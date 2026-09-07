@@ -42,6 +42,35 @@ Two loops run over this data:
    claims, and proposes diffs to the system's own prompts and pipeline **as pull requests**.
    The system never modifies itself autonomously; the human merge is the gate.
 
+## Deployment view
+
+The logical diagram above survives any vendor swap; this one names the vendors.
+
+```mermaid
+flowchart TB
+    FEEDS[arXiv + lab blog feeds] --> ING2
+    subgraph MODAL["Modal — scheduled jobs"]
+        ING2[Ingest<br/>daily cron]
+        TRI2[Triage]
+        DIS2[Distill]
+        META2[Meta-review<br/>weekly]
+    end
+    TRI2 --> GROQ[Groq<br/>Llama 3.3 70B, free tier]
+    DIS2 --> ANT[Anthropic API<br/>Claude, metered]
+    MODAL <--> NEON
+    subgraph NEON["Neon — Postgres + pgvector"]
+        B[(bronze)]
+        S[(silver)]
+        G[(gold)]
+        L[(triage log)]
+    end
+    META2 -->|opens PRs| GH[GitHub repo<br/>code, prompts, skills]
+    GH -->|deploys| MODAL
+    NEON --> AGENT[Claude agent<br/>weekly brief, MCP search]
+    AGENT --> YOU{You}
+    YOU -->|merge| GH
+```
+
 ## Stack
 
 | Concern | Choice | Why |
