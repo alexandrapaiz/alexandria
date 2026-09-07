@@ -45,6 +45,15 @@ def upsert_papers(rows: list[dict]) -> int:
     return inserted
 
 
+def pub_date(entry) -> str | None:
+    """Feeds disagree on date formats (arXiv: ISO 8601, blogs: RFC 822);
+    feedparser's parsed struct_time normalizes both."""
+    t = getattr(entry, "published_parsed", None) or getattr(entry, "updated_parsed", None)
+    if t is None:
+        return None
+    return f"{t.tm_year:04d}-{t.tm_mon:02d}-{t.tm_mday:02d}"
+
+
 def fetch_arxiv() -> list[dict]:
     import feedparser
 
@@ -66,7 +75,7 @@ def fetch_arxiv() -> list[dict]:
                     "authors": [a.name for a in getattr(e, "authors", [])],
                     "abstract": " ".join(getattr(e, "summary", "").split()),
                     "url": e.link,
-                    "published_at": getattr(e, "published", "")[:10] or None,
+                    "published_at": pub_date(e),
                 }
             )
     return rows
@@ -91,7 +100,7 @@ def fetch_blogs() -> list[dict]:
                     "authors": [name],
                     "abstract": " ".join(getattr(e, "summary", "").split())[:4000],
                     "url": link,
-                    "published_at": getattr(e, "published", "")[:10] or None,
+                    "published_at": pub_date(e),
                 }
             )
     return rows
