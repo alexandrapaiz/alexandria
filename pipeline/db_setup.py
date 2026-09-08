@@ -45,3 +45,8 @@ def stats():
         ).fetchall()
         for source, n in by_source:
             print(f"  papers from {source}: {n}")
+        by_tier = conn.execute(
+            "select tier, count(*) from papers group by tier order by 1"
+        ).fetchall()
+        for tier, n in by_tier:
+            print(f"  tier {tier}: {n}")

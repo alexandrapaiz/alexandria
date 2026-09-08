@@ -6,7 +6,8 @@ create extension if not exists vector;
 -- ============ bronze: raw ingested papers ============
 create table if not exists papers (
     id           text primary key,          -- arxiv id, or url hash for blog posts
-    source       text not null,             -- 'arxiv' | 'blog'
+    source       text not null,             -- 'arxiv' | 'hf-daily' | feed name from sources.yaml
+    tier         text not null default 'a', -- triage prior; see sources.yaml
     title        text not null,
     authors      text[] default '{}',
     abstract     text,
@@ -17,6 +18,10 @@ create table if not exists papers (
     -- model means re-embedding every row (batch and query models must match)
     embedding    vector(1024)
 );
+
+-- migrations for databases created before the tier column existed
+alter table papers add column if not exists tier text not null default 'a';
+update papers set tier = 'c' where source = 'blog' and tier = 'a';
 
 -- ============ triage log: every routing decision, with reasoning ============
 -- This table doubles as the eval set for the recursive loop: human_verdict

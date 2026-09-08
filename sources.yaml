@@ -1,0 +1,39 @@
+# Ingestion sources. Tier is a triage prior, carried on every paper row:
+#   a      firehose (arXiv categories) — neutral prior
+#   a-low  firehose, noisy category — extra skepticism
+#   b      human-curated paper picks — strong prior; upgrades a paper already seen in tier a
+#   c      frontier/open-lab owned channels — strong prior
+#   d      trusted practitioners — moderate prior
+# The meta-review may propose diffs to this file (ADR-7).
+
+arxiv:
+  - {category: cs.CL, tier: a}
+  - {category: cs.AI, tier: a}
+  - {category: cs.MA, tier: a}
+  - {category: cs.IR, tier: a}
+  - {category: cs.LG, tier: a-low}
+  - {category: cs.DC, tier: a-low}   # systems/distributed papers; ML-systems work often lands here
+
+hf_daily_papers:
+  url: https://huggingface.co/api/daily_papers
+  tier: b
+
+feeds:
+  # anthropic.com has no RSS feed (verified 2026-09-07; every plausible path 404s).
+  # Coverage comes from transformer-circuits + arXiv + hf-daily; a news-page
+  # scraper is a candidate meta-review proposal.
+  - {name: transformer-circuits, url: "https://transformer-circuits.pub/feed.xml", tier: c}
+  - {name: openai, url: "https://openai.com/news/rss.xml", tier: c}
+  - {name: deepmind, url: "https://deepmind.google/blog/rss.xml", tier: c}
+  - {name: google-research, url: "https://research.google/blog/rss/", tier: c}
+  - {name: thinking-machines, url: "https://thinkingmachines.ai/index.xml", tier: c}
+  - {name: qwen, url: "https://qwenlm.github.io/blog/index.xml", tier: c}
+  # ai.meta.com has no RSS (verified 2026-09-07); engineering.fb.com carries
+  # Meta's systems/infra writing, which is the half we most want anyway
+  - {name: meta-engineering, url: "https://engineering.fb.com/feed/", tier: c}
+  - {name: stanford-sail, url: "https://ai.stanford.edu/blog/feed.xml", tier: d}
+  - {name: mit-news-ai, url: "https://news.mit.edu/rss/topic/artificial-intelligence2", tier: d}
+  - {name: mit-csail, url: "https://www.csail.mit.edu/rss.xml", tier: d}
+  - {name: simonwillison, url: "https://simonwillison.net/atom/everything/", tier: d}
+  - {name: interconnects, url: "https://www.interconnects.ai/feed", tier: d}
+  - {name: langchain, url: "https://www.langchain.com/blog/rss.xml", tier: d}
