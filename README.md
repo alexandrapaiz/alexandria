@@ -7,6 +7,12 @@ The terminal state of a paper is never "read." It is a **skill**, a **pattern no
 **discard**. A paper that doesn't eventually change how an agent is built was, for this
 system's purposes, noise.
 
+It is also a systems-architecture course taught by building: the two disciplines under
+study are **harness engineering** (the deterministic scaffolding around stochastic model
+calls) and **loop engineering** (what repeats, on what clock, with how much autonomy, and
+where the human gate sits). [docs/curriculum.md](docs/curriculum.md) maps each concept to
+the exact place in this repo where it is instantiated.
+
 ## Architecture
 
 ```mermaid
@@ -94,6 +100,7 @@ pipeline/            Modal apps: ingest, triage, distill, meta-review
 prompts/             versioned prompts — the recursive loop proposes diffs against these
 skills/              the gold layer: promoted skills and pattern notes
 docs/decisions.md    architecture decision records
+docs/curriculum.md   what the architecture teaches: harness + loop engineering
 ```
 
 ## Status
