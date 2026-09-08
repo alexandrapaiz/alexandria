@@ -100,8 +100,11 @@ docs/decisions.md    architecture decision records
 
 - [x] Architecture designed (see decisions doc)
 - [x] Repo scaffold, schema, ingest job
-- [ ] Neon database provisioned, schema applied
-- [ ] Triage job wired to Groq
+- [x] Neon database provisioned, schema applied
+- [x] Tiered sources (sources.yaml), daily ingest cron live
+- [x] Triage job live: gpt-oss-120b via Groq, batched, rate-limit-aware
 - [ ] Distill job wired to Anthropic
 - [ ] Weekly brief + promotion flow
 - [ ] Meta-review recursive loop
+- [ ] Digest retrospectives: matured / deprecated sections (ADR-8)
+- [ ] Slow loop: citation check on aged index-tier papers (Semantic Scholar)

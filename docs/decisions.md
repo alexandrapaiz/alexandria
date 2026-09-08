@@ -36,7 +36,8 @@ also the cheapest way to genuinely understand Databricks-style architectures.
 
 ## ADR-5: Right-size the model to the task
 
-Triage: Llama 3.3 70B on Groq's free tier (~100 calls/day against a 1,000/day cap).
+Triage: the largest open model on Groq's free tier (gpt-oss-120b as of 2026-09;
+Groq rotates its lineup, which is exactly why the model name is one constant).
 Distillation: Claude via the Anthropic API — the only metered cost, ~$1–2/month.
 Embeddings: Qwen3-Embedding-0.6B in-process on Modal (top open family on MTEB;
 batch jobs load the model in the job, no serving endpoint needed). All providers sit
@@ -48,6 +49,24 @@ The triage loop uses classic pipeline retrieval (embed, dedupe, route) because t
 retrieval need is known in advance — hardwired is cheaper and more predictable. The
 interactive side exposes `semantic_search` and `sql_query` as MCP tools and lets the
 agent decide what to search and when to stop. Same database, two consumption modes.
+
+## ADR-8: The digest looks backward as well as forward
+
+The weekly brief is not only "what's new." Two retrospective sections are part of
+the design (implemented once the claims layer has accumulated history):
+
+- **Matured** — a slow loop revisits past claims and index-tier papers after
+  months, using citation counts (Semantic Scholar API) and reinforcement by later
+  claims to surface what aged well — including sleepers our triage under-rated,
+  which become labeled eval failures for the meta-review.
+- **Deprecated** — when a new claim lands, semantic search finds its nearest older
+  claims and a model classifies the relation (supports / refines / contradicts);
+  contradiction edges surface superseded techniques in the digest.
+
+Citation counts are deliberately NOT used at the leading edge: papers arrive with
+zero citations, so citations are a lagging signal — useful for retrospectives,
+useless for daily triage. The fast attention proxy at the front edge is tier `b`
+(human curation).
 
 ## ADR-7: The system proposes changes to itself; a human merges them
 
