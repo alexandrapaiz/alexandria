@@ -23,6 +23,10 @@ create table if not exists papers (
 alter table papers add column if not exists tier text not null default 'a';
 update papers set tier = 'c' where source = 'blog' and tier = 'a';
 
+-- distilled_at marks a paper as processed by distill (blackboard marker; claims
+-- alone can't mark completion because a paper may honestly yield zero claims)
+alter table papers add column if not exists distilled_at timestamptz;
+
 -- ============ triage log: every routing decision, with reasoning ============
 -- This table doubles as the eval set for the recursive loop: human_verdict
 -- labels each machine decision, and disagreements drive prompt proposals.
@@ -93,14 +97,16 @@ create or replace view triage_queue as
     left join triage_log t on t.paper_id = p.id
     where t.id is null;
 
-create or replace view distill_queue as
+-- drop first: adding distilled_at to papers changed this view's column order,
+-- which CREATE OR REPLACE refuses to do
+drop view if exists distill_queue;
+create view distill_queue as
     select p.*, t.decision as triage_decision
     from papers p
     join triage_log t on t.paper_id = p.id
         and t.decision in ('distill', 'deep_read')
         and t.model != 'rule:backfill'
-    left join claims c on c.paper_id = p.id
-    where c.id is null;
+    where p.distilled_at is null;
 
 create or replace view interpret_queue as
     select c.*
