@@ -38,7 +38,12 @@ also the cheapest way to genuinely understand Databricks-style architectures.
 
 Triage: the largest open model on Groq's free tier (gpt-oss-120b as of 2026-09;
 Groq rotates its lineup, which is exactly why the model name is one constant).
-Distillation: Claude via the Anthropic API — the only metered cost, ~$1–2/month.
+Distillation: originally slated for Claude (paid); AMENDED 2026-09-07 by blind
+bake-off (docs/evals/2026-09-07-distill-bakeoff.json): gpt-oss-120b won 4–1–3
+over Qwen3.8-27B on faithfulness and claim readability, so distillation is $0 on
+Groq too; Qwen3.8 is the fallback, and Gemini was disqualified on free-tier
+reliability (7/8 calls 429'd under backoff). Upgrading to a paid frontier
+distiller stays on the roadmap, now with a golden set to measure it against.
 Embeddings: Qwen3-Embedding-0.6B in-process on Modal (top open family on MTEB;
 batch jobs load the model in the job, no serving endpoint needed). All providers sit
 behind swappable interfaces; free-tier limits change, so portability is designed in.
