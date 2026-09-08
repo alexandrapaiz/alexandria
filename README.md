@@ -104,7 +104,8 @@ docs/decisions.md    architecture decision records
 - [x] Tiered sources (sources.yaml), daily ingest cron live
 - [x] Triage job live: gpt-oss-120b via Groq, batched, rate-limit-aware
 - [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
-- [ ] Distill job wired to Anthropic
+- [ ] Distill job: $0 bake-off (gpt-oss-120b vs Gemini Flash), provider-agnostic
+- [ ] Upgrade distill model beyond free tiers when budget allows (bake-off decides if it's needed)
 - [ ] Weekly brief + promotion flow
 - [ ] Meta-review recursive loop
 - [ ] Digest retrospectives: matured / deprecated sections (ADR-8)
