@@ -50,6 +50,15 @@ retrieval need is known in advance — hardwired is cheaper and more predictable
 interactive side exposes `semantic_search` and `sql_query` as MCP tools and lets the
 agent decide what to search and when to stop. Same database, two consumption modes.
 
+## ADR-7: The system proposes changes to itself; a human merges them
+
+The weekly meta-review reads the triage log (every decision + reasoning, labeled by
+human verdicts — the eval set the pipeline emits as exhaust) and newly distilled
+claims, and opens pull requests against the system's own prompts and code. It never
+self-modifies: unsupervised drift in triage criteria is the eval problem eating
+itself, and the human review step is where the owner's learning happens. Prompts are
+versioned files precisely so that self-improvement proposals are literal git diffs.
+
 ## ADR-8: The digest looks backward as well as forward
 
 The weekly brief is not only "what's new." Two retrospective sections are part of
@@ -67,12 +76,3 @@ Citation counts are deliberately NOT used at the leading edge: papers arrive wit
 zero citations, so citations are a lagging signal — useful for retrospectives,
 useless for daily triage. The fast attention proxy at the front edge is tier `b`
 (human curation).
-
-## ADR-7: The system proposes changes to itself; a human merges them
-
-The weekly meta-review reads the triage log (every decision + reasoning, labeled by
-human verdicts — the eval set the pipeline emits as exhaust) and newly distilled
-claims, and opens pull requests against the system's own prompts and code. It never
-self-modifies: unsupervised drift in triage criteria is the eval problem eating
-itself, and the human review step is where the owner's learning happens. Prompts are
-versioned files precisely so that self-improvement proposals are literal git diffs.
