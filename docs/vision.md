@@ -42,3 +42,22 @@ will eventually justify removing the gate. The gate comes off when the
 measured record says the system's judgment matches the human's — the same rule
 as every other swap in this architecture: **change under evidence, not under
 optimism.** Until then, autonomy below the gate, proposals above it.
+
+## 4. The business — a subscription newsletter
+
+Once the digest is consistently excellent, alexandria becomes a **paid
+newsletter**:
+
+- **$10/month — Digest tier.** The weekly digest: trailblazing, matured, and
+  left-behind, with evidence.
+- **$30/month — Digest + Skills tier.** The digest plus the skill library —
+  subscribers get the operational assets, not just the reading.
+
+The architecture was built for this from the start: the pipeline's marginal
+cost is ~$0, so subscription revenue is nearly pure margin, and the
+gold layer is the paywalled product. The product surface sketched in
+[stack.md](stack.md) (Next.js + auth + entitlements) is the delivery
+mechanism; email delivery and payments (e.g. Stripe) get chosen when this
+phase begins. Sequencing: quality first — the digest must be worth $10 to a
+stranger before a paywall goes up. The free public repo remains the
+credibility engine; the digest and skills are the product.
