@@ -76,3 +76,16 @@ Citation counts are deliberately NOT used at the leading edge: papers arrive wit
 zero citations, so citations are a lagging signal — useful for retrospectives,
 useless for daily triage. The fast attention proxy at the front edge is tier `b`
 (human curation).
+
+## ADR-9: Blackboard coordination — the schema is the orchestrator
+
+Workers (ingest, triage, distill, meta-review) never message each other. They read
+and write a shared store, and coordination emerges from the data's state — the
+blackboard pattern (Hearsay-II, 1970s AI), rediscovered by every pipeline that
+scales. Each worker's inbox is a SQL view (`triage_queue`, `distill_queue`):
+an item is claimed when the worker's output row exists, which makes idempotency
+and resume properties of the schema rather than of any worker's code. The
+alternative — multi-agent message passing — buys parallelism at the cost of an
+order of magnitude more tokens and much harder debugging; it is the institutional
+swap (see docs/scaling.md), not the default. Corollary: adding a pipeline stage
+means adding a view, and the stage's contract is reviewable as one SQL statement.

@@ -63,6 +63,26 @@ create table if not exists promotions (
     decided_at timestamptz
 );
 
+-- ============ blackboard queues ============
+-- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
+-- view: an item is "claimed" when the worker's output row exists, so every job
+-- is resumable from the board's state alone.
+
+create or replace view triage_queue as
+    select p.*
+    from papers p
+    left join triage_log t on t.paper_id = p.id
+    where t.id is null;
+
+create or replace view distill_queue as
+    select p.*, t.decision as triage_decision
+    from papers p
+    join triage_log t on t.paper_id = p.id
+        and t.decision in ('distill', 'deep_read')
+        and t.model != 'rule:backfill'
+    left join claims c on c.paper_id = p.id
+    where c.id is null;
+
 create index if not exists papers_embedding_idx
     on papers using hnsw (embedding vector_cosine_ops);
 create index if not exists claims_embedding_idx

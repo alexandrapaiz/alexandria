@@ -97,12 +97,11 @@ def triage(max_calls: int = 25):
 
         rows = conn.execute(
             """
-            select p.id, p.title, p.abstract, p.tier
-            from papers p left join triage_log t on t.paper_id = p.id
-            where t.id is null
-            order by case p.tier when 'b' then 0 when 'c' then 1 when 'd' then 2
-                                 when 'a' then 3 else 4 end,
-                     p.published_at desc nulls last
+            select id, title, abstract, tier
+            from triage_queue
+            order by case tier when 'b' then 0 when 'c' then 1 when 'd' then 2
+                               when 'a' then 3 else 4 end,
+                     published_at desc nulls last
             limit %s
             """,
             (BATCH * max_calls,),
