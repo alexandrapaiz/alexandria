@@ -6,6 +6,31 @@ team- or product-grade system — specific technologies, not categories. The
 upgrade path between them is governed by [scaling.md](scaling.md): swap one row
 at a time, under measured load, never breaking the schema contract.
 
+```mermaid
+flowchart LR
+  subgraph NOW["Current — $0/month"]
+    direction TB
+    E1["Evals — triage log · golden set · Modal logs"]
+    A1["Agentic — Claude agent + MCP (next build)"]
+    O1["Orchestration — Modal crons · SQL queue views"]
+    D1["Data — Neon Postgres · pgvector · edges table"]
+    M1["Models — gpt-oss-120b via Groq · Qwen3-Embedding-0.6B"]
+    I1["Infrastructure — Modal serverless · Neon · GitHub"]
+    E1 --- A1 --- O1 --- D1 --- M1 --- I1
+  end
+  subgraph FUTURE["Institutional grade"]
+    direction TB
+    E2["Evals — Braintrust · OpenTelemetry · Datadog"]
+    A2["Agentic — LangGraph graphs · checkpoints · HITL"]
+    O2["Orchestration — Temporal · Dagster · Kafka"]
+    D2["Data — S3/Iceberg · Databricks · Vespa · Neo4j"]
+    M2["Models — LiteLLM gateway · vLLM fleet · fine-tunes"]
+    I2["Infrastructure — Kubernetes · Terraform · Vault · CI/CD"]
+    E2 --- A2 --- O2 --- D2 --- M2 --- I2
+  end
+  NOW -. "swap one row at a time, under measured load" .-> FUTURE
+```
+
 ## Current stack (v1, running now — $0/month)
 
 **Infrastructure**
