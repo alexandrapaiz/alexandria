@@ -20,11 +20,13 @@ PROVIDERS = {
         "key_env": "GROQ_API_KEY",
         "pause": 3,
     },
-    "gemini": {
-        "url": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-        "model": "gemini-3-flash-preview",  # fallback if retired: gemini-2.5-flash
-        "key_env": "GEMINI_API_KEY",
-        "pause": 5,
+    # gemini was evaluated and dropped: 7/8 calls failed with 429 even under
+    # exponential backoff on the free tier — disqualified on reliability
+    "qwen": {
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "model": "qwen/qwen3.8-27b",
+        "key_env": "GROQ_API_KEY",
+        "pause": 3,
     },
 }
 
@@ -44,31 +46,34 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
 
     p = PROVIDERS[provider]
     prompt = open("/root/prompts/distill.md").read()
-    resp = httpx.post(
-        p["url"],
-        headers={"Authorization": f"Bearer {os.environ[p['key_env']].strip()}"},
-        json={
-            "model": p["model"],
-            "temperature": 0.2,
-            "response_format": {"type": "json_object"},
-            "messages": [
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": f"title: {title}\n\nabstract: {abstract}"},
-            ],
-        },
-        timeout=180,
-    )
-    resp.raise_for_status()
-    out = json.loads(resp.json()["choices"][0]["message"]["content"])
-    return out.get("claims", [])
+    for attempt in range(4):
+        resp = httpx.post(
+            p["url"],
+            headers={"Authorization": f"Bearer {os.environ[p['key_env']].strip()}"},
+            json={
+                "model": p["model"],
+                "temperature": 0.2,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": f"title: {title}\n\nabstract: {abstract}"},
+                ],
+            },
+            timeout=180,
+        )
+        if resp.status_code == 429 and attempt < 3:
+            wait = float(resp.headers.get("retry-after") or 20 * (attempt + 1))
+            print(f"  {provider} rate limited; backing off {wait:.0f}s")
+            time.sleep(min(wait, 120))
+            continue
+        resp.raise_for_status()
+        out = json.loads(resp.json()["choices"][0]["message"]["content"])
+        return out.get("claims", [])
+    raise RuntimeError(f"{provider}: exhausted retries")
 
 
 @app.function(
-    secrets=[
-        modal.Secret.from_name("neon"),
-        modal.Secret.from_name("groq"),
-        modal.Secret.from_name("gemini"),
-    ],
+    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq")],
     timeout=3600,
 )
 def bake_off(n_papers: int = 8) -> list[dict]:
