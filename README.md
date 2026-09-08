@@ -103,6 +103,7 @@ docs/decisions.md    architecture decision records
 - [x] Neon database provisioned, schema applied
 - [x] Tiered sources (sources.yaml), daily ingest cron live
 - [x] Triage job live: gpt-oss-120b via Groq, batched, rate-limit-aware
+- [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
 - [ ] Distill job wired to Anthropic
 - [ ] Weekly brief + promotion flow
 - [ ] Meta-review recursive loop

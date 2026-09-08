@@ -51,6 +51,25 @@ create table if not exists claims (
     created_at timestamptz not null default now()
 );
 
+-- interpreted_at marks a claim as judged against its neighbors (blackboard marker;
+-- edges alone can't mark completion because a claim may legitimately have none)
+alter table claims add column if not exists interpreted_at timestamptz;
+
+-- ============ claim graph: relations between claims ============
+-- Append-only and time-directional: from_claim is always the newer, judging
+-- claim (ADR-10). Re-judgment belongs to the slow loop, not to edits.
+create table if not exists claim_links (
+    from_claim bigint not null references claims(id),
+    to_claim   bigint not null references claims(id),
+    relation   text not null check (relation in ('supports', 'refines', 'contradicts', 'duplicates')),
+    confidence real,
+    method     text,                       -- model + prompt sha that produced the edge
+    created_at timestamptz not null default now(),
+    primary key (from_claim, to_claim, relation)
+);
+
+create index if not exists claim_links_to_idx on claim_links (to_claim);
+
 -- ============ gold: promotions (human-approved only) ============
 create table if not exists promotions (
     id         bigserial primary key,
@@ -82,6 +101,21 @@ create or replace view distill_queue as
         and t.model != 'rule:backfill'
     left join claims c on c.paper_id = p.id
     where c.id is null;
+
+create or replace view interpret_queue as
+    select c.*
+    from claims c
+    where c.interpreted_at is null
+      and c.embedding is not null;
+
+-- a claim is deprecated when a newer claim contradicts it with confidence;
+-- this is ADR-8's "deprecated" digest section as a view
+create or replace view deprecated_claims as
+    select distinct c.*
+    from claims c
+    join claim_links l on l.to_claim = c.id
+        and l.relation = 'contradicts'
+        and coalesce(l.confidence, 0) >= 0.7;
 
 create index if not exists papers_embedding_idx
     on papers using hnsw (embedding vector_cosine_ops);

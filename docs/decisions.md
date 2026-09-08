@@ -89,3 +89,21 @@ alternative — multi-agent message passing — buys parallelism at the cost of 
 order of magnitude more tokens and much harder debugging; it is the institutional
 swap (see docs/scaling.md), not the default. Corollary: adding a pipeline stage
 means adding a view, and the stage's contract is reviewable as one SQL statement.
+
+## ADR-10: Claim graph in Postgres, append-only, time-directional
+
+The interpreting layer relates claims: supports / refines / contradicts /
+duplicates, stored as an edges table (`claim_links`). Relational over Neo4j
+because our traversals are shallow (1–3 hops), our graph queries constantly fuse
+with SQL filters and pgvector similarity (one store, one query), and the graph is
+small and derived — rebuildable from silver at any time. Neo4j is the
+institutional swap when deep traversals dominate (docs/scaling.md); Apache AGE is
+the middle rung if Cypher ergonomics are ever wanted inside Postgres.
+
+Edges are append-only and time-directional: a new claim judges strictly older
+claims; edges are never edited. Re-judgment (a later claim recontextualizing an
+old edge) belongs to the slow loop. Mechanism per edge: pgvector kNN retrieves
+candidate neighbors cheaply, a small model classifies the shortlisted pairs —
+the same retrieve-then-reason shape as triage and RAG, one level up. The
+`deprecated_claims` view (a confident incoming `contradicts` edge from a newer
+claim) is ADR-8's digest section expressed as SQL.
