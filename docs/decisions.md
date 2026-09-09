@@ -112,3 +112,30 @@ candidate neighbors cheaply, a small model classifies the shortlisted pairs —
 the same retrieve-then-reason shape as triage and RAG, one level up. The
 `deprecated_claims` view (a confident incoming `contradicts` edge from a newer
 claim) is ADR-8's digest section expressed as SQL.
+
+## ADR-11: The agentic layer — thin MCP server, OAuth 2.1, promotion by pull request
+
+The agentic layer is Claude (via the user's claude.ai subscription — a weekly
+scheduled task plus ad-hoc sessions) acting as MCP host against a thin MCP
+server on Modal. Division of labor: **all intelligence in the agent, all
+authority in the server.** The server exposes four tools — `semantic_search`
+(embeds the query with the same pinned Qwen3 model as the corpus; a vector
+search is only valid inside one embedding space, so the server owns the model),
+`sql_query` (SELECT-only, enforced server-side), `get_digest`, and
+`propose_skill`. The agent never holds a database password or GitHub token; it
+holds tools.
+
+Auth is OAuth 2.1 as the MCP spec standardizes it — authorization code + PKCE +
+dynamic client registration — implemented in-process and stateless (signed
+JWTs; a single passphrase login, since there is one user). A bearer-token
+shortcut was considered and rejected: claude.ai connectors speak spec OAuth
+natively, and learning the industry-standard agent-auth flow is part of this
+project's purpose.
+
+Promotion is a pull request, not a write. `propose_skill` records a
+`promotions` row and opens a PR into `skills/` using the server-held GitHub
+token. The agent can propose anything and commit nothing — ADR-7's human gate
+is enforced by plumbing, not by prompt. The meta-review loop will reuse this
+same proposal channel for prompt/source diffs. Graduation path (vision §3):
+when the measured record justifies it, the same agent prompt moves onto a
+metered API key as a cron, and the human gate becomes optional.
