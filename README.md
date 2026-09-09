@@ -100,6 +100,7 @@ pipeline/            Modal apps: ingest, triage, distill, meta-review
 prompts/             versioned prompts — the recursive loop proposes diffs against these
 skills/              the gold layer: promoted skills and pattern notes
 docs/vision.md       the declared end state: digest, skills, full autonomy
+docs/diagrams.md     the diagram atlas: status, blackboard, agent loop
 docs/decisions.md    architecture decision records
 docs/curriculum.md   the AI systems stack, layer by layer, learned by building
 ```
