@@ -141,7 +141,7 @@ def gather(conn) -> dict:
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
-        limit 60
+        limit 30
         """
     ).fetchall()
 
@@ -203,7 +203,7 @@ def gather(conn) -> dict:
         "stats": {"papers_ingested": stats[0], "claims_distilled": stats[1], "edges_drawn": stats[2]},
         "new_claims": [
             {
-                "claim_id": r[0], "claim": r[1][:400], "topics": r[2],
+                "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
                 "paper": r[3], "url": r[4], "tier": r[5],
                 "triage": r[6], "score": r[7], "edges": r[8],
             }
@@ -224,8 +224,21 @@ def gather(conn) -> dict:
              "paper": r[3], "url": r[4]}
             for r in deprecated
         ],
-        "deep_reads": [{"paper": r[0], "url": r[1], "why": r[2]} for r in deep_reads],
+        "deep_reads": [{"paper": r[0], "url": r[1], "why": (r[2] or "")[:200]} for r in deep_reads],
     }
+
+
+# Groq's free tier caps request size (413 above it); trim the least-critical
+# evidence (the tail of new_claims, already sorted best-first) until we fit
+MAX_PAYLOAD_CHARS = 22000
+
+
+def shrink(payload: dict) -> str:
+    body = json.dumps(payload, separators=(",", ":"), default=str)
+    while len(body) > MAX_PAYLOAD_CHARS and payload["new_claims"]:
+        payload["new_claims"].pop()
+        body = json.dumps(payload, separators=(",", ":"), default=str)
+    return body
 
 
 def write_digest(payload: dict, prompt: str) -> str:
@@ -233,6 +246,8 @@ def write_digest(payload: dict, prompt: str) -> str:
 
     import httpx
 
+    user = shrink(payload)
+    print(f"payload: {len(user)} chars, {len(payload['new_claims'])} new claims kept")
     for attempt in range(4):
         resp = httpx.post(
             GROQ_URL,
@@ -242,7 +257,7 @@ def write_digest(payload: dict, prompt: str) -> str:
                 "temperature": 0.3,
                 "messages": [
                     {"role": "system", "content": prompt},
-                    {"role": "user", "content": json.dumps(payload, default=str)},
+                    {"role": "user", "content": user},
                 ],
             },
             timeout=300,
@@ -317,7 +332,12 @@ def weekly() -> str:
             (week, body, MODEL, sha),
         )
         conn.commit()
-    print(push_to_repo(week, body))
+    try:
+        print(push_to_repo(week, body))
+    except Exception as exc:
+        # the digests table is the record of record; a push failure (bad token,
+        # GitHub outage) must never fail the run
+        print(f"repo push failed ({exc}); digest is safe in the database")
     return body
 
 
