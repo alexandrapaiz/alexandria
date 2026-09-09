@@ -115,8 +115,10 @@ docs/curriculum.md   the AI systems stack, layer by layer, learned by building
 - [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
 - [x] Distill job live: bake-off winner gpt-oss-120b + Qwen3 embeddings, daily 11:30 UTC
 - [x] First claims in silver, first edges in the claim graph
-- [ ] Upgrade distill model beyond free tiers when budget allows (bake-off decides if it's needed)
-- [ ] Weekly brief + promotion flow
+- [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
+      self-published to digests/ every Monday — first edition 2026-W37
+- [x] Slow loop: citation tracking via Semantic Scholar, merged into the weekly cron (ADR-8)
+- [ ] MCP server over Neon (semantic_search, sql_query, promote)
+- [ ] Claude weekly agent: synthesis review + skill authoring → promotion flow
 - [ ] Meta-review recursive loop
-- [ ] Digest retrospectives: matured / deprecated sections (ADR-8)
-- [ ] Slow loop: citation check on aged index-tier papers (Semantic Scholar)
+- [ ] Upgrade distill model beyond free tiers when budget allows (bake-off decides if it's needed)
