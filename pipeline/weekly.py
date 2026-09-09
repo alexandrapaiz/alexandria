@@ -1,23 +1,33 @@
-"""Digest: assemble and publish the weekly three-section research digest.
+"""Weekly loop: refresh citation trajectories, then write and publish the digest.
 
-This is a workflow, not an agent (ADR-6 logic): the digest's queries are known
-in advance — new claims, accumulating supports-edges, citation movers, fresh
-deprecations — so retrieval is hardwired SQL and the model only writes. Runs
-Monday 15:00 UTC, after Sunday's slow loop has refreshed citation trajectories.
+One scheduled function doing two jobs, in order:
 
-The digest lands in two places: the `digests` table (database of record) and
-digests/<week>.md in the GitHub repo via the contents API (the published form).
-The push needs the `github` Modal secret (GITHUB_TOKEN, a fine-grained PAT with
-contents read/write on alexandrapaiz/alexandria); without the env var the run
-still succeeds and only skips the push.
+1. **Slow loop** — batch-check citation counts on aged papers via Semantic
+   Scholar's free API into the append-only citation_log. Trajectory (count now
+   vs. last check) is the "gaining traction" evidence: the claim graph shows
+   what our corpus thinks, citations show what the field thinks.
+2. **Digest** — fixed SQL gathers five evidence streams (new claims, claims
+   with 2+ supports edges, citation movers, fresh deprecations, deep-read
+   flags); gpt-oss-120b writes the three-section digest; it lands in the
+   `digests` table (database of record) and digests/<week>.md in the repo.
 
-    modal run pipeline/digest.py         # one-off manual run
-    modal deploy pipeline/digest.py      # install the weekly schedule
+They share one function deliberately: Modal's free plan caps scheduled
+functions at 5, and the citations exist for the digest — running them in the
+same Monday process makes the trajectories maximally fresh and costs no slot.
+The digest is a workflow, not an agent (ADR-6): every query is known in
+advance, so the model only writes.
+
+Needs secrets: `neon`, `groq`, `github` (GITHUB_TOKEN, fine-grained PAT with
+contents read/write on the repo; if absent the run succeeds and skips the push).
+
+    modal run pipeline/weekly.py         # one-off manual run (citations + digest)
+    modal deploy pipeline/weekly.py      # install the Monday schedule
 """
 
 import base64
 import hashlib
 import json
+import re
 import time
 from datetime import date, timedelta
 
@@ -26,7 +36,12 @@ import modal
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "openai/gpt-oss-120b"
 REPO = "alexandrapaiz/alexandria"
-WINDOW_DAYS = 7
+
+S2_BATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
+S2_BATCH_SIZE = 100       # ids per API call (S2 allows up to 500; be gentle)
+MAX_PAPERS_PER_RUN = 400
+MIN_AGE_DAYS = 7          # first check is the baseline; the second makes a trajectory
+RECHECK_DAYS = 6          # at most one check per paper per weekly cycle
 
 image = (
     modal.Image.debian_slim()
@@ -34,8 +49,72 @@ image = (
     .add_local_file("prompts/digest.md", "/root/prompts/digest.md")
 )
 
-app = modal.App("alexandria-digest", image=image)
+app = modal.App("alexandria-weekly", image=image)
 
+
+# ---------------- slow loop: citations ----------------
+
+def s2_id(paper_id: str) -> str | None:
+    """papers.id 'arxiv:2409.01234v2' -> Semantic Scholar id 'ARXIV:2409.01234'."""
+    if not paper_id.startswith("arxiv:"):
+        return None  # blog posts aren't in the citation graph
+    raw = re.sub(r"v\d+$", "", paper_id.removeprefix("arxiv:"))
+    return f"ARXIV:{raw}"
+
+
+def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
+    import httpx
+
+    rows = conn.execute(
+        """
+        select p.id
+        from papers p
+        join triage_log t on t.paper_id = p.id
+            and t.decision in ('index', 'distill', 'deep_read')
+        left join lateral (
+            select max(checked_at) as last_check
+            from citation_log where paper_id = p.id
+        ) c on true
+        where p.id like 'arxiv:%%'
+          and p.published_at <= current_date - %s
+          and (c.last_check is null or c.last_check < now() - make_interval(days => %s))
+        order by c.last_check asc nulls first
+        limit %s
+        """,
+        (MIN_AGE_DAYS, RECHECK_DAYS, max_papers),
+    ).fetchall()
+    ids = [r[0] for r in rows]
+    print(f"{len(ids)} papers due for a citation check")
+
+    written = 0
+    for i in range(0, len(ids), S2_BATCH_SIZE):
+        chunk = ids[i : i + S2_BATCH_SIZE]
+        resp = httpx.post(
+            S2_BATCH_URL,
+            params={"fields": "citationCount"},
+            json={"ids": [s2_id(pid) for pid in chunk]},
+            timeout=60,
+        )
+        if resp.status_code == 429:
+            print("rate limited by Semantic Scholar; continuing with what we have")
+            break
+        resp.raise_for_status()
+        # response aligns positionally with the request; unknown papers are null
+        for pid, result in zip(chunk, resp.json()):
+            if result is None or result.get("citationCount") is None:
+                continue
+            conn.execute(
+                "insert into citation_log (paper_id, citations) values (%s, %s)",
+                (pid, result["citationCount"]),
+            )
+            written += 1
+        conn.commit()
+        time.sleep(2)
+    print(f"citation checks written: {written}")
+    return written
+
+
+# ---------------- digest ----------------
 
 def gather(conn) -> dict:
     """Fixed queries; the model never chooses what to retrieve."""
@@ -207,7 +286,7 @@ def push_to_repo(week: str, body: str) -> str:
              modal.Secret.from_name("github")],
     timeout=1800,
 )
-def digest() -> str:
+def weekly() -> str:
     import os
 
     import psycopg
@@ -219,6 +298,10 @@ def digest() -> str:
     sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        try:
+            check_citations(conn)
+        except Exception as exc:
+            print(f"citation check failed ({exc}); digest proceeds without fresh citations")
         payload = gather(conn)
         payload["week"] = week
         print(f"{week}: {payload['stats']} | new_claims={len(payload['new_claims'])} "
@@ -240,5 +323,5 @@ def digest() -> str:
 
 @app.local_entrypoint()
 def main():
-    body = digest.remote()
+    body = weekly.remote()
     print("\n" + body)
