@@ -86,6 +86,31 @@ create table if not exists promotions (
     decided_at timestamptz
 );
 
+-- ============ slow loop: citation history ============
+-- Append-only log of citation counts from Semantic Scholar. Trajectory (this
+-- week's count vs. last check) is what "gaining traction" means; a single
+-- snapshot can't show it, so this is a log, not a column on papers.
+create table if not exists citation_log (
+    id         bigserial primary key,
+    paper_id   text not null references papers(id),
+    citations  int not null,
+    checked_at timestamptz not null default now()
+);
+
+create index if not exists citation_log_paper_idx on citation_log (paper_id, checked_at desc);
+
+-- ============ digests: the weekly product ============
+-- One row per ISO week. The repo copy (digests/<week>.md) is the published
+-- form; this row is the database of record and survives even if the push fails.
+create table if not exists digests (
+    id         bigserial primary key,
+    week       text not null unique,        -- e.g. '2026-W37'
+    body       text not null,               -- the digest markdown
+    model      text,
+    prompt_sha text,
+    created_at timestamptz not null default now()
+);
+
 -- ============ blackboard queues ============
 -- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
 -- view: an item is "claimed" when the worker's output row exists, so every job
