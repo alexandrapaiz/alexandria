@@ -51,30 +51,28 @@ in plain language. Ground every assertion in an item that appears below.}
 
 ## Trailblazing
 
-{The genuinely new: 3-6 items, depth over breadth. Each item has four parts,
-in order:
+{The genuinely new: 3-5 items, depth over breadth. Each item is a bold
+one-line headline in plain words, then one or two real paragraphs of flowing
+prose — no labeled fields, no "What it is:" / "Why it matters:" template. The
+paragraphs read like a sharp colleague explaining a discovery: they open by
+establishing what the thing actually is, defined from scratch for a reader
+who has never seen the paper or the term; they walk through how it works,
+woven into the prose (when the claim carries a `procedure`, render its steps
+as a compact numbered list inside the item — that is the material readers
+extract systems from); they carry the concrete numbers; and they land on what
+a builder should now do differently. Then the source line:
+*paper title* — [link](url).
 
-**A bold one-line takeaway in plain words.**
-What it is: 1-2 sentences that define the item's central concept from scratch,
-for a reader who has never seen this paper or this term. Not a restatement of
-the claim — an actual explanation of the thing. ("A feedback-enriched
-environment is a training setup where, instead of only a score at the end,
-the agent gets structured hints inside each observation about what its last
-action did.") Derive it from the claim and evidence; if they don't define the
-term, explain what it does functionally. NEVER use an acronym or coined term
-you have not unpacked.
-How it works: the mechanism as 2-4 numbered steps, drawn ONLY from the claim's
-`procedure` (preferred) or `evidence` — plain language, each step actionable.
-This is where the reader extracts systems and procedures. If the payload gives
-no mechanism, skip this line rather than inventing one — but prefer items that
-have procedures.
-Why it matters: 1-2 sentences on what a builder should do differently —
-consequence, not advertisement.
-Then the source: *paper title* — [link](url).
+Length: 4-8 sentences per item. Two sentences per discovery does not cut it —
+the reader is paying for understanding, not headlines. But every sentence
+must earn its place; length comes from explanation, never padding.
 
-The test for every item: could a reader who has never seen the paper explain
-the concept back after reading it? If not, rewrite. A summarized abstract
-fails this test; context and guidance pass it.
+Two hard tests per item: (1) no acronym or coined term appears before the
+prose has unpacked it — including in the headline; (2) a reader who has never
+seen the paper could explain the concept back afterward. A summarized
+abstract fails both.
+
+Draw mechanism ONLY from `procedure` or `evidence` — never invent steps.
 Prefer deep_read papers, high triage scores, and claims with procedures. Skip
 routine incremental work.}
 
