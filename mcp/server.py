@@ -78,8 +78,10 @@ def serve():
         import socket
         from urllib.parse import urlparse
 
+        # No startup options: Neon's pooler (PgBouncer) rejects them — timeouts
+        # are set per-transaction with `set local` where untrusted SQL runs.
         url = os.environ["DATABASE_URL"]
-        kwargs = {"options": "-c statement_timeout=15000"}
+        kwargs = {}
         try:
             host = urlparse(url).hostname
             kwargs["hostaddr"] = socket.getaddrinfo(host, 5432, socket.AF_INET)[0][4][0]
@@ -145,6 +147,7 @@ def serve():
             return {"error": "only a single SELECT (or WITH ... SELECT) statement is allowed"}
         with db() as conn:
             conn.execute("set transaction read only")
+            conn.execute("set local statement_timeout = 15000")
             cur = conn.execute(cleaned)
             cols = [d.name for d in cur.description] if cur.description else []
             rows = cur.fetchmany(200)
