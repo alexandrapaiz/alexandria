@@ -39,6 +39,14 @@ PROVIDERS = {
 PRODUCTION_PROVIDER = "groq"
 EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 
+# Full-text distillation: skills are the product, and abstracts don't contain
+# procedures — so every arXiv paper in the run gets its HTML full text, not
+# the abstract. Triage routes ~3-6 papers/day to distill, so this fits the
+# Groq budget; the cap is a safety valve for backlog days (deep_read papers
+# sort first in the queue, so they always get full text).
+FULLTEXT_MAX_PER_RUN = 15
+FULLTEXT_CHARS = 24000
+
 image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "sentence-transformers")
@@ -48,6 +56,32 @@ image = (
 app = modal.App("alexandria-distill", image=image)
 
 hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
+
+
+def fetch_fulltext(paper_id: str) -> str | None:
+    """arXiv serves full-paper HTML for most recent papers. Returns cleaned
+    text (~FULLTEXT_CHARS) or None so the caller falls back to the abstract."""
+    import html as htmllib
+    import re
+
+    import httpx
+
+    if not paper_id.startswith("arxiv:"):
+        return None  # blog posts: the feed summary already is the content
+    arxiv_id = re.sub(r"v\d+$", "", paper_id.removeprefix("arxiv:"))
+    try:
+        resp = httpx.get(f"https://arxiv.org/html/{arxiv_id}",
+                         follow_redirects=True, timeout=30)
+        if resp.status_code != 200 or len(resp.text) < 5000:
+            return None
+        text = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", resp.text)
+        text = re.sub(r"<[^>]+>", " ", text)
+        text = htmllib.unescape(text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text[:FULLTEXT_CHARS] if len(text) > 2000 else None
+    except Exception as exc:
+        print(f"  fulltext fetch failed for {paper_id}: {exc}")
+        return None
 
 
 def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
@@ -67,7 +101,7 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
                 "response_format": {"type": "json_object"},
                 "messages": [
                     {"role": "system", "content": prompt},
-                    {"role": "user", "content": f"title: {title}\n\nabstract: {abstract}"},
+                    {"role": "user", "content": f"title: {title}\n\ncontent: {abstract}"},
                 ],
             },
             timeout=180,
@@ -149,9 +183,18 @@ def distill(max_papers: int = 30):
             return 0
 
         new_claims = []  # (claim_id, text) pending embedding
+        fulltexts_used = 0
         for pid, title, abstract, decision in papers:
+            body = None
+            if fulltexts_used < FULLTEXT_MAX_PER_RUN:
+                body = fetch_fulltext(pid)
+                if body:
+                    fulltexts_used += 1
+                    print(f"  full text ({len(body)} chars): {title[:50]}")
+            if body is None:
+                body = (abstract or "")[:6000]
             try:
-                claims = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
+                claims = extract_claims(PRODUCTION_PROVIDER, title, body)
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code == 429:
                     print("rate limited by Groq; stopping — next run resumes")
