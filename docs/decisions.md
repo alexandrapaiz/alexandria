@@ -139,3 +139,22 @@ is enforced by plumbing, not by prompt. The meta-review loop will reuse this
 same proposal channel for prompt/source diffs. Graduation path (vision §3):
 when the measured record justifies it, the same agent prompt moves onto a
 metered API key as a cron, and the human gate becomes optional.
+
+## ADR-12: Meta-review lives in the weekly agent, not a sixth cron
+
+The recursive loop (ADR-7) ships as Step 4 of the weekly agent
+(prompts/weekly-agent.md) plus one MCP tool, `propose_change`, which can open
+PRs against a whitelist of the system's own files (prompts/*.md, sources.yaml)
+and records each proposal as a `promotions` row (kind `system_diff`).
+
+Three forcings aligned. First, Modal's free tier caps scheduled functions at
+five, all taken — a sixth cron had real cost. Second, the workflows-vs-agents
+rule: meta-review is judgment over an open-ended evidence surface (triage
+drift, graph errors, human overturns), which is agent-shaped work, unlike the
+digest's fixed queries. Third, the proposal channel already existed —
+propose_skill built the branch-file-PR plumbing; meta-review reuses it with a
+path whitelist. The whitelist is the safety boundary: the loop can rewrite the
+system's *judgment* (prompts, sources) but not its *machinery* (pipeline code,
+schema, this file) — machinery changes stay human-authored. Cadence is bounded
+in the prompt (≤1 proposal/week, evidence must be a pattern), and the human
+merge remains the only way any proposal takes effect.

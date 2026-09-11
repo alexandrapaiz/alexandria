@@ -55,9 +55,31 @@ Skill file format:
 <what breaks, when not to use this>
 ```
 
+## Step 4 — Meta-review (0-1 proposal per week)
+
+This is the recursive loop (ADR-7): the system reads its own record and
+proposes changes to itself — as pull requests only, via `propose_change`
+(targets: `prompts/*.md`, `sources.yaml`).
+
+Gather the evidence with `sql_query`:
+
+- Triage health: decision mix and score distribution by source/tier; sources
+  whose papers are always discarded (candidates for demotion in sources.yaml);
+  any `human_verdict = 'overturn'` rows and what they overturned.
+- Distill health: papers that yielded zero claims (prompt too strict? triage
+  too loose?).
+- Graph health: the errors you found in Step 1, plus `contradicts` edges whose
+  claims are actually comparisons or refinements (candidates for a sharper
+  prompts/interpret.md).
+
+Propose a change only when the evidence is a pattern, not an anecdote —
+at least several instances pointing the same way. One proposal per week
+maximum; write the full new file, keep the diff minimal, and cite the evidence
+in the rationale so the reviewer can verify it with one query. Zero proposals
+is the normal outcome in a healthy week.
+
 ## Output
 
 End with a compact report: digest verdict (with any graph errors found), the
-synthesis, skills proposed (PR links) or why none, and anything the pipeline
-should do differently (candidate prompt/source changes for the future
-meta-review).
+synthesis, skills proposed (PR links) or why none, and the meta-review verdict
+(proposal PR link, or what you're watching but not yet acting on).

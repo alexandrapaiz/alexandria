@@ -208,6 +208,44 @@ def serve():
             conn.commit()
         return {"pr_url": pr["html_url"], "promotion_id": row[0]}
 
+    @mcp.tool
+    def propose_change(path: str, new_content: str, rationale: str) -> dict:
+        """Meta-review: propose a change to the system's own prompts or sources
+        as a pull request (ADR-7 — the human merge is the gate). Only
+        prompts/*.md and sources.yaml may be targeted. `new_content` is the
+        complete new file; `rationale` must cite the evidence (triage stats,
+        graph errors, human verdicts) that justifies the change."""
+        if not re.match(r"^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$", path):
+            return {"error": "only prompts/*.md and sources.yaml can be changed by proposal"}
+        gh = httpx.Client(
+            base_url=f"https://api.github.com/repos/{REPO}",
+            headers={"Authorization": f"Bearer {os.environ['GITHUB_TOKEN'].strip()}",
+                     "Accept": "application/vnd.github+json"},
+            timeout=30,
+        )
+        main_sha = gh.get("/git/ref/heads/main").raise_for_status().json()["object"]["sha"]
+        branch = f"meta/{int(time.time())}"
+        gh.post("/git/refs", json={"ref": f"refs/heads/{branch}", "sha": main_sha}).raise_for_status()
+        existing = gh.get(f"/contents/{path}", params={"ref": "main"})
+        put = {"message": f"meta-review proposal: {path}", "branch": branch,
+               "content": base64.b64encode(new_content.encode()).decode()}
+        if existing.status_code == 200:
+            put["sha"] = existing.json()["sha"]
+        gh.put(f"/contents/{path}", json=put).raise_for_status()
+        body = (f"{rationale}\n\n"
+                "Proposed by the alexandria meta-review — merging this PR is the approval (ADR-7).")
+        pr = gh.post(
+            "/pulls",
+            json={"title": f"meta: {path}", "head": branch, "base": "main", "body": body},
+        ).raise_for_status().json()
+        with db() as conn:
+            conn.execute(
+                "insert into promotions (claim_ids, kind, path) values ('{}', 'system_diff', %s)",
+                (pr["html_url"],),
+            )
+            conn.commit()
+        return {"pr_url": pr["html_url"]}
+
     # ---------------- OAuth 2.1 (spec flow, stateless via JWTs) ----------------
 
     mcp_app = mcp.http_app(path="/mcp")
