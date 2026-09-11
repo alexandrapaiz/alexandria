@@ -72,10 +72,20 @@ def serve():
     REFRESH_TTL = 180 * 24 * 3600
 
     def db():
-        return psycopg.connect(
-            os.environ["DATABASE_URL"],
-            options="-c statement_timeout=15000",
-        )
+        # Modal web containers sometimes resolve Neon to IPv6, which is
+        # unroutable here ("Network is unreachable") — pin to IPv4. TLS still
+        # verifies against the hostname; hostaddr only skips DNS.
+        import socket
+        from urllib.parse import urlparse
+
+        url = os.environ["DATABASE_URL"]
+        kwargs = {"options": "-c statement_timeout=15000"}
+        try:
+            host = urlparse(url).hostname
+            kwargs["hostaddr"] = socket.getaddrinfo(host, 5432, socket.AF_INET)[0][4][0]
+        except OSError:
+            pass  # fall back to default resolution
+        return psycopg.connect(url, **kwargs)
 
     def mint(claims: dict, ttl: int) -> str:
         return jwt.encode({**claims, "iat": int(time.time()), "exp": int(time.time()) + ttl},
