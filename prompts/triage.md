@@ -24,6 +24,13 @@ Given a paper's title and abstract, route it:
 The routing criterion is "could this change how we build agents?" — not "is this
 interesting?" Novelty without operational consequence is `index` at best.
 
+Some items are **software releases**, not papers (sources named `gh-*`; the
+"abstract" is release notes). Route them by capability, not by version number:
+a release adding a genuinely new capability, API, protocol change, or major
+performance shift is `index` (or `distill` if the notes describe a technique
+worth extracting); routine patch/bugfix/dependency releases are `discard`.
+Release notes never warrant `deep_read`.
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra

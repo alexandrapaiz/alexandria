@@ -37,3 +37,15 @@ feeds:
   - {name: simonwillison, url: "https://simonwillison.net/atom/everything/", tier: d}
   - {name: interconnects, url: "https://www.interconnects.ai/feed", tier: d}
   - {name: langchain, url: "https://www.langchain.com/blog/rss.xml", tier: d}
+  # ---- tools & software: GitHub release feeds (releases.atom, all verified 200) ----
+  # The unit here is a release, not a paper: triage routes major capability
+  # releases to index/distill and patch releases to discard (see prompts/triage.md).
+  - {name: gh-vllm, url: "https://github.com/vllm-project/vllm/releases.atom", tier: d}
+  - {name: gh-sglang, url: "https://github.com/sgl-project/sglang/releases.atom", tier: d}
+  - {name: gh-llamacpp, url: "https://github.com/ggml-org/llama.cpp/releases.atom", tier: d}
+  - {name: gh-transformers, url: "https://github.com/huggingface/transformers/releases.atom", tier: d}
+  - {name: gh-langgraph, url: "https://github.com/langchain-ai/langgraph/releases.atom", tier: d}
+  - {name: gh-autogen, url: "https://github.com/microsoft/autogen/releases.atom", tier: d}
+  - {name: gh-mcp-spec, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/releases.atom", tier: d}
+  - {name: gh-claude-code, url: "https://github.com/anthropics/claude-code/releases.atom", tier: d}
+  - {name: gh-ollama, url: "https://github.com/ollama/ollama/releases.atom", tier: d}

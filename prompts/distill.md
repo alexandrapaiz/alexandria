@@ -23,7 +23,7 @@ For each claim provide:
   paper is a finding with no actionable mechanism.
 - `topics` — tags from: skills, context-engineering, harness-engineering,
   loop-engineering, memory, retrieval, multi-agent, evals, post-training,
-  serving, systems, other.
+  serving, systems, tooling, other.
 
 Extract 1–5 claims per paper. If a distill-routed paper yields zero claims, say so —
 that is a triage error worth logging, not a failure to invent claims.
