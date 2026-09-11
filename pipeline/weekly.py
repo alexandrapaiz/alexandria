@@ -159,6 +159,7 @@ def gather(conn) -> dict:
         where l.relation = 'refines'
           and coalesce(l.confidence, 0) >= 0.75
           and l.created_at > now() - interval '7 days'
+          and old.paper_id != new.paper_id  -- a paper refining itself is not a supersession
         order by l.confidence desc
         limit 10
         """
@@ -281,6 +282,7 @@ def write_digest(payload: dict, prompt: str) -> str:
             json={
                 "model": MODEL,
                 "temperature": 0.3,
+                "max_completion_tokens": 6000,  # depth sections got truncated at the default cap
                 "messages": [
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": user},
