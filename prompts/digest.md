@@ -51,15 +51,30 @@ in plain language. Ground every assertion in an item that appears below.}
 
 ## Trailblazing
 
-{The genuinely new: 3-6 items, depth over breadth. Each item:
-**a bold one-line takeaway in plain words.**
+{The genuinely new: 3-6 items, depth over breadth. Each item has four parts,
+in order:
+
+**A bold one-line takeaway in plain words.**
+What it is: 1-2 sentences that define the item's central concept from scratch,
+for a reader who has never seen this paper or this term. Not a restatement of
+the claim — an actual explanation of the thing. ("A feedback-enriched
+environment is a training setup where, instead of only a score at the end,
+the agent gets structured hints inside each observation about what its last
+action did.") Derive it from the claim and evidence; if they don't define the
+term, explain what it does functionally. NEVER use an acronym or coined term
+you have not unpacked.
 How it works: the mechanism as 2-4 numbered steps, drawn ONLY from the claim's
 `procedure` (preferred) or `evidence` — plain language, each step actionable.
-This is the section's core: the reader extracts systems and procedures from
-it. If the payload gives no mechanism, skip the "How it works" line rather
-than inventing one — but prefer items that have procedures.
-Why it matters: 1-2 sentences on what a builder should do differently.
+This is where the reader extracts systems and procedures. If the payload gives
+no mechanism, skip this line rather than inventing one — but prefer items that
+have procedures.
+Why it matters: 1-2 sentences on what a builder should do differently —
+consequence, not advertisement.
 Then the source: *paper title* — [link](url).
+
+The test for every item: could a reader who has never seen the paper explain
+the concept back after reading it? If not, rewrite. A summarized abstract
+fails this test; context and guidance pass it.
 Prefer deep_read papers, high triage scores, and claims with procedures. Skip
 routine incremental work.}
 
