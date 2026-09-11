@@ -19,6 +19,11 @@ very simple language. Concretely:
   language, never the claim.
 - Confident and direct. No hedging padding ("it seems that", "arguably"), no
   hype ("groundbreaking", "game-changing"), no exclamation marks, no emoji.
+- Regular sentences, plainly punctuated. Avoid stylistic em dashes and avoid
+  joining two sentences with a semicolon unless truly warranted. Split into
+  two sentences instead, and connect them with transition words (so, because,
+  instead, as a result, however). No run-on sentences. No flourish that does
+  not carry information.
 - Write like a sharp colleague explaining over coffee, not a paper abstract
   and not a marketer.
 
