@@ -10,8 +10,9 @@ dynamic client registration, implemented stateless with signed JWTs and a
 single passphrase login (one user). claude.ai custom connectors speak this flow
 natively.
 
-Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `alexandria-auth`
-(AUTH_JWT_SECRET — long random string; MCP_PASSPHRASE — the login passphrase).
+Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `JWT`
+(AUTH_JWT_SECRET — long random signing string), `MCP` (MCP_PASSPHRASE — the
+login passphrase typed on the authorize page).
 
     modal deploy mcp/server.py    # serve at https://<workspace>--alexandria-mcp-serve.modal.run
 """
@@ -41,7 +42,8 @@ hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
     secrets=[
         modal.Secret.from_name("neon"),
         modal.Secret.from_name("github"),
-        modal.Secret.from_name("alexandria-auth"),
+        modal.Secret.from_name("JWT"),
+        modal.Secret.from_name("MCP"),
     ],
     volumes={"/root/.cache/huggingface": hf_cache},
     timeout=600,
