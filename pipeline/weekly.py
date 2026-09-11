@@ -132,16 +132,35 @@ def gather(conn) -> dict:
         select c.id, c.claim, c.topics, p.title, p.url, p.tier,
                t.decision, t.score,
                coalesce(array_agg(l.relation || ' -> claim ' || l.to_claim)
-                        filter (where l.from_claim is not null), '{}')
+                        filter (where l.from_claim is not null), '{}'),
+               c.evidence, c.procedure
         from claims c
         join papers p on p.id = c.paper_id
         left join triage_log t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
-        group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score
+        group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
+                 c.evidence, c.procedure
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
-        limit 30
+        limit 22
+        """
+    ).fetchall()
+
+    superseded = conn.execute(
+        """
+        select old.claim, new.claim, l.confidence,
+               po.title, po.url, pn.title, pn.url
+        from claim_links l
+        join claims old on old.id = l.to_claim
+        join claims new on new.id = l.from_claim
+        join papers po on po.id = old.paper_id
+        join papers pn on pn.id = new.paper_id
+        where l.relation = 'refines'
+          and coalesce(l.confidence, 0) >= 0.75
+          and l.created_at > now() - interval '7 days'
+        order by l.confidence desc
+        limit 10
         """
     ).fetchall()
 
@@ -206,8 +225,15 @@ def gather(conn) -> dict:
                 "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
                 "paper": r[3], "url": r[4], "tier": r[5],
                 "triage": r[6], "score": r[7], "edges": r[8],
+                "evidence": (r[9] or "")[:350] or None,
+                "procedure": (r[10] or "")[:600] or None,
             }
             for r in new_claims
+        ],
+        "superseded": [
+            {"old_claim": r[0][:280], "new_claim": r[1][:280], "confidence": r[2],
+             "old_paper": r[3], "old_url": r[4], "new_paper": r[5], "new_url": r[6]}
+            for r in superseded
         ],
         "traction": {
             "supported_claims": [

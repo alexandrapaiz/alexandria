@@ -59,6 +59,11 @@ create table if not exists claims (
 -- edges alone can't mark completion because a claim may legitimately have none)
 alter table claims add column if not exists interpreted_at timestamptz;
 
+-- procedure: the mechanism as numbered operational steps, when the paper gives
+-- one — the raw material for extractable systems and skills (digest "how it
+-- works" sections, skill proposals)
+alter table claims add column if not exists procedure text;
+
 -- ============ claim graph: relations between claims ============
 -- Append-only and time-directional: from_claim is always the newer, judging
 -- claim (ADR-10). Re-judgment belongs to the slow loop, not to edits.

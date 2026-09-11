@@ -15,6 +15,12 @@ For each claim provide:
 - `claim` — one sentence, present tense, no hedging beyond what the evidence forces.
 - `evidence` — the paper's support in one or two sentences (benchmark, ablation,
   proof, or "authors' assertion" if that is all it is).
+- `procedure` — when the paper describes HOW (a method, recipe, or mechanism):
+  the operational steps, numbered, 2-5 steps, each one short sentence. Write
+  them so an engineer could act on them without the paper ("1) Route each query
+  through X. 2) Cap the context at Y. 3) ..."). This is the raw material for
+  extractable systems and skills — capture it whenever it exists. Null when the
+  paper is a finding with no actionable mechanism.
 - `topics` — tags from: skills, context-engineering, harness-engineering,
   loop-engineering, memory, retrieval, multi-agent, evals, post-training,
   serving, systems, other.
@@ -25,5 +31,5 @@ that is a triage error worth logging, not a failure to invent claims.
 Respond with JSON only:
 
 ```json
-{"claims": [{"claim": "...", "evidence": "...", "topics": ["retrieval"]}]}
+{"claims": [{"claim": "...", "evidence": "...", "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
 ```

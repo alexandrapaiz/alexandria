@@ -26,8 +26,11 @@ You receive a JSON payload assembled by fixed queries:
 
 - `week`, `stats` — the ISO week and this week's pipeline counts.
 - `new_claims` — claims distilled this week, each with its paper title, url,
-  source tier, triage decision and score, topics, and any edges already drawn
-  to older claims.
+  source tier, triage decision and score, topics, any edges already drawn to
+  older claims, the supporting `evidence`, and — when the paper described a
+  mechanism — a `procedure` (numbered operational steps).
+- `superseded` — high-confidence `refines` edges from this week: an older
+  claim and the newer claim that updates it, with both papers.
 - `traction` — two evidence streams for older work gaining acceptance:
   `supported_claims` (claims with 2+ incoming `supports` edges, with counts)
   and `citation_movers` (papers whose Semantic Scholar citation count grew
@@ -48,11 +51,17 @@ in plain language. Ground every assertion in an item that appears below.}
 
 ## Trailblazing
 
-{The genuinely new: 4-8 items max, chosen from new_claims. Each item:
+{The genuinely new: 3-6 items, depth over breadth. Each item:
 **a bold one-line takeaway in plain words.**
-Why it matters: 1-2 sentences on what a builder should do or think
-differently. Then the source: *paper title* — [link](url).
-Prefer deep_read papers and high triage scores. Skip routine incremental work.}
+How it works: the mechanism as 2-4 numbered steps, drawn ONLY from the claim's
+`procedure` (preferred) or `evidence` — plain language, each step actionable.
+This is the section's core: the reader extracts systems and procedures from
+it. If the payload gives no mechanism, skip the "How it works" line rather
+than inventing one — but prefer items that have procedures.
+Why it matters: 1-2 sentences on what a builder should do differently.
+Then the source: *paper title* — [link](url).
+Prefer deep_read papers, high triage scores, and claims with procedures. Skip
+routine incremental work.}
 
 ## Gaining traction
 
@@ -63,9 +72,17 @@ week, say so in one line and move on — never pad.}
 
 ## Left behind
 
-{What to stop believing: each deprecated claim, what contradicted it, and the
-practical consequence in one sentence. If nothing was deprecated, say so —
-that is itself information.}
+{What to stop believing or stop using — two kinds, labeled:
+
+**Contradicted:** each item from `deprecated` — the old claim, what
+contradicted it, and the practical consequence in one sentence.
+
+**Replaced:** items from `superseded` where the newer claim genuinely
+supplants the older approach (not a mere detail refinement — judge this).
+Format: "X is giving way to Y" with one sentence on why the newer approach
+wins, both papers linked.
+
+If a kind is empty, say so in one line — that is itself information.}
 
 ## Read these yourself
 

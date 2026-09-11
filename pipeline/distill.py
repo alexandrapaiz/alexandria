@@ -163,10 +163,10 @@ def distill(max_papers: int = 30):
                     continue
                 row = conn.execute(
                     """
-                    insert into claims (paper_id, claim, evidence, topics)
-                    values (%s, %s, %s, %s) returning id
+                    insert into claims (paper_id, claim, evidence, topics, procedure)
+                    values (%s, %s, %s, %s, %s) returning id
                     """,
-                    (pid, text, c.get("evidence"), c.get("topics") or []),
+                    (pid, text, c.get("evidence"), c.get("topics") or [], c.get("procedure")),
                 ).fetchone()
                 new_claims.append((row[0], text))
             conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
