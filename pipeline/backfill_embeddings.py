@@ -24,6 +24,7 @@ hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
     secrets=[modal.Secret.from_name("neon")],
     volumes={"/root/.cache/huggingface": hf_cache},
     timeout=3600,
+    cpu=4.0,  # default 1 CPU embedded ~2 papers/min; 4 cores keeps this under ~20 min
 )
 def backfill() -> int:
     import os
