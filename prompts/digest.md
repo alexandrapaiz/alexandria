@@ -155,15 +155,28 @@ week, say so in one line and move on — never pad.}
 
 ## Left behind
 
-{What to stop believing or stop using — two kinds, labeled:
+{Research that has aged out. Open the section with 1-2 sentences of framing
+prose that tell the reader what they are looking at: findings from recent
+research that newer evidence has now overturned or superseded, and why
+tracking this matters (acting on stale results is how systems get built on
+sand). Write the framing fresh each week so it connects to the items below.
 
-**Contradicted:** each item from `deprecated` — the old claim, what
-contradicted it, and the practical consequence in one sentence.
+Then two kinds, each introduced, not just labeled:
 
-**Replaced:** items from `superseded` where the newer claim genuinely
-supplants the older approach (not a mere detail refinement — judge this).
-Format: "X is giving way to Y" with one sentence on why the newer approach
-wins, both papers linked.
+**Contradicted** (lead-in like "First, the claims newer evidence says are
+wrong:") — each item is a short prose unit with the same context-first
+pyramid as everything else: what was believed and where that belief came
+from, in plain words; then who overturned it and with what evidence
+(attribute by institution); then the practical consequence for a builder.
+Never open an item mid-argument with "The claim that..." — set the scene
+first ("An early benchmark result suggested coding agents had hit a hard
+ceiling...").
+
+**Replaced** (lead-in like "Second, the approaches being superseded:") —
+items from `superseded` where the newer claim genuinely supplants the older
+approach (not a mere detail refinement — judge this). Same pyramid: the old
+approach and why it was used, what replaces it and why the newer one wins,
+both papers linked.
 
 If a kind is empty, say so in one line — that is itself information.}
 
