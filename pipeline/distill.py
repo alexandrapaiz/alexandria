@@ -182,7 +182,7 @@ def distill(max_papers: int = 30):
         if not papers:
             return 0
 
-        new_claims = []  # (claim_id, text) pending embedding
+        wrote_any = False
         fulltexts_used = 0
         for pid, title, abstract, decision in papers:
             body = None
@@ -199,36 +199,46 @@ def distill(max_papers: int = 30):
                 if exc.response.status_code == 429:
                     print("rate limited by Groq; stopping — next run resumes")
                     break
-                raise
+                if body is not None and len(body) > 6000:
+                    # full text too large for the provider — fall back to abstract
+                    print(f"  provider rejected full text ({exc.response.status_code}); retrying with abstract")
+                    claims = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
+                else:
+                    raise
             for c in claims:
                 text = (c.get("claim") or "").strip()
                 if not text:
                     continue
-                row = conn.execute(
+                conn.execute(
                     """
                     insert into claims (paper_id, claim, evidence, topics, procedure)
-                    values (%s, %s, %s, %s, %s) returning id
+                    values (%s, %s, %s, %s, %s)
                     """,
                     (pid, text, c.get("evidence"), c.get("topics") or [], c.get("procedure")),
-                ).fetchone()
-                new_claims.append((row[0], text))
+                )
+                wrote_any = True
             conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
             conn.commit()
             print(f"  {len(claims)} claims <- {title[:60]}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
 
-        if new_claims:
+        # Embedding is blackboard work: sweep every unembedded claim, not just
+        # this run's, so a crash between insert and embed is healed next run.
+        pending = conn.execute(
+            "select id, claim from claims where embedding is null"
+        ).fetchall()
+        if pending:
             model = SentenceTransformer(EMBED_MODEL)
             hf_cache.commit()  # persist downloaded weights for future runs
-            vectors = model.encode([t for _, t in new_claims], normalize_embeddings=True)
-            for (claim_id, _), vec in zip(new_claims, vectors):
+            vectors = model.encode([t for _, t in pending], normalize_embeddings=True)
+            for (claim_id, _), vec in zip(pending, vectors):
                 conn.execute(
                     "update claims set embedding = %s::vector where id = %s",
                     (str(vec.tolist()), claim_id),
                 )
             conn.commit()
-            print(f"embedded {len(new_claims)} claims with {EMBED_MODEL}")
-        return len(new_claims)
+            print(f"embedded {len(pending)} claims with {EMBED_MODEL}")
+        return len(pending)
 
 
 @app.local_entrypoint()
