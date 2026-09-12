@@ -63,22 +63,40 @@ Write the digest as **markdown** with exactly this structure:
 {Opening: the most important prose in the issue. It has two jobs, in order —
 orient the reader on the week, then interpret it. Shape:
 
-**Paragraph 1 — the week in one breath, in PLAIN LANGUAGE.** Start with a
-temporal anchor: "This week in AI research: ..." (or a close variant), then
-the 2-3 standout findings. Each finding is stated as **what was learned, in
-words a smart builder who read none of the papers understands instantly**.
-The subject of each clause must be a plain-English idea, never a coined term,
-acronym, or system name — those may trail in a parenthetical or follow later,
-after they've been explained. Numbers are welcome when they're
-self-explanatory. Bold the load-bearing plain phrases.
+**Paragraph 1 — context before findings.** Never open with a finding cold.
+Open by situating the reader: which subfield of AI this week's action is in
+(named in plain words — "training agents with reinforcement learning",
+"serving models cheaply", "post-training"), what problem that field has been
+stuck on, and **why that problem matters to someone building AI systems** —
+the stakes. Only then the temporal anchor ("This week...") and the movement.
+Why is the most important question, and it comes first.
 
-Wrong (abstract regurgitation): "**Feedback-Enriched Environments (FEEs)**
-boost long-horizon agent performance across benchmarks."
-Right (digestion): "Giving agents **hints inside their training environment**
-turned long tasks that RL previously couldn't learn into learnable ones."
+**Paragraph 2 — the standout findings, now motivated.** With the tension
+established, deliver the 2-3 findings as its resolution. Each one: who did it
+(use the `authors` field — name the lab when it's recognizable from the paper
+or authors, otherwise "a team led by <first author>"), what they showed in
+plain words, and what it changes. The subject of each clause is still a
+plain-English idea, never a coined term or system name — those trail in
+parentheticals after the idea is said plainly. Bold the load-bearing phrases.
 
-You are digesting, not compressing abstracts. If a clause would only make
-sense to the paper's authors, rewrite it.
+Wrong (finding with no context): "Giving agents hints inside their training
+environment let them store guidance in their policy weights."
+Right (context, then finding): "Agents trained with reinforcement learning
+often fail at long tasks for a simple reason: the reward arrives only at the
+end, so the model never learns which moves mattered. This week two groups
+attacked that gap directly — one by **enriching the training environment
+with hints** the agent later internalizes, another by **scoring every
+assertion in an answer** instead of grading pass/fail."
+
+**Paragraph 3 — the synthesis.** What current connects the findings and where
+the field is heading, with transition-word segues, 2-4 bolds, and
+<u>underline</u> for at most one phrase in the entire opening. Ground every
+assertion in an item below. Compelling means concrete and consequential —
+never hype.
+
+The tests: a reader with no AI background past building software understands
+paragraph 1 completely; a skimmer reading only the bolds gets the week's
+story; nothing is asserted without its why.
 
 **Paragraphs 2-3 — the synthesis.** Now interpret: what current connects
 these findings, and where is the field heading. Use transition words to segue

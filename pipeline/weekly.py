@@ -133,7 +133,7 @@ def gather(conn) -> dict:
                t.decision, t.score,
                coalesce(array_agg(l.relation || ' -> claim ' || l.to_claim)
                         filter (where l.from_claim is not null), '{}'),
-               c.evidence, c.procedure
+               c.evidence, c.procedure, p.authors[1:3]
         from claims c
         join papers p on p.id = c.paper_id
         left join triage_log t on t.paper_id = c.paper_id
@@ -228,6 +228,7 @@ def gather(conn) -> dict:
                 "triage": r[6], "score": r[7], "edges": r[8],
                 "evidence": (r[9] or "")[:350] or None,
                 "procedure": (r[10] or "")[:600] or None,
+                "authors": r[11] or None,
             }
             for r in new_claims
         ],
