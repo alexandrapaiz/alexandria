@@ -9,7 +9,9 @@ One scheduled function doing two jobs, in order:
 2. **Digest** — fixed SQL gathers five evidence streams (new claims, claims
    with 2+ supports edges, citation movers, fresh deprecations, deep-read
    flags); gpt-oss-120b writes the three-section digest; it lands in the
-   `digests` table (database of record) and digests/<week>.md in the repo.
+   `digests` table (database of record) and goes to subscribers by email via
+   Buttondown. It is deliberately NOT published to the public repo — the
+   newsletter is the paid product (docs/vision.md §4).
 
 They share one function deliberately: Modal's free plan caps scheduled
 functions at 5, and the citations exist for the digest — running them in the
@@ -17,14 +19,13 @@ same Monday process makes the trajectories maximally fresh and costs no slot.
 The digest is a workflow, not an agent (ADR-6): every query is known in
 advance, so the model only writes.
 
-Needs secrets: `neon`, `groq`, `github` (GITHUB_TOKEN, fine-grained PAT with
-contents read/write on the repo; if absent the run succeeds and skips the push).
+Needs secrets: `neon`, `groq`, and `buttondown` (BUTTONDOWN_API_KEY) once the
+newsletter is live; until then the run succeeds and only skips the email.
 
     modal run pipeline/weekly.py         # one-off manual run (citations + digest)
     modal deploy pipeline/weekly.py      # install the Monday schedule
 """
 
-import base64
 import hashlib
 import json
 import re
@@ -35,7 +36,6 @@ import modal
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "openai/gpt-oss-120b"
-REPO = "alexandrapaiz/alexandria"
 
 S2_BATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
 S2_BATCH_SIZE = 100       # ids per API call (S2 allows up to 500; be gentle)
@@ -300,33 +300,30 @@ def write_digest(payload: dict, prompt: str) -> str:
     raise RuntimeError("groq: exhausted retries")
 
 
-def push_to_repo(week: str, body: str) -> str:
+def send_newsletter(week: str, body: str) -> str:
+    """Send the digest to subscribers via Buttondown (the product is the email;
+    the digests table is the record of record — the digest is NOT published to
+    the public repo). No-op until the buttondown secret exists."""
     import os
 
     import httpx
 
-    token = os.environ.get("GITHUB_TOKEN", "").strip()
-    if not token:
-        return "no GITHUB_TOKEN; skipped repo push (digest is in the database)"
-    path = f"digests/{week}.md"
-    api = f"https://api.github.com/repos/{REPO}/contents/{path}"
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
-    existing = httpx.get(api, headers=headers, timeout=30)
-    put = {
-        "message": f"digest: {week}",
-        "content": base64.b64encode(body.encode()).decode(),
-    }
-    if existing.status_code == 200:
-        put["sha"] = existing.json()["sha"]
-    resp = httpx.put(api, headers=headers, json=put, timeout=30)
+    key = os.environ.get("BUTTONDOWN_API_KEY", "").strip()
+    if not key:
+        return "no BUTTONDOWN_API_KEY; email send skipped (digest is in the database)"
+    resp = httpx.post(
+        "https://api.buttondown.email/v1/emails",
+        headers={"Authorization": f"Token {key}"},
+        json={"subject": f"alexandria digest — {week}", "body": body},
+        timeout=60,
+    )
     resp.raise_for_status()
-    return f"pushed {path}"
+    return f"sent {week} to subscribers via Buttondown"
 
 
 @app.function(
     schedule=modal.Cron("0 15 * * 1"),  # Monday 15:00 UTC, after the daily crons
-    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq"),
-             modal.Secret.from_name("github")],
+    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq")],
     timeout=1800,
 )
 def weekly() -> str:
@@ -361,11 +358,11 @@ def weekly() -> str:
         )
         conn.commit()
     try:
-        print(push_to_repo(week, body))
+        print(send_newsletter(week, body))
     except Exception as exc:
-        # the digests table is the record of record; a push failure (bad token,
-        # GitHub outage) must never fail the run
-        print(f"repo push failed ({exc}); digest is safe in the database")
+        # the digests table is the record of record; a send failure (bad key,
+        # Buttondown outage) must never fail the run
+        print(f"newsletter send failed ({exc}); digest is safe in the database")
     return body
 
 
