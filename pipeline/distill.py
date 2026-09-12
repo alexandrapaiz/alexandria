@@ -222,14 +222,22 @@ def distill(max_papers: int = 30):
             print(f"  {len(claims)} claims <- {title[:60]}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
 
-        # Embedding is blackboard work: sweep every unembedded claim, not just
-        # this run's, so a crash between insert and embed is healed next run.
+        # Embedding is blackboard work: sweep every unembedded claim and paper,
+        # not just this run's, so any crash or missed backfill heals next run.
         pending = conn.execute(
             "select id, claim from claims where embedding is null"
         ).fetchall()
-        if pending:
+        pending_papers = conn.execute(
+            """
+            select id, title, coalesce(abstract, '')
+            from papers where embedding is null
+            order by fetched_at limit 500
+            """
+        ).fetchall()
+        if pending or pending_papers:
             model = SentenceTransformer(EMBED_MODEL)
             hf_cache.commit()  # persist downloaded weights for future runs
+        if pending:
             vectors = model.encode([t for _, t in pending], normalize_embeddings=True)
             for (claim_id, _), vec in zip(pending, vectors):
                 conn.execute(
@@ -238,6 +246,16 @@ def distill(max_papers: int = 30):
                 )
             conn.commit()
             print(f"embedded {len(pending)} claims with {EMBED_MODEL}")
+        if pending_papers:
+            texts = [f"{t}\n\n{a[:2000]}" for _, t, a in pending_papers]
+            vectors = model.encode(texts, normalize_embeddings=True)
+            for (paper_id, _, _), vec in zip(pending_papers, vectors):
+                conn.execute(
+                    "update papers set embedding = %s::vector where id = %s",
+                    (str(vec.tolist()), paper_id),
+                )
+            conn.commit()
+            print(f"embedded {len(pending_papers)} papers with {EMBED_MODEL}")
         return len(pending)
 
 
