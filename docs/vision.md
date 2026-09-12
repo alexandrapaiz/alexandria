@@ -57,15 +57,31 @@ The architecture was built for this from the start: the pipeline's marginal
 cost is ~$0, so subscription revenue is nearly pure margin, and the
 gold layer is the paywalled product.
 
-Launch plan (decided 2026-09-11): **Buttondown** as the newsletter platform —
-markdown-native with a REST API, so the Monday cron sends each issue
-automatically (one HTTP call at the end of weekly.py); paid subscriptions via
-Stripe with no platform revenue cut; friends get comped subscriptions in the
-Buttondown UI. Mailchimp was rejected (no native paid subs). Substack was
-rejected because it has no publishing API, which breaks full automation, and
-it takes 10%. Ghost is the graduation platform when the $30 two-tier package
-(digest + skills) needs native tier gating. Paywall mechanics (her call): digests are email-only — the digests/ folder is
+Launch plan (final, 2026-09-11): **self-built**, in phases. The subscriber
+list is a Neon table (email, tier, comp, status) and the Monday cron emails
+each issue itself after publishing. No newsletter platform.
+
+- Phase 1 (now, under ~20 subscribers): friends and family, all comped. The
+  cron sends through the owner's own Gmail via authenticated SMTP, because at
+  this scale Gmail's sender reputation IS the deliverability strategy. No
+  domain, no services, $0.
+- Phase 2 (past ~20): buy a domain (~$12/yr), send via Amazon SES with
+  SPF/DKIM, add a real unsubscribe endpoint, and turn on payments: a Stripe
+  Payment Link for $10/month plus a Modal webhook that activates and
+  deactivates subscriber rows. Friends stay comped.
+- Growth graduation, if wanted later: beehiiv (built by Morning Brew's product
+  lead; Morning Brew itself runs on enterprise Sailthru) buys the referral
+  and recommendation machinery. Migration is a CSV.
+
+Rejected: Mailchimp (no native paid subs), Substack (no publishing API breaks
+automation, and it takes 10%), managed platforms generally (the point is $0
+and ownership). The only rented piece is the raw email pipe, since sender
+reputation cannot be self-made at any price. That is the inverse of the
+embedding-model decision, and the same right-size-ownership rule.
+
+Paywall mechanics (her call): digests are email-only. The digests/ folder is
 gitignored and never published to the repo. The public repo carries the code,
-prompts, and ADRs as the credibility engine; the newsletter is the product. Sequencing: quality first — the digest must
-be worth $10 to a stranger before the paywall goes up; comp friends from day
-one for feedback.
+prompts, and ADRs as the credibility engine, and the newsletter is the
+product. Sequencing: quality first. The digest must be worth $10 to a
+stranger before the paywall goes up, and friends are comped from day one for
+feedback.
