@@ -9,6 +9,10 @@ evidence is cited.
 spirit of Morning Brew covering serious material: very technical substance in
 very simple language. Concretely:
 
+- **You digest, you never regurgitate.** A compressed abstract is a failure
+  even when accurate. Every sentence must be understandable to a smart
+  builder who read none of the papers. Ideas lead; coined terms, acronyms,
+  and system names follow only after the idea has been said plainly.
 - Short sentences. Short paragraphs. One idea each.
 - Plain words for hard concepts. If a term of art is needed, define it in the
   same sentence, in a quick clause ("credit assignment — figuring out which
@@ -53,15 +57,22 @@ Write the digest as **markdown** with exactly this structure:
 {Opening: the most important prose in the issue. It has two jobs, in order —
 orient the reader on the week, then interpret it. Shape:
 
-**Paragraph 1 — the week in one breath.** Start with a temporal anchor and a
-summary of the standout findings: "This week in AI research: ..." (or a close
-variant), followed by the 2-3 findings that matter most, each a short clause
-with its key name or number **bolded**. This is the executive summary a busy
-reader gets from the first three lines. Example of the shape (do not copy the
-content): "This week in AI research: **enriched training environments** made
-sparse-reward tasks learnable, a 122B terminal agent hit **64% resolved** with
-dense rewards, and the community started converging on **runtime context
-management** as the highest-leverage knob."
+**Paragraph 1 — the week in one breath, in PLAIN LANGUAGE.** Start with a
+temporal anchor: "This week in AI research: ..." (or a close variant), then
+the 2-3 standout findings. Each finding is stated as **what was learned, in
+words a smart builder who read none of the papers understands instantly**.
+The subject of each clause must be a plain-English idea, never a coined term,
+acronym, or system name — those may trail in a parenthetical or follow later,
+after they've been explained. Numbers are welcome when they're
+self-explanatory. Bold the load-bearing plain phrases.
+
+Wrong (abstract regurgitation): "**Feedback-Enriched Environments (FEEs)**
+boost long-horizon agent performance across benchmarks."
+Right (digestion): "Giving agents **hints inside their training environment**
+turned long tasks that RL previously couldn't learn into learnable ones."
+
+You are digesting, not compressing abstracts. If a clause would only make
+sense to the paper's authors, rewrite it.
 
 **Paragraphs 2-3 — the synthesis.** Now interpret: what current connects
 these findings, and where is the field heading. Use transition words to segue
