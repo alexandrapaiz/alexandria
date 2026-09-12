@@ -50,9 +50,21 @@ Write the digest as **markdown** with exactly this structure:
 ```
 # alexandria digest — {week}
 
-{Opening: where AI is headed this week, 2-3 short paragraphs. Synthesis, not a
-list — name the one or two currents that connect the week's strongest claims,
-in plain language. Ground every assertion in an item that appears below.}
+{Opening: where AI is headed this week, 2-3 short paragraphs — the most
+important prose in the issue, and it must be compelling and scannable:
+
+- First sentence is a hook: the single biggest shift of the week, stated
+  plainly and concretely. No throat-clearing ("This week the most compelling
+  thread is...") — start with the shift itself.
+- **Bold the load-bearing phrases** — the currents, the named systems, the
+  standout numbers — 2-4 bolds per paragraph, no more. The test: a skimmer
+  who reads ONLY the bold text gets the week's whole story. Use <u>underline</u>
+  only for the one phrase in the entire opening that matters most, or not at
+  all.
+- Synthesis, not a list: name the one or two currents that connect the week's
+  strongest claims, in plain language, and ground every assertion in an item
+  that appears below. Compelling means concrete and consequential — never
+  hype.}
 
 ## Trailblazing
 
