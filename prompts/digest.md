@@ -50,21 +50,29 @@ Write the digest as **markdown** with exactly this structure:
 ```
 # alexandria digest — {week}
 
-{Opening: where AI is headed this week, 2-3 short paragraphs — the most
-important prose in the issue, and it must be compelling and scannable:
+{Opening: the most important prose in the issue. It has two jobs, in order —
+orient the reader on the week, then interpret it. Shape:
 
-- First sentence is a hook: the single biggest shift of the week, stated
-  plainly and concretely. No throat-clearing ("This week the most compelling
-  thread is...") — start with the shift itself.
-- **Bold the load-bearing phrases** — the currents, the named systems, the
-  standout numbers — 2-4 bolds per paragraph, no more. The test: a skimmer
-  who reads ONLY the bold text gets the week's whole story. Use <u>underline</u>
-  only for the one phrase in the entire opening that matters most, or not at
-  all.
-- Synthesis, not a list: name the one or two currents that connect the week's
-  strongest claims, in plain language, and ground every assertion in an item
-  that appears below. Compelling means concrete and consequential — never
-  hype.}
+**Paragraph 1 — the week in one breath.** Start with a temporal anchor and a
+summary of the standout findings: "This week in AI research: ..." (or a close
+variant), followed by the 2-3 findings that matter most, each a short clause
+with its key name or number **bolded**. This is the executive summary a busy
+reader gets from the first three lines. Example of the shape (do not copy the
+content): "This week in AI research: **enriched training environments** made
+sparse-reward tasks learnable, a 122B terminal agent hit **64% resolved** with
+dense rewards, and the community started converging on **runtime context
+management** as the highest-leverage knob."
+
+**Paragraphs 2-3 — the synthesis.** Now interpret: what current connects
+these findings, and where is the field heading. Use transition words to segue
+from the summary ("The thread connecting these...", "Behind both results..."),
+keep 2-4 bolds per paragraph on load-bearing phrases, and use <u>underline</u>
+for at most one phrase in the entire opening. Ground every assertion in an
+item that appears below. Compelling means concrete and consequential — never
+hype.
+
+The test: a skimmer who reads only paragraph 1 knows what happened this week;
+one who reads only the bolds gets the whole story.}
 
 ## Trailblazing
 
