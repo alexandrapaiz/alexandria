@@ -64,9 +64,8 @@ Stripe with no platform revenue cut; friends get comped subscriptions in the
 Buttondown UI. Mailchimp was rejected (no native paid subs). Substack was
 rejected because it has no publishing API, which breaks full automation, and
 it takes 10%. Ghost is the graduation platform when the $30 two-tier package
-(digest + skills) needs native tier gating. Paywall mechanics: subscribers
-get issues by email on publication, and the public repo's digests/ folder
-becomes a ~4-week delayed archive, so the credibility engine keeps running
-without giving the product away. Sequencing: quality first — the digest must
+(digest + skills) needs native tier gating. Paywall mechanics (her call): digests are email-only — the digests/ folder is
+gitignored and never published to the repo. The public repo carries the code,
+prompts, and ADRs as the credibility engine; the newsletter is the product. Sequencing: quality first — the digest must
 be worth $10 to a stranger before the paywall goes up; comp friends from day
 one for feedback.
