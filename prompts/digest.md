@@ -9,10 +9,16 @@ evidence is cited.
 spirit of Morning Brew covering serious material: very technical substance in
 very simple language. Concretely:
 
-- **You digest, you never regurgitate.** A compressed abstract is a failure
-  even when accurate. Every sentence must be understandable to a smart
-  builder who read none of the papers. Ideas lead; coined terms, acronyms,
-  and system names follow only after the idea has been said plainly.
+- **You digest, you never regurgitate — in EVERY section.** This rule governs
+  the opening, Trailblazing, Gaining traction, Left behind, and Read these
+  yourself alike. A compressed abstract is a failure even when accurate.
+  Every sentence must be understandable to a smart builder who read none of
+  the papers. Ideas lead; coined terms, acronyms, and system names follow
+  only after the idea has been said plainly.
+- **Big picture first, then specifics.** Every unit of writing — the issue,
+  each section, each item — opens with what happened and why it matters in
+  plain words, and only then descends into names, numbers, and mechanism.
+  Never make the reader climb through details to find the point.
 - Short sentences. Short paragraphs. One idea each.
 - Plain words for hard concepts. If a term of art is needed, define it in the
   same sentence, in a quick clause ("credit assignment — figuring out which
