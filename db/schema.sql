@@ -116,6 +116,21 @@ create table if not exists digests (
     created_at timestamptz not null default now()
 );
 
+-- ============ subscribers: the newsletter list ============
+-- Source of truth for who receives the digest. Friends-and-family phase sends
+-- via Gmail SMTP; past ~20 subscribers this graduates to SES + a real domain
+-- + Stripe (docs/vision.md §4). comp = free access (friends).
+create table if not exists subscribers (
+    id              bigserial primary key,
+    email           text not null unique,
+    name            text,
+    tier            text not null default 'digest' check (tier in ('digest', 'full')),
+    comp            boolean not null default false,
+    status          text not null default 'active' check (status in ('active', 'unsubscribed')),
+    created_at      timestamptz not null default now(),
+    unsubscribed_at timestamptz
+);
+
 -- ============ blackboard queues ============
 -- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
 -- view: an item is "claimed" when the worker's output row exists, so every job

@@ -45,7 +45,7 @@ RECHECK_DAYS = 6          # at most one check per paper per weekly cycle
 
 image = (
     modal.Image.debian_slim()
-    .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1")
+    .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "markdown==3.7")
     .add_local_file("prompts/digest.md", "/root/prompts/digest.md")
 )
 
@@ -300,25 +300,51 @@ def write_digest(payload: dict, prompt: str) -> str:
     raise RuntimeError("groq: exhausted retries")
 
 
-def send_newsletter(week: str, body: str) -> str:
-    """Send the digest to subscribers via Buttondown (the product is the email;
-    the digests table is the record of record — the digest is NOT published to
-    the public repo). No-op until the buttondown secret exists."""
+def send_newsletter(conn, week: str, body: str) -> str:
+    """Email the digest to active subscribers (friends-and-family phase).
+
+    Sends through the owner's Gmail via authenticated SMTP: at this scale
+    (<20 recipients) Gmail's own sender reputation is the deliverability
+    strategy, and no domain or email service is needed. Past ~20 subscribers
+    this graduates to SES + a purchased domain + a real unsubscribe endpoint
+    (docs/vision.md §4). No-op until the `gmail` secret exists
+    (GMAIL_ADDRESS + GMAIL_APP_PASSWORD)."""
     import os
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
 
-    import httpx
+    addr = os.environ.get("GMAIL_ADDRESS", "").strip()
+    pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
+    if not addr or not pw:
+        return "no gmail secret; email send skipped (digest is in the database)"
+    rows = conn.execute(
+        "select email, name from subscribers where status = 'active'"
+    ).fetchall()
+    if not rows:
+        return "no active subscribers; nothing to send"
 
-    key = os.environ.get("BUTTONDOWN_API_KEY", "").strip()
-    if not key:
-        return "no BUTTONDOWN_API_KEY; email send skipped (digest is in the database)"
-    resp = httpx.post(
-        "https://api.buttondown.email/v1/emails",
-        headers={"Authorization": f"Token {key}"},
-        json={"subject": f"alexandria digest — {week}", "body": body},
-        timeout=60,
+    import markdown as md
+
+    html_body = md.markdown(body, extensions=["extra"])
+    html = (
+        "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
+        "font-size:16px;line-height:1.6;color:#222'>"
+        f"{html_body}"
+        "<hr><p style='font-size:12px;color:#888'>You're receiving this as a "
+        "friend of alexandria. Reply to this email to unsubscribe.</p></div>"
     )
-    resp.raise_for_status()
-    return f"sent {week} to subscribers via Buttondown"
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(addr, pw)
+        for email, name in rows:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"alexandria digest — {week}"
+            msg["From"] = f"alexandria <{addr}>"
+            msg["To"] = email
+            msg.attach(MIMEText(body, "plain"))
+            msg.attach(MIMEText(html, "html"))
+            smtp.sendmail(addr, [email], msg.as_string())
+    return f"sent {week} to {len(rows)} subscribers via Gmail"
 
 
 @app.function(
@@ -357,12 +383,12 @@ def weekly() -> str:
             (week, body, MODEL, sha),
         )
         conn.commit()
-    try:
-        print(send_newsletter(week, body))
-    except Exception as exc:
-        # the digests table is the record of record; a send failure (bad key,
-        # Buttondown outage) must never fail the run
-        print(f"newsletter send failed ({exc}); digest is safe in the database")
+        try:
+            print(send_newsletter(conn, week, body))
+        except Exception as exc:
+            # the digests table is the record of record; a send failure must
+            # never fail the run
+            print(f"newsletter send failed ({exc}); digest is safe in the database")
     return body
 
 
