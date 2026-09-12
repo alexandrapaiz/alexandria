@@ -349,7 +349,8 @@ def send_newsletter(conn, week: str, body: str) -> str:
 
 @app.function(
     schedule=modal.Cron("0 15 * * 1"),  # Monday 15:00 UTC, after the daily crons
-    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq")],
+    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq"),
+             modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=1800,
 )
 def weekly() -> str:
