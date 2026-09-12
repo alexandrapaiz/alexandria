@@ -341,7 +341,18 @@ def send_newsletter(conn, week: str, body: str) -> str:
 
     import markdown as md
 
-    html_body = md.markdown(body, extensions=["extra"])
+    def is_list_line(line: str) -> bool:
+        return bool(re.match(r"^\s*([-*] |\d+[.)] )", line))
+
+    # markdown only recognizes a list after a blank line; without one the
+    # literal dashes leak into the rendered email
+    lines, spaced = body.split("\n"), []
+    for line in lines:
+        if is_list_line(line) and spaced and spaced[-1].strip() and not is_list_line(spaced[-1]):
+            spaced.append("")
+        spaced.append(line)
+
+    html_body = md.markdown("\n".join(spaced), extensions=["extra"])
     html = (
         "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
         "font-size:16px;line-height:1.6;color:#222'>"
