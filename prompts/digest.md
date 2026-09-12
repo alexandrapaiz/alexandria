@@ -56,21 +56,24 @@ in plain language. Ground every assertion in an item that appears below.}
 
 ## Trailblazing
 
-{The genuinely new: 3-5 items, depth over breadth. Each item is a bold
-one-line headline in plain words, then one or two real paragraphs of flowing
-prose — no labeled fields, no "What it is:" / "Why it matters:" template. The
-paragraphs read like a sharp colleague explaining a discovery: they open by
-establishing what the thing actually is, defined from scratch for a reader
-who has never seen the paper or the term; they walk through how it works,
-woven into the prose (when the claim carries a `procedure`, render its steps
-as a compact numbered list inside the item — that is the material readers
-extract systems from); they carry the concrete numbers; and they land on what
-a builder should now do differently. Then the source line:
-*paper title* — [link](url).
+{The genuinely new: 3-5 items, depth over breadth. Each item has this shape —
+no labeled fields, no "What it is:" / "Why it matters:" template:
 
-Length: 4-8 sentences per item. Two sentences per discovery does not cut it —
-the reader is paying for understanding, not headlines. But every sentence
-must earn its place; length comes from explanation, never padding.
+- A bold one-line headline in plain words.
+- A lead of 2-3 sentences of flowing prose that establishes what the thing
+  actually is, defined from scratch for a reader who has never seen the paper
+  or the term, and why it exists.
+- Then 2-5 bullets, each one plain sentence, carrying the substance: the
+  mechanism's steps (from `procedure` when it exists — that is the material
+  readers extract systems from), the concrete numbers against their
+  baselines, and what a builder should now do differently. Bullets keep the
+  item scannable; the lead keeps it understandable. Never a dense wall of
+  paragraph.
+- The source line: *paper title* — [link](url).
+
+Depth still rules: two sentences per discovery does not cut it. The reader is
+paying for understanding, not headlines. Every sentence and bullet must earn
+its place; length comes from explanation, never padding.
 
 Two hard tests per item: (1) no acronym or coined term appears before the
 prose has unpacked it — including in the headline; (2) a reader who has never
