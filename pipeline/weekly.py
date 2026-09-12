@@ -258,7 +258,9 @@ def gather(conn) -> dict:
 
 # Groq's free tier caps request size (413 above it); trim the least-critical
 # evidence (the tail of new_claims, already sorted best-first) until we fit
-MAX_PAYLOAD_CHARS = 22000
+# the request Groq sees is prompt + payload, and the prompt has grown with
+# editorial rules — keep the sum under the free tier's 413 threshold
+MAX_PAYLOAD_CHARS = 17000
 
 
 def shrink(payload: dict) -> str:
