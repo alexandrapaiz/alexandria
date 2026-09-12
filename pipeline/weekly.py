@@ -300,6 +300,21 @@ def write_digest(payload: dict, prompt: str) -> str:
     raise RuntimeError("groq: exhausted retries")
 
 
+# The standing introduction under the title. Fixed in code, not written by the
+# model, so the brand line never drifts issue to issue.
+MASTHEAD = (
+    "*The latest in AI research, read in full and distilled weekly: "
+    "what's new, what's gaining ground, and what's been left behind.*"
+)
+
+
+def add_masthead(body: str) -> str:
+    lines = body.split("\n")
+    if lines and lines[0].startswith("#"):
+        return "\n".join([lines[0], "", MASTHEAD, ""] + lines[1:])
+    return f"{MASTHEAD}\n\n{body}"
+
+
 def send_newsletter(conn, week: str, body: str) -> str:
     """Email the digest to active subscribers (friends-and-family phase).
 
@@ -374,6 +389,7 @@ def weekly() -> str:
         print(f"{week}: {payload['stats']} | new_claims={len(payload['new_claims'])} "
               f"deprecated={len(payload['deprecated'])}")
         body = write_digest(payload, prompt)
+        body = add_masthead(body)
         conn.execute(
             """
             insert into digests (week, body, model, prompt_sha) values (%s, %s, %s, %s)
