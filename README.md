@@ -120,6 +120,8 @@ docs/curriculum.md   the AI systems stack, layer by layer, learned by building
 - [x] Slow loop: citation tracking via Semantic Scholar, merged into the weekly cron (ADR-8)
 - [x] MCP server live (ADR-11): OAuth 2.1, semantic_search / sql_query / get_digest /
       propose_skill, at ap4509--alexandria-mcp-serve.modal.run
+- [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
+      itself — first send 2026-09-11; email-only, digests never in the repo
 - [ ] Claude weekly agent scheduled task (prompt: prompts/weekly-agent.md) → first skill PRs
 - [ ] Meta-review recursive loop
 - [ ] Upgrade distill model beyond free tiers when budget allows (bake-off decides if it's needed)
