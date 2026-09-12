@@ -55,9 +55,18 @@ newsletter**:
 
 The architecture was built for this from the start: the pipeline's marginal
 cost is ~$0, so subscription revenue is nearly pure margin, and the
-gold layer is the paywalled product. The product surface sketched in
-[stack.md](stack.md) (Next.js + auth + entitlements) is the delivery
-mechanism; email delivery and payments (e.g. Stripe) get chosen when this
-phase begins. Sequencing: quality first — the digest must be worth $10 to a
-stranger before a paywall goes up. The free public repo remains the
-credibility engine; the digest and skills are the product.
+gold layer is the paywalled product.
+
+Launch plan (decided 2026-09-11): **Buttondown** as the newsletter platform —
+markdown-native with a REST API, so the Monday cron sends each issue
+automatically (one HTTP call at the end of weekly.py); paid subscriptions via
+Stripe with no platform revenue cut; friends get comped subscriptions in the
+Buttondown UI. Mailchimp was rejected (no native paid subs). Substack was
+rejected because it has no publishing API, which breaks full automation, and
+it takes 10%. Ghost is the graduation platform when the $30 two-tier package
+(digest + skills) needs native tier gating. Paywall mechanics: subscribers
+get issues by email on publication, and the public repo's digests/ folder
+becomes a ~4-week delayed archive, so the credibility engine keeps running
+without giving the product away. Sequencing: quality first — the digest must
+be worth $10 to a stranger before the paywall goes up; comp friends from day
+one for feedback.
