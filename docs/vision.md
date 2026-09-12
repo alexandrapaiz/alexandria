@@ -85,3 +85,21 @@ prompts, and ADRs as the credibility engine, and the newsletter is the
 product. Sequencing: quality first. The digest must be worth $10 to a
 stranger before the paywall goes up, and friends are comped from day one for
 feedback.
+
+## Sprint 2 — the member site (agreed 2026-09-11, not yet built)
+
+A website hosting the digest archive and the library, with the paywall as a
+real server-side gate. Architecture agreed in advance:
+
+- Next.js on Vercel (ALEX team, free tier). Server-rendered, so locked
+  content never reaches the browser: each article shows its first paragraph
+  publicly and the rest only to entitled users.
+- Clerk for auth (free to 10k users), chosen for its prebuilt profile
+  management UI. Sign in with Google or email code.
+- Entitlement stays in the Neon `subscribers` table: logged-in email checked
+  server-side against status = active. Comped friends unlock like paying
+  subscribers; the future Stripe webhook flips the same rows, so the site
+  never changes when payments arrive.
+- Pages: home (pitch + latest teaser), digest archive, issue pages with the
+  teaser gate, library (skills / routines / automations from the gold
+  layer), account (Clerk profile).
