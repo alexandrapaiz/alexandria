@@ -113,7 +113,7 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
             continue
         resp.raise_for_status()
         out = json.loads(resp.json()["choices"][0]["message"]["content"])
-        return out.get("claims", [])
+        return out
     raise RuntimeError(f"{provider}: exhausted retries")
 
 
@@ -145,7 +145,7 @@ def bake_off(n_papers: int = 8) -> list[dict]:
         entry = {"paper_id": pid, "title": title, "url": url, "decision": decision}
         for provider in PROVIDERS:
             try:
-                entry[provider] = extract_claims(provider, title, abstract[:6000])
+                entry[provider] = extract_claims(provider, title, abstract[:6000]).get("claims", [])
             except Exception as exc:
                 entry[provider] = [{"claim": f"PROVIDER ERROR: {exc}", "evidence": "", "topics": []}]
             time.sleep(PROVIDERS[provider]["pause"])
@@ -194,7 +194,7 @@ def distill(max_papers: int = 30):
             if body is None:
                 body = (abstract or "")[:6000]
             try:
-                claims = extract_claims(PRODUCTION_PROVIDER, title, body)
+                out = extract_claims(PRODUCTION_PROVIDER, title, body)
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code == 429:
                     print("rate limited by Groq; stopping — next run resumes")
@@ -202,9 +202,16 @@ def distill(max_papers: int = 30):
                 if body is not None and len(body) > 6000:
                     # full text too large for the provider — fall back to abstract
                     print(f"  provider rejected full text ({exc.response.status_code}); retrying with abstract")
-                    claims = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
+                    out = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
                 else:
                     raise
+            claims = out.get("claims", [])
+            institutions = [i for i in (out.get("institutions") or []) if i][:3]
+            if institutions:
+                conn.execute(
+                    "update papers set institutions = %s where id = %s",
+                    (institutions, pid),
+                )
             for c in claims:
                 text = (c.get("claim") or "").strip()
                 if not text:

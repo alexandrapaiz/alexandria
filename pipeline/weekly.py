@@ -133,14 +133,14 @@ def gather(conn) -> dict:
                t.decision, t.score,
                coalesce(array_agg(l.relation || ' -> claim ' || l.to_claim)
                         filter (where l.from_claim is not null), '{}'),
-               c.evidence, c.procedure, p.authors[1:3]
+               c.evidence, c.procedure, p.authors[1:3], p.institutions
         from claims c
         join papers p on p.id = c.paper_id
         left join triage_log t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
-                 c.evidence, c.procedure, p.authors
+                 c.evidence, c.procedure, p.authors, p.institutions
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
         limit 22
@@ -229,6 +229,7 @@ def gather(conn) -> dict:
                 "evidence": (r[9] or "")[:350] or None,
                 "procedure": (r[10] or "")[:600] or None,
                 "authors": r[11] or None,
+                "institutions": r[12] or None,
             }
             for r in new_claims
         ],

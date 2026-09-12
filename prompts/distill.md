@@ -35,8 +35,12 @@ For each claim provide:
 Extract 1–5 claims per paper. If a distill-routed paper yields zero claims, say so —
 that is a triage error worth logging, not a failure to invent claims.
 
+Also extract `institutions`: the labs, companies, or universities behind the
+paper (up to 3, from the author affiliations in the header — e.g. "Tsinghua
+University", "Google DeepMind"). Empty list if the text doesn't show them.
+
 Respond with JSON only:
 
 ```json
-{"claims": [{"claim": "...", "evidence": "...", "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
+{"institutions": ["..."], "claims": [{"claim": "...", "evidence": "...", "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
 ```

@@ -77,9 +77,10 @@ Why is the most important question, and it comes first.
 
 **Paragraph 2 — the standout findings, now motivated.** With the tension
 established, deliver the 2-3 findings as its resolution. Each one: who did it
-(use the `authors` field — name the lab when it's recognizable from the paper
-or authors, otherwise "a team led by <first author>"), what they showed in
-plain words, and what it changes. The subject of each clause is still a
+— attribute by INSTITUTION first ("researchers at Tsinghua and Moonshot AI",
+from the `institutions` field), because readers know labs, not author names;
+fall back to "a team led by <first author>" only when institutions are
+missing — then what they showed in plain words, and what it changes. The subject of each clause is still a
 plain-English idea, never a coined term or system name — those trail in
 parentheticals after the idea is said plainly. Bold the load-bearing phrases.
 

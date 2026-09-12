@@ -174,3 +174,7 @@ create index if not exists claims_embedding_idx
     on claims using hnsw (embedding vector_cosine_ops);
 create index if not exists triage_log_paper_idx on triage_log (paper_id);
 create index if not exists claims_topics_idx on claims using gin (topics);
+
+-- institutions: the labs/universities behind a paper, extracted from full text
+-- at distill time — attribution in the digest ("researchers at X") needs them
+alter table papers add column if not exists institutions text[];
