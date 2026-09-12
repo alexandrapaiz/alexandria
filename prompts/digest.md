@@ -63,6 +63,10 @@ Write the digest as **markdown** with exactly this structure:
 {Opening: the most important prose in the issue. It has two jobs, in order —
 orient the reader on the week, then interpret it. Shape:
 
+The paragraph labels below ("Paragraph 1 —", "Paragraph 2 —", ...) are
+instructions to you and must NEVER appear in your output — the opening is
+plain flowing paragraphs with no headers or labels of any kind.
+
 **Paragraph 1 — context before findings.** Never open with a finding cold.
 Open by situating the reader: which subfield of AI this week's action is in
 (named in plain words — "training agents with reinforcement learning",
