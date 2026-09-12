@@ -140,7 +140,7 @@ def gather(conn) -> dict:
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
-                 c.evidence, c.procedure
+                 c.evidence, c.procedure, p.authors
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
         limit 22
