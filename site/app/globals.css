@@ -162,16 +162,14 @@ a {
   display: block;
 }
 
-.wordmark .embed-mark {
-  width: 2em;
-  height: 1.5em;
+.hero-mark {
+  width: clamp(320px, 46vw, 600px);
+  aspect-ratio: 1200 / 900;
+  margin: 28px auto 0;
   color: var(--ink);
-  top: 0;
-  vertical-align: middle;
-  margin-left: 0.04em;
 }
 
-.wordmark .embed-mark svg {
+.hero-mark svg {
   width: 100%;
   height: 100%;
   display: block;

@@ -8,11 +8,11 @@ export default function Home() {
         <h1 className="wordmark">
           library of
           <br />
-          alexandr.ia{" "}
-          <span className="embed embed-mark">
-            <MarkLive />
-          </span>
+          alexandr.ia
         </h1>
+        <div className="hero-mark">
+          <MarkLive />
+        </div>
         <p className="hero-sub">
           The latest in AI research, read in full and distilled weekly:
           what&rsquo;s new, what&rsquo;s gaining acceptance, and what newer

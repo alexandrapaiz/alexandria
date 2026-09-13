@@ -21,20 +21,21 @@ const SPEC = [
 ];
 const T = 60;
 const B = 840;
-const DC_W = 46; // slab width in the machine state
-const DC_S = 115; // shared lean of every slab in the machine state
+const DC_CENTER_S = 80; // the center spine's lean once racked
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
 function compute(f) {
+  // f in [-1, 1]: -1 full machine (far left), 0 the resting mark (the
+  // middle of the animation), +1 fully fanned book (far right)
   const k = Math.max(f, 0); // book factor
-  const t = Math.min(Math.max(-f, 0) / 0.7, 1); // machine factor, complete by f = -0.7
+  const t = Math.max(-f, 0); // machine factor, complete only at f = -1
   const pts = [];
-  // bars indexed -5..5 around the spine; pitch is already uniform (98)
+  // bars indexed -5..5 around the spine
   for (let j = -5; j <= 5; j++) {
     const i = Math.abs(j) - 1;
     const [w0, s0] = j === 0 ? [10, 0] : SPEC[4 - i];
-    // book state (mirrored fan): near side spreads and widens with k,
+    // book side (mirrored fan): near side spreads and widens with k,
     // far side tucks thin and edge-on
     let w, s, cx;
     if (j < 0) {
@@ -50,21 +51,20 @@ function compute(f) {
       s = 0;
       cx = 600;
     }
-    // book corner ys: left group leans one way, right group mirrors,
-    // center stands straight
+    // book corner ys: left group leans one way, right group mirrors
     const bookTL = j > 0 ? T + s : T;
     const bookTR = j > 0 ? T : T + s;
     const bookBL = j > 0 ? B : B - s;
     const bookBR = j > 0 ? B - s : B;
-    // machine state: every slab identical, same lean, uniform pitch
-    const W = lerp(w, DC_W, t);
-    const CX = lerp(cx, 600 + j * 98, t);
+    // machine: sizes and pitch keep their character — only the lean
+    // unifies, every page sharing one direction at its own depth
+    const sDC = j === 0 ? DC_CENTER_S : s0;
     const tl = lerp(bookTL, T, t);
-    const tr = lerp(bookTR, T + DC_S, t);
-    const bl = lerp(bookBL, B - DC_S, t);
+    const tr = lerp(bookTR, T + sDC, t);
+    const bl = lerp(bookBL, B - sDC, t);
     const br = lerp(bookBR, B, t);
-    const x0 = CX - W / 2;
-    const x1 = CX + W / 2;
+    const x0 = cx - w / 2;
+    const x1 = cx + w / 2;
     pts.push(`${x0},${tl} ${x1},${tr} ${x1},${br} ${x0},${bl}`);
   }
   return pts;
@@ -101,15 +101,17 @@ export default function MarkLive(props) {
       }
     };
     const retarget = () => {
-      target = Math.max(-0.85, Math.min(0.85, mouseF + scrollF));
+      target = Math.max(-1, Math.min(1, mouseF + scrollF));
       if (raf === null) raf = requestAnimationFrame(tick);
     };
     const onMove = (e) => {
-      mouseF = (e.clientX / window.innerWidth - 0.5) * 1.7;
+      // symmetric 50/50 travel: center of the screen is the resting mark,
+      // full machine only at the far-left edge, full book at the far right
+      mouseF = (e.clientX / window.innerWidth - 0.5) * 2;
       retarget();
     };
     const onScroll = () => {
-      scrollF = -Math.min(window.scrollY / 450, 1) * 0.85;
+      scrollF = -Math.min(window.scrollY / 450, 1);
       retarget();
     };
 
