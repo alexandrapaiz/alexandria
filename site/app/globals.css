@@ -34,6 +34,12 @@ html {
   scroll-snap-align: end;
 }
 
+/* while the wheel is being spent on the morph, the page creeps a little
+   and must not be snapped back; snap re-arms when the morph resolves */
+:root.morphing {
+  scroll-snap-type: none !important;
+}
+
 body {
   background: var(--paper);
   color: var(--ink);

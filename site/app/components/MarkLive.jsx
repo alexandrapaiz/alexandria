@@ -125,8 +125,11 @@ export default function MarkLive(props) {
       // scrolled. The mouse never changes the mode — it only sways the
       // pages toward the cursor.
       // while the page travels, the mark is the open book; at the top,
-      // the wheel-driven morph progress decides
-      const targetF = lastScrollY > 4 ? 1 : p * 2 - 1;
+      // the wheel-driven morph progress decides, shaped by an S-curve so
+      // the middle of the transformation passes quickly and the endpoints
+      // settle slowly
+      const eased = p * p * (3 - 2 * p);
+      const targetF = lastScrollY > 130 ? 1 : eased * 2 - 1;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
       curF += (targetF - curF) * 0.1;
       curS += (targetS - curS) * 0.1;
@@ -150,24 +153,46 @@ export default function MarkLive(props) {
       mouseF = Math.max(-1, Math.min(1, x * 1.9));
       wake();
     };
+    const setMorphing = (on) =>
+      document.documentElement.classList.toggle("morphing", on);
+    let advancing = false;
     const onWheel = (e) => {
-      if (window.scrollY > 0) return; // page is traveling; let it scroll
+      const sy = window.scrollY;
+      if (sy > 90) return; // page is traveling; let it scroll
       if (e.deltaY > 0 && p < 1) {
-        // spend the down-scroll on opening the book, page held still
+        // spend the down-scroll on opening the book, while the page
+        // creeps just enough to promise something below
+        e.preventDefault();
         p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
-        e.preventDefault();
+        setMorphing(true);
+        window.scrollBy(0, e.deltaY * 0.07);
         wake();
+        if (p >= 1 && !advancing) {
+          // the book is ready: glide smoothly into scene two
+          advancing = true;
+          setTimeout(() => {
+            document
+              .querySelector(".hero-follow")
+              ?.scrollIntoView({ behavior: "smooth" });
+            setTimeout(() => setMorphing(false), 900);
+          }, 130);
+        }
       } else if (e.deltaY < 0 && p > 0) {
-        // spend the up-scroll on folding it back — perfectly symmetric
-        p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
+        // spend the up-scroll on folding it back — symmetric
         e.preventDefault();
+        p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
+        setMorphing(true);
+        window.scrollBy(0, e.deltaY * 0.07);
         wake();
+        if (p <= 0) setMorphing(false);
       }
     };
     const onScroll = () => {
       lastScrollY = window.scrollY;
       // any real travel (touch, keyboard, scrollbar) rides as the book
-      if (lastScrollY > 4) p = 1;
+      if (lastScrollY > 130) p = 1;
+      if (lastScrollY > 130 && !advancing) setMorphing(false);
+      if (advancing && lastScrollY < 60) advancing = false;
       wake();
     };
 
@@ -179,6 +204,7 @@ export default function MarkLive(props) {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
+      setMorphing(false);
       if (raf !== null) cancelAnimationFrame(raf);
     };
   }, []);
