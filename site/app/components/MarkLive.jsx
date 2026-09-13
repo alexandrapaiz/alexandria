@@ -113,12 +113,20 @@ export default function MarkLive(props) {
     let scrollF = -1;
     let raf = null;
 
+    const hub = svg.querySelector("#hubcut circle:last-of-type");
     const apply = () => {
       const pts = compute(curF, curS);
       polys.forEach((p, i) => p.setAttribute("points", pts[i]));
+      // in book mode a circular cut at the spine's foot trims the
+      // staggered page bottoms into one smooth arc
+      if (hub) hub.setAttribute("r", String(Math.max(curF, 0) * 95));
     };
     const tick = () => {
-      const targetF = Math.max(-1, Math.min(1, mouseF + scrollF));
+      // scroll owns the story (machine at the top, book once scrolled);
+      // the mouse can only nudge the mode, and its pull fades to zero as
+      // the scroll completes so the book always locks in
+      const progress = (scrollF + 1) / 2;
+      const targetF = Math.max(-1, Math.min(1, scrollF + mouseF * 0.35 * (1 - progress)));
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
       curF += (targetF - curF) * 0.065;
       curS += (targetS - curS) * 0.065;
@@ -146,7 +154,7 @@ export default function MarkLive(props) {
       // the story of the scroll: the page opens on the data center, and
       // descending toward the text transforms it into the fully open
       // book, complete before the text below is reached
-      const span = window.innerHeight * 0.3;
+      const span = window.innerHeight * 0.18;
       scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
       wake();
     };
@@ -170,9 +178,17 @@ export default function MarkLive(props) {
       aria-hidden="true"
       {...props}
     >
-      {compute(-1, 0).map((pts, i) => (
-        <polygon key={i} points={pts} fill="currentColor" />
-      ))}
+      <defs>
+        <mask id="hubcut" maskUnits="userSpaceOnUse" x="-70" y="0" width="1340" height="900">
+          <rect x="-70" y="0" width="1340" height="900" fill="white" />
+          <circle cx={PIVOT_X} cy={B} r="0" fill="black" />
+        </mask>
+      </defs>
+      <g mask="url(#hubcut)">
+        {compute(-1, 0).map((pts, i) => (
+          <polygon key={i} points={pts} fill="currentColor" />
+        ))}
+      </g>
     </svg>
   );
 }
