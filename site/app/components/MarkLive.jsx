@@ -29,8 +29,11 @@ const T = 60;
 const B = 840;
 const PIVOT_X = 600; // the spine's foot — pages rotate about this point
 const DC_CENTER_S = 80;
-const BOOK_ANGLE = 0.13; // radians per page of fan spread
-const BOOK_GATHER = 30; // horizontal pitch in book mode (pages close up)
+const BOOK_TURN = 0.26; // depth turn per page away from the spine
+const BOOK_RADIUS = 470; // how far the turned pages reach from the spine
+const BOOK_PAGE_W = 64; // a page's width when it faces the viewer flat
+const DC_W = 50; // every rack slab identical: one width...
+const DC_S = 120; // ...and one lean
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -59,25 +62,27 @@ function restCorners(j) {
 }
 
 function bookCorners(j) {
-  const [w] = barSpec(j);
-  const cx = PIVOT_X + j * BOOK_GATHER;
+  // an open codex seen head-on: the center page faces the viewer flat
+  // and wide, and each page outward TURNS AWAY from the spine in depth,
+  // foreshortening toward edge-on, placed along the sine of its turn
+  const th = j * BOOK_TURN;
+  const cx = PIVOT_X + Math.sin(th) * BOOK_RADIUS;
+  const w = Math.max(BOOK_PAGE_W * Math.cos(th), 6);
   const x0 = cx - w / 2;
   const x1 = cx + w / 2;
-  const ang = j * BOOK_ANGLE;
-  return [rot(x0, T, ang), rot(x1, T, ang), rot(x1, B, ang), rot(x0, B, ang)];
+  return [[x0, T], [x1, T], [x1, B], [x0, B]];
 }
 
 function machineCorners(j) {
-  // a rack aisle has no spine: the center bar collapses to nothing, and
-  // the ten slabs redistribute to one uniform pitch so no gap remains
+  // a rack aisle has no spine, and every slab is identical: one width,
+  // one lean, one pitch — the center bar collapses to nothing
   if (j === 0) {
     return [[PIVOT_X, T], [PIVOT_X, T + DC_CENTER_S], [PIVOT_X, B], [PIVOT_X, B - DC_CENTER_S]];
   }
-  const [w, s] = barSpec(j);
   const cx = PIVOT_X + Math.sign(j) * (Math.abs(j) - 0.5) * 99;
-  const x0 = cx - w / 2;
-  const x1 = cx + w / 2;
-  return [[x0, T], [x1, T + s], [x1, B], [x0, B - s]];
+  const x0 = cx - DC_W / 2;
+  const x1 = cx + DC_W / 2;
+  return [[x0, T], [x1, T + DC_S], [x1, B], [x0, B - DC_S]];
 }
 
 function compute(f, sway) {
