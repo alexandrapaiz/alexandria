@@ -16,20 +16,21 @@ export default function Pricing() {
           <span className="per">per month</span>
           <ul>
             <li>The weekly digest by email</li>
-            <li>Full library access</li>
+            <li>The complete issue archive</li>
             <li>Every issue, past and future</li>
           </ul>
           <span className="pill ghost">Coming soon</span>
         </div>
         <div className="tier featured">
-          <h2>Digest + Skills</h2>
+          <h2>Full library</h2>
           <div className="price">$30</div>
           <span className="per">per month</span>
           <ul>
             <li>Everything in Digest</li>
-            <li>The full Claude skill library</li>
-            <li>Routines &amp; automations when they land</li>
-            <li>Updates when the research moves</li>
+            <li>The full skill library, for any AI agent</li>
+            <li>The claim graph, explorable</li>
+            <li>Skill revisions as the research moves</li>
+            <li>Routines &amp; automations (coming soon)</li>
           </ul>
           <span className="pill">Coming soon</span>
         </div>

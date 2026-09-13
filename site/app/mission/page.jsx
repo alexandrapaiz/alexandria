@@ -28,7 +28,7 @@ export default function Mission() {
         </p>
         <p>
           The library also builds. Procedures that survive scrutiny become{" "}
-          <b>Claude skills</b> that carry full provenance back to the claims
+          <b>agent skills</b> that carry full provenance back to the claims
           justifying them, and because that provenance stays live, movement in
           the graph flows into the skills themselves: a skill is revised as its
           research sharpens and retired with an explanation if the research is

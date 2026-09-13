@@ -66,11 +66,11 @@ export default function Home() {
         <div>
           <h3>Turned into skills</h3>
           <p>
-            Procedures that hold up under accumulating evidence are packaged as
-            Claude skills, each traceable to the claims and papers that justify
-            it. Because that provenance stays live, a skill is revised whenever
-            its research sharpens and retired with an explanation if the
-            research is overturned.
+            Procedures that hold up under accumulating evidence are packaged
+            as skills that any AI agent can load, each traceable to the claims
+            and papers that justify it. Because that provenance stays live, a
+            skill is revised whenever its research sharpens and retired with
+            an explanation if the research is overturned.
           </p>
         </div>
       </section>
