@@ -125,10 +125,10 @@ export default function MarkLive(props) {
       // scrolled. The mouse never changes the mode — it only sways the
       // pages toward the cursor.
       // while the page travels, the mark is the open book; at the top,
-      // the wheel-driven morph progress decides, shaped by an S-curve so
-      // the middle of the transformation passes quickly and the endpoints
-      // settle slowly
-      const eased = p * p * (3 - 2 * p);
+      // the wheel-driven morph progress decides, shaped by a doubled
+      // S-curve: long dwell at rack and at book, a quick flip between
+      const s = (x) => x * x * (3 - 2 * x);
+      const eased = s(s(p));
       const targetF = lastScrollY > 130 ? 1 : eased * 2 - 1;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
       curF += (targetF - curF) * 0.1;
@@ -156,42 +156,76 @@ export default function MarkLive(props) {
     const setMorphing = (on) =>
       document.documentElement.classList.toggle("morphing", on);
     let advancing = false;
-    const onWheel = (e) => {
-      const sy = window.scrollY;
-      if (sy > 90) return; // page is traveling; let it scroll
-      if (e.deltaY > 0 && p < 1) {
-        // spend the down-scroll on opening the book, while the page
-        // creeps just enough to promise something below
-        e.preventDefault();
-        p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
-        setMorphing(true);
-        window.scrollBy(0, e.deltaY * 0.07);
-        wake();
-        if (p >= 1 && !advancing) {
-          // the book is ready: glide smoothly into scene two
-          advancing = true;
-          setTimeout(() => {
-            document
-              .querySelector(".hero-follow")
-              ?.scrollIntoView({ behavior: "smooth" });
-            setTimeout(() => setMorphing(false), 900);
-          }, 130);
+    let gliding = false;
+
+    // our own scene-to-scene travel: one eased flight, wheel input
+    // swallowed while it flies, CSS snap re-armed only after landing
+    const glide = (toY) => {
+      gliding = true;
+      setMorphing(true);
+      const fromY = window.scrollY;
+      const t0 = performance.now();
+      const ms = 850;
+      const ease = (x) =>
+        x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+      const step = (now) => {
+        const u = Math.min((now - t0) / ms, 1);
+        window.scrollTo(0, fromY + (toY - fromY) * ease(u));
+        if (u < 1) requestAnimationFrame(step);
+        else {
+          gliding = false;
+          setTimeout(() => setMorphing(false), 80);
         }
-      } else if (e.deltaY < 0 && p > 0) {
-        // spend the up-scroll on folding it back — symmetric
+      };
+      requestAnimationFrame(step);
+    };
+    const followTop = () => {
+      const el = document.querySelector(".hero-follow");
+      return el ? el.getBoundingClientRect().top + window.scrollY - 96 : 0;
+    };
+
+    const onWheel = (e) => {
+      if (gliding) {
+        e.preventDefault(); // the flight owns the scroll
+        return;
+      }
+      const sy = window.scrollY;
+      if (sy < 90) {
+        if (e.deltaY > 0 && p < 1) {
+          // spend the down-scroll on opening the book, while the page
+          // creeps just enough to promise something below
+          e.preventDefault();
+          p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
+          setMorphing(true);
+          window.scrollBy(0, e.deltaY * 0.07);
+          wake();
+          if (p >= 1 && !advancing) {
+            // hold the finished book for a beat before flying down
+            advancing = true;
+            setTimeout(() => glide(followTop()), 800);
+          }
+        } else if (e.deltaY < 0 && p > 0) {
+          // spend the up-scroll on folding it back — symmetric
+          e.preventDefault();
+          p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
+          setMorphing(true);
+          window.scrollBy(0, e.deltaY * 0.07);
+          wake();
+          if (p <= 0) setMorphing(false);
+        }
+        return;
+      }
+      // at scene two, an upward wheel flies home the same way
+      if (e.deltaY < 0 && Math.abs(sy - followTop()) < 60) {
         e.preventDefault();
-        p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
-        setMorphing(true);
-        window.scrollBy(0, e.deltaY * 0.07);
-        wake();
-        if (p <= 0) setMorphing(false);
+        glide(0);
       }
     };
     const onScroll = () => {
       lastScrollY = window.scrollY;
       // any real travel (touch, keyboard, scrollbar) rides as the book
       if (lastScrollY > 130) p = 1;
-      if (lastScrollY > 130 && !advancing) setMorphing(false);
+      if (lastScrollY > 130 && !advancing && !gliding) setMorphing(false);
       if (advancing && lastScrollY < 60) advancing = false;
       wake();
     };
