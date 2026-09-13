@@ -197,7 +197,7 @@ export default function MarkLive(props) {
           e.preventDefault();
           p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
           setMorphing(true);
-          window.scrollBy(0, e.deltaY * 0.07);
+          window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p >= 1 && !advancing) {
             // hold the finished book for a beat before flying down
@@ -209,7 +209,7 @@ export default function MarkLive(props) {
           e.preventDefault();
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
           setMorphing(true);
-          window.scrollBy(0, e.deltaY * 0.07);
+          window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p <= 0) setMorphing(false);
         }
