@@ -40,7 +40,8 @@ const DC_S = 120; // ...and one lean
 // nested pages readable.
 const BOOK_CY = (T + B) / 2;
 const PAGE_L = 430; // a page's reach from the spine when it lies flat
-const PAGE_PERSP = 0.16; // how much a standing page grows toward the eye
+const PAGE_PERSP = 0.04; // a whisper of growth toward the eye — a book's
+// body stays rectangular; only the near-spine pages lift slightly
 const HINGE = 4; // the hinge sits this close beside the spine line
 
 const lerp = (a, b, t) => a + (b - a) * t;
