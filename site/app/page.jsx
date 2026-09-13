@@ -23,9 +23,14 @@ export default function Home() {
           <b>distilled weekly</b>: what&rsquo;s new, what&rsquo;s gaining
           acceptance, and what newer evidence has overturned.
         </p>
-        <p className="metric-line">
-          <b>3,431</b> papers ingested this week
-        </p>
+        <div className="hero-cta">
+          <Link href="/pricing" className="pill">
+            Subscribe
+          </Link>
+          <Link href="/library" className="pill ghost">
+            Read an issue
+          </Link>
+        </div>
         <p className="about-inline">
           Abstracts hide the details that make research usable, so the library
           reads each selected paper whole and distills it into claims that
@@ -39,14 +44,9 @@ export default function Home() {
           its research sharpens and retired with an explanation when the
           research is overturned.
         </p>
-        <div className="hero-cta">
-          <Link href="/pricing" className="pill">
-            Subscribe
-          </Link>
-          <Link href="/library" className="pill ghost">
-            Read an issue
-          </Link>
-        </div>
+        <p className="metric-line">
+          <b>3,431</b> papers ingested this week
+        </p>
       </section>
     </main>
   );

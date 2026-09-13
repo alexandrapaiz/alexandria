@@ -244,24 +244,29 @@ a {
 }
 
 .metric-line {
-  margin-top: 36px;
-  font-size: 15px;
+  margin-top: 34px;
+  font-size: 14px;
   color: var(--gray);
 }
 
 .metric-line b {
   color: var(--ink);
   font-weight: 600;
-  font-size: 18px;
+  font-size: 15px;
   font-variant-numeric: tabular-nums;
   margin-right: 4px;
 }
 
 .hero-cta {
-  margin-top: 34px;
+  margin-top: 38px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
+}
+
+.hero-cta .pill {
+  padding: 15px 32px;
+  font-size: 16px;
 }
 
 .about-inline {
