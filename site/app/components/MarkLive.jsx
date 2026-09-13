@@ -5,12 +5,11 @@ import { useEffect, useRef } from "react";
 // The mark holds both identities of the library, morphing along one axis
 // and swaying on another:
 //
-// - Mode (scroll + mouse x): the page LOADS as the MACHINE — a racked
-//   row of slabs sharing one lean, no spine. Scrolling down toward the
-//   text performs the transformation into the BOOK: pages rotate around
-//   the spine's foot and fan away from it in all directions, fully open
-//   before the text arrives. The mouse still shifts the balance: right
-//   is bookward, left is machineward.
+// - Mode (scroll only): the page LOADS as the MACHINE — a racked row of
+//   slabs sharing one lean, no spine. Scrolling down toward the text
+//   performs the transformation into the BOOK: pages rotate around the
+//   spine's foot and fan away from it in all directions, fully open
+//   before the text arrives.
 // - Sway: wherever the cursor is, every page tips a few degrees toward
 //   it, so the whole object follows the mouse a little at all times.
 //
@@ -118,11 +117,10 @@ export default function MarkLive(props) {
       polys.forEach((p, i) => p.setAttribute("points", pts[i]));
     };
     const tick = () => {
-      // scroll owns the story (machine at the top, book once scrolled);
-      // the mouse can only nudge the mode, and its pull fades to zero as
-      // the scroll completes so the book always locks in
-      const progress = (scrollF + 1) / 2;
-      const targetF = Math.max(-1, Math.min(1, scrollF + mouseF * 0.35 * (1 - progress)));
+      // scroll alone tells the story: machine at the top, book once
+      // scrolled. The mouse never changes the mode — it only sways the
+      // pages toward the cursor.
+      const targetF = scrollF;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
       curF += (targetF - curF) * 0.065;
       curS += (targetS - curS) * 0.065;
