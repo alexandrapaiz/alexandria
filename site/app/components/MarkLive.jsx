@@ -267,7 +267,7 @@ export default function MarkLive(props) {
           if (p >= 1 && !advancing) {
             // hold the finished book for a beat before flying down
             advancing = true;
-            setTimeout(() => glide(followTop()), 800);
+            setTimeout(() => glide(followTop()), 450);
           }
         } else if (e.deltaY > 0 && p >= 1) {
           // holding as the book: the page belongs to the coming flight
