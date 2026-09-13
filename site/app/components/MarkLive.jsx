@@ -113,13 +113,9 @@ export default function MarkLive(props) {
     let scrollF = -1;
     let raf = null;
 
-    const hub = svg.querySelector("#hubcut circle:last-of-type");
     const apply = () => {
       const pts = compute(curF, curS);
       polys.forEach((p, i) => p.setAttribute("points", pts[i]));
-      // in book mode a circular cut at the spine's foot trims the
-      // staggered page bottoms into one smooth arc
-      if (hub) hub.setAttribute("r", String(Math.max(curF, 0) * 95));
     };
     const tick = () => {
       // scroll owns the story (machine at the top, book once scrolled);
@@ -178,17 +174,9 @@ export default function MarkLive(props) {
       aria-hidden="true"
       {...props}
     >
-      <defs>
-        <mask id="hubcut" maskUnits="userSpaceOnUse" x="-70" y="0" width="1340" height="900">
-          <rect x="-70" y="0" width="1340" height="900" fill="white" />
-          <circle cx={PIVOT_X} cy={B} r="0" fill="black" />
-        </mask>
-      </defs>
-      <g mask="url(#hubcut)">
-        {compute(-1, 0).map((pts, i) => (
-          <polygon key={i} points={pts} fill="currentColor" />
-        ))}
-      </g>
+      {compute(-1, 0).map((pts, i) => (
+        <polygon key={i} points={pts} fill="currentColor" />
+      ))}
     </svg>
   );
 }
