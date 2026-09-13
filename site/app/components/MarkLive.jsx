@@ -130,14 +130,17 @@ function compute(f, sway) {
       lerp(ax, g[c][0], e),
       lerp(ay, g[c][1], e),
     ]);
-    // the mouse TURNS the pages in depth: each page rotates about its
-    // own vertical axis, its width foreshortening from flat toward
-    // edge-on as the cursor moves — pages turning, not the image
-    // tilting. Alive in every stage, rack and book alike.
-    const effS = sway;
+    // the mouse TURNS the pages in depth — LOCALLY: each page's turn
+    // depends on its distance from the cursor. The page under the
+    // cursor stays flat, its neighbors lean away hardest, and the wave
+    // decays outward, so the pages part around the mouse as it moves.
+    // Alive in every stage, rack and book alike. (sway = eased cursor
+    // x in viewBox units)
     const cxm = (corners[0][0] + corners[1][0]) / 2;
-    const cs = Math.cos(effS);
-    const sh = Math.sin(effS) * 8;
+    const u = (cxm - sway) / 240;
+    const th = 1.5 * u * Math.exp((-u * u) / 2);
+    const cs = Math.cos(th);
+    const sh = Math.sin(th) * 8;
     const turned = corners.map(([x, y]) => [cxm + (x - cxm) * cs + sh, y]);
     pts.push(turned.map(([x, y]) => `${x},${y}`).join(" "));
   }
@@ -157,8 +160,8 @@ export default function MarkLive(props) {
     // scrolling; the staged wheel choreography is desktop-only
     const mobile = window.matchMedia("(pointer: coarse)").matches;
     let curF = -1; // the page loads as the machine
-    let curS = 0;
-    let mouseF = 0;
+    let curS = PIVOT_X; // eased cursor x in viewBox units
+    let mouseVX = PIVOT_X;
     let p = 0; // morph progress at the top: 0 machine, 1 open book
     let lastScrollY = 0;
     let raf = null;
@@ -178,11 +181,10 @@ export default function MarkLive(props) {
       const s = (x) => x * x * (3 - 2 * x);
       const eased = s(s(p));
       const targetF = !mobile && lastScrollY > 130 ? 1 : eased * 2 - 1;
-      // the turn angle: center screen is flat, screen edges near edge-on
-      const targetS = mouseF * 1.25;
+      const targetS = mouseVX; // the wave's center follows the cursor
       curF += (targetF - curF) * 0.065;
       curS += (targetS - curS) * 0.065;
-      if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
+      if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.5) {
         apply();
         raf = requestAnimationFrame(tick);
       } else {
@@ -196,10 +198,12 @@ export default function MarkLive(props) {
       if (raf === null) raf = requestAnimationFrame(tick);
     };
     const onMove = (e) => {
-      // saturating gain: final states arrive well before the screen edges,
-      // so the mark spends real time fully open or fully racked
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
-      mouseF = Math.max(-1, Math.min(1, x * 1.9));
+      // map the cursor into the mark's own coordinate space, so each
+      // page can measure its distance to it
+      const r = svg.getBoundingClientRect();
+      if (r.width > 0) {
+        mouseVX = ((e.clientX - r.left) / r.width) * 1340 - 70;
+      }
       wake();
     };
     const setMorphing = (on) =>
