@@ -1,18 +1,16 @@
 import Link from "next/link";
-import Mark from "./components/Mark";
+import MarkLive from "./components/MarkLive";
 
 export default function Home() {
   return (
     <main>
       <section className="hero">
-        <h1 className="wordmark">
-          library{" "}
-          <span className="embed embed-mark">
-            <Mark />
-          </span>{" "}
-          of
-          <br />
+        <p className="hero-eyebrow">library of</p>
+        <h1 className="wordmark wordmark-row">
           alexandr.ia
+          <span className="embed embed-mark">
+            <MarkLive />
+          </span>
         </h1>
         <p className="hero-sub">
           The latest in AI research, read in full and distilled weekly:
