@@ -5,11 +5,13 @@ import { useEffect, useRef } from "react";
 // The mark holds both identities of the library, morphing along one axis
 // and swaying on another:
 //
-// - Mode (scroll only): the page LOADS as the MACHINE — a racked row of
-//   slabs sharing one lean, no spine. Scrolling down toward the text
-//   performs the transformation into the BOOK: pages rotate around the
-//   spine's foot and fan away from it in all directions, fully open
-//   before the text arrives.
+// - Mode (a staged scroll): the page LOADS as the MACHINE — a racked row
+//   of slabs sharing one lean, no spine. At the top of the page, wheel
+//   input is spent on the transformation itself while the page holds
+//   still: scrolling down turns the pages into the fully open BOOK, and
+//   only then does the page actually travel. Returning is symmetric —
+//   the page arrives back at the top as the open book, and further
+//   up-scroll folds it back into the rack.
 // - Sway: wherever the cursor is, every page tips a few degrees toward
 //   it, so the whole object follows the mouse a little at all times.
 //
@@ -109,13 +111,10 @@ export default function MarkLive(props) {
     let curF = -1; // the page loads as the machine
     let curS = 0;
     let mouseF = 0;
-    let scrollF = -1;
+    let p = 0; // morph progress at the top: 0 machine, 1 open book
+    let lastScrollY = 0;
     let raf = null;
-    // the book's dwell: on reaching the fully open book, hold it for a
-    // beat before letting it fold away — in either scroll direction
-    let bookArmed = false;
-    let bookHoldUntil = 0;
-    const BOOK_DWELL_MS = 1100;
+    const MORPH_WHEEL = 700; // wheel pixels that turn machine fully into book
 
     const apply = () => {
       const pts = compute(curF, curS);
@@ -125,17 +124,11 @@ export default function MarkLive(props) {
       // scroll alone tells the story: machine at the top, book once
       // scrolled. The mouse never changes the mode — it only sways the
       // pages toward the cursor.
-      const targetF = scrollF;
+      // while the page travels, the mark is the open book; at the top,
+      // the wheel-driven morph progress decides
+      const targetF = lastScrollY > 4 ? 1 : p * 2 - 1;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
-      const now = performance.now();
-      if (!bookArmed && curF >= 0.97) {
-        bookArmed = true;
-        bookHoldUntil = now + BOOK_DWELL_MS;
-      } else if (bookArmed && curF < 0.9) {
-        bookArmed = false;
-      }
-      const heldAsBook = bookArmed && now < bookHoldUntil && targetF < curF;
-      if (!heldAsBook) curF += (targetF - curF) * 0.1;
+      curF += (targetF - curF) * 0.1;
       curS += (targetS - curS) * 0.1;
       if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
         apply();
@@ -157,21 +150,34 @@ export default function MarkLive(props) {
       mouseF = Math.max(-1, Math.min(1, x * 1.9));
       wake();
     };
+    const onWheel = (e) => {
+      if (window.scrollY > 0) return; // page is traveling; let it scroll
+      if (e.deltaY > 0 && p < 1) {
+        // spend the down-scroll on opening the book, page held still
+        p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
+        e.preventDefault();
+        wake();
+      } else if (e.deltaY < 0 && p > 0) {
+        // spend the up-scroll on folding it back — perfectly symmetric
+        p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
+        e.preventDefault();
+        wake();
+      }
+    };
     const onScroll = () => {
-      // the story of the scroll: the page opens on the data center, and
-      // descending toward the text transforms it into the fully open
-      // book, complete before the text below is reached
-      // the book arrives fast — a fifth of a screen of scroll
-      const span = window.innerHeight * 0.2;
-      scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
+      lastScrollY = window.scrollY;
+      // any real travel (touch, keyboard, scrollbar) rides as the book
+      if (lastScrollY > 4) p = 1;
       wake();
     };
 
     window.addEventListener("mousemove", onMove);
+    window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => {
       window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
       if (raf !== null) cancelAnimationFrame(raf);
     };
