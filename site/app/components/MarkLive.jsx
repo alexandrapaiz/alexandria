@@ -82,7 +82,7 @@ function pageCorners(j) {
   // beside the spine, easing outward — with white air between strips
   if (j === 0) {
     // the spine sits a touch shorter than the pages flanking it
-    return [[PIVOT_X - 4, T + 26], [PIVOT_X + 4, T + 26], [PIVOT_X + 4, B - 26], [PIVOT_X - 4, B - 26]];
+    return [[PIVOT_X - 4, T + 44], [PIVOT_X + 4, T + 44], [PIVOT_X + 4, B - 44], [PIVOT_X - 4, B - 44]];
   }
   const n = Math.abs(j);
   const dir = Math.sign(j);
