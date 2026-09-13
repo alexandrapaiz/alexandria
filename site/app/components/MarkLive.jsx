@@ -137,10 +137,10 @@ function compute(f, sway) {
     // Alive in every stage, rack and book alike. (sway = eased cursor
     // x in viewBox units)
     const cxm = (corners[0][0] + corners[1][0]) / 2;
-    const u = (cxm - sway) / 240;
-    const th = 1.5 * u * Math.exp((-u * u) / 2);
+    const u = (cxm - sway) / 280;
+    const th = 0.55 * u * Math.exp((-u * u) / 2); // a gentle swell
     const cs = Math.cos(th);
-    const sh = Math.sin(th) * 8;
+    const sh = Math.sin(th) * 4;
     const turned = corners.map(([x, y]) => [cxm + (x - cxm) * cs + sh, y]);
     pts.push(turned.map(([x, y]) => `${x},${y}`).join(" "));
   }
