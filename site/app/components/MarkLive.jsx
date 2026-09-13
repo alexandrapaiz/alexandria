@@ -29,9 +29,8 @@ const T = 60;
 const B = 840;
 const PIVOT_X = 600; // the spine's foot — pages rotate about this point
 const DC_CENTER_S = 80;
-const BOOK_TURN = 0.26; // depth turn per page away from the spine
-const BOOK_RADIUS = 470; // how far the turned pages reach from the spine
-const BOOK_PAGE_W = 64; // a page's width when it faces the viewer flat
+const LEAF_IN = 30; // the open page starts this far from the spine
+const LEAF_OUT = 410; // ...and reaches this far
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
 
@@ -61,15 +60,18 @@ function restCorners(j) {
   return [[x0, T], [x1, T], [x1, B], [x0, B]];
 }
 
-function bookCorners(j) {
-  // an open codex seen head-on: the center page faces the viewer flat
-  // and wide, and each page outward TURNS AWAY from the spine in depth,
-  // foreshortening toward edge-on, placed along the sine of its turn
-  const th = j * BOOK_TURN;
-  const cx = PIVOT_X + Math.sin(th) * BOOK_RADIUS;
-  const w = Math.max(BOOK_PAGE_W * Math.cos(th), 6);
-  const x0 = cx - w / 2;
-  const x1 = cx + w / 2;
+function leafCorners(j) {
+  // the finished book is the OPEN SPREAD: every left page has turned
+  // flat into the left leaf, every right page into the right leaf,
+  // with the thin spine standing between them
+  if (j === 0) {
+    return [[PIVOT_X - 5, T], [PIVOT_X + 5, T], [PIVOT_X + 5, B], [PIVOT_X - 5, B]];
+  }
+  const dir = Math.sign(j);
+  const a = PIVOT_X + dir * LEAF_IN;
+  const b = PIVOT_X + dir * LEAF_OUT;
+  const x0 = Math.min(a, b);
+  const x1 = Math.max(a, b);
   return [[x0, T], [x1, T], [x1, B], [x0, B]];
 }
 
@@ -92,12 +94,26 @@ function compute(f, sway) {
   const pts = [];
   for (let j = -5; j <= 5; j++) {
     const rest = restCorners(j);
-    const goal = f >= 0 ? bookCorners(j) : machineCorners(j);
-    const m = f >= 0 ? k : t;
-    const corners = rest.map(([rx, ry], c) => [
-      lerp(rx, goal[c][0], m),
-      lerp(ry, goal[c][1], m),
-    ]);
+    let corners;
+    if (f >= 0) {
+      // the pages TURN, perpendicular to flat, away from the spine —
+      // a staggered cascade: outer pages turn first, the innermost
+      // last, each widening along the sine of its own turn
+      const startAt = (5 - Math.abs(j)) * 0.06;
+      const local = Math.min(1, Math.max(0, (k - startAt) / (1 - startAt)));
+      const e = Math.sin((local * Math.PI) / 2);
+      const goal = leafCorners(j);
+      corners = rest.map(([rx, ry], c) => [
+        lerp(rx, goal[c][0], e),
+        lerp(ry, goal[c][1], local),
+      ]);
+    } else {
+      const goal = machineCorners(j);
+      corners = rest.map(([rx, ry], c) => [
+        lerp(rx, goal[c][0], t),
+        lerp(ry, goal[c][1], t),
+      ]);
+    }
     // the mouse TURNS the pages in depth: each page rotates about its
     // own vertical axis, its width foreshortening from flat toward
     // edge-on as the cursor moves — pages turning, not the image tilting
