@@ -234,11 +234,10 @@ export default function MarkLive(props) {
       if (gliding) return;
       const sy = window.scrollY;
       const ft = followTop();
+      // only the true between-scenes band settles; everything at or
+      // past scene two is ordinary free scrolling
       if (sy > 90 && sy < ft - 40) {
         glide(sy < ft / 2 ? 0 : ft); // nearest scene wins
-      } else if (sy > ft + 24) {
-        // overshot the landing (momentum): ease back to the scene top
-        glide(ft);
       }
     };
     const onScroll = () => {

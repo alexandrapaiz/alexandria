@@ -133,7 +133,7 @@ export default function ShelvesLive(props) {
       // and only then does the flight to the archive follow
       if (p >= 1 && cur > 0.995 && !advancing && lastScrollY < 90) {
         advancing = true;
-        setTimeout(() => glide(sceneTop()), 1600);
+        setTimeout(() => glide(sceneTop()), 300);
       }
       // keep the frame loop alive while the LEDs are lit, so they breathe
       if (!settled || cur > 0.5) raf = requestAnimationFrame(tick);
@@ -201,11 +201,10 @@ export default function ShelvesLive(props) {
       if (gliding) return;
       const sy = window.scrollY;
       const st = sceneTop();
+      // only the true between-scenes band settles; everything at or
+      // past scene two is ordinary free scrolling
       if (sy > 90 && sy < st - 40) {
         glide(sy < st / 2 ? 0 : st); // nearest scene wins
-      } else if (sy > st + 24) {
-        // overshot the landing (momentum): ease back to the scene top
-        glide(st);
       }
     };
     const onScroll = () => {
