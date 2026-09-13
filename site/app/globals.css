@@ -305,10 +305,11 @@ a {
 
 /* ---------- library ---------- */
 
-.lib-head {
-  width: min(680px, 100%);
-  margin: 0 auto 34px;
-  text-align: left;
+/* scene one is slightly shorter than the viewport so the archive's
+   header peeks at the bottom — the same text the glide then carries to
+   the top of scene two */
+.lib-hero {
+  min-height: calc(84svh - 96px);
 }
 
 .lib-art {

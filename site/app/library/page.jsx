@@ -8,21 +8,11 @@ export default function Library() {
   const issues = listIssues();
   return (
     <main>
-      <section className="hero">
-        <div className="lib-head">
-          <p className="page-kicker">Archive</p>
-          <h1 className="page-title">The Library</h1>
-          <p className="page-intro">
-            The opening of each issue is free to read. Members read
-            everything.
-          </p>
-        </div>
+      <section className="hero lib-hero">
         <div className="lib-art">
           <ShelvesLive />
         </div>
       </section>
-
-      <div className="scene-gap" aria-hidden="true" />
 
       <section className="hero-follow lib-scene2">
         <p className="page-kicker">Archive</p>
