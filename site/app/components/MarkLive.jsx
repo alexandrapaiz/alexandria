@@ -2,15 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-// The mark holds both identities of the library. Mouse right (or the top
-// of the page) and it is a codex: pages fan open MIRRORED around the
-// central spine, shear deepening as it opens. Mouse left or scroll down
-// and it becomes the machine: eleven identical slabs, uniform width and
-// pitch, all leaning the SAME way — racked units seen down a data-center
-// aisle. Every bar is one unbroken page in both states; what morphs is
-// the symmetry. One parameter f in [-0.85, 0.85] drives it from cursor x
-// plus scroll depth, eased with a rAF lerp, mutating the SVG directly so
-// nothing re-renders. Still under prefers-reduced-motion.
+// The mark holds both identities of the library, morphing along one axis
+// and swaying on another:
+//
+// - Mode (mouse x + scroll): center screen is the resting emblem. The
+//   further RIGHT the cursor, the more BOOK: pages rotate around the
+//   spine's foot and fan away from it in all directions, drawn closer
+//   together like leaves of one codex. The further LEFT (or the deeper
+//   the scroll), the more MACHINE: pages return to their racked row, all
+//   sharing one lean at their own sizes.
+// - Sway: wherever the cursor is, every page tips a few degrees toward
+//   it, so the whole object follows the mouse a little at all times.
+//
+// Both are eased with a rAF lerp, mutate the SVG directly (no renders),
+// and stay still under prefers-reduced-motion.
 
 const SPEC = [
   [72, 170],
@@ -21,51 +26,73 @@ const SPEC = [
 ];
 const T = 60;
 const B = 840;
-const DC_CENTER_S = 80; // the center spine's lean once racked
+const PIVOT_X = 600; // the spine's foot — pages rotate about this point
+const DC_CENTER_S = 80;
+const BOOK_ANGLE = 0.13; // radians per page of fan spread
+const BOOK_GATHER = 30; // horizontal pitch in book mode (pages close up)
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
-function compute(f) {
-  // f in [-1, 1]: -1 full machine (far left), 0 the resting mark (the
-  // middle of the animation), +1 fully fanned book (far right)
-  const k = Math.max(f, 0); // book factor
-  const t = Math.max(-f, 0); // machine factor, complete only at f = -1
+function rot(x, y, ang) {
+  const dx = x - PIVOT_X;
+  const dy = y - B;
+  const c = Math.cos(ang);
+  const s = Math.sin(ang);
+  return [PIVOT_X + dx * c - dy * s, B + dx * s + dy * c];
+}
+
+function barSpec(j) {
+  if (j === 0) return [10, 0];
+  return SPEC[4 - (Math.abs(j) - 1)];
+}
+
+// corner sets in TL, TR, BR, BL order
+function restCorners(j) {
+  const [w, s] = barSpec(j);
+  const cx = PIVOT_X + j * 98;
+  const x0 = cx - w / 2;
+  const x1 = cx + w / 2;
+  if (j > 0) return [[x0, T + s], [x1, T], [x1, B - s], [x0, B]];
+  if (j < 0) return [[x0, T], [x1, T + s], [x1, B], [x0, B - s]];
+  return [[x0, T], [x1, T], [x1, B], [x0, B]];
+}
+
+function bookCorners(j) {
+  const [w] = barSpec(j);
+  const cx = PIVOT_X + j * BOOK_GATHER;
+  const x0 = cx - w / 2;
+  const x1 = cx + w / 2;
+  const ang = j * BOOK_ANGLE;
+  return [rot(x0, T, ang), rot(x1, T, ang), rot(x1, B, ang), rot(x0, B, ang)];
+}
+
+function machineCorners(j) {
+  // a rack aisle has no spine: the center bar collapses to nothing here
+  if (j === 0) {
+    return [[PIVOT_X, T], [PIVOT_X, T + DC_CENTER_S], [PIVOT_X, B], [PIVOT_X, B - DC_CENTER_S]];
+  }
+  const [w, s] = barSpec(j);
+  const cx = PIVOT_X + j * 98;
+  const x0 = cx - w / 2;
+  const x1 = cx + w / 2;
+  return [[x0, T], [x1, T + s], [x1, B], [x0, B - s]];
+}
+
+function compute(f, sway) {
+  // f in [-1, 1]: -1 machine, 0 resting emblem, +1 fanned codex
+  const k = Math.max(f, 0);
+  const t = Math.max(-f, 0);
   const pts = [];
-  // bars indexed -5..5 around the spine
   for (let j = -5; j <= 5; j++) {
-    const i = Math.abs(j) - 1;
-    const [w0, s0] = j === 0 ? [10, 0] : SPEC[4 - i];
-    // book side (mirrored fan): near side spreads and widens with k,
-    // far side tucks thin and edge-on
-    let w, s, cx;
-    if (j < 0) {
-      w = Math.max(w0 * (1 - 0.45 * k), 5);
-      s = s0 * (1 + 0.3 * k);
-      cx = 600 + j * 98 * (1 - 0.14 * k);
-    } else if (j > 0) {
-      w = Math.max(w0 * (1 + 0.45 * k), 5);
-      s = s0 * (1 - 0.3 * k);
-      cx = 600 + j * 98 * (1 + 0.14 * k);
-    } else {
-      w = w0;
-      s = 0;
-      cx = 600;
-    }
-    // book corner ys: left group leans one way, right group mirrors
-    const bookTL = j > 0 ? T + s : T;
-    const bookTR = j > 0 ? T : T + s;
-    const bookBL = j > 0 ? B : B - s;
-    const bookBR = j > 0 ? B - s : B;
-    // machine: sizes and pitch keep their character — only the lean
-    // unifies, every page sharing one direction at its own depth
-    const sDC = j === 0 ? DC_CENTER_S : s0;
-    const tl = lerp(bookTL, T, t);
-    const tr = lerp(bookTR, T + sDC, t);
-    const bl = lerp(bookBL, B - sDC, t);
-    const br = lerp(bookBR, B, t);
-    const x0 = cx - w / 2;
-    const x1 = cx + w / 2;
-    pts.push(`${x0},${tl} ${x1},${tr} ${x1},${br} ${x0},${bl}`);
+    const rest = restCorners(j);
+    const goal = f >= 0 ? bookCorners(j) : machineCorners(j);
+    const m = f >= 0 ? k : t;
+    const corners = rest.map(([rx, ry], c) => {
+      const x = lerp(rx, goal[c][0], m);
+      const y = lerp(ry, goal[c][1], m);
+      return rot(x, y, sway);
+    });
+    pts.push(corners.map(([x, y]) => `${x},${y}`).join(" "));
   }
   return pts;
 }
@@ -79,40 +106,47 @@ export default function MarkLive(props) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const polys = svg.querySelectorAll("polygon");
-    let cur = 0;
-    let target = 0;
+    let curF = 0;
+    let curS = 0;
     let mouseF = 0;
     let scrollF = 0;
     let raf = null;
 
-    const apply = (f) => {
-      const pts = compute(f);
+    const apply = () => {
+      const pts = compute(curF, curS);
       polys.forEach((p, i) => p.setAttribute("points", pts[i]));
     };
     const tick = () => {
-      cur += (target - cur) * 0.08;
-      if (Math.abs(target - cur) > 0.001) {
-        apply(cur);
+      const targetF = Math.max(-1, Math.min(1, mouseF + scrollF));
+      const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
+      curF += (targetF - curF) * 0.065;
+      curS += (targetS - curS) * 0.065;
+      if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
+        apply();
         raf = requestAnimationFrame(tick);
       } else {
-        cur = target;
-        apply(cur);
+        curF = targetF;
+        curS = targetS;
+        apply();
         raf = null;
       }
     };
-    const retarget = () => {
-      target = Math.max(-1, Math.min(1, mouseF + scrollF));
+    const wake = () => {
       if (raf === null) raf = requestAnimationFrame(tick);
     };
     const onMove = (e) => {
-      // symmetric 50/50 travel: center of the screen is the resting mark,
-      // full machine only at the far-left edge, full book at the far right
-      mouseF = (e.clientX / window.innerWidth - 0.5) * 2;
-      retarget();
+      // saturating gain: final states arrive well before the screen edges,
+      // so the mark spends real time fully open or fully racked
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseF = Math.max(-1, Math.min(1, x * 1.9));
+      wake();
     };
     const onScroll = () => {
-      scrollF = -Math.min(window.scrollY / 450, 1);
-      retarget();
+      // one hero's worth of scroll plays the entire transition, complete
+      // by the time the text below arrives
+      const span = window.innerHeight * 0.8;
+      scrollF = -Math.min(window.scrollY / span, 1);
+      wake();
     };
 
     window.addEventListener("mousemove", onMove);
@@ -128,13 +162,13 @@ export default function MarkLive(props) {
   return (
     <svg
       ref={ref}
-      viewBox="0 0 1200 900"
+      viewBox="-70 0 1340 900"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
       {...props}
     >
-      {compute(0).map((pts, i) => (
+      {compute(0, 0).map((pts, i) => (
         <polygon key={i} points={pts} fill="currentColor" />
       ))}
     </svg>

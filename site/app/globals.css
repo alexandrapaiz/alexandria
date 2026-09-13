@@ -132,15 +132,25 @@ a {
 /* ---------- landing ---------- */
 
 .hero {
-  padding: 96px 24px 40px;
+  min-height: calc(100svh - 96px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px 24px;
   text-align: center;
 }
 
 .wordmark {
-  font-size: clamp(52px, 10.5vw, 168px);
+  font-size: clamp(44px, min(10.5vw, 11.5svh), 150px);
   font-weight: 600;
   letter-spacing: -0.045em;
   line-height: 0.98;
+  text-align: center;
+}
+
+.hero-follow {
+  padding: 40px 24px 20px;
   text-align: center;
 }
 
@@ -163,9 +173,9 @@ a {
 }
 
 .hero-mark {
-  width: clamp(320px, 46vw, 600px);
+  width: min(560px, 60vw, 62svh);
   aspect-ratio: 1200 / 900;
-  margin: 28px auto 0;
+  margin: 24px auto 0;
   color: var(--ink);
 }
 

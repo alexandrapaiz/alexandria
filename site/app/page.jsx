@@ -13,6 +13,9 @@ export default function Home() {
         <div className="hero-mark">
           <MarkLive />
         </div>
+      </section>
+
+      <section className="hero-follow">
         <p className="hero-sub">
           The latest in AI research, read in full and distilled weekly:
           what&rsquo;s new, what&rsquo;s gaining acceptance, and what newer
