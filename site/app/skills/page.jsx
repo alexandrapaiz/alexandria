@@ -10,11 +10,11 @@ export default function Skills() {
       <p className="page-kicker">Skills</p>
       <h1 className="page-title">Research that installs.</h1>
       <p className="page-intro">
-        Validated procedures from the literature, packaged as skill files any
-        AI agent can load while it works. Each skill is traceable to the
-        claims and papers that justify it, which means it can be revised as
-        the research sharpens and retired with an explanation if the research
-        is overturned.
+        The best techniques the research has produced, packaged so your
+        agents can use them: harness design, training recipes, debugging
+        methods for multi-agent systems. Each skill is proven before it
+        ships, updated as the science sharpens, and retired with an
+        explanation if it is overturned.
       </p>
       {skills.map((s) => (
         <div key={s.name} className="skill-card">
