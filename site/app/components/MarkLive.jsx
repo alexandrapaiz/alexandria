@@ -133,9 +133,8 @@ function compute(f, sway) {
     // the mouse TURNS the pages in depth: each page rotates about its
     // own vertical axis, its width foreshortening from flat toward
     // edge-on as the cursor moves — pages turning, not the image
-    // tilting. The effect fades out as the radial book takes over,
-    // where widths are the fan itself.
-    const effS = sway * (f > 0 ? 1 - 0.85 * Math.min(f, 1) : 1);
+    // tilting. Alive in every stage, rack and book alike.
+    const effS = sway;
     const cxm = (corners[0][0] + corners[1][0]) / 2;
     const cs = Math.cos(effS);
     const sh = Math.sin(effS) * 8;
