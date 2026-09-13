@@ -17,27 +17,12 @@ html {
   text-rendering: optimizeLegibility;
 }
 
-/* the home page scrolls scene to scene: every scroll lands on a stage,
-   never in between */
-:root:has(.home-snap) {
-  scroll-snap-type: y mandatory;
-  /* snap positions account for the sticky nav, so scene one's resting
-     view is the page scrolled to the very top */
-  scroll-padding-top: 96px;
-}
-
+/* the home page scrolls scene to scene. No CSS snapping: the scene
+   choreography is owned entirely by the mark's script (wheel staging,
+   eased glides, settle guard), so no browser snap animation can ever
+   fight it or bounce */
 .scene-gap {
   height: 12svh;
-}
-
-:root:has(.home-snap) .footer {
-  scroll-snap-align: end;
-}
-
-/* while the wheel is being spent on the morph, the page creeps a little
-   and must not be snapped back; snap re-arms when the morph resolves */
-:root.morphing {
-  scroll-snap-type: none !important;
 }
 
 body {

@@ -221,12 +221,25 @@ export default function MarkLive(props) {
         glide(0);
       }
     };
+    // with no CSS snap, a settle guard finishes any scroll that would
+    // otherwise rest between the scenes: after input goes quiet, glide
+    // to whichever scene is nearer
+    let settleTimer = null;
+    const settle = () => {
+      if (gliding) return;
+      const sy = window.scrollY;
+      const ft = followTop();
+      if (sy > 90 && sy < ft - 40) {
+        glide(sy < ft / 2 && p < 1 ? 0 : ft);
+      }
+    };
     const onScroll = () => {
       lastScrollY = window.scrollY;
       // any real travel (touch, keyboard, scrollbar) rides as the book
       if (lastScrollY > 130) p = 1;
-      if (lastScrollY > 130 && !advancing && !gliding) setMorphing(false);
       if (advancing && lastScrollY < 60) advancing = false;
+      if (settleTimer) clearTimeout(settleTimer);
+      if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();
     };
 
@@ -239,6 +252,7 @@ export default function MarkLive(props) {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
       setMorphing(false);
+      if (settleTimer) clearTimeout(settleTimer);
       if (raf !== null) cancelAnimationFrame(raf);
     };
   }, []);
