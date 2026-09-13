@@ -29,8 +29,9 @@ const T = 60;
 const B = 840;
 const PIVOT_X = 600; // the spine's foot — pages rotate about this point
 const DC_CENTER_S = 80;
-const LEAF_IN = 30; // the open page starts this far from the spine
-const LEAF_OUT = 410; // ...and reaches this far
+const PAGE_W = 80; // a page's width when fully turned flat
+const PAGE_SLOT = 93; // even pitch between the turning pages
+const PAGE_IN = 55; // the innermost page's distance from the spine
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
 
@@ -60,18 +61,22 @@ function restCorners(j) {
   return [[x0, T], [x1, T], [x1, B], [x0, B]];
 }
 
-function leafCorners(j) {
-  // the finished book is the OPEN SPREAD: every left page has turned
-  // flat into the left leaf, every right page into the right leaf,
-  // with the thin spine standing between them
+function pageCorners(j) {
+  // the open book as visible ROTATION: every page frozen at its own
+  // stage of the turn away from the spine — nearly edge-on beside the
+  // spine, progressively wider outward, almost flat at the ends. The
+  // sequence of stages IS the page turning, laid out side by side.
   if (j === 0) {
-    return [[PIVOT_X - 5, T], [PIVOT_X + 5, T], [PIVOT_X + 5, B], [PIVOT_X - 5, B]];
+    return [[PIVOT_X - 4, T], [PIVOT_X + 4, T], [PIVOT_X + 4, B], [PIVOT_X - 4, B]];
   }
   const dir = Math.sign(j);
-  const a = PIVOT_X + dir * LEAF_IN;
-  const b = PIVOT_X + dir * LEAF_OUT;
-  const x0 = Math.min(a, b);
-  const x1 = Math.max(a, b);
+  const stage = (Math.abs(j) - 1) / 4; // 0 at the spine .. 1 outermost
+  const th = ((80 - 72 * stage) * Math.PI) / 180; // 80deg edge-on -> 8deg flat
+  const w = Math.max(PAGE_W * Math.cos(th), 10);
+  const xin = PIVOT_X + dir * (PAGE_IN + (Math.abs(j) - 1) * PAGE_SLOT);
+  const xout = xin + dir * w;
+  const x0 = Math.min(xin, xout);
+  const x1 = Math.max(xin, xout);
   return [[x0, T], [x1, T], [x1, B], [x0, B]];
 }
 
@@ -102,7 +107,7 @@ function compute(f, sway) {
       const startAt = (5 - Math.abs(j)) * 0.06;
       const local = Math.min(1, Math.max(0, (k - startAt) / (1 - startAt)));
       const e = Math.sin((local * Math.PI) / 2);
-      const goal = leafCorners(j);
+      const goal = pageCorners(j);
       corners = rest.map(([rx, ry], c) => [
         lerp(rx, goal[c][0], e),
         lerp(ry, goal[c][1], local),
