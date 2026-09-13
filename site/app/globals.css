@@ -15,6 +15,7 @@
 html {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -139,6 +140,7 @@ a {
   justify-content: center;
   padding: 12px 24px 24px;
   text-align: center;
+  scroll-snap-align: start;
 }
 
 .wordmark {
@@ -150,8 +152,32 @@ a {
 }
 
 .hero-follow {
-  padding: 40px 24px 20px;
+  min-height: calc(100svh - 96px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
   text-align: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* the text stage rises into place as it arrives; browsers without
+   scroll-driven animations simply play the rise once on load */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(26px); }
+  to { opacity: 1; transform: none; }
+}
+
+.hero-follow > * {
+  animation: rise 0.7s ease both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 55%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-follow > * { animation: none; }
 }
 
 .wordmark .embed {
@@ -204,7 +230,8 @@ a {
   display: flex;
   justify-content: center;
   gap: 64px;
-  padding: 84px 24px;
+  padding: 0 24px;
+  margin-top: 72px;
   flex-wrap: wrap;
 }
 

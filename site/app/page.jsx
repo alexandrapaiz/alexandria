@@ -29,20 +29,19 @@ export default function Home() {
             Read an issue
           </Link>
         </div>
-      </section>
-
-      <section className="stats">
-        <div className="stat">
-          <b>3,431</b>
-          <span>papers ingested this week</span>
-        </div>
-        <div className="stat">
-          <b>216</b>
-          <span>claims distilled</span>
-        </div>
-        <div className="stat">
-          <b>80</b>
-          <span>edges drawn in the graph</span>
+        <div className="stats">
+          <div className="stat">
+            <b>3,431</b>
+            <span>papers ingested this week</span>
+          </div>
+          <div className="stat">
+            <b>216</b>
+            <span>claims distilled</span>
+          </div>
+          <div className="stat">
+            <b>80</b>
+            <span>edges drawn in the graph</span>
+          </div>
         </div>
       </section>
 
