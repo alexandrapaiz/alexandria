@@ -89,10 +89,15 @@ function pageCorners(j) {
   const xin = PIVOT_X + dir * (STRIP_GAP0 + (n - 1) * STRIP_PITCH);
   const xout = xin + dir * stripW(n);
   const half = ((B - T) * stripPinch(n)) / 2;
+  // a very minor perspective aid: pages step slightly shorter toward
+  // the spine, their tops and feet tracing a shallow V into the book
+  const short = 26 * ((5 - n) / 4);
+  const yT = T + short;
+  const yB = B - short;
   if (dir > 0) {
-    return [[xin, BOOK_CY - half], [xout, T], [xout, B], [xin, BOOK_CY + half]];
+    return [[xin, BOOK_CY - half], [xout, yT], [xout, yB], [xin, BOOK_CY + half]];
   }
-  return [[xout, T], [xin, BOOK_CY - half], [xin, BOOK_CY + half], [xout, B]];
+  return [[xout, yT], [xin, BOOK_CY - half], [xin, BOOK_CY + half], [xout, yB]];
 }
 
 function machineCorners(j) {
