@@ -104,8 +104,10 @@ export default function ShelvesLive(props) {
     let flightTimer = null; // the scheduled flight — cancelable by up-scroll
 
     const s = (x) => x * x * (3 - 2 * x);
+    let ledCache = null; // last led positions, for cheap pulse-only frames
     const apply = (v, tms) => {
       const { lines, leds } = shapes(v);
+      ledCache = leds;
       lineEls.forEach((el, i) => {
         const [x1, y1, x2, y2] = lines[i];
         el.setAttribute("x1", x1);
@@ -128,12 +130,29 @@ export default function ShelvesLive(props) {
         glowEls[i].setAttribute("opacity", (0.85 * lit).toFixed(3));
       });
     };
+    // only the glow breathes on an idle frame — no geometry recompute,
+    // no line rewrites, just the pulse
+    const pulse = (tms) => {
+      if (!ledCache) return;
+      const lit = Math.max(0, (cur - 0.45) / 0.55);
+      const r = 3.4 * lit;
+      ledCache.forEach((pos, i) => {
+        const breath = 1 + 0.2 * Math.sin(tms / 300 + i * 1.7);
+        glowEls[i].setAttribute("r", r * 2.5 * breath);
+      });
+    };
     const tick = (tms) => {
+      // the artwork freezes during a flight: the glide owns every frame
+      if (gliding) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       const target = !mobile && lastScrollY > 130 ? 1 : s(s(p));
       cur += (target - cur) * 0.065;
       const settled = Math.abs(target - cur) <= 0.0005;
       if (settled) cur = target;
-      apply(cur, tms || performance.now());
+      if (settled) pulse(tms || performance.now());
+      else apply(cur, tms || performance.now());
       // the flight arms only from a downward gesture — never just from
       // standing at the top as the rack (e.g. after gliding back up) —
       // and launches promptly; the morph's tail finishes during the
