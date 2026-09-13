@@ -67,12 +67,13 @@ function bookCorners(j) {
 }
 
 function machineCorners(j) {
-  // a rack aisle has no spine: the center bar collapses to nothing here
+  // a rack aisle has no spine: the center bar collapses to nothing, and
+  // the ten slabs redistribute to one uniform pitch so no gap remains
   if (j === 0) {
     return [[PIVOT_X, T], [PIVOT_X, T + DC_CENTER_S], [PIVOT_X, B], [PIVOT_X, B - DC_CENTER_S]];
   }
   const [w, s] = barSpec(j);
-  const cx = PIVOT_X + j * 98;
+  const cx = PIVOT_X + Math.sign(j) * (Math.abs(j) - 0.5) * 99;
   const x0 = cx - w / 2;
   const x1 = cx + w / 2;
   return [[x0, T], [x1, T + s], [x1, B], [x0, B - s]];
@@ -145,7 +146,7 @@ export default function MarkLive(props) {
       // the story of the scroll: the page opens on the data center, and
       // descending toward the text transforms it into the fully open
       // book, complete before the text below is reached
-      const span = window.innerHeight * 0.5;
+      const span = window.innerHeight * 0.3;
       scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
       wake();
     };
