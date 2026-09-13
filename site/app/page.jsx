@@ -5,9 +5,10 @@ export default function Home() {
   return (
     <main>
       <section className="hero">
-        <p className="hero-eyebrow">library of</p>
-        <h1 className="wordmark wordmark-row">
-          alexandr.ia
+        <h1 className="wordmark">
+          library of
+          <br />
+          alexandr.ia{" "}
           <span className="embed embed-mark">
             <MarkLive />
           </span>

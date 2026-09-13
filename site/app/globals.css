@@ -162,26 +162,11 @@ a {
   display: block;
 }
 
-.hero-eyebrow {
-  font-size: clamp(15px, 2vw, 21px);
-  letter-spacing: 0.32em;
-  margin-bottom: 14px;
-  padding-left: 0.32em;
-}
-
-.wordmark-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.16em;
-  font-size: clamp(56px, 12.5vw, 196px);
-}
-
 .wordmark .embed-mark {
-  width: 1.02em;
-  height: 0.78em;
+  width: 0.95em;
+  height: 0.72em;
   color: var(--ink);
-  top: 0;
+  top: 0.02em;
 }
 
 .wordmark .embed-mark svg {

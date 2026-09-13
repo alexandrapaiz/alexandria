@@ -2,11 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
-// The spine mark, alive: as the mouse moves across the page the fan of
-// pages leans and opens a little, like a book easing open and closed.
-// Geometry matches Mark.jsx at rest (f = 0); f in [-0.65, 0.65] deepens
-// the shear and spreads the spines. DOM is mutated directly inside rAF so
-// nothing re-renders, and the listener respects prefers-reduced-motion.
+// The spine mark, alive: the pages fan toward the cursor over the central
+// spine. On the side the mouse is on, spines spread apart and widen, so
+// more of each page's rectangle turns into view; on the far side they tuck
+// thin toward the spine. Geometry matches Mark.jsx at rest (f = 0). DOM is
+// mutated directly inside rAF so nothing re-renders, and the listener
+// respects prefers-reduced-motion.
 
 const SPEC = [
   [72, 170],
@@ -20,18 +21,27 @@ const T = 60;
 const B = H - 60;
 
 function compute(f) {
+  // f > 0: mouse right of center — right pages fan open (spread + widen,
+  // flatter shear), left pages tuck (narrow, deeper shear). f < 0 mirrors.
+  const openR = 1 + 0.14 * f;
+  const openL = 1 - 0.14 * f;
+  const faceR = Math.max(1 + 0.45 * f, 0.2);
+  const faceL = Math.max(1 - 0.45 * f, 0.2);
   const pts = [];
   for (let i = 0; i < 5; i++) {
     const [w, s0] = SPEC[i];
-    const s = s0 * (1 + 0.5 * f);
-    const spread = (5 - i) * 9 * f;
-    const cxL = 110 + i * 98 - spread;
-    const cxR = 1090 - i * 98 + spread;
+    const d = 490 - i * 98;
+    const wL = Math.max(w * faceL, 5);
+    const wR = Math.max(w * faceR, 5);
+    const sL = s0 * (1 + 0.3 * f);
+    const sR = s0 * (1 - 0.3 * f);
+    const cxL = 600 - d * openL;
+    const cxR = 600 + d * openR;
     pts.push(
-      `${cxL - w / 2},${T} ${cxL + w / 2},${T + s} ${cxL + w / 2},${B} ${cxL - w / 2},${B - s}`
+      `${cxL - wL / 2},${T} ${cxL + wL / 2},${T + sL} ${cxL + wL / 2},${B} ${cxL - wL / 2},${B - sL}`
     );
     pts.push(
-      `${cxR - w / 2},${T + s} ${cxR + w / 2},${T} ${cxR + w / 2},${B - s} ${cxR - w / 2},${B}`
+      `${cxR - wR / 2},${T + sR} ${cxR + wR / 2},${T} ${cxR + wR / 2},${B - sR} ${cxR - wR / 2},${B}`
     );
   }
   return pts;
@@ -67,7 +77,7 @@ export default function MarkLive(props) {
     };
     const onMove = (e) => {
       const x = e.clientX / window.innerWidth - 0.5;
-      target = Math.max(-0.65, Math.min(0.65, x * 1.4));
+      target = Math.max(-0.8, Math.min(0.8, x * 1.8));
       if (raf === null) raf = requestAnimationFrame(tick);
     };
 
