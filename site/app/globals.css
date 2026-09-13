@@ -305,11 +305,23 @@ a {
 
 /* ---------- library ---------- */
 
-/* scene one is slightly shorter than the viewport so the archive's
-   header peeks at the bottom — the same text the glide then carries to
-   the top of scene two */
+/* scene one is shorter than the viewport so the archive's header —
+   kicker, The Library in display type, intro — rides visibly at the
+   bottom: the same text the glide then carries to the top of scene two */
 .lib-hero {
-  min-height: calc(84svh - 96px);
+  min-height: calc(72svh - 96px);
+}
+
+/* the shared header is always visible (it belongs to both scenes);
+   only the issue list rises on arrival */
+.lib-scene2 > * {
+  animation: none;
+}
+
+.lib-scene2 .issue-list {
+  animation: rise 0.7s ease both;
+  animation-timeline: view();
+  animation-range: entry 40% entry 85%;
 }
 
 .lib-art {

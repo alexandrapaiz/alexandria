@@ -86,7 +86,8 @@ export default function ShelvesLive(props) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const lineEls = svg.querySelectorAll("line");
-    const ledEls = svg.querySelectorAll("circle");
+    const dotEls = svg.querySelectorAll(".led-dots circle");
+    const glowEls = svg.querySelectorAll(".led-glows circle");
     let cur = 0;
     let p = 0;
     let lastScrollY = 0;
@@ -94,7 +95,7 @@ export default function ShelvesLive(props) {
     const MORPH_WHEEL = 700;
 
     const s = (x) => x * x * (3 - 2 * x);
-    const apply = (v) => {
+    const apply = (v, tms) => {
       const { lines, leds } = shapes(v);
       lineEls.forEach((el, i) => {
         const [x1, y1, x2, y2] = lines[i];
@@ -103,25 +104,30 @@ export default function ShelvesLive(props) {
         el.setAttribute("x2", x2);
         el.setAttribute("y2", y2);
       });
-      // LEDs light through the second half of the transformation
-      const r = 3.4 * Math.max(0, (v - 0.45) / 0.55);
-      ledEls.forEach((el, i) => {
-        el.setAttribute("cx", leds[i][0]);
-        el.setAttribute("cy", leds[i][1]);
-        el.setAttribute("r", r);
+      // LEDs light through the second half of the transformation, each
+      // glowing with a slow breath once lit
+      const lit = Math.max(0, (v - 0.45) / 0.55);
+      const r = 3.4 * lit;
+      leds.forEach(([cx, cy], i) => {
+        dotEls[i].setAttribute("cx", cx);
+        dotEls[i].setAttribute("cy", cy);
+        dotEls[i].setAttribute("r", r);
+        const breath = 1 + 0.2 * Math.sin(tms / 300 + i * 1.7);
+        glowEls[i].setAttribute("cx", cx);
+        glowEls[i].setAttribute("cy", cy);
+        glowEls[i].setAttribute("r", r * 2.5 * breath);
+        glowEls[i].setAttribute("opacity", (0.85 * lit).toFixed(3));
       });
     };
-    const tick = () => {
+    const tick = (tms) => {
       const target = lastScrollY > 130 ? 1 : s(s(p));
       cur += (target - cur) * 0.1;
-      if (Math.abs(target - cur) > 0.0005) {
-        apply(cur);
-        raf = requestAnimationFrame(tick);
-      } else {
-        cur = target;
-        apply(cur);
-        raf = null;
-      }
+      const settled = Math.abs(target - cur) <= 0.0005;
+      if (settled) cur = target;
+      apply(cur, tms || performance.now());
+      // keep the frame loop alive while the LEDs are lit, so they breathe
+      if (!settled || cur > 0.5) raf = requestAnimationFrame(tick);
+      else raf = null;
     };
     const wake = () => {
       if (raf === null) raf = requestAnimationFrame(tick);
@@ -162,9 +168,10 @@ export default function ShelvesLive(props) {
           window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p >= 1 && !advancing) {
-            // linger on the finished rack before flying to the archive
+            // linger on the finished rack, lights breathing, before the
+            // flight to the archive
             advancing = true;
-            setTimeout(() => glide(sceneTop()), 1400);
+            setTimeout(() => glide(sceneTop()), 2200);
           }
         } else if (e.deltaY < 0 && p > 0) {
           e.preventDefault();
@@ -218,12 +225,24 @@ export default function ShelvesLive(props) {
       aria-hidden="true"
       {...props}
     >
+      <defs>
+        <filter id="ledglow" x="-200%" y="-200%" width="500%" height="500%">
+          <feGaussianBlur stdDeviation="5" />
+        </filter>
+      </defs>
       {init.lines.map(([x1, y1, x2, y2], i) => (
         <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" strokeWidth={W} />
       ))}
-      {init.leds.map(([cx, cy], i) => (
-        <circle key={`l${i}`} cx={cx} cy={cy} r="0" fill="#fff" />
-      ))}
+      <g className="led-glows" filter="url(#ledglow)">
+        {init.leds.map(([cx, cy], i) => (
+          <circle key={`g${i}`} cx={cx} cy={cy} r="0" fill="#fff" opacity="0" />
+        ))}
+      </g>
+      <g className="led-dots">
+        {init.leds.map(([cx, cy], i) => (
+          <circle key={`l${i}`} cx={cx} cy={cy} r="0" fill="#fff" />
+        ))}
+      </g>
     </svg>
   );
 }
