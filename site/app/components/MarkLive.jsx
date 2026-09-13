@@ -5,12 +5,12 @@ import { useEffect, useRef } from "react";
 // The mark holds both identities of the library, morphing along one axis
 // and swaying on another:
 //
-// - Mode (mouse x + scroll): center screen is the resting emblem. The
-//   further RIGHT the cursor, the more BOOK: pages rotate around the
-//   spine's foot and fan away from it in all directions, drawn closer
-//   together like leaves of one codex. The further LEFT (or the deeper
-//   the scroll), the more MACHINE: pages return to their racked row, all
-//   sharing one lean at their own sizes.
+// - Mode (scroll + mouse x): the page LOADS as the MACHINE — a racked
+//   row of slabs sharing one lean, no spine. Scrolling down toward the
+//   text performs the transformation into the BOOK: pages rotate around
+//   the spine's foot and fan away from it in all directions, fully open
+//   before the text arrives. The mouse still shifts the balance: right
+//   is bookward, left is machineward.
 // - Sway: wherever the cursor is, every page tips a few degrees toward
 //   it, so the whole object follows the mouse a little at all times.
 //
@@ -106,10 +106,10 @@ export default function MarkLive(props) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const polys = svg.querySelectorAll("polygon");
-    let curF = 0;
+    let curF = -1; // the page loads as the machine
     let curS = 0;
     let mouseF = 0;
-    let scrollF = 0;
+    let scrollF = -1;
     let raf = null;
 
     const apply = () => {
@@ -142,10 +142,11 @@ export default function MarkLive(props) {
       wake();
     };
     const onScroll = () => {
-      // one hero's worth of scroll plays the entire transition, complete
-      // by the time the text below arrives
-      const span = window.innerHeight * 0.8;
-      scrollF = -Math.min(window.scrollY / span, 1);
+      // the story of the scroll: the page opens on the data center, and
+      // descending toward the text transforms it into the fully open
+      // book, complete before the text below is reached
+      const span = window.innerHeight * 0.5;
+      scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
       wake();
     };
 
@@ -168,7 +169,7 @@ export default function MarkLive(props) {
       aria-hidden="true"
       {...props}
     >
-      {compute(0, 0).map((pts, i) => (
+      {compute(-1, 0).map((pts, i) => (
         <polygon key={i} points={pts} fill="currentColor" />
       ))}
     </svg>
