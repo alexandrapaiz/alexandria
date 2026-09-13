@@ -41,10 +41,12 @@ const DC_S = 120; // ...and one lean
 const BOOK_CY = (T + B) / 2;
 // strips sit slightly OUTSIDE their rack slots, so during the morph
 // every page drifts outward — from the spine, never into it
-const STRIP_GAP0 = 70; // the innermost strip's distance from the spine
+const STRIP_GAP0 = 40; // the innermost strip's distance from the spine
 const STRIP_PITCH = 96; // slot-to-slot distance of the strips
-const stripW = (n) => 22 + ((n - 1) / 4) * 34; // thin inner .. wide outer
-const stripPinch = (n) => 0.3 + ((n - 1) / 4) * 0.55; // spine-edge height frac
+const stripW = (n) => 46 + ((n - 1) / 4) * 18; // near-even, widest outside
+// the pinch develops fully: the innermost page narrows almost to a
+// point at the spine (the X closes), the outermost stays near-square
+const stripPinch = (n) => 0.05 + 0.85 * Math.pow((n - 1) / 4, 0.8);
 const DRAW_ORDER = [-1, -2, -3, -4, -5, 1, 2, 3, 4, 5, 0];
 
 const lerp = (a, b, t) => a + (b - a) * t;
