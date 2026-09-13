@@ -163,10 +163,12 @@ a {
 }
 
 .wordmark .embed-mark {
-  width: 0.95em;
-  height: 0.72em;
+  width: 2em;
+  height: 1.5em;
   color: var(--ink);
-  top: 0.02em;
+  top: 0;
+  vertical-align: middle;
+  margin-left: 0.04em;
 }
 
 .wordmark .embed-mark svg {
