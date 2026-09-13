@@ -252,31 +252,17 @@ a {
   color: var(--gray);
 }
 
-.tri {
-  max-width: 1040px;
+.about {
+  max-width: 640px;
   margin: 0 auto;
-  padding: 40px 40px 140px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 48px;
-}
-
-.tri h3 {
+  padding: 48px 24px 150px;
   font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin-bottom: 10px;
-}
-
-.tri p {
-  font-size: 15px;
+  line-height: 1.68;
   color: var(--gray);
-  line-height: 1.55;
 }
 
 @media (max-width: 780px) {
   .nav-links { display: none; }
-  .tri { grid-template-columns: 1fr; }
 }
 
 /* ---------- inner pages ---------- */
