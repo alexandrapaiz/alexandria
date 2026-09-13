@@ -32,17 +32,22 @@ const DC_CENTER_S = 80;
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
 
-// The open book faces the viewer, parallel to the screen, and the
-// turning pages stand OUT of it, perpendicular. Every page hinges on
-// the central spine. Seen head-on with perspective: a page mid-turn
-// is horizontally thin but TALLER (its free edge is nearest the eye);
-// a settled page lies wide at page height. Thin paper seams keep the
-// nested pages readable.
+// The FLARE-OUT book: pages hinged on the spine fan open toward the
+// viewer. Each page is PINCHED at the spine (its hinge edge short and
+// vertically centered — it sits deeper, away from the eye) and flares
+// to FULL height at its free edge (nearest the eye). Nested at graded
+// reaches, the pages form a bowtie opening outward, their slanted
+// edges drawn by the paper seams.
 const BOOK_CY = (T + B) / 2;
-const PAGE_L = 430; // a page's reach from the spine when it lies flat
-const PAGE_PERSP = 0.04; // a whisper of growth toward the eye — a book's
-// body stays rectangular; only the near-spine pages lift slightly
-const HINGE = 4; // the hinge sits this close beside the spine line
+const HINGE = 6; // the hinge sits this close beside the spine line
+const SPINE_H = 300; // a page's height where it meets the spine (pinch)
+const PAGE_REACH_MIN = 95; // the innermost page's reach from the spine
+const PAGE_REACH_MAX = 430; // ...and the outermost page's
+const pageReach = (n) =>
+  PAGE_REACH_MIN + ((n - 1) / 4) * (PAGE_REACH_MAX - PAGE_REACH_MIN);
+// paint order: big pages first, small on top, spine last — so every
+// nested page's seams stay visible
+const DRAW_ORDER = [-1, -2, -3, -4, -5, 1, 2, 3, 4, 5, 0];
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -71,23 +76,22 @@ function restCorners(j) {
 }
 
 function pageCorners(j) {
-  // a page hinged on the spine, caught at its own stage of the turn:
-  // the hinge edge is a full-height vertical at the spine; the free
-  // edge sits at cos(theta) reach with sin(theta) perspective growth —
-  // standing pages thin and tall, settled pages wide at page height
+  // a page flaring out of the spine: short hinge edge at the spine
+  // (deep, away from the eye), full-height free edge at its reach
+  // (toward the eye) — a trapezoid widening AWAY from the spine
   if (j === 0) {
     return [[PIVOT_X - 4, T], [PIVOT_X + 4, T], [PIVOT_X + 4, B], [PIVOT_X - 4, B]];
   }
+  const n = Math.abs(j);
   const dir = Math.sign(j);
-  const stage = (Math.abs(j) - 1) / 4; // 0 beside the spine .. 1 outermost
-  const th = ((82 - 78 * stage) * Math.PI) / 180; // standing -> almost flat
   const xs = PIVOT_X + dir * HINGE;
-  const xe = PIVOT_X + dir * (HINGE + PAGE_L * Math.cos(th));
-  const half = ((B - T) / 2) * (1 + PAGE_PERSP * Math.sin(th));
+  const xe = PIVOT_X + dir * pageReach(n);
+  const yS0 = BOOK_CY - SPINE_H / 2;
+  const yS1 = BOOK_CY + SPINE_H / 2;
   if (dir > 0) {
-    return [[xs, T], [xe, BOOK_CY - half], [xe, BOOK_CY + half], [xs, B]];
+    return [[xs, yS0], [xe, T], [xe, B], [xs, yS1]];
   }
-  return [[xe, BOOK_CY - half], [xs, T], [xs, B], [xe, BOOK_CY + half]];
+  return [[xe, T], [xs, yS0], [xs, yS1], [xe, B]];
 }
 
 function machineCorners(j) {
@@ -107,7 +111,7 @@ function compute(f, sway) {
   const k = Math.max(f, 0);
   const t = Math.max(-f, 0);
   const pts = [];
-  for (let j = -5; j <= 5; j++) {
+  for (const j of DRAW_ORDER) {
     const rest = restCorners(j);
     let corners;
     if (f >= 0) {
