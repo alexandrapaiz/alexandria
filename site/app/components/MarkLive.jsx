@@ -111,6 +111,11 @@ export default function MarkLive(props) {
     let mouseF = 0;
     let scrollF = -1;
     let raf = null;
+    // the book's dwell: on reaching the fully open book, hold it for a
+    // beat before letting it fold away — in either scroll direction
+    let bookArmed = false;
+    let bookHoldUntil = 0;
+    const BOOK_DWELL_MS = 550;
 
     const apply = () => {
       const pts = compute(curF, curS);
@@ -122,7 +127,15 @@ export default function MarkLive(props) {
       // pages toward the cursor.
       const targetF = scrollF;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
-      curF += (targetF - curF) * 0.1;
+      const now = performance.now();
+      if (!bookArmed && curF >= 0.97) {
+        bookArmed = true;
+        bookHoldUntil = now + BOOK_DWELL_MS;
+      } else if (bookArmed && curF < 0.9) {
+        bookArmed = false;
+      }
+      const heldAsBook = bookArmed && now < bookHoldUntil && targetF < curF;
+      if (!heldAsBook) curF += (targetF - curF) * 0.1;
       curS += (targetS - curS) * 0.1;
       if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
         apply();
