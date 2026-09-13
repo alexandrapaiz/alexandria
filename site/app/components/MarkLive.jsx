@@ -111,15 +111,19 @@ function compute(f, sway) {
     const rest = restCorners(j);
     let corners;
     if (f >= 0) {
-      // the pages TURN, perpendicular to flat, away from the spine —
-      // a staggered cascade: outer pages turn first, the innermost
-      // last, each widening along the sine of its own turn
-      const startAt = (5 - Math.abs(j)) * 0.06;
+      // the pages FLARE OPEN from the spine outward: the columns
+      // nearest the spine become the far-reaching leaves (their free
+      // edges sweep outward), the cascade starts at the spine and
+      // travels out, and every page arcs outward mid-flight before
+      // settling — opening, never closing in
+      const inv = j === 0 ? 0 : Math.sign(j) * (6 - Math.abs(j));
+      const startAt = j === 0 ? 0 : (Math.abs(j) - 1) * 0.06;
       const local = Math.min(1, Math.max(0, (k - startAt) / (1 - startAt)));
       const e = Math.sin((local * Math.PI) / 2);
-      const goal = pageCorners(j);
+      const arc = j === 0 ? 0 : Math.sign(j) * 90 * Math.sin(local * Math.PI);
+      const goal = pageCorners(inv);
       corners = rest.map(([rx, ry], c) => [
-        lerp(rx, goal[c][0], e),
+        lerp(rx, goal[c][0], e) + arc,
         lerp(ry, goal[c][1], local),
       ]);
     } else {
