@@ -3,14 +3,14 @@
 import { useEffect, useRef } from "react";
 
 // The mark holds both identities of the library. Mouse right (or the top
-// of the page) and it is a codex: pages fan open over the central spine,
-// shear deepening, the near side turning its faces into view. Mouse left
-// or scroll down and it squares into the machine: shears flatten and the
-// widths equalize into a uniform row of full-height slabs. Every bar stays
-// one unbroken page in both states. One parameter f in [-0.85, 0.85]
-// drives the morph from cursor x plus scroll depth, eased with a rAF
-// lerp, mutating the SVG directly so nothing re-renders. Still under
-// prefers-reduced-motion.
+// of the page) and it is a codex: pages fan open MIRRORED around the
+// central spine, shear deepening as it opens. Mouse left or scroll down
+// and it becomes the machine: eleven identical slabs, uniform width and
+// pitch, all leaning the SAME way — racked units seen down a data-center
+// aisle. Every bar is one unbroken page in both states; what morphs is
+// the symmetry. One parameter f in [-0.85, 0.85] drives it from cursor x
+// plus scroll depth, eased with a rAF lerp, mutating the SVG directly so
+// nothing re-renders. Still under prefers-reduced-motion.
 
 const SPEC = [
   [72, 170],
@@ -21,35 +21,52 @@ const SPEC = [
 ];
 const T = 60;
 const B = 840;
+const DC_W = 46; // slab width in the machine state
+const DC_S = 115; // shared lean of every slab in the machine state
+
+const lerp = (a, b, t) => a + (b - a) * t;
 
 function compute(f) {
   const k = Math.max(f, 0); // book factor
-  const t = Math.min(Math.max(-f, 0) / 0.7, 1); // brick factor, complete by f = -0.7
+  const t = Math.min(Math.max(-f, 0) / 0.7, 1); // machine factor, complete by f = -0.7
   const pts = [];
-  for (let i = 0; i < 5; i++) {
-    const [w0, s0] = SPEC[i];
-    const d = 490 - i * 98;
-    // book: near side spreads and widens, far side tucks thin and edge-on
-    let wL = Math.max(w0 * (1 - 0.45 * k), 5);
-    let wR = Math.max(w0 * (1 + 0.45 * k), 5);
-    let sL = s0 * (1 + 0.3 * k);
-    let sR = s0 * (1 - 0.3 * k);
-    const cxL = 600 - d * (1 - 0.14 * k);
-    const cxR = 600 + d * (1 + 0.14 * k);
-    // brick: converge on uniform square-ended slabs
-    wL += (46 - wL) * t;
-    wR += (46 - wR) * t;
-    sL *= 1 - t;
-    sR *= 1 - t;
-    pts.push(
-      `${cxL - wL / 2},${T} ${cxL + wL / 2},${T + sL} ${cxL + wL / 2},${B} ${cxL - wL / 2},${B - sL}`
-    );
-    pts.push(
-      `${cxR - wR / 2},${T + sR} ${cxR + wR / 2},${T} ${cxR + wR / 2},${B - sR} ${cxR - wR / 2},${B}`
-    );
+  // bars indexed -5..5 around the spine; pitch is already uniform (98)
+  for (let j = -5; j <= 5; j++) {
+    const i = Math.abs(j) - 1;
+    const [w0, s0] = j === 0 ? [10, 0] : SPEC[4 - i];
+    // book state (mirrored fan): near side spreads and widens with k,
+    // far side tucks thin and edge-on
+    let w, s, cx;
+    if (j < 0) {
+      w = Math.max(w0 * (1 - 0.45 * k), 5);
+      s = s0 * (1 + 0.3 * k);
+      cx = 600 + j * 98 * (1 - 0.14 * k);
+    } else if (j > 0) {
+      w = Math.max(w0 * (1 + 0.45 * k), 5);
+      s = s0 * (1 - 0.3 * k);
+      cx = 600 + j * 98 * (1 + 0.14 * k);
+    } else {
+      w = w0;
+      s = 0;
+      cx = 600;
+    }
+    // book corner ys: left group leans one way, right group mirrors,
+    // center stands straight
+    const bookTL = j > 0 ? T + s : T;
+    const bookTR = j > 0 ? T : T + s;
+    const bookBL = j > 0 ? B : B - s;
+    const bookBR = j > 0 ? B - s : B;
+    // machine state: every slab identical, same lean, uniform pitch
+    const W = lerp(w, DC_W, t);
+    const CX = lerp(cx, 600 + j * 98, t);
+    const tl = lerp(bookTL, T, t);
+    const tr = lerp(bookTR, T + DC_S, t);
+    const bl = lerp(bookBL, B - DC_S, t);
+    const br = lerp(bookBR, B, t);
+    const x0 = CX - W / 2;
+    const x1 = CX + W / 2;
+    pts.push(`${x0},${tl} ${x1},${tr} ${x1},${br} ${x0},${bl}`);
   }
-  const wC = 10 + 36 * t;
-  pts.push(`${600 - wC / 2},${T} ${600 + wC / 2},${T} ${600 + wC / 2},${B} ${600 - wC / 2},${B}`);
   return pts;
 }
 
