@@ -274,15 +274,12 @@ export default function MarkLive(props) {
             }, 450);
           }
         } else if (e.deltaY > 0 && p >= 1) {
-          // standing at the top as the book: a down-scroll relaunches
-          // the flight (e.g. after gliding back up from scene two)
+          // standing at the top as the book: the book is already made,
+          // so a down-scroll flies at once — no hold
           e.preventDefault();
           if (!advancing) {
             advancing = true;
-            flightTimer = setTimeout(() => {
-              flightTimer = null;
-              glide(followTop());
-            }, 450);
+            glide(followTop());
           }
         } else if (e.deltaY < 0 && p > 0) {
           // spend the up-scroll on folding it back — symmetric; a
