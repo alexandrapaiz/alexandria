@@ -212,10 +212,11 @@ export default function ShelvesLive(props) {
       lastScrollY = window.scrollY;
       if (lastScrollY > 130) p = 1;
       if (advancing && lastScrollY < 60) advancing = false;
-      // reveal the archive only as the header reaches the top
-      document
-        .querySelector(".lib-scene2")
-        ?.classList.toggle("arrived", lastScrollY > sceneTop() - 180);
+      // reveal the archive only as the header reaches the top, and fade
+      // the shelf out so it never smears behind the nav
+      const near = lastScrollY > sceneTop() - 180;
+      document.querySelector(".lib-scene2")?.classList.toggle("arrived", near);
+      document.querySelector(".lib-art")?.classList.toggle("passed", near);
       if (settleTimer) clearTimeout(settleTimer);
       if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();

@@ -311,9 +311,17 @@ a {
    white until it lands */
 .lib-hero {
   min-height: 0;
-  /* the bottom cushion keeps the zone behind the nav white when the
-     glide lands the header at the top */
-  padding: 16px 24px 110px;
+  padding: 16px 24px 44px;
+}
+
+/* the shelf fades away as the landing approaches, so nothing smears
+   behind the nav at scene two */
+.lib-art {
+  transition: opacity 0.5s ease;
+}
+
+.lib-art.passed {
+  opacity: 0;
 }
 
 .lib-scene2 > * {
