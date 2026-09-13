@@ -3,7 +3,7 @@ import MarkLive from "./components/MarkLive";
 
 export default function Home() {
   return (
-    <main>
+    <main className="home-snap">
       <section className="hero">
         <h1 className="wordmark">
           library of
@@ -24,18 +24,7 @@ export default function Home() {
         <p className="metric-line">
           <b>3,431</b> papers ingested this week
         </p>
-        <div className="hero-cta">
-          <Link href="/pricing" className="pill">
-            Subscribe
-          </Link>
-          <Link href="/library" className="pill ghost">
-            Read an issue
-          </Link>
-        </div>
-      </section>
-
-      <section className="about">
-        <p>
+        <p className="about-inline">
           Abstracts hide the details that make research usable, so the library
           reads each selected paper whole and distills it into claims that
           keep the finding together with its evidence and the procedure behind
@@ -48,6 +37,14 @@ export default function Home() {
           its research sharpens and retired with an explanation when the
           research is overturned.
         </p>
+        <div className="hero-cta">
+          <Link href="/pricing" className="pill">
+            Subscribe
+          </Link>
+          <Link href="/library" className="pill ghost">
+            Read an issue
+          </Link>
+        </div>
       </section>
     </main>
   );
