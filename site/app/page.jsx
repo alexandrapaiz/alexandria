@@ -16,10 +16,13 @@ export default function Home() {
       </section>
 
       <section className="hero-follow">
-        <p className="hero-sub">
-          The latest in AI research, read in full and distilled weekly:
-          what&rsquo;s new, what&rsquo;s gaining acceptance, and what newer
-          evidence has overturned.
+        <p className="statement">
+          The latest in AI research, <b>read in full</b> and{" "}
+          <b>distilled weekly</b>: what&rsquo;s new, what&rsquo;s gaining
+          acceptance, and what newer evidence has overturned.
+        </p>
+        <p className="metric-line">
+          <b>3,431</b> papers ingested this week
         </p>
         <div className="hero-cta">
           <Link href="/pricing" className="pill">
@@ -28,12 +31,6 @@ export default function Home() {
           <Link href="/library" className="pill ghost">
             Read an issue
           </Link>
-        </div>
-        <div className="stats">
-          <div className="stat">
-            <b>3,431</b>
-            <span>papers ingested this week</span>
-          </div>
         </div>
       </section>
 
