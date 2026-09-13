@@ -206,6 +206,12 @@ export default function ShelvesLive(props) {
       document.querySelector(".lib-scene2")?.classList.toggle("arrived", near);
       document.querySelector(".lib-art")?.classList.toggle("passed", near);
     };
+    // leaving the archive upward: the text bows out FIRST, at flight
+    // start; the shelf enters only on arrival (via updateReveal)
+    const glideHome = () => {
+      document.querySelector(".lib-scene2")?.classList.remove("arrived");
+      glide(0);
+    };
 
     const onWheel = (e) => {
       if (gliding) {
@@ -217,7 +223,7 @@ export default function ShelvesLive(props) {
         // wheel here is the user deliberately leaving — honor it
         if (e.deltaY < 0 && Math.abs(window.scrollY - sceneTop()) < 60) {
           e.preventDefault();
-          glide(0);
+          glideHome();
           return;
         }
         e.preventDefault();
@@ -252,7 +258,7 @@ export default function ShelvesLive(props) {
       if (e.deltaY < 0 && Math.abs(sy - sceneTop()) < 60) {
         e.preventDefault();
         advancePending = false;
-        glide(0);
+        glideHome();
       }
     };
     let settleTimer = null;
@@ -264,7 +270,8 @@ export default function ShelvesLive(props) {
       // past scene two is ordinary free scrolling. The direction of
       // travel decides the destination, so scrolling up never snaps down
       if (sy > 90 && sy < st - 40) {
-        glide(lastDir < 0 ? 0 : st);
+        if (lastDir < 0) glideHome();
+        else glide(st);
       }
     };
     let lastDir = 1;
