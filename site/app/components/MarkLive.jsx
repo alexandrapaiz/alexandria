@@ -93,17 +93,14 @@ function compute(f, sway) {
       lerp(rx, goal[c][0], m),
       lerp(ry, goal[c][1], m),
     ]);
-    // the sway tips each page around its OWN foot — pages responding
-    // to the cursor individually, never the image rotating as one
-    const fx = (corners[2][0] + corners[3][0]) / 2;
-    const fy = Math.max(corners[2][1], corners[3][1]);
+    // the mouse TURNS the pages in depth: each page rotates about its
+    // own vertical axis, its width foreshortening from flat toward
+    // edge-on as the cursor moves — pages turning, not the image tilting
+    const cxm = (corners[0][0] + corners[1][0]) / 2;
     const cs = Math.cos(sway);
-    const sn = Math.sin(sway);
-    const tipped = corners.map(([x, y]) => [
-      fx + (x - fx) * cs - (y - fy) * sn,
-      fy + (x - fx) * sn + (y - fy) * cs,
-    ]);
-    pts.push(tipped.map(([x, y]) => `${x},${y}`).join(" "));
+    const sh = Math.sin(sway) * 8;
+    const turned = corners.map(([x, y]) => [cxm + (x - cxm) * cs + sh, y]);
+    pts.push(turned.map(([x, y]) => `${x},${y}`).join(" "));
   }
   return pts;
 }
@@ -142,7 +139,8 @@ export default function MarkLive(props) {
       const s = (x) => x * x * (3 - 2 * x);
       const eased = s(s(p));
       const targetF = !mobile && lastScrollY > 130 ? 1 : eased * 2 - 1;
-      const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
+      // the turn angle: center screen is flat, screen edges near edge-on
+      const targetS = mouseF * 1.25;
       curF += (targetF - curF) * 0.065;
       curS += (targetS - curS) * 0.065;
       if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
