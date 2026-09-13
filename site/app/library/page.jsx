@@ -9,6 +9,14 @@ export default function Library() {
   return (
     <main>
       <section className="hero">
+        <div className="lib-head">
+          <p className="page-kicker">Archive</p>
+          <h1 className="page-title">The Library</h1>
+          <p className="page-intro">
+            The opening of each issue is free to read. Members read
+            everything.
+          </p>
+        </div>
         <div className="lib-art">
           <ShelvesLive />
         </div>

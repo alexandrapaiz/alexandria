@@ -162,8 +162,9 @@ export default function ShelvesLive(props) {
           window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p >= 1 && !advancing) {
+            // linger on the finished rack before flying to the archive
             advancing = true;
-            setTimeout(() => glide(sceneTop()), 800);
+            setTimeout(() => glide(sceneTop()), 1400);
           }
         } else if (e.deltaY < 0 && p > 0) {
           e.preventDefault();
