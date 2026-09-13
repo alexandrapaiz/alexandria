@@ -19,7 +19,6 @@ export default function RootLayout({ children }) {
           <div className="nav-links">
             <Link href="/library">Library</Link>
             <Link href="/skills">Skills</Link>
-            <Link href="/routines">Routines</Link>
             <Link href="/graph">Graph</Link>
             <Link href="/mission">Mission</Link>
           </div>

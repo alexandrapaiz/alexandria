@@ -171,6 +171,7 @@ export default function ShelvesLive(props) {
         else {
           gliding = false;
           lockUntil = performance.now() + 380;
+          updateReveal(); // reveals play after touchdown, never mid-flight
         }
       };
       requestAnimationFrame(step);
@@ -178,6 +179,13 @@ export default function ShelvesLive(props) {
     const sceneTop = () => {
       const el = document.querySelector(".lib-scene2");
       return el ? el.getBoundingClientRect().top + window.scrollY - 96 : 0;
+    };
+    // reveal the archive only as the header reaches the top, and fade
+    // the shelf out so it never smears behind the nav
+    const updateReveal = () => {
+      const near = window.scrollY > sceneTop() - 180;
+      document.querySelector(".lib-scene2")?.classList.toggle("arrived", near);
+      document.querySelector(".lib-art")?.classList.toggle("passed", near);
     };
 
     const onWheel = (e) => {
@@ -246,11 +254,8 @@ export default function ShelvesLive(props) {
       lastScrollY = window.scrollY;
       if (lastScrollY > 130) p = 1;
       if (advancing && lastScrollY < 60) advancing = false;
-      // reveal the archive only as the header reaches the top, and fade
-      // the shelf out so it never smears behind the nav
-      const near = lastScrollY > sceneTop() - 180;
-      document.querySelector(".lib-scene2")?.classList.toggle("arrived", near);
-      document.querySelector(".lib-art")?.classList.toggle("passed", near);
+      // reveals never repaint mid-flight — that caused jagged scrolling
+      if (!gliding) updateReveal();
       if (settleTimer) clearTimeout(settleTimer);
       if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();
