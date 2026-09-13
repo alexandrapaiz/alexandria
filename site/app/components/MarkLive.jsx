@@ -29,11 +29,17 @@ const T = 60;
 const B = 840;
 const PIVOT_X = 600; // the spine's foot — pages rotate about this point
 const DC_CENTER_S = 80;
-const PAGE_W = 80; // a page's width when fully turned flat
-const PAGE_SLOT = 93; // even pitch between the turning pages
-const PAGE_IN = 55; // the innermost page's distance from the spine
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
+
+// The book, seen ALONG the spine: the spine is the center point and
+// the pages radiate from it — tapered wedges fanning to a circular
+// rim, the circle inscribed exactly in the mark's frame.
+const BOOK_CX = 600;
+const BOOK_CY = (T + B) / 2;
+const BOOK_R = (B - T) / 2; // rim radius: the circle kisses top and bottom
+const BOOK_R0 = 8; // pages spring from just outside the spine point
+const WEDGE_IN = 5; // a page's width where it leaves the spine
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -62,22 +68,25 @@ function restCorners(j) {
 }
 
 function pageCorners(j) {
-  // the open book as visible ROTATION: every page frozen at its own
-  // stage of the turn away from the spine — nearly edge-on beside the
-  // spine, progressively wider outward, almost flat at the ends. The
-  // sequence of stages IS the page turning, laid out side by side.
-  if (j === 0) {
-    return [[PIVOT_X - 4, T], [PIVOT_X + 4, T], [PIVOT_X + 4, B], [PIVOT_X - 4, B]];
-  }
-  const dir = Math.sign(j);
-  const stage = (Math.abs(j) - 1) / 4; // 0 at the spine .. 1 outermost
-  const th = ((80 - 72 * stage) * Math.PI) / 180; // 80deg edge-on -> 8deg flat
-  const w = Math.max(PAGE_W * Math.cos(th), 10);
-  const xin = PIVOT_X + dir * (PAGE_IN + (Math.abs(j) - 1) * PAGE_SLOT);
-  const xout = xin + dir * w;
-  const x0 = Math.min(xin, xout);
-  const x1 = Math.max(xin, xout);
-  return [[x0, T], [x1, T], [x1, B], [x0, B]];
+  // a page seen down the spine axis: a wedge springing from the spine
+  // point, tapering out to the rim. Eleven of them fan the full circle,
+  // each wedge's rim width carrying its stage of the turn.
+  const phi = ((-90 + j * (360 / 11)) * Math.PI) / 180;
+  const ux = Math.cos(phi);
+  const uy = Math.sin(phi);
+  const nx = -uy;
+  const ny = ux;
+  const wOut = 26 + 44 * Math.pow(Math.abs(j) / 5, 1.15);
+  const ox = BOOK_CX + ux * BOOK_R;
+  const oy = BOOK_CY + uy * BOOK_R;
+  const ix = BOOK_CX + ux * BOOK_R0;
+  const iy = BOOK_CY + uy * BOOK_R0;
+  return [
+    [ox - (nx * wOut) / 2, oy - (ny * wOut) / 2],
+    [ox + (nx * wOut) / 2, oy + (ny * wOut) / 2],
+    [ix + (nx * WEDGE_IN) / 2, iy + (ny * WEDGE_IN) / 2],
+    [ix - (nx * WEDGE_IN) / 2, iy - (ny * WEDGE_IN) / 2],
+  ];
 }
 
 function machineCorners(j) {
@@ -121,10 +130,13 @@ function compute(f, sway) {
     }
     // the mouse TURNS the pages in depth: each page rotates about its
     // own vertical axis, its width foreshortening from flat toward
-    // edge-on as the cursor moves — pages turning, not the image tilting
+    // edge-on as the cursor moves — pages turning, not the image
+    // tilting. The effect fades out as the radial book takes over,
+    // where widths are the fan itself.
+    const effS = sway * (f > 0 ? 1 - 0.85 * Math.min(f, 1) : 1);
     const cxm = (corners[0][0] + corners[1][0]) / 2;
-    const cs = Math.cos(sway);
-    const sh = Math.sin(sway) * 8;
+    const cs = Math.cos(effS);
+    const sh = Math.sin(effS) * 8;
     const turned = corners.map(([x, y]) => [cxm + (x - cxm) * cs + sh, y]);
     pts.push(turned.map(([x, y]) => `${x},${y}`).join(" "));
   }
