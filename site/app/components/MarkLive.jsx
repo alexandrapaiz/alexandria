@@ -2,14 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
-// The mark holds both identities of the library. Mouse right (or scroll to
-// the top) and it is a codex: pages fan open over the central spine, shear
-// deepening, the near side turning its faces into view. Mouse left or
-// scroll down and it squares into the machine: shears flatten, widths
-// equalize, and each spine splits into stacked units — a rack row in a
-// data center. One parameter f in [-0.85, 0.85] morphs between them,
-// driven by cursor x and scroll depth, eased with a rAF lerp, mutating the
-// SVG directly so nothing re-renders. Still under prefers-reduced-motion.
+// The mark holds both identities of the library. Mouse right (or the top
+// of the page) and it is a codex: pages fan open over the central spine,
+// shear deepening, the near side turning its faces into view. Mouse left
+// or scroll down and it squares into the machine: shears flatten and the
+// widths equalize into a uniform row of full-height slabs. Every bar stays
+// one unbroken page in both states. One parameter f in [-0.85, 0.85]
+// drives the morph from cursor x plus scroll depth, eased with a rAF
+// lerp, mutating the SVG directly so nothing re-renders. Still under
+// prefers-reduced-motion.
 
 const SPEC = [
   [72, 170],
@@ -20,55 +21,35 @@ const SPEC = [
 ];
 const T = 60;
 const B = 840;
-const SPAN = B - T;
 
-// bars: five per side plus the center spine; every bar renders as three
-// stacked segments so the brick morph can open gaps between them
-function bars(f) {
+function compute(f) {
   const k = Math.max(f, 0); // book factor
   const t = Math.min(Math.max(-f, 0) / 0.7, 1); // brick factor, complete by f = -0.7
-  const out = [];
+  const pts = [];
   for (let i = 0; i < 5; i++) {
     const [w0, s0] = SPEC[i];
     const d = 490 - i * 98;
     // book: near side spreads and widens, far side tucks thin and edge-on
-    const wL = Math.max(w0 * (1 - 0.45 * k), 5);
-    const wR = Math.max(w0 * (1 + 0.45 * k), 5);
-    const sL = s0 * (1 + 0.3 * k);
-    const sR = s0 * (1 - 0.3 * k);
+    let wL = Math.max(w0 * (1 - 0.45 * k), 5);
+    let wR = Math.max(w0 * (1 + 0.45 * k), 5);
+    let sL = s0 * (1 + 0.3 * k);
+    let sR = s0 * (1 - 0.3 * k);
     const cxL = 600 - d * (1 - 0.14 * k);
     const cxR = 600 + d * (1 + 0.14 * k);
-    // brick: everything converges on uniform slabs with square ends
-    out.push({ cx: cxL, w: wL + (46 - wL) * t, s: sL * (1 - t), side: -1 });
-    out.push({ cx: cxR, w: wR + (46 - wR) * t, s: sR * (1 - t), side: 1 });
+    // brick: converge on uniform square-ended slabs
+    wL += (46 - wL) * t;
+    wR += (46 - wR) * t;
+    sL *= 1 - t;
+    sR *= 1 - t;
+    pts.push(
+      `${cxL - wL / 2},${T} ${cxL + wL / 2},${T + sL} ${cxL + wL / 2},${B} ${cxL - wL / 2},${B - sL}`
+    );
+    pts.push(
+      `${cxR - wR / 2},${T + sR} ${cxR + wR / 2},${T} ${cxR + wR / 2},${B - sR} ${cxR - wR / 2},${B}`
+    );
   }
-  out.push({ cx: 600, w: 10 + 36 * t, s: 0, side: 0 });
-  return { list: out, gap: 26 * t };
-}
-
-function compute(f) {
-  const { list, gap } = bars(f);
-  const h = (SPAN - 2 * gap) / 3;
-  const ov = gap > 0.5 ? 0 : 2; // overlap segments when touching, no seams
-  const pts = [];
-  for (const { cx, w, s, side } of list) {
-    const x0 = cx - w / 2;
-    const x1 = cx + w / 2;
-    const y1 = T + h;
-    const y2a = T + h + gap;
-    const y2b = T + 2 * h + gap;
-    const y3a = T + 2 * h + 2 * gap;
-    // top segment carries the top cap's shear
-    if (side < 0) pts.push(`${x0},${T} ${x1},${T + s} ${x1},${y1 + ov} ${x0},${y1 + ov}`);
-    else if (side > 0) pts.push(`${x0},${T + s} ${x1},${T} ${x1},${y1 + ov} ${x0},${y1 + ov}`);
-    else pts.push(`${x0},${T} ${x1},${T} ${x1},${y1 + ov} ${x0},${y1 + ov}`);
-    // middle segment is always a slab
-    pts.push(`${x0},${y2a - ov} ${x1},${y2a - ov} ${x1},${y2b + ov} ${x0},${y2b + ov}`);
-    // bottom segment carries the bottom cap's shear
-    if (side < 0) pts.push(`${x0},${y3a - ov} ${x1},${y3a - ov} ${x1},${B} ${x0},${B - s}`);
-    else if (side > 0) pts.push(`${x0},${y3a - ov} ${x1},${y3a - ov} ${x1},${B - s} ${x0},${B}`);
-    else pts.push(`${x0},${y3a - ov} ${x1},${y3a - ov} ${x1},${B} ${x0},${B}`);
-  }
+  const wC = 10 + 36 * t;
+  pts.push(`${600 - wC / 2},${T} ${600 + wC / 2},${T} ${600 + wC / 2},${B} ${600 - wC / 2},${B}`);
   return pts;
 }
 
