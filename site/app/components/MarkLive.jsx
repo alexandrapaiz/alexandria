@@ -235,7 +235,7 @@ export default function MarkLive(props) {
       const sy = window.scrollY;
       const ft = followTop();
       if (sy > 90 && sy < ft - 40) {
-        glide(sy < ft / 2 && p < 1 ? 0 : ft);
+        glide(sy < ft / 2 ? 0 : ft); // nearest scene wins
       } else if (sy > ft + 24) {
         // overshot the landing (momentum): ease back to the scene top
         glide(ft);

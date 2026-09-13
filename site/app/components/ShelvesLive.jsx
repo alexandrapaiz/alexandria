@@ -202,7 +202,7 @@ export default function ShelvesLive(props) {
       const sy = window.scrollY;
       const st = sceneTop();
       if (sy > 90 && sy < st - 40) {
-        glide(sy < st / 2 && p < 1 ? 0 : st);
+        glide(sy < st / 2 ? 0 : st); // nearest scene wins
       } else if (sy > st + 24) {
         // overshot the landing (momentum): ease back to the scene top
         glide(st);
