@@ -1,5 +1,5 @@
 import Link from "next/link";
-import GraphEmbed from "./components/GraphEmbed";
+import Mark from "./components/Mark";
 
 export default function Home() {
   return (
@@ -7,8 +7,8 @@ export default function Home() {
       <section className="hero">
         <h1 className="wordmark">
           library{" "}
-          <span className="embed">
-            <GraphEmbed />
+          <span className="embed embed-mark">
+            <Mark />
           </span>{" "}
           of
           <br />

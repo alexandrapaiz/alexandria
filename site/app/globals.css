@@ -162,6 +162,17 @@ a {
   display: block;
 }
 
+.wordmark .embed-mark {
+  width: 1.12em;
+  color: var(--ink);
+}
+
+.wordmark .embed-mark svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .hero-sub {
   margin: 34px auto 0;
   max-width: 560px;
