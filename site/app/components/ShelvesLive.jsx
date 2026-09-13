@@ -99,7 +99,9 @@ export default function ShelvesLive(props) {
     let p = 0;
     let lastScrollY = 0;
     let raf = null;
-    const MORPH_WHEEL = 700;
+    const MORPH_WHEEL = 480; // one decisive flick completes the turn
+    let advancePending = false; // armed only by a downward gesture
+    let flightTimer = null; // the scheduled flight — cancelable by up-scroll
 
     const s = (x) => x * x * (3 - 2 * x);
     const apply = (v, tms) => {
@@ -132,11 +134,17 @@ export default function ShelvesLive(props) {
       const settled = Math.abs(target - cur) <= 0.0005;
       if (settled) cur = target;
       apply(cur, tms || performance.now());
-      // only once the rack is VISUALLY complete does the hold begin,
-      // and only then does the flight to the archive follow
-      if (!mobile && p >= 1 && cur > 0.995 && !advancing && lastScrollY < 90) {
+      // the flight arms only from a downward gesture — never just from
+      // standing at the top as the rack (e.g. after gliding back up) —
+      // and launches promptly; the morph's tail finishes during the
+      // flight
+      if (!mobile && advancePending && !advancing && lastScrollY < 90) {
         advancing = true;
-        setTimeout(() => glide(sceneTop()), 300);
+        advancePending = false;
+        flightTimer = setTimeout(() => {
+          flightTimer = null;
+          glide(sceneTop());
+        }, 300);
       }
       // keep the frame loop alive while the LEDs are lit, so they breathe
       if (!settled || cur > 0.5) raf = requestAnimationFrame(tick);
@@ -194,12 +202,21 @@ export default function ShelvesLive(props) {
         if (e.deltaY > 0 && p < 1) {
           e.preventDefault();
           p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
+          if (p >= 1) advancePending = true; // a downward gesture finished it
           wake();
         } else if (e.deltaY > 0 && p >= 1) {
           // holding as the rack: the page belongs to the coming flight
+          advancePending = true;
           e.preventDefault();
         } else if (e.deltaY < 0 && p > 0) {
           e.preventDefault();
+          // folding back: no flight — abort one already scheduled
+          advancePending = false;
+          if (flightTimer) {
+            clearTimeout(flightTimer);
+            flightTimer = null;
+            advancing = false;
+          }
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
           wake();
         }
@@ -207,6 +224,7 @@ export default function ShelvesLive(props) {
       }
       if (e.deltaY < 0 && Math.abs(sy - sceneTop()) < 60) {
         e.preventDefault();
+        advancePending = false;
         glide(0);
       }
     };
