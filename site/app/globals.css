@@ -305,27 +305,36 @@ a {
 
 /* ---------- library ---------- */
 
-/* scene one is shorter than the viewport so the archive's header —
-   kicker, The Library in display type, intro — rides visibly at the
-   bottom: the same text the glide then carries to the top of scene two */
+/* scene one: the shelf large, with the archive's kicker and title
+   visible right beneath it in the first view. The glide carries that
+   same header to the top of the page; the intro and the list stay
+   white until it lands */
 .lib-hero {
-  min-height: calc(72svh - 96px);
+  min-height: 0;
+  padding: 36px 24px 0;
 }
 
-/* the shared header is always visible (it belongs to both scenes);
-   only the issue list rises on arrival */
 .lib-scene2 > * {
   animation: none;
 }
 
+/* the intro and the archive stay white until the glide lands; the
+   script toggles .arrived */
+.lib-scene2 .page-intro,
 .lib-scene2 .issue-list {
-  animation: rise 0.7s ease both;
-  animation-timeline: view();
-  animation-range: entry 40% entry 85%;
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.lib-scene2.arrived .page-intro,
+.lib-scene2.arrived .issue-list {
+  opacity: 1;
+  transform: none;
 }
 
 .lib-art {
-  width: min(600px, 74vw, 58svh);
+  width: min(840px, 76vw, 74svh);
   color: var(--ink);
 }
 
@@ -341,7 +350,7 @@ a {
   max-width: 680px;
   margin: 0 auto;
   justify-content: flex-start;
-  padding-top: 110px;
+  padding-top: 34px;
 }
 
 .lib-scene2 .issue-list {

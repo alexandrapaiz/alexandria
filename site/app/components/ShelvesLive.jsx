@@ -83,7 +83,11 @@ export default function ShelvesLive(props) {
   useEffect(() => {
     const svg = ref.current;
     if (!svg) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // no staging: everything visible, shelf at rest
+      document.querySelector(".lib-scene2")?.classList.add("arrived");
+      return;
+    }
 
     const lineEls = svg.querySelectorAll("line");
     const dotEls = svg.querySelectorAll(".led-dots circle");
@@ -199,6 +203,10 @@ export default function ShelvesLive(props) {
       lastScrollY = window.scrollY;
       if (lastScrollY > 130) p = 1;
       if (advancing && lastScrollY < 60) advancing = false;
+      // reveal the archive only as the header reaches the top
+      document
+        .querySelector(".lib-scene2")
+        ?.classList.toggle("arrived", lastScrollY > sceneTop() - 180);
       if (settleTimer) clearTimeout(settleTimer);
       if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();
