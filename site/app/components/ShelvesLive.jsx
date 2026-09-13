@@ -129,6 +129,12 @@ export default function ShelvesLive(props) {
       const settled = Math.abs(target - cur) <= 0.0005;
       if (settled) cur = target;
       apply(cur, tms || performance.now());
+      // only once the rack is VISUALLY complete does the hold begin,
+      // and only then does the flight to the archive follow
+      if (p >= 1 && cur > 0.995 && !advancing && lastScrollY < 90) {
+        advancing = true;
+        setTimeout(() => glide(sceneTop()), 1600);
+      }
       // keep the frame loop alive while the LEDs are lit, so they breathe
       if (!settled || cur > 0.5) raf = requestAnimationFrame(tick);
       else raf = null;
@@ -170,24 +176,17 @@ export default function ShelvesLive(props) {
       }
       const sy = window.scrollY;
       if (sy < 90) {
+        // the page holds perfectly still while the shelf transforms
         if (e.deltaY > 0 && p < 1) {
           e.preventDefault();
           p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
-          window.scrollBy(0, e.deltaY * 0.035);
           wake();
-          if (p >= 1 && !advancing) {
-            // linger on the finished rack, lights breathing, before the
-            // flight to the archive
-            advancing = true;
-            setTimeout(() => glide(sceneTop()), 2200);
-          }
         } else if (e.deltaY > 0 && p >= 1) {
           // holding as the rack: the page belongs to the coming flight
           e.preventDefault();
         } else if (e.deltaY < 0 && p > 0) {
           e.preventDefault();
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
-          window.scrollBy(0, e.deltaY * 0.035);
           wake();
         }
         return;
