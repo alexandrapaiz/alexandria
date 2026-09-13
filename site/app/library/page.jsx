@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listIssues } from "../../lib/content";
+import Shelves from "../components/Shelves";
 
 export const metadata = { title: "Library — library of alexandr.ia" };
 
@@ -7,6 +8,9 @@ export default function Library() {
   const issues = listIssues();
   return (
     <main className="page">
+      <div className="shelf-art">
+        <Shelves />
+      </div>
       <p className="page-kicker">Library</p>
       <h1 className="page-title">Every issue, kept.</h1>
       <p className="page-intro">

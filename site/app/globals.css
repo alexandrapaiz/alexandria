@@ -272,6 +272,17 @@ a {
 
 /* ---------- library ---------- */
 
+.shelf-art {
+  color: var(--ink);
+  margin-bottom: 64px;
+}
+
+.shelf-art svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 .issue-list {
   margin-top: 64px;
   border-top: 1px solid var(--line);
