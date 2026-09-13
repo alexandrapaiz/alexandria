@@ -211,6 +211,7 @@ export default function MarkLive(props) {
     let advancing = false;
     let gliding = false;
     let lockUntil = 0; // absorbs trackpad momentum right after a landing
+    let flightTimer = null; // the scheduled flight — cancelable by up-scroll
 
     // our own scene-to-scene travel: one eased flight, wheel input
     // swallowed while it flies
@@ -267,14 +268,31 @@ export default function MarkLive(props) {
           if (p >= 1 && !advancing) {
             // hold the finished book for a beat before flying down
             advancing = true;
-            setTimeout(() => glide(followTop()), 450);
+            flightTimer = setTimeout(() => {
+              flightTimer = null;
+              glide(followTop());
+            }, 450);
           }
         } else if (e.deltaY > 0 && p >= 1) {
-          // holding as the book: the page belongs to the coming flight
+          // standing at the top as the book: a down-scroll relaunches
+          // the flight (e.g. after gliding back up from scene two)
           e.preventDefault();
+          if (!advancing) {
+            advancing = true;
+            flightTimer = setTimeout(() => {
+              flightTimer = null;
+              glide(followTop());
+            }, 450);
+          }
         } else if (e.deltaY < 0 && p > 0) {
-          // spend the up-scroll on folding it back — symmetric
+          // spend the up-scroll on folding it back — symmetric; a
+          // scheduled flight is aborted
           e.preventDefault();
+          if (flightTimer) {
+            clearTimeout(flightTimer);
+            flightTimer = null;
+            advancing = false;
+          }
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
           setMorphing(true);
           wake();
