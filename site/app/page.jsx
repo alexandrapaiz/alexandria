@@ -5,13 +5,15 @@ export default function Home() {
   return (
     <main className="home-snap">
       <section className="hero">
-        <h1 className="wordmark">
-          library of
-          <br />
-          alexandr.ia
-        </h1>
-        <div className="hero-mark">
-          <MarkLive />
+        <div className="hero-pin">
+          <h1 className="wordmark">
+            library of
+            <br />
+            alexandr.ia
+          </h1>
+          <div className="hero-mark">
+            <MarkLive />
+          </div>
         </div>
       </section>
 

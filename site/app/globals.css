@@ -27,7 +27,7 @@ html {
 }
 
 .scene-gap {
-  height: 22svh;
+  height: 12svh;
 }
 
 :root:has(.home-snap) .footer {
@@ -148,16 +148,25 @@ a {
 
 /* ---------- landing ---------- */
 
+/* the hero is a tall scroll stretch with the emblem pinned inside it:
+   scrolling plays the morph while the mark stays fully in view, holds
+   the finished book for a beat, then releases toward scene two */
 .hero {
-  min-height: calc(100svh - 96px);
+  height: 175svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.hero-pin {
+  position: sticky;
+  top: 96px;
+  height: calc(100svh - 96px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 12px 24px 24px;
   text-align: center;
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
 }
 
 .wordmark {

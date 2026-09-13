@@ -122,8 +122,8 @@ export default function MarkLive(props) {
       // pages toward the cursor.
       const targetF = scrollF;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
-      curF += (targetF - curF) * 0.065;
-      curS += (targetS - curS) * 0.065;
+      curF += (targetF - curF) * 0.1;
+      curS += (targetS - curS) * 0.1;
       if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
         apply();
         raf = requestAnimationFrame(tick);
@@ -148,7 +148,9 @@ export default function MarkLive(props) {
       // the story of the scroll: the page opens on the data center, and
       // descending toward the text transforms it into the fully open
       // book, complete before the text below is reached
-      const span = window.innerHeight * 0.18;
+      // the morph completes about a third of the way through the pinned
+      // stretch, so the finished book stays fully in view for the rest
+      const span = window.innerHeight * 0.35;
       scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
       wake();
     };
