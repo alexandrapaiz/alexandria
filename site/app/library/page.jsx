@@ -12,14 +12,13 @@ export default function Library() {
         <div className="lib-art">
           <ShelvesLive />
         </div>
-        <h1 className="wordmark lib-title">The Library</h1>
       </section>
 
       <div className="scene-gap" aria-hidden="true" />
 
       <section className="hero-follow lib-scene2">
         <p className="page-kicker">Archive</p>
-        <h1 className="page-title">Every issue, kept.</h1>
+        <h1 className="page-title">The Library</h1>
         <p className="page-intro">
           The opening of each issue is free to read. Members read everything.
         </p>
