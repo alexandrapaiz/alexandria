@@ -32,14 +32,16 @@ const DC_CENTER_S = 80;
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
 
-// The book, seen ALONG the spine: the spine is the center point and
-// the pages radiate from it — tapered wedges fanning to a circular
-// rim, the circle inscribed exactly in the mark's frame.
-const BOOK_CX = 600;
+// The open book faces the viewer, parallel to the screen, and the
+// turning pages stand OUT of it, perpendicular. Every page hinges on
+// the central spine. Seen head-on with perspective: a page mid-turn
+// is horizontally thin but TALLER (its free edge is nearest the eye);
+// a settled page lies wide at page height. Thin paper seams keep the
+// nested pages readable.
 const BOOK_CY = (T + B) / 2;
-const BOOK_R = (B - T) / 2; // rim radius: the circle kisses top and bottom
-const BOOK_R0 = 8; // pages spring from just outside the spine point
-const WEDGE_IN = 5; // a page's width where it leaves the spine
+const PAGE_L = 430; // a page's reach from the spine when it lies flat
+const PAGE_PERSP = 0.16; // how much a standing page grows toward the eye
+const HINGE = 4; // the hinge sits this close beside the spine line
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
@@ -68,25 +70,23 @@ function restCorners(j) {
 }
 
 function pageCorners(j) {
-  // a page seen down the spine axis: a wedge springing from the spine
-  // point, tapering out to the rim. Eleven of them fan the full circle,
-  // each wedge's rim width carrying its stage of the turn.
-  const phi = ((-90 + j * (360 / 11)) * Math.PI) / 180;
-  const ux = Math.cos(phi);
-  const uy = Math.sin(phi);
-  const nx = -uy;
-  const ny = ux;
-  const wOut = 26 + 44 * Math.pow(Math.abs(j) / 5, 1.15);
-  const ox = BOOK_CX + ux * BOOK_R;
-  const oy = BOOK_CY + uy * BOOK_R;
-  const ix = BOOK_CX + ux * BOOK_R0;
-  const iy = BOOK_CY + uy * BOOK_R0;
-  return [
-    [ox - (nx * wOut) / 2, oy - (ny * wOut) / 2],
-    [ox + (nx * wOut) / 2, oy + (ny * wOut) / 2],
-    [ix + (nx * WEDGE_IN) / 2, iy + (ny * WEDGE_IN) / 2],
-    [ix - (nx * WEDGE_IN) / 2, iy - (ny * WEDGE_IN) / 2],
-  ];
+  // a page hinged on the spine, caught at its own stage of the turn:
+  // the hinge edge is a full-height vertical at the spine; the free
+  // edge sits at cos(theta) reach with sin(theta) perspective growth —
+  // standing pages thin and tall, settled pages wide at page height
+  if (j === 0) {
+    return [[PIVOT_X - 4, T], [PIVOT_X + 4, T], [PIVOT_X + 4, B], [PIVOT_X - 4, B]];
+  }
+  const dir = Math.sign(j);
+  const stage = (Math.abs(j) - 1) / 4; // 0 beside the spine .. 1 outermost
+  const th = ((82 - 78 * stage) * Math.PI) / 180; // standing -> almost flat
+  const xs = PIVOT_X + dir * HINGE;
+  const xe = PIVOT_X + dir * (HINGE + PAGE_L * Math.cos(th));
+  const half = ((B - T) / 2) * (1 + PAGE_PERSP * Math.sin(th));
+  if (dir > 0) {
+    return [[xs, T], [xe, BOOK_CY - half], [xe, BOOK_CY + half], [xs, B]];
+  }
+  return [[xe, BOOK_CY - half], [xs, T], [xs, B], [xe, BOOK_CY + half]];
 }
 
 function machineCorners(j) {
@@ -348,7 +348,13 @@ export default function MarkLive(props) {
       {...props}
     >
       {compute(-1, 0).map((pts, i) => (
-        <polygon key={i} points={pts} fill="currentColor" />
+        <polygon
+          key={i}
+          points={pts}
+          fill="currentColor"
+          stroke="#fff"
+          strokeWidth="2.5"
+        />
       ))}
     </svg>
   );
