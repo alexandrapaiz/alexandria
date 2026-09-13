@@ -491,6 +491,28 @@ a {
   .tiers { grid-template-columns: 1fr; }
 }
 
+.billing-note {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.billing-note h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.billing-note p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 540px;
+}
+
 /* ---------- graph ---------- */
 
 .graph-page {

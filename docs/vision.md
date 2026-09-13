@@ -50,8 +50,15 @@ newsletter**:
 
 - **$10/month — Digest tier.** The weekly digest: trailblazing, matured, and
   left-behind, with evidence.
-- **$30/month — Digest + Skills tier.** The digest plus the skill library —
-  subscribers get the operational assets, not just the reading.
+- **$30/month — Full library tier.** Everything beyond the digest: the skill
+  library (agent-agnostic — skills load into any AI agent, not just Claude),
+  the explorable claim graph, and routines & automations when they land.
+
+Billing principle (her call, 2026-09-13): subscribers choose between
+autorenew and a monthly renewal reminder — the subscription can stop at the
+end of each month until they actively say yes. No dark-pattern retention;
+the business model must never depend on subscribers forgetting. This is a
+hard requirement on the Stripe implementation in Phase 2.
 
 The architecture was built for this from the start: the pipeline's marginal
 cost is ~$0, so subscription revenue is nearly pure margin, and the

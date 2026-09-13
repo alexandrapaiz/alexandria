@@ -35,6 +35,15 @@ export default function Pricing() {
           <span className="pill">Coming soon</span>
         </div>
       </div>
+      <div className="billing-note">
+        <h3>How billing works</h3>
+        <p>
+          You choose how your subscription behaves. It can renew automatically,
+          or it can stop at the end of each month until a reminder arrives and
+          you decide to continue. Subscription businesses often count on being
+          forgotten, and we would rather earn the renewal than collect it.
+        </p>
+      </div>
     </main>
   );
 }
