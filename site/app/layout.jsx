@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata = {
   title: "library of alexandr.ia",
   description:
-    "The latest in AI research, read in full and distilled weekly: what's new, what's gaining acceptance, and what newer evidence has overturned.",
+    "An autonomous library that researches the research: it reads the field in full, keeps a living record of what holds true, and rewrites itself as the science moves.",
 };
 
 export default function RootLayout({ children }) {

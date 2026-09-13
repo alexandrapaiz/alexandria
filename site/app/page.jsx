@@ -19,9 +19,9 @@ export default function Home() {
 
       <section className="hero-follow">
         <p className="statement">
-          The latest in AI research, <b>read in full</b> and{" "}
-          <b>distilled weekly</b>: what&rsquo;s new, what&rsquo;s gaining
-          acceptance, and what newer evidence has overturned.
+          An autonomous library that <b>researches the research</b>: it reads
+          the field in full, keeps a <b>living record</b> of what holds true,
+          and <b>rewrites itself</b> as the science moves.
         </p>
         <div className="hero-cta">
           <Link href="/pricing" className="pill">
@@ -32,12 +32,13 @@ export default function Home() {
           </Link>
         </div>
         <p className="about-inline">
-          The library reads papers in full and keeps what matters: the
-          finding, the evidence, and the procedure that produced it. Every
-          claim then lives in a graph that records how the field treats it
-          over time, so you see what gains acceptance and what falls. The
-          procedures that survive become skills any AI agent can load,
-          revised as the research sharpens and retired when it is overturned.
+          Every week the pipeline ingests thousands of papers, reads the ones
+          that matter in full, and distills them into claims connected in a
+          graph. Because the graph records how each claim fares as new
+          evidence arrives, the weekly digest is not a feed of announcements
+          but an updated statement of where the field stands. The same record
+          produces skills any AI agent can load, and the library maintains
+          all of it on its own, proposing its own improvements as it learns.
         </p>
         <p className="metric-line">
           <b>3,431</b> papers ingested this week

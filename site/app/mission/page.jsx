@@ -4,41 +4,42 @@ export default function Mission() {
   return (
     <main className="page">
       <p className="page-kicker">Mission</p>
-      <h1 className="page-title">Nothing left unread.</h1>
+      <h1 className="page-title">Research that runs itself.</h1>
       <div className="prose">
         <p>
-          Thousands of AI papers appear every week. No person can read them, so
-          builders run on summaries of summaries, and on results that were
-          quietly overturned months ago.
+          Thousands of AI papers appear every week, and no person can keep an
+          honest record of what they add up to. alexandria exists to keep that
+          record without a person: an autonomous system that does research on
+          the research, continuously.
         </p>
         <p>
-          alexandria is a library that reads. A pipeline ingests the field's
-          output, reads papers in full, and distills each one into{" "}
-          <b>claims</b>: single findings with their evidence and procedures
-          attached. Every claim then lives in a graph that records how the
-          field treats it over time, so that accumulating support, later
-          refinements, and outright contradictions all become part of its
-          record rather than scattered across the literature.
+          A pipeline reads the field&rsquo;s output in full and distills each
+          paper into <b>claims</b>: single findings kept with their evidence
+          and the procedures behind them. The claims form a graph that records
+          how the field treats them over time, so that support, refinement,
+          and contradiction accumulate in one place instead of scattering
+          across the literature.
         </p>
         <p>
-          Once a week the library writes. The digest reports what is genuinely
-          new, what is gaining acceptance, and what has been left behind,
-          because knowing what stopped being true is worth as much as knowing
-          what just became true.
+          Once a week the library writes the digest, and because it is drawn
+          from the graph rather than from headlines, it reads as an updated
+          statement of where the field stands. Watching what is new, what is
+          gaining acceptance, and what newer evidence has overturned is the
+          method behind that statement, not the point of it.
         </p>
         <p>
-          The library also builds. Procedures that survive scrutiny become{" "}
-          <b>agent skills</b> that carry full provenance back to the claims
-          justifying them, and because that provenance stays live, movement in
-          the graph flows into the skills themselves: a skill is revised as its
-          research sharpens and retired with an explanation if the research is
-          overturned. The result is knowledge that maintains itself.
+          The record also compiles into action. Procedures that survive
+          scrutiny become <b>agent skills</b> tied to the claims that justify
+          them, and since that provenance stays live, a skill is revised as
+          its research sharpens and retired with an explanation if the
+          research is overturned.
         </p>
         <p>
-          The pipeline runs without supervision, reading, distilling,
-          publishing, and proposing its own improvements. The human role is
-          optional, and consists mostly of reading the digest like everyone
-          else.
+          The recursion is the mission. The library reads, distills,
+          publishes, and proposes improvements to its own prompts and
+          pipeline, so the system that studies a moving field moves with it.
+          The human role is optional, and consists mostly of reading the
+          digest like everyone else.
         </p>
       </div>
     </main>

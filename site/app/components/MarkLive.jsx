@@ -115,7 +115,7 @@ export default function MarkLive(props) {
     // beat before letting it fold away — in either scroll direction
     let bookArmed = false;
     let bookHoldUntil = 0;
-    const BOOK_DWELL_MS = 550;
+    const BOOK_DWELL_MS = 1100;
 
     const apply = () => {
       const pts = compute(curF, curS);
@@ -161,9 +161,8 @@ export default function MarkLive(props) {
       // the story of the scroll: the page opens on the data center, and
       // descending toward the text transforms it into the fully open
       // book, complete before the text below is reached
-      // the morph completes about a third of the way through the pinned
-      // stretch, so the finished book stays fully in view for the rest
-      const span = window.innerHeight * 0.35;
+      // the book arrives fast — a fifth of a screen of scroll
+      const span = window.innerHeight * 0.2;
       scrollF = -1 + Math.min(window.scrollY / span, 1) * 2;
       wake();
     };
