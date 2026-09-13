@@ -107,36 +107,23 @@ function machineCorners(j) {
 }
 
 function compute(f, sway) {
-  // f in [-1, 1]: -1 machine, 0 resting emblem, +1 fanned codex
-  const k = Math.max(f, 0);
-  const t = Math.max(-f, 0);
+  // ONE direct morph: f = -1 is the rack, f = +1 the flared book. The
+  // two forms almost share their outer edges, so the motion is a clean
+  // pinch-and-attach: each slab's inner edge reaches to the spine as
+  // its profile pinches, the caps unshear, and the spine grows in — a
+  // whisper of cascade, spine outward.
+  const k = (f + 1) / 2;
   const pts = [];
   for (const j of DRAW_ORDER) {
-    const rest = restCorners(j);
-    let corners;
-    if (f >= 0) {
-      // the pages FLARE OPEN from the spine outward: the columns
-      // nearest the spine become the far-reaching leaves (their free
-      // edges sweep outward), the cascade starts at the spine and
-      // travels out, and every page arcs outward mid-flight before
-      // settling — opening, never closing in
-      const inv = j === 0 ? 0 : Math.sign(j) * (6 - Math.abs(j));
-      const startAt = j === 0 ? 0 : (Math.abs(j) - 1) * 0.06;
-      const local = Math.min(1, Math.max(0, (k - startAt) / (1 - startAt)));
-      const e = Math.sin((local * Math.PI) / 2);
-      const arc = j === 0 ? 0 : Math.sign(j) * 90 * Math.sin(local * Math.PI);
-      const goal = pageCorners(inv);
-      corners = rest.map(([rx, ry], c) => [
-        lerp(rx, goal[c][0], e) + arc,
-        lerp(ry, goal[c][1], local),
-      ]);
-    } else {
-      const goal = machineCorners(j);
-      corners = rest.map(([rx, ry], c) => [
-        lerp(rx, goal[c][0], t),
-        lerp(ry, goal[c][1], t),
-      ]);
-    }
+    const a = machineCorners(j);
+    const g = pageCorners(j);
+    const startAt = j === 0 ? 0 : (Math.abs(j) - 1) * 0.05;
+    const local = Math.min(1, Math.max(0, (k - startAt) / (1 - startAt)));
+    const e = Math.sin((local * Math.PI) / 2);
+    const corners = a.map(([ax, ay], c) => [
+      lerp(ax, g[c][0], e),
+      lerp(ay, g[c][1], e),
+    ]);
     // the mouse TURNS the pages in depth: each page rotates about its
     // own vertical axis, its width foreshortening from flat toward
     // edge-on as the cursor moves — pages turning, not the image
@@ -170,7 +157,7 @@ export default function MarkLive(props) {
     let p = 0; // morph progress at the top: 0 machine, 1 open book
     let lastScrollY = 0;
     let raf = null;
-    const MORPH_WHEEL = 700; // wheel pixels that turn machine fully into book
+    const MORPH_WHEEL = 480; // a short, decisive scroll completes the turn
 
     const apply = () => {
       const pts = compute(curF, curS);
