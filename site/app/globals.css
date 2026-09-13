@@ -305,15 +305,33 @@ a {
 
 /* ---------- library ---------- */
 
-.shelf-art {
+.lib-art {
+  width: min(620px, 72vw, 62svh);
   color: var(--ink);
-  margin-bottom: 64px;
 }
 
-.shelf-art svg {
+.lib-art svg {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.lib-title {
+  margin-top: 30px;
+  font-size: clamp(44px, min(9vw, 10.5svh), 130px);
+}
+
+.lib-scene2 {
+  align-items: stretch;
+  text-align: left;
+  max-width: 680px;
+  margin: 0 auto;
+  justify-content: flex-start;
+  padding-top: 110px;
+}
+
+.lib-scene2 .issue-list {
+  margin-top: 48px;
 }
 
 .issue-list {
