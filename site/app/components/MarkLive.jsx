@@ -32,21 +32,19 @@ const DC_CENTER_S = 80;
 const DC_W = 50; // every rack slab identical: one width...
 const DC_S = 120; // ...and one lean
 
-// The FLARE-OUT book: pages hinged on the spine fan open toward the
-// viewer. Each page is PINCHED at the spine (its hinge edge short and
-// vertically centered — it sits deeper, away from the eye) and flares
-// to FULL height at its free edge (nearest the eye). Nested at graded
-// reaches, the pages form a bowtie opening outward, their slanted
-// edges drawn by the paper seams.
+// The FLARE-OUT book (the approved final): separate page strips with
+// white air between them, flanking the thin spine. Each strip's outer
+// edge stands full height (nearest the eye) and its spine-facing edge
+// is pinched toward the vertical center — hardest beside the spine,
+// easing outward — so the whole book reads as pages flaring open
+// toward the viewer around a pinched waist.
 const BOOK_CY = (T + B) / 2;
-const HINGE = 6; // the hinge sits this close beside the spine line
-const SPINE_H = 300; // a page's height where it meets the spine (pinch)
-const PAGE_REACH_MIN = 95; // the innermost page's reach from the spine
-const PAGE_REACH_MAX = 430; // ...and the outermost page's
-const pageReach = (n) =>
-  PAGE_REACH_MIN + ((n - 1) / 4) * (PAGE_REACH_MAX - PAGE_REACH_MIN);
-// paint order: big pages first, small on top, spine last — so every
-// nested page's seams stay visible
+// strips sit slightly OUTSIDE their rack slots, so during the morph
+// every page drifts outward — from the spine, never into it
+const STRIP_GAP0 = 70; // the innermost strip's distance from the spine
+const STRIP_PITCH = 96; // slot-to-slot distance of the strips
+const stripW = (n) => 22 + ((n - 1) / 4) * 34; // thin inner .. wide outer
+const stripPinch = (n) => 0.3 + ((n - 1) / 4) * 0.55; // spine-edge height frac
 const DRAW_ORDER = [-1, -2, -3, -4, -5, 1, 2, 3, 4, 5, 0];
 
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -76,22 +74,21 @@ function restCorners(j) {
 }
 
 function pageCorners(j) {
-  // a page flaring out of the spine: short hinge edge at the spine
-  // (deep, away from the eye), full-height free edge at its reach
-  // (toward the eye) — a trapezoid widening AWAY from the spine
+  // a page strip of the approved final: outer edge full height, the
+  // spine-facing edge pinched toward the vertical center — hardest
+  // beside the spine, easing outward — with white air between strips
   if (j === 0) {
     return [[PIVOT_X - 4, T], [PIVOT_X + 4, T], [PIVOT_X + 4, B], [PIVOT_X - 4, B]];
   }
   const n = Math.abs(j);
   const dir = Math.sign(j);
-  const xs = PIVOT_X + dir * HINGE;
-  const xe = PIVOT_X + dir * pageReach(n);
-  const yS0 = BOOK_CY - SPINE_H / 2;
-  const yS1 = BOOK_CY + SPINE_H / 2;
+  const xin = PIVOT_X + dir * (STRIP_GAP0 + (n - 1) * STRIP_PITCH);
+  const xout = xin + dir * stripW(n);
+  const half = ((B - T) * stripPinch(n)) / 2;
   if (dir > 0) {
-    return [[xs, yS0], [xe, T], [xe, B], [xs, yS1]];
+    return [[xin, BOOK_CY - half], [xout, T], [xout, B], [xin, BOOK_CY + half]];
   }
-  return [[xe, T], [xs, yS0], [xs, yS1], [xe, B]];
+  return [[xout, T], [xin, BOOK_CY - half], [xin, BOOK_CY + half], [xout, B]];
 }
 
 function machineCorners(j) {
