@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 bakeoff_results.json
 digests/
+site/node_modules/
+site/.next/
+site/content/digests/

@@ -368,7 +368,12 @@ def send_newsletter(conn, week: str, body: str) -> str:
         smtp.login(addr, pw)
         for email, name in rows:
             msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"alexandria digest — {week}"
+            # subject = the issue's editorial title (the digest's own H1);
+            # the W code is an internal id and never reader-facing
+            subject = f"alexandria digest — {week}"
+            if body.startswith("# "):
+                subject = body.split("\n", 1)[0][2:].strip()
+            msg["Subject"] = subject
             msg["From"] = f"alexandria <{addr}>"
             msg["To"] = email
             msg.attach(MIMEText(body, "plain"))
@@ -391,6 +396,12 @@ def weekly() -> str:
     # label with the ISO week that just ended (yesterday = Sunday)
     y = date.today() - timedelta(days=1)
     week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
+    monday = y - timedelta(days=6)
+    if monday.month == y.month:
+        dates = f"{monday.strftime('%B')} {monday.day}–{y.day}, {y.year}"
+    else:
+        dates = (f"{monday.strftime('%B')} {monday.day} – "
+                 f"{y.strftime('%B')} {y.day}, {y.year}")
     prompt = open("/root/prompts/digest.md").read()
     sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
 
@@ -401,6 +412,7 @@ def weekly() -> str:
             print(f"citation check failed ({exc}); digest proceeds without fresh citations")
         payload = gather(conn)
         payload["week"] = week
+        payload["dates"] = dates
         print(f"{week}: {payload['stats']} | new_claims={len(payload['new_claims'])} "
               f"deprecated={len(payload['deprecated'])}")
         body = write_digest(payload, prompt)

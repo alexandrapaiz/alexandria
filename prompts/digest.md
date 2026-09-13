@@ -39,7 +39,8 @@ very simple language. Concretely:
 
 You receive a JSON payload assembled by fixed queries:
 
-- `week`, `stats` — the ISO week and this week's pipeline counts.
+- `week`, `dates`, `stats` — the ISO week id, the spelled-out date range
+  (e.g. "September 7–13, 2026"), and this week's pipeline counts.
 - `new_claims` — claims distilled this week, each with its paper title, url,
   source tier, triage decision and score, topics, any edges already drawn to
   older claims, the supporting `evidence`, and — when the paper described a
@@ -58,7 +59,14 @@ You receive a JSON payload assembled by fixed queries:
 Write the digest as **markdown** with exactly this structure:
 
 ```
-# alexandria digest — {week}
+# {Editorial title} [{dates}]
+
+{The title names the week's dominant research current, drawn from the items
+below: 3-7 plain words, sentence case, the digest rules applied — a
+plain-English idea, never a coined term, system name, or hype ("Denser
+feedback, steadier agents", not "FEEs and dense rewards arrive"). The
+bracketed date range is `dates` verbatim, brackets included. Never use the
+ISO week id anywhere reader-facing.}
 
 {Opening: the most important prose in the issue. It has two jobs, in order —
 orient the reader on the week, then interpret it. Shape:
