@@ -15,8 +15,9 @@ export default function Home() {
           alexandr.ia
         </h1>
         <p className="hero-sub">
-          The latest in AI research, read in full and distilled weekly: what&rsquo;s
-          new, what&rsquo;s gaining ground, and what&rsquo;s been left behind.
+          The latest in AI research, read in full and distilled weekly:
+          what&rsquo;s new, what&rsquo;s gaining acceptance, and what newer
+          evidence has overturned.
         </p>
         <div className="hero-cta">
           <Link href="/pricing" className="pill">
@@ -47,24 +48,29 @@ export default function Home() {
         <div>
           <h3>Read in full</h3>
           <p>
-            Every notable paper is read whole, not skimmed by abstract. Findings
-            are distilled into claims with their evidence and procedures attached.
+            Abstracts compress away the details that make research usable, so
+            the library reads each selected paper whole and keeps every finding
+            together with its evidence and the exact procedure that produced it.
           </p>
         </div>
         <div>
           <h3>Tracked over time</h3>
           <p>
-            Claims live in a graph that never forgets. When new evidence supports,
-            refines, or overturns a result, the graph records it, and the digest
-            tells you.
+            Research keeps moving after publication, and a result that stood in
+            March can be overturned by June. Every claim therefore enters a
+            graph where newer evidence attaches to older conclusions, so that
+            growing support, refinements, and contradictions all become part of
+            a claim&rsquo;s record.
           </p>
         </div>
         <div>
           <h3>Turned into skills</h3>
           <p>
-            Validated procedures become Claude skills with full provenance. When
-            the research moves, your skills update. When it is overturned, they
-            retire.
+            Procedures that hold up under accumulating evidence are packaged as
+            Claude skills, each traceable to the claims and papers that justify
+            it. Because that provenance stays live, a skill is revised whenever
+            its research sharpens and retired with an explanation if the
+            research is overturned.
           </p>
         </div>
       </section>

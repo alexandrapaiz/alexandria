@@ -308,7 +308,8 @@ def write_digest(payload: dict, prompt: str) -> str:
 # model, so the brand line never drifts issue to issue.
 MASTHEAD = (
     "*The latest in AI research, read in full and distilled weekly: "
-    "what's new, what's gaining ground, and what's been left behind.*"
+    "what's new, what's gaining acceptance, and what newer evidence has "
+    "overturned.*"
 )
 
 

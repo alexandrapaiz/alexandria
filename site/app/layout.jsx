@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata = {
   title: "library of alexandr.ia",
   description:
-    "The latest in AI research, read in full and distilled weekly: what's new, what's gaining ground, and what's been left behind.",
+    "The latest in AI research, read in full and distilled weekly: what's new, what's gaining acceptance, and what newer evidence has overturned.",
 };
 
 export default function RootLayout({ children }) {
@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
             <Link href="/library">Library</Link>
             <Link href="/skills">Skills</Link>
             <Link href="/routines">Routines</Link>
-            <Link href="/pricing">Pricing</Link>
+            <Link href="/graph">Graph</Link>
             <Link href="/mission">Mission</Link>
           </div>
           <Link href="/pricing" className="pill">
@@ -30,10 +30,7 @@ export default function RootLayout({ children }) {
         {children}
         <footer className="footer">
           <span>library of alexandr.ia</span>
-          <span>read in full · distilled weekly · nothing left unread</span>
-          <span>
-            <a href="https://github.com/alexandrapaiz/alexandria">how it works</a>
-          </span>
+          <span>© 2026</span>
         </footer>
       </body>
     </html>

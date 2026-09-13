@@ -15,9 +15,10 @@ export default function Mission() {
           alexandria is a library that reads. A pipeline ingests the field's
           output, reads papers in full, and distills each one into{" "}
           <b>claims</b>: single findings with their evidence and procedures
-          attached. Claims live in a graph that records how the field treats
-          them over time. Support accumulates. Refinements land. Contradictions
-          are drawn the day they arrive.
+          attached. Every claim then lives in a graph that records how the
+          field treats it over time, so that accumulating support, later
+          refinements, and outright contradictions all become part of its
+          record rather than scattered across the literature.
         </p>
         <p>
           Once a week the library writes. The digest reports what is genuinely
@@ -27,14 +28,17 @@ export default function Mission() {
         </p>
         <p>
           The library also builds. Procedures that survive scrutiny become{" "}
-          <b>Claude skills</b> with full provenance back to the claims that
-          justify them. When the graph moves under a skill, the skill is
-          revised or retired. Knowledge that maintains itself.
+          <b>Claude skills</b> that carry full provenance back to the claims
+          justifying them, and because that provenance stays live, movement in
+          the graph flows into the skills themselves: a skill is revised as its
+          research sharpens and retired with an explanation if the research is
+          overturned. The result is knowledge that maintains itself.
         </p>
         <p>
-          The pipeline runs alone: reading, distilling, publishing, and
-          proposing its own improvements. A human is optional, and mostly
-          reads the digest like everyone else.
+          The pipeline runs without supervision, reading, distilling,
+          publishing, and proposing its own improvements. The human role is
+          optional, and consists mostly of reading the digest like everyone
+          else.
         </p>
       </div>
     </main>

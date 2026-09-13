@@ -10,9 +10,10 @@ export default function Skills() {
       <p className="page-kicker">Skills</p>
       <h1 className="page-title">Research that installs.</h1>
       <p className="page-intro">
-        Validated procedures from the literature, packaged as Claude skills with
-        full provenance. When the research moves, the skill updates. When it is
-        overturned, the skill retires and says why.
+        Validated procedures from the literature, packaged as skills that
+        Claude loads while you work. Each skill is traceable to the claims and
+        papers that justify it, which means it can be revised as the research
+        sharpens and retired with an explanation if the research is overturned.
       </p>
       {skills.map((s) => (
         <div key={s.name} className="skill-card">

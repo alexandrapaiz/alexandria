@@ -491,6 +491,66 @@ a {
   .tiers { grid-template-columns: 1fr; }
 }
 
+/* ---------- graph ---------- */
+
+.graph-page {
+  max-width: 1040px;
+}
+
+.graph-stage {
+  position: relative;
+  margin-top: 56px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.graph-canvas {
+  width: 100%;
+  height: 64vh;
+  min-height: 420px;
+  display: block;
+}
+
+.graph-gate {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 26px 30px;
+  text-align: center;
+  max-width: 420px;
+  width: calc(100% - 48px);
+}
+
+.graph-gate h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.graph-gate p {
+  font-size: 14px;
+  color: var(--gray);
+  margin: 8px 0 18px;
+  line-height: 1.5;
+}
+
+.graph-legend {
+  display: flex;
+  gap: 26px;
+  justify-content: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--gray);
+  flex-wrap: wrap;
+}
+
 /* ---------- mission / coming soon ---------- */
 
 .prose {
