@@ -92,6 +92,9 @@ export default function ShelvesLive(props) {
     const lineEls = svg.querySelectorAll("line");
     const dotEls = svg.querySelectorAll(".led-dots circle");
     const glowEls = svg.querySelectorAll(".led-glows circle");
+    // touch devices get a scroll-linked morph with fully native
+    // scrolling; the staged wheel choreography is desktop-only
+    const mobile = window.matchMedia("(pointer: coarse)").matches;
     let cur = 0;
     let p = 0;
     let lastScrollY = 0;
@@ -124,14 +127,14 @@ export default function ShelvesLive(props) {
       });
     };
     const tick = (tms) => {
-      const target = lastScrollY > 130 ? 1 : s(s(p));
+      const target = !mobile && lastScrollY > 130 ? 1 : s(s(p));
       cur += (target - cur) * 0.1;
       const settled = Math.abs(target - cur) <= 0.0005;
       if (settled) cur = target;
       apply(cur, tms || performance.now());
       // only once the rack is VISUALLY complete does the hold begin,
       // and only then does the flight to the archive follow
-      if (p >= 1 && cur > 0.995 && !advancing && lastScrollY < 90) {
+      if (!mobile && p >= 1 && cur > 0.995 && !advancing && lastScrollY < 90) {
         advancing = true;
         setTimeout(() => glide(sceneTop()), 300);
       }
@@ -220,6 +223,24 @@ export default function ShelvesLive(props) {
       if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();
     };
+
+    if (mobile) {
+      // the thumb drives the morph directly; scrolling stays native
+      const onScrollM = () => {
+        lastScrollY = window.scrollY;
+        p = Math.min(1, Math.max(0, lastScrollY / (window.innerHeight * 0.3)));
+        const near = lastScrollY > sceneTop() - 180;
+        document.querySelector(".lib-scene2")?.classList.toggle("arrived", near);
+        document.querySelector(".lib-art")?.classList.toggle("passed", near);
+        wake();
+      };
+      window.addEventListener("scroll", onScrollM, { passive: true });
+      onScrollM();
+      return () => {
+        window.removeEventListener("scroll", onScrollM);
+        if (raf !== null) cancelAnimationFrame(raf);
+      };
+    }
 
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("scroll", onScroll, { passive: true });

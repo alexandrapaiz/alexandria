@@ -108,6 +108,9 @@ export default function MarkLive(props) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const polys = svg.querySelectorAll("polygon");
+    // touch devices get a scroll-linked morph with fully native
+    // scrolling; the staged wheel choreography is desktop-only
+    const mobile = window.matchMedia("(pointer: coarse)").matches;
     let curF = -1; // the page loads as the machine
     let curS = 0;
     let mouseF = 0;
@@ -129,7 +132,7 @@ export default function MarkLive(props) {
       // S-curve: long dwell at rack and at book, a quick flip between
       const s = (x) => x * x * (3 - 2 * x);
       const eased = s(s(p));
-      const targetF = lastScrollY > 130 ? 1 : eased * 2 - 1;
+      const targetF = !mobile && lastScrollY > 130 ? 1 : eased * 2 - 1;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
       curF += (targetF - curF) * 0.1;
       curS += (targetS - curS) * 0.1;
@@ -249,6 +252,21 @@ export default function MarkLive(props) {
       if (!gliding) settleTimer = setTimeout(settle, 170);
       wake();
     };
+
+    if (mobile) {
+      // the thumb drives the morph directly; scrolling stays native
+      const onScrollM = () => {
+        lastScrollY = window.scrollY;
+        p = Math.min(1, Math.max(0, lastScrollY / (window.innerHeight * 0.35)));
+        wake();
+      };
+      window.addEventListener("scroll", onScrollM, { passive: true });
+      onScrollM();
+      return () => {
+        window.removeEventListener("scroll", onScrollM);
+        if (raf !== null) cancelAnimationFrame(raf);
+      };
+    }
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("wheel", onWheel, { passive: false });
