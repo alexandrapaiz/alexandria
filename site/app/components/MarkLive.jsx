@@ -89,12 +89,21 @@ function compute(f, sway) {
     const rest = restCorners(j);
     const goal = f >= 0 ? bookCorners(j) : machineCorners(j);
     const m = f >= 0 ? k : t;
-    const corners = rest.map(([rx, ry], c) => {
-      const x = lerp(rx, goal[c][0], m);
-      const y = lerp(ry, goal[c][1], m);
-      return rot(x, y, sway);
-    });
-    pts.push(corners.map(([x, y]) => `${x},${y}`).join(" "));
+    const corners = rest.map(([rx, ry], c) => [
+      lerp(rx, goal[c][0], m),
+      lerp(ry, goal[c][1], m),
+    ]);
+    // the sway tips each page around its OWN foot — pages responding
+    // to the cursor individually, never the image rotating as one
+    const fx = (corners[2][0] + corners[3][0]) / 2;
+    const fy = Math.max(corners[2][1], corners[3][1]);
+    const cs = Math.cos(sway);
+    const sn = Math.sin(sway);
+    const tipped = corners.map(([x, y]) => [
+      fx + (x - fx) * cs - (y - fy) * sn,
+      fy + (x - fx) * sn + (y - fy) * cs,
+    ]);
+    pts.push(tipped.map(([x, y]) => `${x},${y}`).join(" "));
   }
   return pts;
 }
@@ -134,8 +143,8 @@ export default function MarkLive(props) {
       const eased = s(s(p));
       const targetF = !mobile && lastScrollY > 130 ? 1 : eased * 2 - 1;
       const targetS = mouseF * 0.055; // the follow-the-mouse tip, always on
-      curF += (targetF - curF) * 0.1;
-      curS += (targetS - curS) * 0.1;
+      curF += (targetF - curF) * 0.065;
+      curS += (targetS - curS) * 0.065;
       if (Math.abs(targetF - curF) > 0.0005 || Math.abs(targetS - curS) > 0.0003) {
         apply();
         raf = requestAnimationFrame(tick);
@@ -169,16 +178,16 @@ export default function MarkLive(props) {
       setMorphing(true);
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = Math.max(260, Math.min(850, Math.abs(toY - fromY) * 1.1));
+      const ms = Math.max(320, Math.min(950, Math.abs(toY - fromY) * 1.2));
       const ease = (x) =>
-        x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
       const step = (now) => {
         const u = Math.min((now - t0) / ms, 1);
         window.scrollTo(0, fromY + (toY - fromY) * ease(u));
         if (u < 1) requestAnimationFrame(step);
         else {
           gliding = false;
-          lockUntil = performance.now() + 650;
+          lockUntil = performance.now() + 380;
           setTimeout(() => setMorphing(false), 80);
         }
       };
@@ -190,8 +199,19 @@ export default function MarkLive(props) {
     };
 
     const onWheel = (e) => {
-      if (gliding || performance.now() < lockUntil) {
-        e.preventDefault(); // the flight (or its afterglow) owns the scroll
+      if (gliding) {
+        e.preventDefault(); // the flight owns the scroll
+        return;
+      }
+      if (performance.now() < lockUntil) {
+        // momentum after a downward landing is never upward: an upward
+        // wheel here is the user deliberately leaving — honor it
+        if (e.deltaY < 0 && Math.abs(window.scrollY - followTop()) < 60) {
+          e.preventDefault();
+          glide(0);
+          return;
+        }
+        e.preventDefault();
         return;
       }
       const sy = window.scrollY;
@@ -202,7 +222,6 @@ export default function MarkLive(props) {
           e.preventDefault();
           p = Math.min(1, p + e.deltaY / MORPH_WHEEL);
           setMorphing(true);
-          window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p >= 1 && !advancing) {
             // hold the finished book for a beat before flying down
@@ -217,7 +236,6 @@ export default function MarkLive(props) {
           e.preventDefault();
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
           setMorphing(true);
-          window.scrollBy(0, e.deltaY * 0.035);
           wake();
           if (p <= 0) setMorphing(false);
         }
@@ -237,13 +255,15 @@ export default function MarkLive(props) {
       if (gliding) return;
       const sy = window.scrollY;
       const ft = followTop();
-      // only the true between-scenes band settles; everything at or
-      // past scene two is ordinary free scrolling
+      // only the true between-scenes band settles; the direction of
+      // travel decides the destination, so scrolling up never snaps down
       if (sy > 90 && sy < ft - 40) {
-        glide(sy < ft / 2 ? 0 : ft); // nearest scene wins
+        glide(lastDir < 0 ? 0 : ft);
       }
     };
+    let lastDir = 1;
     const onScroll = () => {
+      lastDir = Math.sign(window.scrollY - lastScrollY) || lastDir;
       lastScrollY = window.scrollY;
       // any real travel (touch, keyboard, scrollbar) rides as the book
       if (lastScrollY > 130) p = 1;

@@ -128,7 +128,7 @@ export default function ShelvesLive(props) {
     };
     const tick = (tms) => {
       const target = !mobile && lastScrollY > 130 ? 1 : s(s(p));
-      cur += (target - cur) * 0.1;
+      cur += (target - cur) * 0.065;
       const settled = Math.abs(target - cur) <= 0.0005;
       if (settled) cur = target;
       apply(cur, tms || performance.now());
@@ -153,16 +153,16 @@ export default function ShelvesLive(props) {
       gliding = true;
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = Math.max(260, Math.min(850, Math.abs(toY - fromY) * 1.1));
+      const ms = Math.max(320, Math.min(950, Math.abs(toY - fromY) * 1.2));
       const ease = (x) =>
-        x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
       const step = (now) => {
         const u = Math.min((now - t0) / ms, 1);
         window.scrollTo(0, fromY + (toY - fromY) * ease(u));
         if (u < 1) requestAnimationFrame(step);
         else {
           gliding = false;
-          lockUntil = performance.now() + 650;
+          lockUntil = performance.now() + 380;
         }
       };
       requestAnimationFrame(step);
@@ -173,7 +173,18 @@ export default function ShelvesLive(props) {
     };
 
     const onWheel = (e) => {
-      if (gliding || performance.now() < lockUntil) {
+      if (gliding) {
+        e.preventDefault();
+        return;
+      }
+      if (performance.now() < lockUntil) {
+        // momentum after a downward landing is never upward: an upward
+        // wheel here is the user deliberately leaving — honor it
+        if (e.deltaY < 0 && Math.abs(window.scrollY - sceneTop()) < 60) {
+          e.preventDefault();
+          glide(0);
+          return;
+        }
         e.preventDefault();
         return;
       }
@@ -205,12 +216,15 @@ export default function ShelvesLive(props) {
       const sy = window.scrollY;
       const st = sceneTop();
       // only the true between-scenes band settles; everything at or
-      // past scene two is ordinary free scrolling
+      // past scene two is ordinary free scrolling. The direction of
+      // travel decides the destination, so scrolling up never snaps down
       if (sy > 90 && sy < st - 40) {
-        glide(sy < st / 2 ? 0 : st); // nearest scene wins
+        glide(lastDir < 0 ? 0 : st);
       }
     };
+    let lastDir = 1;
     const onScroll = () => {
+      lastDir = Math.sign(window.scrollY - lastScrollY) || lastDir;
       lastScrollY = window.scrollY;
       if (lastScrollY > 130) p = 1;
       if (advancing && lastScrollY < 60) advancing = false;

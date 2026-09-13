@@ -8,10 +8,7 @@ export default function Routines() {
         <br />
         automations
       </h1>
-      <p>
-        Runbooks a person follows and pipelines a machine runs, extracted from
-        the same graph as the skills. Coming soon.
-      </p>
+      <p>Coming soon.</p>
     </main>
   );
 }
