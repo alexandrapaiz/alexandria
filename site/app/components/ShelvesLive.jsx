@@ -139,18 +139,22 @@ export default function ShelvesLive(props) {
 
     let advancing = false;
     let gliding = false;
+    let lockUntil = 0; // absorbs trackpad momentum right after a landing
     const glide = (toY) => {
       gliding = true;
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = 850;
+      const ms = Math.max(260, Math.min(850, Math.abs(toY - fromY) * 1.1));
       const ease = (x) =>
         x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
       const step = (now) => {
         const u = Math.min((now - t0) / ms, 1);
         window.scrollTo(0, fromY + (toY - fromY) * ease(u));
         if (u < 1) requestAnimationFrame(step);
-        else gliding = false;
+        else {
+          gliding = false;
+          lockUntil = performance.now() + 650;
+        }
       };
       requestAnimationFrame(step);
     };
@@ -160,7 +164,7 @@ export default function ShelvesLive(props) {
     };
 
     const onWheel = (e) => {
-      if (gliding) {
+      if (gliding || performance.now() < lockUntil) {
         e.preventDefault();
         return;
       }
@@ -177,6 +181,9 @@ export default function ShelvesLive(props) {
             advancing = true;
             setTimeout(() => glide(sceneTop()), 2200);
           }
+        } else if (e.deltaY > 0 && p >= 1) {
+          // holding as the rack: the page belongs to the coming flight
+          e.preventDefault();
         } else if (e.deltaY < 0 && p > 0) {
           e.preventDefault();
           p = Math.max(0, p + e.deltaY / MORPH_WHEEL);
@@ -197,6 +204,9 @@ export default function ShelvesLive(props) {
       const st = sceneTop();
       if (sy > 90 && sy < st - 40) {
         glide(sy < st / 2 && p < 1 ? 0 : st);
+      } else if (sy > st + 24) {
+        // overshot the landing (momentum): ease back to the scene top
+        glide(st);
       }
     };
     const onScroll = () => {

@@ -157,15 +157,16 @@ export default function MarkLive(props) {
       document.documentElement.classList.toggle("morphing", on);
     let advancing = false;
     let gliding = false;
+    let lockUntil = 0; // absorbs trackpad momentum right after a landing
 
     // our own scene-to-scene travel: one eased flight, wheel input
-    // swallowed while it flies, CSS snap re-armed only after landing
+    // swallowed while it flies
     const glide = (toY) => {
       gliding = true;
       setMorphing(true);
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = 850;
+      const ms = Math.max(260, Math.min(850, Math.abs(toY - fromY) * 1.1));
       const ease = (x) =>
         x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
       const step = (now) => {
@@ -174,6 +175,7 @@ export default function MarkLive(props) {
         if (u < 1) requestAnimationFrame(step);
         else {
           gliding = false;
+          lockUntil = performance.now() + 650;
           setTimeout(() => setMorphing(false), 80);
         }
       };
@@ -185,8 +187,8 @@ export default function MarkLive(props) {
     };
 
     const onWheel = (e) => {
-      if (gliding) {
-        e.preventDefault(); // the flight owns the scroll
+      if (gliding || performance.now() < lockUntil) {
+        e.preventDefault(); // the flight (or its afterglow) owns the scroll
         return;
       }
       const sy = window.scrollY;
@@ -204,6 +206,9 @@ export default function MarkLive(props) {
             advancing = true;
             setTimeout(() => glide(followTop()), 800);
           }
+        } else if (e.deltaY > 0 && p >= 1) {
+          // holding as the book: the page belongs to the coming flight
+          e.preventDefault();
         } else if (e.deltaY < 0 && p > 0) {
           // spend the up-scroll on folding it back — symmetric
           e.preventDefault();
@@ -231,6 +236,9 @@ export default function MarkLive(props) {
       const ft = followTop();
       if (sy > 90 && sy < ft - 40) {
         glide(sy < ft / 2 && p < 1 ? 0 : ft);
+      } else if (sy > ft + 24) {
+        // overshot the landing (momentum): ease back to the scene top
+        glide(ft);
       }
     };
     const onScroll = () => {

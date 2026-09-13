@@ -311,7 +311,9 @@ a {
    white until it lands */
 .lib-hero {
   min-height: 0;
-  padding: 36px 24px 0;
+  /* the bottom cushion keeps the zone behind the nav white when the
+     glide lands the header at the top */
+  padding: 16px 24px 110px;
 }
 
 .lib-scene2 > * {
@@ -334,7 +336,7 @@ a {
 }
 
 .lib-art {
-  width: min(840px, 76vw, 74svh);
+  width: min(840px, 76vw, 70svh);
   color: var(--ink);
 }
 
