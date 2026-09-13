@@ -21,6 +21,13 @@ html {
    never in between */
 :root:has(.home-snap) {
   scroll-snap-type: y mandatory;
+  /* snap positions account for the sticky nav, so scene one's resting
+     view is the page scrolled to the very top */
+  scroll-padding-top: 96px;
+}
+
+.scene-gap {
+  height: 22svh;
 }
 
 :root:has(.home-snap) .footer {

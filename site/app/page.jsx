@@ -15,6 +15,8 @@ export default function Home() {
         </div>
       </section>
 
+      <div className="scene-gap" aria-hidden="true" />
+
       <section className="hero-follow">
         <p className="statement">
           The latest in AI research, <b>read in full</b> and{" "}
