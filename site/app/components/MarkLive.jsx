@@ -44,10 +44,11 @@ const BOOK_CY = (T + B) / 2;
 const STRIP_GAP0 = 40; // the innermost strip's distance from the spine
 const STRIP_PITCH = 96; // slot-to-slot distance of the strips
 const stripW = (n) => 46 + ((n - 1) / 4) * 18; // near-even, widest outside
-// the pinch develops fully: the innermost page narrows almost to a
-// point at the spine (the X closes); the outermost keeps a legible
-// diagonal rather than an odd nick
-const stripPinch = (n) => 0.05 + 0.73 * Math.pow((n - 1) / 4, 0.8);
+// the pinch concentrates at the spine: the innermost page closes to a
+// near-point (the X closes), the second is still strongly tapered, and
+// by the outermost the page is a plain full-height rectangle — so the
+// taper reads as pages turning at the spine, not a starburst
+const stripPinch = (n) => 0.03 + 0.97 * Math.sin(((n - 1) / 4) * (Math.PI / 2));
 const DRAW_ORDER = [-1, -2, -3, -4, -5, 1, 2, 3, 4, 5, 0];
 
 const lerp = (a, b, t) => a + (b - a) * t;
