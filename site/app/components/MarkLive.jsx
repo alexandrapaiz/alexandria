@@ -42,15 +42,17 @@ const BOOK_CY = (T + B) / 2;
 // strips sit slightly OUTSIDE their rack slots, so during the morph
 // every page drifts outward — from the spine, never into it
 const STRIP_GAP0 = 25; // the innermost strip's distance from the spine
-const STRIP_PITCH = 99; // slot-to-slot distance of the strips
-// pages are wide slabs with narrow air between them (about 3:1 black
-// to white) — thin strips read as blades, not pages
-const stripW = () => 74;
-// the pinch concentrates at the spine: the innermost page closes to a
-// near-point (the X closes), the second is still strongly tapered, and
-// by the outermost the page is a plain full-height rectangle — so the
-// taper reads as pages turning at the spine, not a starburst
-const stripPinch = (n) => 0.03 + 0.97 * Math.sin(((n - 1) / 4) * (Math.PI / 2));
+const STRIP_PITCH = 99; // pitch of the strips' spine-facing edges
+// every page is a plane tilting out of the screen: near the spine it
+// stands close to perpendicular (narrow, strongly foreshortened), and
+// each page outward lies flatter (wider). The gaps narrow outward as
+// the fan compresses — both are what sells the 3D open book.
+const stripW = (n) => 50 + 9 * (n - 1);
+// the spine-facing edge is pinched toward the vertical center: the
+// innermost page closes to a near-point (the X closes), easing outward
+// — but even the outermost keeps a clear taper, because a plain
+// rectangle reads as a flat slab, never as a turning page
+const stripPinch = (n) => 0.03 + 0.8 * Math.sin(((n - 1) / 4) * (Math.PI / 2));
 const DRAW_ORDER = [-1, -2, -3, -4, -5, 1, 2, 3, 4, 5, 0];
 
 const lerp = (a, b, t) => a + (b - a) * t;
