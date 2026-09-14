@@ -41,9 +41,11 @@ const DC_S = 120; // ...and one lean
 const BOOK_CY = (T + B) / 2;
 // strips sit slightly OUTSIDE their rack slots, so during the morph
 // every page drifts outward — from the spine, never into it
-const STRIP_GAP0 = 40; // the innermost strip's distance from the spine
-const STRIP_PITCH = 96; // slot-to-slot distance of the strips
-const stripW = (n) => 46 + ((n - 1) / 4) * 18; // near-even, widest outside
+const STRIP_GAP0 = 25; // the innermost strip's distance from the spine
+const STRIP_PITCH = 99; // slot-to-slot distance of the strips
+// pages are wide slabs with narrow air between them (about 3:1 black
+// to white) — thin strips read as blades, not pages
+const stripW = () => 74;
 // the pinch concentrates at the spine: the innermost page closes to a
 // near-point (the X closes), the second is still strongly tapered, and
 // by the outermost the page is a plain full-height rectangle — so the
