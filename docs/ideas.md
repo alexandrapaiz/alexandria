@@ -356,6 +356,11 @@ herself.
   into vision.md in her own words, edits it, or rejects it. Nothing
   changes in how the quarter is run either way.
 - Cost: $0
+- Status: built
+- Owner outcome 2026-09-18: after three rounds at the all-hands the owner
+  chose the mission now at the top of vision.md §0 ("Make the frontier of
+  AI research directly usable by every builder and every agent, through
+  knowledge that compounds and maintains itself"). This entry is done.
 - Status: proposed
 
 ## Security agent findings (first run, 2026-09-18)

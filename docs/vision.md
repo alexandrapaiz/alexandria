@@ -5,6 +5,17 @@ status checklist in the README tracks distance from it.
 
 ## 0. Purpose
 
+**The mission** (owner's words, chosen 2026-09-18 after three rounds at
+the first all-hands):
+
+> **Make the frontier of AI research directly usable by every builder
+> and every agent, through knowledge that compounds and maintains
+> itself.**
+
+Everything below serves that sentence. It is a goal in the Google mold,
+internal and unfinishable: the OKR agent holds every quarter against it,
+and the owner's tiebreak notes stand beneath it.
+
 Recorded 2026-09-17, the owner's calls on the record. alexandria is an
 **autonomous research organism building a standalone knowledge business**:
 it turns the moving frontier of AI research into operational knowledge, a
