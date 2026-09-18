@@ -1,9 +1,13 @@
 """alexandria MCP server: the agentic layer's doorway into the corpus (ADR-11).
 
-A thin MCP server on a Modal web endpoint. Four tools — semantic_search,
-sql_query (SELECT-only), get_digest, propose_skill (opens a PR; the human merge
-is the promotion, ADR-7). All intelligence stays in the calling agent; all
-authority (DB password, GitHub token, embedding model) stays here.
+A thin MCP server on a Modal web endpoint. Tools — semantic_search, rag_answer
+(retrieve-then-generate over the corpus, ADR-20), sql_query (SELECT-only),
+get_digest, propose_skill (opens a PR; the human merge is the promotion,
+ADR-7). All intelligence stays in the calling agent; all authority (DB
+password, GitHub token, embedding model) stays here. rag_answer is the one
+exception: synthesis has to happen somewhere, so it happens server-side,
+against a fixed prompt, over context the server itself retrieved — never
+against the open corpus or the model's own training data.
 
 Auth is OAuth 2.1 as the MCP spec standardizes it: authorization code + PKCE +
 dynamic client registration, implemented stateless with signed JWTs and a
@@ -20,6 +24,7 @@ login passphrase typed on the authorize page).
 import modal
 
 EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
+RAG_MODEL = "openai/gpt-oss-120b"  # same model as interpret.py; free-tier Groq
 REPO = "alexandrapaiz/alexandria"
 
 image = (
@@ -32,6 +37,7 @@ image = (
         "httpx==0.28.1",
         "sentence-transformers",
     )
+    .add_local_file("prompts/rag-answer.md", "/root/prompts/rag-answer.md")
 )
 
 app = modal.App("alexandria-mcp", image=image)
@@ -42,6 +48,7 @@ hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
     secrets=[
         modal.Secret.from_name("neon"),
         modal.Secret.from_name("github"),
+        modal.Secret.from_name("groq"),
         modal.Secret.from_name("JWT"),
         modal.Secret.from_name("MCP"),
     ],
@@ -89,6 +96,26 @@ def serve():
             pass  # fall back to default resolution
         return psycopg.connect(url, **kwargs)
 
+    def call_groq(api_key: str, system: str, user: str) -> dict:
+        import json
+
+        resp = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key.strip()}"},
+            json={
+                "model": RAG_MODEL,
+                "temperature": 0.1,
+                "response_format": {"type": "json_object"},
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+        return json.loads(resp.json()["choices"][0]["message"]["content"])
+
     def mint(claims: dict, ttl: int) -> str:
         return jwt.encode({**claims, "iat": int(time.time()), "exp": int(time.time()) + ttl},
                           JWT_SECRET, algorithm="HS256")
@@ -113,10 +140,7 @@ def serve():
         vec = _embedder[0].encode([text], normalize_embeddings=True)[0]
         return str(vec.tolist())
 
-    @mcp.tool
-    def semantic_search(query: str, k: int = 8) -> list[dict]:
-        """Search the claim corpus by meaning. Returns the k nearest claims with
-        their evidence, topics, source paper, and cosine similarity."""
+    def _retrieve(query: str, k: int) -> list[dict]:
         qvec = embed(query)
         with db() as conn:
             rows = conn.execute(
@@ -135,6 +159,46 @@ def serve():
              "paper": r[4], "url": r[5], "similarity": round(float(r[6]), 3)}
             for r in rows
         ]
+
+    @mcp.tool
+    def semantic_search(query: str, k: int = 8) -> list[dict]:
+        """Search the claim corpus by meaning. Returns the k nearest claims with
+        their evidence, topics, source paper, and cosine similarity. This is
+        retrieval only — no synthesis. Use rag_answer when you want a
+        cited answer instead of a ranked list to read yourself."""
+        return _retrieve(query, k)
+
+    _rag_prompt = open("/root/prompts/rag-answer.md").read()
+
+    @mcp.tool
+    def rag_answer(question: str, k: int = 8) -> dict:
+        """Retrieval-augmented generation over the claim corpus: retrieves the
+        k nearest claims by meaning, then asks a model to synthesize a short,
+        cited answer grounded only in that retrieved context — never in the
+        model's own training data. Returns the answer with inline [C<id>]
+        citations plus the source claims, so every sentence is checkable.
+        Use this for "what does the corpus say about X" questions; use
+        semantic_search instead when you want to read the raw claims yourself."""
+        claims = _retrieve(question, k)
+        if not claims:
+            return {"answer": "The corpus has no embedded claims yet.", "citations": []}
+        context = "\n\n".join(
+            f"[C{c['claim_id']}] {c['claim']} (evidence: {c['evidence']}) "
+            f"— {c['paper']}"
+            for c in claims
+        )
+        user = f"CONTEXT:\n{context}\n\nQUESTION: {question}"
+        try:
+            out = call_groq(os.environ["GROQ_API_KEY"], _rag_prompt, user)
+        except httpx.HTTPStatusError as exc:
+            return {"error": f"synthesis model unavailable: {exc.response.status_code}"}
+        by_id = {c["claim_id"]: c for c in claims}
+        used_ids = [cid for cid in out.get("claim_ids_used", []) if cid in by_id]
+        citations = [
+            {"claim_id": cid, "paper": by_id[cid]["paper"], "url": by_id[cid]["url"]}
+            for cid in used_ids
+        ]
+        return {"answer": out.get("answer", ""), "citations": citations}
 
     @mcp.tool
     def sql_query(sql: str) -> dict:

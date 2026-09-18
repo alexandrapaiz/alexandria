@@ -86,7 +86,7 @@ flowchart TB
 | Triage model | Llama 3.3 70B via Groq free tier | Open model, $0, 10× headroom over our volume |
 | Distill model | Claude (Anthropic API) | Frontier reasoning where quality matters; the only metered cost (~$1–2/mo) |
 | Embeddings | Qwen3-Embedding-0.6B, in-process on Modal | Top open family on MTEB; batch jobs need no serving endpoint |
-| Interactive search | MCP tools over Postgres (`semantic_search` + `sql_query`) | Agentic retrieval for humans; hardwired retrieval for batch |
+| Interactive search | MCP tools over Postgres (`semantic_search` + `rag_answer` + `sql_query`) | Agentic retrieval for humans; hardwired retrieval for batch |
 | Code, prompts, gold | This repo | Prompts are versioned files, so self-improvement proposals are literal git diffs |
 
 Standing cost: **$0/month**. See [docs/decisions.md](docs/decisions.md) for every
@@ -118,8 +118,10 @@ docs/curriculum.md   the AI systems stack, layer by layer, learned by building
 - [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
       self-published to digests/ every Monday — first edition 2026-W37
 - [x] Slow loop: citation tracking via Semantic Scholar, merged into the weekly cron (ADR-8)
-- [x] MCP server live (ADR-11): OAuth 2.1, semantic_search / sql_query / get_digest /
-      propose_skill, at ap4509--alexandria-mcp-serve.modal.run
+- [x] MCP server live (ADR-11): OAuth 2.1, semantic_search / rag_answer / sql_query /
+      get_digest / propose_skill, at ap4509--alexandria-mcp-serve.modal.run
+- [x] RAG (retrieve-then-generate, ADR-20): `rag_answer` synthesizes cited answers
+      over the claim corpus, self-used today; hosted/paid surface is a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself — first send 2026-09-11; email-only, digests never in the repo
 - [ ] Claude weekly agent scheduled task (prompt: prompts/weekly-agent.md) → first skill PRs
