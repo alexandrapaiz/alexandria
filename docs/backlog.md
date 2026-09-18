@@ -276,3 +276,27 @@ verdict text got copied onto the wrong entry rather than a deliberate
 rejection. Carded on the board regardless since it's genuinely pending
 either way, but worth your eyes to confirm the status is what you
 intended.
+
+## Owner orders queued for the frontend seat (2026-09-18, recorded by the chair)
+
+Given live during the working session, to be executed by the next
+frontend dispatch on PR #26's branch (a copy-revision run is in flight
+as this is written; these fire the moment it lands):
+
+1. **Hide the knowledge graph completely.** Nav link gone, every
+   mention on home and pricing gone, the route unreachable. Code stays
+   on the shelf; a visitor must have no idea it exists until it is
+   industry standard.
+2. **Density pass.** Some spaces look dense to the owner. Re-screenshot
+   every page at the three viewports hunting for cramped spacing and
+   open up the tight scenes.
+3. **Reorganize the skills library to grow.** Design for fifty skills,
+   not two: grouping, scannable structure, honest small-category
+   states. The UX benchmark is Clerk: their flows, small states, and
+   interaction quality, translated into the house black and white,
+   never their look.
+4. **The UI must make clear the product is for you AND your agents.**
+   Both audiences, together: the builder reads the digest and library,
+   the builder's agents load the same skills and cite the same claims.
+   This is a positioning line the whole surface should carry, not one
+   sentence on one page.
