@@ -357,3 +357,152 @@ herself.
   changes in how the quarter is run either way.
 - Cost: $0
 - Status: proposed
+
+## Security agent findings (first run, 2026-09-18)
+
+Full report at docs/security/audit-2026-09-18.md. The three below are
+`urgent` because each needs an owner decision or action, not an engineer
+build.
+
+### 2026-09-18 — MCP OAuth: redirect_uri not validated against registration (security agent)
+
+- Trigger: OAuth flow review of mcp/server.py per this seat's charter.
+- What: `/register` (server.py:277) issues a client_id but never persists
+  the submitted `redirect_uris`. `/authorize` (server.py:301-330) then
+  accepts any `redirect_uri` from the request with no check against what
+  was registered, and redirects the signed authorization code there once
+  the passphrase is entered. PKCE does not close this: an attacker who
+  crafts the entire authorize link (their own redirect_uri and
+  code_challenge) legitimately holds the matching code_verifier, so a
+  phishing link on the real domain that gets the real passphrase typed
+  into it hands the attacker a working access+refresh token pair with
+  full MCP tool access, including the PR-authority tools.
+- First step: persist client_id to redirect_uris at `/register` (signed
+  token or a small store) and reject `/authorize` or `/token` calls whose
+  redirect_uri does not match. Needs a real test against a live Modal
+  deployment before shipping, which this run could not do.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — Public git history still holds a full pre-privacy-pivot digest (security agent)
+
+- Trigger: public/private boundary check across full git history (this
+  repo is public on GitHub).
+- What: digests/2026-W37.md was committed nine times (2026-09-08 through
+  the "digests go private" commit) before the folder was gitignored. The
+  file is no longer tracked on main, but every historical version,
+  including the full digest text, is still retrievable by anyone who
+  clones the public repo (`git show <commit>:digests/2026-W37.md`). This
+  is the paid product's actual content sitting in public history ahead of
+  the Oct 13 launch.
+- First step: the owner decides whether to rewrite history (BFG /
+  `git filter-repo`) to purge the blob, weighed against the disruption
+  (force-push, breaks the two branches currently ahead of main and any
+  existing clones/forks) versus leaving it and accepting the exposure.
+  This agent does not rewrite history or force-push on its own authority.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — Grant the GitHub App the `workflows` permission, or accept no agent can fix workflow files (security agent)
+
+- Trigger: pushing this run's branch with a workflow-file fix (pinning
+  actions/checkout and anthropics/claude-code-action to resolved SHAs,
+  see the next section) was rejected by GitHub: "refusing to allow a
+  GitHub App to create or update workflow
+  `.github/workflows/agent-engineer.yml` without `workflows` permission."
+  That is a GitHub App installation permission, separate from each
+  workflow's own `permissions:` block, and none of the six workflows
+  request `workflows: write` either, so no seat's token can land a
+  workflow-file change today, including ExO's, whose charter explicitly
+  names agent workflows as writable.
+- What: the owner decides whether to grant the GitHub App installation
+  the `workflows` permission so an agent (this one, or ExO per its
+  charter) can push a workflow-file fix directly, or to keep workflow
+  edits owner-only and treat every future finding in this category as a
+  ledger entry the owner applies by hand. Either is a real choice about
+  how much authority this class of change should have, not an oversight
+  to just fix.
+- First step: the owner's call. If she grants it, the pinning fix in the
+  next entry is ready to apply verbatim.
+- Cost: $0
+- Status: urgent
+
+## Security agent proposals (first run, 2026-09-18)
+
+### 2026-09-18 — Pin actions/checkout and claude-code-action to resolved SHAs (security agent)
+
+- Trigger: both `actions/checkout@v4` and `anthropics/claude-code-action@v1`
+  in all six `agent-*.yml` workflows are floating major-version tags, not
+  immutable references. Whoever controls the tag controls what code runs
+  in every future scheduled or dispatched run. This is the fix this run
+  prepared and verified but could not push (see the `workflows`
+  permission entry above).
+- What: replace `uses: actions/checkout@v4` with
+  `uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0`
+  and `uses: anthropics/claude-code-action@v1` with
+  `uses: anthropics/claude-code-action@a4f54ef2c58884867281bd8e2f8d63352ad019a9 # v1.0.229`
+  in all six workflow files. Verified tonight that both SHAs are exactly
+  what the tags already resolve to, so this changes nothing about current
+  behavior. Trade-off to weigh: pinning trades away automatic upstream
+  fixes, and claude-code-action's v1 tag moved as recently as tonight, so
+  whoever applies this should plan to re-check the SHA periodically
+  (a natural fit for this seat's biweekly cadence) or use Dependabot's
+  GitHub Actions update support instead.
+- First step: apply the two substitutions above across the six files, or
+  wait for the `workflows` permission decision.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Verify pipeline/weekly.py's Gmail secret name against Modal before wiring it live (security agent)
+
+- Trigger: `weekly()`'s decorator requests two Modal secrets, `Gmail`
+  (capital G) and `gmail_pass`, while the function's own docstring
+  describes one combined secret it calls "the gmail secret." Unlike
+  `neon`/`groq`, which are single lowercase secrets used consistently
+  everywhere, this pairing does not match any pattern used elsewhere in
+  the pipeline. Could not verify against the actual Modal secret store
+  from this session.
+- What: before the owner creates the real Gmail secret(s) in Modal,
+  confirm the name(s) `pipeline/weekly.py` expects and either fix the
+  code to request one `gmail` secret (matching the neon/groq pattern) or
+  fix the docstring to match two secrets, whichever is actually true.
+- First step: check what's created in the Modal secret dashboard, or the
+  owner's preference, before the newsletter send goes live.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Confirm interpret.py's neighbor query casts the embedding parameter (security agent)
+
+- Trigger: `interpret.py`'s nearest-neighbor query passes a claim's
+  `embedding` value, read back from Postgres with no pgvector adapter
+  registered, straight into `order by embedding <=> %s` with no explicit
+  `::vector` cast on the parameter. `distill.py`'s writes always cast
+  (`%s::vector`), and this read path doesn't. Could not verify against a
+  live pgvector database from this session, so this may already work
+  fine depending on how psycopg3 types the round-tripped value.
+- What: run interpret.py once against a real database and confirm the
+  neighbor query executes without a cast or type error. If it errors,
+  add `%s::vector`.
+- First step: a single live run of the interpret step with logging on the
+  neighbor query.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Pin the open-ended Python dependency floors (security agent)
+
+- Trigger: dependency audit found several unpinned or open-ended
+  requirements: `modal>=1.5` (root requirements.txt), and in
+  `mcp/server.py`'s inline `pip_install`, `pyjwt>=2.9` and
+  `fastapi>=0.115`. `sentence-transformers` (used by distill.py) carries
+  no version pin at all and pulls in unconstrained `transformers`/`torch`.
+  No currently known CVE was confirmed against the exact resolved
+  versions, but open floors mean a future `pip install` can silently pick
+  up a different, unreviewed version, which matters most for `pyjwt`
+  since it signs the MCP server's own auth tokens.
+- What: pin `pyjwt` to `>=2.12,<3` (guarantees the `crit`-header
+  validation fix), add an upper bound to `fastapi`, and pin
+  `sentence-transformers`/`transformers` to tested versions.
+- First step: pin `pyjwt` first, since it's the security-relevant one,
+  then test the MCP server still deploys and authenticates after the bump.
+- Cost: $0
+- Status: proposed
