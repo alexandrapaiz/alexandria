@@ -986,6 +986,85 @@ build.
 - Cost: $0
 - Status: built
 
+## Engineer agent findings (2026-09-18, sprint 2026-09-21 items 1-3)
+
+### 2026-09-18 — Read the archive from the `digests` table, fixture as fallback (engineer agent)
+- Trigger: sprint item 3 asked for real digest content on the archive.
+  This session had no database credentials (`NEON_RO_URL` is wired into the
+  research and skill workflows but not `agent-engineer.yml`, and it was
+  empty here), so the issue body had to be recovered from git history at
+  commit `d98885e`, from before `digests/` went gitignored. Meanwhile
+  `db/schema.sql` already calls the `digests` table "the database of
+  record," one row per ISO week with the markdown in `body`. The site and
+  the database of record are not connected, so the archive will still show
+  only 2026-W37 the day 2026-W38 sends.
+- What: give `site/lib/content.js` a Neon-backed implementation behind the
+  interface it already exposes (`listIssues`, `getIssue`). Query `digests`
+  ordered by week, fall back to the checked-in fixtures when
+  `DATABASE_URL` is absent so local development and preview builds keep
+  working with no credentials. The driver is already a site dependency as
+  of this PR (`@neondatabase/serverless`), added for the spine entitlement
+  check, so this is a query and a fallback branch rather than new plumbing.
+- First step: add `NEON_RO_URL` to `.github/workflows/agent-engineer.yml`
+  so an engineer session can see the table it is coding against, then
+  write the query behind the existing interface.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — A "why this matters" line on every digest item (engineer agent)
+- Trigger: this run's craft scan of Import AI (jack-clark.net, 116,000+
+  free subscribers, 450+ issues). Every item in every issue ends with a
+  named "Why this matters" annotation that states the consequence for the
+  reader, separate from the finding itself. Reading our own 2026-W37 issue
+  end to end while wiring it to the archive, the contrast is sharp: our
+  items give the claim and then the procedure, both accurate, and leave
+  the reader to work out what to do differently. Import AI never makes the
+  reader do that work.
+- What: add one required slot to the item template in `prompts/digest.md`:
+  a single sentence naming what a builder should do differently now that
+  this holds. It is a prompt change, not a pipeline change, so it is
+  cheap to try and cheap to revert. Pair it with the blind read test
+  already proposed in this ledger so the change is judged rather than
+  assumed.
+- First step: add the slot to `prompts/digest.md` and regenerate 2026-W37
+  from the stored payload, then read the two versions side by side.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Editorial titles for the pre-overhaul issues (engineer agent)
+- Trigger: with the archive finally rendering, the 2026-W37 row reads
+  "alexandria digest — 2026‑W37" and tells a visitor nothing, because the
+  first editions predate the voice overhaul that made the H1
+  "{Editorial title} [{dates}]" (`prompts/digest.md`). The archive is now
+  a public acquisition surface, so a title that carries no information is
+  a cost on every issue that has one. The date range is already handled:
+  `weekRange()` derives the ISO week's Monday-to-Sunday span, so the row
+  reads "[September 7–13, 2026]" rather than an empty bracket.
+- What: a one-off pass that gives each pre-overhaul issue an editorial
+  title in the current format, taken from what the issue actually argued,
+  and rewrites its H1. Small, but it is the difference between an archive
+  that sells the product and a list of week numbers.
+- First step: retitle 2026-W37, the only issue on the site today.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Craft scan: Import AI (jack-clark.net)
+- Scanned: the public archive and issue pages, as a signed-out visitor.
+  Chosen because this run built alexandria's public archive, and Import AI
+  runs the same shape at scale: every issue free and complete in public,
+  with the paid tier selling access rather than content.
+- Worth stealing: the per-item "Why this matters" annotation, filed as its
+  own ledger entry above. Also structural, and cheaper: issues are
+  numbered and titled with their actual topics ("Import AI 472: topic;
+  topic; topic"), so the archive index is scannable without opening
+  anything. Ours is titled by week number, which is the entry above.
+- Where alexandria is better: Import AI's "gaining traction" equivalent is
+  one author's judgment, stated well but unfalsifiable. Ours is counted.
+  The "gaining traction" section is backed by `supports` edge counts in
+  the claim graph and citation trajectories from the slow loop, and "left
+  behind" is backed by `contradicts` edges and the `deprecated_claims`
+  view. A reader can ask why a claim moved and get a number and an edge,
+  not an opinion. No profiled digest can answer that question at all.
 ## ExO findings (2026-09-18, second run)
 
 Filed by the ExO agent under charter §5b: staleness found in surfaces
