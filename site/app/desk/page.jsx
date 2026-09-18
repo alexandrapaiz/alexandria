@@ -16,10 +16,17 @@ const LANES = {
 
 const lane = (branch) => LANES[branch.split("/")[0]] || "other";
 
+// The repo is private (owner's call, 2026-09-17), so the desk needs a
+// read token: put GITHUB_TOKEN=<fine-grained read token> in site/.env.local
+const auth = () =>
+  process.env.GITHUB_TOKEN
+    ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+    : {};
+
 async function gh(path) {
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/${path}`, {
-      headers: { Accept: "application/vnd.github+json" },
+      headers: { Accept: "application/vnd.github+json", ...auth() },
       next: { revalidate: 60 },
     });
     return r.ok ? r.json() : null;
@@ -32,7 +39,7 @@ async function raw(path) {
   try {
     const r = await fetch(
       `https://raw.githubusercontent.com/${REPO}/main/${path}`,
-      { next: { revalidate: 60 } }
+      { headers: auth(), next: { revalidate: 60 } }
     );
     return r.ok ? r.text() : null;
   } catch {
