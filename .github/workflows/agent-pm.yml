@@ -46,4 +46,4 @@ jobs:
             Owner instructions for this dispatch, binding for this run and
             extending the charter (empty on scheduled runs):
             ${{ inputs.owner_instructions }}
-          claude_args: "--max-turns 140 --permission-mode bypassPermissions --model sonnet"
+          claude_args: "--max-turns 250 --permission-mode bypassPermissions --model sonnet"
