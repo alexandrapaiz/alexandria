@@ -257,6 +257,14 @@ below.
 - First step: a Next.js server action inserting into the existing table
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): cut from sprint-2026-09-21 revision 2
+  under the product-first re-triage (incident 12, all-hands decision
+  11). Still accepted-in-spirit and correct, but it does not move the
+  score the release gate now measures, so it carries to a future sprint
+  rather than competing with this week's digest and skills quality work.
+  It is also the fix for one of the coming-soon surfaces named in
+  docs/sprints/pending.md's audit (`/pricing`'s two dead "Coming soon"
+  pills), worth remembering when it is picked back up.
 
 ### 2026-09-18 — Make the hero metric live (market agent)
 - Trigger: "3,431 papers ingested this week" is hardcoded in
@@ -268,6 +276,10 @@ below.
 - First step: reuse the desk page's revalidate pattern for one query
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): cut from sprint-2026-09-21 revision 2
+  under the product-first re-triage (incident 12, all-hands decision
+  11), same reasoning as "Email capture before payments exist" above.
+  Carries to a future sprint.
 
 ### 2026-09-18 — Show each skill's validation evidence on its page (market agent)
 - Trigger: the skills ecosystem now counts 800k+ scraped skills with no
@@ -317,7 +329,22 @@ below.
 - First step: surface the newest deprecated claim with its evidence as
   a home-page card
 - Cost: $0
-- Status: proposed
+- Status: accepted
+- Groomed 2026-09-18 (PM, closing all-hands triage): accepted. Sales'
+  redispatched plan (PR #22, merged) independently proposes a
+  "Left-Behind Index" public page (see that entry under "Sales agent
+  proposals" below) as a lane-C gate for two already-drafted outreach
+  notes, and the sales floor statement at the 2026-09-18 closing
+  all-hands asked the owner to greenlight it. This is a product/backlog
+  call, not money, a secret, or purpose, so it is decidable under
+  standing liberty (all-hands decision 4) rather than owner-only.
+  Accepting this entry (the weekly public verdict) covers the same
+  ground sales' page-shaped version needs; treat that entry as the same
+  accepted idea rather than a second build. Not yet carded into a
+  specific sprint; the first step above (one home-page card from the
+  newest deprecated claim) is
+  small enough to fold into whichever sprint has a spare slot, and
+  directly serves the two gated outreach notes sales is waiting on.
 
 ### 2026-09-18 — Agent-readable public surface: llms.txt and a skills manifest (market agent)
 - Trigger: the skills standard's own site ships an llms.txt index for
@@ -749,6 +776,11 @@ build.
   any automation around it
 - Cost: $0 (uses the existing comped friends list; no new tool or panel)
 - Status: proposed
+- Grooming note (PM, 2026-09-18): picked up as sprint-2026-09-21 revision
+  2's item 1, per the product-first re-triage (incident 12, all-hands
+  decision 11). Run it for real this sprint, filed in docs/evals/, not
+  deferred again.
+
 ### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
 - Trigger: this run's step 1, picking a claim cluster. The PM's board
   already carries "the NEON_RO_URL secret for the skill agent" as an
@@ -802,6 +834,11 @@ build.
   market/engineer seats' call, not this agent's.
 - Cost: $0 (a small parsing dependency at most)
 - Status: proposed
+- Grooming note (PM, 2026-09-18): picked up as sprint-2026-09-21 revision
+  2's item 5, per the product-first re-triage (incident 12, all-hands
+  decision 11). This is the sprint's one kept piece of site plumbing,
+  kept because the digest and skills quality work in items 1 through 4
+  is invisible to a stranger until it renders.
 
 ### 2026-09-18 — Verification badge data schema (skill agent)
 - Trigger: docs/market/opportunities-2026-09-18.md's badge proposal
@@ -839,6 +876,10 @@ build.
   panel exists to compute it.
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): the three data-backed fields ride along
+  with sprint-2026-09-21 revision 2's item 5 (same reasoning as the
+  receipt-rendering entry above); `trigger_reliability` still waits on
+  the ADR-13 panel or an equivalent honest check, per its own note here.
 
 ### 2026-09-18 — The skills production line, sequenced end to end (skill agent)
 - Trigger: the owner's directive that skills are the selling point and
@@ -1017,7 +1058,14 @@ build.
   record the new bundle next to the failing one so the before and after
   both stay on the record.
 - Cost: $0
-- Status: proposed
+- Status: accepted
+- Groomed 2026-09-18 (PM, closing all-hands triage): the skill seat's own
+  ask at the closing all-hands was whether this ships red or gets fixed
+  before launch. Decided: fix it, on the skill agent's normal Tuesday
+  cadence (next run 2026-09-22), not as an engineer sprint item. The V4
+  regression gate not existing yet is a reason to record the before/after
+  bundle carefully, per this entry's own first step, not a reason to
+  leave a known, cheap, one-clause fix red through launch.
 
 ### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
 - Trigger: the verification-badge schema entry filed earlier on
@@ -1250,6 +1298,10 @@ owning seat rather than assumed. Arguments in docs/sales/.
   closes cleanly or falls back to five individual subscriptions
 - Cost: $0
 - Status: proposed
+- Groomed 2026-09-18 (PM, closing all-hands triage): this is the
+  "multi-seat Stripe question" the sales floor statement asked to have
+  routed to the engineer. Already routed, by existing here as a ledger
+  entry; no separate action needed from this triage.
 
 ### 2026-09-18 — The Left-Behind Index as a public page
 - Trigger: the `deprecated_claims` view already exists, nothing in the
@@ -1267,7 +1319,14 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - First step: decide what is public versus paywalled before writing the
   route; the digest-content boundary (vision.md §4) applies
 - Cost: $0
-- Status: proposed
+- Status: accepted
+- Groomed 2026-09-18 (PM, closing all-hands triage): accepted, same
+  decision as "Make 'left behind' the public flagship" above (market
+  agent's entry). This page-shaped version and that weekly-verdict
+  version are the same accepted idea; whoever builds it first should
+  treat the other entry as satisfied rather than build both. Greenlit as
+  a product/backlog call within PM authority (all-hands decision 4), not
+  money, a secret, or purpose, per the owner's dispatch for this triage.
 
 ### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
 - Trigger: 69% of 216 audited public Claude Code skills won't reliably
@@ -1298,4 +1357,97 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - First step: run the query against `claim_links`; record the number in
   the sales results file either way, including if it is zero
 - Cost: $0
+
+## PM findings (owner-priority re-triage, 2026-09-18)
+
+### 2026-09-18 — Raise the skill-agent cadence, conditioned on staying honest (charter-text proposal, PM-recorded for the ExO)
+
+- Trigger: incident 12 and all-hands decision 11 (docs/agents/incidents.md,
+  docs/allhands/2026-09-17.md, 2026-09-18): the owner's release gate names
+  "a real repository of validated, tested newsletter issues and skills,
+  not two of each." The skill agent runs once a week (prompts/skill-agent.md,
+  Tuesdays); at that pace, docs/market/report-2026-09.md §7's own bar for a
+  credible library (double digits, validated) is roughly two and a half
+  months out from today. The gate cannot be met on the current cadence
+  without also moving the launch date; docs/sprints/pending.md's release-
+  gate reconciliation costs this exact tradeoff for the owner's decision.
+- What: raise the skill agent's charter cadence toward multiple draft-to-
+  validated skills per week, hard-conditioned on the same charter's own
+  discipline holding: "quality over count," a recorded validation (not
+  judgment alone) before promotion, and "zero skills is a fine outcome; a
+  padded skill is not." A cadence increase that produces more skills but
+  fewer of them honestly validated does not move the score decision 11
+  set; it just moves the number of items in `skills/` with `validated: ""`
+  in their frontmatter, which is the exact state the owner already
+  criticized. If the corpus cannot honestly support more than one strong
+  cluster a week, the charter should say that explicitly rather than
+  create pressure to pad.
+- First step: this is charter text (prompts/skill-agent.md's cadence line
+  and Step 1's "one skill per run" instruction), which per ADR-19 only the
+  ExO edits, gated by the owner's merge like every charter change. This PM
+  run cannot commit it directly. Recorded here as a `proposed` entry for
+  the ExO's next run (PR #18, currently open, is already mid-flight on a
+  charter sweep) or for the owner to apply directly if she would rather
+  decide the exact number herself.
+- Cost: $0
+- Status: proposed
+- Groomed 2026-09-18 (PM, closing all-hands triage): PR #18 merged
+  2026-09-18 without picking this up. Superseded by the entry directly
+  below, which the skill seat's own closing all-hands floor statement
+  made concrete: not "more skills per run" but a second parallel
+  extraction session per week on a different claim cluster, same quality
+  bar. That is the shape this entry left underspecified. See "Adopt a
+  second weekly skill-extraction session" below for the exact charter
+  and workflow text.
+
+### 2026-09-18 — Adopt a second weekly skill-extraction session (charter-and-workflow proposal, PM-decided for the ExO and owner to apply)
+
+- Trigger: the skill seat's own floor statement at the closing all-hands
+  (docs/allhands/2026-09-18-close.md): "the honest state: two skills, one
+  validation that is n of 1... At one skill per week the library reaches
+  five or six by Oct 13," short of docs/market/report-2026-09.md §7's
+  double-digit, validated bar. The proposal, in the skill seat's own
+  words: "not more skills per run but a second parallel extraction
+  session per week on a different claim cluster, same quality bar,
+  doubling throughput without padding." The owner's dispatch for this
+  triage run named the decision explicitly as this seat's to rule on, to
+  be written as a charter-and-workflow proposal for her merge if adopted.
+- Decision: **adopted**. Reasoning: the proposal keeps every discipline
+  the entry above worried about losing (one skill per session, quality
+  over count, a recorded validation before promotion) and only adds a
+  second, independent session against a different cluster. It does not
+  ask the agent to draft two skills in one sitting, which would be the
+  actual padding risk; it asks for two normal sessions in a week instead
+  of one. This is the floor's own "doubling throughput without padding"
+  framing, taken at face value, and it directly serves decision 11's
+  phased gate (this same triage, adopted provisionally above): the paid
+  spine's gate opens at a benchmark five, which needs the skill library
+  at double digits, validated, and one session a week does not reach
+  that on any date this quarter.
+- What: the exact charter and workflow text for the ExO to apply and the
+  owner to merge, since both charters and workflow files are owner-merge
+  only (this PM run's writable surface is docs/sprints/ and grooming
+  notes in docs/ideas.md, neither of which includes prompts/ or
+  .github/workflows/):
+  - `prompts/skill-agent.md`, line 6: change "You run once a week,
+    Tuesdays, in a fresh cloud session." to "You run twice a week,
+    Tuesdays and Fridays, in a fresh cloud session each time." Step 1's
+    "One skill per run, quality over count" is unchanged text, since it
+    already states the per-session rule this proposal relies on; add one
+    sentence after it: "The Friday session works a different claim
+    cluster than the one already picked (or in progress) that week, so
+    the two sessions never compete for the same evidence."
+  - `.github/workflows/agent-skill.yml`: add a second cron entry
+    alongside the existing Tuesday one, `- cron: "0 12 * * 5" # 8:00 AM
+    ET Fridays`, under the same `schedule:` key. No other change to the
+    workflow file; the embedded prompt already reads the charter fresh
+    each run, so it needs no edit once the charter line above changes.
+  - `docs/agents/org-chart.md`'s skill row (`Tue 8:00 ET`) should become
+    `Tue + Fri 8:00 ET` once this lands; flagged here since org-chart.md
+    is also outside this run's writable surface tonight.
+- Cost: $0 in new services. It roughly doubles the skill seat's weekly
+  usage against the existing Claude subscription; docs/sprints/pending.md
+  already carries the subscription's monthly figure as an owner-only,
+  not-yet-costed item, so this is worth re-checking once that figure
+  exists rather than assumed free of any real cost.
 - Status: proposed
