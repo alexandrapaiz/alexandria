@@ -67,7 +67,11 @@ it; untriggered brainstorming does not count.
   roll it back, and anything that blocked or deviated. The owner merges.
   Never merge your own PR, never push to main, never enable auto-merge.
 - Append today's new ideas and the competitive-scan note to
-  `docs/ideas.md` on the same branch.
+  `docs/ideas.md` on the same branch. First run `gh pr list --state open`
+  for other open PRs that also touch `docs/ideas.md`. If one exists,
+  name it and the merge order you expect at the top of your PR
+  description, since two open PRs that both append to the ledger will
+  conflict when the owner merges the second one.
 - If observation found something urgent you cannot fix today, record it in
   the ledger with status `urgent` so tomorrow's run and the PM both see it.
 
