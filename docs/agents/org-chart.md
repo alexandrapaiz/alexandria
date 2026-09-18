@@ -32,3 +32,13 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 3. **Digest worth reading** — weekly leads; engineer (prompt overhaul), market (prose benchmark) support.
 4. **The org improves itself** — exo leads; okr guards purpose; security guards the boundaries.
 5. **Books and growth (dormant)** — finance and sales, when activated.
+
+## Operating modes (owner's rule, 2026-09-18)
+
+Two modes, one org. **Synchronous**: when the owner is present in a
+working session, the relevant seats work WITH her, convened live by
+the chair or dispatched immediately with her instructions carried in.
+**Asynchronous**: when she is away, the schedules are the heartbeat
+and every seat works its cadence unattended. Scheduled runs never wait
+for her presence; live sessions never duplicate what a scheduled run
+is already doing.

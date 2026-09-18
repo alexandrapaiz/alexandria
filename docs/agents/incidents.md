@@ -57,3 +57,13 @@ turns patterns into charter or workflow fixes.
    PM overhaul as success before recording failure, which misled
    monitoring. Lesson: trust a run's shipped artifacts (branch, PR),
    never its conclusion alone.
+
+9. **Premium seats silently ran on the default model.** The routing
+   table assigned the top model to engineer, exo, security, skill,
+   weekly, and frontend, but no `--model` flag was set and
+   claude-code-action defaults to Sonnet, so every premium run on
+   2026-09-17/18 actually used Sonnet. Caught by an owner-requested
+   routing audit reading modelUsage from real run logs. FIXED:
+   `--model opus` set explicitly on all six workflows. Lesson: a
+   routing policy is config plus verification; assert the model from
+   run logs, never from intention.
