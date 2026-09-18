@@ -1,231 +1,249 @@
 # Landscape — the living competitor map
 
-Maintained by the market research agent (prompts/market-agent.md). One
-entry per competitor or adjacent product. Entries are added and retired
-with dated notes, never silently deleted. First full map built
-2026-09-18 on the first run.
+Maintained by the market research agent (prompts/market-agent.md), Fridays.
+One entry per competitor or adjacent product. Entries are added and retired
+with dated notes, never silently deleted. First built 2026-09-18.
 
-alexandria sits at the intersection of three categories, so the map has
-three sections plus a paid-newsletter pricing comp section. No product
-observed so far spans all three. That intersection is the positioning
-story, argued in [positioning.md](positioning.md).
+Alexandria's shape, for reference when reading "weaknesses against
+alexandria" below: a free research digest (trailblazing, matured, and
+left-behind findings, evidence-cited via a claim graph) as the acquisition
+engine, plus a $20/month paid layer of Claude-loadable skills, claim-graph
+access, and automations. Differentiation, owner's words (2026-09-17):
+"specifically technical research, systems, and directly applicable tools
+for orchestration essentially," not AI news.
 
-## Category 1 — AI research intelligence tools
+## Academic research tools
 
-### Elicit
-- What: AI research assistant for literature search, systematic review,
-  and data extraction over 138M+ papers.
-- Audience: researchers and R&D teams, with an enterprise push.
-- Pricing (observed 2026-09-18 at [elicit.com/pricing](https://elicit.com/pricing)):
-  Free basic tier, Pro $49/mo ($588/yr), Scale $169/mo ($2,028/yr),
-  Enterprise custom.
-- Strengths: deep extraction workflows, systematic-review credibility,
-  API access, real enterprise motion.
-- Weaknesses against alexandria: it is a pull tool, not a judgment
-  product. It answers the question you ask and keeps no public running
-  record of what the field believes or has abandoned. It ships no
-  agent-loadable output. Priced 5x above alexandria's top tier.
-- Last observed: 2026-09-18.
+### Elicit (elicit.com)
+- **What it is:** AI research assistant for finding, reading, and
+  extracting structured data from academic papers.
+- **Who it serves:** Individual researchers, grad students, research teams.
+- **Pricing:** Free (5,000 credits, unlimited search over 138M+ papers,
+  unlimited summaries/chat). Pro $49/month ($588/year). Scale $169/month
+  ($2,028/year). Enterprise custom. [elicit.com/pricing](https://elicit.com/pricing)
+- **Strengths:** Deep systematic-review workflow, huge paper index, API
+  access even on Pro.
+- **Weaknesses against alexandria:** Purely academic-paper-centric. No
+  coverage of AI engineering or systems, no orchestration/automation
+  layer, not built for agent builders.
+- **Funding signal:** ~$22M Series A, early 2025, Spark Capital and
+  Footwork. [Crunchbase](https://www.crunchbase.com/organization/elicit-52a6)
+- **Last observed:** 2026-09-18.
 
-### Consensus
-- What: AI academic search engine over 200M+ papers with answer
-  synthesis, claims "over 5 million researchers, students, and
-  clinicians" ([consensus.app/pricing](https://consensus.app/pricing)).
-- Audience: students, clinicians, researchers. Consumer-leaning.
-- Pricing (pricing page is script-rendered, figures confirmed via
-  third-party trackers, e.g.
-  [costbench.com](https://costbench.com/software/ai-research-tools/consensus/)):
-  Free with ~20 AI searches/mo, Pro ~$10/mo, Deep ~$45/mo, Teams
-  ~$9.99/seat/mo annual, Enterprise custom.
-- Strengths: huge registered base, clean freemium ladder, the $10 entry
-  point proves individual willingness to pay $10/mo for research
-  intelligence.
-- Weaknesses against alexandria: search over a static corpus, no
-  temporal judgment, nothing for agents, no digest habit loop.
-- Last observed: 2026-09-18.
+### Consensus (consensus.app)
+- **What it is:** AI search engine that surfaces consensus/claims across
+  academic papers.
+- **Who it serves:** Students, academic researchers, clinicians.
+- **Pricing:** Free tier exists. Pro reported at roughly $20/month or
+  $144/year (sources conflict; consensus.app/pricing returned 403 on
+  direct fetch 2026-09-18, figure from
+  [costbench.com](https://costbench.com/software/ai-research-tools/consensus/),
+  verified there 2026-09-02, and a
+  [help-center article title](https://help.consensus.app/en/articles/11408820-what-do-you-get-with-a-pro-subscription)
+  — treat as medium confidence until independently reconfirmed).
+- **Strengths:** Claim-style synthesis across papers, the closest seed-set
+  product to alexandria's "claim graph" framing, though scoped to general
+  academic literature not AI engineering.
+- **Weaknesses against alexandria:** Same academic-only scope as Elicit;
+  no orchestration/automation product; no AI-engineer-specific framing.
+- **Note:** a same-named, unrelated B2B sales-demo tool (goconsensus.com)
+  exists — do not conflate in future notes.
+- **Last observed:** 2026-09-18.
 
-### Semantic Scholar
-- What: free AI-driven academic search and open APIs (Academic Graph,
-  S2ORC) from Ai2, 200M+ papers
-  ([semanticscholar.org/about](https://www.semanticscholar.org/about)).
-- Audience: the global research community and developers building on the
-  corpus. alexandria's own pipeline class of user.
-- Pricing: free, nonprofit-funded.
-- Strengths: canonical open infrastructure, citation graph at scale.
-- Weaknesses against alexandria: infrastructure, not judgment. It gives
-  you the graph and leaves the interpretation to you.
-- Note: not a revenue competitor, but the free baseline any paid claim
-  graph gets compared against.
-- Last observed: 2026-09-18.
+### Semantic Scholar (semanticscholar.org)
+- **What it is:** Free, nonprofit AI-powered academic search engine and
+  open research-graph API.
+- **Who it serves:** Researchers and developers; infrastructure other
+  tools (including Elicit) build on.
+- **Pricing:** Free, nonprofit-funded, no paid tier.
+- **Strengths:** Massive open graph (200M+ papers, 2.4B citation edges),
+  TLDR summaries and citation-intent classification already in the API.
+- **Weaknesses against alexandria:** Infrastructure, not a product —
+  no digest, no synthesis, no skills layer, no consumer habit loop.
+- **Last observed:** 2026-09-18. [semanticscholar.org/faq/public-api](https://www.semanticscholar.org/faq/public-api)
 
-### Exa
-- What: search API built for AI agents, usage-priced
-  ([exa.ai/pricing](https://exa.ai/pricing)): search $7/1k requests,
-  deep search $12-15/1k, monitors $15/1k, free tier with $10/mo credits.
-- Audience: developers and businesses wiring live web search into
-  agents.
-- Strengths: agent-native distribution, pay-as-you-go with no
-  subscription friction, monitors product overlaps with "watch the
-  frontier" jobs.
-- Weaknesses against alexandria: retrieval without curation. Exa hands
-  an agent raw web results, not validated procedures. It is plumbing
-  alexandria could even consume, not a library.
-- Last observed: 2026-09-18.
+### Paperguide (paperguide.ai) — new find, added 2026-09-18
+- **What it is:** End-to-end AI research assistant (discovery, lit review,
+  extraction, academic writing), increasingly cited as an Elicit/Consensus
+  alternative.
+- **Pricing:** Free tier; Plus $12/month; Pro $24/month; annual saves
+  ~41%. [g2.com/products/paperguide/pricing](https://www.g2.com/products/paperguide/pricing)
+- **Weaknesses against alexandria:** Academic-paper-focused like the
+  others, not AI-engineering-focused.
+- **Last observed:** 2026-09-18.
 
-## Category 2 — AI digests and technical newsletters
+### Undermind.ai — new find, added 2026-09-18
+- **What it is:** AI research assistant for scientific-literature
+  discovery and novelty-checking with cited answers.
+- **Weaknesses against alexandria:** Academic-search-only, same as above.
+- **Last observed:** 2026-09-18 (search-snippet confidence only).
 
-### TLDR AI
-- What: free daily AI newsletter, "1,100,000 readers," ad and
-  sponsorship funded ([tldr.tech/ai](https://tldr.tech/ai)).
-- Audience: engineers and technical professionals who want a 5-minute
-  scan.
-- Strengths: enormous reach, daily habit, dense engineering-first tone.
-- Weaknesses against alexandria: pure coverage. No memory, no verdicts,
-  no tracking of which results held up. The inbox-noise problem it
-  feeds is alexandria's opening.
-- Last observed: 2026-09-18.
+## Digests and newsletters (the category alexandria does not compete in)
 
-### AINews (smol.ai / Latent Space)
-- What: automated weekday roundup summarizing AI Discords, subreddits,
-  and X, "over 150,000 top AI engineers," free with a paid option
-  ([news.smol.ai](https://news.smol.ai/)). Karpathy blurbs it as the
-  "best AI newsletter atm."
-- Audience: working AI engineers. The closest audience overlap with
-  alexandria's digest tier.
-- Strengths: automation-first production like alexandria's, credible
-  endorsements, high frequency.
-- Weaknesses against alexandria: summarizes conversation, not
-  literature. No claim-level provenance, no retrospective judgment, no
-  skills output.
-- Last observed: 2026-09-18.
+### TLDR AI (tldr.tech/ai)
+- **What it is:** Free daily 5-minute AI-news email digest, part of the
+  TLDR network.
+- **Pricing:** Free, ad/sponsorship-supported. No paid tier found.
+- **Reach:** ~1.1M subscribers to the AI edition; TLDR network 7.2M+
+  readers across 13 editions; 47% open rate vs ~34% industry benchmark
+  (TLDR's own July 2026 data).
+  [genai.works — Top 12 AI Newsletters 2026](https://genai.works/insights/top-12-ai-newsletters-to-follow-in-2026)
+- **Weaknesses against alexandria:** Link-dump format, no synthesis, no
+  claim graph, no tooling. This is the acquisition comp, not a peer —
+  proof that pure AI news is fully commoditized at $0 with no viable
+  paid tier.
+- **Last observed:** 2026-09-18.
 
-### Latent Space
-- What: newsletter, podcast, and community "by and for AI Engineers,"
-  200k+ subscribers, 10M viewers across channels, free
-  ([latent.space/about](https://www.latent.space/about)).
-- Audience: the self-identified AI Engineer movement.
-- Strengths: community moat (Discord, paper club, conferences), owns the
-  "AI engineer" identity alexandria sells to.
-- Weaknesses against alexandria: editorial essays and interviews, not a
-  systematic record. Nothing loads into an agent.
-- Last observed: 2026-09-18.
+### Import AI (jack-clark.net, Jack Clark)
+- **What it is:** Weekly AI research/policy essay newsletter by an
+  Anthropic co-founder.
+- **Pricing:** Free tier; paid $10/month or $100/year (early access,
+  commenting); "Founding Member" pay-what-you-wish from $10,000.
+  [jack-clark.net](https://jack-clark.net/)
+- **Reach:** 116,000+ free subscribers, 450+ issues by mid-2026.
+- **Weaknesses against alexandria:** One person's editorial essays, no
+  structured claims, no tooling; cadence and depth bound to one author's
+  bandwidth; potential conflict of interest (author is an Anthropic
+  co-founder).
+- **Last observed:** 2026-09-18.
 
-### Import AI
-- What: Jack Clark's free weekly long-form research and policy
-  newsletter, publishing steadily as of 2026-09-07
-  ([jack-clark.net](https://jack-clark.net/)).
-- Audience: researchers, policymakers, and readers who want one expert's
-  synthesis.
-- Strengths: singular authorial judgment, deep credibility.
-- Weaknesses against alexandria: scales with one human's attention, no
-  structured memory, free so it monetizes nothing alexandria wants.
-- Last observed: 2026-09-18.
+### The Batch (deeplearning.ai, Andrew Ng)
+- **What it is:** Free weekly AI news/insights newsletter.
+- **Pricing:** Free, no paid tier — monetized via DeepLearning.AI courses,
+  not the newsletter.
+- **Weaknesses against alexandria:** News-and-opinion format, no claim
+  structure, no skills/tooling layer.
+- **Notable drift:** a 2026-09-11 issue on "how skilled AI engineers
+  shape products" shows the editorial voice drifting toward the
+  AI-engineering audience alexandria targets.
+  [deeplearning.ai/the-batch](https://www.deeplearning.ai/the-batch)
+- **Last observed:** 2026-09-18.
 
-### The Batch (DeepLearning.AI)
-- What: Andrew Ng's free weekly AI newsletter
-  ([deeplearning.ai/the-batch](https://www.deeplearning.ai/the-batch/)).
-- Audience: practitioners and students in the DeepLearning.AI funnel.
-- Strengths: brand authority, education funnel behind it.
-- Weaknesses against alexandria: news plus commentary, funnel for
-  courses rather than a standalone knowledge product.
-- Last observed: 2026-09-18.
+### AlphaSignal (alphasignal.ai)
+- **What it is:** Daily AI newsletter/site tracking models, repos,
+  papers, and announcements.
+- **Pricing:** Free tier confirmed; a "Pro" tier exists (articles marked
+  Pro) but exact price not found on the primary domain.
+- **Reach:** Claimed 300,000+ engineer subscribers.
+- **Weaknesses against alexandria:** Still a news-summary product, no
+  claim graph or tooling, opaque Pro pricing.
+- **Caution:** an unrelated crypto-signals company also uses the
+  "AlphaSignal" name (alphasignal.digital) — do not conflate.
+- **Last observed:** 2026-09-18.
 
-### AlphaSignal
-- What: "The Front Page of AI," real-time feed and newsletter tracking
-  models, repos, and papers, free with a Pro tier surfacing on some
-  articles ([alphasignal.ai](https://alphasignal.ai/)).
-- Audience: engineers wanting real-time industry tracking.
-- Strengths: speed, ranking mechanics, engineer-targeted curation.
-- Weaknesses against alexandria: headline velocity without evidence
-  depth. Another feed to keep up with rather than a record that keeps up
-  for you.
-- Last observed: 2026-09-18.
+### Last Week in AI (lastweekin.ai)
+- **What it is:** Weekly AI-news podcast and Substack newsletter.
+- **Pricing:** Free; no confirmed paid tier.
+- **Weaknesses against alexandria:** Discussion/podcast format, general
+  AI-news framing, no technical depth or tooling.
+- **Last observed:** 2026-09-18.
 
-### Last Week in AI
-- What: weekly AI news summaries on Substack with free and paid tiers
-  ([lastweekin.ai/about](https://lastweekin.ai/about)).
-- Audience: general-to-technical AI followers.
-- Strengths: consistent cadence, podcast pairing.
-- Weaknesses against alexandria: summary coverage in a crowded free
-  band.
-- Last observed: 2026-09-18.
+### Latent Space (latent.space, Swyx)
+- **What it is:** Technical media for AI engineers — newsletter, podcast,
+  and (since Jan 2026) a daily AINews roundup.
+- **Who it serves:** AI engineers specifically — the closest seed-set
+  audience match to alexandria's reader.
+- **Pricing:** Free plus a paid subscription; exact price not confirmed
+  on the live page (JS-rendered pricing widget, search suggests roughly
+  $8/month or $80/year, low-medium confidence).
+- **Reach:** 200,000+ subscribers, 10M+ viewers/listeners across channels.
+- **Structural precedent worth tracking:** AINews (smol.ai) merged into
+  Latent Space "under one subscription" around 2026-01-23 — a free daily
+  roundup folded into one paid brand, structurally similar to alexandria's
+  free-digest-plus-paid-layer shape, though Latent Space's paid layer is
+  more content/access than tooling.
+  [latent.space/about](https://www.latent.space/about)
+- **Weaknesses against alexandria:** Long-form interviews/essays, not a
+  structured claim product; no orchestration-tools or skills-marketplace
+  layer.
+- **Last observed:** 2026-09-18.
 
-### The Pragmatic Engineer (paid-newsletter comp)
-- What: the #1 software/AI engineering newsletter on Substack, over 1M
-  readers, $15/mo or $150/yr
-  ([newsletter.pragmaticengineer.com/about](https://newsletter.pragmaticengineer.com/about)).
-- Audience: engineers and engineering leaders.
-- Strengths: the existence proof that individual engineers pay
-  newsletter subscriptions at scale for judgment and depth they cannot
-  get free. Clear free-teaser-to-paid mechanics: partial deepdives free,
-  full articles paid.
-- Weaknesses against alexandria: not AI-research-focused and produces no
-  operational artifacts. As a comp rather than a competitor, its lesson
-  is the free-sample funnel and the $15/$150 anchor.
-- Last observed: 2026-09-18.
+### The Pragmatic Engineer (Gergely Orosz) — pricing comp, not an AI peer
+- **What it is:** Paid software-engineering-practice newsletter, used
+  here purely as a pricing benchmark.
+- **Pricing:** $15/month or $150/year (up from an original $10/month or
+  $100/year at launch).
+  [newsletter.pragmaticengineer.com/about](https://newsletter.pragmaticengineer.com/about)
+- **Reach:** 1,073,929+ total readers by end of 2025, 200,000+ added in
+  the prior year.
+- **Relevance:** validates a $15-20/month price point for a single-brand
+  technical-professional newsletter; alexandria's paid layer is a
+  materially different value prop (tooling, not more essays).
+- **Last observed:** 2026-09-18.
 
-## Category 3 — agent skills and knowledge ecosystems
+## Agent-knowledge ecosystems
 
-### Anthropic skills repo and the Agent Skills open standard
-- What: [github.com/anthropics/skills](https://github.com/anthropics/skills)
-  (176.9k stars, 20.9k forks observed 2026-09-18), free Apache-2.0
-  skills. The format is an open standard at
-  [agentskills.io](https://agentskills.io/), adopted by a large client
-  showcase including Claude Code, Cursor, GitHub Copilot, Gemini CLI,
-  OpenAI Codex, Goose, OpenCode, and dozens more.
-- Audience: everyone building with agents.
-- Strengths: the standard alexandria's product rides on. Free, official,
-  massive distribution.
-- Weaknesses against alexandria: examples and utilities, not distilled
-  research judgment. Nobody at the standard layer validates that a skill
-  reflects current evidence.
-- Last observed: 2026-09-18.
+### Anthropic's Claude Skills ecosystem / skill marketplaces
+- **What it is:** Not one product — a fast-growing, fragmented set of
+  directories/marketplaces for Claude "Agent Skills."
+- **Landscape:**
+  - `anthropics/skills` — Anthropic's own curated examples (GitHub).
+  - Claude Marketplace / `anthropics/claude-plugins-official` —
+    Anthropic's own curated plugin directory.
+  - **skills.sh** (Vercel-backed) — open, npm-style skill registry,
+    launched 2026-01-20. Free, MIT-licensed CLI. ~20K installs shortly
+    after launch; by June 2026, ~669,670 skills listed, top skill at
+    2.0M installs.
+    [Vercel changelog](https://vercel.com/changelog/introducing-skills-the-open-agent-skills-ecosystem)
+  - Smithery.ai (MCP-server infra, hosts skill-registry products on top).
+  - Other catalogs: localskills.sh, SkillsMP, ClawHub,
+    claudemarketplaces.com, mcpmarket.com.
+- **Monetization model:** distribution is free everywhere observed — no
+  native billing/take-rate layer. No dominant *paid* skills marketplace
+  exists yet. Open lane for alexandria's $20/month skills layer, but also
+  a low-cost bar for a free alternative to appear.
+- **Quality signal (new find, added 2026-09-18):** a Show HN post,
+  "Linting 216 public Claude Code skills — 69% won't reliably trigger"
+  (skillcrossroads.com "State of Skills — 2026-09" report), found 57% of
+  subagents declare no tools list (an unintended permission-escalation
+  risk). [news.ycombinator.com/item?id=49744398](https://news.ycombinator.com/item?id=49744398),
+  2026-09-17.
+- **Weaknesses against alexandria:** fragmented, no quality guarantee at
+  most nodes, no research/claim-graph layer, no editorial component.
+- **Last observed:** 2026-09-18.
 
-### skills.sh (Vercel)
-- What: npm-style skills directory and one-command installer across 22+
-  agents, headline counter shows 1.44M skills/installs, top listings in
-  the 0.9M-3.4M install range ([skills.sh](https://skills.sh/)).
-- Audience: agent builders installing capabilities.
-- Strengths: distribution rail with real volume, Vercel backing.
-- Weaknesses against alexandria: an unranked free-for-all on quality.
-  No provenance, no evidence, no revision-on-contradiction. Also a
-  potential distribution channel for alexandria teaser skills rather
-  than only a rival.
-- Last observed: 2026-09-18.
+### skillbay.sh — new find, added 2026-09-18
+- **What it is:** "Craigslist for agent skills, curated by a human" — a
+  small, hand-curated skill marketplace, launched to HN 2026-09-17.
+- **Why it matters:** HN's reaction is the clearest willingness-to-pay
+  data point found this run. Top comment: "Why would I buy a markdown
+  file that someone most likely got an LLM to generate while I can just
+  simply get my own LLM to generate a similar one for me for free?" The
+  founder conceded AI-generated skills "are usually pretty bad," which is
+  why he hand-curates; another commenter called the business model
+  "no valuable moat." A third said only "nontechnical people" would pay
+  $5 for something that "just works."
+  [news.ycombinator.com/item?id=49743459](https://news.ycombinator.com/item?id=49743459),
+  2026-09-17.
+- **Reading for alexandria:** the market is skeptical of paying for raw
+  skill *content*, but concedes curation and verification are the
+  defensible value — supports alexandria's "distilled procedure +
+  judgment, evidence-cited" framing over a raw skill dump.
+- **Last observed:** 2026-09-18.
 
-### SkillsMP and the aggregator class
-- What: aggregator indexing 800k+ skills scraped from public GitHub
-  ([skillsmp.com](https://skillsmp.com/)), one of roughly eight active
-  skills directories in 2026 (survey:
-  [localskills.sh guide](https://localskills.sh/blog/claude-skills-marketplace-guide)).
-- Strengths: catalog breadth.
-- Weaknesses against alexandria: minimal curation by design. The flood
-  is the point: skill supply is infinite and trust is the scarce good.
-- Last observed: 2026-09-18.
+## Watchlist (not yet full entries, flagged for next pass)
 
-### Smithery
-- What: MCP server and skills registry, 21.8k+ hosted servers, hosted
-  auth, recently acquired by Arcade.dev ([smithery.ai](https://smithery.ai/)).
-- Audience: agent developers wiring tools.
-- Strengths: solves auth plumbing, large registry.
-- Weaknesses against alexandria: tools, not knowledge. Adjacent
-  infrastructure rather than a competing library.
-- Last observed: 2026-09-18.
+- **Exa (exa.ai)** — not a digest/skills competitor but the closest
+  seed-set infrastructure comp for "directly applicable orchestration
+  tools": pay-as-you-go search/retrieval API for agents ($7/1,000
+  requests). Raised an $85M Series B (fall 2025, Benchmark, $700M
+  valuation) then a $250M Series C in May 2026 (a16z, $2.2B valuation) —
+  a signal that agent-facing infrastructure is attracting large capital
+  fast. [exa.ai/pricing](https://exa.ai/pricing),
+  [Bloomberg, 2026-05-20](https://www.bloomberg.com/news/articles/2026-05-20/andreessen-backed-ai-search-startup-exa-valued-at-2-2-billion).
+  Do not compete here directly — integrate/cite, don't rebuild.
+- **SemiAnalysis** — retail newsletter $500/year; a separate,
+  higher-priced "Core Research" institutional product reported on track
+  for ~$100M/year from buy-side demand. Evidence that a free-or-cheap
+  retail tier plus a much higher institutional tier is a repeatable
+  pattern worth watching as alexandria matures past the individual
+  $20/month tier.
+  [aiweekly.co](https://aiweekly.co/alerts/semianalysis-core-research-eyes-100m-year-on-buy-side-demand)
 
-## Paid-comp pricing shelf (non-AI-specific anchors)
+## Change log
 
-- Stratechery Plus: $15/mo or $120/yr
-  ([stratechery.com/stratechery-plus](https://stratechery.com/stratechery-plus/)).
-- Lenny's Newsletter: $20/mo or $200/yr web pricing observed September
-  2026 ([lennysnewsletter.com](https://www.lennysnewsletter.com/)).
-- Market norm for paid newsletters generally: $10/mo and $100/yr is the
-  standard across industries per beehiiv's State of Paid Newsletters
-  2026 ([beehiiv.com](https://www.beehiiv.com/blog/the-state-of-paid-newsletters-2026)).
-
-## Map notes
-
-- 2026-09-18: initial map built on the first run. Categories 1 and 2
-  are mature with entrenched free leaders. Category 3 is one year old,
-  huge in volume, and has no quality layer yet. No observed product
-  combines a judgment digest with validated agent skills, which is the
-  slot alexandria claims.
+- 2026-09-18: initial landscape built (first run). Full seed set covered:
+  Elicit, Consensus, Semantic Scholar, Exa, TLDR AI, Import AI, The
+  Batch, AlphaSignal, Last Week in AI, Latent Space, The Pragmatic
+  Engineer, Anthropic's skills ecosystem. Added Paperguide, Undermind.ai,
+  skillbay.sh as new finds not in the original seed set.

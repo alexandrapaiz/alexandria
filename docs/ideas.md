@@ -60,6 +60,47 @@ defines. Statuses below are untouched; only the owner moves them.
 
 ## Proposals
 
+### 2026-09-18 — Skill-verification badge on every library entry
+- Trigger: Show HN "State of Skills" report, 69% of 216 audited public
+  Claude Code skills don't reliably trigger, 57% of subagents declare no
+  tools list
+  ([news.ycombinator.com/item?id=49744398](https://news.ycombinator.com/item?id=49744398),
+  2026-09-17)
+- What: every skill in the paid library ships with a visible "verified
+  against N sources, confidence X" line pulled from the claim graph, plus
+  a trigger-reliability score, so the differentiator from every other
+  skill marketplace observed (skills.sh, skillbay.sh, Smithery-hosted
+  registries, none of which attach evidence to a listed skill) is
+  checkable, not asserted
+- First step: define the badge schema against the existing claim-graph
+  `supports`/`contradicts` edges and prompts/skill-extract.md
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Scoped skill delivery by default
+- Trigger: Show HN "Skillzero — save tokens by omitting skills from agent
+  context," a commenter asking whether scoping works "on repo level"
+  ([news.ycombinator.com/item?id=49698184](https://news.ycombinator.com/item?id=49698184),
+  2026-09-14)
+- What: the skill-library UX loads only skills relevant to the current
+  task or repo by default, not the full library into context, avoiding
+  the context bloat and reliability loss the HN thread describes
+- First step: define scoping rule (task/repo signal) with the engineer
+  agent before the skill library ships
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Orchestration-pattern benchmark, tied to the claim graph
+- Trigger: Ask HN "Multi-agent workflows in production," practitioners
+  explicitly asking for multi-agent observability/benchmark tooling and
+  reporting they've "not really seen anything outstanding in this space"
+  ([news.ycombinator.com/item?id=49689454](https://news.ycombinator.com/item?id=49689454),
+  2026-09-13)
+- What: a maintained, versioned table of orchestration/harness patterns
+  with measured cost, latency, and error tradeoffs, each row backed by a
+  claim-graph citation, exposed as part of the $20/month tier
+- First step: scope as a claim-graph query/view before committing to new
+  data collection
 ### 2026-09-18 — competitive scan: the Agent Skills marketplace ecosystem
 This is the day's craft-scan note (engineer charter, Observe step 4), not a
 build proposal on its own — the actionable idea it produced is "Agent packs"
