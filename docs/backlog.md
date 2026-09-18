@@ -304,15 +304,19 @@ as this is written; these fire the moment it lands):
 5. **The Alexandria line.** The owner wants a phrase in the UI built on
    this idea, in her words: "what we'd know if the library of
    alexandria was never burned down. like this product gets us there."
-   The owner chose the line, live and final: "Catching up to the
-   world where the library never burned." Set exactly that on the
-   hero as the supporting line. She also approved a second concept,
-   cost-then-remedy, for the mission page where a reader has slowed
-   down: the calm two-sentence form, first candidate "When the
-   library burned, knowledge stopped compounding. It starts again
-   here." (alternates in the chair's notes). Two placements, not
-   competitors: the chosen line on the hero, the compounding line on
-   the mission page. Neither crowds the mission sentence itself. The seat places it where it carries most
+   The owner chose the line: "Catching up to the world where the
+   library never burned." But NOT as a subtitle or any visible copy.
+   She wants it as a hidden easter egg. Hide it where the curious
+   look, one to three tasteful placements from: a comment at the top
+   of the page's HTML source, a single quiet console message on
+   load, a line in llms.txt where agents will genuinely find it (the
+   best fit for "for you and your agents"), or the 404 page. Never
+   a tooltip or hover on the hero mark, whose behavior stays
+   untouchable. The visible surface does not carry the line at all.
+   The mission page's compounding concept ("When the library burned,
+   knowledge stopped compounding. It starts again here.") stays a
+   visible candidate there unless she says otherwise, since her
+   easter-egg order was about the chosen line, not that one. The seat places it where it carries most
    (likely the hero's supporting line or the mission page) and may
    tighten the wording, but the idea is fixed: the knowledge that
    compounds when the library never burns. It must not crowd the
