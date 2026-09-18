@@ -331,3 +331,33 @@ pull requests" in the repo's Actions settings. The desktop scheduled
 tasks are retired once the first cloud runs go green; they remain the
 documented fallback if Actions cron ever proves unpunctual for a
 time-sensitive agent.
+
+## ADR-19: An ExO agent reviews and improves the agents
+
+Owner's decision (2026-09-17): the organization gets its own loop. A
+weekly ExO agent, named for the exponential-organization idea that the
+org itself must improve as fast as the product, reviews how every agent
+actually ran and edits the agents accordingly. Charter at
+prompts/exo-agent.md; it runs Sundays in the cloud, before Monday's PM
+planning.
+
+The loop is the owner's, an OODA variant with purpose bolted on the
+front and learning bolted on the end: **purpose** (vision §0, committed
+OKRs, all-hands minutes and her recorded words) → **observe** (the
+week's workflow runs and logs, PR outcomes, retros, drift audits, and
+every charter) → **orient** (diagnose the org, not the product: charter
+deviations, overlaps, gaps, repeated failures nothing remembered) →
+**decide** (at most three evidenced improvements) → **orchestrate**
+(edit the agent layer: charters, agent workflows, org docs) →
+**learn** (docs/agents/learning-log.md, append-only, the org's memory
+across the ExO's own fresh contexts).
+
+The recursion is deliberate and bounded. Improving the agents includes
+improving the ExO agent, and its charter edits to itself travel the
+same one-PR-per-run channel as everything else, so the loop that
+improves the loops is still gated by the owner's merge. Division of
+labor stays clean: the OKR agent audits whether the WORK serves the
+purpose; the ExO agent audits whether the WORKERS and their design do.
+Lane rules as ever: agent layer only, never pipeline code, site,
+skills, plans, or vision; any edit that moves authority between agents
+or loosens an owner gate must be flagged in bold in the PR.
