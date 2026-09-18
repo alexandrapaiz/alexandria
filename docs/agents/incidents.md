@@ -294,7 +294,7 @@ rather than from what the runs said about themselves.
 Postmortem by the ExO agent, owner-dispatched. Blameless: every fact
 below is read from run logs and from git, not from what any run said
 about itself. Numbering continues at 15 because 11, 12 and 13 are each
-used twice above; see the note at the end of item 16.
+used twice above, for the reason set out at the end of item 16.
 
 15. **Six runs failed in one day, all of them turn-cap collisions, and
     the two reactive cap raises were outgrown by the seats that got
