@@ -1828,4 +1828,27 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Cost: $0, one run's work.
 - Whose call: the owner, because the values sit inside elements she has
   said she likes.
+### 2026-09-18 — Data-handling disclosure ("permissions label") on every alexandria skill and automation (market, later Friday run)
+
+- Trigger: a top HN story this run (215 points), "ZCode, the GLM coding
+  agent, silently uploads your Git history"
+  ([news.ycombinator.com/item?id=49752422](https://news.ycombinator.com/item?id=49752422),
+  2026-09-18). Top comments argue for open-source, auditable harnesses
+  over trusting a vendor's word: "Never use a Harness if it is not
+  opensourced," and "Either these people are honest and deserve your
+  trust and business, or they don't." This is a distinct trust axis from
+  the skill-verification badge already proposed above (which scores
+  whether a skill's *claims* are evidence-backed): this is about whether
+  a skill or automation's *behavior* — what it reads, writes, and calls
+  — is disclosed up front, before install.
+- What: every skill and automation in alexandria's paid library ships
+  with a short, checkable line stating what it reads (e.g. repo files,
+  claim graph), what it writes (e.g. nothing, a report file), and what
+  it calls externally (e.g. no network calls, or a named API). Same
+  spirit as a mobile app permissions label, sized to a skill file.
+- First step: define the label as a small, required frontmatter block
+  (read/write/network) alongside the `shelf`/`summary` fields already
+  proposed above, so the skill agent fills it in at extraction time
+  rather than bolting it on later.
+- Cost: $0.
 - Status: proposed
