@@ -985,3 +985,92 @@ build.
   failure mode.
 - Cost: $0
 - Status: built
+
+### 2026-09-18 — harness-engineering does not fire on its own test-time-compute case (skill agent)
+- Trigger: the executable trigger test built this run
+  (`skills/_validation/trigger_test.py`, board card "Design the skill
+  validation system") fails one of twelve cases, and the failure is in
+  the library rather than in the instrument. The prompt "We have budget
+  for extra inference compute on one hard planning step. Should the agent
+  reflect on and revise its own answer, or should we sample three
+  candidates in parallel and select one?" does not select
+  `harness-engineering`. It loses by 0.010 to a decoy about cluster
+  capacity, because the skill's description claims the case with the
+  phrase "when allocating test-time compute" and contains none of the
+  words a user actually reaches for: inference, sample, parallel, select,
+  revise, reflect.
+- What: amend the `description` of `skills/harness-engineering/SKILL.md`
+  so the activation condition carries the vocabulary of the question, not
+  only its term of art. Suggested replacement for the existing clause:
+  "or when deciding how to spend extra inference compute on a hard step,
+  for instance sampling several candidates in parallel and selecting one
+  versus having the model revise its own answer". The skill's body and
+  provenance are untouched by this, only the trigger surface.
+- Why this run did not simply make the edit: `harness-engineering` is the
+  one skill in gold carrying a recorded validation result, and editing a
+  validated artifact is the case the V4 regression gate
+  (docs/product/skill-validation.md) exists to govern. That gate is not
+  built, so there is nothing to re-run against the edit yet. Recording
+  the defect and leaving the suite red is the honest state.
+- First step: apply the clause, re-run
+  `python3 skills/_validation/trigger_test.py`, expect 12 of 12, and
+  record the new bundle next to the failing one so the before and after
+  both stay on the record.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
+- Trigger: the verification-badge schema entry filed earlier on
+  2026-09-18 left `trigger_reliability` as the one field with no data
+  source, and flagged two options: drop it from v1, or have the panel
+  replay each trigger-test prompt. The executable test built this run
+  settles it. The prompts now live in `skills/<slug>/triggers.json` and
+  replay deterministically in about a second with no model, no network,
+  and no database.
+- What: wire the badge's `trigger_reliability` to the newest bundle in
+  `skills/_validation/results/`, rendering the fraction with its exact
+  binomial interval and the engine version that produced it, never a bare
+  percentage. Until the model-in-the-loop engine exists (slice 5 of
+  docs/product/skill-validation.md), the number is a lower bound and the
+  page must say so.
+- First step: this depends on the parser fix already in the ledger
+  ("Receipt-rendering schema for the skill library"), since the bundle
+  keys off each skill's name and the site cannot currently read nested
+  frontmatter at all. Build the parser fix first, then read the bundle.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Run the trigger test in CI on every PR touching skills/ (skill agent)
+- Trigger: the test is executable, stdlib-only, and finishes in about a
+  second, so the marginal cost of running it on every PR is effectively
+  zero. Nothing runs it today, which means the next skill PR can silently
+  regress another skill's routing.
+- What: a small GitHub Actions job on pull requests touching `skills/**`
+  running `python3 skills/_validation/trigger_test.py --json` and posting
+  the summary. Workflow files are the engineer's surface, not this
+  agent's, hence a proposal rather than a commit.
+- Note on the gate: the suite is red today by design (see the
+  harness-engineering entry above), so wiring it as a required check
+  before that clause lands would block every PR. Either land the
+  description fix first, or have the job compare against the last
+  recorded bundle and fail only on regression, which is the V4 rule and
+  the better long-run design.
+- First step: land the description amendment, then add the job as a
+  non-blocking check for one week before making it required.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — skill-extract's SQL sketch names a column the schema does not have (skill agent)
+- Trigger: found while querying silver this run. The candidate-cluster
+  query in `prompts/skill-extract.md` selects `c.text` from `claims`, but
+  the column is `claims.claim` (db/schema.sql). Copied as written, the
+  query errors out, which costs a future run a turn on a trivial fix.
+- What: fixed in this run's PR, since `prompts/skill-extract.md` is this
+  agent's writable surface. Recorded here because the same drift can
+  recur: the prompt carries a hand-written copy of the schema, and
+  nothing checks it against `db/schema.sql`.
+- First step: none required. Worth considering, when the panel is built,
+  whether the extract prompt should reference the schema file rather than
+  restate it.
+- Cost: $0
+- Status: built

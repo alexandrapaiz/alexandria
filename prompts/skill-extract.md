@@ -17,19 +17,27 @@ Sketch:
 ```sql
 -- candidate clusters: claims with the most mutual support, excluding
 -- anything already promoted
-select c.id, c.text, c.topics, c.confidence, p.title, p.url
+select c.id, c.claim, c.procedure, c.topics, p.title, p.url
 from claims c
 join papers p on p.id = c.paper_id
 where c.id not in (
   select unnest(claim_ids) from promotions where status in ('approved', 'proposed')
 )
-order by c.confidence desc nulls last;
+order by c.id;
 
 select from_claim, to_claim, relation, confidence
 from claim_links
 where relation = 'supports'
 order by confidence desc nulls last;
 ```
+
+The column is `claims.claim`, not `claims.text`, and there is no
+`confidence` column on `claims` (the confidence that exists is on
+`claim_links`). Check db/schema.sql before trusting any column name written
+here, since this prompt restates the schema by hand and nothing keeps the two
+in sync. `claims.procedure` is the field worth selecting first: it holds the
+mechanism as numbered steps, which is the raw material the procedure-rich
+test below is really asking about.
 
 Group claims into clusters by shared `supports` edges and topic overlap
 (`claims.topics`, `claims.embedding` for a similarity pass if the SQL alone
@@ -134,8 +142,29 @@ in one pass:
   each with the reason the skill should stay silent.
 
 A trigger test that only tests obviously-on and obviously-off prompts
-proves nothing; the two negatives should be the prompts most likely to
+proves nothing. The two negatives should be the prompts most likely to
 false-positive on a lazy description, not softballs.
+
+Then write the same cases as `skills/<slug>/triggers.json` and run them.
+The prose version convinces a reviewer once; the file re-runs on every
+future change to any skill in the library, which is what stops a new skill
+from quietly stealing an old one's prompts. The format, the decision policy,
+and the runner are in `skills/_validation/` and the design behind them is in
+docs/product/skill-validation.md. Two additions the executable form asks for
+beyond the five prompts:
+
+- **One confusion case per neighbouring skill**, a prompt that belongs to
+  the neighbour and must route there rather than here. Write it for the
+  nearest skill already in the library, not a hypothetical one.
+- **`kind` on every case**, one of `positive`, `negative`, or `confusion`,
+  since the report scores the three separately and a suite that passes only
+  because its negatives are easy should be visible as such.
+
+Run `python3 skills/_validation/trigger_test.py` before opening the PR and
+paste the output into the PR body. A failing case is a finding worth
+reporting, not a reason to soften the case until it passes. If the failure is
+in an existing gold skill rather than in the draft, record it in the ledger
+and leave it failing, because a validated skill is not this run's to edit.
 
 ## 4. What not to do
 
@@ -146,5 +175,9 @@ false-positive on a lazy description, not softballs.
 - One skill per run. A cluster too thin for a good skill is a ledger
   finding, not a reason to pad or to draft two thin skills instead of one
   good one.
+- Never soften a trigger case, a decoy, or a decision threshold to turn a
+  red suite green. The policy in `skills/_validation/` is pre-registered on
+  purpose, and tuning an instrument until it flatters the artifact it
+  measures is the same sin as overstating a claim.
 - Never write outside skills/, this file, and docs/ideas.md — panel
   promotion, library rendering, and pipeline code are other seats' surface.
