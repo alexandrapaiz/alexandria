@@ -257,6 +257,14 @@ below.
 - First step: a Next.js server action inserting into the existing table
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): cut from sprint-2026-09-21 revision 2
+  under the product-first re-triage (incident 12, all-hands decision
+  11). Still accepted-in-spirit and correct, but it does not move the
+  score the release gate now measures, so it carries to a future sprint
+  rather than competing with this week's digest and skills quality work.
+  It is also the fix for one of the coming-soon surfaces named in
+  docs/sprints/pending.md's audit (`/pricing`'s two dead "Coming soon"
+  pills), worth remembering when it is picked back up.
 
 ### 2026-09-18 — Make the hero metric live (market agent)
 - Trigger: "3,431 papers ingested this week" is hardcoded in
@@ -268,6 +276,10 @@ below.
 - First step: reuse the desk page's revalidate pattern for one query
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): cut from sprint-2026-09-21 revision 2
+  under the product-first re-triage (incident 12, all-hands decision
+  11), same reasoning as "Email capture before payments exist" above.
+  Carries to a future sprint.
 
 ### 2026-09-18 — Show each skill's validation evidence on its page (market agent)
 - Trigger: the skills ecosystem now counts 800k+ scraped skills with no
@@ -749,6 +761,11 @@ build.
   any automation around it
 - Cost: $0 (uses the existing comped friends list; no new tool or panel)
 - Status: proposed
+- Grooming note (PM, 2026-09-18): picked up as sprint-2026-09-21 revision
+  2's item 1, per the product-first re-triage (incident 12, all-hands
+  decision 11). Run it for real this sprint, filed in docs/evals/, not
+  deferred again.
+
 ### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
 - Trigger: this run's step 1, picking a claim cluster. The PM's board
   already carries "the NEON_RO_URL secret for the skill agent" as an
@@ -802,6 +819,11 @@ build.
   market/engineer seats' call, not this agent's.
 - Cost: $0 (a small parsing dependency at most)
 - Status: proposed
+- Grooming note (PM, 2026-09-18): picked up as sprint-2026-09-21 revision
+  2's item 5, per the product-first re-triage (incident 12, all-hands
+  decision 11). This is the sprint's one kept piece of site plumbing,
+  kept because the digest and skills quality work in items 1 through 4
+  is invisible to a stranger until it renders.
 
 ### 2026-09-18 — Verification badge data schema (skill agent)
 - Trigger: docs/market/opportunities-2026-09-18.md's badge proposal
@@ -839,6 +861,10 @@ build.
   panel exists to compute it.
 - Cost: $0
 - Status: proposed
+- Grooming note (PM, 2026-09-18): the three data-backed fields ride along
+  with sprint-2026-09-21 revision 2's item 5 (same reasoning as the
+  receipt-rendering entry above); `trigger_reliability` still waits on
+  the ADR-13 panel or an equivalent honest check, per its own note here.
 
 ### 2026-09-18 — The skills production line, sequenced end to end (skill agent)
 - Trigger: the owner's directive that skills are the selling point and
@@ -985,3 +1011,37 @@ build.
   failure mode.
 - Cost: $0
 - Status: built
+
+## PM findings (owner-priority re-triage, 2026-09-18)
+
+### 2026-09-18 — Raise the skill-agent cadence, conditioned on staying honest (charter-text proposal, PM-recorded for the ExO)
+
+- Trigger: incident 12 and all-hands decision 11 (docs/agents/incidents.md,
+  docs/allhands/2026-09-17.md, 2026-09-18): the owner's release gate names
+  "a real repository of validated, tested newsletter issues and skills,
+  not two of each." The skill agent runs once a week (prompts/skill-agent.md,
+  Tuesdays); at that pace, docs/market/report-2026-09.md §7's own bar for a
+  credible library (double digits, validated) is roughly two and a half
+  months out from today. The gate cannot be met on the current cadence
+  without also moving the launch date; docs/sprints/pending.md's release-
+  gate reconciliation costs this exact tradeoff for the owner's decision.
+- What: raise the skill agent's charter cadence toward multiple draft-to-
+  validated skills per week, hard-conditioned on the same charter's own
+  discipline holding: "quality over count," a recorded validation (not
+  judgment alone) before promotion, and "zero skills is a fine outcome; a
+  padded skill is not." A cadence increase that produces more skills but
+  fewer of them honestly validated does not move the score decision 11
+  set; it just moves the number of items in `skills/` with `validated: ""`
+  in their frontmatter, which is the exact state the owner already
+  criticized. If the corpus cannot honestly support more than one strong
+  cluster a week, the charter should say that explicitly rather than
+  create pressure to pad.
+- First step: this is charter text (prompts/skill-agent.md's cadence line
+  and Step 1's "one skill per run" instruction), which per ADR-19 only the
+  ExO edits, gated by the owner's merge like every charter change. This PM
+  run cannot commit it directly. Recorded here as a `proposed` entry for
+  the ExO's next run (PR #18, currently open, is already mid-flight on a
+  charter sweep) or for the owner to apply directly if she would rather
+  decide the exact number herself.
+- Cost: $0
+- Status: proposed
