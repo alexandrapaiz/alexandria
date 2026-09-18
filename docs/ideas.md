@@ -44,3 +44,26 @@ Statuses: `proposed`, `accepted`, `rejected`, `built`, `urgent`.
 - Status: accepted
 
 ## Proposals
+
+### 2026-09-17 — Public digest archive page (OKR agent, first benchmark)
+- Trigger: baseline benchmark scored product surface 1.3 of 5; TLDR AI
+  has a public archive and Elicit a full web app, while alexandria has
+  no public page at all
+- What: publish past digests as pages on the site behind the teaser
+  gate, so the judgment advantage is visible before someone subscribes
+- First step: render one issue from the digests store into the existing
+  site/app/library route
+- Cost: $0
+- Status: proposed
+
+### 2026-09-17 — List the gold skills at agentskills.io (OKR agent)
+- Trigger: benchmark vs Anthropic's ecosystem scored agent
+  actionability 1 of 5; the skills are already in the standard SKILL.md
+  format, and distribution is the entire gap
+- What: submit harness-engineering (and each later promoted skill) to
+  the agentskills.io partner directory, provenance block intact, as the
+  first distribution channel for the library tier
+- First step: read the directory's submission requirements and check
+  they permit a link back to the paid library
+- Cost: $0
+- Status: proposed
