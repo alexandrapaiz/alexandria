@@ -300,3 +300,15 @@ as this is written; these fire the moment it lands):
    the builder's agents load the same skills and cite the same claims.
    This is a positioning line the whole surface should carry, not one
    sentence on one page.
+
+5. **The Alexandria line.** The owner wants a phrase in the UI built on
+   this idea, in her words: "what we'd know if the library of
+   alexandria was never burned down. like this product gets us there."
+   Working candidates, hers to pick from at review: "What we'd know if
+   the Library of Alexandria never burned." / "Everything we'd know if
+   the library never burned." The seat places it where it carries most
+   (likely the hero's supporting line or the mission page) and may
+   tighten the wording, but the idea is fixed: the knowledge that
+   compounds when the library never burns. It must not crowd the
+   mission line, which stays exactly "Accelerate every builder to
+   frontier speed." The retired subtitle stays retired.
