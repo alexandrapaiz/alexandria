@@ -1555,3 +1555,38 @@ owning seat rather than assumed. Arguments in docs/sales/.
   not-yet-costed item, so this is worth re-checking once that figure
   exists rather than assumed free of any real cost.
 - Status: proposed
+
+### 2026-09-18 — Let a skill declare its own shelf and its own summary (frontend proposal)
+
+- Trigger: the owner's order 3 of 2026-09-18, to reorganise the skills
+  library so it scales to fifty. The page is now shelves, and it works,
+  but the shelf a skill lands on is decided in `site/lib/skill-shelves.js`
+  by matching the skill's name, then by scanning its description for
+  keywords. `skills/` belongs to the skill agent and the frontend seat
+  does not write there, so this was the only honest way to do it from
+  this lane.
+- The problem with it: it is a guess made outside the file it describes.
+  A new skill whose name is unknown and whose description happens to say
+  "context" lands on Context engineering whether or not that is where its
+  author would have put it, and nobody who writes a skill can see where
+  it will appear. At two skills the guess is checkable by eye. At fifty
+  it is not.
+- What: two optional fields in a skill's frontmatter, both written by the
+  skill agent when it extracts:
+  - `shelf:` one of the shelf ids in `site/lib/skill-shelves.js`
+    (`harnesses`, `context`, `multi-agent`, `training`, `serving`,
+    `multimodal`). The site keeps its keyword fallback for skills that
+    do not carry the field, so nothing breaks on the way in.
+  - `summary:` one plain sentence for a person. `description:` stays
+    exactly as it is, because it is what the router matches on and what
+    the trigger test scores. This is the same proposal an earlier run in
+    PR #26 filed against the routing text showing up as page copy, and
+    the shelves make it worth a second mention: the page currently
+    derives the human sentence by cutting `description` at its first
+    "Use when", which works on both of today's skills and is a
+    convention, not a guarantee.
+- Cost: $0. It is two frontmatter lines per skill and a few lines in
+  `site/lib/skill-shelves.js` to prefer them when present.
+- Whose call: the skill agent's charter and `skills/`, so not this
+  seat's. Filed for the owner.
+- Status: proposed
