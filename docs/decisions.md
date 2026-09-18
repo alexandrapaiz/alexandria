@@ -192,3 +192,36 @@ Scope is still bounded by the ADR-12 whitelist: the panel can merge judgment
 (`skills/`, `prompts/*.md`, `sources.yaml`) but never machinery (pipeline
 code, schema, these docs). Autonomy applies to what the system knows, not to
 what the system is.
+
+## ADR-14: A daily engineer agent maintains the machinery
+
+Owner's decision (2026-09-17): alongside ADR-13's reviewer panel, a single
+software-engineering agent runs once a day in a fresh session and works the
+product itself — fixing bugs, maintaining code, comparing alexandria to
+adjacent products, and proposing ideas the owner has not thought to prompt
+for. The goal, in her words: exponential creativity, so the product is not
+limited by her prompt generation. The agent's daily observations become the
+prompt stream.
+
+The loop is OODA, one cycle per day, and the charter is a versioned file
+(prompts/engineer-agent.md): **Observe** — repo state, PR queue, pipeline
+logs, and a rotating one-product competitive scan; **Orient** — rank against
+vision.md, broken things first, then owner-accepted ideas, then its own;
+**Decide** — exactly one shippable unit of work plus one to three new
+triggered ideas; **Act** — one PR on an `engineer/` branch, ideas appended
+to the ledger (docs/ideas.md).
+
+Division of authority completes ADR-13's picture. The panel autonomously
+*merges knowledge*; the engineer autonomously *proposes machinery* but never
+merges it — machinery PRs keep ADR-7's human gate, now fed on a daily clock.
+The ideas ledger is the steering interface: the agent appends `proposed`
+entries with the triggering observation, the owner flips them to `accepted`
+or `rejected`, and accepted ideas outrank the agent's new ones. The
+engineer's own charter is carved out of every autonomous-merge surface: it
+can be proposed against in the ledger, never edited in a daily PR.
+
+Launch vehicle: a daily scheduled Claude Code task on the owner's machine —
+her existing subscription is the compute budget, so steady-state cost stays
+$0. Each run is a fresh clone with fresh context; statelessness is the
+harness discipline, and everything durable lives in the repo, the PR queue,
+and the ledger.
