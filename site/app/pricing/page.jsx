@@ -1,3 +1,5 @@
+import Waitlist from "../components/Waitlist";
+
 export const metadata = { title: "Pricing — library of alexandr.ia" };
 
 export default function Pricing() {
@@ -35,6 +37,17 @@ export default function Pricing() {
           <span className="pill">Coming soon</span>
         </div>
       </div>
+      <section className="waitlist-block" id="waitlist">
+        <h3>Be told when they open</h3>
+        <p>
+          Leave an email and we will write to you once, on the day
+          subscriptions open. Until then nothing else arrives.
+        </p>
+        <Waitlist
+          source="pricing"
+          note="One email, and you can leave the list from any of them."
+        />
+      </section>
       <div className="billing-note">
         <h3>How billing works</h3>
         <p>

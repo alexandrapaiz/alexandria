@@ -1,7 +1,13 @@
 import Link from "next/link";
 import MarkLive from "./components/MarkLive";
+import Waitlist from "./components/Waitlist";
+import { weeklyIngestCount } from "../lib/metrics";
 
-export default function Home() {
+export const revalidate = 3600;
+
+export default async function Home() {
+  const papersThisWeek = await weeklyIngestCount();
+
   return (
     <main className="home-snap">
       <section className="hero">
@@ -23,10 +29,11 @@ export default function Home() {
           knows right now, and the <b>best known methods</b>, ready for{" "}
           <b>your agents</b> to load.
         </p>
-        <div className="hero-cta">
-          <Link href="/pricing" className="pill">
-            Subscribe
-          </Link>
+        <div className="hero-act">
+          <Waitlist
+            source="home"
+            note="One email when subscriptions open. Nothing else."
+          />
           <Link href="/library" className="pill ghost">
             Read an issue
           </Link>
@@ -39,9 +46,12 @@ export default function Home() {
           from agent harness design to training recipes, packaged so your
           own agents can load them and kept current as the research moves.
         </p>
-        <p className="metric-line">
-          <b>3,431</b> papers ingested this week
-        </p>
+        {papersThisWeek !== null && (
+          <p className="metric-line">
+            <b>{papersThisWeek.toLocaleString("en-US")}</b> papers ingested
+            this week
+          </p>
+        )}
       </section>
     </main>
   );

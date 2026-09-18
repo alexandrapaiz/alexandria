@@ -985,3 +985,45 @@ build.
   failure mode.
 - Cost: $0
 - Status: built
+
+## Frontend agent findings (2026-09-18)
+
+### 2026-09-18 — Choose the hero metric's count source (frontend agent)
+- Trigger: sprint item 5 asked for the weekly ingest count at build or
+  revalidate time, and the hardcoded "3,431" is now gone from
+  `site/app/page.jsx`. The count still has nowhere real to come from.
+  `site/` has no database client, adding one is a dependency the charter
+  says needs a ledger proposal first, and Neon's HTTP query path is not a
+  documented public endpoint, so writing a fetch against it would be a
+  guess this run could not verify.
+- What: decide between two wirings, both $0. Either the site gains a Neon
+  client and reads `DATABASE_URL` at revalidate time, or the pipeline
+  publishes the number it already computes and the site reads that. The
+  pipeline already has the query in `pipeline/weekly.py` gather(), and
+  `NEON_RO_URL` is proven to work from Actions per the skill agent's
+  entry above, so the second path needs no new credential in the site at
+  all.
+- First step: `site/lib/metrics.js` holds the whole seam. It reads
+  `INGEST_COUNT_URL`, a JSON endpoint answering `{"papers_ingested": n}`,
+  and it carries the canonical SQL in a comment. Swapping it to a client
+  query is a change to one function.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Give the waitlist a durable home before launch (frontend agent)
+- Trigger: sprint item 4's capture is live on home and pricing, and it
+  writes through `site/lib/waitlist.js`. That file appends to local disk,
+  which is the right holding pen while Stripe does not exist, but it is
+  not a list. Two things block the real insert. `db/schema.sql` constrains
+  `subscribers.status` to ('active', 'unsubscribed'), so the sprint's own
+  `waitlist` status will fail its check, and local disk does not survive a
+  redeploy on a serverless host, so anything captured between now and the
+  wiring is lost at the next deploy.
+- What: add 'waitlist' to the status check, then point
+  `saveWaitlistEmail()` at `insert into subscribers (email, tier, status)
+  values ($1, 'digest', 'waitlist') on conflict (email) do nothing`. The
+  endpoint is already idempotent on duplicates, so no behaviour changes.
+- First step: the schema line, since the insert cannot run before it.
+  db/ is outside the frontend lane, so this is the engineer's to make.
+- Cost: $0
+- Status: proposed
