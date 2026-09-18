@@ -1852,3 +1852,97 @@ owning seat rather than assumed. Arguments in docs/sales/.
   rather than bolting it on later.
 - Cost: $0.
 - Status: proposed
+### 2026-09-18 — Bind MCP access tokens to their audience (engineer agent)
+
+- Trigger: while fixing the redirect-URI gap (sprint 2026-09-21 item 1),
+  read the MCP authorization spec end to end. It states as a MUST that
+  "MCP servers MUST validate that access tokens were issued specifically
+  for them as the intended audience," per RFC 8707, and that clients MUST
+  send a `resource` parameter on both the authorization and the token
+  request. alexandria's access tokens carry `{"typ": "access"}` and
+  nothing else. Any token this server's own JWT secret signs and typed
+  `access` opens `/mcp`, whatever it was minted for.
+- What: record the `resource` parameter at `/authorize`, carry it into the
+  code and the access token as an `aud` claim, and have the bearer guard
+  reject a token whose `aud` is not this server's canonical URI. Advertise
+  the canonical URI in the protected-resource metadata that already
+  exists. Today the exposure is small, because one secret signs one
+  server's tokens and nothing else uses it. It stops being small the day a
+  second Modal surface shares the `JWT` secret, which the public read-only
+  MCP proposal in this ledger would do.
+- First step: one session. Add `aud` to the mint and one check in the
+  guard, extend tests/test_oauth_redirect_uri.py with a
+  wrong-audience case, and keep accepting audience-less tokens for one
+  release so the owner's live connector does not drop mid-flight.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Scope the MCP tools, so a stolen token cannot open a PR (engineer agent)
+
+- Trigger: the security seat's own finding named the blast radius
+  precisely: a stolen token pair reaches "PR-opening tools." Today's fix
+  closes the theft path it described, but it does not shrink what a token
+  is worth once taken. Every access token this server mints reaches every
+  tool, so `semantic_search` and `propose_change` sit behind the same
+  bearer check. The MCP spec spends a whole section on this, and expects
+  a server to answer an under-scoped request with 403 plus a
+  `WWW-Authenticate: Bearer error="insufficient_scope", scope="..."`
+  header naming what the operation needs.
+- What: two scopes, `corpus:read` for the five retrieval tools and
+  `repo:propose` for `propose_skill` and `propose_change`. Mint the scope
+  set into the access token, check it per tool, and advertise
+  `scopes_supported` in the protected-resource metadata so a client asks
+  for the smaller set first. A read-only client then holds a token that
+  cannot write to the repository at all, which is the shape the public
+  read-only MCP proposal in this ledger needs anyway.
+- First step: one session, on top of the audience work above, since both
+  touch the same mint and the same guard. Scope enforcement lands per
+  tool; the spec's step-up flow can wait.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Nothing runs the repo's tests (engineer agent)
+
+- Trigger: this run added `tests/` and `requirements-dev.txt`, the repo's
+  first Python tests, and had to `pip install fastapi httpx
+  python-multipart pytest` by hand to run them. They pass, and four of
+  them fail against the pre-fix behaviour when the check is stubbed out,
+  which is the whole point of having them. But nothing runs them on a PR,
+  so the next change to `mcp/oauth_flow.py` gets no warning at all.
+- What: one GitHub Actions job on pull requests touching `mcp/`,
+  `pipeline/`, or `tests/`: install `requirements-dev.txt`, run
+  `python3 -m pytest tests/ -q`. Free on a public repo, seconds per run.
+  This is the same job the skill seat's "run the trigger test in CI"
+  entry above wants for `skills/`, and both should land as one workflow
+  file rather than two.
+- Blocked on an owner decision already pending: no seat's token can push
+  a workflow file until the GitHub App's `workflows` permission is
+  granted (docs/sprints/pending.md, owner-only items 5 and 13). That is
+  the only thing standing between this entry and a first step.
+- First step: once the permission exists, one workflow file, one session.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Craft scan: Anthropic's MCP connector platform (modelcontextprotocol.io)
+
+- Scanned: the MCP authorization specification's draft pages, as the
+  standard alexandria's own connector is judged against. Chosen because
+  this run rebuilt that exact surface, and because the platform is the
+  distribution channel the $20 spine actually arrives through: a builder
+  does not visit alexandria, a builder adds a connector.
+- Worth stealing: the spec treats a token's blast radius as a first-class
+  design question, not an afterthought. It expects a server to answer an
+  under-scoped call with 403 and a header naming the scopes that call
+  needs, so the client can ask for exactly those and no more. alexandria
+  mints one all-powerful token. Both of the entries above came out of
+  this, and the scoped-token one is the one that matters: it is what lets
+  a public read-only corpus exist next to the owner's writable one
+  without a second server.
+- Where alexandria is better: the spec stops at the door. It standardises
+  who may knock and never says anything about whether what is behind the
+  door is worth reaching, which is the honest division of labour for a
+  protocol. alexandria's answer to that second question is the claim
+  graph, so a tool call comes back with edges and claim ids a caller can
+  follow, not prose it has to trust. Most connectors on this platform
+  wrap an API and return whatever it returned. The retrieval is the
+  product here, and the protocol is the doorway.
