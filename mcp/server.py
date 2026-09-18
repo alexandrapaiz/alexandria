@@ -2,7 +2,9 @@
 
 A thin MCP server on a Modal web endpoint. Tools — semantic_search, rag_answer
 (retrieve-then-generate over the corpus, ADR-20), sql_query (SELECT-only),
-get_digest, propose_skill (opens a PR; the human merge is the promotion,
+discovery_report (candidate new topics/authors/institutions/sources, evidence
+for a sources.yaml proposal — docs/product/source-discovery.md), get_digest,
+propose_skill (opens a PR; the human merge is the promotion,
 ADR-7). All intelligence stays in the calling agent; all authority (DB
 password, GitHub token, embedding model) stays here. rag_answer is the one
 exception: synthesis has to happen somewhere, so it happens server-side,
@@ -216,6 +218,164 @@ def serve():
             cols = [d.name for d in cur.description] if cur.description else []
             rows = cur.fetchmany(200)
         return {"columns": cols, "rows": [[str(v) if v is not None else None for v in r] for r in rows]}
+
+    @mcp.tool
+    def discovery_report(days: int = 21) -> dict:
+        """Surface candidates for what to start watching next: new topics,
+        rising authors and institutions, and sources gaining traction faster
+        than sources.yaml credits them for. This is evidence for a
+        sources.yaml proposal via propose_change (docs/product/source-discovery.md)
+        — it gathers, it does not decide, and a single instance of any signal
+        below is an anecdote, not a proposal.
+
+        Three read-only queries over data the pipeline already collects:
+
+        - novel_topic_clusters: claims from the last `days` days whose nearest
+          neighbor in the older corpus is distant in embedding space, grouped
+          with other recent claims making the same move. The topics column is
+          a closed 13-tag vocabulary (prompts/distill.md) that cannot name a
+          genuinely new topic, so novelty has to be read from the embedding
+          space instead — a higher cluster_size and nearest_old_distance means
+          more independent papers converging on something the corpus has not
+          seen before.
+        - rising_authors / rising_institutions: authors and institutions first
+          seen within `days` days with 2+ papers already routed past discard —
+          a candidate new prolific researcher or lab. Reads thin until the
+          corpus has a few months of depth: right after launch, everyone looks
+          "first seen recently."
+        - citation_velocity_outliers: papers gaining Semantic Scholar citations
+          fastest (citation_log, the weekly slow loop) that came from a tier we
+          do not already curate as a strong prior (not 'b' or 'c') — traction
+          from a source sources.yaml treats as neutral or skeptical today.
+        """
+        window = max(1, min(days, 180))
+        with db() as conn:
+            novel = conn.execute(
+                """
+                with recent as (
+                    select c.id, c.claim, c.embedding, c.paper_id, p.title, p.url
+                    from claims c join papers p on p.id = c.paper_id
+                    where c.created_at > now() - make_interval(days => %s)
+                      and c.embedding is not null
+                ),
+                novelty as (
+                    select r.id, r.claim, r.paper_id, r.title, r.url, r.embedding,
+                        (select min(c2.embedding <=> r.embedding)
+                         from claims c2
+                         where c2.embedding is not null
+                           and c2.created_at <= now() - make_interval(days => %s)) as nearest_old_distance
+                    from recent r
+                ),
+                candidates as (
+                    select * from novelty
+                    where nearest_old_distance is null or nearest_old_distance > 0.35
+                )
+                select a.id, a.claim, a.title, a.url, a.nearest_old_distance,
+                    (select count(*) from candidates b
+                     where b.id != a.id and b.paper_id != a.paper_id
+                       and (b.embedding <=> a.embedding) < 0.3) as cluster_size
+                from candidates a
+                order by cluster_size desc, a.nearest_old_distance desc nulls first
+                limit 15
+                """,
+                (window, window),
+            ).fetchall()
+
+            rising_authors = conn.execute(
+                """
+                with author_rows as (
+                    select unnest(p.authors) as author, p.id, p.published_at
+                    from papers p
+                    join triage_log t on t.paper_id = p.id
+                        and t.decision in ('distill', 'deep_read')
+                    where p.authors is not null
+                ),
+                first_seen as (
+                    select author, min(published_at) as first_seen
+                    from author_rows group by author
+                )
+                select ar.author, fs.first_seen, count(*) as papers_in_window
+                from author_rows ar
+                join first_seen fs on fs.author = ar.author
+                where fs.first_seen > current_date - make_interval(days => %s)
+                group by ar.author, fs.first_seen
+                having count(*) >= 2
+                order by papers_in_window desc, fs.first_seen desc
+                limit 15
+                """,
+                (window,),
+            ).fetchall()
+
+            rising_institutions = conn.execute(
+                """
+                with inst_rows as (
+                    select unnest(p.institutions) as institution, p.id, p.published_at
+                    from papers p
+                    join triage_log t on t.paper_id = p.id
+                        and t.decision in ('distill', 'deep_read')
+                    where p.institutions is not null
+                ),
+                first_seen as (
+                    select institution, min(published_at) as first_seen
+                    from inst_rows group by institution
+                )
+                select ir.institution, fs.first_seen, count(*) as papers_in_window
+                from inst_rows ir
+                join first_seen fs on fs.institution = ir.institution
+                where fs.first_seen > current_date - make_interval(days => %s)
+                group by ir.institution, fs.first_seen
+                having count(*) >= 2
+                order by papers_in_window desc, fs.first_seen desc
+                limit 15
+                """,
+                (window,),
+            ).fetchall()
+
+            velocity = conn.execute(
+                """
+                with checks as (
+                    select paper_id, citations, checked_at,
+                           row_number() over (partition by paper_id order by checked_at desc) as rn
+                    from citation_log
+                )
+                select p.title, p.url, p.tier, p.institutions,
+                       prev.citations, latest.citations,
+                       extract(epoch from (latest.checked_at - prev.checked_at)) / 86400 as days_between,
+                       (latest.citations - prev.citations)
+                         / greatest(extract(epoch from (latest.checked_at - prev.checked_at)) / 86400, 1) as citations_per_day
+                from checks latest
+                join checks prev on prev.paper_id = latest.paper_id and prev.rn = 2
+                join papers p on p.id = latest.paper_id
+                where latest.rn = 1
+                  and latest.citations > prev.citations
+                  and p.tier not in ('b', 'c')
+                order by citations_per_day desc
+                limit 15
+                """
+            ).fetchall()
+
+        return {
+            "novel_topic_clusters": [
+                {"claim_id": r[0], "claim": r[1][:300], "paper": r[2], "url": r[3],
+                 "nearest_old_distance": round(float(r[4]), 3) if r[4] is not None else None,
+                 "cluster_size": r[5]}
+                for r in novel
+            ],
+            "rising_authors": [
+                {"author": r[0], "first_seen": str(r[1]), "papers_in_window": r[2]}
+                for r in rising_authors
+            ],
+            "rising_institutions": [
+                {"institution": r[0], "first_seen": str(r[1]), "papers_in_window": r[2]}
+                for r in rising_institutions
+            ],
+            "citation_velocity_outliers": [
+                {"paper": r[0], "url": r[1], "tier": r[2], "institutions": r[3],
+                 "citations_before": r[4], "citations_now": r[5],
+                 "days_between": round(float(r[6]), 1), "citations_per_day": round(float(r[7]), 2)}
+                for r in velocity
+            ],
+        }
 
     @mcp.tool
     def get_digest(week: str | None = None) -> dict:
