@@ -720,7 +720,18 @@ a {
 }
 
 /* ---------- desk (owner review page) ---------- */
-.desk { padding-bottom: 120px; text-align: left; }
+/* .hero-follow centers its children by shrink-wrapping each to its own
+   content width; that's right for the home page's short centered scenes
+   but leaves the desk's headings and lists each a different width and
+   out of alignment with each other. Stretch them to one shared column. */
+.desk {
+  padding-bottom: 120px;
+  text-align: left;
+  align-items: stretch;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
 .desk .page-kicker, .desk .page-title, .desk .page-intro { text-align: left; margin-left: 0; }
 .desk-h {
   margin: 56px 0 6px;
