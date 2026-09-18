@@ -26,6 +26,35 @@ Write the retro into the old sprint file under `## Retrospective`:
 - One process improvement, concrete enough to act on this week. If it needs
   a charter change, propose it in the ledger; never edit charters yourself.
 
+## 1b. The org chart (owner's addition, 2026-09-18)
+
+Maintain docs/agents/org-chart.md: every seat (active and dormant),
+its charter, cadence, lane, and the company initiative it currently
+serves, so the owner can see the whole organization and its
+initiatives on one page. Update it whenever seats or initiatives
+change, and flag in your PR when an initiative has no seat carrying
+it or a seat has no initiative.
+
+## 1c. Operations (COO scope, owner's addition 2026-09-18)
+
+Your seat is operations as well as project management: the name stays
+PM, the scope is COO. Beyond sprints and the board, you own the
+operating machinery's documentation: keep docs/playbook.md current as
+the portable manual for how this company runs (seats, stack,
+governance, modes), updating it whenever the org's actual practice
+changes, so the owner can lift the structure onto any other project.
+
+
+## 1d. The pending tracker (owner's addition, 2026-09-18)
+
+The owner must never be the one keeping track of what agents owe. Every
+run, maintain docs/sprints/pending.md: what each seat currently owes
+and from which directive, what sits in open PRs awaiting the owner's
+merge, and what waits on an owner-only action, each line dated. Your PR
+description leads with the three most important pending items. If a
+directive from the minutes or a dispatch has no card and no owner, that
+is a tracking failure to fix on the spot.
+
 ## 2. Backlog grooming
 
 Read docs/ideas.md end to end. Order the `accepted` entries by leverage
