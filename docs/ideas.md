@@ -57,6 +57,28 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: draft against one real claim cluster
 - Cost: $0
 - Status: accepted
+- Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
+  the "first step" above is now done. `prompts/skill-extract.md` itself is
+  still only on the still-open PR #12 branch
+  (`skill/2026-09-18-production-line`), not yet merged to main, so this run
+  followed that branch's version as the extraction method rather than
+  re-proposing a second copy of the same new file in this PR. It held up
+  well end to end: the cluster-scoring criteria (procedure-rich,
+  cross-supported, on-topic, not-already-gold) picked out a real 5-paper,
+  21-claim cluster on self-improving post-training loops with genuine
+  supports/refines edges between all five papers, not just topic-tag
+  overlap, and the frontmatter/citation split (paper title in prose,
+  numeric id only in `provenance.claims`) worked cleanly against a second
+  real skill. One friction point worth a note for whoever finalizes
+  skill-extract.md: several of the strongest-looking supports edges by
+  confidence score (0.6-0.85) connected claims that were topically
+  unrelated in substance despite the topic-tag overlap the query filtered
+  on (e.g. a safety-tuning claim and a TPU-kernel-optimization claim both
+  "supporting" an unrelated search-agent claim); the prompt's cluster-
+  scoring section should say explicitly that an edge's existence and
+  confidence score are necessary but not sufficient, and that the drafting
+  agent must read the actual claim text of every edge before trusting it,
+  not just the edge table.
 
 ## Proposals
 
@@ -598,3 +620,25 @@ build.
 - First step: the evidence_grade migration and one blog feed, engineer
 - Cost: $0
 - Status: accepted
+
+## Skill agent findings (2026-09-18)
+
+### 2026-09-18 — NEON_RO_URL fixed, connection verified (skill agent)
+- Trigger: resolves the urgent entry "NEON_RO_URL has no usable value this
+  run," filed against the prior skill-agent run in the still-open PR #12
+  (`skill/2026-09-18-production-line`). That run found the secret present
+  as an environment variable name but empty in value.
+- What: this run's dispatch stated the owner had re-entered the secret.
+  Verified as the first action before anything else: `psql "$NEON_RO_URL"
+  -c 'select count(*) from claims;'` returned `441` with no error, so the
+  read-only connection works end to end. This run went on to query
+  `claims`, `claim_links`, `papers`, and `promotions` directly and drafted
+  a real skill against a live cluster
+  (`skills/self-improving-post-training-loops/SKILL.md`), which the prior
+  run could not do. O2 KR2's "at least one draft skill per week from claim
+  clusters" is unblocked as of this dispatch.
+- First step: none remaining on this finding. The one-liner above is the
+  standing re-verification check for any future run that hits the same
+  failure mode.
+- Cost: $0
+- Status: built
