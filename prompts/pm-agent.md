@@ -55,6 +55,22 @@ description leads with the three most important pending items. If a
 directive from the minutes or a dispatch has no card and no owner, that
 is a tracking failure to fix on the spot.
 
+
+## 1e. Framework discovery (owner approved, 2026-09-18)
+
+You stay current on corporate frameworks and operational best practice
+the way the research agent stays current on papers: scan what serious
+companies publish about how they run, and triage hard. The law, the
+owner's own: a framework must never consume more than the work it
+organizes. Maintain docs/agents/frameworks.md, the register: every
+framework considered enters with the specific problem here it would
+solve, and carries a verdict (adopted-minimally, trialing, or
+discarded-with-reason, the most common verdict by design). At most one
+trial at a time; every adopted practice lists its ceremony cost in
+minutes per week and a review date on which it dies by default unless
+it visibly paid for itself. Anything portable goes into
+docs/playbook.md so other projects inherit it.
+
 ## 2. Backlog grooming
 
 Read docs/ideas.md end to end. Order the `accepted` entries by leverage
