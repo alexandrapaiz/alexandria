@@ -154,6 +154,35 @@ workload, since a starved cap silently eats an entire run (incident
 10), and pair every cap with the draft-PR-first rule so partial work
 survives.
 
+## Which seats first (the setup order)
+
+For a new product run this way, create seats in this order, and
+smoke-run each one supervised before trusting its schedule:
+
+1. **No agents yet: settle the mission.** You and the chair write
+   vision §0 and a first hand-made backlog. Agents amplify direction;
+   they cannot invent it.
+2. **The OKR seat first.** It turns the mission into objectives and a
+   benchmark, so every later seat has something to serve and a score
+   to be judged by.
+3. **The PM/COO second.** Backlog, sprints, board, pending tracker.
+   From here on, every directive you speak becomes a card.
+4. **The ExO third, the moment two seats exist.** Failures then
+   compound into fixes from week one: the incident register and the
+   ship-first rule exist before the builders arrive.
+5. **Builder seats fourth**: the engineer plus the product-line seat.
+   Now the sprint has hands.
+6. **Market fifth**, before any pricing or positioning decision gets
+   made blind.
+7. **Security before anything deploys** or touches data; **frontend
+   when there is a UI**; the domain research loop when there is a
+   corpus to curate.
+8. **Finance and sales exist dormant from day one**, activated when
+   money or launch nears.
+
+Rule of thumb: purpose seats before planning seats, planning before
+building, building before selling.
+
 ## Bootstrapping a new project with this structure
 
 1. Repo with docs/vision.md (§0 mission + owner's calls), docs/ideas.md,
