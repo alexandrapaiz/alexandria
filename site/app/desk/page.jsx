@@ -10,6 +10,7 @@ const LANES = {
   market: "market",
   okr: "okr",
   exo: "exo",
+  sec: "sec",
 };
 
 const lane = (branch) => LANES[branch.split("/")[0]] || "other";
