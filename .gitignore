@@ -10,7 +10,7 @@ site/node_modules/
 site/.next/
 site/content/digests/
 .claude/worktrees/
-site/shot.mjs
-site/audit.mjs
-site/bench.mjs
-site/states.mjs
+# a run's throwaway Playwright scripts. They are written fresh each run
+# against whatever needs looking at, so none of them belong in the repo.
+site/*.mjs
+!site/next.config.mjs
