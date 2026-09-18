@@ -26,11 +26,13 @@ export default function Mission() {
           of what was loud.
         </p>
         <p>
-          The record also turns into work your agents can do. Procedures that
-          hold up become <b>agent skills</b>, each one tied to the claims that
-          justify it. That link stays live, so a skill is revised when its
-          research sharpens and retired with an explanation when the research
-          is overturned.
+          The same record turns into work your agents can do. You read the
+          digest to decide what matters, and your agents load the skills to
+          act on it, from the same claims either way. Procedures that hold up
+          become <b>agent skills</b>, each one tied to the claims that justify
+          it. That link stays live, so a skill is revised when its research
+          sharpens and retired with an explanation when the research is
+          overturned.
         </p>
         <p>
           The library also reads itself. It proposes improvements to its own

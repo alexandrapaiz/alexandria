@@ -477,7 +477,7 @@ a {
 }
 
 .waitlist-note {
-  margin-top: 12px;
+  margin-top: 14px;
   font-size: 13px;
   line-height: 1.45;
   color: var(--gray);
@@ -497,8 +497,8 @@ a {
 
 /* the pricing page's capture, under the tiers */
 .waitlist-block {
-  margin-top: 56px;
-  padding-top: 32px;
+  margin-top: 72px;
+  padding-top: 40px;
   border-top: 1px solid var(--line);
 }
 
@@ -579,7 +579,9 @@ a {
      and the whole block clears the nav at rest */
   .home-snap .hero-follow {
     min-height: 0;
-    padding: 24px 24px 8px;
+    /* the closing paragraph used to end 8px above the footer's hairline,
+       which read as the page running out rather than ending */
+    padding: 24px 24px 56px;
   }
 
   .home-snap .hero-act { margin-top: 26px; }
@@ -779,8 +781,9 @@ a {
    teaser, which is why it pulled itself up over the text above; the digest is
    free in full now, so there is nothing to fade and nothing to pull over. */
 .gate {
-  margin-top: 56px;
-  text-align: center;
+  margin-top: 72px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
 }
 
 .gate h3 {
@@ -792,7 +795,8 @@ a {
 .gate p {
   color: var(--gray);
   font-size: 15px;
-  margin: 8px 0 22px;
+  margin: 14px 0 26px;
+  max-width: 520px;
 }
 
 /* ---------- issue footer ---------- */
@@ -991,7 +995,7 @@ a {
 }
 
 .shelf-blurb {
-  margin-top: 10px;
+  margin-top: 14px;
   font-size: 14px;
   line-height: 1.6;
   color: var(--gray);
@@ -1171,6 +1175,7 @@ a {
 }
 
 .tier .per {
+  margin-top: 10px;
   font-size: 13px;
   color: var(--gray);
 }
@@ -1204,12 +1209,17 @@ a {
 }
 
 @media (max-width: 640px) {
-  .tiers { grid-template-columns: 1fr; }
+  /* stacked, these are two large bordered blocks rather than two columns,
+     so they need more air between them than a grid gutter */
+  .tiers {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
 }
 
 .billing-note {
-  margin-top: 56px;
-  padding-top: 32px;
+  margin-top: 72px;
+  padding-top: 40px;
   border-top: 1px solid var(--line);
 }
 
