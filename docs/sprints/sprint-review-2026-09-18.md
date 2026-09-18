@@ -78,5 +78,54 @@ Full detail on every pending item: docs/sprints/pending.md.
 
 ## Slide 5 — Board and views (project 4, "alexandria scrum")
 
-See the "Board hygiene" and "Roadmap/Board views" sections below, filled
-in after this run's GitHub Projects work.
+56 items on the board, all now carrying Start date and Target date. State
+verified live via `gh api graphql` with `GH_TOKEN=$PROJECTS_TOKEN` (the
+`gh project` CLI subcommands still hit the known "unknown owner type"
+quirk on a user-owned project; go straight to `graphql`).
+
+**Start date / Target date fields.** Already existed on the board,
+carried over from an earlier attempt at this same mandate (GraphQL
+mutations against a live project persist even when the agent run that
+made them dies mid-session and ships no PR, unlike file edits — this
+explains why the board was already partway done going into this, the
+third attempt). 51 of 56 items already carried correct dates matching
+the requested ranges (sprint 09-21 to 09-27, runway sprint 2 09-28 to
+10-05, sprint 3 10-06 to 10-12, launch 10-13). This run populated the 5
+that were still blank: the press release/FAQ and launch pre-mortem
+(sprint 3 / pre-launch), the board's own WIP-limit task (this week), and
+two carried frontend items (next Wednesday's cadence and the runway-2
+best-in-class benchmark pass).
+
+**Stale statuses.** Checked all three categories you named:
+- Agent-weekly automation: already `Done` on the board, and correctly
+  so. `prompts/weekly-agent.md` was renamed to `prompts/research-agent.md`
+  at some point, and `.github/workflows/agent-research.yml` runs it
+  Mondays 16:30 UTC. docs/ideas.md's engineer-agent entry proposing a new
+  `agent-weekly.yml` predates this and is now itself stale (the need it
+  names is already met under a different file name); worth a note at the
+  next grooming pass, not fixed here since docs/ideas.md grooming isn't
+  one of this run's four jobs.
+- Mission-on-site: already `Done`, and correctly so — PR #15 (the
+  purpose line on /mission) is merged.
+- Security items fixed in merged PRs: checked PR #8's actual file diff
+  (db/schema.sql, pipeline/weekly.py) against the board. The "two
+  stale-doc fixes" mentioned in that PR's title never had their own
+  board card (too minor to have been carded individually), so there is
+  no stale status to correct here. Every `Security ·` card still on the
+  board (redirect_uri gap, git-history purge, workflows permission, and
+  five smaller findings) is genuinely still open and correctly `Todo`.
+
+**Roadmap and Board views.** Attempted `createProjectV2View` via
+GraphQL: it works (the mutation exists and is not blocked by scope).
+Turned out to be moot for this project specifically — GitHub creates a
+Table, a Board, and a Roadmap view by default on every new Projects v2
+board, and project 4 already has all three (verified via a `views`
+query before touching anything). Board groups by Status already, and
+Roadmap will now render a real timeline since every item carries a
+Start/Target date as of this run. No UI fallback steps needed: the API
+path worked end to end, confirmed by creating then cleanly deleting a
+throwaway pair of views as a live test (`deleteProjectV2View` takes only
+`viewId`, not `projectId`, worth remembering for next time).
+
+Net result: the views-and-presentation mandate is done. Nothing on this
+list needs a manual UI step from you.
