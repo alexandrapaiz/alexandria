@@ -894,6 +894,25 @@ build.
 - Cost: $0
 - Status: accepted
 
+### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
+- Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
+  the cheapest available growth loop and found it structurally blocked:
+  the digest archive currently renders empty (docs/market/report-2026-09.md
+  §6), so there is no per-issue URL to share, and no digest issue can
+  become its own acquisition surface the way every comped competitor's
+  archive does.
+- What: once the archive renders real content, give each issue a stable
+  permalink with correct social meta tags (title, description, maybe an
+  OG image), and put a plain "share this issue" link on the issue page.
+  This is the highest-leverage cheap mechanic in the whole campaign
+  (docs/sales/launch/referral.md) because it costs a subscriber nothing
+  and turns every good issue into distribution without any outreach.
+- First step: confirm the archive-rendering fix (already tracked in
+  docs/backlog.md's launch runway table) lands, then add per-issue meta
+  tags on top of it — small enough to fold into that same fix rather
+  than a separate sprint item.
+- Cost: $0
+- Status: proposed
 ### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
 - Trigger: owner's directive to cover everything related to building in
   the AI age, adopted with the three seats' guardrails (all-hands
