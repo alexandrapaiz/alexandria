@@ -11,6 +11,19 @@ scheduled PM ceremony (retro on sprint-2026-09-21, grooming, sprint
 2026-09-28) runs Monday 2026-09-28 on its normal cadence; this file does
 not replace that run.
 
+## Board reorg (owner dispatch, 2026-09-18, in progress)
+
+A second same-day dispatch, separate from the ops dispatch above: bring
+GitHub Projects board #4 ("alexandria scrum") up to real Scrum
+structure (Status field restructured into Backlog / Sprint Ready / In
+Progress / In Review / Done, a weekly Sprint iteration field, truthful
+status mapping, and product-first Backlog ordering per decision 11).
+Board mutations run via `GH_TOKEN=$PROJECTS_TOKEN` against project 4,
+not through this repo, so this PR carries only the repo-side notes: this
+section, plus a full account of what changed on the board once done.
+This paragraph is the draft-PR checkpoint; it is being replaced with the
+finished account in the same PR.
+
 ## Open PRs waiting on your merge
 
 1. **PR #18** — exo, `exo/2026-09-18` (run 2), opened 2026-09-18. Still in
