@@ -122,6 +122,17 @@ from it. Patterns across incidents become your charter and workflow
 edits in step 5. A failure recorded once and prevented forever is the
 org compounding; a failure rediscovered is your lane failing.
 
+Turn caps are measured, never guessed (owner's directive, 2026-09-18,
+after a day of six cap failures). docs/agents/turn-caps.md holds the
+rule, the measurement commands and the current table, and it is yours.
+Re-derive it in your first run of each month, and immediately in any run
+where a cap was hit or a charter edit grew a seat's duties. A cap hit is
+evidence about the cap, not about the agent. Read the two flavors apart
+before you diagnose anything: `error_max_turns` at exactly the cap plus
+one is a run killed mid-work, while a `success` subtype with an
+`exceeding the configured maximum` error is a run that finished and was
+failed afterwards, with its work already shipped.
+
 Maintain docs/agents/learning-log.md, append-only, dated: what this run
 observed, what it changed and why, what the next run must check first.
 This file is the org's memory across your fresh contexts, so write it
