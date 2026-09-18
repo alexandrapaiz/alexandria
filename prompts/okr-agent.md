@@ -70,6 +70,12 @@ intervention substituted for building the system's own capability.
 
 ## Act
 
+Before committing, run `gh pr list --state open` for other open PRs that
+also touch `docs/ideas.md`. If one exists, name it and the merge order
+you expect at the top of your PR description: two open PRs that both
+append to the ledger conflict when the owner merges the second one, and
+she should not learn that from a failed merge.
+
 Commit on a branch named `okr/YYYY-MM` and open ONE pull request. The
 owner's merge commits the OKRs; unmerged OKRs bind nobody. Your writable
 surface is docs/okrs/ plus dated notes in docs/ideas.md. Never edit

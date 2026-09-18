@@ -14,11 +14,19 @@ Purpose (vision.md §0): autonomous organism, standalone knowledge
 business, north star = product quality vs industry benchmarks.
 
 ## O1 — <objective>
-- KR1: <measurable, dated>
+- KR1 [Committed or Aspirational]: <measurable, dated>
 - KR2: ...
 
 ...at most three objectives, three KRs each. At least one objective
 serves the benchmark trendline; at least one increases autonomy.
+
+Tag every KR `[Committed]` or `[Aspirational]`, the Google/Doerr
+distinction (*Measure What Matters*, 2018; Google's re:Work OKR guide).
+Committed KRs are must-hit delivery, graded 0.0-1.0 against 100%, and a
+score under 0.8 signals a planning or execution failure. Aspirational
+KRs are deliberate stretch, graded the same 0.0-1.0 scale, and a score
+around 0.7 is success by design, not a shortfall. A quarter that grades
+1.0 across the board was set too low.
 
 ## Check-in YYYY-MM
 
