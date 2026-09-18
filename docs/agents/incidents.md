@@ -99,3 +99,17 @@ an incident.
    owner's critique verbatim. ExO's Sunday postmortem should consider
    whether "liberty" dispatches need a different prompt shape (examples
    of the ambition bar, not just permission) across all seats.
+
+11. **The sales seat underdelivered on creativity despite a complete
+   liberty grant (owner-reported).** Her critique, in substance: the
+   sales plan was poorly creative; she wanted selling to other
+   companies, a list of ideas, an outreach plan, and an immediate
+   post-launch plan for obtaining the first customers, delivered with
+   the personality of a genuinely talented, out-there salesperson.
+   FIXES: the charter now carries that personality explicitly, the
+   seat moves to the premium model tier (creative breadth under open
+   briefs is where it earns its cost), and the redispatch carries the
+   critique verbatim. For the ExO's Sunday postmortem: liberty grants
+   may need an ambition bar stated in examples, not just permission,
+   across every seat; timidity under liberty is now a named failure
+   mode.
