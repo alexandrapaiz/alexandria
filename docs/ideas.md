@@ -929,6 +929,41 @@ build.
 - Cost: $0
 - Status: accepted
 
+### 2026-09-18 — A public, read-only, cited claims endpoint (sales agent)
+- Trigger: the GEO plan (docs/sales/geo-plan.md, Game 2) and the board's
+  "Define alexandria's distribution system (Thiel)" directive both need
+  a claim-graph surface an outside agent can query without the owner's
+  own credentials. Today the only way to read real claim text is the
+  MCP server's authenticated tools (ADR-11), built for one user's agent,
+  not a public surface — the graph's own site page ships a hardcoded
+  structure-only snapshot with claim text deliberately withheld
+- What: a narrow, unauthenticated `GET` route (e.g. `/api/claims/{id}`)
+  returning a claim's text, evidence, and supports/contradicts counts,
+  scoped to matured or deprecated claims only — never anything still
+  paywalled or in-progress, never a bulk graph dump
+- First step: pick the claim-status filter (matured/deprecated only) and
+  ship one route against one claim before generalizing
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — A public, read-only MCP surface, scoped and separate from the owner's authenticated layer (sales agent)
+- Trigger: same GEO plan (docs/sales/geo-plan.md, Game 2) and 2026-09-web
+  research showing MCP already functions as "the front door" for
+  agent-native infrastructure companies (Firecrawl, Browserbase, Exa,
+  Mem0). Alexandria's existing MCP server (ADR-11, `mcp/server.py`) is
+  real and deployed but sits entirely behind the owner's own OAuth 2.1
+  passphrase — built for her agent, not for outside agents to query
+- What: a second, read-only MCP surface exposing `semantic_search` and
+  `rag_answer` against the same matured/deprecated claim set as the
+  claims-endpoint item above, no auth required, returning the same
+  `[C<id>]`-cited answer format `rag_answer` already produces
+  internally. The owner's existing authenticated MCP layer is untouched
+  — this is an additive, narrowly scoped surface, not a loosening of it
+- First step: confirm the read-only scope excludes anything paywalled or
+  still in-progress before writing a single route, then reuse the
+  existing `semantic_search`/`rag_answer` logic against that filtered set
+- Cost: $0
+- Status: proposed
 ## Skill agent findings (2026-09-18)
 
 ### 2026-09-18 — NEON_RO_URL fixed, connection verified (skill agent)

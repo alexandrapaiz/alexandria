@@ -6,6 +6,11 @@ once instead of rediscovered. Append-only, dated, any seat or the chair
 may add entries; the ExO reads this file every run (charter step 2) and
 turns patterns into charter or workflow fixes.
 
+STANDING RULE (owner, 2026-09-18): any issue that occurs MORE THAN ONCE,
+anywhere in the org, is always recorded here at the moment it repeats.
+No exceptions, no judgment call. A repeat that goes unrecorded is itself
+an incident.
+
 ## 2026-09-17/18 — the founding night's failures
 
 1. **OIDC permission missing.** First cloud run (engineer,
@@ -68,12 +73,24 @@ turns patterns into charter or workflow fixes.
    routing policy is config plus verification; assert the model from
    run logs, never from intention.
 
+10. **Turn-cap starvation is a pattern, not a one-off (ExO owns the
+   postmortem).** Second and third occurrences: the PM's views/triage
+   run and its scrum-overhaul run both died or shipped nothing under a
+   60-turn cap, after the frontend's first run died at 150. Owner
+   escalated 2026-09-18: "pass this issue on to EXO because it's the
+   second time it's happened." Interim fixes: PM raised to 140,
+   frontend to 250. ExO's Sunday postmortem should right-size every
+   seat's cap against its real workload, and pair it with the
+   draft-PR-first rule so a starved run still leaves partial work
+   instead of nothing. A cap that silently eats a run's entire output
+   is a harness bug, not an agent failure.
+
 ## 2026-09-18 — the first full week of cloud runs
 
 Postmortems by the ExO agent (charter step 6), blameless, from run logs
 rather than from what the runs said about themselves.
 
-10. **A turn cap failed a run that had already shipped.** The security
+11. **A turn cap failed a run that had already shipped.** The security
     seat's first run (35299288455) did its whole job, opened PR #8 at
     02:42:38, and was then failed by the action eight seconds later:
     `Claude reported a successful result after 108 turns, exceeding the
@@ -87,11 +104,11 @@ rather than from what the runs said about themselves.
     rule for reading runs: **judge a run by its artifacts, never by its
     conclusion.** FIX queued, not applied: raise the security cap from
     100 to 150, in docs/agents/pending-workflow-changes.md, because of
-    incident 11 below. Lesson for charters: a cap is a tripwire, not a
+    incident 12 below. Lesson for charters: a cap is a tripwire, not a
     budget, so size it to the seat's honest work and treat a cap hit as
     evidence about the cap.
 
-11. **The agent token cannot write the agent workflows, so part of the
+12. **The agent token cannot write the agent workflows, so part of the
     ExO's chartered lane is unreachable.** Discovered this run, by
     trying it. The ExO charter §5 names `.github/workflows/agent-*.yml`
     as writable, and the push was rejected outright:
@@ -119,7 +136,7 @@ rather than from what the runs said about themselves.
     that holds it, so the ExO now verifies its own writable surface each
     run instead of assuming it.
 
-12. **Incident 3's pattern fix sat unapplied for a full week.** Incident
+13. **Incident 3's pattern fix sat unapplied for a full week.** Incident
     3 recorded draft-PR-first as "PATTERN FIX pending with the ExO" on
     the founding night. Sixteen PRs and one ExO run later, not one of
     the eleven charters contained the word draft, and the owner was

@@ -85,25 +85,30 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
-### 2. Two turn caps raised, on evidence
+### 2. Turn caps, re-derived from run logs
 
-**Why.** The security seat's first run (35299288455) finished its work,
-opened PR #8, and was then marked a failed run by the action itself:
+**Why.** The owner escalated turn-cap starvation as incident 10 and
+asked this seat to right-size every cap against real workload. Incident
+10's postmortem holds the evidence table, read from `num_turns` in the
+run logs rather than from intention. The rule it lands on: **a cap is at
+least twice the seat's highest observed turn count, never below 100.**
 
-```
-Claude reported a successful result after 108 turns, exceeding the
-configured maximum of 100
-```
+**How.** One number per file, in the `claude_args` line. Nothing else on
+the line moves.
 
-The cap is a hard tripwire, not a budget, so a seat whose honest work
-needs 108 turns must be given 108. The ExO seat has the same 100 and
-gained the whole GitHub-home duty in §5b on 2026-09-18, and this run,
-the first to carry that duty, also ran long.
+| File | From | To | Highest observed | Why |
+|---|---|---|---|---|
+| `agent-security.yml` | 100 | 200 | 108 | overshot its cap and failed a run that had already shipped (incident 11) |
+| `agent-exo.yml` | 100 | 200 | 36 | that 36 was an observation-only first run. §5b added the whole GitHub home on 2026-09-18, and the first run carrying it ran well past 100 |
+| `agent-engineer.yml` | 120 | 150 | 67 | daily seat, and the scope grows with the launch runway |
+| `agent-skill.yml` | 100 | 150 | 61 | both samples predate a working database, so real runs will be longer |
+| `agent-sales.yml` | 80 | 120 | 59 | 80 is only 1.35x its own observed high |
+| `agent-finance.yml` | 80 | 120 | never run | matched to sales, its nearest twin |
 
-**How.** In `.github/workflows/agent-security.yml` and
-`.github/workflows/agent-exo.yml`, change `--max-turns 100` to
-`--max-turns 150` in the `claude_args` line. Nothing else on the line
-moves. For reference, the frontend seat already sits at 250 after the
-same class of failure (incident 4), and the engineer at 120.
+Unchanged and already correct under the rule: `agent-frontend.yml` at
+250 against 151 observed, `agent-pm.yml` at 140 against 42, and
+`agent-market.yml`, `agent-okr.yml` and `agent-research.yml` at 100
+against 23, 33, and nothing.
 
-**Cost.** None standing. Turns are only spent if a run needs them.
+**Cost.** None standing. Turns are only spent if a run needs them, so a
+cap is a ceiling rather than a budget.
