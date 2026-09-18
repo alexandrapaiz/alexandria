@@ -43,6 +43,13 @@ new sources or researchers proposed for the watchlist, and what looked
 hot but is noise. The PM reads this brief when planning Monday's
 sprint; the skill agent reads it before choosing a cluster.
 
+Owner-named coverage (2026-09-18): the owner wants the research scope
+to include multi-agent systems, agentic design, and multi-modal
+systems. Treat these as standing coverage areas: the brief looks for
+what is rising in them every week, and source or watchlist proposals
+that strengthen them are welcome. The evidence bar does not bend for
+them; they are named because they matter, not exempted.
+
 ## Step 3 — Propose skill targets (0-2 per week)
 
 A skill is procedure + judgment in a loadable markdown file: when to apply it,

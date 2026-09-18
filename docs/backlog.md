@@ -276,3 +276,48 @@ verdict text got copied onto the wrong entry rather than a deliberate
 rejection. Carded on the board regardless since it's genuinely pending
 either way, but worth your eyes to confirm the status is what you
 intended.
+
+## Owner orders queued for the frontend seat (2026-09-18, recorded by the chair)
+
+Given live during the working session, to be executed by the next
+frontend dispatch on PR #26's branch (a copy-revision run is in flight
+as this is written; these fire the moment it lands):
+
+1. **Hide the knowledge graph completely.** Nav link gone, every
+   mention on home and pricing gone, the route unreachable. Code stays
+   on the shelf; a visitor must have no idea it exists until it is
+   industry standard.
+2. **Density pass.** Some spaces look dense to the owner. Re-screenshot
+   every page at the three viewports hunting for cramped spacing and
+   open up the tight scenes.
+3. **Reorganize the skills library to grow.** Design for fifty skills,
+   not two: grouping, scannable structure, honest small-category
+   states. The UX benchmark is Clerk: their flows, small states, and
+   interaction quality, translated into the house black and white,
+   never their look.
+4. **The UI must make clear the product is for you AND your agents.**
+   Both audiences, together: the builder reads the digest and library,
+   the builder's agents load the same skills and cite the same claims.
+   This is a positioning line the whole surface should carry, not one
+   sentence on one page.
+
+5. **The Alexandria line.** The owner wants a phrase in the UI built on
+   this idea, in her words: "what we'd know if the library of
+   alexandria was never burned down. like this product gets us there."
+   The owner chose the line: "Catching up to the world where the
+   library never burned." But NOT as a subtitle or any visible copy.
+   She wants it as a hidden easter egg. Hide it where the curious
+   look, one to three tasteful placements from: a comment at the top
+   of the page's HTML source, a single quiet console message on
+   load, a line in llms.txt where agents will genuinely find it (the
+   best fit for "for you and your agents"), or the 404 page. Never
+   a tooltip or hover on the hero mark, whose behavior stays
+   untouchable. The visible surface does not carry the line at all.
+   The mission-page compounding line is VETOED by the owner
+   (2026-09-18): no visible Alexandria motif appears anywhere on the
+   site. The hidden easter egg is the only place the idea lives. The seat places it where it carries most
+   (likely the hero's supporting line or the mission page) and may
+   tighten the wording, but the idea is fixed: the knowledge that
+   compounds when the library never burns. It must not crowd the
+   mission line, which stays exactly "Accelerate every builder to
+   frontier speed." The retired subtitle stays retired.
