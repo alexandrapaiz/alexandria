@@ -1590,3 +1590,82 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the skill agent's charter and `skills/`, so not this
   seat's. Filed for the owner.
 - Status: proposed
+
+### 2026-09-18 — The $20 spine is shut to everybody, including paying subscribers (security agent, run 2)
+
+- Trigger: this run's sweep of today's merged diffs. Clerk's components and
+  middleware landed at 05:27:43 in `09c0ed5` (sign-in, sign-up,
+  `ClerkProvider`, `clerkMiddleware`), but `currentEmail()` in
+  `site/lib/entitlement.js` is still the pre-Clerk stub that returns `null`.
+- The problem: `hasSpine()` starts by calling `currentEmail()` and returns
+  `false` the moment it gets `null`, so it can never return `true` for
+  anyone. Three pages gate on it — `site/app/skills/page.jsx`,
+  `site/app/routines/page.jsx` and `site/app/_graph/page.jsx` — and all
+  three will show the not-entitled view to a subscriber who has paid. The
+  comment above the stub still said "Clerk is not wired yet", which stopped
+  being true today; this run corrected the comment and nothing else.
+- Not a security hole. The gate fails closed, which is the right direction
+  to fail, so nothing leaks. It is a product defect, and the deadline is
+  real: Stripe goes live 2026-09-26, and the first person to pay $20 gets
+  nothing for it.
+- What: implement `currentEmail()` against Clerk's server-side session and
+  return the signed-in user's primary email address, then verify end to end
+  against a `subscribers` row with `tier = 'full'` and `status = 'active'`.
+- First step: it needs the Clerk keys in Vercel, which are still the owner's
+  pending action on the board, so the engineer cannot finish or test this
+  until those land.
+- Whose call: the engineer seat. Not a behaviour-preserving fix, so out of
+  this agent's lane.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — Six seats can no longer reach their own turn cap before the job timeout kills them (security agent, run 2)
+
+- Trigger: the owner's order to sanity-check the chair's new caps. `c6bc2c4`
+  raised `--max-turns` on all eleven workflows; `57135da` raised
+  `timeout-minutes` on two of them. The other nine stayed at 45 minutes.
+- The problem: a turn cap and a job timeout are two different tripwires, and
+  for six seats the timeout is now the binding one. Measured against today's
+  own runs (`duration_ms / num_turns` from each result JSON), frontend's
+  400-turn cap needs 83 minutes at its median pace and 112 at its worst,
+  against a 90-minute timeout, so the cap is simply unreachable. pm, sales,
+  engineer and market are all reachable at median pace but not at the worst
+  pace each of them actually recorded today. This matters because the two
+  failures are not equivalent: a cap hit returns a result JSON with turns,
+  cost and timings and leaves pushed work diagnosable, while a timeout is a
+  SIGKILL with no result JSON at all. Raising caps without raising timeouts
+  trades soft failures for hard ones.
+- What: raise `timeout-minutes` to 120 on frontend, to 75 on pm, and to 60
+  on engineer, market, sales, skill and exo. Alternatively lower frontend's
+  cap to 300 and leave its timeout at 90. A timeout only costs money when it
+  is actually reached, so the raise is close to free.
+- Blocked, not skipped: no agent seat's token can push a change to
+  `.github/workflows/*`, which is incident 12. This needs the owner's own
+  push or a PAT carrying the `workflow` scope. The full per-seat table is in
+  [docs/security/audit-2026-09-18-b.md](security/audit-2026-09-18-b.md) §4.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — The incident register has three entries numbered 11, two numbered 12 and two numbered 13 (security agent, run 2)
+
+- Trigger: the owner's order to hunt for duplicate ledger entries left by
+  repeated grooming. This is the clearest instance.
+- The problem: two concurrent runs each appended what each believed was the
+  next free number in `docs/agents/incidents.md`, and the conflict
+  resolutions kept both — the merge commits say so in their own subjects
+  (`7a3df64`, "Merge main into sales branch: keep both incident entries").
+  Lines 195 and 210 are the same sales-creativity incident written twice.
+  The cost is not only untidiness: entries elsewhere in the file cite
+  "incident 12 below" and "incident 3's pattern fix", and those citations
+  are now ambiguous. This is incident 6, same-anchor ledger appends,
+  reappearing in a numbered list where the damage outlives the conflict.
+- What: renumber to a unique sequence and collapse the two sales entries
+  into one.
+- Deliberately not fixed here: ExO is writing today's postmortem into that
+  exact file in PR #30 as this runs, and a competing edit from this branch
+  would manufacture the very collision being reported. The line numbers are
+  in [docs/security/audit-2026-09-18-b.md](security/audit-2026-09-18-b.md)
+  §2f for whoever holds the file next.
+- Whose call: ExO owns the incident register.
+- Cost: $0
+- Status: proposed

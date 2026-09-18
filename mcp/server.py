@@ -63,6 +63,7 @@ def serve():
     import base64
     import hashlib
     import hmac
+    import html
     import os
     import re
     import time
@@ -527,8 +528,12 @@ def serve():
         q = request.query_params
         if q.get("response_type") != "code" or q.get("code_challenge_method") != "S256":
             return JSONResponse({"error": "unsupported_response_type"}, status_code=400)
+        # Escaped, because every one of these values came from the query string
+        # of whatever link the user clicked. Unescaped, a crafted `state` closes
+        # the value attribute and rewrites the page the passphrase is typed into.
         hidden = "".join(
-            f'<input type="hidden" name="{p}" value="{q.get(p, "")}">' for p in AUTH_PARAMS
+            f'<input type="hidden" name="{p}" value="{html.escape(q.get(p, ""), quote=True)}">'
+            for p in AUTH_PARAMS
         )
         return HTMLResponse(LOGIN_FORM.format(msg="Enter the passphrase to connect.", hidden=hidden))
 
@@ -540,7 +545,7 @@ def serve():
                          code_challenge_method: str = Form("")):
         if not hmac.compare_digest(passphrase, PASSPHRASE):
             hidden = "".join(
-                f'<input type="hidden" name="{p}" value="{v}">'
+                f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
                 for p, v in [("response_type", response_type), ("client_id", client_id),
                              ("redirect_uri", redirect_uri), ("state", state),
                              ("code_challenge", code_challenge),
