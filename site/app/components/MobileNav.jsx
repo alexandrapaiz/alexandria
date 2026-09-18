@@ -6,7 +6,6 @@ import Link from "next/link";
 const LINKS = [
   ["/library", "Library"],
   ["/skills", "Skills"],
-  ["/graph", "Graph"],
   ["/mission", "Mission"],
 ];
 
@@ -32,6 +31,14 @@ export default function MobileNav() {
               {label}
             </Link>
           ))}
+          {/* The bar has no room for sign-in on a phone, so the panel carries
+              it. This is the /sign-in route rather than the bar's modal
+              button, because that button is Clerk's and renders nothing until
+              Clerk's script has loaded, which would leave a phone with no way
+              in at all on a slow connection. */}
+          <Link href="/sign-in" className="mobile-nav-signin" onClick={() => setOpen(false)}>
+            Sign in
+          </Link>
         </div>
       )}
     </div>

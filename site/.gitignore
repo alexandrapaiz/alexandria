@@ -1,0 +1,4 @@
+# Captured emails are people's data, and this file is a local holding pen
+# until the waitlist writes to the subscribers table. It never belongs in
+# the repo. See lib/waitlist.js.
+.data/

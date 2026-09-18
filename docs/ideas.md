@@ -1027,6 +1027,110 @@ build.
 - Cost: $0
 - Status: built
 
+## Frontend agent findings (2026-09-18)
+
+### 2026-09-18 — The skills page shows agents' routing text to people (frontend agent)
+- Trigger: the copy pass this run rewrote every line the site owns, and
+  then hit the two lines it does not. `/skills` renders each skill's
+  `description` from its `SKILL.md` frontmatter, and that field is written
+  for an agent's router, not for a reader. On the page it comes out as
+  "Evidence-backed practices for designing, improving, and debugging agent
+  harnesses (the scaffold around a model - tools, prompts, loop structure,
+  feedback). Use when building an agent or multi-agent system, when an
+  agent underperforms and the cause is unclear, when ..." and runs for
+  eight lines of "use when" clauses. The second card's text carries a
+  semicolon join, which the house voice does not allow. It is the longest
+  block of prose on the page and the worst-written text on the site.
+- What: give each skill a second frontmatter field, a one-sentence
+  `summary` for people, and have `site/app/skills/page.jsx` render that
+  and keep `description` for routing. Both audiences then get text aimed
+  at them, and the trigger test in `skills/_validation/` keeps scoring the
+  field it already scores.
+- Why this run did not simply make the edit: `skills/` is outside the
+  frontend lane by the charter, and the `description` field is the exact
+  string the trigger test measures, so editing it from this seat would
+  move a number another seat owns.
+- First step: the skill seat adds `summary` to the two gold skills, then
+  one line changes in the skills page. The page falls back to
+  `description` when `summary` is absent, so the two can land in either
+  order.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Confirm or reject renaming "the spine" for visitors (frontend agent)
+- Trigger: the owner's copy order for this run bans buzzwords and asks
+  that the site sell the product rather than the recipe. "The spine" is
+  the owner's own word from the 2026-09-17 all-hands, and it is the right
+  word internally, but on the site it was the name of the paid tier and
+  the subject of four gate messages, and it tells a first-time visitor
+  nothing about what they would be paying for. This run renamed the tier
+  to "Full access" and rewrote the gates to say "the paid plan", which is
+  a naming decision above this seat.
+- What: the owner keeps "Full access" or restores "The spine". If it is
+  restored, the tier needs a subtitle that says what it contains, because
+  the word alone does not carry it.
+- First step: one word in `site/app/pricing/page.jsx` and one phrase each
+  in the skills, graph and routines gates plus the issue foot. Reverting
+  is a five-line diff either way.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The digest's own text says "ingested" where the site now says "read" (frontend agent)
+- Trigger: the home page's metric line was changed this run from "papers
+  ingested this week" to "papers read this week", because "ingested" is
+  pipeline vocabulary and a reader does not use it. The digest itself
+  still ends with "3431 papers ingested / 216 claims distilled / 80 edges
+  drawn this week", which is written by the weekly agent and rendered
+  verbatim on every issue page, so the same number is now described two
+  ways on two pages of the same site.
+- What: the weekly agent's digest template says "papers read" instead of
+  "papers ingested". Nothing else changes, and the claims and edges lines
+  are already fine.
+- Why this run did not simply make the edit: the digest is the weekly
+  agent's output and its published issues are a record, so rewriting one
+  from this seat would edit a publication after the fact.
+- First step: the line in the weekly agent's template, applied to future
+  issues rather than to the ones already out.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Choose the hero metric's count source (frontend agent)
+- Trigger: sprint item 5 asked for the weekly ingest count at build or
+  revalidate time, and the hardcoded "3,431" is now gone from
+  `site/app/page.jsx`. The count still has nowhere real to come from.
+  `site/` has no database client, adding one is a dependency the charter
+  says needs a ledger proposal first, and Neon's HTTP query path is not a
+  documented public endpoint, so writing a fetch against it would be a
+  guess this run could not verify.
+- What: decide between two wirings, both $0. Either the site gains a Neon
+  client and reads `DATABASE_URL` at revalidate time, or the pipeline
+  publishes the number it already computes and the site reads that. The
+  pipeline already has the query in `pipeline/weekly.py` gather(), and
+  `NEON_RO_URL` is proven to work from Actions per the skill agent's
+  entry above, so the second path needs no new credential in the site at
+  all.
+- First step: `site/lib/metrics.js` holds the whole seam. It reads
+  `INGEST_COUNT_URL`, a JSON endpoint answering `{"papers_ingested": n}`,
+  and it carries the canonical SQL in a comment. Swapping it to a client
+  query is a change to one function.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Give the waitlist a durable home before launch (frontend agent)
+- Trigger: sprint item 4's capture is live on home and pricing, and it
+  writes through `site/lib/waitlist.js`. That file appends to local disk,
+  which is the right holding pen while Stripe does not exist, but it is
+  not a list. Two things block the real insert. `db/schema.sql` constrains
+  `subscribers.status` to ('active', 'unsubscribed'), so the sprint's own
+  `waitlist` status will fail its check, and local disk does not survive a
+  redeploy on a serverless host, so anything captured between now and the
+  wiring is lost at the next deploy.
+- What: add 'waitlist' to the status check, then point
+  `saveWaitlistEmail()` at `insert into subscribers (email, tier, status)
+  values ($1, 'digest', 'waitlist') on conflict (email) do nothing`. The
+  endpoint is already idempotent on duplicates, so no behaviour changes.
+- First step: the schema line, since the insert cannot run before it.
+  db/ is outside the frontend lane, so this is the engineer's to make.
 ### 2026-09-18 — harness-engineering does not fire on its own test-time-compute case (skill agent)
 - Trigger: the executable trigger test built this run
   (`skills/_validation/trigger_test.py`, board card "Design the skill
@@ -1450,4 +1554,39 @@ owning seat rather than assumed. Arguments in docs/sales/.
   already carries the subscription's monthly figure as an owner-only,
   not-yet-costed item, so this is worth re-checking once that figure
   exists rather than assumed free of any real cost.
+- Status: proposed
+
+### 2026-09-18 — Let a skill declare its own shelf and its own summary (frontend proposal)
+
+- Trigger: the owner's order 3 of 2026-09-18, to reorganise the skills
+  library so it scales to fifty. The page is now shelves, and it works,
+  but the shelf a skill lands on is decided in `site/lib/skill-shelves.js`
+  by matching the skill's name, then by scanning its description for
+  keywords. `skills/` belongs to the skill agent and the frontend seat
+  does not write there, so this was the only honest way to do it from
+  this lane.
+- The problem with it: it is a guess made outside the file it describes.
+  A new skill whose name is unknown and whose description happens to say
+  "context" lands on Context engineering whether or not that is where its
+  author would have put it, and nobody who writes a skill can see where
+  it will appear. At two skills the guess is checkable by eye. At fifty
+  it is not.
+- What: two optional fields in a skill's frontmatter, both written by the
+  skill agent when it extracts:
+  - `shelf:` one of the shelf ids in `site/lib/skill-shelves.js`
+    (`harnesses`, `context`, `multi-agent`, `training`, `serving`,
+    `multimodal`). The site keeps its keyword fallback for skills that
+    do not carry the field, so nothing breaks on the way in.
+  - `summary:` one plain sentence for a person. `description:` stays
+    exactly as it is, because it is what the router matches on and what
+    the trigger test scores. This is the same proposal an earlier run in
+    PR #26 filed against the routing text showing up as page copy, and
+    the shelves make it worth a second mention: the page currently
+    derives the human sentence by cutting `description` at its first
+    "Use when", which works on both of today's skills and is a
+    convention, not a guarantee.
+- Cost: $0. It is two frontmatter lines per skill and a few lines in
+  `site/lib/skill-shelves.js` to prefer them when present.
+- Whose call: the skill agent's charter and `skills/`, so not this
+  seat's. Filed for the owner.
 - Status: proposed

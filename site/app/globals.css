@@ -31,6 +31,21 @@ body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 1.5;
+  /* short pages (routines, 404) used to leave the footer floating in the
+     middle of the screen with white space under it; the column pins it to
+     the bottom without changing anything on a page that already fills */
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+body > main {
+  flex: 1 0 auto;
+  /* a flex item with auto side margins sizes to its content instead of
+     stretching, which blew .page past the viewport; the explicit width
+     keeps every page exactly as wide as the body */
+  width: 100%;
+  min-width: 0;
 }
 
 a {
@@ -52,10 +67,19 @@ a {
   padding: 22px 40px;
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* a 64px headline scrolling under this used to read through as a grey
+     smear behind the nav's own links. The blur was working; 0.85 white on
+     top of it was not enough to put the page behind the bar */
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   z-index: 10;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav {
+    background: var(--paper);
+  }
 }
 
 .nav-logo {
@@ -166,10 +190,47 @@ a {
   background: #f5f5f5;
 }
 
-@media (max-width: 780px) {
-  .mobile-nav { display: block; }
+/* the panel's links already carry this shape; sign-in sits under a hairline
+   because it is an account action rather than another page */
+.mobile-nav-signin {
+  margin-top: 6px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+  border-radius: 6px;
 }
 
+.nav-user {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Found in the pixels: with the sign-in pill, the menu button and the
+   primary pill all in the bar, the nav ran to 447px at a 390px viewport and
+   pushed every page into a horizontal scroll. The panel below already holds
+   the links, so it holds sign-in too and the bar fits. */
+@media (max-width: 780px) {
+  .mobile-nav { display: block; }
+  /* .pill sets display below this rule, so the hide needs to outrank it */
+  .nav-right .nav-signin { display: none; }
+}
+
+/* the wordmark plus the menu button plus the pill still need the last few
+   pixels back on a 320px screen */
+@media (max-width: 400px) {
+  .nav { padding-left: 18px; padding-right: 18px; }
+  .nav-logo { font-size: 13.5px; gap: 7px; }
+  .nav-logo .dot { width: 11px; height: 11px; }
+  .nav-right { gap: 12px; }
+  .nav-right .pill { padding: 9px 16px; }
+}
+
+/* From the benchmark runs. Elicit's hover is a Framer Motion spring: it
+   overshoots its target and settles, which is what makes it feel alive
+   rather than merely animated. It gets there with a shadow and a colour,
+   neither of which we have, so the same physics has to translate to motion
+   alone. A back-out curve does that. The lift's timing is the one already
+   on main. The press is faster than the lift, the way a real button is,
+   and :active also gives touch the same feedback hover gives a cursor. */
 .pill {
   display: inline-block;
   background: var(--ink);
@@ -178,14 +239,16 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  /* a back-out curve overshoots past the target scale and settles,
-     the spring feel behind Elicit's hover, translated to our identity
-     as motion only (no color) */
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
   transform: scale(1.06);
+}
+
+.pill:active {
+  transform: scale(0.98);
+  transition-duration: 0.09s;
 }
 
 .pill.ghost {
@@ -203,6 +266,7 @@ a {
 }
 
 .footer {
+  margin-top: auto;
   border-top: 1px solid var(--line);
   padding: 44px 40px 60px;
   display: flex;
@@ -327,19 +391,177 @@ a {
   font-weight: 600;
   font-size: 15px;
   font-variant-numeric: tabular-nums;
-  margin-right: 4px;
 }
 
-.hero-cta {
-  margin-top: 38px;
+/* the home page's closing act: leave an email, or go read an issue.
+   Full width so the field is measured against the page gutter and not
+   against its own intrinsic size, which overflowed the page below 380px */
+.hero-act {
+  margin-top: 34px;
+  width: 100%;
   display: flex;
-  gap: 14px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 }
 
-.hero-cta .pill {
+/* the direct child only: this is the large standalone CTA, and letting it
+   reach the submit button inside the form made that button so wide it
+   clipped the field's placeholder */
+.hero-act > .pill {
   padding: 15px 32px;
   font-size: 16px;
+}
+
+/* ---------- waitlist ---------- */
+
+.waitlist-wrap {
+  width: 100%;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.waitlist {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.waitlist-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.waitlist-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 13px 20px;
+  transition: border-color 0.2s ease;
+}
+
+.waitlist-field::placeholder {
+  color: var(--gray);
+}
+
+.waitlist-field:hover {
+  border-color: var(--gray);
+}
+
+.waitlist-field:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+/* a keyboard user needs more than a border that darkens, and a hairline
+   ring is the house vocabulary for it */
+.waitlist-field:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.waitlist-go {
+  flex: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 13px 22px;
+  white-space: nowrap;
+}
+
+.waitlist-go:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.waitlist-note {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--gray);
+  text-align: center;
+}
+
+.waitlist-note.is-error {
+  color: var(--ink);
+}
+
+.waitlist-done {
+  font-size: 15px;
+  color: var(--ink);
+  text-align: center;
+  max-width: 440px;
+}
+
+/* the pricing page's capture, under the tiers */
+.waitlist-block {
+  margin-top: 72px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+}
+
+.waitlist-block h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.waitlist-block p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 540px;
+}
+
+.waitlist-block .waitlist-wrap,
+.waitlist-block .waitlist-done {
+  margin-top: 22px;
+}
+
+/* the block's prose is left aligned, so the field is too */
+.waitlist-block .waitlist-wrap {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.waitlist-block .waitlist-note,
+.waitlist-block .waitlist-done {
+  text-align: left;
+}
+
+/* on a phone the button was taking more of the line than the field it
+   belongs to, and the placeholder lost its last characters */
+@media (max-width: 440px) {
+  .waitlist-go {
+    padding: 13px 16px;
+  }
+}
+
+/* below this the field and the button cannot share a line without clipping
+   the placeholder, so they stack instead */
+@media (max-width: 360px) {
+  .waitlist {
+    flex-wrap: wrap;
+  }
+
+  .waitlist-field,
+  .waitlist-go {
+    flex: 1 0 100%;
+  }
 }
 
 .about-inline {
@@ -353,6 +575,27 @@ a {
 
 @media (max-width: 780px) {
   .nav-links { display: none; }
+
+  /* the chrome used a 40px gutter while every page's content used 24px, so
+     the logo and the footer sat inset from the text they framed */
+  .nav { padding: 22px 24px; }
+  .footer { padding: 30px 24px 38px; }
+
+  /* the second scene is centred inside a full-viewport box, which parked 81px
+     of empty space under the metric line and pushed the statement's first
+     line up behind the sticky nav once the page was scrolled to its end.
+     On touch there is no glide to rescue it, so the scene hugs its content
+     and the whole block clears the nav at rest */
+  .home-snap .hero-follow {
+    min-height: 0;
+    /* the closing paragraph used to end 8px above the footer's hairline,
+       which read as the page running out rather than ending */
+    padding: 24px 24px 56px;
+  }
+
+  .home-snap .hero-act { margin-top: 26px; }
+  .home-snap .about-inline { margin-top: 30px; }
+  .home-snap .metric-line { margin-top: 24px; }
 }
 
 /* ---------- inner pages ---------- */
@@ -479,7 +722,28 @@ a {
   line-height: 1.55;
 }
 
-.issue:hover h2 {
+/* Refinement 2, same benchmark, other list. An issue row was a link that did
+   nothing under the cursor but underline, so the row now leans into the
+   pointer on the same spring the pills use. The contents move and the rule
+   under the row does not, which keeps the left edge of the divider straight
+   while the row travels. Touch has no hover, so it gets the press instead. */
+.issue > * {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .issue:hover > * {
+    transform: translateX(6px);
+  }
+}
+
+.issue:active > * {
+  transform: translateX(3px);
+  transition-duration: 0.09s;
+}
+
+.issue:hover h2,
+.issue:focus-visible h2 {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -547,8 +811,9 @@ a {
    teaser, which is why it pulled itself up over the text above; the digest is
    free in full now, so there is nothing to fade and nothing to pull over. */
 .gate {
-  margin-top: 56px;
-  text-align: center;
+  margin-top: 72px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
 }
 
 .gate h3 {
@@ -560,7 +825,8 @@ a {
 .gate p {
   color: var(--gray);
   font-size: 15px;
-  margin: 8px 0 22px;
+  margin: 14px 0 26px;
+  max-width: 520px;
 }
 
 /* ---------- issue footer ---------- */
@@ -587,6 +853,15 @@ a {
   flex-wrap: wrap;
 }
 
+/* the same row on a left-aligned .page, where centring it under the intro
+   left the two buttons floating off the page's own left edge */
+.page-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 36px;
+}
+
 /* An entitled member reads the skill file itself, in the digest's type. */
 .skill-body {
   margin-top: 28px;
@@ -596,61 +871,338 @@ a {
 
 /* ---------- skills ---------- */
 
-.skill-card {
-  margin-top: 64px;
-  border: 1px solid var(--ink);
-  border-radius: var(--radius);
-  padding: 34px;
+/* The catalogue is built to read well at fifty skills, so a skill is a row
+   on a shelf rather than a card of its own: shelf heading, count, one
+   sentence per skill, and the detail folded away until it is asked for.
+   Benchmarked on Clerk's docs index, translated to hairlines and type. */
+
+.skills-page {
+  max-width: 760px;
 }
 
-.skill-meta {
+.agent-note {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.agent-note a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.agent-note a:hover,
+.agent-note a:focus-visible {
+  border-bottom-color: var(--ink);
+}
+
+.lib-controls {
+  margin-top: 56px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.lib-filter {
+  flex: 1 1 240px;
+  max-width: 320px;
+}
+
+.lib-filter input {
+  width: 100%;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.lib-filter input::placeholder {
+  color: var(--gray);
+}
+
+.lib-filter input:hover {
+  border-color: #cfcfcf;
+}
+
+.lib-filter input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Chromium draws its own clear button inside a search field and draws it in
+   the UA's blue, which is the one colour the palette does not allow. The
+   field carries its own clear instead, in the empty state. */
+.lib-filter input::-webkit-search-cancel-button,
+.lib-filter input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.lib-count {
+  font-size: 13px;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+/* the sentence sits on its own line rather than inside the count, where it
+   used to wrap mid-clause against the right edge at every viewport */
+.lib-note {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.lib-empty {
+  margin-top: 56px;
+  padding: 40px 0 8px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.lib-empty p {
+  font-size: 15px;
+  color: var(--gray);
+}
+
+.shelf {
+  margin-top: 64px;
+  padding-top: 26px;
+  border-top: 1px solid var(--ink);
+}
+
+/* a shelf with nothing on it is a fact worth showing, not a block worth
+   filling: the heading, the count, and the sentence, at a third of the
+   height of a shelf that has something on it */
+.shelf.is-empty {
+  margin-top: 40px;
+  padding-top: 22px;
+  border-top-color: var(--line);
+}
+
+.shelf.is-empty .shelf-head h2 {
+  font-size: 18px;
+  color: var(--gray);
+}
+
+.shelf.is-empty .shelf-blurb {
+  margin-top: 6px;
+}
+
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shelf-head h2 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shelf-count {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+.shelf-blurb {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 520px;
+}
+
+.shelf-rows {
+  margin-top: 30px;
+}
+
+.skill-row {
+  padding: 30px 0;
+  border-top: 1px solid var(--line);
+}
+
+.skill-row:first-child {
+  border-top: none;
+  padding-top: 4px;
+}
+
+.skill-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.skill-row-head h3 {
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  word-break: break-word;
+}
+
+.skill-row-meta {
   display: flex;
   gap: 14px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--gray);
-  margin-bottom: 14px;
+  white-space: nowrap;
 }
 
-.skill-card h2 {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  margin-bottom: 10px;
-}
-
-.skill-card > p {
+.skill-row-summary {
+  margin-top: 12px;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--gray);
+  max-width: 600px;
+}
+
+/* the two disclosures stack rather than sit side by side: as a row, opening
+   the first one threw the second across to the far edge of the card */
+.skill-row-more {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.skill-row-more details {
+  min-width: 0;
+}
+
+.skill-row-more summary {
+  font-size: 13px;
+  color: var(--gray);
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+  transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skill-row-more summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Refinement 1, from the Clerk benchmark. Their docs index folds sections
+   away behind a marker that moves rather than swaps. Ours is drawn rather
+   than typed, as two hairlines, so the upright one can rotate down into the
+   minus on the house spring instead of the glyph cutting from + to - with no
+   motion at all. The panel itself grows open where the browser can animate
+   it, and snaps open exactly as before where it cannot. */
+.skill-row-more summary {
+  position: relative;
+  padding-left: 21px;
+}
+
+.skill-row-more summary::before,
+.skill-row-more summary::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 11px;
+  height: 1px;
+  background: currentColor;
+}
+
+.skill-row-more summary::after {
+  transform: rotate(90deg);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-row-more details[open] > summary::after {
+  transform: rotate(0deg);
+}
+
+@supports (interpolate-size: allow-keywords) {
+  .skill-row-more details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      content-visibility 0.28s allow-discrete;
+  }
+
+  .skill-row-more details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+.skill-row-more summary:hover,
+.skill-row-more summary:focus-visible {
+  color: var(--ink);
+}
+
+.skill-row-more details[open] > summary {
+  color: var(--ink);
 }
 
 .skill-sources {
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid var(--line);
+  margin-top: 14px;
   font-size: 13px;
+  line-height: 1.6;
   color: var(--gray);
+  max-width: 600px;
 }
 
 .skill-sources li {
   list-style: none;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.skill-lock {
+.skill-routing {
+  margin-top: 14px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--gray);
+  max-width: 600px;
+}
+
+.skill-row-lock {
   margin-top: 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
   flex-wrap: wrap;
 }
 
-.skill-lock span {
+.skill-row-lock span {
   font-size: 13px;
   color: var(--gray);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---------- pricing ---------- */
@@ -689,6 +1241,7 @@ a {
 }
 
 .tier .per {
+  margin-top: 10px;
   font-size: 13px;
   color: var(--gray);
 }
@@ -697,11 +1250,18 @@ a {
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* line-height alone used to space these, so a bullet that wrapped read as
+   two bullets. The gap between items is now a margin, and a wrapped line
+   stays visibly part of the item above it */
 .tier ul {
   margin: 26px 0 34px;
   list-style: none;
   font-size: 15px;
-  line-height: 2;
+  line-height: 1.45;
+}
+
+.tier ul li + li {
+  margin-top: 14px;
 }
 
 .tier .pill {
@@ -715,12 +1275,17 @@ a {
 }
 
 @media (max-width: 640px) {
-  .tiers { grid-template-columns: 1fr; }
+  /* stacked, these are two large bordered blocks rather than two columns,
+     so they need more air between them than a grid gutter */
+  .tiers {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
 }
 
 .billing-note {
-  margin-top: 56px;
-  padding-top: 32px;
+  margin-top: 72px;
+  padding-top: 40px;
   border-top: 1px solid var(--line);
 }
 
@@ -889,8 +1454,23 @@ a {
 .desk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .desk-main b { font-weight: 600; font-size: 15px; }
 .desk-main i { font-style: normal; font-size: 12px; color: #888; }
-.desk-go { font-size: 12px; white-space: nowrap; opacity: 0; }
-.desk-row:hover .desk-go { opacity: 1; }
+/* Refinement 2, from the benchmark run. The affordance used to pop on and
+   off with no transition, and on a touch screen it never appeared at all,
+   so the row gave no sign it was a link. It now slides in on Linear's own
+   curve and timing, and where there is no hover to give, it is simply
+   already there. */
+.desk-go {
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.desk-row:hover .desk-go { opacity: 1; transform: none; }
+@media (hover: none) {
+  .desk-go { opacity: 1; transform: none; }
+}
 .desk-empty { font-size: 14px; color: #888; margin: 10px 0 0; }
 .desk-doc {
   border: 1px solid #e5e5e5;
@@ -904,4 +1484,41 @@ a {
 @media (max-width: 560px) {
   .desk-row { flex-wrap: wrap; }
   .desk-lane { flex-basis: 64px; }
+}
+
+/* ---------- reduced motion ----------
+   Last in the file on purpose: these have to outrank the rules they mute,
+   and several of them are defined further down than the block at the top.
+   Every state below still changes, it just stops moving to get there. */
+
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  .desk-go,
+  .waitlist-field,
+  .lib-art {
+    transition: none;
+  }
+
+  .pill:hover,
+  .pill:active,
+  .desk-go {
+    transform: none;
+  }
+}
+
+/* ---------- motion, switched off ---------- */
+
+/* This block is last on purpose. An earlier copy of it sat above the rules it
+   was meant to cancel, so it lost on source order and reduced motion kept
+   animating. Verified by reading the computed transition back out of a
+   reduced-motion context, which now reports 0s. */
+@media (prefers-reduced-motion: reduce) {
+  .issue > *,
+  .skill-row-more summary,
+  .skill-row-more summary::after,
+  .skill-row-more details::details-content,
+  .lib-filter input,
+  .agent-note a {
+    transition: none;
+  }
 }

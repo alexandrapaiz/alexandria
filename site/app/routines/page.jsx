@@ -18,7 +18,7 @@ export default async function Routines() {
           <br />
           automations
         </h1>
-        <p>Coming soon.</p>
+        <p>Still being built. We will write to you the day they ship.</p>
       </main>
     );
   }
@@ -26,20 +26,21 @@ export default async function Routines() {
   return (
     <main className="page">
       <p className="page-kicker">Routines</p>
-      <h1 className="page-title">Routines &amp; automations.</h1>
+      <h1 className="page-title">Standing jobs, run for you.</h1>
       <p className="page-intro">
-        Standing jobs that run against the library on your behalf: watch a
-        topic, track a claim as the evidence moves, and get the skills your
-        agents load refreshed without asking.
+        A routine is a standing job the library runs on your behalf. None of
+        them are built yet. When they ship, one will watch a topic, another
+        will follow a claim as the evidence moves, and another will refresh
+        the skills your agents load without being asked.
       </p>
       <div className="gate">
-        <h3>Routines are part of the spine.</h3>
+        <h3>Routines come with the paid plan.</h3>
         <p>
-          They are still being built. The spine includes them the day they
-          ship, alongside the skill library and the claim graph.
+          It will include them the day they ship, alongside the skill library
+          you read and your agents load.
         </p>
         <Link href="/pricing" className="pill">
-          Get access
+          See pricing
         </Link>
       </div>
     </main>

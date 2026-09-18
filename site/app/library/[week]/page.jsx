@@ -35,15 +35,16 @@ export default async function Issue({ params }) {
       />
       <div className="issue-foot">
         <p>
-          Every issue reads like this one, free and in full, in your inbox each
-          Monday. The skills and the claim graph behind it are the paid spine.
+          Every issue reads like this one, free and in full, in your inbox
+          each Monday. The skills behind it, the ones your agents load, come
+          with the paid plan.
         </p>
         <div className="issue-foot-cta">
           <Link href="/library" className="pill ghost">
             All issues
           </Link>
           <Link href="/pricing" className="pill">
-            See the spine
+            See pricing
           </Link>
         </div>
       </div>

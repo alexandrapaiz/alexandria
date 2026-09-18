@@ -1,7 +1,13 @@
 import Link from "next/link";
 import MarkLive from "./components/MarkLive";
+import Waitlist from "./components/Waitlist";
+import { weeklyIngestCount } from "../lib/metrics";
 
-export default function Home() {
+export const revalidate = 3600;
+
+export default async function Home() {
+  const papersThisWeek = await weeklyIngestCount();
+
   return (
     <main className="home-snap">
       <section className="hero">
@@ -19,29 +25,31 @@ export default function Home() {
 
       <section className="hero-follow">
         <p className="statement">
-          A library <b>live with the latest AI research</b>: what the field
-          knows right now, and the <b>best known methods</b>, ready for{" "}
-          <b>your agents</b> to load.
+          Every week the library reads new AI research and tells you{" "}
+          <b>what changed</b>. Your agents load{" "}
+          <b>the same answers you do</b>.
         </p>
-        <div className="hero-cta">
-          <Link href="/pricing" className="pill">
-            Subscribe
-          </Link>
+        <div className="hero-act">
+          <Waitlist
+            source="home"
+            note="We write once, on the day subscriptions open."
+          />
           <Link href="/library" className="pill ghost">
             Read an issue
           </Link>
         </div>
         <p className="about-inline">
-          The weekly digest tells you where AI actually stands: which new
-          techniques work, which ones the field has come to trust, and which
-          results no longer hold, in plain language you can read in minutes.
-          The library then turns the best of it into ready-to-use skills,
-          from agent harness design to training recipes, packaged so your
-          own agents can load them and kept current as the research moves.
+          The digest takes a few minutes to read. It covers what is new in AI
+          research, what has proven out, and what no longer holds, in plain
+          language. The skill library then turns the same findings into files
+          your agents load, and every skill is revised as the research moves.
         </p>
-        <p className="metric-line">
-          <b>3,431</b> papers ingested this week
-        </p>
+        {papersThisWeek !== null && (
+          <p className="metric-line">
+            <b>{papersThisWeek.toLocaleString("en-US")}</b> papers read
+            this week
+          </p>
+        )}
       </section>
     </main>
   );

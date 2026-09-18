@@ -15,11 +15,11 @@ export default function Library() {
       </section>
 
       <section className="hero-follow lib-scene2">
-        <p className="page-kicker">Archive</p>
-        <h1 className="page-title">The Library</h1>
+        <p className="page-kicker">Library</p>
+        <h1 className="page-title">Every issue, in full.</h1>
         <p className="page-intro">
-          Every issue is free to read in full. The digest is how the library
-          introduces itself, so nothing in it is held back.
+          The weekly digest is free to read and nothing in it is held back.
+          Start with the most recent issue.
         </p>
         {issues.length === 0 ? (
           <p className="desk-empty">
