@@ -4,10 +4,16 @@ on:
   schedule:
     - cron: "35 10 * * 1" # 6:35 AM ET Mondays
   workflow_dispatch:
+    inputs:
+      owner_instructions:
+        description: "Owner instructions for this run (bind for this run)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -36,4 +42,7 @@ jobs:
             code, never edit charters, never merge your own PR, never push to
             main, never touch secrets or digests/. If the charter file is
             missing, stop and fail loudly instead of improvising.
-          claude_args: "--max-turns 60"
+            Owner instructions for this dispatch, binding for this run and
+            extending the charter (empty on scheduled runs):
+            ${{ inputs.owner_instructions }}
+          claude_args: "--max-turns 60 --permission-mode bypassPermissions --model sonnet"

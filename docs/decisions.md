@@ -331,3 +331,54 @@ pull requests" in the repo's Actions settings. The desktop scheduled
 tasks are retired once the first cloud runs go green; they remain the
 documented fallback if Actions cron ever proves unpunctual for a
 time-sensitive agent.
+
+## ADR-19: An ExO agent reviews and improves the agents
+
+Owner's decision (2026-09-17): the organization gets its own loop. A
+weekly ExO agent, named for the exponential-organization idea that the
+org itself must improve as fast as the product, reviews how every agent
+actually ran and edits the agents accordingly. Charter at
+prompts/exo-agent.md; it runs Sundays in the cloud, before Monday's PM
+planning.
+
+The loop is the owner's, an OODA variant with purpose bolted on the
+front and learning bolted on the end: **purpose** (vision §0, committed
+OKRs, all-hands minutes and her recorded words) → **observe** (the
+week's workflow runs and logs, PR outcomes, retros, drift audits, and
+every charter) → **orient** (diagnose the org, not the product: charter
+deviations, overlaps, gaps, repeated failures nothing remembered) →
+**decide** (at most three evidenced improvements) → **orchestrate**
+(edit the agent layer: charters, agent workflows, org docs) →
+**learn** (docs/agents/learning-log.md, append-only, the org's memory
+across the ExO's own fresh contexts).
+
+The recursion is deliberate and bounded. Improving the agents includes
+improving the ExO agent, and its charter edits to itself travel the
+same one-PR-per-run channel as everything else, so the loop that
+improves the loops is still gated by the owner's merge. Division of
+labor stays clean: the OKR agent audits whether the WORK serves the
+purpose; the ExO agent audits whether the WORKERS and their design do.
+Lane rules as ever: agent layer only, never pipeline code, site,
+skills, plans, or vision; any edit that moves authority between agents
+or loosens an owner gate must be flagged in bold in the PR.
+
+## ADR-20: A debug and security agent sweeps every two weeks
+
+Owner's decision (2026-09-17): a combined debug and cybersecurity
+agent runs on the 1st and 15th in the cloud
+(prompts/security-agent.md, agent-security.yml). One seat, two
+defensive functions. The debug sweep hunts defects: workflow failures,
+broken builds, lying docstrings, dead code, and it ships small
+behavior-preserving fixes in its own PR while routing larger repairs
+to the engineer through the ledger. The security audit covers the
+things a public-repo, $0-stack, agent-run business actually risks:
+secrets in the tree or git history (found values are never printed,
+only located, with rotation flagged urgent for the owner),
+dependencies, the public/private boundary around digests and
+subscriber data, the MCP server's OAuth and SELECT-only enforcement,
+Actions workflow security, and the prompt-injection surface that comes
+with agents who read the public web. Reports land in docs/security/,
+severe findings in bold at the top of the PR. Strictly defensive:
+no offensive tooling, nothing probed that we do not own. Fixes
+preserve behavior; features stay the engineer's. Same authority
+pattern as every seat: one PR per run, merged only by the owner.
