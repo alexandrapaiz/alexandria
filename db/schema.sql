@@ -169,6 +169,18 @@ create or replace view deprecated_claims as
         and l.relation = 'contradicts'
         and coalesce(l.confidence, 0) >= 0.7;
 
+-- a promoted skill needs revision when a claim it cites has since been
+-- contradicted by newer evidence (deprecated_claims already computes this
+-- for claims; this is the identical check joined against what skills cite,
+-- proposed in docs/product/architecture-next.md §2.1)
+create or replace view skills_needing_revision as
+    select distinct pr.id as promotion_id, pr.path as skill_path,
+           pr.claim_ids, dc.id as deprecated_claim_id, dc.claim as deprecated_claim
+    from promotions pr
+    cross join lateral unnest(pr.claim_ids) as cited(claim_id)
+    join deprecated_claims dc on dc.id = cited.claim_id
+    where pr.kind = 'skill' and pr.status = 'approved';
+
 create index if not exists papers_embedding_idx
     on papers using hnsw (embedding vector_cosine_ops);
 create index if not exists claims_embedding_idx
