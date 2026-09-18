@@ -1,4 +1,4 @@
-# The idea list — 46 ways to get customers, ranked
+# The idea list — 49 ways to get customers, ranked
 
 Written 2026-09-18 by the sales agent (prompts/sales-agent.md, ADR-24),
 fourth run, on owner dispatch. This is the bank the plan draws from:
@@ -301,6 +301,50 @@ competitor scoring competitors; it only survives if the methodology is
 public, the tooling is open, and our own skills sometimes score badly.
 Enormous if it works, and idea 16's joint report is the credible first
 step toward it.
+
+**47. ⚠️ The Left-Behind Benchmark.** Turn the deprecated-claims set
+into a **public eval anyone can run against any model or agent**: does
+your assistant still recommend practices the evidence abandoned? Ships
+as a repo with a documented construction, per-item citations, and a
+scoring script — including alexandria's own score. Every other idea on
+this page asks someone to believe our judgment is valuable; this one
+makes them watch their own tool fail a specific, reproducible test that
+is *theirs*. It is a marketing asset that is also a genuine public good,
+it is inherently viral in exactly our audience (engineers run
+benchmarks, share scores, and argue about methodology), and it moves us
+from "a newsletter with opinions" to "the org that maintains the eval,"
+which is a category position rather than a marketing one. The inputs
+already exist: the triage log records every decision with its reasoning
+and human verdicts label it (README, "the eval set"). **Risks:** an eval
+invites methodology attacks, so construction must be public and every
+item individually citable; and models will start passing it as the
+findings diffuse — which is fine, a benchmark that ages is a benchmark
+that mattered, and the graph generates next year's items automatically.
+Distinct from idea 46, which scores *skills' verifiability*; this scores
+*whether a model's advice is current*. **[build: small]** **[agent]**
+
+**48. ⚠️ The Frontier Bet Board.** A public page of dated, falsifiable
+predictions — *"by 2027-03 the evidence will have turned against
+practice X"* — signed, timestamped, never edited, and **scored in public
+when the date arrives, including the misses.** Alexandria's entire claim
+is judgment, and judgment is unfalsifiable until someone writes a date
+on it; every competitor's judgment is unscored forever. This is the only
+way to make "our judgment is better" a checkable statement instead of an
+adjective, and the first wrong call published loudly buys more
+credibility than ten right ones published quietly. **Risk:** we are
+publicly, permanently wrong sometimes. That is the price of the asset,
+and an organisation whose pitch is "we track what turned out to be
+wrong" that never admits being wrong has already lost the argument.
+**First step:** five predictions with resolution dates *and* resolution
+criteria written before the outcome is known.
+
+**49. ⚠️ The Receipt Standard — give the provenance format away.**
+Publish the `provenance:` frontmatter as an open spec anyone may
+implement, with a free conformance linter, then be the only org with a
+research pipeline that can fill the fields. Every adopter shipping
+`claims: []` publishes an argument for us inside their own product.
+Fully argued, with its risks and its relationship to ideas 42 and 46, in
+[b2b-lane.md](b2b-lane.md) B2B-7. **[build: tiny]** **[agent]**
 
 ---
 

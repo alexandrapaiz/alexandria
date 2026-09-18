@@ -111,15 +111,49 @@ already described their pain in their own words.
 |---|---|---|---|
 | **C1 — the skill-quality auditors** | "Show HN: Linting 216 public Claude Code skills — 69% won't reliably trigger" ([HN 49744398](https://news.ycombinator.com/item?id=49744398), 2026-09-17) | The poster (sgharlow, skillcrossroads.com) — already drafted in `outreach/list.md` §1 — plus commenters in that thread who reported the same experience | C1 |
 | **C2 — the skill-marketplace builders and their skeptics** | Show HN for skillbay.sh ([HN 49743459](https://news.ycombinator.com/item?id=49743459), 2026-09-17); founder conceded AI-generated skills "are usually pretty bad"; top commenter (kouteiheika) asked why anyone would buy a markdown file | skeptrune (skillbay.sh) — drafted in `outreach/list.md` §2 — and, separately and carefully, the skeptic | C2 |
-| **C3 — the multi-agent operators** | Ask HN on production multi-agent systems ([HN 49689454](https://news.ycombinator.com/item?id=49689454), 2026-09-13): "I've not really seen anything outstanding in this space" on observability | Named commenters in that thread — **must be re-verified first**, see §6 | C3 |
+| **C3 — the multi-agent operators** | Ask HN on production multi-agent systems ([HN 49689454](https://news.ycombinator.com/item?id=49689454), 2026-09-13): "I've not really seen anything outstanding in this space" on observability | **Verified 2026-09-18: Var1377, kaihwang, ramstar3000 (OP), idempotent_, and the skeptic taurath** — see the table below | C3, C3a-C3d |
 | **C4 — the context-budget crowd** | Show HN "Skillzero" ([HN 49698184](https://news.ycombinator.com/item?id=49698184), 2026-09-14), and the commenter asking whether scoping works "on repo level" | The poster and that commenter | C4 |
 
-**Honest gap, carried forward from the previous run and not papered
-over:** the specific commenters in C3 were never verified — HN
-rate-limited the fetch. Sales will not name a person it has not
-confirmed said the thing. **Action for day -6 (2026-10-07): re-open
-that thread and write down the actual handles.** Until then C3's draft
-exists and its recipients do not.
+**Gap closed, 2026-09-18.** The previous run could not verify C3's
+commenters (HN rate-limited the fetch) and this file originally carried
+that as an open action for day -6. It is now resolved: direct HN fetches
+returned HTTP 429 again, but the **public Algolia item API**
+(`hn.algolia.com/api/v1/items/<id>`) served the full thread, and all four
+threads behind lanes C1-C4 were re-read against it. Recording the method
+because it is the one that works when HN's own pages are rate-limited.
+
+The verified handles and their exact words:
+
+| Handle | What they actually said | Thread |
+|---|---|---|
+| **Var1377** | *"does anyone have any recommendations for stronger multi-agent observability. I've not really seen anything outstanding in this space yet"* | 49689454 |
+| **kaihwang** | *"most of the pain at scale isn't the agents themselves, it's observability. once you're past a handful you basically need per-agent tracing or you're debugging blind"* | 49689454 |
+| **ramstar3000** (OP) | *"Curious to understand exactly when it becomes worth it / what production use cases there are"* for large multi-agent architectures | 49689454 |
+| **idempotent_** | Runs custom harnesses with *"OpenTelemetry + Prometheus… a massive K8s cluster spinning up pods per N agents"* | 49689454 |
+| **taurath** | *"I'd love examples of it actually working but right now all it's seemed to be is hype… I haven't found anyone who isn't working for OpenAI/Anthropic, or isn't selling a solution."* | 49689454 |
+| **keks0r** | *"I have added some sales skills into our company brain, but for sessions that others would do, if they are not doing sales related tasks, they would not require any of it"* | 49698184 |
+| **holoduke** | *"this probably has no valuable moat… There is some serious demand for expertise in the field of AI automation. But it requires experts with domain knowledge."* | 49743459 |
+| **radlad** | *"I had a similar idea but as a marketplace for agents to purchase from… I then started wondering how agents could su[bscribe]"* | 49743459 |
+
+Two of these change what the plan can do, not just who it can write to:
+
+- **keks0r is lane E's first evidenced prospect.** A person describing a
+  company-wide shared skill library, unprompted, in public, is a
+  team-seat buyer stating their own buying context. Until now lane E's
+  only source was the owner's warm network (`first-customers.md` §5,
+  B2B-1). It now has a public one, and a repeatable sourcing rule:
+  **watch for the pronoun** — "our team," "our company brain," "we share
+  skills."
+- **taurath is the most useful sentence in this research.** Alexandria
+  *is* selling a solution, so the only honest reply hands over something
+  checkable instead of arguing. Draft C3d.
+
+**Still unverified, and flagged rather than assumed:** whether any of
+these people publish a contact address. HN does not expose emails.
+**Default motion for every name above is a public in-thread reply**, not
+a private note — hunting someone's address to pitch them after they
+asked a technical question is the move that makes people resent being
+helped. Private notes only where a profile lists a contact itself.
 
 **Sustaining the list:** five new names a week is roughly one new
 qualifying HN or Reddit thread a week, which is the rate this market
@@ -350,7 +384,9 @@ doesn't clear your bar I'd honestly rather know why.
 
 ### C3 — the multi-agent operator
 
-*(Recipients pending re-verification of [HN 49689454](https://news.ycombinator.com/item?id=49689454) — see §6.)*
+*Recipients verified 2026-09-18 (see lane C above). The generic version
+below still works for whoever fits next month; the three named variants
+that follow are better, because they quote the person.*
 
 ```
 You said in the multi-agent thread that you hadn't seen anything
@@ -372,7 +408,88 @@ what the graph says, including if the answer is "nobody knows yet."
 this entire page and it is also a real commitment. Only send it in a
 week she can honestly answer within two days.
 
+### C3a — Var1377, the observability ask (public reply, preferred)
+
+```
+On "nothing outstanding in this space" — agreed, and I'd split it in
+two, because the tooling gap and the knowledge gap get conflated a lot.
+
+Tracing is the part OTel-style tooling actually does solve (the sibling
+comment's OTel + Prometheus setup is roughly where I'd start too). The
+part nothing solves is knowing which pattern was worth tracing in the
+first place — there's no maintained record of which multi-agent
+patterns held up and which quietly got abandoned, so every team
+relearns it from scratch.
+
+That second gap is what I've been building: a claim graph over
+AI-engineering papers that tracks supports/contradicts edges over time,
+so "is this pattern still a good idea" has an answer with citations
+under it. Public, if it's useful:
+github.com/alexandrapaiz/alexandria
+
+Not a pitch — same wall you're describing, approached from the
+research side.
+```
+
+### C3b — kaihwang, the tracing-at-scale comment
+
+```
+Your framing — past a handful of agents you're debugging blind without
+per-agent tracing — matches what I keep finding in the papers, and the
+borrowed-from-microservices instinct seems right.
+
+The adjacent thing I've been building is the evidence layer rather than
+the telemetry one: a claim graph tracking which agent-design and
+orchestration claims get supported or contradicted as results come in.
+The finding that surprised me most is how often improving the harness
+beats decomposing into more agents — distilled here with the papers
+attached, if you want the receipts rather than my summary:
+github.com/alexandrapaiz/alexandria/blob/main/skills/harness-engineering/SKILL.md
+```
+
+### C3c — ramstar3000, the thread's author
+
+```
+Hi — you asked when multi-agent architectures actually become worth it
+versus one capable model with a few subagents. I've been building the
+research side of that question and the honest summary of what I've
+found so far: the evidence mostly favours the harness over the
+architecture. Improving the scaffold around one model tends to beat
+decomposing into more agents, and several 2026 papers land there
+independently.
+
+It's distilled into a skill file with the claims and papers attached:
+github.com/alexandrapaiz/alexandria/blob/main/skills/harness-engineering/SKILL.md
+
+No ask — you asked a good question in public and I had an unusually
+specific answer to it.
+```
+
+### C3d — taurath, the skeptic (send only if she means it)
+
+```
+"I haven't found anyone who isn't working for OpenAI/Anthropic, or
+isn't selling a solution" is fair, and I am selling a solution, so
+take this accordingly.
+
+The one thing I can offer that isn't an assertion: I publish what got
+left behind. Not "here's what's new" — here are the practices the
+evidence stopped supporting, with the paper and the date. It's the
+section that's useless for marketing and it's the reason I started,
+because nobody publishes negative results and everyone needs them.
+
+[LEFT_BEHIND_LINK] if you want to check whether it's that or just more
+hype with better framing. Genuinely fine either way.
+```
+
+**Gate on C3d:** it links the left-behind artifact, so it cannot go out
+before that artifact is public. Until then, link the repo or don't send.
+
 ### C4 — the context-budget crowd
+
+*Verified recipients: **kurtextrem** (Skillzero's author) and **keks0r**
+(the "company brain" commenter — but keks0r is better served by the
+team ask in lane E, and should get that, not this).*
 
 ```
 Saw the thread about skill libraries eating context across unrelated
@@ -631,10 +748,15 @@ addressed to a handle that has changed, costs the relationship outright.
 1. **Re-open every linked thread** and confirm it exists, the quote is
    accurate, and the handle is current. Four HN threads, four links, ten
    minutes.
-2. **Resolve lane C3's open gap:** re-fetch [HN 49689454](https://news.ycombinator.com/item?id=49689454)
-   (rate-limited on the previous run) and write down the actual
-   commenter handles. Until this is done, C3's draft has no recipients
-   and none may be guessed.
+2. ~~**Resolve lane C3's open gap**~~ **— done 2026-09-18.** Handles and
+   quotes are in lane C above, verified via the Algolia item API after
+   HN returned 429. What remains for day -6 is narrower and still
+   required: confirm the handles and threads still exist, and find
+   **that week's equivalent threads**. By 2026-10-13 these are four
+   weeks cold; the named people are the permanent template for what a
+   good target looks like, but a reply to a month-old thread is read by
+   nobody. The market agent's Friday brief is the natural supplier of
+   fresh ones.
 3. **Confirm every product fact in every draft** against
    docs/sales/first-customers.md §10. Specifically: is there an issue
    link yet (gates D1)? Is signup live (gates the A-drafts' link)? Are

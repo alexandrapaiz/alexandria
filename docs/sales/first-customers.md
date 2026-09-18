@@ -358,7 +358,13 @@ already infrastructure-shaped — it is skills, a claim graph, and
 automations, not essays — so this is not a stretch, it is the natural
 second SKU.
 
-Four products, ordered by how soon they can honestly be sold.
+Four products, ordered by how soon they can honestly be sold. **Three
+more are defended in [b2b-lane.md](b2b-lane.md)** — contradiction alerts
+as a monitoring product (B2B-5), the deprecation audit as a services
+wedge deliverable this quarter (B2B-6), and publishing the provenance
+format as an open spec (B2B-7) — along with a proposed hard cap of three
+concurrent retainer clients, so B2B-3 cannot quietly become a
+consultancy.
 
 ### B2B-1 — Team seats (sellable at launch, lane E)
 
@@ -511,8 +517,11 @@ only product on this list with a moat that compounds — a competitor with
 identical models cannot replicate a year of curated, evidence-linked
 claims overnight (docs/market/opportunities-2026-09-18.md says exactly
 this). It is also the one that most needs the graph to be large, stable,
-and trustworthy, which at 254 claims and 88 edges
-(`site/lib/graph-data.js`, a hardcoded snapshot) it is not yet.
+and trustworthy, which it is not yet. (Size, corrected: `site/lib/graph-data.js` says 254
+claims and 88 edges, but its own header dates that snapshot 2026-09-13.
+The live count on 2026-09-18 was **441 claims**, verified against the
+production cluster that day and recorded in docs/ideas.md. Quote the
+live number and the date it was checked, never the site snapshot.)
 
 **Month one action, and it is deliberately small:** the public read-only
 claims endpoint already proposed in docs/sales/geo-plan.md Game 2 item 3

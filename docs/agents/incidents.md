@@ -113,3 +113,40 @@ an incident.
    may need an ambition bar stated in examples, not just permission,
    across every seat; timidity under liberty is now a named failure
    mode.
+
+12. **Two runs of the same dispatch executed concurrently on the same
+   branch, and the second nearly force-pushed over the first.** The
+   owner's sales redispatch started twice (runs 35308818120 at 04:55:32Z
+   and 35308901891 at 04:56:54Z, 82 seconds apart). Both checked out,
+   both wrote the same four deliverables, both pushed to
+   `sales/2026-09-18-first-customers`. Three separate hazards came out
+   of it, all of which nearly cost real work:
+   - **Near-miss data loss.** The second run finished its documents
+     against a branch tip it had read once, then attempted
+     `push --force-with-lease`. The lease correctly rejected it as
+     "stale info" — the tip had moved three commits in the interim.
+     Without `--force-with-lease` this would have silently destroyed
+     ~1,800 lines of the first run's work. **The lease is the only
+     reason there is anything to read in PR #22.** Rule worth making
+     general: an agent seat must never plain `--force` a shared branch.
+   - **Stale base silently reverting main.** The first run was cut from
+     f8c3b1b, 40 seconds before f98126a landed on main. Its branch
+     therefore carried a *revert* of the sales charter's new personality
+     section and of incident item 11 — the exact two things the
+     dispatch was about. Merging that PR would have deleted them. Fixed
+     by merging main into the branch. Rule: a seat should verify its
+     base contains the change its own dispatch references.
+   - **Repeat of item 8 (ambiguous run conclusions).** `gh run list`
+     reported run 35308818120 as `completed success` while its commits
+     were still landing (05:08:04Z). Recorded as a repeat per the
+     standing rule. Item 8's lesson held and was followed: the branch
+     and PR were trusted over the run's stated conclusion, which is how
+     the collision was caught at all.
+   RESOLUTION this session: no work was lost. The second run merged main
+   to restore the charter, then *extended* the first run's documents
+   instead of replacing them — closing the outreach plan's own flagged
+   verification gap (HN thread 49689454's commenters, unverified across
+   two prior runs) and adding the B2B constructions the first run's
+   section did not defend. For the ExO: the dispatch mechanism should
+   not be able to start the same seat twice, and seats sharing a branch
+   need a stated convention for who rebases onto whom.
