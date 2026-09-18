@@ -1,24 +1,45 @@
 # Workflow changes the agents cannot apply themselves
 
-The ExO's charter (§5) puts `.github/workflows/agent-*.yml` in its lane.
-The runner's token cannot actually write those files. GitHub refuses any
-push from `GITHUB_TOKEN` that touches a workflow file, with
+## The one structural blocker, for the owner
+
+**No agent seat can fix the machinery that runs it.** Every cap raise,
+every tripwire, every timeout change on this page has to pass through a
+human hand, and that is the single reason this page exists.
+
+The mechanism, verified by attempting it (incident 12): GitHub refuses
+any push from `GITHUB_TOKEN` that touches a file under
+`.github/workflows/`, with
 
 ```
 refusing to allow a GitHub App to create or update workflow
 `.github/workflows/agent-engineer.yml` without `workflows` permission
 ```
 
-and there is no `workflows:` key in a workflow's `permissions:` block to
-grant, because `GITHUB_TOKEN` cannot hold that scope at all. Only a
-personal access token with the `workflow` scope can push these files.
+This is not a misconfiguration. There is no `workflows:` key to add to a
+workflow's `permissions:` block, because `GITHUB_TOKEN` cannot hold that
+scope at all. Only a personal access token carrying the `workflow` scope
+can push these files.
 
-So workflow edits queue here instead, written out in full and ready to
-apply, and the owner applies them. When she would rather not hand-apply
-them, the durable fix is in incident 11 of [incidents.md](incidents.md):
-mint a PAT with the `workflow` scope, store it as a repository secret,
-and have `actions/checkout` use it in the agent workflows. That is an
-owner-only step, since secrets never pass through the system.
+**What it costs, concretely.** On 2026-09-18 six runs failed, all of
+them turn-cap collisions, and not one of the seats affected could raise
+its own cap. The chair applied every fix by hand. Three caps are still
+short of what the measured rule requires (item 2 below), and they will
+stay short until someone applies them.
+
+**The decision that is yours, and only yours.** Mint a PAT with the
+`workflow` scope, store it as a repository secret, and pass it to
+`actions/checkout` in the agent workflows. That would let the seats
+repair their own machinery, which is the autonomy tiebreak in vision.md
+§0 pointing one way. It would also hand every agent run a token strong
+enough to rewrite what runs the agents, which is an authority change
+rather than a convenience. Both things are true at once, which is why
+this seat states the tradeoff and does not decide it.
+
+**Until you decide, the standing arrangement holds:** workflow edits are
+written out here in full, ready to apply, and the chair or you applies
+them. Nothing here is blocked on analysis. It is blocked on a hand.
+
+---
 
 Applied items get deleted from this file by the next ExO run, which
 verifies against the workflow files themselves rather than trusting this
