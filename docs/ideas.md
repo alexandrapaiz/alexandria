@@ -564,3 +564,141 @@ build.
   lookup, proposed together so the field is never dead configuration
 - Cost: $0
 - Status: proposed
+
+### 2026-09-18 — Unified traction-confidence score for discovery_report (engineer agent)
+- Trigger: owner's architecture-run directive to build on
+  docs/product/source-discovery.md so the pipeline "reliably catches
+  what is genuinely gaining traction." Today discovery_report returns
+  three independent signals (embedding-space novelty, rising
+  authors/institutions, citation velocity from an untrusted tier); a
+  candidate that clears two signals at once is stronger evidence than
+  one that clears either alone, but nothing computes that today — a
+  human or the weekly agent has to hold three lists in their head and
+  cross-reference by hand
+- What: fuse the three discovery_report signals into one ranked score
+  per candidate (paper, author, or institution), returned as a single
+  ordered list showing which signals fired and by how much, so
+  independent agreement across signals — the evidence bar
+  source-discovery.md §5 already requires — is a number in the
+  propose_change rationale instead of an implicit read
+- First step: define the scoring function against the three existing
+  queries in mcp/server.py's discovery_report (no new data collection,
+  pure recombination of what it already returns)
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Discovery precision audit: track discovery→diff→outcome (engineer agent)
+- Trigger: same directive. "Reliably catches" is a claim about
+  precision that nothing today measures — every discovery_report
+  finding that becomes an accepted sources.yaml diff via propose_change
+  is untracked once merged, so there is no way to say whether the
+  signal was actually right
+- What: tag the promotions row (kind = 'system_diff') that originated
+  from a discovery_report finding, then a few weeks later check whether
+  that source's subsequent papers cleared triage at a materially higher
+  rate than the corpus baseline — the same measured-before-trusted
+  method as the distill bake-off (docs/evals/2026-09-07-distill-bakeoff.json),
+  applied to the discovery signal instead of a model choice
+- First step: add the tag at propose_change time (a note in the
+  rationale is enough, no schema change required yet), then design the
+  follow-up query once a few tagged diffs exist to check against
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Executable trigger tests for skills, checked in CI (engineer agent)
+- Trigger: ADR-22 already requires five prompts (three should fire, two
+  shouldn't) narrated in every skill-agent PR body, answering the
+  market audit's "69% of public skills won't reliably trigger" finding.
+  A narrated PR description is evidence for a human reader the day it's
+  written; it is not a check that runs, and it goes stale silently the
+  moment a skill's `description:` frontmatter is edited later without
+  anyone re-running the five prompts by hand
+- What: a `skills/<slug>/trigger-test.json` fixture per skill (the same
+  five prompts, structured as prompt text + expected fire/no-fire), plus
+  a small script that checks a skill's activation-condition text against
+  its fixture, run in CI on any change under skills/ — the reviewer
+  panel's future adversary/provenance checks stay judgment calls; this
+  is the one piece of ADR-22's requirement that is mechanical enough to
+  automate outright
+- First step: convert skills/harness-engineering's existing (narrated,
+  in its promotion PR) five prompts into the first trigger-test.json, as
+  the worked example before asking the skill agent to produce one every
+  week going forward
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Self-application step for prompts/weekly-agent.md (engineer agent, charter-text proposal)
+- Trigger: owner's architecture-run directive, verbatim: "the big things
+  that we research, let's build" — findings in our own claim graph
+  (harness patterns, loop designs, orchestration techniques) should
+  change our own pipeline and agents, not only get written up for
+  someone else to load. Today that only happens when a human happens to
+  notice the resemblance while reading; docs/product/architecture-next.md
+  §3 designs the mechanism in full, with three worked examples against
+  the one skill already in gold
+- What: this ledger entry carries the exact step to add to
+  prompts/weekly-agent.md's Step 4 (meta-review), which already runs
+  weekly via agent-weekly.yml and already holds propose_change
+  authority: after gathering the week's evidence, ask whether any
+  finding, applied to alexandria's own prompts/pipeline/agent design,
+  predicts a concrete nameable change (name the file and the practice
+  it contradicts or improves, not a resemblance). A prompt/sources.yaml-
+  shaped answer calls propose_change directly, citing the claim ids,
+  exactly as Step 4 already does for any other finding. A pipeline-code-
+  shaped answer becomes a ledger entry tagged `self-application` for the
+  engineer's next run. No new cron, tool, or secret — reuses the
+  meta-review step and the ADR-12 channel that already exist
+- First step: this is charter text, not code — prompts/weekly-agent.md is
+  an agent charter, which per ADR-19 only the ExO edits (gated by the
+  owner's merge like every charter change). The engineer cannot commit
+  this directly; the owner or the ExO's next run applies the step above
+  verbatim or edited, into Step 4
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Self-application example: sample-and-select bake-off for distill.py (engineer agent)
+- Trigger: docs/product/architecture-next.md §3.2, example 1 — the one
+  skill already in gold cites its own headline finding (claim 203,
+  "What Else Needs Fixing?"): best-of-three parallel sampling with a
+  cheap selection step beat sequential self-reflection by 2.2-9.7% for
+  less compute. distill.py samples once per paper today; the skill's
+  own procedure, applied to the pipeline that produced it, predicts a
+  concrete change
+- What: sample distillation 2-3 times per paper on the same free-tier
+  Groq model (still $0 — more calls against the same free budget, not a
+  new one), embed each candidate's extracted claims, and select the
+  medoid (or use an LLM judge with 2 samples) before writing to silver,
+  on the bet that it reduces missed or hallucinated claims the same way
+  it improved accuracy in the source paper
+- First step: a measured blind comparison against the current
+  single-sample baseline on a fixed set of papers, same method as the
+  2026-09-07 distill bake-off, before changing production behavior —
+  do not ship this on the skill's say-so alone; measure it the way the
+  house style already requires
+- Cost: $0 to test (same free-tier budget, more calls per paper — watch
+  the daily rate limit)
+- Status: proposed
+
+### 2026-09-18 — Repeatable prose benchmark: blind read test against that week's TLDR issue (engineer agent)
+- Trigger: owner's finding that the digest reads stale and mechanical
+  despite improvement, and her directive that digest quality get
+  measured, not vibed, per the market seat's blind-pairwise-comparison
+  method already established for model choices (the distill bake-off,
+  docs/evals/2026-09-07-distill-bakeoff.json) and proposed again for a
+  future skill head-to-head (docs/ideas.md, "A published head-to-head")
+- What: a repeatable weekly or biweekly check — take alexandria's digest
+  opening plus its top Trailblazing item and a comparably-scoped section
+  of that week's TLDR AI issue, strip both of branding, and have blind
+  readers (the comped friends list first, before any wider readership
+  exists) score prose quality only — clarity, whether it reads as
+  written by a person versus a template, whether the point lands without
+  rereading — with no visibility into which is which. Track the score as
+  a trendline the way the OKR check-in tracks everything else, so
+  "less mechanical" becomes a number over successive issues instead of
+  an impression
+- First step: write the one-page rubric (3-4 questions, same shape as
+  the distill bake-off's pairwise grading) and run it once, by hand,
+  against the next issue and that week's TLDR AI issue, before proposing
+  any automation around it
+- Cost: $0 (uses the existing comped friends list; no new tool or panel)
+- Status: proposed
