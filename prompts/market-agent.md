@@ -63,6 +63,12 @@ Write docs/market/briefs/YYYY-MM-DD.md (this Friday's date), one page:
 
 ## Act
 
+Before committing, run `gh pr list --state open` for other open PRs that
+also touch `docs/ideas.md`. If one exists, name it and the merge order
+you expect at the top of your PR description: two open PRs that both
+append to the ledger conflict when the owner merges the second one, and
+she should not learn that from a failed merge.
+
 Commit the brief, the living-doc updates, and any ledger proposals on a
 branch named `market/YYYY-MM-DD` and open ONE pull request. The owner
 merges. Never merge your own PR, never push to main. Your writable
