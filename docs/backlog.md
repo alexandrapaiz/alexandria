@@ -313,10 +313,9 @@ as this is written; these fire the moment it lands):
    best fit for "for you and your agents"), or the 404 page. Never
    a tooltip or hover on the hero mark, whose behavior stays
    untouchable. The visible surface does not carry the line at all.
-   The mission page's compounding concept ("When the library burned,
-   knowledge stopped compounding. It starts again here.") stays a
-   visible candidate there unless she says otherwise, since her
-   easter-egg order was about the chosen line, not that one. The seat places it where it carries most
+   The mission-page compounding line is VETOED by the owner
+   (2026-09-18): no visible Alexandria motif appears anywhere on the
+   site. The hidden easter egg is the only place the idea lives. The seat places it where it carries most
    (likely the hero's supporting line or the mission page) and may
    tighten the wording, but the idea is fixed: the knowledge that
    compounds when the library never burns. It must not crowd the
