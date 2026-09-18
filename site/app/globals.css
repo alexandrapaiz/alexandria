@@ -181,21 +181,13 @@ a {
   background: #f5f5f5;
 }
 
+/* the panel's links already carry this shape; sign-in sits under a hairline
+   because it is an account action rather than another page */
 .mobile-nav-signin {
-  padding: 11px 14px;
+  margin-top: 6px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
   border-radius: 6px;
-  font-size: 15px;
-  color: var(--ink);
-  background: none;
-  border: none;
-  text-align: left;
-  font: inherit;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.mobile-nav-signin:hover {
-  background: #f5f5f5;
 }
 
 .nav-user {
@@ -209,7 +201,18 @@ a {
    the links, so it holds sign-in too and the bar fits. */
 @media (max-width: 780px) {
   .mobile-nav { display: block; }
-  .nav-signin { display: none; }
+  /* .pill sets display below this rule, so the hide needs to outrank it */
+  .nav-right .nav-signin { display: none; }
+}
+
+/* the wordmark plus the menu button plus the pill still need the last few
+   pixels back on a 320px screen */
+@media (max-width: 400px) {
+  .nav { padding-left: 18px; padding-right: 18px; }
+  .nav-logo { font-size: 13.5px; gap: 7px; }
+  .nav-logo .dot { width: 11px; height: 11px; }
+  .nav-right { gap: 12px; }
+  .nav-right .pill { padding: 9px 16px; }
 }
 
 /* From the benchmark runs. Elicit's hover is a Framer Motion spring: it
@@ -814,6 +817,15 @@ a {
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+/* the same row on a left-aligned .page, where centring it under the intro
+   left the two buttons floating off the page's own left edge */
+.page-cta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 36px;
 }
 
 /* An entitled member reads the skill file itself, in the digest's type. */

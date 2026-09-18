@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Show, SignInButton } from "@clerk/nextjs";
 
 const LINKS = [
   ["/library", "Library"],
@@ -33,14 +32,14 @@ export default function MobileNav() {
               {label}
             </Link>
           ))}
-          {/* the nav bar has no room for this on a phone, so the panel carries it */}
-          <Show when="signed-out">
-            <SignInButton mode="modal">
-              <button type="button" className="mobile-nav-signin">
-                Sign in
-              </button>
-            </SignInButton>
-          </Show>
+          {/* The bar has no room for sign-in on a phone, so the panel carries
+              it. This is the /sign-in route rather than the bar's modal
+              button, because that button is Clerk's and renders nothing until
+              Clerk's script has loaded, which would leave a phone with no way
+              in at all on a slow connection. */}
+          <Link href="/sign-in" className="mobile-nav-signin" onClick={() => setOpen(false)}>
+            Sign in
+          </Link>
         </div>
       )}
     </div>

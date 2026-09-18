@@ -11,7 +11,7 @@ export default function NotFound() {
         The link may be out of date, or the address may have a typo in it.
         Everything the library has published is one page away.
       </p>
-      <div className="issue-foot-cta">
+      <div className="page-cta">
         <Link href="/" className="pill ghost">
           Home
         </Link>
