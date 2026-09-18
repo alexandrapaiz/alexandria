@@ -6,6 +6,11 @@ once instead of rediscovered. Append-only, dated, any seat or the chair
 may add entries; the ExO reads this file every run (charter step 2) and
 turns patterns into charter or workflow fixes.
 
+STANDING RULE (owner, 2026-09-18): any issue that occurs MORE THAN ONCE,
+anywhere in the org, is always recorded here at the moment it repeats.
+No exceptions, no judgment call. A repeat that goes unrecorded is itself
+an incident.
+
 ## 2026-09-17/18 — the founding night's failures
 
 1. **OIDC permission missing.** First cloud run (engineer,
