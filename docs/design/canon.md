@@ -83,7 +83,9 @@ decorative. Where to learn from, by name:
 - **Linear and family.co:** entrance stagger and fluid gesture-grade
   motion at production quality.
 
-The rules the seat animates under:
+The distilled working knowledge from Kowalski and Freiberg lives in
+docs/design/motion.md; read it in full whenever a run touches motion,
+hover, or gesture. The rules the seat animates under:
 
 1. Every animation has a job: orientation (where did this come from),
    feedback (did that work), or continuity (what changed). An
