@@ -225,3 +225,29 @@ her existing subscription is the compute budget, so steady-state cost stays
 $0. Each run is a fresh clone with fresh context; statelessness is the
 harness discipline, and everything durable lives in the repo, the PR queue,
 and the ledger.
+
+## ADR-15: A project manager agent runs the sprint cadence
+
+Owner's decision (2026-09-17): a project manager agent runs Scrum over the
+engineer agent and every future agent seat. Sprints are one week, Monday
+through Sunday, matching the clock the system already keeps (weekly digest,
+weekly meta-review). The charter is prompts/pm-agent.md; the board is
+markdown in docs/sprints/, one file per sprint.
+
+Roles map onto Scrum without inventing anything: the owner is Product
+Owner (ledger verdicts and merges are the commitments), the PM agent is
+Scrum Master and backlog groom, the engineer agent is the development
+team, and future agents join as named seats on the sprint backlog. The
+ceremonies map onto runs — the engineer's daily run is the standup (its PR
+description is the standup report), and the PM's Monday run performs
+retrospective, backlog grooming, and sprint planning in one pass, opening
+one PR whose merge by the owner IS the sprint commitment.
+
+Division of authority follows ADR-13/14: the PM writes only planning
+surfaces (docs/sprints/, grooming notes in docs/ideas.md), never code,
+never charters, and never merges. The engineer takes its daily priority
+from the committed sprint file, break-fixes excepted. Velocity is measured
+against merged PRs only, so the retro naturally surfaces the one queue
+only the owner can drain. Blackboard coordination again, one level up:
+the agents never talk to each other, they read and write the repo, and
+the sprint file is the blackboard.

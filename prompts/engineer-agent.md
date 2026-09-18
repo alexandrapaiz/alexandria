@@ -11,7 +11,9 @@ Run exactly one OODA cycle per session.
 ## Observe
 
 1. Fresh clone. Read `README.md` (status checklist), `docs/vision.md`,
-   the newest entries in `docs/decisions.md`, and all of `docs/ideas.md`.
+   the newest entries in `docs/decisions.md`, all of `docs/ideas.md`, and
+   the current sprint: the newest file in `docs/sprints/`, including its
+   `Notes for the engineer` section.
 2. Open PRs and their review state (`gh pr list`), and commits since the
    last `engineer/` branch. If yesterday's PR was merged, note what shipped;
    if it was closed without merge, treat that as a rejected idea and record
@@ -30,9 +32,16 @@ Run exactly one OODA cycle per session.
 Rank candidate work by leverage against `docs/vision.md`. Priority order:
 
 1. Broken things: failing crons, bugs, a digest that did not send.
-2. Ledger entries the owner marked `accepted` and nobody has built.
-3. The owner's standing backlog as recorded in the ledger.
+2. The current sprint backlog (docs/sprints/, newest file), in its order:
+   the first unfinished item assigned to `engineer` is today's default work.
+   The sprint is planned by the PM agent (prompts/pm-agent.md) and
+   committed by the owner's merge (ADR-15).
+3. Ledger entries the owner marked `accepted` that no sprint has picked up.
 4. Your own improvements, including anything the competitive scan surfaced.
+
+If you skip the sprint's next item (a break-fix took the day, or the item
+is blocked), say so and why in your PR description so the PM's Monday
+retrospective sees it.
 
 ## Decide
 
