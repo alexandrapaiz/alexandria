@@ -30,6 +30,18 @@ Three decisions govern every agent that plans or builds here:
 The school continues as a byproduct: the ADR habit is institutionalized
 and no longer needs protecting.
 
+Amended 2026-09-17 at the first all-hands, owner's calls: the product
+is the data layer and the orchestration layer for frontier AI research
+and architecture, sold as skills, possibly a memory layer, and
+automations. The newsletter is the interface that keeps the human in
+the loop, not the whole product. Launch is a dated event, Scrum style:
+ship on 2026-10-13, then update continuously. Pricing decided the same
+night: the digest is free, full issues, as the acquisition engine and
+human interface, and the paid spine is the operational layer at $20 a
+month. The business must be profitable at launch. This supersedes §4's
+$10/$30 tiers and its wait-until-worth-$10 paywall rule; §4's honest
+billing principle and self-built mechanics stand.
+
 ## 1. The weekly digest
 
 The end product of the reading loops is a well-drafted weekly digest with three

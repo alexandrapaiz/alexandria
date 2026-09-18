@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 10 1 * *" # 6:00 AM ET, first of the month
   workflow_dispatch:
+    inputs:
+      owner_instructions:
+        description: "Owner instructions for this run (bind for this run)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -40,4 +45,7 @@ jobs:
             charters, sprints, or code. Never merge your own PR, never push to
             main, never touch secrets or digests/. If the charter file is
             missing, stop and fail loudly instead of improvising.
+            Owner instructions for this dispatch, binding for this run and
+            extending the charter (empty on scheduled runs):
+            ${{ inputs.owner_instructions }}
           claude_args: "--max-turns 100"

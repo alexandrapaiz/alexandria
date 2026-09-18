@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "6 11 * * *" # 7:06 AM ET daily
   workflow_dispatch:
+    inputs:
+      owner_instructions:
+        description: "Owner instructions for this run (bind for this run)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -34,4 +39,7 @@ jobs:
             push to main, never touch secrets, never write into skills/ or
             digests/, never edit charters or docs/sprints/. If the charter file
             is missing, stop and fail loudly instead of improvising.
+            Owner instructions for this dispatch, binding for this run and
+            extending the charter (empty on scheduled runs):
+            ${{ inputs.owner_instructions }}
           claude_args: "--max-turns 120"
