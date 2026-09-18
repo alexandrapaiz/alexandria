@@ -159,6 +159,12 @@ schema, this file) — machinery changes stay human-authored. Cadence is bounded
 in the prompt (≤1 proposal/week, evidence must be a pattern), and the human
 merge remains the only way any proposal takes effect.
 
+*Amended by ADR-25 (2026-09-18).* The seat this ADR calls the weekly
+agent is now the research agent, and the charter it names has moved from
+`prompts/weekly-agent.md`, which no longer exists, to
+`prompts/research-agent.md`. Meta-review as Step 4 of one weekly seat,
+and the path whitelist as its safety boundary, both stand as written.
+
 ## ADR-13: The gate is an agent panel, not a human
 
 Owner's decision (2026-09-17), superseding the human-merge gate of ADR-7/12:
@@ -486,3 +492,26 @@ ranking what is rising by evidence, naming extraction targets for the
 skill agent, and warning what is noise. The PM plans from it. Skill
 drafting stays with the skill agent; one seat decides what is worth
 reading, another what is worth packaging, and the engineer builds.
+
+## ADR-26: Decision 11 resolved, the release gate is a four
+
+Owner's decision (2026-09-18, closing the open question from the
+2026-09-17 all-hands): the release gate drops from a benchmark score
+of five to a four, and the October 13 launch date holds. The bar is
+the OKR seat's five-axis benchmark (speed to the frontier, judgment,
+actionability for a reader, actionability for an agent, product
+surface), scored against real competitors, harshly. Until launch the
+company's focus is essentially the product: validated digests, tested
+skills, live data, real content. Surface area, plumbing, and anything
+that does not move the benchmark toward four waits. This supersedes
+the provisional phased-gate assumption the PM triage run of
+2026-09-18 planned under; where that run's outputs reference the
+phased gate, this ADR is the ruling. Consequences the seats already
+named: the OKR seat's October run scores against one target, the
+skill seat learns whether known gaps ship by whether the benchmark
+reaches four with them open, and the market seat keeps positioning
+claims inside what the product actually is at launch. Owner logistics
+running alongside, in her hands: the Stripe account (an email
+conflict is being resolved), then the domain purchase. The finance
+seat activates at the first real expenditure and books it, CapEx and
+all four questions, from receipts she reports, never from access.

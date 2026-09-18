@@ -115,14 +115,83 @@ a {
   font-weight: 600;
 }
 
-/* Refinement 1, from the benchmark run. Elicit's hover is a Framer Motion
-   spring: it overshoots its target and settles, which is what makes it feel
-   alive rather than merely animated. It gets there with a shadow and a
-   colour, neither of which we have. The same physics translates to motion
-   alone: an overshooting curve on a slightly larger scale, held to Linear's
-   short timing so it stays quick. The press is faster than the lift, the way
-   a real button is, and :active also gives touch the same feedback that
-   hover gives a cursor. */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.mobile-nav {
+  display: none;
+  position: relative;
+}
+
+.mobile-nav-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mobile-nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: var(--ink);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.mobile-nav-toggle span.open:first-child {
+  transform: translateY(3.25px) rotate(45deg);
+}
+
+.mobile-nav-toggle span.open:last-child {
+  transform: translateY(-3.25px) rotate(-45deg);
+}
+
+.mobile-nav-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  min-width: 160px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-nav-panel a {
+  padding: 11px 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.mobile-nav-panel a:hover {
+  background: #f5f5f5;
+}
+
+@media (max-width: 780px) {
+  .mobile-nav { display: block; }
+}
+
+/* From the benchmark runs. Elicit's hover is a Framer Motion spring: it
+   overshoots its target and settles, which is what makes it feel alive
+   rather than merely animated. It gets there with a shadow and a colour,
+   neither of which we have, so the same physics has to translate to motion
+   alone. A back-out curve does that. The lift's timing is the one already
+   on main. The press is faster than the lift, the way a real button is,
+   and :active also gives touch the same feedback hover gives a cursor. */
 .pill {
   display: inline-block;
   background: var(--ink);
@@ -131,11 +200,11 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.26s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
-  transform: scale(1.045);
+  transform: scale(1.06);
 }
 
 .pill:active {
@@ -147,6 +216,14 @@ a {
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
+}
+
+/* the pill's own color (black bg or white bg) matches the browser's
+   default focus ring closely enough to make keyboard focus invisible;
+   a white-gap-then-black ring reads on either variant */
+.pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
 }
 
 .footer {
@@ -216,6 +293,7 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-follow > * { animation: none; }
+  .pill { transition: none; }
 }
 
 .wordmark .embed {
@@ -645,12 +723,20 @@ a {
   text-underline-offset: 3px;
 }
 
-.digest ol {
+.digest ol,
+.digest ul {
   margin: 0 0 18px 22px;
 }
 
-.digest ol li {
+.digest li {
   margin-bottom: 6px;
+}
+
+/* Issues nest a claim's supporting points under its headline point. */
+.digest li > ol,
+.digest li > ul {
+  margin: 8px 0 8px 18px;
+  color: var(--gray);
 }
 
 .digest hr {
@@ -659,11 +745,11 @@ a {
   margin: 36px 0;
 }
 
+/* The lock on a spine route. It used to fade out of a truncated digest
+   teaser, which is why it pulled itself up over the text above; the digest is
+   free in full now, so there is nothing to fade and nothing to pull over. */
 .gate {
-  position: relative;
-  margin-top: -140px;
-  padding-top: 180px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 55%);
+  margin-top: 56px;
   text-align: center;
 }
 
@@ -677,6 +763,37 @@ a {
   color: var(--gray);
   font-size: 15px;
   margin: 8px 0 22px;
+}
+
+/* ---------- issue footer ---------- */
+
+.issue-foot {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+
+.issue-foot p {
+  color: var(--gray);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 auto 22px;
+  max-width: 34em;
+}
+
+.issue-foot-cta {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* An entitled member reads the skill file itself, in the digest's type. */
+.skill-body {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 
 /* ---------- skills ---------- */

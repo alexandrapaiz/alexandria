@@ -1,0 +1,40 @@
+Retired run: engine lexical/1, pre-registered absolute threshold 0.25, no null model.
+Recorded 2026-09-18 by the skill agent before the policy was replaced by lexical/2.
+Reading note: the 95% CI column below is wrong in this run. The Clopper-Pearson
+lower bound was computed with an inverted bisection, found and fixed in the same
+PR that recorded this file. The pass/fail lines are unaffected and are the point.
+
+trigger test — engine lexical/1, fire>=0.25 margin>=0.05 (pre-registered)
+library: 2 skills
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [FAIL] he-pos-1     positive  expect harness-engineering -> got (silence)
+         prompt: Our customer-support agent fails about a third of its multi-step tickets and we cannot tell which of the five sub-agents is at fault. Where should we start debugging?
+         scores: {'harness-engineering': 0.118, 'self-improving-post-training-loops': 0.049}
+  [FAIL] he-pos-2     positive  expect harness-engineering -> got (silence)
+         prompt: We have budget for extra inference compute on one hard planning step. Should the agent reflect on and revise its own answer, or should we sample three candidates in parallel and select one?
+         scores: {'harness-engineering': 0.0967, 'self-improving-post-training-loops': 0.0854}
+  [FAIL] he-pos-3     positive  expect harness-engineering -> got (silence)
+         prompt: We are deciding whether to spend the quarter fine-tuning our 8B model or rebuilding the tool interface it calls. Which buys more?
+         scores: {'harness-engineering': 0.2158, 'self-improving-post-training-loops': 0.1382}
+  [PASS] he-neg-1     negative  expect (silence) -> got (silence)
+  [PASS] he-neg-2     negative  expect (silence) -> got (silence)
+  [PASS] he-conf-1    confusion expect harness-engineering -> got harness-engineering
+  3/6 passed (positives 0/3, negatives 2/2, confusion 1/1); 95% CI [1.00, 0.88]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> got self-improving-post-training-loops
+  [FAIL] pt-pos-2     positive  expect self-improving-post-training-loops -> got (silence)
+         prompt: Before we distil from our large teacher model, how do we know its answers are actually right on the prompts we care about?
+         scores: {'harness-engineering': 0.1435, 'self-improving-post-training-loops': 0.1625}
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> got self-improving-post-training-loops
+  [PASS] pt-neg-1     negative  expect (silence) -> got (silence)
+  [PASS] pt-neg-2     negative  expect (silence) -> got (silence)
+  [FAIL] pt-conf-1    confusion expect self-improving-post-training-loops -> got (silence)
+         prompt: Our asynchronous on-policy distillation run is burning teacher GPU time on prompts the student already answers correctly. How should we decide which prompts actually need the teacher?
+         scores: {'harness-engineering': 0.1013, 'self-improving-post-training-loops': 0.1818}
+  4/6 passed (positives 2/3, negatives 2/2, confusion 0/1); 95% CI [1.00, 0.96]
+
+TOTAL 7/12 — reliability 0.58, 95% CI [1.00, 0.85]
+
+wrote /tmp/v1-prereg.json

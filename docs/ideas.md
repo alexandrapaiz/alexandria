@@ -1025,5 +1025,316 @@ build.
   endpoint is already idempotent on duplicates, so no behaviour changes.
 - First step: the schema line, since the insert cannot run before it.
   db/ is outside the frontend lane, so this is the engineer's to make.
+### 2026-09-18 — harness-engineering does not fire on its own test-time-compute case (skill agent)
+- Trigger: the executable trigger test built this run
+  (`skills/_validation/trigger_test.py`, board card "Design the skill
+  validation system") fails one of twelve cases, and the failure is in
+  the library rather than in the instrument. The prompt "We have budget
+  for extra inference compute on one hard planning step. Should the agent
+  reflect on and revise its own answer, or should we sample three
+  candidates in parallel and select one?" does not select
+  `harness-engineering`. It loses by 0.010 to a decoy about cluster
+  capacity, because the skill's description claims the case with the
+  phrase "when allocating test-time compute" and contains none of the
+  words a user actually reaches for: inference, sample, parallel, select,
+  revise, reflect.
+- What: amend the `description` of `skills/harness-engineering/SKILL.md`
+  so the activation condition carries the vocabulary of the question, not
+  only its term of art. Suggested replacement for the existing clause:
+  "or when deciding how to spend extra inference compute on a hard step,
+  for instance sampling several candidates in parallel and selecting one
+  versus having the model revise its own answer". The skill's body and
+  provenance are untouched by this, only the trigger surface.
+- Why this run did not simply make the edit: `harness-engineering` is the
+  one skill in gold carrying a recorded validation result, and editing a
+  validated artifact is the case the V4 regression gate
+  (docs/product/skill-validation.md) exists to govern. That gate is not
+  built, so there is nothing to re-run against the edit yet. Recording
+  the defect and leaving the suite red is the honest state.
+- First step: apply the clause, re-run
+  `python3 skills/_validation/trigger_test.py`, expect 12 of 12, and
+  record the new bundle next to the failing one so the before and after
+  both stay on the record.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
+- Trigger: the verification-badge schema entry filed earlier on
+  2026-09-18 left `trigger_reliability` as the one field with no data
+  source, and flagged two options: drop it from v1, or have the panel
+  replay each trigger-test prompt. The executable test built this run
+  settles it. The prompts now live in `skills/<slug>/triggers.json` and
+  replay deterministically in about a second with no model, no network,
+  and no database.
+- What: wire the badge's `trigger_reliability` to the newest bundle in
+  `skills/_validation/results/`, rendering the fraction with its exact
+  binomial interval and the engine version that produced it, never a bare
+  percentage. Until the model-in-the-loop engine exists (slice 5 of
+  docs/product/skill-validation.md), the number is a lower bound and the
+  page must say so.
+- First step: this depends on the parser fix already in the ledger
+  ("Receipt-rendering schema for the skill library"), since the bundle
+  keys off each skill's name and the site cannot currently read nested
+  frontmatter at all. Build the parser fix first, then read the bundle.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Run the trigger test in CI on every PR touching skills/ (skill agent)
+- Trigger: the test is executable, stdlib-only, and finishes in about a
+  second, so the marginal cost of running it on every PR is effectively
+  zero. Nothing runs it today, which means the next skill PR can silently
+  regress another skill's routing.
+- What: a small GitHub Actions job on pull requests touching `skills/**`
+  running `python3 skills/_validation/trigger_test.py --json` and posting
+  the summary. Workflow files are the engineer's surface, not this
+  agent's, hence a proposal rather than a commit.
+- Note on the gate: the suite is red today by design (see the
+  harness-engineering entry above), so wiring it as a required check
+  before that clause lands would block every PR. Either land the
+  description fix first, or have the job compare against the last
+  recorded bundle and fail only on regression, which is the V4 rule and
+  the better long-run design.
+- First step: land the description amendment, then add the job as a
+  non-blocking check for one week before making it required.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — skill-extract's SQL sketch names a column the schema does not have (skill agent)
+- Trigger: found while querying silver this run. The candidate-cluster
+  query in `prompts/skill-extract.md` selects `c.text` from `claims`, but
+  the column is `claims.claim` (db/schema.sql). Copied as written, the
+  query errors out, which costs a future run a turn on a trivial fix.
+- What: fixed in this run's PR, since `prompts/skill-extract.md` is this
+  agent's writable surface. Recorded here because the same drift can
+  recur: the prompt carries a hand-written copy of the schema, and
+  nothing checks it against `db/schema.sql`.
+- First step: none required. Worth considering, when the panel is built,
+  whether the extract prompt should reference the schema file rather than
+  restate it.
+- Cost: $0
+- Status: built
+## Engineer agent findings (2026-09-18, sprint 2026-09-21 items 1-3)
+
+### 2026-09-18 — Read the archive from the `digests` table, fixture as fallback (engineer agent)
+- Trigger: sprint item 3 asked for real digest content on the archive.
+  This session had no database credentials (`NEON_RO_URL` is wired into the
+  research and skill workflows but not `agent-engineer.yml`, and it was
+  empty here), so the issue body had to be recovered from git history at
+  commit `d98885e`, from before `digests/` went gitignored. Meanwhile
+  `db/schema.sql` already calls the `digests` table "the database of
+  record," one row per ISO week with the markdown in `body`. The site and
+  the database of record are not connected, so the archive will still show
+  only 2026-W37 the day 2026-W38 sends.
+- What: give `site/lib/content.js` a Neon-backed implementation behind the
+  interface it already exposes (`listIssues`, `getIssue`). Query `digests`
+  ordered by week, fall back to the checked-in fixtures when
+  `DATABASE_URL` is absent so local development and preview builds keep
+  working with no credentials. The driver is already a site dependency as
+  of this PR (`@neondatabase/serverless`), added for the spine entitlement
+  check, so this is a query and a fallback branch rather than new plumbing.
+- First step: add `NEON_RO_URL` to `.github/workflows/agent-engineer.yml`
+  so an engineer session can see the table it is coding against, then
+  write the query behind the existing interface.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — A "why this matters" line on every digest item (engineer agent)
+- Trigger: this run's craft scan of Import AI (jack-clark.net, 116,000+
+  free subscribers, 450+ issues). Every item in every issue ends with a
+  named "Why this matters" annotation that states the consequence for the
+  reader, separate from the finding itself. Reading our own 2026-W37 issue
+  end to end while wiring it to the archive, the contrast is sharp: our
+  items give the claim and then the procedure, both accurate, and leave
+  the reader to work out what to do differently. Import AI never makes the
+  reader do that work.
+- What: add one required slot to the item template in `prompts/digest.md`:
+  a single sentence naming what a builder should do differently now that
+  this holds. It is a prompt change, not a pipeline change, so it is
+  cheap to try and cheap to revert. Pair it with the blind read test
+  already proposed in this ledger so the change is judged rather than
+  assumed.
+- First step: add the slot to `prompts/digest.md` and regenerate 2026-W37
+  from the stored payload, then read the two versions side by side.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Editorial titles for the pre-overhaul issues (engineer agent)
+- Trigger: with the archive finally rendering, the 2026-W37 row reads
+  "alexandria digest — 2026‑W37" and tells a visitor nothing, because the
+  first editions predate the voice overhaul that made the H1
+  "{Editorial title} [{dates}]" (`prompts/digest.md`). The archive is now
+  a public acquisition surface, so a title that carries no information is
+  a cost on every issue that has one. The date range is already handled:
+  `weekRange()` derives the ISO week's Monday-to-Sunday span, so the row
+  reads "[September 7–13, 2026]" rather than an empty bracket.
+- What: a one-off pass that gives each pre-overhaul issue an editorial
+  title in the current format, taken from what the issue actually argued,
+  and rewrites its H1. Small, but it is the difference between an archive
+  that sells the product and a list of week numbers.
+- First step: retitle 2026-W37, the only issue on the site today.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Craft scan: Import AI (jack-clark.net)
+- Scanned: the public archive and issue pages, as a signed-out visitor.
+  Chosen because this run built alexandria's public archive, and Import AI
+  runs the same shape at scale: every issue free and complete in public,
+  with the paid tier selling access rather than content.
+- Worth stealing: the per-item "Why this matters" annotation, filed as its
+  own ledger entry above. Also structural, and cheaper: issues are
+  numbered and titled with their actual topics ("Import AI 472: topic;
+  topic; topic"), so the archive index is scannable without opening
+  anything. Ours is titled by week number, which is the entry above.
+- Where alexandria is better: Import AI's "gaining traction" equivalent is
+  one author's judgment, stated well but unfalsifiable. Ours is counted.
+  The "gaining traction" section is backed by `supports` edge counts in
+  the claim graph and citation trajectories from the slow loop, and "left
+  behind" is backed by `contradicts` edges and the `deprecated_claims`
+  view. A reader can ask why a claim moved and get a number and an edge,
+  not an opinion. No profiled digest can answer that question at all.
+## ExO findings (2026-09-18, second run)
+
+Filed by the ExO agent under charter §5b: staleness found in surfaces
+that belong to other seats, flagged here rather than edited there. Each
+is a documented fact contradicting a decision the owner has already
+made, so none of these needs a new decision, only the owning seat's
+hand. Statuses left blank for the owner as always.
+
+### 2026-09-18 — pipeline/weekly.py still calls the newsletter the paid product (engineer)
+- Trigger: README and diagram audit. `pipeline/weekly.py`'s module
+  docstring says the digest "goes to subscribers by email ... the
+  newsletter is the paid product." The owner decided the opposite on
+  2026-09-17, recorded in vision.md §0: the digest is free and full as
+  the acquisition engine, and the $20 spine is the operational layer.
+- What: correct the docstring to the current pricing. The code is right,
+  only the prose about why it exists is wrong, which is the lying-
+  docstring class the security seat's charter already hunts.
+- First step: one docstring, engineer or security, whoever runs first
+- Cost: $0
+- Status:
+
+### 2026-09-18 — four product docs still point at prompts/weekly-agent.md (engineer)
+- Trigger: ADR-25 renamed the weekly seat to the research agent and moved
+  its charter to `prompts/research-agent.md`. Nine references to the old
+  path survive in `docs/product/architecture-next.md`,
+  `docs/product/source-discovery.md` and `docs/product/pipeline.md`, two
+  of which also name an `agent-weekly.yml` that does not exist. A reader
+  following any of them lands on nothing. The README and ADR-12 were
+  fixed in the ExO's PR this run; these are the engineer's surface.
+- What: update the paths, and check whether the self-application step
+  those docs propose is now the research seat's step 4 rather than a new
+  one.
+- First step: `grep -rn weekly-agent docs/product/`
+- Cost: $0
+- Status:
+
+### 2026-09-18 — skills/README.md says the gold layer is empty (skill agent)
+- Trigger: `skills/README.md` reads "Empty is the honest starting state."
+  Two skills are merged and live: `harness-engineering` (2026-09-12) and
+  `self-improving-post-training-loops` (2026-09-18). Honesty was the
+  point of that sentence, so it should keep being honest.
+- What: describe what is actually in gold, and what a reader should
+  expect a skill file to contain, since skills are the sellable product.
+- First step: rewrite three lines, skill agent's next Tuesday run
+- Cost: $0
+- Status:
+
+### 2026-09-18 — the Q4 OKR file calls the mission unapproved (okr agent)
+- Trigger: `docs/okrs/okrs-2026-Q4.md` says the mission is "proposed
+  2026-09-18, pending the owner's approval, not yet canonical."
+  vision.md §0 records it as the owner's words, final, same day:
+  *accelerate every builder to frontier speed.* The OKR file is the
+  document that holds every quarter against the mission, so it is the
+  worst single place for that line to be stale.
+- What: cite the approved mission and drop the pending language.
+- First step: the OKR agent's next run, or sooner if the owner prefers
+- Cost: $0
+- Status:
+
+### 2026-09-18 — the diagram atlas needs fresh counts from the database (engineer)
+- Trigger: `docs/diagrams.md` diagram 1 carries per-node counts from
+  2026-09-08 (2,312 papers, 1,446 triaged, 80 claims, 22 edges). The one
+  verified newer number is 441 claims on 2026-09-18 (PR #16). The ExO
+  fixed which stations are live and labelled the counts as stale this
+  run, but has no database access and will not guess numbers.
+- What: refresh the five counts in diagram 1 and the four in diagram 2
+  from a live query, and consider printing the query beside them so any
+  future run can re-check rather than re-guess.
+- First step: five `select count(*)` statements, engineer's next run
+- Cost: $0
+- Status:
+
+## Sales agent proposals (2026-09-18)
+
+Filed by the sales seat (ADR-24) on owner dispatch. Each is a build the
+launch plan depends on and that sales cannot do itself, flagged to the
+owning seat rather than assumed. Arguments in docs/sales/.
+
+### 2026-09-18 — A team/seat purchase path, manual first
+- Trigger: `docs/sales/first-customers.md` lane E targets ten seats
+  across two companies in month one, and §5 B2B-1 flags that taking
+  payment for more than one seat does not exist today. First evidenced
+  public prospect: HN commenter keks0r describing a company-wide shared
+  skill library ([item 49698184](https://news.ycombinator.com/item?id=49698184),
+  2026-09-14, verified 2026-09-18)
+- What: **not a seat-management UI.** Entitlement is already a row in the
+  Neon `subscribers` table checked server-side by email (vision.md,
+  Sprint 2), so ten seats is ten rows. The ask is a line on the pricing
+  page and in the launch email — "Buying for a team? Reply and I'll set
+  it up" — plus whatever minimum Stripe configuration lets one invoice
+  cover several seats. Owner adds rows by hand for the first ten teams;
+  automate at the eleventh, not before
+- First step: confirm whether the planned Stripe Payment Link can take a
+  multi-seat payment at all, since that answer decides whether lane E
+  closes cleanly or falls back to five individual subscriptions
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The Left-Behind Index as a public page
+- Trigger: the `deprecated_claims` view already exists, nothing in the
+  competitive landscape publishes negative results
+  (docs/market/landscape.md), and it is the only honest answer to the
+  "everyone here is selling a solution" objection recorded on HN
+  ([item 49689454](https://news.ycombinator.com/item?id=49689454),
+  commenter taurath, verified 2026-09-18). Two drafted outreach notes
+  (`outreach-plan.md` C3d and the launch-day skeptic reply) are gated on
+  this page existing and cannot be sent until it does
+- What: a permanent public page listing practices the evidence has
+  abandoned, each with its citation and the date it stopped being
+  supported — a thin public face over a view the pipeline already
+  computes
+- First step: decide what is public versus paywalled before writing the
+  route; the digest-content boundary (vision.md §4) applies
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
+- Trigger: 69% of 216 audited public Claude Code skills won't reliably
+  trigger ([item 49744398](https://news.ycombinator.com/item?id=49744398),
+  2026-09-17) and no registry attaches evidence to a listing
+  (docs/market/opportunities-2026-09-18.md)
+- What: publish the `provenance:` frontmatter already in
+  `skills/harness-engineering/SKILL.md` (`extracted`, `validated`,
+  `claims`, `papers`) as an open spec anyone may implement, with a free
+  linter that checks conformance. Give the format away; the
+  unreplicable part is a claim graph that can fill the fields. Argued in
+  `docs/sales/b2b-lane.md` B2B-7 and `docs/sales/idea-list.md` 49
+- First step: spec page and linter **in the same change** — a spec
+  without a checker invites empty `claims: []` blocks that dilute the
+  signal the spec exists to create
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Check `contradicts` density before building Claim Watch
+- Trigger: `docs/sales/b2b-lane.md` B2B-5 proposes contradiction alerts
+  as a paid monitoring product, and its value depends entirely on how
+  often such an alert would actually fire
+- What: one query, not a build — over the last quarter, how many
+  `contradicts` edges landed on claims that a team could plausibly have
+  pinned? The answer gates whether the product is worth building at all,
+  and it is cheap enough that it should gate the build rather than
+  follow it
+- First step: run the query against `claim_links`; record the number in
+  the sales results file either way, including if it is zero
 - Cost: $0
 - Status: proposed

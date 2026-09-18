@@ -26,7 +26,8 @@ the owner's subscription.
 | Embeddings | Qwen3-0.6B self-hosted | married, never rented |
 | Reviewer panel (provenance, adversary, validator) | gpt-oss-120b (Groq, $0) | small verifiable steps, fresh contexts |
 | engineer, security, exo, skill, weekly, frontend seats | Opus (set explicitly; the action DEFAULTS to Sonnet when unset, incident learned 2026-09-18) | agentic coding, gold drafting, audits, visual judgment: errors cost most here |
-| pm, market, okr seats | Claude Sonnet | strategy and writing over a repo, Sonnet-shaped |
+| pm, market, okr, finance seats | Claude Sonnet | strategy and writing over a repo, Sonnet-shaped |
+| sales seat | Opus (moved up 2026-09-18, incident 11: creative breadth under open briefs is premium-tier work) | campaigns and creative strategy |
 | Mechanical subtasks inside any seat's run | Haiku via `.claude/agents/sweeper` | log parsing, link checks, inventory sweeps |
 
 ## The three levers, cheapest first

@@ -1,5 +1,12 @@
 # Outreach list — public evidence of fit, drafted notes
 
+> **Superseded in scope, not in content (2026-09-18, fourth run):** the
+> four verified targets below are still valid and their drafts are
+> reproduced verbatim in docs/sales/outreach-plan.md, which adds the
+> target *categories*, the weekly volumes, the sequence, the reply
+> playbook, and the B2B lanes. Add new individually verified targets
+> here; run the machine from there.
+
 Charter boundary, restated because it matters most here: **sales
 contacts no one.** Everything below is a candidate and a drafted note.
 The owner decides who actually hears from her, and sends it herself,

@@ -1,12 +1,25 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { marked } from "marked";
-import { getIssue } from "../../../lib/content";
+import { getIssue, listIssues } from "../../../lib/content";
 
-// Entitlement stub: Clerk drops in here. Until then everyone is a reader,
-// and locked content never leaves the server.
-async function getEntitlement() {
-  return { member: false };
+// The digest is free in full (docs/vision.md §0, amended 2026-09-17). There is
+// no teaser split and no entitlement check on this route: a signed-out visitor
+// reads the entire issue. Gating lives on the spine only, in site/lib/entitlement.js.
+
+export function generateStaticParams() {
+  return listIssues().map((it) => ({ week: it.week }));
+}
+
+export async function generateMetadata({ params }) {
+  const { week } = await params;
+  const issue = getIssue(week);
+  return {
+    title: issue
+      ? `${issue.title} — library of alexandr.ia`
+      : "Issue — library of alexandr.ia",
+    description: issue?.excerpt.slice(0, 200),
+  };
 }
 
 export default async function Issue({ params }) {
@@ -14,33 +27,26 @@ export default async function Issue({ params }) {
   const issue = getIssue(week);
   if (!issue) notFound();
 
-  const { member } = await getEntitlement();
-  const teaserHtml = marked.parse(issue.teaser);
-  const lockedHtml = member ? marked.parse(issue.locked) : null;
-
   return (
     <main className="page">
       <article
         className="digest"
-        dangerouslySetInnerHTML={{ __html: teaserHtml }}
+        dangerouslySetInnerHTML={{ __html: marked.parse(issue.body) }}
       />
-      {member ? (
-        <article
-          className="digest"
-          dangerouslySetInnerHTML={{ __html: lockedHtml }}
-        />
-      ) : (
-        <div className="gate">
-          <h3>The rest of this issue is for members.</h3>
-          <p>
-            Trailblazing, gaining traction, left behind, and what to read
-            yourself.
-          </p>
+      <div className="issue-foot">
+        <p>
+          Every issue reads like this one, free and in full, in your inbox each
+          Monday. The skills and the claim graph behind it are the paid spine.
+        </p>
+        <div className="issue-foot-cta">
+          <Link href="/library" className="pill ghost">
+            All issues
+          </Link>
           <Link href="/pricing" className="pill">
-            Subscribe
+            See the spine
           </Link>
         </div>
-      )}
+      </div>
     </main>
   );
 }
