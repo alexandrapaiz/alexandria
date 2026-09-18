@@ -304,9 +304,13 @@ as this is written; these fire the moment it lands):
 5. **The Alexandria line.** The owner wants a phrase in the UI built on
    this idea, in her words: "what we'd know if the library of
    alexandria was never burned down. like this product gets us there."
-   Working candidates, hers to pick from at review: "What we'd know if
-   the Library of Alexandria never burned." / "Everything we'd know if
-   the library never burned." The seat places it where it carries most
+   The owner refined the framing live: not "what we'd know" but the
+   counterfactual catch-up, "getting us to where we should have been
+   had the library never burned." Working candidates, hers to pick
+   from at review: "Where we'd already be if the library never
+   burned." (chair's pick) / "Catching up to the world where the
+   library never burned." / "Where we should have been by now. The
+   library is being rebuilt." The seat places it where it carries most
    (likely the hero's supporting line or the mission page) and may
    tighten the wording, but the idea is fixed: the knowledge that
    compounds when the library never burns. It must not crowd the
