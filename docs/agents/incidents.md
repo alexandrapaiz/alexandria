@@ -278,3 +278,13 @@ rather than from what the runs said about themselves.
    is item 6's pattern playing out in the register itself. Flagged for
    the ExO rather than renumbered here: renumbering other seats' entries
    mid-merge would break every cross-reference pointing at them.)
+13. **Cautionary note (owner-directed): Clerk Core 3 API drift during
+   auth integration.** The chair wired auth controls using the widely
+   known SignedIn/SignedOut components; @clerk/nextjs v7 (Core 3)
+   removed them in favor of Show when="signed-in|signed-out", and the
+   build failed at prerender. The setup doc the owner supplied stated
+   the correct Show API and the chair deviated from it toward
+   training-data memory. Fixed in minutes; recorded for caution.
+   Lesson for all seats: when integrating a fast-moving vendor SDK,
+   the vendor's current doc outranks remembered APIs, and the
+   installed clerk-* skills exist precisely to be consulted first.
