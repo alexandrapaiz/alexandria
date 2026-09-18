@@ -358,8 +358,8 @@ herself.
 - Cost: $0
 - Status: built
 - Owner outcome 2026-09-18, final after a full brainstorm: the mission is
-  "Accelerate every builder to frontier speed." alone, everywhere, with
-  "Living discovery that compounds." as a rarely used companion line.
+  "Accelerate every builder to frontier speed." alone, everywhere, no
+  subtitle or companion line (one was considered and deleted).
   Recorded at the top of vision.md §0. This entry is done.
 - Status: proposed
 

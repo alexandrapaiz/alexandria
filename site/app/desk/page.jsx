@@ -14,6 +14,8 @@ const LANES = {
   skill: "skill",
   weekly: "weekly",
   fe: "fe",
+  fin: "fin",
+  sales: "sales",
 };
 
 const lane = (branch) => LANES[branch.split("/")[0]] || "other";

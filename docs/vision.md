@@ -9,12 +9,11 @@ status checklist in the README tracks distance from it.
 
 > **Accelerate every builder to frontier speed.**
 
-That sentence is the mission everywhere, alone. A companion line exists
-for rare use where a second beat earns its place, never as an equal
-partner: *Living discovery that compounds.* Everything below serves the
-mission. It is a goal in the Google mold, internal and unfinishable:
-the OKR agent holds every quarter against it, and the owner's tiebreak
-notes stand beneath it.
+That sentence is the mission everywhere, alone, with no subtitle or
+companion line (the owner considered and deleted one on 2026-09-18; do
+not resurrect it). Everything below serves the mission. It is a goal in
+the Google mold, internal and unfinishable: the OKR agent holds every
+quarter against it, and the owner's tiebreak notes stand beneath it.
 
 Recorded 2026-09-17, the owner's calls on the record. alexandria is an
 **autonomous research organism building a standalone knowledge business**:

@@ -26,6 +26,15 @@ Write the retro into the old sprint file under `## Retrospective`:
 - One process improvement, concrete enough to act on this week. If it needs
   a charter change, propose it in the ledger; never edit charters yourself.
 
+## 1b. The org chart (owner's addition, 2026-09-18)
+
+Maintain docs/agents/org-chart.md: every seat (active and dormant),
+its charter, cadence, lane, and the company initiative it currently
+serves, so the owner can see the whole organization and its
+initiatives on one page. Update it whenever seats or initiatives
+change, and flag in your PR when an initiative has no seat carrying
+it or a seat has no initiative.
+
 ## 2. Backlog grooming
 
 Read docs/ideas.md end to end. Order the `accepted` entries by leverage

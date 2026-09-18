@@ -453,3 +453,19 @@ the hero mark's owner-approved geometry is untouchable without her
 word, no color enters the palette, sprint feature builds stay the
 engineer's. Same authority as every seat: one PR per run, owner's
 merge, lane-bounded writes (site/, docs/design/, ledger, board).
+
+## ADR-24: Finance and sales seats, created dormant
+
+Owner's decision (2026-09-18): two more seats exist on paper before
+they exist on a schedule. The finance agent (prompts/finance-agent.md)
+keeps the books: a measured OPEX ledger proving the $0 principle, then
+revenue and unit economics once sales begin; it never sees credentials
+or moves money, and figures it cannot measure it asks for. The sales
+agent (prompts/sales-agent.md) builds campaigns, launch sequences, and
+outreach material under one law: it prepares, the owner sends; it
+never contacts anyone, posts, or creates accounts, because the company
+speaks in one voice, hers. Both workflows are workflow_dispatch only,
+no cron, until the owner activates them; activation is a one-line
+schedule addition. The PM's charter gains the org chart
+(docs/agents/org-chart.md), the one-page view of every seat, active
+and dormant, and the company initiative each serves.
