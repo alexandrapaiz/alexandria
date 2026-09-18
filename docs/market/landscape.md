@@ -221,6 +221,42 @@ for orchestration essentially," not AI news.
   judgment, evidence-cited" framing over a raw skill dump.
 - **Last observed:** 2026-09-18.
 
+### Bastionskill — new find, added 2026-09-18 (later run)
+- **What it is:** Show HN launch, a scanner that checks an AI agent
+  skill for malicious code before install.
+  [news.ycombinator.com/item?id=49753727](https://news.ycombinator.com/item?id=49753727),
+  2026-09-18. Low traction at discovery (1 point, a few hours old),
+  flagged for a traction re-check next pass rather than a full entry.
+- **Why it matters:** a second, independent entrant (after skillbay.sh)
+  building specifically toward trust/verification of skills rather than
+  distribution. The gap alexandria is built for is now attracting
+  founders on both sides: curated distribution (skillbay.sh) and
+  automated safety scanning (Bastionskill). Neither attaches
+  research-backed evidence to a skill's *claims*, only its code safety —
+  alexandria's claim-graph verification is still differentiated, but the
+  "skills need trust infrastructure" thesis now has multiple, independent
+  confirmations in one week.
+- **Last observed:** 2026-09-18.
+
+### Cloudflare's security-audit-skill — landscape note, 2026-09-18 (later run)
+- Not a competitor entry (Cloudflare is not selling this), but a signal
+  worth recording under the skills ecosystem: a first-party engineering
+  team shipping a real, in-production Claude skill drew a heavily
+  upvoted HN thread (205 points) whose top complaints were token bloat
+  ("I threw 1M tokens for nothing in a medium codebase," "at least 150k
+  on my relatively small FastAPI project") and unscoped context loading
+  ("you should consolidate all of your skills into a single skill and
+  route everything thru that skill," acknowledged by a Cloudflare
+  engineer as "being worked on").
+  [news.ycombinator.com/item?id=49736466](https://news.ycombinator.com/item?id=49736466),
+  2026-09-18.
+- **Reading for alexandria:** direct, first-party confirmation of the
+  "Scoped skill delivery by default" ledger proposal already filed
+  2026-09-18 (docs/ideas.md) from the Skillzero find — this is now two
+  independent pieces of evidence, one hypothetical (a commenter's
+  question) and one lived (a real company's users hitting the problem in
+  production).
+
 ## Watchlist (not yet full entries, flagged for next pass)
 
 - **Exa (exa.ai)** — not a digest/skills competitor but the closest
@@ -239,6 +275,19 @@ for orchestration essentially," not AI news.
   pattern worth watching as alexandria matures past the individual
   $20/month tier.
   [aiweekly.co](https://aiweekly.co/alerts/semianalysis-core-research-eyes-100m-year-on-buy-side-demand)
+- **Agent Memory Leaderboard (agentmemoryleaderboard.ai)** — new find,
+  2026-09-18 (later run). An open, academically-backed (Tsinghua, Peking
+  University, Oxford, and others) benchmark for AI agent memory systems
+  across textual, multimodal, and coding-agent tracks, free to enter,
+  no commercial pricing. Refines rather than reverses this morning's "no
+  independent benchmark exists for multi-agent orchestration" finding: a
+  credible academic benchmark now exists for agent *memory* specifically,
+  but the broader orchestration-pattern space (cost/latency/error
+  tradeoffs across harness and multi-agent designs, the shape of the
+  ledger's "Orchestration-pattern benchmark" proposal) is still
+  unaddressed by anything observed. Worth citing as a possible claim-graph
+  integration rather than building memory-evaluation data collection from
+  scratch. [agentmemoryleaderboard.ai](https://agentmemoryleaderboard.ai/)
 
 ## Change log
 
@@ -247,3 +296,13 @@ for orchestration essentially," not AI news.
   Batch, AlphaSignal, Last Week in AI, Latent Space, The Pragmatic
   Engineer, Anthropic's skills ecosystem. Added Paperguide, Undermind.ai,
   skillbay.sh as new finds not in the original seed set.
+- 2026-09-18 (later run): checked a claim from secondary-source blogs
+  (500k.io and reposts) that Anthropic shipped a paid "Skills
+  Marketplace" on 2026-05-01 with a 15% revenue share. Could not verify
+  against any primary source — the `anthropics/skills` marketplace.json
+  and claude.com/blog/skills both describe only a free, open directory of
+  skills with no pricing or revenue-share mechanism. Not recorded as fact
+  here; flagged in case a future pass finds a primary source, but treated
+  as unreliable for now. Added Bastionskill and a Cloudflare
+  security-audit-skill note to the skills-ecosystem section; added the
+  Agent Memory Leaderboard to the watchlist.

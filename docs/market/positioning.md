@@ -92,3 +92,17 @@ proposal, not an evidenced conclusion.
   Newsletter, Interconnects, SemiAnalysis, The Information, Elicit,
   Consensus, Exa, TLDR AI, and early AI-skill-marketplace pricing. See
   docs/market/briefs/2026-09-18.md for this week's full sourcing.
+- 2026-09-18 (later run): re-tested $20/month against this run's new
+  evidence (Bastionskill, Cloudflare's security-audit-skill thread, the
+  Agent Memory Leaderboard, a distrust-of-closed-agents thread on the
+  ZCode/GLM git-history story). None of it is a price signal — it is all
+  trust/verification and context-scoping evidence, already folded into
+  the why-pay paragraph's "evidence and verification layer" framing. No
+  change to $20/month or to the open annual-anchoring question. Also
+  checked and explicitly did not add: a secondary-source claim of an
+  Anthropic paid skills marketplace with 15% revenue share, unverifiable
+  against any primary source (see docs/market/landscape.md's 2026-09-18
+  later-run change-log entry) — if that had verified, it would have been
+  a first same-price-tier internal comp inside the skills ecosystem
+  itself, worth a dedicated section, so it is flagged here for a future
+  pass to re-check rather than dropped silently.
