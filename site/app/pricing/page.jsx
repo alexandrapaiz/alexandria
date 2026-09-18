@@ -6,27 +6,29 @@ export default function Pricing() {
       <p className="page-kicker">Pricing</p>
       <h1 className="page-title">Two ways in.</h1>
       <p className="page-intro">
-        Subscriptions open soon. Every plan starts with the weekly digest,
-        delivered by email and archived in the library.
+        The weekly digest is free, in full, and always will be. One paid plan
+        adds the operational layer underneath it: the skills your agents load,
+        the claim graph they are drawn from, and the automations that keep both
+        current.
       </p>
       <div className="tiers">
         <div className="tier">
           <h2>Digest</h2>
-          <div className="price">$10</div>
-          <span className="per">per month</span>
+          <div className="price">Free</div>
+          <span className="per">every Monday</span>
           <ul>
             <li>The weekly digest by email</li>
-            <li>The complete issue archive</li>
-            <li>Every issue, past and future</li>
+            <li>Every issue in full, nothing held back</li>
+            <li>The complete archive in the library</li>
           </ul>
           <span className="pill ghost">Coming soon</span>
         </div>
         <div className="tier featured">
-          <h2>Full library</h2>
-          <div className="price">$30</div>
+          <h2>The spine</h2>
+          <div className="price">$20</div>
           <span className="per">per month</span>
           <ul>
-            <li>Everything in Digest</li>
+            <li>Everything in the free digest</li>
             <li>The full skill library, for any AI agent</li>
             <li>The claim graph, explorable</li>
             <li>Skill revisions as the research moves</li>

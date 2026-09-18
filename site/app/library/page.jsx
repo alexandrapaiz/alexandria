@@ -18,17 +18,24 @@ export default function Library() {
         <p className="page-kicker">Archive</p>
         <h1 className="page-title">The Library</h1>
         <p className="page-intro">
-          The opening of each issue is free to read. Members read everything.
+          Every issue is free to read in full. The digest is how the library
+          introduces itself, so nothing in it is held back.
         </p>
-        <div className="issue-list">
-          {issues.map((it) => (
-            <Link key={it.week} href={`/library/${it.week}`} className="issue">
-              <span className="issue-week">[{it.dates}]</span>
-              <h2>{it.title}</h2>
-              <p>{it.excerpt.slice(0, 220)}…</p>
-            </Link>
-          ))}
-        </div>
+        {issues.length === 0 ? (
+          <p className="desk-empty">
+            The first issue is on its way. Check back on Monday.
+          </p>
+        ) : (
+          <div className="issue-list">
+            {issues.map((it) => (
+              <Link key={it.week} href={`/library/${it.week}`} className="issue">
+                <span className="issue-week">[{it.dates}]</span>
+                <h2>{it.title}</h2>
+                <p>{it.excerpt.slice(0, 220)}…</p>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
