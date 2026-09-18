@@ -6,7 +6,6 @@ import Link from "next/link";
 const LINKS = [
   ["/library", "Library"],
   ["/skills", "Skills"],
-  ["/graph", "Graph"],
   ["/mission", "Mission"],
 ];
 

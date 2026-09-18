@@ -37,7 +37,7 @@ export default async function Routines() {
         <h3>Routines come with the paid plan.</h3>
         <p>
           It will include them the day they ship, alongside the skill library
-          and the claim graph.
+          you read and your agents load.
         </p>
         <Link href="/pricing" className="pill">
           See pricing

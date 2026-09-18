@@ -1,9 +1,12 @@
 import Link from "next/link";
-import GraphFull from "../components/GraphFull";
+import GraphFull from "./GraphFull";
 import { hasSpine } from "../../lib/entitlement";
 
-// Spine route: the structure-only snapshot teases in public, and opening a
-// node is part of the $20 tier.
+// PARKED, owner's order of 2026-09-18. The knowledge graph is hidden from
+// visitors completely: no nav link, no mention on any page, and no route.
+// The leading underscore makes this a Next private folder, so /graph is a
+// 404 rather than a page. Nothing here was deleted. Drop the underscore to
+// put it back when the graph is industry standard.
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Graph — library of alexandr.ia" };
 

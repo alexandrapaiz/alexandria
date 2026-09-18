@@ -36,8 +36,8 @@ export default async function Issue({ params }) {
       <div className="issue-foot">
         <p>
           Every issue reads like this one, free and in full, in your inbox
-          each Monday. The skills and the claim graph behind it come with the
-          paid plan.
+          each Monday. The skills behind it, the ones your agents load, come
+          with the paid plan.
         </p>
         <div className="issue-foot-cta">
           <Link href="/library" className="pill ghost">

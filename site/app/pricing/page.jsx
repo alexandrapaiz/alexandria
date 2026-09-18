@@ -8,9 +8,9 @@ export default function Pricing() {
       <p className="page-kicker">Pricing</p>
       <h1 className="page-title">Read for free. Build for $20.</h1>
       <p className="page-intro">
-        The weekly digest stays free and arrives in full. The paid plan adds
-        the three things your agents run on. You get the skill library, the
-        claim graph behind it, and the routines that keep both current.
+        The weekly digest stays free and arrives in full. The paid plan opens
+        the skill library, in the same files you read and your agents load,
+        and the routines that keep it current as the research moves.
       </p>
       <div className="tiers">
         <div className="tier">
@@ -30,8 +30,8 @@ export default function Pricing() {
           <span className="per">per month</span>
           <ul>
             <li>Everything in the digest</li>
-            <li>The full skill library, for any agent</li>
-            <li>The claim graph, node by node</li>
+            <li>The full skill library, file by file</li>
+            <li>The same files your agents load</li>
             <li>Skill updates as the research moves</li>
             <li>Routines, once they ship</li>
           </ul>

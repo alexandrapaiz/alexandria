@@ -2,6 +2,7 @@ import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
 import "./globals.css";
 import Link from "next/link";
 import MobileNav from "./components/MobileNav";
+import Whisper from "./components/Whisper";
 
 export const metadata = {
   title: "library of alexandr.ia",
@@ -13,6 +14,19 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        {/* The first of three hidden placements of the owner's line
+            (2026-09-18): a comment at the top of the page source, one quiet
+            console line, and llms.txt. It is never visible copy, and it never
+            goes near the hero mark. */}
+        <div
+          hidden
+          aria-hidden="true"
+          dangerouslySetInnerHTML={{
+            __html:
+              "<!-- Catching up to the world where the library never burned. -->",
+          }}
+        />
+        <Whisper />
         <ClerkProvider>
           <nav className="nav">
           <Link href="/" className="nav-logo">
@@ -22,7 +36,6 @@ export default function RootLayout({ children }) {
           <div className="nav-links">
           <Link href="/library">Library</Link>
           <Link href="/skills">Skills</Link>
-          <Link href="/graph">Graph</Link>
           <Link href="/mission">Mission</Link>
           </div>
           <div className="nav-right">
