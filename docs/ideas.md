@@ -1224,3 +1224,78 @@ hand. Statuses left blank for the owner as always.
 - First step: five `select count(*)` statements, engineer's next run
 - Cost: $0
 - Status:
+
+## Sales agent proposals (2026-09-18)
+
+Filed by the sales seat (ADR-24) on owner dispatch. Each is a build the
+launch plan depends on and that sales cannot do itself, flagged to the
+owning seat rather than assumed. Arguments in docs/sales/.
+
+### 2026-09-18 — A team/seat purchase path, manual first
+- Trigger: `docs/sales/first-customers.md` lane E targets ten seats
+  across two companies in month one, and §5 B2B-1 flags that taking
+  payment for more than one seat does not exist today. First evidenced
+  public prospect: HN commenter keks0r describing a company-wide shared
+  skill library ([item 49698184](https://news.ycombinator.com/item?id=49698184),
+  2026-09-14, verified 2026-09-18)
+- What: **not a seat-management UI.** Entitlement is already a row in the
+  Neon `subscribers` table checked server-side by email (vision.md,
+  Sprint 2), so ten seats is ten rows. The ask is a line on the pricing
+  page and in the launch email — "Buying for a team? Reply and I'll set
+  it up" — plus whatever minimum Stripe configuration lets one invoice
+  cover several seats. Owner adds rows by hand for the first ten teams;
+  automate at the eleventh, not before
+- First step: confirm whether the planned Stripe Payment Link can take a
+  multi-seat payment at all, since that answer decides whether lane E
+  closes cleanly or falls back to five individual subscriptions
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The Left-Behind Index as a public page
+- Trigger: the `deprecated_claims` view already exists, nothing in the
+  competitive landscape publishes negative results
+  (docs/market/landscape.md), and it is the only honest answer to the
+  "everyone here is selling a solution" objection recorded on HN
+  ([item 49689454](https://news.ycombinator.com/item?id=49689454),
+  commenter taurath, verified 2026-09-18). Two drafted outreach notes
+  (`outreach-plan.md` C3d and the launch-day skeptic reply) are gated on
+  this page existing and cannot be sent until it does
+- What: a permanent public page listing practices the evidence has
+  abandoned, each with its citation and the date it stopped being
+  supported — a thin public face over a view the pipeline already
+  computes
+- First step: decide what is public versus paywalled before writing the
+  route; the digest-content boundary (vision.md §4) applies
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
+- Trigger: 69% of 216 audited public Claude Code skills won't reliably
+  trigger ([item 49744398](https://news.ycombinator.com/item?id=49744398),
+  2026-09-17) and no registry attaches evidence to a listing
+  (docs/market/opportunities-2026-09-18.md)
+- What: publish the `provenance:` frontmatter already in
+  `skills/harness-engineering/SKILL.md` (`extracted`, `validated`,
+  `claims`, `papers`) as an open spec anyone may implement, with a free
+  linter that checks conformance. Give the format away; the
+  unreplicable part is a claim graph that can fill the fields. Argued in
+  `docs/sales/b2b-lane.md` B2B-7 and `docs/sales/idea-list.md` 49
+- First step: spec page and linter **in the same change** — a spec
+  without a checker invites empty `claims: []` blocks that dilute the
+  signal the spec exists to create
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Check `contradicts` density before building Claim Watch
+- Trigger: `docs/sales/b2b-lane.md` B2B-5 proposes contradiction alerts
+  as a paid monitoring product, and its value depends entirely on how
+  often such an alert would actually fire
+- What: one query, not a build — over the last quarter, how many
+  `contradicts` edges landed on claims that a team could plausibly have
+  pinned? The answer gates whether the product is worth building at all,
+  and it is cheap enough that it should gate the build rather than
+  follow it
+- First step: run the query against `claim_links`; record the number in
+  the sales results file either way, including if it is zero
+- Cost: $0
+- Status: proposed
