@@ -469,3 +469,20 @@ no cron, until the owner activates them; activation is a one-line
 schedule addition. The PM's charter gains the org chart
 (docs/agents/org-chart.md), the one-page view of every seat, active
 and dormant, and the company initiative each serves.
+
+## ADR-25: The weekly seat is the research agent
+
+Owner's decision (2026-09-18), on the chair's recommendation against
+adding a twelfth seat: the function she described as a product
+researcher (evaluate what input serves the mission, guide the engineer
+and skill seats by what is gaining citation traction and reputation,
+find new sources and researchers beyond arXiv) already lived in the
+weekly meta-review seat, which consumed discovery_report, proposed
+sources.yaml diffs, and reviewed what the pipeline read. The seat is
+renamed the research agent (prompts/research-agent.md,
+agent-research.yml, research/ branches) and gains the one output that
+was missing: the weekly CURATION BRIEF (docs/research/briefs/),
+ranking what is rising by evidence, naming extraction targets for the
+skill agent, and warning what is noise. The PM plans from it. Skill
+drafting stays with the skill agent; one seat decides what is worth
+reading, another what is worth packaging, and the engineer builds.

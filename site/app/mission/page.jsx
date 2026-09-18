@@ -4,7 +4,7 @@ export default function Mission() {
   return (
     <main className="page">
       <p className="page-kicker">Mission</p>
-      <h1 className="page-title">Research that runs itself.</h1>
+      <h1 className="page-title">Accelerate every builder to frontier speed.</h1>
       <div className="prose">
         <p>
           Thousands of AI papers appear every week, and no person can keep an

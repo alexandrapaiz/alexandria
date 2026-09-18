@@ -89,6 +89,24 @@ remembering must live in a file.
 - **Incidents** (docs/agents/incidents.md): blameless postmortems owned
   by the exo seat; a failure recorded once and prevented forever.
 
+## The frameworks register (adopt minimally, discard by default)
+
+The PM stays current on operational frameworks and triages them in
+docs/agents/frameworks.md under one law: a framework must never
+consume more than the work it organizes. Entry requires naming the
+problem it solves; one trial at a time; every adopted practice carries
+a measured ceremony cost and a kill-by-default review date. Adopted
+here (2026-09-18, all near-zero ceremony): minimal Scrum (already
+practiced), OKRs with Committed/Aspirational grading, Amazon Working
+Backwards (the launch press release and FAQ written before building
+further), the pre-mortem (one hour, the week before any launch),
+Kanban WIP limits (a number on the board's In Progress column), and
+Team Topologies as the vocabulary for seat design. Deliberately
+discarded with reasons on record: SAFe, EOS, holacracy, DACI; Shape Up
+is studied as Scrum's rival, not adopted. Portable rule for any new
+project: start with the adopted list above and an empty register, not
+with framework shopping.
+
 ## Operating modes
 
 **Synchronous**: owner present; relevant seats work with her live

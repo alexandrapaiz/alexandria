@@ -57,6 +57,41 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: draft against one real claim cluster
 - Cost: $0
 - Status: accepted
+- Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-production-line):
+  `prompts/skill-extract.md` is written, but not yet drafted against a real
+  claim cluster as planned, because `NEON_RO_URL` had no usable value this
+  run (see the urgent ledger entry below) — the "first step" above still
+  stands for next Tuesday. One resolved ambiguity worth recording: the
+  charter (prompts/skill-agent.md) says "every claim-backed sentence citing
+  its claim id," but the gold specimen actually cites by paper title inline
+  ("(Co-Evolving Harnesses and Models)") and keeps numeric ids only in
+  `provenance.claims`. skill-extract.md now codifies the specimen's
+  approach as the rule: paper-title citation in prose, numeric ids in
+  frontmatter for the provenance reviewer to check against the database.
+  Inline numeric ids would make the prose unreadable without making it any
+  more checkable, since the reviewer needs the stable id either way.
+- Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
+  the "first step" above is now done. `prompts/skill-extract.md` itself is
+  still only on the still-open PR #12 branch
+  (`skill/2026-09-18-production-line`), not yet merged to main, so this run
+  followed that branch's version as the extraction method rather than
+  re-proposing a second copy of the same new file in this PR. It held up
+  well end to end: the cluster-scoring criteria (procedure-rich,
+  cross-supported, on-topic, not-already-gold) picked out a real 5-paper,
+  21-claim cluster on self-improving post-training loops with genuine
+  supports/refines edges between all five papers, not just topic-tag
+  overlap, and the frontmatter/citation split (paper title in prose,
+  numeric id only in `provenance.claims`) worked cleanly against a second
+  real skill. One friction point worth a note for whoever finalizes
+  skill-extract.md: several of the strongest-looking supports edges by
+  confidence score (0.6-0.85) connected claims that were topically
+  unrelated in substance despite the topic-tag overlap the query filtered
+  on (e.g. a safety-tuning claim and a TPU-kernel-optimization claim both
+  "supporting" an unrelated search-agent claim); the prompt's cluster-
+  scoring section should say explicitly that an edge's existence and
+  confidence score are necessary but not sufficient, and that the drafting
+  agent must read the actual claim text of every edge before trusting it,
+  not just the edge table.
 
 ## Proposals
 
@@ -245,6 +280,18 @@ below.
   field to the skills page card
 - Cost: $0
 - Status: proposed
+- Grooming note (skill agent, 2026-09-18): "parseSkill already reads
+  frontmatter" is not quite true for this field, verified against the gold
+  specimen this run. `site/lib/content.js`'s `get(key)` regex
+  (`^${key}:\s*(.+)$`) requires the key at column 0; `validated` and
+  `claims` both sit indented under `provenance:` in the gold specimen, so
+  `get("validated")` and `get("claims")` both return `""` today, confirmed
+  by running `parseSkill` against `skills/harness-engineering/SKILL.md`
+  directly (papers still parses fine, since its list-item regex doesn't
+  care about the parent key). This is the same gap the "receipt-rendering
+  schema" entry below covers in full; that entry is the fuller fix,
+  this note just pins the exact bug for whichever engineer run picks
+  either one up first.
 
 ### 2026-09-18 — A free teaser skill on the public directories (market agent)
 - Trigger: skills.sh top listings show 0.9M-3.4M installs and support
@@ -565,6 +612,270 @@ build.
 - Cost: $0
 - Status: proposed
 
+### 2026-09-18 — Unified traction-confidence score for discovery_report (engineer agent)
+- Trigger: owner's architecture-run directive to build on
+  docs/product/source-discovery.md so the pipeline "reliably catches
+  what is genuinely gaining traction." Today discovery_report returns
+  three independent signals (embedding-space novelty, rising
+  authors/institutions, citation velocity from an untrusted tier); a
+  candidate that clears two signals at once is stronger evidence than
+  one that clears either alone, but nothing computes that today — a
+  human or the weekly agent has to hold three lists in their head and
+  cross-reference by hand
+- What: fuse the three discovery_report signals into one ranked score
+  per candidate (paper, author, or institution), returned as a single
+  ordered list showing which signals fired and by how much, so
+  independent agreement across signals — the evidence bar
+  source-discovery.md §5 already requires — is a number in the
+  propose_change rationale instead of an implicit read
+- First step: define the scoring function against the three existing
+  queries in mcp/server.py's discovery_report (no new data collection,
+  pure recombination of what it already returns)
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Discovery precision audit: track discovery→diff→outcome (engineer agent)
+- Trigger: same directive. "Reliably catches" is a claim about
+  precision that nothing today measures — every discovery_report
+  finding that becomes an accepted sources.yaml diff via propose_change
+  is untracked once merged, so there is no way to say whether the
+  signal was actually right
+- What: tag the promotions row (kind = 'system_diff') that originated
+  from a discovery_report finding, then a few weeks later check whether
+  that source's subsequent papers cleared triage at a materially higher
+  rate than the corpus baseline — the same measured-before-trusted
+  method as the distill bake-off (docs/evals/2026-09-07-distill-bakeoff.json),
+  applied to the discovery signal instead of a model choice
+- First step: add the tag at propose_change time (a note in the
+  rationale is enough, no schema change required yet), then design the
+  follow-up query once a few tagged diffs exist to check against
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Executable trigger tests for skills, checked in CI (engineer agent)
+- Trigger: ADR-22 already requires five prompts (three should fire, two
+  shouldn't) narrated in every skill-agent PR body, answering the
+  market audit's "69% of public skills won't reliably trigger" finding.
+  A narrated PR description is evidence for a human reader the day it's
+  written; it is not a check that runs, and it goes stale silently the
+  moment a skill's `description:` frontmatter is edited later without
+  anyone re-running the five prompts by hand
+- What: a `skills/<slug>/trigger-test.json` fixture per skill (the same
+  five prompts, structured as prompt text + expected fire/no-fire), plus
+  a small script that checks a skill's activation-condition text against
+  its fixture, run in CI on any change under skills/ — the reviewer
+  panel's future adversary/provenance checks stay judgment calls; this
+  is the one piece of ADR-22's requirement that is mechanical enough to
+  automate outright
+- First step: convert skills/harness-engineering's existing (narrated,
+  in its promotion PR) five prompts into the first trigger-test.json, as
+  the worked example before asking the skill agent to produce one every
+  week going forward
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Self-application step for prompts/weekly-agent.md (engineer agent, charter-text proposal)
+- Trigger: owner's architecture-run directive, verbatim: "the big things
+  that we research, let's build" — findings in our own claim graph
+  (harness patterns, loop designs, orchestration techniques) should
+  change our own pipeline and agents, not only get written up for
+  someone else to load. Today that only happens when a human happens to
+  notice the resemblance while reading; docs/product/architecture-next.md
+  §3 designs the mechanism in full, with three worked examples against
+  the one skill already in gold
+- What: this ledger entry carries the exact step to add to
+  prompts/weekly-agent.md's Step 4 (meta-review), which already runs
+  weekly via agent-weekly.yml and already holds propose_change
+  authority: after gathering the week's evidence, ask whether any
+  finding, applied to alexandria's own prompts/pipeline/agent design,
+  predicts a concrete nameable change (name the file and the practice
+  it contradicts or improves, not a resemblance). A prompt/sources.yaml-
+  shaped answer calls propose_change directly, citing the claim ids,
+  exactly as Step 4 already does for any other finding. A pipeline-code-
+  shaped answer becomes a ledger entry tagged `self-application` for the
+  engineer's next run. No new cron, tool, or secret — reuses the
+  meta-review step and the ADR-12 channel that already exist
+- First step: this is charter text, not code — prompts/weekly-agent.md is
+  an agent charter, which per ADR-19 only the ExO edits (gated by the
+  owner's merge like every charter change). The engineer cannot commit
+  this directly; the owner or the ExO's next run applies the step above
+  verbatim or edited, into Step 4
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Self-application example: sample-and-select bake-off for distill.py (engineer agent)
+- Trigger: docs/product/architecture-next.md §3.2, example 1 — the one
+  skill already in gold cites its own headline finding (claim 203,
+  "What Else Needs Fixing?"): best-of-three parallel sampling with a
+  cheap selection step beat sequential self-reflection by 2.2-9.7% for
+  less compute. distill.py samples once per paper today; the skill's
+  own procedure, applied to the pipeline that produced it, predicts a
+  concrete change
+- What: sample distillation 2-3 times per paper on the same free-tier
+  Groq model (still $0 — more calls against the same free budget, not a
+  new one), embed each candidate's extracted claims, and select the
+  medoid (or use an LLM judge with 2 samples) before writing to silver,
+  on the bet that it reduces missed or hallucinated claims the same way
+  it improved accuracy in the source paper
+- First step: a measured blind comparison against the current
+  single-sample baseline on a fixed set of papers, same method as the
+  2026-09-07 distill bake-off, before changing production behavior —
+  do not ship this on the skill's say-so alone; measure it the way the
+  house style already requires
+- Cost: $0 to test (same free-tier budget, more calls per paper — watch
+  the daily rate limit)
+- Status: proposed
+
+### 2026-09-18 — Repeatable prose benchmark: blind read test against that week's TLDR issue (engineer agent)
+- Trigger: owner's finding that the digest reads stale and mechanical
+  despite improvement, and her directive that digest quality get
+  measured, not vibed, per the market seat's blind-pairwise-comparison
+  method already established for model choices (the distill bake-off,
+  docs/evals/2026-09-07-distill-bakeoff.json) and proposed again for a
+  future skill head-to-head (docs/ideas.md, "A published head-to-head")
+- What: a repeatable weekly or biweekly check — take alexandria's digest
+  opening plus its top Trailblazing item and a comparably-scoped section
+  of that week's TLDR AI issue, strip both of branding, and have blind
+  readers (the comped friends list first, before any wider readership
+  exists) score prose quality only — clarity, whether it reads as
+  written by a person versus a template, whether the point lands without
+  rereading — with no visibility into which is which. Track the score as
+  a trendline the way the OKR check-in tracks everything else, so
+  "less mechanical" becomes a number over successive issues instead of
+  an impression
+- First step: write the one-page rubric (3-4 questions, same shape as
+  the distill bake-off's pairwise grading) and run it once, by hand,
+  against the next issue and that week's TLDR AI issue, before proposing
+  any automation around it
+- Cost: $0 (uses the existing comped friends list; no new tool or panel)
+- Status: proposed
+### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
+- Trigger: this run's step 1, picking a claim cluster. The PM's board
+  already carries "the NEON_RO_URL secret for the skill agent" as an
+  owner-logistics card, and this run's dispatch stated the secret is now
+  set. It is present as an environment variable name but its value is
+  empty: `psql "$NEON_RO_URL" -c "select 1;"` fails immediately trying a
+  local unix socket, the shape of error `psql` gives an empty connection
+  string, not a network or auth error. Ruled out sandboxing as the cause:
+  `getent hosts neon.tech` resolves fine, so egress works and the failure
+  is specific to the secret's value.
+- What: the owner or engineer should re-check the `NEON_RO_URL` repo
+  secret's actual stored value (GitHub masks secret values in the UI, so a
+  blank paste is easy to miss) and re-save it. Until fixed, every
+  Tuesday run of this agent and the newly-added weekly agent
+  (agent-weekly.yml, also reads `NEON_RO_URL`) will silently degrade to
+  the no-database fallback path, which blocks O2 KR2 (docs/okrs/okrs-2026-Q4.md,
+  "at least one draft skill per week from claim clusters from 2026-11-01
+  onward") before that window even opens.
+- First step: `gh secret list` confirms the secret exists by name only
+  (GitHub never exposes values via the API either); the owner needs to
+  re-enter the value directly in the repo settings UI, then any agent run
+  can re-verify with the same psql one-liner above.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — Receipt-rendering schema for the skill library (skill agent)
+- Trigger: O2 ("Make the skill library a real asset") and the composed
+  product thesis ("skills with receipts," docs/allhands/2026-09-17.md
+  decision 6) both depend on the claim ids and validation evidence in a
+  skill's frontmatter actually reaching the site. Verified this run that
+  they currently do not (see the grooming note on "Show each skill's
+  validation evidence on its page" above): `site/lib/content.js`'s
+  `parseSkill` is a flat-line regex parser, blind to anything nested
+  under `provenance:`, and has no extraction for `provenance.claims` at
+  all, only `papers`.
+- What: replace the hand-rolled regex parser with a real YAML frontmatter
+  parse (any small `js-yaml`-class dependency, or a hand-written nested
+  parser if the site wants to stay dependency-free), and extend the
+  skill-card data shape to carry, per skill: `extracted` date, `validated`
+  string (empty = not yet promoted), `claims` (the id list, count is
+  `claims.length`), and `papers` (already parsed). This is the minimum
+  schema the verification-badge entry below needs as its data source; the
+  two are one piece of work split for review size, not two independent
+  builds. This entry supersedes "parseSkill already reads frontmatter" as
+  the first step on the validation-evidence entry above — it does not yet,
+  this is now the fix.
+- First step: swap the regex parser for real nested-YAML parsing first
+  (a pure bugfix, testable against the one gold specimen on disk today),
+  then extend `Skills` in `site/lib/content.js` and the skill-card
+  component to surface the new fields; the card's visual design is the
+  market/engineer seats' call, not this agent's.
+- Cost: $0 (a small parsing dependency at most)
+- Status: proposed
+
+### 2026-09-18 — Verification badge data schema (skill agent)
+- Trigger: docs/market/opportunities-2026-09-18.md's badge proposal
+  ("verified against N sources, confidence X," directly answering the
+  Show HN finding that 69% of public skills won't reliably trigger) is
+  accepted in principle (see "Skill-verification badge on every library
+  entry" above, proposed 2026-09-18) but has no defined data shape yet.
+  Drafting prompts/skill-extract.md this run required deciding exactly
+  what a draft skill's frontmatter can and cannot honestly claim before
+  the panel has run, which is the same question the badge needs answered.
+- What: define the badge as four fields, all derivable from data this
+  system already produces and none inventable by an agent drafting a
+  skill:
+  - `source_count` — `provenance.papers.length`, already on every skill.
+  - `claim_count` — `provenance.claims.length`, needs the parser fix
+    above to reach the site.
+  - `validated` — boolean plus the recorded trial sentence, true only
+    once `provenance.validated` is non-empty; a drafted-but-unpromoted
+    skill (this run's fallback state, and any future draft still awaiting
+    the ADR-13 panel) must render as "pending validation," never as a
+    silent false or a blank, so a prospect never mistakes a draft for a
+    proven skill.
+  - `trigger_reliability` — not yet computable from anything the system
+    tracks today. The honest options are (a) leave it out of v1 and ship
+    only the three fields above, or (b) the panel logs whether each
+    trigger-test prompt in the skill's PR actually activated the skill
+    when replayed, and the badge shows a fraction (e.g. "3/3 positive
+    triggers confirmed"). Recommend (b), since it reuses the trigger test
+    prompts/skill-agent.md already requires in every PR rather than
+    inventing new measurement machinery, but flagging both options for
+    the engineer and panel-builder to weigh, since (b) depends on the
+    still-unbuilt ADR-13 panel actually replaying the trigger prompts.
+- First step: ship the three data-backed fields first (needs only the
+  parser fix above), land `trigger_reliability` as a fast-follow once the
+  panel exists to compute it.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The skills production line, sequenced end to end (skill agent)
+- Trigger: the owner's directive that skills are the selling point and
+  the team is "far behind on them," and that this run should propose
+  "the skills production line done right." Four pieces of it already
+  exist as separate ledger entries (skill-extract prompt, receipt
+  rendering, verification badge, ADR-13 panel); none of them names the
+  order they need to land in or who is blocked on whom.
+- What: the dependency order, as this run's extraction work surfaced it:
+  1. `NEON_RO_URL` fixed (urgent entry above) — nothing downstream runs
+     without it.
+  2. `prompts/skill-extract.md` (this run, done) — the extraction method.
+  3. One real draft skill through this agent's normal weekly cadence,
+     once (1) is fixed — proves the prompt against real data, which this
+     run could not do.
+  4. The ADR-13 panel, validator reviewer first per the PM's resequencing
+     (docs/backlog.md item 4) — a draft sitting in `status: active` with
+     an empty `validated` field is not yet a promoted skill, and the
+     badge schema above depends on the panel actually running to ever
+     show `validated: true` on anything.
+  5. The parser fix + badge fields (both entries above) — can build in
+     parallel with (3)-(4) since it only needs the one gold specimen
+     already on disk to develop and test against, but the badge's
+     `validated` field only ever shows real data once (4) exists.
+  6. `trigger_reliability` (badge entry, option b) — depends on (4)
+     existing to replay trigger prompts.
+  The current state of every draft skill until (4) ships: `status:
+  active` but not panel-reviewed. Recommend the site never call an
+  unpromoted draft "verified" regardless of its `status` field — gate the
+  badge's verified state on `validated` being non-empty, not on the
+  skill file merely existing in `skills/`, so an unreviewed draft never
+  reads as a receipt it hasn't earned.
+- First step: none — this is a sequencing map for the engineer, PM, and
+  next skill-agent runs to read before picking up any one piece, not a
+  build task itself.
+- Cost: $0
+- Status: proposed
 ### 2026-09-18 — Knowledge graph upgraded to industry standard
 - Trigger: owner's directive, verbatim: "the knowledge graph needs
   maintenance and to be upgraded to be industry standard right now it's
@@ -583,6 +894,25 @@ build.
 - Cost: $0
 - Status: accepted
 
+### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
+- Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
+  the cheapest available growth loop and found it structurally blocked:
+  the digest archive currently renders empty (docs/market/report-2026-09.md
+  §6), so there is no per-issue URL to share, and no digest issue can
+  become its own acquisition surface the way every comped competitor's
+  archive does.
+- What: once the archive renders real content, give each issue a stable
+  permalink with correct social meta tags (title, description, maybe an
+  OG image), and put a plain "share this issue" link on the issue page.
+  This is the highest-leverage cheap mechanic in the whole campaign
+  (docs/sales/launch/referral.md) because it costs a subscriber nothing
+  and turns every good issue into distribution without any outreach.
+- First step: confirm the archive-rendering fix (already tracked in
+  docs/backlog.md's launch runway table) lands, then add per-issue meta
+  tags on top of it — small enough to fold into that same fix rather
+  than a separate sprint item.
+- Cost: $0
+- Status: proposed
 ### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
 - Trigger: owner's directive to cover everything related to building in
   the AI age, adopted with the three seats' guardrails (all-hands
@@ -634,3 +964,24 @@ build.
   existing `semantic_search`/`rag_answer` logic against that filtered set
 - Cost: $0
 - Status: proposed
+## Skill agent findings (2026-09-18)
+
+### 2026-09-18 — NEON_RO_URL fixed, connection verified (skill agent)
+- Trigger: resolves the urgent entry "NEON_RO_URL has no usable value this
+  run," filed against the prior skill-agent run in the still-open PR #12
+  (`skill/2026-09-18-production-line`). That run found the secret present
+  as an environment variable name but empty in value.
+- What: this run's dispatch stated the owner had re-entered the secret.
+  Verified as the first action before anything else: `psql "$NEON_RO_URL"
+  -c 'select count(*) from claims;'` returned `441` with no error, so the
+  read-only connection works end to end. This run went on to query
+  `claims`, `claim_links`, `papers`, and `promotions` directly and drafted
+  a real skill against a live cluster
+  (`skills/self-improving-post-training-loops/SKILL.md`), which the prior
+  run could not do. O2 KR2's "at least one draft skill per week from claim
+  clusters" is unblocked as of this dispatch.
+- First step: none remaining on this finding. The one-liner above is the
+  standing re-verification check for any future run that hits the same
+  failure mode.
+- Cost: $0
+- Status: built
