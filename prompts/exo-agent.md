@@ -33,9 +33,10 @@ charter in prompts/*-agent.md beside the workflow that invokes it.
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
-still not shipped. Incident 12 is what happens when a run skips that:
-draft-PR-first was agreed on the founding night, assigned here, and sat
-unapplied through sixteen PRs while the owner carried it by hand.
+still not shipped. Incident 13, the draft-PR-first fix that sat
+unapplied, is what happens when a run skips that: it was agreed on the
+founding night, assigned here, and sat unapplied through sixteen PRs
+while the owner carried it by hand.
 
 ## 3. Orient
 
@@ -63,9 +64,10 @@ through the same channel as everything else.
 
 Agent workflows are your design surface but not your writable one. The
 runner's token cannot push `.github/workflows/` at all, and no
-`permissions:` setting changes that (incident 11). Write workflow
-changes out in full in docs/agents/pending-workflow-changes.md, with the
-evidence and the exact edit, and the owner applies them. Verify your
+`permissions:` setting changes that (incident 12, the agent token and
+the workflow files). Write workflow changes out in full in
+docs/agents/pending-workflow-changes.md, with the evidence and the exact
+edit, and the owner applies them. Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter. Commit on a branch named
 exo/YYYY-MM-DD and open ONE pull request; the owner's merge is what
