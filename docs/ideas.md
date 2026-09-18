@@ -193,6 +193,10 @@ below.
   "what contradicts claim X" directly instead of reading a summary of it.
 - First step: define a small, fixed query surface (2-3 endpoints, not open
   SQL) reusing the MCP server's existing read-only-DB pattern
+- Cost: $0 to build; a metered API is a pricing proposal for the owner
+- Status: rejected
+- Owner verdict 2026-09-18: rejected for Q4 by the skills-focus decision (all-hands decision 6). Not current work; may be re-proposed after Q4.
+
 ### 2026-09-18 — Permanent free sample issue on the site (market agent)
 - Trigger: walkthrough found "Read an issue" leads to an empty archive,
   while every profiled paid comp converts through free samples
