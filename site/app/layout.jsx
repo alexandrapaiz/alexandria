@@ -1,5 +1,6 @@
 import "./globals.css";
 import Link from "next/link";
+import MobileNav from "./components/MobileNav";
 
 export const metadata = {
   title: "library of alexandr.ia",
@@ -22,9 +23,12 @@ export default function RootLayout({ children }) {
             <Link href="/graph">Graph</Link>
             <Link href="/mission">Mission</Link>
           </div>
-          <Link href="/pricing" className="pill">
-            Subscribe
-          </Link>
+          <div className="nav-right">
+            <MobileNav />
+            <Link href="/pricing" className="pill">
+              Subscribe
+            </Link>
+          </div>
         </nav>
         {children}
         <footer className="footer">
