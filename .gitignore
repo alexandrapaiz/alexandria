@@ -13,3 +13,4 @@ site/content/digests/
 site/shot.mjs
 site/audit.mjs
 site/bench.mjs
+site/states.mjs
