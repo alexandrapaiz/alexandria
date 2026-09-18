@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { marked } from "marked";
 import { listSkills } from "../../lib/content";
+import { hasSpine } from "../../lib/entitlement";
 
+// Spine route: the skill files themselves are the $20 product. The card for
+// each skill stays public, because the catalogue is the pitch, but the body
+// of a skill only renders for an entitled visitor.
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Skills — library of alexandr.ia" };
 
-export default function Skills() {
+export default async function Skills() {
   const skills = listSkills();
+  const entitled = await hasSpine();
+
   return (
     <main className="page">
       <p className="page-kicker">Skills</p>
@@ -30,12 +38,19 @@ export default function Skills() {
               <li key={p}>{p.split(" — ")[0]}</li>
             ))}
           </ul>
-          <div className="skill-lock">
-            <span>Full skill file is for members.</span>
-            <Link href="/pricing" className="pill">
-              Get access
-            </Link>
-          </div>
+          {entitled ? (
+            <article
+              className="digest skill-body"
+              dangerouslySetInnerHTML={{ __html: marked.parse(s.body) }}
+            />
+          ) : (
+            <div className="skill-lock">
+              <span>The full skill file is part of the spine.</span>
+              <Link href="/pricing" className="pill">
+                Get access
+              </Link>
+            </div>
+          )}
         </div>
       ))}
     </main>

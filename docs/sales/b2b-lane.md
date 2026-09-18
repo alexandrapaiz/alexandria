@@ -160,6 +160,23 @@ their main risk, because we are not scoring competitors — we are
 publishing a format and a checker and letting anyone score anyone,
 including themselves, including us.
 
+**The first move, concretely, so this is executable rather than
+admired.** One weekend of the engineer seat's time produces two files:
+`docs/standards/provenance-v0.md` (the four fields, their types, and
+what `validated:` must contain to count) and a linter that reads a
+SKILL.md and reports pass/fail per field. The day those exist, three
+notes go out, all to people already on `outreach/list.md` or named in
+`outreach-plan.md` lane C — **sgharlow** (built the linter that found
+the 69% number; the spec is the format his tool could check against),
+**skeptrune** (hand-curates skillbay.sh precisely because he can't tell
+good from bad at scale), and **kurtextrem** (Skillzero already reads
+skill frontmatter to decide what loads). The drafted note is
+`outreach-plan.md`'s C-series pattern: quote their work in line one,
+offer the spec, ask nothing else. No registry integration is asked for in that first round —
+the ask is "does this format describe what you'd need to know," which
+is a question three people who have publicly wrestled with exactly this
+can answer in a paragraph.
+
 **The two honest risks:**
 
 - **A standard nobody adopts is a file in our repo.** The downside is a
