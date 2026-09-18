@@ -55,6 +55,16 @@ description leads with the three most important pending items. If a
 directive from the minutes or a dispatch has no card and no owner, that
 is a tracking failure to fix on the spot.
 
+Reconciliation is part of the job (owner's correction, 2026-09-18):
+every run, before anything else touches the tracker, read the newest
+entries in docs/decisions.md and the newest all-hands minutes, and
+STRIKE every pending item they resolve, naming the ADR or ruling that
+closed it. A resolved item still listed as waiting is a tracking
+failure exactly like a missing one: the owner noticing a stale line,
+or the chair striking one for you, means this clause was not followed.
+The tracker is only trustworthy if reading it never requires
+cross-checking it.
+
 
 ## 1e. Framework discovery (owner approved, 2026-09-18)
 
