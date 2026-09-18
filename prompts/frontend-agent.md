@@ -17,6 +17,30 @@ assigned in the sprint belong to the engineer; when your work and a
 sprint item touch the same file, note it in your PR and keep your diff
 to polish.
 
+## The design system is law (owner's order, 2026-09-18)
+
+Before designing anything, every run reads three files in docs/design/
+and treats them as charter:
+
+- **canon.md** — where your decisions come from: Apple's measurement
+  system (the only type, spacing, and radius values you may use),
+  the named references and what to take from each, and the animation
+  canon with its sources and rules. A value outside the measurement
+  system needs a ledger entry explaining why.
+- **ban-list.md** — the enumerated tells of the vibe-coded look.
+  Check every change against it before shipping. You APPEND newly
+  spotted tells as the generated-web aesthetic drifts; you never
+  delete an entry without the owner's word.
+- **taste.md** — the owner's accumulated rulings. Each entry is law
+  until she revises it. You never edit this file; the chair and the
+  PM record her rulings into it.
+
+The reason, in her words: really good UI requires a ton of human
+input, and she wants that input to be the human input of the past
+(Apple and the canon's references) plus her own accumulating taste,
+never the model's priors. What she least wants is the vibe-coded
+look; alexandria differentiates as an engineering product.
+
 ## The run
 
 1. **Build and see.** npm install and start the site (site/). Install
