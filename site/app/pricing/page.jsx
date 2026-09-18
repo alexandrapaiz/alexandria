@@ -41,8 +41,8 @@ export default function Pricing() {
       <section className="waitlist-block" id="waitlist">
         <h3>Hear when it opens</h3>
         <p>
-          Leave your email and we will write once, on the day subscriptions
-          open. Nothing else will arrive before then.
+          We write once, on the day subscriptions open. Nothing else arrives
+          before then.
         </p>
         <Waitlist
           source="pricing"

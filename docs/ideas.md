@@ -988,6 +988,71 @@ build.
 
 ## Frontend agent findings (2026-09-18)
 
+### 2026-09-18 — The skills page shows agents' routing text to people (frontend agent)
+- Trigger: the copy pass this run rewrote every line the site owns, and
+  then hit the two lines it does not. `/skills` renders each skill's
+  `description` from its `SKILL.md` frontmatter, and that field is written
+  for an agent's router, not for a reader. On the page it comes out as
+  "Evidence-backed practices for designing, improving, and debugging agent
+  harnesses (the scaffold around a model - tools, prompts, loop structure,
+  feedback). Use when building an agent or multi-agent system, when an
+  agent underperforms and the cause is unclear, when ..." and runs for
+  eight lines of "use when" clauses. The second card's text carries a
+  semicolon join, which the house voice does not allow. It is the longest
+  block of prose on the page and the worst-written text on the site.
+- What: give each skill a second frontmatter field, a one-sentence
+  `summary` for people, and have `site/app/skills/page.jsx` render that
+  and keep `description` for routing. Both audiences then get text aimed
+  at them, and the trigger test in `skills/_validation/` keeps scoring the
+  field it already scores.
+- Why this run did not simply make the edit: `skills/` is outside the
+  frontend lane by the charter, and the `description` field is the exact
+  string the trigger test measures, so editing it from this seat would
+  move a number another seat owns.
+- First step: the skill seat adds `summary` to the two gold skills, then
+  one line changes in the skills page. The page falls back to
+  `description` when `summary` is absent, so the two can land in either
+  order.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Confirm or reject renaming "the spine" for visitors (frontend agent)
+- Trigger: the owner's copy order for this run bans buzzwords and asks
+  that the site sell the product rather than the recipe. "The spine" is
+  the owner's own word from the 2026-09-17 all-hands, and it is the right
+  word internally, but on the site it was the name of the paid tier and
+  the subject of four gate messages, and it tells a first-time visitor
+  nothing about what they would be paying for. This run renamed the tier
+  to "Full access" and rewrote the gates to say "the paid plan", which is
+  a naming decision above this seat.
+- What: the owner keeps "Full access" or restores "The spine". If it is
+  restored, the tier needs a subtitle that says what it contains, because
+  the word alone does not carry it.
+- First step: one word in `site/app/pricing/page.jsx` and one phrase each
+  in the skills, graph and routines gates plus the issue foot. Reverting
+  is a five-line diff either way.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The digest's own text says "ingested" where the site now says "read" (frontend agent)
+- Trigger: the home page's metric line was changed this run from "papers
+  ingested this week" to "papers read this week", because "ingested" is
+  pipeline vocabulary and a reader does not use it. The digest itself
+  still ends with "3431 papers ingested / 216 claims distilled / 80 edges
+  drawn this week", which is written by the weekly agent and rendered
+  verbatim on every issue page, so the same number is now described two
+  ways on two pages of the same site.
+- What: the weekly agent's digest template says "papers read" instead of
+  "papers ingested". Nothing else changes, and the claims and edges lines
+  are already fine.
+- Why this run did not simply make the edit: the digest is the weekly
+  agent's output and its published issues are a record, so rewriting one
+  from this seat would edit a publication after the fact.
+- First step: the line in the weekly agent's template, applied to future
+  issues rather than to the ones already out.
+- Cost: $0
+- Status: proposed
+
 ### 2026-09-18 — Choose the hero metric's count source (frontend agent)
 - Trigger: sprint item 5 asked for the weekly ingest count at build or
   revalidate time, and the hardcoded "3,431" is now gone from
