@@ -114,3 +114,94 @@ charter edits regardless.
 - This is a standing all-hands seat from now on (owner's decision,
   2026-09-17 all-hands). Read the newest docs/allhands/ file for
   seat-specific directives before starting purpose/observe.
+
+---
+
+## 2026-09-18 — Second run (synchronous, owner-priority dispatch)
+
+Owner present, dispatched mid-session with a binding directive: audit
+README.md and every architecture diagram in the repo for staleness,
+rewrite the README so a stranger understands both layers of the system
+(the data pipeline and the agent org that runs the company), and keep
+the ADR trail and status checklist truthful. Charter §5b makes the
+GitHub home this seat's, so this run spends itself there.
+
+**Work in progress; this entry is completed before the PR leaves draft.**
+
+### Purpose read
+
+Mission, final and alone (vision.md §0, 2026-09-18): *accelerate every
+builder to frontier speed.* Tiebreak autonomy, end state a standalone
+knowledge business, north star product quality against the Elicit and
+TLDR-AI class. Pricing settled: the digest is free and full, the paid
+spine is the operational layer at $20 a month, launch 2026-10-13,
+profitable at launch. Q4 OKRs committed in docs/okrs/okrs-2026-Q4.md,
+sprint in docs/sprints/sprint-2026-09-21.md, backlog consolidated in
+docs/backlog.md. Newest ADR is 25, the weekly seat renamed research.
+
+### Observed
+
+Checked the previous run's "next run must check" list first.
+
+1. **The ledger collision predicted last run never happened, because the
+   ledger got restructured instead.** PRs #1-#3 resolved: #1 closed
+   unmerged, #2 and #3 both merged (02:32 and 02:34) without the
+   predicted conflict. The PM's all-hands directive landed:
+   docs/backlog.md is now the consolidated leverage-ordered board and
+   docs/ideas.md kept only the append-and-verdict contract. The
+   same-anchor append point the last run's charter fix targeted has
+   effectively moved. The `gh pr list` collision check is still cheap
+   and still correct, so it stays, but it is no longer the live risk.
+
+2. **Sixteen PRs opened, fourteen merged, in one night.** Every active
+   seat shipped. Eleven seats now exist (nine active, two dormant) per
+   docs/agents/org-chart.md.
+
+3. **The research seat has never run.** agent-research.yml exists with a
+   Monday 16:30 UTC cron and ADR-25 renamed the seat, but `gh run list`
+   shows no research-agent run at all, and docs/research/briefs/, the
+   directory ADR-25 commissions for the curation brief, does not exist.
+   Not a failure, the cron has not come round yet. Recorded so the next
+   run treats a still-missing brief on Tuesday as a real finding.
+
+4. **The repo's front door describes a system two weeks dead.** This is
+   the owner's directive and the evidence is flat. README.md claims the
+   weekly agent is unbuilt and points at `prompts/weekly-agent.md`, a
+   file that does not exist (ADR-25 renamed it research-agent.md); it
+   lists `pipeline/` as holding a meta-review Modal app that was never
+   written (ADR-12 folded meta-review into the weekly job, ADR-25 moved
+   it to the research seat); its layout section predates docs/agents/,
+   docs/sprints/, docs/okrs/, docs/allhands/, docs/security/ and
+   docs/backlog.md; its status checklist calls the first skill PRs
+   pending when two skills are merged in skills/; and neither of its two
+   architecture diagrams contains a single agent seat, so a stranger
+   reading it cannot tell that eleven agents and an owner merge gate are
+   what actually run this company. Pricing is absent from the README
+   entirely, so the free-digest-plus-$20-spine decision and the
+   2026-10-13 launch are invisible at the front door.
+
+5. **docs/diagrams.md carries the same blind spot plus a stale
+   snapshot.** Its pipeline-status diagram is dated 2026-09-08 and still
+   draws the weekly digest, gold promotion and the slow loop as dashed
+   "left to build" nodes; all three have since shipped. Its blackboard
+   diagram labels gold "empty, awaits promotion" while skills/ holds two
+   merged skills. The file itself warns that its numbers are a dated
+   snapshot, which covers the counts but not the shipped/unshipped
+   status of whole nodes. No diagram anywhere in the repo shows the org
+   layer.
+
+6. **Inventory of every diagram in the repo, for the successor.**
+   Four files hold mermaid: README.md (logical view, deployment view),
+   docs/diagrams.md (pipeline status, blackboard, agent loop),
+   docs/stack.md (current vs institutional stack), and
+   docs/product/pipeline.md (the three-layer product diagram, engineer's
+   surface, current). There are no ascii diagrams. site/app/graph/ and
+   site/lib/graph-data.js render the *claim* graph, which is product,
+   not architecture, and is not this seat's to touch.
+
+7. **A pipeline docstring still calls the newsletter the paid product.**
+   pipeline/weekly.py's header says the digest "goes to subscribers by
+   email ... the newsletter is the paid product". The owner decided the
+   opposite on 2026-09-17: the digest is free and full, the $20 spine is
+   the operational layer. Pipeline code is outside this seat's lane, so
+   this goes to the engineer as a ledger note, not an edit.
