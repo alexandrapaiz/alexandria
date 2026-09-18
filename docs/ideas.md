@@ -564,3 +564,21 @@ build.
   lookup, proposed together so the field is never dead configuration
 - Cost: $0
 - Status: proposed
+
+### 2026-09-18 — Knowledge graph upgraded to industry standard
+- Trigger: owner's directive, verbatim: "the knowledge graph needs
+  maintenance and to be upgraded to be industry standard right now it's
+  very junior and behind and prehistoric and almost like a toy"
+- What: the claim graph grows up. Audit the current edges table against
+  industry practice (GraphRAG-class systems, entity resolution and
+  dedup, calibrated edge confidence, richer relation semantics, the
+  slow-loop re-judgment ADR-10 promised but never built, graph quality
+  metrics tracked over time), design the upgrade, and build it in
+  day-sized slices. ADR-10's escalation ladder (Apache AGE, Neo4j)
+  is on the table if the evidence justifies it, but the first gains
+  are likely in edge quality, not storage engine.
+- First step: a graph-quality audit with metrics (edge precision on a
+  sample, duplicate rate, contradiction coverage) and an upgrade design
+  doc, engineer seat
+- Cost: $0
+- Status: accepted
