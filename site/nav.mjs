@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const phase=process.argv[2]||'before';
+const DIR='/home/runner/work/alexandria/alexandria/docs/design/reviews/2026-09-18/orders';
+const b=await chromium.launch();
+const ctx=await b.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
+await ctx.addCookies([{name:'__clerk_db_jwt',value:'dvb_2abcdefghijklmnop',domain:'127.0.0.1',path:'/'}]);
+const p=await ctx.newPage();
+await p.route('**://*.clerk.accounts.dev/**',r=>r.abort());
+await p.goto('http://127.0.0.1:3100/mission'); await p.waitForTimeout(600);
+await p.evaluate(()=>window.scrollTo(0,150));
+await p.waitForTimeout(500);
+await p.locator('.nav').screenshot({path:`${DIR}/nav-bleed-desktop-${phase}.png`});
+console.log('nav bg:', await p.evaluate(()=>getComputedStyle(document.querySelector('.nav')).backgroundColor));
+await b.close();

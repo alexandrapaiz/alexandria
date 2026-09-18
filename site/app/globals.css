@@ -67,10 +67,19 @@ a {
   padding: 22px 40px;
   position: sticky;
   top: 0;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  /* a 64px headline scrolling under this used to read through as a grey
+     smear behind the nav's own links. The blur was working; 0.85 white on
+     top of it was not enough to put the page behind the bar */
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
   z-index: 10;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nav {
+    background: var(--paper);
+  }
 }
 
 .nav-logo {
@@ -713,7 +722,28 @@ a {
   line-height: 1.55;
 }
 
-.issue:hover h2 {
+/* Refinement 2, same benchmark, other list. An issue row was a link that did
+   nothing under the cursor but underline, so the row now leans into the
+   pointer on the same spring the pills use. The contents move and the rule
+   under the row does not, which keeps the left edge of the divider straight
+   while the row travels. Touch has no hover, so it gets the press instead. */
+.issue > * {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (hover: hover) {
+  .issue:hover > * {
+    transform: translateX(6px);
+  }
+}
+
+.issue:active > * {
+  transform: translateX(3px);
+  transition-duration: 0.09s;
+}
+
+.issue:hover h2,
+.issue:focus-visible h2 {
   text-decoration: underline;
   text-underline-offset: 4px;
 }
@@ -1049,11 +1079,14 @@ a {
   max-width: 600px;
 }
 
+/* the two disclosures stack rather than sit side by side: as a row, opening
+   the first one threw the second across to the far edge of the card */
 .skill-row-more {
   margin-top: 20px;
   display: flex;
-  gap: 28px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .skill-row-more details {
@@ -1073,15 +1106,48 @@ a {
   display: none;
 }
 
-.skill-row-more summary::before {
-  content: "+";
-  display: inline-block;
-  width: 13px;
-  color: var(--gray);
+/* Refinement 1, from the Clerk benchmark. Their docs index folds sections
+   away behind a marker that moves rather than swaps. Ours is drawn rather
+   than typed, as two hairlines, so the upright one can rotate down into the
+   minus on the house spring instead of the glyph cutting from + to - with no
+   motion at all. The panel itself grows open where the browser can animate
+   it, and snaps open exactly as before where it cannot. */
+.skill-row-more summary {
+  position: relative;
+  padding-left: 21px;
 }
 
-.skill-row-more details[open] > summary::before {
-  content: "\2212";
+.skill-row-more summary::before,
+.skill-row-more summary::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 11px;
+  height: 1px;
+  background: currentColor;
+}
+
+.skill-row-more summary::after {
+  transform: rotate(90deg);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-row-more details[open] > summary::after {
+  transform: rotate(0deg);
+}
+
+@supports (interpolate-size: allow-keywords) {
+  .skill-row-more details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition: block-size 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      content-visibility 0.28s allow-discrete;
+  }
+
+  .skill-row-more details[open]::details-content {
+    block-size: auto;
+  }
 }
 
 .skill-row-more summary:hover,
@@ -1437,5 +1503,22 @@ a {
   .pill:active,
   .desk-go {
     transform: none;
+  }
+}
+
+/* ---------- motion, switched off ---------- */
+
+/* This block is last on purpose. An earlier copy of it sat above the rules it
+   was meant to cancel, so it lost on source order and reduced motion kept
+   animating. Verified by reading the computed transition back out of a
+   reduced-motion context, which now reports 0s. */
+@media (prefers-reduced-motion: reduce) {
+  .issue > *,
+  .skill-row-more summary,
+  .skill-row-more summary::after,
+  .skill-row-more details::details-content,
+  .lib-filter input,
+  .agent-note a {
+    transition: none;
   }
 }
