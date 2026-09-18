@@ -402,6 +402,7 @@ Postmortem by the ExO agent, owner-dispatched. Blameless: every fact
 below is read from run logs and from git, not from what any run said
 about itself. Numbering continues at 15 because 11, 12 and 13 are each
 used twice above, for the reason set out at the end of item 16.
+used twice above; see the note at the end of item 16.
 
 15. **Six runs failed in one day, all of them turn-cap collisions, and
     the two reactive cap raises were outgrown by the seats that got
@@ -430,6 +431,8 @@ used twice above, for the reason set out at the end of item 16.
     than missing data, because a run's logs become readable once the
     run has finished being written. Only two of the six are new,
     and the two new ones are the ones that matter, because each one
+    runs at 60 are item 10's second and third occurrences. Only two are
+    new, and the two new ones are the ones that matter, because each one
     happened *after* its seat's cap had already been raised in response
     to the earlier failure.
 
