@@ -126,8 +126,6 @@ rewrite the README so a stranger understands both layers of the system
 the ADR trail and status checklist truthful. Charter §5b makes the
 GitHub home this seat's, so this run spends itself there.
 
-**Work in progress; this entry is completed before the PR leaves draft.**
-
 ### Purpose read
 
 Mission, final and alone (vision.md §0, 2026-09-18): *accelerate every
@@ -205,3 +203,104 @@ Checked the previous run's "next run must check" list first.
    opposite on 2026-09-17: the digest is free and full, the $20 spine is
    the operational layer. Pipeline code is outside this seat's lane, so
    this goes to the engineer as a ledger note, not an edit.
+
+8. **A cap failed a run that had already shipped, and the owner had
+   escalated the cap pattern mid-run.** The security seat's first run
+   (35299288455) opened PR #8 and was then failed by the action for
+   using 108 turns against a cap of 100. Separately, main gained an
+   incident 10 while this run was working, recording turn-cap
+   starvation as a repeat and assigning the postmortem here by name.
+   Both are answered in incidents.md.
+
+9. **The org is running synchronously around this run.** main moved four
+   times while this branch was open, and PRs #17, #19 and #20 appeared
+   or merged mid-run. Re-read main before assuming the repo is where the
+   observe step left it. This run had to merge main and renumber its own
+   incident entries because of it.
+
+### Changed
+
+Three improvements, each with a trigger in the section above.
+
+1. **README rewritten around both layers, with a two-layer architecture
+   diagram.** The evidence is finding 4. The new diagram draws the
+   eleven seats with their cadences, the one-PR-per-run channel, the
+   owner's merge as the single write to main, and main deploying the
+   pipeline the org just changed, so the recursion is visible rather
+   than described. Added: the seat table with its ADR per row, the
+   planning hierarchy, a product section carrying free digest plus $20
+   spine plus 2026-10-13, and a status checklist split into pipeline,
+   org and launch. Corrected against reality: the stack table (it still
+   named Llama 3.3 for triage and a metered Anthropic model for distill,
+   when both are gpt-oss-120b on Groq's free tier), the MCP tool list
+   (missing discovery_report and propose_change), the source counts (6
+   arXiv categories and 22 feeds, not 7 and 11), the layout block, and
+   the dead pointer to prompts/weekly-agent.md.
+
+2. **The diagram atlas gained the org and lost three lies.** Evidence is
+   finding 5. New section 4 draws the week as a ring with the owner's
+   merge at the end of it. The status and blackboard diagrams no longer
+   draw the weekly digest, the slow loop and gold promotion as unbuilt.
+   The 2026-09-08 counts are kept and labelled as stale rather than
+   guessed at, and refreshing them is ledgered for the engineer.
+
+3. **Incident 3's pattern fix finally shipped, and a lane this seat
+   never had was given up.** Evidence is incident 13. "Ship first, then
+   work" is now a section in all eleven charters: branch, commit, push
+   and `gh pr create --draft` in the first few turns, then commit as you
+   go. Step 2 of this charter now reads the incident register as a work
+   queue, where a pending fix outranks a new idea.
+
+   The workflow half could not ship, and that is the most important
+   thing this run learned. `GITHUB_TOKEN` cannot push
+   `.github/workflows/` at all, and no `permissions:` block grants it,
+   so §5 of this charter had been claiming a lane for a week that no run
+   could reach. The charter now says so. The no-ship tripwire and the
+   re-derived turn caps are written out in full in the new
+   docs/agents/pending-workflow-changes.md for the owner to apply, and
+   the durable fix (a PAT with the `workflow` scope) is flagged as an
+   authority change that is hers alone to make.
+
+Also done under §5b, as housekeeping rather than as one of the three:
+five stale surfaces belonging to other seats filed in docs/ideas.md
+rather than edited (see finding 7 and the ledger section dated today);
+ADR-12 annotated to point at ADR-25, since it named a charter file that
+no longer exists; and fifteen merged remote branches deleted after
+proving each was an ancestor of main.
+
+### Next run must check
+
+- **Did the owner apply docs/agents/pending-workflow-changes.md?** Verify
+  against the workflow files themselves, not against that page, and
+  delete what landed. If she instead minted a `workflow`-scoped token,
+  §5 of this charter should be rewritten to take the lane back.
+- **Did the tripwire earn its place, if it landed?** It fails a run only
+  when commits reached no remote branch. If it fires on a healthy run
+  even once, that is a false positive and the check is wrong, not the
+  seat.
+- **Is "Ship first, then work" actually being obeyed?** The cheap test is
+  `gh pr list --state all --json isDraft,createdAt` against run start
+  times: a PR created in a run's first minutes is the rule working. If
+  PRs still appear only at the end, the rule is boilerplate and needs to
+  move into the workflow prompts, which are also unpushable, so it would
+  join the queue.
+- **Re-derive the caps.** Incident 10's rule is twice the highest
+  observed turn count, floor 100. Read `num_turns` from the logs again,
+  because two seats had never run when this table was built. The
+  research seat's first scheduled run is 2026-09-21 and the finance seat
+  has still never run.
+- **Did the research seat run, and did docs/research/briefs/ appear?**
+  ADR-25 commissions the curation brief and the directory did not exist
+  this run. After 2026-09-21 a missing brief is a real finding.
+- **One branch was left undeleted on purpose.**
+  `fe/2026-09-18-mission-and-hover` has three commits that are not
+  ancestors of main, but whose subjects and content duplicate three
+  commits that are in main under different SHAs, which means PR #19 was
+  rebased onto a fresh branch and left the old one carrying orphans.
+  Nothing is lost, but confirm that before deleting it, and if frontend
+  runs keep branching off already-merged branches, that is a charter fix.
+- **The ledger-collision check from run 1 is being exercised.** This
+  run's ledger append is the second one in flight against docs/ideas.md,
+  and the merge order is declared in PR #18's description as the rule
+  requires. Check whether other seats' PR descriptions do the same, or
+  whether it reads as unused boilerplate.
