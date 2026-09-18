@@ -1,0 +1,27 @@
+trigger test — engine lexical/2.1, floor 0.05, 8 decoys (policy pre-registered)
+library: 2 skills, 12 cases
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [PASS] he-pos-1     positive  expect harness-engineering -> harness-engineering
+  [FAIL] he-pos-2     positive  expect harness-engineering -> (silence, best fit decoy-cluster-capacity)  [narrow, margin -0.010]
+         prompt: We have budget for extra inference compute on one hard planning step. Should the agent reflect on and revise its own answer, or should we sample three candidates in parallel and select one?
+         top: decoy-cluster-capacity 0.1339, harness-engineering 0.1239, self-improving-post-training-loops 0.1105, decoy-frontend-layout 0.0
+         library 0.124 vs null decoy-cluster-capacity 0.134 (margin -0.010)
+  [PASS] he-pos-3     positive  expect harness-engineering -> harness-engineering
+  [PASS] he-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] he-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] he-conf-1    confusion expect harness-engineering -> harness-engineering
+  5/6 passed (positives 2/3, negatives 2/2, confusion 1/1, narrow 1); 95% CI [0.36, 1.00]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-2     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-neg-1     negative  expect (silence) -> (silence, best fit decoy-api-integration)  [narrow, margin +0.000]
+  [PASS] pt-neg-2     negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] pt-conf-1    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 1); 95% CI [0.54, 1.00]
+
+TOTAL 11/12 — reliability 0.92, 95% CI [0.62, 1.00]
+
+wrote skills/_validation/results/2026-09-18-lexical-2.1.json

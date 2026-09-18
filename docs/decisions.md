@@ -159,6 +159,12 @@ schema, this file) — machinery changes stay human-authored. Cadence is bounded
 in the prompt (≤1 proposal/week, evidence must be a pattern), and the human
 merge remains the only way any proposal takes effect.
 
+*Amended by ADR-25 (2026-09-18).* The seat this ADR calls the weekly
+agent is now the research agent, and the charter it names has moved from
+`prompts/weekly-agent.md`, which no longer exists, to
+`prompts/research-agent.md`. Meta-review as Step 4 of one weekly seat,
+and the path whitelist as its safety boundary, both stand as written.
+
 ## ADR-13: The gate is an agent panel, not a human
 
 Owner's decision (2026-09-17), superseding the human-merge gate of ADR-7/12:
