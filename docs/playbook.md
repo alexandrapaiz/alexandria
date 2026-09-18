@@ -115,13 +115,44 @@ with framework shopping.
 Scheduled runs never wait for her; live work never duplicates a
 scheduled run in flight.
 
-## Model routing
+## Model and agent routing (portable, the full method)
 
-Premium model for seats where errors cost most (engineer, exo,
-security, product line, visual judgment); Sonnet-class for strategy
-and writing seats (pm, market, okr, finance, sales); a Haiku sweeper
-subagent (.claude/agents/) for mechanical grunt work inside any run.
-Verify routing from run logs' modelUsage, never from config intent.
+Use models intelligently: the cheapest model that passes the bar per
+task class, with the routing an explicit, verified policy, never an
+accident. The three levers, cheapest first:
+
+1. **Right-size within the family, per seat.** Set `--model`
+   EXPLICITLY in every workflow's claude_args: the runner's default is
+   NOT the top model, and unset means silently under-modeled (learned
+   as incident 9). Premium tier for seats where errors cost most:
+   code, security audits, charter edits, visual judgment, and, learned
+   as incident 11, creative breadth under open briefs. Sonnet-class
+   for structured strategy and writing over a repo (pm, market, okr,
+   finance). A Haiku sweeper subagent (.claude/agents/sweeper.md,
+   frontmatter `model: haiku`) for mechanical grunt work inside any
+   run: log parsing, link checks, inventories, so premium tokens
+   never read logs.
+2. **Route whole seats to open models through a proxy** once a seat's
+   run shape is stable: claude-code-router (or a LiteLLM-class
+   OpenAI-compatible proxy) started in the runner, pointed at a free
+   tier such as Groq. Gate every migration with a golden-set
+   comparison, the bake-off discipline, because open-model tool
+   calling on long agentic runs is the real risk.
+3. **An owned router in the orchestration layer** as the destination:
+   a task-class table plus an escalation rule (open model first,
+   escalate to premium when a verifier rejects or the run stalls),
+   tuned by the org-improvement seat from evidence. RouteLLM is the
+   reference design.
+
+Routing laws, all learned the hard way: assert the model from run
+logs' modelUsage, never from config intent; a routing change that
+saves tokens but dents the quality benchmark reverts; batch pipeline
+judgment (non-agentic, known shape) belongs on free open models from
+day one, with the agent org as the only premium spend. Turn caps are
+part of routing too: size each seat's --max-turns to its real
+workload, since a starved cap silently eats an entire run (incident
+10), and pair every cap with the draft-PR-first rule so partial work
+survives.
 
 ## Bootstrapping a new project with this structure
 
