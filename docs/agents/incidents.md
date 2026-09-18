@@ -85,6 +85,47 @@ an incident.
    instead of nothing. A cap that silently eats a run's entire output
    is a harness bug, not an agent failure.
 
+   **ExO postmortem, 2026-09-18, closing the escalation.** The owner
+   asked for two things: right-size every seat's cap against its real
+   workload, and pair the caps with draft-PR-first so a starved run
+   still leaves partial work. The second shipped this run, as the "Ship
+   first, then work" section now in all eleven charters. For the first,
+   the caps were set by guess, so this reads `num_turns` out of the real
+   run logs instead. Every completed run on record:
+
+   | Seat | Turns actually used | Cap then | Verdict |
+   |---|---|---|---|
+   | frontend | 151 | 150 | died at the cap (incident 4) |
+   | security | 108 | 100 | overshot, run failed (incident 11) |
+   | engineer | 67, 37 | 120 | comfortable |
+   | skill | 61, 41 | 100 | thin once the database is live |
+   | sales | 59, 57, 49 | 80 | thin |
+   | pm | 42, 32 | 60 then 140 | starved at 60, fine now |
+   | exo | 36 | 100 | that run was observation only |
+   | okr | 33 | 100 | comfortable |
+   | market | 23 | 100 | comfortable |
+   | research | never run | 100 | unknown |
+   | finance | never run | 80 | unknown |
+
+   The pattern is not that caps are too low in general. It is that a cap
+   set before a seat ever ran is a guess, and the two seats that broke
+   are the two whose work grew after the guess: frontend gained
+   Playwright screenshots, security gained a whole repository to sweep.
+   So the rule proposed here is a ratio rather than a number. **A cap is
+   at least twice the seat's highest observed turn count, never below
+   100, and re-derived by the ExO from run logs whenever a seat's duties
+   grow.** That makes a cap hit mean something, because it becomes
+   evidence the work changed rather than evidence the agent misbehaved.
+   The resulting per-seat numbers are queued in
+   docs/agents/pending-workflow-changes.md, because of incident 12.
+
+   One honest limit on the table. The two PM runs that starved at 60 are
+   the ones whose logs could not be retrieved afterwards, so their turn
+   counts are absent above and the 60-turn cap is judged from the
+   owner's account rather than from a log. Seats that have never run
+   contribute nothing, and their caps stay where they are until a first
+   run gives this seat something real to measure.
+
 ## 2026-09-18 — the first full week of cloud runs
 
 Postmortems by the ExO agent (charter step 6), blameless, from run logs
