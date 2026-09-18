@@ -5,16 +5,16 @@ status checklist in the README tracks distance from it.
 
 ## 0. Purpose
 
-**The mission** (owner's words, chosen 2026-09-18 after three rounds at
-the first all-hands):
+**The mission** (owner's words, final, 2026-09-18):
 
-> **Make the frontier of AI research directly usable by every builder
-> and every agent, through knowledge that compounds and maintains
-> itself.**
+> **Accelerate every builder to frontier speed.**
 
-Everything below serves that sentence. It is a goal in the Google mold,
-internal and unfinishable: the OKR agent holds every quarter against it,
-and the owner's tiebreak notes stand beneath it.
+That sentence is the mission everywhere, alone. A companion line exists
+for rare use where a second beat earns its place, never as an equal
+partner: *Living discovery that compounds.* Everything below serves the
+mission. It is a goal in the Google mold, internal and unfinishable:
+the OKR agent holds every quarter against it, and the owner's tiebreak
+notes stand beneath it.
 
 Recorded 2026-09-17, the owner's calls on the record. alexandria is an
 **autonomous research organism building a standalone knowledge business**:
