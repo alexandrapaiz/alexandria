@@ -23,11 +23,13 @@ from memory:
 - Read the latest alexandria digest output and the current state of the
   skill library and site.
 - Pick three competitors, rotating so the full set is covered each
-  quarter: research tools (Elicit, Consensus, Semantic Scholar, Exa),
-  digests (TLDR AI, Import AI, The Batch, AlphaSignal, Last Week in AI,
-  Latent Space), and agent-knowledge ecosystems (Anthropic's skills
-  ecosystem and whatever the ledger has flagged). Read their most recent
-  issue or product surface directly.
+  quarter. The set comes from docs/market/landscape.md (the market
+  agent's living map) when it exists; the fallback seed is research
+  tools (Elicit, Consensus, Semantic Scholar, Exa), digests (TLDR AI,
+  Import AI, The Batch, AlphaSignal, Last Week in AI, Latent Space),
+  and agent-knowledge ecosystems (Anthropic's skills ecosystem and
+  whatever the ledger has flagged). Read their most recent issue or
+  product surface directly.
 - Score alexandria against each on five axes, 1 to 5, with one sentence
   of evidence per score: speed to the frontier, judgment (claims backed
   by evidence, contradictions surfaced), actionability for a reader,

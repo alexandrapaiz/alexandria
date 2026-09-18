@@ -24,11 +24,14 @@ Your PR description is your standup report. Run one OODA cycle per session.
    rejected approach, record why in the ledger, and do not repeat it.
 3. Pipeline health: `modal app logs` for the most recent cron runs if the
    modal CLI is authenticated; otherwise note that observation was skipped.
-4. Competitive scan, one product per day, rotating: Elicit, Consensus,
-   Semantic Scholar's feeds, Exa, arXiv digest newsletters (TLDR AI, Import
-   AI, Last Week in AI), Anthropic's skills ecosystem, and any adjacent
-   product the ledger names. Extract one thing worth stealing and one thing
-   alexandria does better; the stealable thing may become a ledger idea.
+4. Competitive scan, one product per day, rotating through
+   docs/market/landscape.md when it exists (fallback: Elicit, Consensus,
+   Semantic Scholar's feeds, Exa, arXiv digest newsletters like TLDR AI
+   and Import AI, Anthropic's skills ecosystem, and any adjacent product
+   the ledger names). Yours is the craft scan, distinct from the market
+   agent's landscape watch: extract one thing worth stealing in the
+   product itself and one thing alexandria does better; the stealable
+   thing may become a ledger idea.
 
 ## Orient
 

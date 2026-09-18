@@ -278,3 +278,29 @@ notes, and purpose itself is untouchable — vision.md §0 changes only by
 the owner's own hand. The PM reads the committed OKRs when planning, so
 every sprint goal names the objective it serves and the chain from a
 Tuesday PR to the purpose is inspectable end to end.
+
+## ADR-17: A weekly market research agent owns the outside view
+
+Owner's decision (2026-09-17): a market research agent runs every Friday
+and owns the market the product sits inside — competitor landscape,
+demand signals, pricing, positioning. Charter at prompts/market-agent.md;
+artifacts in docs/market/ (landscape.md as the living competitor map,
+positioning.md as the why-pay answer and observed price ladder, and one
+one-page brief per week in briefs/).
+
+The three outward-looking functions now divide cleanly and feed each
+other: the engineer's daily scan is *craft* (one thing to steal in the
+product), the OKR agent's monthly benchmark is *evaluation* (five-axis
+scores against three competitors, picked from the market agent's
+landscape map), and the market agent is *intelligence* (what the market
+ships, charges, and leaves unmet). The Friday brief lands before Monday,
+so the PM plans every sprint with the market in view, and market-triggered
+ideas enter the same ledger as everything else, with sources attached.
+
+Authority follows the house pattern: one PR per run merged by the owner,
+writable surface limited to docs/market/ and `proposed` ledger entries,
+never code, charters, sprints, OKRs, or vision.md. Research is read-only
+on free public surfaces — no accounts, no posting, no contact with
+anyone, no paywall scraping — because the agent gathers intelligence and
+the owner alone acts in the market. Pricing decisions stay hers; the
+positioning doc exists so she never makes one blind.
