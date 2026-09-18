@@ -192,3 +192,47 @@ rather than from what the runs said about themselves.
     pending or queued, and either shipping them or saying in the PR why
     not. An incident is not closed when it is written down. It is closed
     when the fix is in the tree.
+11. **The sales seat underdelivers on creativity despite explicit
+   liberty grants (owner-reported, second miss).** First, its pitch
+   deck answered the wrong audience (an external pitch when the owner
+   asked to be pitched herself). Then its sales-plan content, made
+   under "complete creative liberty," was judged by the owner as
+   "poorly creative": no selling to other companies, no idea list, no
+   concrete outreach plan, no immediate first-customers plan for the
+   days after launch. Contributing cause worth testing: the seat runs
+   on the Sonnet routing tier, and creative breadth under an open
+   brief is exactly where the premium tier earns its cost. FIXES this
+   session: the seat moves to Opus, and its redispatch carries the
+   owner's critique verbatim. ExO's Sunday postmortem should consider
+   whether "liberty" dispatches need a different prompt shape (examples
+   of the ambition bar, not just permission) across all seats.
+
+11. **The sales seat underdelivered on creativity despite a complete
+   liberty grant (owner-reported).** Her critique, in substance: the
+   sales plan was poorly creative; she wanted selling to other
+   companies, a list of ideas, an outreach plan, and an immediate
+   post-launch plan for obtaining the first customers, delivered with
+   the personality of a genuinely talented, out-there salesperson.
+   FIXES: the charter now carries that personality explicitly, the
+   seat moves to the premium model tier (creative breadth under open
+   briefs is where it earns its cost), and the redispatch carries the
+   critique verbatim. For the ExO's Sunday postmortem: liberty grants
+   may need an ambition bar stated in examples, not just permission,
+   across every seat; timidity under liberty is now a named failure
+   mode.
+
+12. **The PM's triage misprioritized plumbing over product
+   (owner-reported).** Her critique, in substance: the PM is
+   unfocused and its triage is not ideal. The most important thing
+   before a release is a working product, and the product is the
+   content: the newsletter has roughly two issues with no testing or
+   validation of them, and barely two skills, under-tested. Site
+   plumbing led the sprint while the sellable repository of top-tier
+   skills and newsletter entries lagged. Her release gate, recorded
+   as all-hands decision 11: nothing releases honestly until the
+   product scores top tier (a five) on the OKR benchmark against the
+   market's comparison set. Also named: a real domain and a UI with
+   no coming-soon pages. For the ExO postmortem: triage law needs a
+   product-first clause, and the PM's sprint goals should be scored
+   against "does this make the product better" before "does this
+   make the site work."
