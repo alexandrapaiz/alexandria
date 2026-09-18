@@ -6,6 +6,11 @@ once instead of rediscovered. Append-only, dated, any seat or the chair
 may add entries; the ExO reads this file every run (charter step 2) and
 turns patterns into charter or workflow fixes.
 
+STANDING RULE (owner, 2026-09-18): any issue that occurs MORE THAN ONCE,
+anywhere in the org, is always recorded here at the moment it repeats.
+No exceptions, no judgment call. A repeat that goes unrecorded is itself
+an incident.
+
 ## 2026-09-17/18 — the founding night's failures
 
 1. **OIDC permission missing.** First cloud run (engineer,
@@ -79,3 +84,155 @@ turns patterns into charter or workflow fixes.
    draft-PR-first rule so a starved run still leaves partial work
    instead of nothing. A cap that silently eats a run's entire output
    is a harness bug, not an agent failure.
+
+   **ExO postmortem, 2026-09-18, closing the escalation.** The owner
+   asked for two things: right-size every seat's cap against its real
+   workload, and pair the caps with draft-PR-first so a starved run
+   still leaves partial work. The second shipped this run, as the "Ship
+   first, then work" section now in all eleven charters. For the first,
+   the caps were set by guess, so this reads `num_turns` out of the real
+   run logs instead. Every completed run on record:
+
+   | Seat | Turns actually used | Cap then | Verdict |
+   |---|---|---|---|
+   | frontend | 151 | 150 | died at the cap (incident 4) |
+   | security | 108 | 100 | overshot, run failed (incident 11) |
+   | engineer | 67, 37 | 120 | comfortable |
+   | skill | 61, 41 | 100 | thin once the database is live |
+   | sales | 59, 57, 49 | 80 | thin |
+   | pm | 42, 32 | 60 then 140 | starved at 60, fine now |
+   | exo | 36 | 100 | that run was observation only |
+   | okr | 33 | 100 | comfortable |
+   | market | 23 | 100 | comfortable |
+   | research | never run | 100 | unknown |
+   | finance | never run | 80 | unknown |
+
+   The pattern is not that caps are too low in general. It is that a cap
+   set before a seat ever ran is a guess, and the two seats that broke
+   are the two whose work grew after the guess: frontend gained
+   Playwright screenshots, security gained a whole repository to sweep.
+   So the rule proposed here is a ratio rather than a number. **A cap is
+   at least twice the seat's highest observed turn count, never below
+   100, and re-derived by the ExO from run logs whenever a seat's duties
+   grow.** That makes a cap hit mean something, because it becomes
+   evidence the work changed rather than evidence the agent misbehaved.
+   The resulting per-seat numbers are queued in
+   docs/agents/pending-workflow-changes.md, because of incident 12.
+
+   One honest limit on the table. The two PM runs that starved at 60 are
+   the ones whose logs could not be retrieved afterwards, so their turn
+   counts are absent above and the 60-turn cap is judged from the
+   owner's account rather than from a log. Seats that have never run
+   contribute nothing, and their caps stay where they are until a first
+   run gives this seat something real to measure.
+
+## 2026-09-18 — the first full week of cloud runs
+
+Postmortems by the ExO agent (charter step 6), blameless, from run logs
+rather than from what the runs said about themselves.
+
+11. **A turn cap failed a run that had already shipped.** The security
+    seat's first run (35299288455) did its whole job, opened PR #8 at
+    02:42:38, and was then failed by the action eight seconds later:
+    `Claude reported a successful result after 108 turns, exceeding the
+    configured maximum of 100`. Technically this is not the same defect
+    as incident 4, where frontend died mid-work at `error_max_turns`.
+    Here the work was complete and merged; only the run's conclusion was
+    red. The damage is to monitoring rather than to output, and it is
+    the exact inverse of incident 8: there, a green conclusion hid a run
+    that shipped nothing, and here a red conclusion hides a run that
+    shipped everything. Both point at one rule, which is now the house
+    rule for reading runs: **judge a run by its artifacts, never by its
+    conclusion.** FIX queued, not applied: raise the security cap from
+    100 to 150, in docs/agents/pending-workflow-changes.md, because of
+    incident 12 below. Lesson for charters: a cap is a tripwire, not a
+    budget, so size it to the seat's honest work and treat a cap hit as
+    evidence about the cap.
+
+12. **The agent token cannot write the agent workflows, so part of the
+    ExO's chartered lane is unreachable.** Discovered this run, by
+    trying it. The ExO charter §5 names `.github/workflows/agent-*.yml`
+    as writable, and the push was rejected outright:
+    `refusing to allow a GitHub App to create or update workflow
+    .github/workflows/agent-engineer.yml without workflows permission`.
+    This is not a misconfiguration that a `permissions:` block can fix.
+    `GITHUB_TOKEN` has no `workflows` scope available to grant, and only
+    a personal access token carrying the `workflow` scope can push these
+    files. Every workflow-level fix the org has wanted since the
+    founding night runs into this, including incident 3's tripwire and
+    incident 10's cap raise, which means the gap has been silently
+    costing the org its whole workflow-repair capability for a week.
+    FIX, two parts. Part one shipped now: workflow edits are written out
+    in full in docs/agents/pending-workflow-changes.md for the owner to
+    apply, and the ExO charter no longer claims a lane it cannot reach.
+    Part two is owner-only and stays her call: mint a PAT with the
+    `workflow` scope, store it as a repository secret, and pass it to
+    `actions/checkout` in the agent workflows. That would let the seats
+    repair their own machinery, and it would also hand every agent run a
+    token strong enough to rewrite what runs the agents, so it is an
+    authority change rather than a convenience, and it belongs to her.
+    Lesson, and the one worth generalizing: **a charter that grants a
+    lane the runtime cannot reach is a charter defect, not a runtime
+    defect.** Every lane a charter names should be provable by the seat
+    that holds it, so the ExO now verifies its own writable surface each
+    run instead of assuming it.
+
+13. **Incident 3's pattern fix sat unapplied for a full week.** Incident
+    3 recorded draft-PR-first as "PATTERN FIX pending with the ExO" on
+    the founding night. Sixteen PRs and one ExO run later, not one of
+    the eleven charters contained the word draft, and the owner was
+    still carrying the rule by hand in each dispatch prompt. The ExO's
+    own first run spent its single permitted charter edit elsewhere, on
+    the ledger-collision fix, which was reasonable in isolation and
+    wrong against this queue. Nothing in the org held the list of fixes
+    that had been agreed but not made, so the register recorded the
+    decision and then no one read it as a to-do. FIXED: the rule is now
+    a section in all eleven charters, and the ExO charter's step 2 now
+    requires reading this register for entries whose fix is marked
+    pending or queued, and either shipping them or saying in the PR why
+    not. An incident is not closed when it is written down. It is closed
+    when the fix is in the tree.
+11. **The sales seat underdelivers on creativity despite explicit
+   liberty grants (owner-reported, second miss).** First, its pitch
+   deck answered the wrong audience (an external pitch when the owner
+   asked to be pitched herself). Then its sales-plan content, made
+   under "complete creative liberty," was judged by the owner as
+   "poorly creative": no selling to other companies, no idea list, no
+   concrete outreach plan, no immediate first-customers plan for the
+   days after launch. Contributing cause worth testing: the seat runs
+   on the Sonnet routing tier, and creative breadth under an open
+   brief is exactly where the premium tier earns its cost. FIXES this
+   session: the seat moves to Opus, and its redispatch carries the
+   owner's critique verbatim. ExO's Sunday postmortem should consider
+   whether "liberty" dispatches need a different prompt shape (examples
+   of the ambition bar, not just permission) across all seats.
+
+11. **The sales seat underdelivered on creativity despite a complete
+   liberty grant (owner-reported).** Her critique, in substance: the
+   sales plan was poorly creative; she wanted selling to other
+   companies, a list of ideas, an outreach plan, and an immediate
+   post-launch plan for obtaining the first customers, delivered with
+   the personality of a genuinely talented, out-there salesperson.
+   FIXES: the charter now carries that personality explicitly, the
+   seat moves to the premium model tier (creative breadth under open
+   briefs is where it earns its cost), and the redispatch carries the
+   critique verbatim. For the ExO's Sunday postmortem: liberty grants
+   may need an ambition bar stated in examples, not just permission,
+   across every seat; timidity under liberty is now a named failure
+   mode.
+
+12. **The PM's triage misprioritized plumbing over product
+   (owner-reported).** Her critique, in substance: the PM is
+   unfocused and its triage is not ideal. The most important thing
+   before a release is a working product, and the product is the
+   content: the newsletter has roughly two issues with no testing or
+   validation of them, and barely two skills, under-tested. Site
+   plumbing led the sprint while the sellable repository of top-tier
+   skills and newsletter entries lagged. Her release gate, recorded
+   as all-hands decision 11: nothing releases honestly until the
+   product scores top tier (a five) on the OKR benchmark against the
+   market's comparison set. Also named: a real domain and a UI with
+   no coming-soon pages. For the ExO postmortem: triage law needs a
+   product-first clause, and the PM's sprint goals should be scored
+   against "does this make the product better" before "does this
+   make the site work."
