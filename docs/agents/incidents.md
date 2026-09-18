@@ -315,8 +315,14 @@ used twice above; see the note at the end of item 16.
     **These are not six new incidents, and reading them as six is what
     hid the real finding.** Four were already on this register: the
     security run is item 11, the frontend 151 is item 4, and the two pm
-    runs at 60 are item 10's second and third occurrences. Only two are
-    new, and the two new ones are the ones that matter, because each one
+    runs at 60 are item 10's second and third occurrences. Item 10's
+    postmortem recorded that those two pm logs could not be retrieved,
+    so it judged the 60-turn cap from the owner's account rather than
+    from a log. They retrieve fine now, and both read 61 turns against
+    60, which confirms that account exactly. The gap was timing rather
+    than missing data, because a run's logs become readable once the
+    run has finished being written. Only two of the six are new,
+    and the two new ones are the ones that matter, because each one
     happened *after* its seat's cap had already been raised in response
     to the earlier failure.
 
