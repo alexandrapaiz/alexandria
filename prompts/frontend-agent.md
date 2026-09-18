@@ -51,7 +51,12 @@ look; alexandria differentiates as an engineering product.
    wraps, spacing that drifts from the grid, contrast failures,
    anything that would embarrass an Apple design review. Also exercise
    states: hover where hover exists, the morph's start and end frames,
-   scrolled positions.
+   scrolled positions. Verify at the volume the design targets, not
+   the inventory of the day: for list surfaces like the skills
+   library, generate dummy entries under skills/fixture-* (that
+   pattern is gitignored for exactly this; mark each DUMMY FIXTURE in
+   its description) and judge the screenshots fully loaded. A layout
+   is not done because it works at two items when the target is fifty.
 2. **Fix.** Repair every visual bug you found, smallest safe diff.
    After each fix, re-screenshot and look again. A fix is done when
    the new screenshot shows it done.
