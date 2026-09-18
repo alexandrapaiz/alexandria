@@ -178,11 +178,14 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.15s ease;
+  /* a back-out curve overshoots past the target scale and settles,
+     the spring feel behind Elicit's hover, translated to our identity
+     as motion only (no color) */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
-  transform: scale(1.03);
+  transform: scale(1.06);
 }
 
 .pill.ghost {
@@ -265,6 +268,7 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-follow > * { animation: none; }
+  .pill { transition: none; }
 }
 
 .wordmark .embed {
