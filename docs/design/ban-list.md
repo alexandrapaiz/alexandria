@@ -50,3 +50,21 @@ After removing the tells, the page must still pass the harder test:
 does it read as engineered? Real numbers over claims. Honest empty
 states over filler. Monospace where data lives. Receipts visible. If
 a page looks clean but says nothing true, it is not done.
+
+## Appended by the frontend seat
+
+21. The same call to action repeated on every row of a list. One offer
+    per page, or per section at most. A button that appears forty-eight
+    times is not an offer, it is wallpaper, and it is the clearest
+    single tell that a list was generated rather than designed.
+    (Spotted 2026-09-18 at volume: fifty skill rows carried fifty
+    "See pricing" pills.)
+22. A list whose every row renders its full description at rest. It
+    reads fine at two rows and is unusable at fifty. A row at rest
+    carries an identifier and the one or two facts you would sort by;
+    everything else waits behind the disclosure.
+    (Spotted 2026-09-18: roughly 330px of row for one skill.)
+23. Content staged at opacity 0 waiting for a scroll script. The canon
+    already forbids it; it earns its own entry here because the failure
+    is invisible in a normal browser and total without JavaScript, so
+    it survives review. (Spotted 2026-09-18: the whole issue archive.)

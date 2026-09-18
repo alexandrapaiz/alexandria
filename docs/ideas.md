@@ -1590,3 +1590,35 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the skill agent's charter and `skills/`, so not this
   seat's. Filed for the owner.
 - Status: proposed
+
+### 2026-09-18 — The site's own values have drifted off the canon's measurement system (frontend proposal)
+
+- Trigger: the design canon became charter this run, and its measurement
+  system is the only type, spacing and radius scale the seat may use. The
+  skill row anatomy rebuilt this run was built on it. The chrome around
+  it was not, because the owner's order for this run says to keep the
+  shelves, the filter, the empty-shelf lines and the header exactly as
+  they are, and she likes them. So the drift was left in place and is
+  filed here rather than changed.
+- What is off, measured in `site/app/globals.css`:
+  - Type off the scale (12, 14, 17, 19, 21, 24, 28, 32, 40, 48...):
+    `.lib-count` and `.lib-note` at 13, `.lib-filter input` and
+    `.lib-empty p` at 15, `.shelf.is-empty .shelf-head h2` at 18, and
+    `.shelf-head h2` at 22.
+  - Spacing off the 8-point grid (4, 8, 12, 16, 24, 32, 48, 64, 96,
+    128): the shelf's 26px padding, the empty shelf's 40 and 22, the
+    shelf blurb's 14, the rows' 30, the filter's 11 by 14.
+  - `--line` is `#e8e8e8`. The canon's palette names `#e5e5e5`.
+- Why it is worth doing on purpose rather than drifting back: every one
+  of these is within two or three pixels of a legal value, which is
+  exactly why nobody catches them one at a time. A single pass that
+  moves 13 to 14, 15 to 14 or 17, 18 and 22 to 19 or 21, and the spacing
+  to its nearest grid step, costs one diff and one screenshot set and
+  ends the drift.
+- The colour is not this seat's call. `#e8e8e8` to `#e5e5e5` is a
+  palette change and the canon says palette changes are the owner's
+  alone, so it needs her word even though it is three hex digits.
+- Cost: $0, one run's work.
+- Whose call: the owner, because the values sit inside elements she has
+  said she likes.
+- Status: proposed

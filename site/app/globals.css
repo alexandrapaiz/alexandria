@@ -653,20 +653,14 @@ a {
   animation: none;
 }
 
-/* the intro and the archive stay white until the glide lands; the
-   script toggles .arrived */
-.lib-scene2 .page-intro,
-.lib-scene2 .issue-list {
-  opacity: 0;
-  transform: translateY(26px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.lib-scene2.arrived .page-intro,
-.lib-scene2.arrived .issue-list {
-  opacity: 1;
-  transform: none;
-}
+/* The intro and the archive used to wait at opacity 0 until a script added
+   .arrived on scroll. Two things were wrong with that and both were caught in
+   the pixels. With JavaScript off the class never arrives, so the whole
+   archive was invisible for good: the page rendered a headline over an empty
+   column. And the canon is explicit that nothing waits at opacity 0 for an
+   observer, with motion.md naming the digest archive as a high-frequency
+   surface that gets no entrance choreography at all.
+   The shelf art above still glides. The list is simply there. */
 
 .lib-art {
   width: min(840px, 76vw, 70svh);
@@ -1032,38 +1026,73 @@ a {
   max-width: 520px;
 }
 
-.shelf-rows {
-  margin-top: 30px;
-}
+/* ---------- a skill row ---------- */
 
-.skill-row {
-  padding: 30px 0;
+/* Owner's order, 2026-09-18: a row at rest is ONE line, name plus version
+   plus source count, nothing else. The page held fifty rows of roughly 330px
+   each before this, every one repeating its description, two expander lines,
+   the paid-plan sentence and its own pricing button. Fifty of those is a page
+   nobody reaches the bottom of and forty-eight identical buttons.
+   Everything else a row has to say now lives behind the disclosure. */
+
+.shelf-rows {
+  margin-top: 24px;
   border-top: 1px solid var(--line);
 }
 
-.skill-row:first-child {
-  border-top: none;
-  padding-top: 4px;
+.skill-row {
+  border-bottom: 1px solid var(--line);
 }
 
-.skill-row-head {
+/* 25px of line inside 12 and 12 clears the 44px touch minimum, and the whole
+   line is the target rather than the marker alone */
+.skill-line {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 18px;
-  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  /* the band runs 12px past the text column on both sides, so the target is
+     wider than the words and a near miss with the pointer still lands on the
+     row. Freiberg's Fitts note: a 44px target that accepts 52px is craft. */
+  margin: 0 -12px;
+  padding: 12px 44px 12px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.skill-row-head h3 {
-  font-size: 19px;
+/* Refinement, from this run's benchmark. Read off the live pages rather than
+   from memory: Linear transitions `color, background` and nothing else, in
+   0.1s on cubic-bezier(0.25, 0.46, 0.45, 0.94), and Elicit's nav hover is a
+   background wash at zero duration. Neither moves the row. So the whole line
+   fills instead of lifting, which is also the only hover that survives fifty
+   rows without the page flickering as the pointer crosses it. The wash is
+   the house hairline grey; no colour enters. */
+.skill-line:hover,
+/* touch has no hover, so the press carries the same feedback. The native tap
+   flash is suppressed above, so without this a tap would answer with nothing
+   until the panel appeared. */
+.skill-line:active {
+  background: var(--line);
+}
+
+.skill-line::-webkit-details-marker {
+  display: none;
+}
+
+.skill-line-name {
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.022em;
   word-break: break-word;
 }
 
-.skill-row-meta {
+.skill-line-meta {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -1071,97 +1100,95 @@ a {
   white-space: nowrap;
 }
 
-.skill-row-summary {
-  margin-top: 12px;
-  font-size: 15px;
-  line-height: 1.65;
-  color: var(--gray);
-  max-width: 600px;
-}
-
-/* the two disclosures stack rather than sit side by side: as a row, opening
-   the first one threw the second across to the far edge of the card */
-.skill-row-more {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
-
-.skill-row-more details {
-  min-width: 0;
-}
-
-.skill-row-more summary {
-  font-size: 13px;
-  color: var(--gray);
-  cursor: pointer;
-  list-style: none;
-  padding: 4px 0;
-  transition: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.skill-row-more summary::-webkit-details-marker {
-  display: none;
-}
-
-/* Refinement 1, from the Clerk benchmark. Their docs index folds sections
-   away behind a marker that moves rather than swaps. Ours is drawn rather
-   than typed, as two hairlines, so the upright one can rotate down into the
-   minus on the house spring instead of the glyph cutting from + to - with no
-   motion at all. The panel itself grows open where the browser can animate
-   it, and snaps open exactly as before where it cannot. */
-.skill-row-more summary {
-  position: relative;
-  padding-left: 21px;
-}
-
-.skill-row-more summary::before,
-.skill-row-more summary::after {
+/* the marker is drawn as two hairlines rather than typed, so the upright one
+   rotates down into the minus instead of a glyph cutting from + to - with no
+   motion between them */
+.skill-line::before,
+.skill-line::after {
   content: "";
   position: absolute;
-  left: 0;
+  right: 14px;
   top: 50%;
   width: 11px;
   height: 1px;
-  background: currentColor;
+  background: var(--gray);
+  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.skill-row-more summary::after {
+.skill-line::after {
   transform: rotate(90deg);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.skill-row-more details[open] > summary::after {
+.skill-row[open] > .skill-line::after {
   transform: rotate(0deg);
 }
 
-@supports (interpolate-size: allow-keywords) {
-  .skill-row-more details::details-content {
-    block-size: 0;
-    overflow: clip;
-    transition: block-size 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-      content-visibility 0.28s allow-discrete;
-  }
-
-  .skill-row-more details[open]::details-content {
-    block-size: auto;
-  }
-}
-
-.skill-row-more summary:hover,
-.skill-row-more summary:focus-visible {
+/* Hover answers immediately and costs no layout, which is the whole rule for
+   a surface a subscriber uses daily. No lift and no shadow: the ban list
+   forbids them, and a fifty-row list would flicker with them. */
+.skill-line:hover .skill-line-meta,
+.skill-row[open] > .skill-line .skill-line-meta {
   color: var(--ink);
 }
 
-.skill-row-more details[open] > summary {
-  color: var(--ink);
+.skill-line:hover::before,
+.skill-line:hover::after,
+.skill-row[open] > .skill-line::before,
+.skill-row[open] > .skill-line::after {
+  background: var(--ink);
+}
+
+.skill-line:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* The panel's height change is not animated at all, because the canon bans
+   animating layout properties and because the library is a high-frequency
+   surface that should feel instant. What is animated is the contents rising
+   into place: 180ms, ease-out, transform and opacity only, on the
+   compositor, and interruptible because a CSS animation restarts cleanly
+   when the row is closed and reopened mid-flight. */
+.skill-panel {
+  padding-bottom: 24px;
+}
+
+.skill-row[open] > .skill-panel > .skill-panel-in {
+  animation: skill-panel-in 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes skill-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.skill-row-summary {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  max-width: 600px;
+}
+
+.skill-detail-head {
+  margin-top: 24px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
 }
 
 .skill-sources {
-  margin-top: 14px;
-  font-size: 13px;
+  margin-top: 12px;
+  font-size: 14px;
   line-height: 1.6;
   color: var(--gray);
   max-width: 600px;
@@ -1169,28 +1196,47 @@ a {
 
 .skill-sources li {
   list-style: none;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .skill-routing {
-  margin-top: 14px;
-  font-size: 13px;
-  line-height: 1.65;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
   color: var(--gray);
   max-width: 600px;
 }
 
+/* The entitlement is stated in words inside the open row. The button that
+   used to sit here is now the one at the foot of the page. */
 .skill-row-lock {
   margin-top: 24px;
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.skill-body {
+  margin-top: 24px;
+}
+
+/* The page's single pricing call to action, after the last shelf, where a
+   reader has seen what the library holds. */
+.lib-offer {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--ink);
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: space-between;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
-.skill-row-lock span {
-  font-size: 13px;
-  color: var(--gray);
+.lib-offer p {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  max-width: 420px;
 }
 
 .sr-only {
@@ -1514,11 +1560,16 @@ a {
    reduced-motion context, which now reports 0s. */
 @media (prefers-reduced-motion: reduce) {
   .issue > *,
-  .skill-row-more summary,
-  .skill-row-more summary::after,
-  .skill-row-more details::details-content,
+  .skill-line,
+  .skill-line::before,
+  .skill-line::after,
   .lib-filter input,
   .agent-note a {
     transition: none;
+  }
+
+  /* the panel still opens, it just arrives rather than rises */
+  .skill-row[open] > .skill-panel > .skill-panel-in {
+    animation: none;
   }
 }
