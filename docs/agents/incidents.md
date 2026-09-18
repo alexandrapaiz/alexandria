@@ -113,3 +113,19 @@ an incident.
    may need an ambition bar stated in examples, not just permission,
    across every seat; timidity under liberty is now a named failure
    mode.
+
+12. **The PM's triage misprioritized plumbing over product
+   (owner-reported).** Her critique, in substance: the PM is
+   unfocused and its triage is not ideal. The most important thing
+   before a release is a working product, and the product is the
+   content: the newsletter has roughly two issues with no testing or
+   validation of them, and barely two skills, under-tested. Site
+   plumbing led the sprint while the sellable repository of top-tier
+   skills and newsletter entries lagged. Her release gate, recorded
+   as all-hands decision 11: nothing releases honestly until the
+   product scores top tier (a five) on the OKR benchmark against the
+   market's comparison set. Also named: a real domain and a UI with
+   no coming-soon pages. For the ExO postmortem: triage law needs a
+   product-first clause, and the PM's sprint goals should be scored
+   against "does this make the product better" before "does this
+   make the site work."
