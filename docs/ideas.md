@@ -57,6 +57,19 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: draft against one real claim cluster
 - Cost: $0
 - Status: accepted
+- Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-production-line):
+  `prompts/skill-extract.md` is written, but not yet drafted against a real
+  claim cluster as planned, because `NEON_RO_URL` had no usable value this
+  run (see the urgent ledger entry below) — the "first step" above still
+  stands for next Tuesday. One resolved ambiguity worth recording: the
+  charter (prompts/skill-agent.md) says "every claim-backed sentence citing
+  its claim id," but the gold specimen actually cites by paper title inline
+  ("(Co-Evolving Harnesses and Models)") and keeps numeric ids only in
+  `provenance.claims`. skill-extract.md now codifies the specimen's
+  approach as the rule: paper-title citation in prose, numeric ids in
+  frontmatter for the provenance reviewer to check against the database.
+  Inline numeric ids would make the prose unreadable without making it any
+  more checkable, since the reviewer needs the stable id either way.
 - Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
   the "first step" above is now done. `prompts/skill-extract.md` itself is
   still only on the still-open PR #12 branch
@@ -267,6 +280,18 @@ below.
   field to the skills page card
 - Cost: $0
 - Status: proposed
+- Grooming note (skill agent, 2026-09-18): "parseSkill already reads
+  frontmatter" is not quite true for this field, verified against the gold
+  specimen this run. `site/lib/content.js`'s `get(key)` regex
+  (`^${key}:\s*(.+)$`) requires the key at column 0; `validated` and
+  `claims` both sit indented under `provenance:` in the gold specimen, so
+  `get("validated")` and `get("claims")` both return `""` today, confirmed
+  by running `parseSkill` against `skills/harness-engineering/SKILL.md`
+  directly (papers still parses fine, since its list-item regex doesn't
+  care about the parent key). This is the same gap the "receipt-rendering
+  schema" entry below covers in full; that entry is the fuller fix,
+  this note just pins the exact bug for whichever engineer run picks
+  either one up first.
 
 ### 2026-09-18 — A free teaser skill on the public directories (market agent)
 - Trigger: skills.sh top listings show 0.9M-3.4M installs and support
@@ -587,6 +612,133 @@ build.
 - Cost: $0
 - Status: proposed
 
+### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
+- Trigger: this run's step 1, picking a claim cluster. The PM's board
+  already carries "the NEON_RO_URL secret for the skill agent" as an
+  owner-logistics card, and this run's dispatch stated the secret is now
+  set. It is present as an environment variable name but its value is
+  empty: `psql "$NEON_RO_URL" -c "select 1;"` fails immediately trying a
+  local unix socket, the shape of error `psql` gives an empty connection
+  string, not a network or auth error. Ruled out sandboxing as the cause:
+  `getent hosts neon.tech` resolves fine, so egress works and the failure
+  is specific to the secret's value.
+- What: the owner or engineer should re-check the `NEON_RO_URL` repo
+  secret's actual stored value (GitHub masks secret values in the UI, so a
+  blank paste is easy to miss) and re-save it. Until fixed, every
+  Tuesday run of this agent and the newly-added weekly agent
+  (agent-weekly.yml, also reads `NEON_RO_URL`) will silently degrade to
+  the no-database fallback path, which blocks O2 KR2 (docs/okrs/okrs-2026-Q4.md,
+  "at least one draft skill per week from claim clusters from 2026-11-01
+  onward") before that window even opens.
+- First step: `gh secret list` confirms the secret exists by name only
+  (GitHub never exposes values via the API either); the owner needs to
+  re-enter the value directly in the repo settings UI, then any agent run
+  can re-verify with the same psql one-liner above.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-18 — Receipt-rendering schema for the skill library (skill agent)
+- Trigger: O2 ("Make the skill library a real asset") and the composed
+  product thesis ("skills with receipts," docs/allhands/2026-09-17.md
+  decision 6) both depend on the claim ids and validation evidence in a
+  skill's frontmatter actually reaching the site. Verified this run that
+  they currently do not (see the grooming note on "Show each skill's
+  validation evidence on its page" above): `site/lib/content.js`'s
+  `parseSkill` is a flat-line regex parser, blind to anything nested
+  under `provenance:`, and has no extraction for `provenance.claims` at
+  all, only `papers`.
+- What: replace the hand-rolled regex parser with a real YAML frontmatter
+  parse (any small `js-yaml`-class dependency, or a hand-written nested
+  parser if the site wants to stay dependency-free), and extend the
+  skill-card data shape to carry, per skill: `extracted` date, `validated`
+  string (empty = not yet promoted), `claims` (the id list, count is
+  `claims.length`), and `papers` (already parsed). This is the minimum
+  schema the verification-badge entry below needs as its data source; the
+  two are one piece of work split for review size, not two independent
+  builds. This entry supersedes "parseSkill already reads frontmatter" as
+  the first step on the validation-evidence entry above — it does not yet,
+  this is now the fix.
+- First step: swap the regex parser for real nested-YAML parsing first
+  (a pure bugfix, testable against the one gold specimen on disk today),
+  then extend `Skills` in `site/lib/content.js` and the skill-card
+  component to surface the new fields; the card's visual design is the
+  market/engineer seats' call, not this agent's.
+- Cost: $0 (a small parsing dependency at most)
+- Status: proposed
+
+### 2026-09-18 — Verification badge data schema (skill agent)
+- Trigger: docs/market/opportunities-2026-09-18.md's badge proposal
+  ("verified against N sources, confidence X," directly answering the
+  Show HN finding that 69% of public skills won't reliably trigger) is
+  accepted in principle (see "Skill-verification badge on every library
+  entry" above, proposed 2026-09-18) but has no defined data shape yet.
+  Drafting prompts/skill-extract.md this run required deciding exactly
+  what a draft skill's frontmatter can and cannot honestly claim before
+  the panel has run, which is the same question the badge needs answered.
+- What: define the badge as four fields, all derivable from data this
+  system already produces and none inventable by an agent drafting a
+  skill:
+  - `source_count` — `provenance.papers.length`, already on every skill.
+  - `claim_count` — `provenance.claims.length`, needs the parser fix
+    above to reach the site.
+  - `validated` — boolean plus the recorded trial sentence, true only
+    once `provenance.validated` is non-empty; a drafted-but-unpromoted
+    skill (this run's fallback state, and any future draft still awaiting
+    the ADR-13 panel) must render as "pending validation," never as a
+    silent false or a blank, so a prospect never mistakes a draft for a
+    proven skill.
+  - `trigger_reliability` — not yet computable from anything the system
+    tracks today. The honest options are (a) leave it out of v1 and ship
+    only the three fields above, or (b) the panel logs whether each
+    trigger-test prompt in the skill's PR actually activated the skill
+    when replayed, and the badge shows a fraction (e.g. "3/3 positive
+    triggers confirmed"). Recommend (b), since it reuses the trigger test
+    prompts/skill-agent.md already requires in every PR rather than
+    inventing new measurement machinery, but flagging both options for
+    the engineer and panel-builder to weigh, since (b) depends on the
+    still-unbuilt ADR-13 panel actually replaying the trigger prompts.
+- First step: ship the three data-backed fields first (needs only the
+  parser fix above), land `trigger_reliability` as a fast-follow once the
+  panel exists to compute it.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — The skills production line, sequenced end to end (skill agent)
+- Trigger: the owner's directive that skills are the selling point and
+  the team is "far behind on them," and that this run should propose
+  "the skills production line done right." Four pieces of it already
+  exist as separate ledger entries (skill-extract prompt, receipt
+  rendering, verification badge, ADR-13 panel); none of them names the
+  order they need to land in or who is blocked on whom.
+- What: the dependency order, as this run's extraction work surfaced it:
+  1. `NEON_RO_URL` fixed (urgent entry above) — nothing downstream runs
+     without it.
+  2. `prompts/skill-extract.md` (this run, done) — the extraction method.
+  3. One real draft skill through this agent's normal weekly cadence,
+     once (1) is fixed — proves the prompt against real data, which this
+     run could not do.
+  4. The ADR-13 panel, validator reviewer first per the PM's resequencing
+     (docs/backlog.md item 4) — a draft sitting in `status: active` with
+     an empty `validated` field is not yet a promoted skill, and the
+     badge schema above depends on the panel actually running to ever
+     show `validated: true` on anything.
+  5. The parser fix + badge fields (both entries above) — can build in
+     parallel with (3)-(4) since it only needs the one gold specimen
+     already on disk to develop and test against, but the badge's
+     `validated` field only ever shows real data once (4) exists.
+  6. `trigger_reliability` (badge entry, option b) — depends on (4)
+     existing to replay trigger prompts.
+  The current state of every draft skill until (4) ships: `status:
+  active` but not panel-reviewed. Recommend the site never call an
+  unpromoted draft "verified" regardless of its `status` field — gate the
+  badge's verified state on `validated` being non-empty, not on the
+  skill file merely existing in `skills/`, so an unreviewed draft never
+  reads as a receipt it hasn't earned.
+- First step: none — this is a sequencing map for the engineer, PM, and
+  next skill-agent runs to read before picking up any one piece, not a
+  build task itself.
+- Cost: $0
+- Status: proposed
 ### 2026-09-18 — Knowledge graph upgraded to industry standard
 - Trigger: owner's directive, verbatim: "the knowledge graph needs
   maintenance and to be upgraded to be industry standard right now it's
