@@ -10,8 +10,9 @@ One scheduled function doing two jobs, in order:
    with 2+ supports edges, citation movers, fresh deprecations, deep-read
    flags); gpt-oss-120b writes the three-section digest; it lands in the
    `digests` table (database of record) and goes to subscribers by email via
-   Buttondown. It is deliberately NOT published to the public repo — the
-   newsletter is the paid product (docs/vision.md §4).
+   the owner's Gmail over authenticated SMTP. It is deliberately NOT
+   published to the public repo — the newsletter is the paid product
+   (docs/vision.md §4).
 
 They share one function deliberately: Modal's free plan caps scheduled
 functions at 5, and the citations exist for the digest — running them in the
@@ -19,8 +20,9 @@ same Monday process makes the trajectories maximally fresh and costs no slot.
 The digest is a workflow, not an agent (ADR-6): every query is known in
 advance, so the model only writes.
 
-Needs secrets: `neon`, `groq`, and `buttondown` (BUTTONDOWN_API_KEY) once the
-newsletter is live; until then the run succeeds and only skips the email.
+Needs secrets: `neon`, `groq`, and the Gmail secret(s) (GMAIL_ADDRESS +
+GMAIL_APP_PASSWORD) once the newsletter is live; until then the run succeeds
+and only skips the email.
 
     modal run pipeline/weekly.py         # one-off manual run (citations + digest)
     modal deploy pipeline/weekly.py      # install the Monday schedule

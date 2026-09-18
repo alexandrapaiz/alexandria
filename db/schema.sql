@@ -105,8 +105,9 @@ create table if not exists citation_log (
 create index if not exists citation_log_paper_idx on citation_log (paper_id, checked_at desc);
 
 -- ============ digests: the weekly product ============
--- One row per ISO week. The repo copy (digests/<week>.md) is the published
--- form; this row is the database of record and survives even if the push fails.
+-- One row per ISO week. This row is the database of record. The digest is
+-- never published to the repo (email-only, gitignored digests/) and survives
+-- even if the email send fails.
 create table if not exists digests (
     id         bigserial primary key,
     week       text not null unique,        -- e.g. '2026-W37'
