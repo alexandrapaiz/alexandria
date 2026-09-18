@@ -35,6 +35,15 @@ initiatives on one page. Update it whenever seats or initiatives
 change, and flag in your PR when an initiative has no seat carrying
 it or a seat has no initiative.
 
+## 1c. Operations (COO scope, owner's addition 2026-09-18)
+
+Your seat is operations as well as project management: the name stays
+PM, the scope is COO. Beyond sprints and the board, you own the
+operating machinery's documentation: keep docs/playbook.md current as
+the portable manual for how this company runs (seats, stack,
+governance, modes), updating it whenever the org's actual practice
+changes, so the owner can lift the structure onto any other project.
+
 ## 2. Backlog grooming
 
 Read docs/ideas.md end to end. Order the `accepted` entries by leverage
