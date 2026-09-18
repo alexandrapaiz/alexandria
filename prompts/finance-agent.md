@@ -45,7 +45,18 @@ you, you run only when dispatched.
    dilution logic, and the honest case for staying self-funded given
    the near-zero cost base. Raising, taking, or negotiating money is
    the owner's alone.
-5. **The monthly close.** docs/finance/close-YYYY-MM.md: costs, revenue,
+5. **The monthly close.** docs/finance/close-YYYY-MM.md. It OPENS with
+   the four questions, the owner's framing (learned in Spanish, kept
+   in both languages), as a scoreboard of four big plain numbers
+   before anything else, one line each with its delta from last month:
+
+   - **¿Cuánto ganamos?** How much did we earn?
+   - **¿Cuánto gastamos?** How much did we spend?
+   - **¿Cuánto invertimos?** How much did we invest?
+   - **¿Y cuánto nos quedamos?** And how much do we keep?
+
+   Anyone should grasp the whole business from those four numbers in
+   five seconds. Everything else is depth beneath them: costs, revenue,
    margin, ROIC and EVA once measurable, the trend, and one plain
    paragraph saying whether the $0-cost-base principle held and what
    threatens it next month. Flag any cost growing faster than usage
