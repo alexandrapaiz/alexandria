@@ -187,16 +187,63 @@ a user-owned project), not a real access gap. Future PM runs: use
 `gh api graphql` directly against the board rather than `gh project *` if
 the same error recurs.
 
-Reconciliation result: no board item needed changing. The chair's seed
-already matched the skills-focus reorder above (skill-extract prompt
-ranked up, claim-graph citations and trigger-tests added as new items,
-reviewer panel resequenced to validator-first, institution backfill
-dropped to last) before this file caught up to it. All ten items are
-`DraftIssue` content (title and body only, no linked GitHub issues),
-consistent with the board staying a lightweight visual mirror rather than
-a second tracker. Status is Todo on all ten, correctly: no engineer PR
-exists yet against any sprint 2026-09-21 item (`gh pr list --state all`,
-checked this run) or any backlog item.
+Reconciliation result (first check, mid-week run): no board item needed
+changing. The chair's seed already matched the skills-focus reorder above
+(skill-extract prompt ranked up, claim-graph citations and trigger-tests
+added as new items, reviewer panel resequenced to validator-first,
+institution backfill dropped to last) before this file caught up to it.
+All ten items were `DraftIssue` content (title and body only, no linked
+GitHub issues), consistent with the board staying a lightweight visual
+mirror rather than a second tracker. Status was Todo on all ten,
+correctly: no engineer PR existed yet against any sprint 2026-09-21 item
+(`gh pr list --state all`, checked that run) or any backlog item.
+
+Updated 2026-09-18 (PM, owner-priority board update, off-cycle): between
+that check and this run the security agent's PR #8 landed eight more
+cards (three `urgent`, five `proposed`, matching docs/ideas.md's security
+section), bringing the board to 19 before this run started. This run's
+job, per direct owner instruction, was to make the board the complete
+truth of everything pending across every seat, verifying each write with
+a `gh api graphql` item query before moving to the next (see the
+`gh project` quirk note below for why `graphql` rather than
+`gh project item-list` directly). Added 17 cards, none duplicating an
+existing title, confirmed against a full item dump after each batch:
+
+- Four owner-logistics cards (Clerk keys + Neon in Vercel by 2026-09-19,
+  Stripe account by 2026-09-26, the NEON_RO_URL secret for the skill
+  agent, and the panel's PR-merge PAT by mid-November) — these were
+  already rows in the launch-runway table above but had no board card.
+- The skill agent's first extract-to-panel-to-gold run and its Tuesday
+  cadence (ADR-22).
+- The charter sweep adding board self-assign language to every seat's
+  prompt (decision 8, third addendum), assigned to exo.
+- The three source-discovery build items PR #10 (unmerged) proposes:
+  automating the weekly meta-review seat (`agent-weekly.yml`), storing
+  each paper's arXiv category, and a `sources.yaml` watchlist for authors
+  and institutions without a feed.
+- Aligning Q4 OKRs to the vision.md section 0 mission at the OKR agent's
+  next check-in, now that the mission exists and the objectives predate
+  it.
+- Seven of the market agent's docs/ideas.md proposals not yet carded:
+  the permanent free sample issue, llms.txt plus a skills manifest, the
+  "left behind" flagship, the published head-to-head, the
+  skill-verification badge, scoped skill delivery, and the
+  orchestration-pattern benchmark. (Email capture was already sprint
+  item 4; not duplicated.)
+
+Board total after this run: 36 items, verified by a final full item dump
+(`gh api graphql`, 2026-09-18). This file's launch-runway table and
+leverage-ordered backlog above are unchanged by this run: sprint
+composition and priorities stay as committed, per the owner's explicit
+instruction that this was a board-completeness pass, not a replanning
+one.
+
+`gh project item-list`/`view` still fail with "unknown owner type" this
+run, same as the mid-week check below documents; every read and write
+this run went through `gh api graphql` against
+`user(login: "alexandrapaiz") { projectV2(number: 4) }` instead, using
+`GH_TOKEN=$PROJECTS_TOKEN`. Future runs: don't re-try the `gh project`
+subcommands expecting a different result, they hit the same CLI quirk.
 
 Board stewardship, for future runs: the committed sprint file stays the
 source of truth, as the charter and the owner's directive both say. This
@@ -217,3 +264,15 @@ agent, proposed 2026-09-18) is now most of standing-ledger item 3 above
 (claim-graph citations in the library), so a verdict on it sooner rather
 than later would unblock that item directly instead of waiting on a
 fresh proposal to duplicate it.
+
+Also flagging a likely ledger mistake found while carding this run:
+docs/ideas.md's "Permanent free sample issue on the site" (market agent,
+2026-09-18) carries `Status: rejected` with the same verdict sentence
+used on the four beyond-skills product proposals decision 6 explicitly
+named (hosted RAG API, frontier-model synthesis tier, harness audit,
+claim graph API). The free sample issue isn't one of those four and
+isn't a beyond-skills product proposal at all; this reads like the
+verdict text got copied onto the wrong entry rather than a deliberate
+rejection. Carded on the board regardless since it's genuinely pending
+either way, but worth your eyes to confirm the status is what you
+intended.
