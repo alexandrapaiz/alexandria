@@ -67,3 +67,70 @@ turns patterns into charter or workflow fixes.
    `--model opus` set explicitly on all six workflows. Lesson: a
    routing policy is config plus verification; assert the model from
    run logs, never from intention.
+
+## 2026-09-18 — the first full week of cloud runs
+
+Postmortems by the ExO agent (charter step 6), blameless, from run logs
+rather than from what the runs said about themselves.
+
+10. **A turn cap failed a run that had already shipped.** The security
+    seat's first run (35299288455) did its whole job, opened PR #8 at
+    02:42:38, and was then failed by the action eight seconds later:
+    `Claude reported a successful result after 108 turns, exceeding the
+    configured maximum of 100`. Technically this is not the same defect
+    as incident 4, where frontend died mid-work at `error_max_turns`.
+    Here the work was complete and merged; only the run's conclusion was
+    red. The damage is to monitoring rather than to output, and it is
+    the exact inverse of incident 8: there, a green conclusion hid a run
+    that shipped nothing, and here a red conclusion hides a run that
+    shipped everything. Both point at one rule, which is now the house
+    rule for reading runs: **judge a run by its artifacts, never by its
+    conclusion.** FIX queued, not applied: raise the security cap from
+    100 to 150, in docs/agents/pending-workflow-changes.md, because of
+    incident 11 below. Lesson for charters: a cap is a tripwire, not a
+    budget, so size it to the seat's honest work and treat a cap hit as
+    evidence about the cap.
+
+11. **The agent token cannot write the agent workflows, so part of the
+    ExO's chartered lane is unreachable.** Discovered this run, by
+    trying it. The ExO charter §5 names `.github/workflows/agent-*.yml`
+    as writable, and the push was rejected outright:
+    `refusing to allow a GitHub App to create or update workflow
+    .github/workflows/agent-engineer.yml without workflows permission`.
+    This is not a misconfiguration that a `permissions:` block can fix.
+    `GITHUB_TOKEN` has no `workflows` scope available to grant, and only
+    a personal access token carrying the `workflow` scope can push these
+    files. Every workflow-level fix the org has wanted since the
+    founding night runs into this, including incident 3's tripwire and
+    incident 10's cap raise, which means the gap has been silently
+    costing the org its whole workflow-repair capability for a week.
+    FIX, two parts. Part one shipped now: workflow edits are written out
+    in full in docs/agents/pending-workflow-changes.md for the owner to
+    apply, and the ExO charter no longer claims a lane it cannot reach.
+    Part two is owner-only and stays her call: mint a PAT with the
+    `workflow` scope, store it as a repository secret, and pass it to
+    `actions/checkout` in the agent workflows. That would let the seats
+    repair their own machinery, and it would also hand every agent run a
+    token strong enough to rewrite what runs the agents, so it is an
+    authority change rather than a convenience, and it belongs to her.
+    Lesson, and the one worth generalizing: **a charter that grants a
+    lane the runtime cannot reach is a charter defect, not a runtime
+    defect.** Every lane a charter names should be provable by the seat
+    that holds it, so the ExO now verifies its own writable surface each
+    run instead of assuming it.
+
+12. **Incident 3's pattern fix sat unapplied for a full week.** Incident
+    3 recorded draft-PR-first as "PATTERN FIX pending with the ExO" on
+    the founding night. Sixteen PRs and one ExO run later, not one of
+    the eleven charters contained the word draft, and the owner was
+    still carrying the rule by hand in each dispatch prompt. The ExO's
+    own first run spent its single permitted charter edit elsewhere, on
+    the ledger-collision fix, which was reasonable in isolation and
+    wrong against this queue. Nothing in the org held the list of fixes
+    that had been agreed but not made, so the register recorded the
+    decision and then no one read it as a to-do. FIXED: the rule is now
+    a section in all eleven charters, and the ExO charter's step 2 now
+    requires reading this register for entries whose fix is marked
+    pending or queued, and either shipping them or saying in the PR why
+    not. An incident is not closed when it is written down. It is closed
+    when the fix is in the tree.
