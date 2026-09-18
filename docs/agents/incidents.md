@@ -236,3 +236,14 @@ rather than from what the runs said about themselves.
    product-first clause, and the PM's sprint goals should be scored
    against "does this make the product better" before "does this
    make the site work."
+
+13. **Cautionary note (owner-directed): Clerk Core 3 API drift during
+   auth integration.** The chair wired auth controls using the widely
+   known SignedIn/SignedOut components; @clerk/nextjs v7 (Core 3)
+   removed them in favor of Show when="signed-in|signed-out", and the
+   build failed at prerender. The setup doc the owner supplied stated
+   the correct Show API and the chair deviated from it toward
+   training-data memory. Fixed in minutes; recorded for caution.
+   Lesson for all seats: when integrating a fast-moving vendor SDK,
+   the vendor's current doc outranks remembered APIs, and the
+   installed clerk-* skills exist precisely to be consulted first.
