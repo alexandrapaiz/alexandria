@@ -6,96 +6,125 @@ owner-only action. Each line dated. You should never have to hold this in
 your head; if something is owed and has no line here, that is a tracking
 failure and the next PM run fixes it on the spot.
 
-Updated 2026-09-18 (Friday), owner-priority re-triage dispatch (incident 12,
-all-hands decision 11): product quality is the release gate. This run
-revises sprint-2026-09-21 in place (revision 2), reconciles the release
-date against the score gate, cards the domain purchase, and audits every
-coming-soon and empty surface on the site. See
-docs/sprints/sprint-2026-09-21.md for the revised plan and the three new
-sections below for the three items this dispatch owes the owner directly.
-The next regularly scheduled PM ceremony (retro on the sprint that just
-ran, grooming, sprint 2026-09-28) still runs Monday 2026-09-28 on its
-normal cadence; this file does not replace that run.
+Updated 2026-09-18 (Friday night), triage dispatch following the closing
+all-hands (docs/allhands/2026-09-18-close.md), owner order relayed by the
+chair. This run: (1) folds the MCP redirect-URI fix into
+sprint-2026-09-21 as a blocking item (see the sprint file's revision 3
+note); (2) adopts the OKR seat's phased release gate as the **provisional**
+planning assumption (free surfaces ship 2026-10-13, the $20 spine's gate
+opens at a benchmark five), subject to the owner's veto when she reads
+these minutes; (3) rules on the skill seat's second-extraction-session
+proposal (adopted, written as a charter-and-workflow proposal in
+docs/ideas.md for the ExO and owner to apply, since this seat cannot
+commit to prompts/ or .github/workflows/ itself); (4) adds the new
+owner-only items the closing all-hands surfaced; (5) carries a one-line
+triage memo of every seat's ask from the closing all-hands, decided or
+deferred, at the very end of this file. This supersedes this file's
+earlier same-day (Friday daytime) snapshot in place; nothing below
+should be read as still current from that earlier pass except where this
+version repeats it unchanged. The next regularly scheduled PM ceremony
+(retro on the sprint that just ran, grooming, sprint 2026-09-28) still
+runs Monday 2026-09-28 on its normal cadence; this file does not replace
+that run.
 
 ## Open PRs waiting on your merge
 
-1. **PR #23** (draft) — engineer, `engineer/2026-09-18-free-digest-spine-gate`,
-   opened 2026-09-18. Ships revision 1's sprint items 1 through 3 in full:
-   the digest teaser gate removed, the $20 spine gated in its place, a real
-   issue on the archive. Still draft; not yet ready to merge. Once it is,
-   the revised sprint (above) expects it merged before its own item 1
-   starts, since the revised plan assumes items 1-3 are done.
-2. **PR #21** — skill, `skill/2026-09-18-skill-validation-system`, opened
-   2026-09-18. Designs the skill validation system and lands the first
-   executable trigger-test slice against both gold skills. Ready for your
-   review; the revised sprint's item 4 depends on it.
-3. **PR #22** — sales, `sales/2026-09-18-first-customers`, opened
-   2026-09-18. The first-50-customers plan, the idea list, the outreach
-   machine, redispatched after the owner's creativity critique (incident
-   11). Ready for your review.
-4. **PR #18** — exo, `exo/2026-09-18` (run 2), opened 2026-09-18. README
-   and architecture-diagram truthfulness sweep, charter §5b. Also carries a
-   proposed charter addendum (draft-PR-first as an org-wide rule, all
-   seats) that this run followed ahead of its own merge, since it matches
-   what this dispatch was told to do directly. Ready for your review.
+Refreshed this run: PR #18, #19, #21, and #23 (all listed as open in this
+file's earlier snapshot) merged 2026-09-18. Four PRs are open now:
 
-Everything else opened this week (#1-#17, #19, #20) is merged or closed.
+1. **PR #24** — pm, `pm/sprint-2026-09-21` (this PR). Carries the
+   product-first sprint re-triage (revision 2) plus this closing all-hands
+   triage (revision 3): the MCP fix as a blocking sprint item, the
+   provisional phased-gate decision, the second-extraction-session ruling,
+   and the triage memo at the end of this file. **Merge this one first**
+   among the four below: it is the sprint plan and pending-tracker of
+   record, and #25 and #26 both edit files this PR also touches.
+2. **PR #25** — pm, `pm/board-2026-09-18-3`. A separate, earlier PM
+   dispatch (board craftsmanship, not a replanning pass): rebuilt GitHub
+   Projects board #4's Status field, added a Sprint iteration field,
+   remapped every card against real PR state, and reordered the backlog
+   product-first. Its own body already recommends merging #24 first and
+   rebasing its additive "Board reorg" section of docs/sprints/pending.md
+   over it if needed. One manual step it flags for you: the Roadmap
+   view's "Group by" needs one click to Sprint; the API can't set it.
+3. **PR #22** — sales, `sales/2026-09-18-first-customers`. The
+   first-50-customers plan, the idea list, the outreach machine,
+   redispatched after incident 11's creativity critique. Also appends to
+   docs/ideas.md (a multi-seat Stripe billing question and a Left-Behind
+   Index page proposal, both already reflected in this triage's memo
+   below). Ready for your review; no known conflict with #24 or #25.
+4. **PR #26** — frontend, `fe/2026-09-18-email-capture-live-metric`
+   (draft). Ships the two site items revision 2 of the sprint cut (email
+   capture, the live hero metric) on its own lane, screenshotted at three
+   viewports. Touches docs/ideas.md; small risk of a grooming-note
+   conflict with #24 there, cheap to rebase either way since #26's
+   ideas.md edit is additive. Merge after #24 if a conflict appears.
+
+Recommended order: **#24, then #25, then #22 and #26 in either order**
+(neither of the latter two touches the same lines #24 or #25 do).
 
 ## What each seat owes, and from which directive
 
-- **engineer** — daily cadence. Sprint 2026-09-21 revision 2 (product-
-  quality work first: prose benchmark, factual audit of sent issues, a
-  tier-five checklist held against Monday's send, skill validation
-  extended to both skills, receipts rendered) is committed and starts
-  Monday 2026-09-21; nothing owed before then, and PR #23 already covers
-  most of revision 1's site items ahead of schedule. Standing accepted-
-  but-not-built ledger items, oldest first: reviewer panel harness
-  (ADR-13, owner decision 2026-09-17), institution backfill + digest
-  resend (2026-09-17), corpus-expansion spike (2026-09-18, evidence_grade
-  column + blog feeds), knowledge graph upgrade to industry standard
-  (owner directive, 2026-09-18). None are this sprint's focus; they carry.
-- **skill** — Tuesday cadence. NEON_RO_URL is fixed and verified
-  (2026-09-18, PR #16, 441 claims confirmed live). This week's run landed
-  early and off-cadence as PR #21 (open above): the validation-system
-  design plus the first executable trigger-test slice against both gold
-  skills. Next Tuesday run: whatever #21 leaves open, plus continuing the
-  production line per its own sequencing note in docs/ideas.md.
-- **frontend** — Wednesday cadence. This week's scoped visual run is done
-  (PR #15 merged, PR #19 open above). Nothing further owed until next
+- **engineer** — daily cadence. Sprint 2026-09-21 revision 3 (the MCP
+  fix blocking and first, then the product-quality trio, then skill
+  validation extended to both skills) is committed and starts Monday
+  2026-09-21. Standing accepted-but-not-built ledger items, oldest first:
+  reviewer panel harness (ADR-13, owner decision 2026-09-17), institution
+  backfill + digest resend (2026-09-17), corpus-expansion spike
+  (2026-09-18, evidence_grade column + blog feeds), knowledge graph
+  upgrade to industry standard (owner directive, 2026-09-18). None are
+  this sprint's focus; they carry. Revision 2's cut item 5 (receipts
+  rendering) also carries, to sprint 2026-09-28.
+- **skill** — Tuesday cadence, next run 2026-09-22. Owes two things from
+  this triage: apply the harness-engineering trigger-vocabulary fix
+  (docs/ideas.md, accepted this run) and re-run the trigger test, and
+  continue the production line per PR #21's own sequencing note. A
+  second weekly session (Fridays) is proposed but not yet charter text;
+  it does not change this seat's obligations until the ExO applies it
+  and the owner merges it.
+- **frontend** — Wednesday cadence. This week's scoped visual run
+  shipped early as PR #26 (open above, draft), covering both of
+  revision 2's cut sprint items. Nothing further owed until next
   Wednesday.
 - **market** — Friday cadence. Two runs shipped this week (PR #3, #6,
-  both merged). Eight proposals sit in docs/ideas.md under `proposed`,
-  none older than 2026-09-18, so none are past the two-week grace period
-  yet. Next Friday run continues; one flagged action below (positioning.md
-  still carries stale $10/$30 numbers pending the market agent's own
-  next-run update).
+  merged). Proposals sit in docs/ideas.md under `proposed` or newly
+  `accepted` this run (the Left-Behind flagship); none past the two-week
+  grace period yet. One flagged action: positioning.md still carries
+  stale $10/$30 numbers pending the market agent's own next-run update.
 - **okr** — 1st-of-month cadence. First run shipped 2026-09-18 (Q4 OKRs +
-  baseline benchmark, PR #2, merged). No further OKR-seat action owed
-  until 2026-10-01, except folding the newly-written mission
-  (vision.md §0) into the objectives at its next check-in, which it
-  already carries as a noted follow-up.
+  baseline benchmark, PR #2, merged). Its closing-all-hands floor
+  statement proposed the phased gate this triage adopted provisionally;
+  no further action owed until 2026-10-01, when it scores every KR
+  against merged evidence and reruns the benchmark, except folding the
+  mission (vision.md §0) into the objectives, already a noted follow-up.
 - **security** — 1st and 15th cadence. First run shipped 2026-09-18
-  (PR #8, merged). Three findings are `urgent` in docs/ideas.md and wait
-  on an owner decision, not an engineer build (listed below). Next
+  (PR #8, merged). Of its three `urgent` findings: the MCP fix is now an
+  assigned, blocking sprint item (no longer waiting on a separate owner
+  go-ahead, per this dispatch); the digest-history rewrite and the
+  workflows-permission grant still wait on the owner (below). Next
   scheduled run: 2026-10-01.
-- **exo** — Sunday cadence, plus this week's synchronous dispatches.
-  Baseline run shipped (PR #4, merged). Run 2 (PR #18) is still in
-  draft, see above.
-- **sales** — org-chart.md lists this seat dormant pending owner
-  activation, but PR #14 (launch campaign machinery), PR #17 (GEO +
-  distribution plan), and now PR #22 (first-50-customers plan, open
-  above, redispatched after incident 11's creativity critique) have all
-  shipped and merged or opened since. That is a tracking gap: the org
-  chart has not been updated to reflect the seat is active. Flagging
-  again since fixing docs/agents/org-chart.md is outside this dispatch's
-  scope too (named jobs are the sprint revision, the release-gate
-  reconciliation, the domain card, and the coming-soon audit); the next
-  PM ceremony should correct it.
-- **research / weekly** — Monday 16:30 UTC cadence per org-chart.md, but
-  `agent-weekly.yml` does not exist yet (engineer's 2026-09-18 proposal to
-  add it is still `proposed`, unbuilt). This seat is not actually running
-  on any cadence today. Nothing is owed because nothing is scheduled;
-  flagging so it does not silently look "on cadence" when it is not.
+- **exo** — Sunday cadence, plus synchronous dispatches. Baseline run
+  (PR #4) and run 2 (PR #18, README/diagram truthfulness sweep) both
+  merged 2026-09-18. Owes, from this triage: applying the second-
+  extraction-session charter-and-workflow text (docs/ideas.md, this run)
+  to `prompts/skill-agent.md` and `.github/workflows/agent-skill.yml`, at
+  its own discretion on timing, gated by the owner's merge like any
+  charter change.
+- **sales** — active (not dormant; org-chart.md is stale on this, flagged
+  below). PR #14, #17 merged; PR #22 (first-50-customers plan) open
+  above, redispatched after incident 11's creativity critique. Its
+  closing all-hands floor statement's three morning triggers (route the
+  multi-seat Stripe question to engineer, send ten warm outreach notes,
+  greenlight the Left-Behind Index page) are triaged in the memo at the
+  end of this file.
+- **research** — Monday 16:30 UTC cadence. `agent-research.yml` now
+  exists (ADR-25 renamed the weekly seat; merged since this file's last
+  snapshot), so this is the seat's first real scheduled run, expected
+  today. Its closing all-hands floor statement said its one ask (direct
+  Neon access) is already satisfied. Nothing else owed from this triage.
+- **finance** — dormant, owner-activation pending (ADR-24). Its closing
+  all-hands floor statement's one ask, the Claude subscription's monthly
+  figure, is owner-only; see below.
 
 ## Owner-only actions waiting
 
@@ -104,10 +133,13 @@ Everything else opened this week (#1-#17, #19, #20) is merged or closed.
    of the launch runway.
 2. **Stripe account and keys** — due 2026-09-26. Blocks payments wiring
    to the $20 spine.
-3. **MCP OAuth redirect_uri validation gap** (security, urgent,
-   2026-09-18) — phishing-link token theft risk in mcp/server.py's
-   `/authorize` flow. Needs your read and a go-ahead before an engineer
-   applies the fix.
+3. ~~MCP OAuth redirect_uri validation gap~~ — **no longer waiting on
+   you.** This dispatch made it a blocking, assigned sprint item (item 1
+   of docs/sprints/sprint-2026-09-21.md revision 3), due before Stripe
+   goes live 2026-09-26, per the owner's own order for this triage. Still
+   worth your read of the finding (docs/ideas.md, security agent,
+   2026-09-18) since it names PR-opening tools as what a stolen token
+   would reach, but no action is waiting on you to unblock the build.
 4. **Public git history holds a pre-privacy-pivot digest**
    (security, urgent, 2026-09-18) — nine historical commits of
    `digests/2026-W37.md` are readable by anyone who clones the public
@@ -133,11 +165,33 @@ Everything else opened this week (#1-#17, #19, #20) is merged or closed.
    sentence used on the four beyond-skills product proposals decision 6
    named, but it is not one of those four. Worth confirming the status
    is what you intended.
-9. **The release-gate reconciliation** (incident 12 / decision 11,
-   2026-09-18) — Oct 13 conditional on the score, or a phased launch.
-   Both options costed below in "Release-gate reconciliation." This is
-   the open tension decision 11 itself named as yours to resolve.
-10. **The domain** (decision 11, 2026-09-18) — you purchase; three
+9. **The release-gate reconciliation — now a provisional ruling awaiting
+   your veto** (incident 12 / decision 11, 2026-09-18, updated per the
+   closing all-hands and this triage) — the OKR seat's phased-gate
+   proposal (free surfaces ship Oct 13, the paid spine's gate opens at a
+   benchmark five) is adopted **provisionally** as of this dispatch so no
+   seat sat blocked overnight. Both options remain costed below in
+   "Release-gate reconciliation" exactly as before. This is not yet your
+   decision to make from scratch; it is your decision to ratify or veto.
+   If you veto it or pick Option A instead, the sprint's item ordering
+   does not need to change, only this framing and the paid-spine timeline
+   in docs/agents/org-chart.md's initiatives and docs/okrs/.
+10. **Sending the first ten warm outreach notes** — sales' plan (PR #22)
+    has these finished and ready; per the standing law, agents draft,
+    only you send. Triaged in the memo below.
+11. **The Claude subscription's monthly figure** — finance's one ask at
+    the closing all-hands, so "gastamos" stops being a $0 placeholder in
+    its unit-economics runs. A number only you can supply.
+12. **Ten minutes of your eyes on the new email capture and live metric**
+    — frontend's ask, once PR #26 (open above) lands. Not launch-blocking,
+    but named directly as needing your attention, not a build.
+13. **The workflow-scope PAT / GitHub App `workflows` permission
+    decision** — restated here because the ExO's closing all-hands floor
+    statement asked for it directly: it is the same decision as item 5
+    above, blocking every seat's ability to land a workflow-file fix
+    (including the second skill-extraction cron this run proposes in
+    docs/ideas.md) without going through you by hand each time.
+14. **The domain** (decision 11, 2026-09-18) — you purchase; three
     candidate names proposed below in "Domain." No agent can buy it.
 
 ## Resolved since last noted (no longer pending)
@@ -149,7 +203,7 @@ Everything else opened this week (#1-#17, #19, #20) is merged or closed.
 - PROJECTS_TOKEN secret — done, board live since 2026-09-18 (mid-week PM
   run).
 
-## Release-gate reconciliation (your decision, per decision 11)
+## Release-gate reconciliation (provisionally decided; yours to ratify or veto)
 
 Decision 11 set the gate (a five on the OKR benchmark) and named the
 tension against it explicitly: "the PM must present back to the owner:
@@ -157,14 +211,26 @@ this gate versus the fixed Oct 13 date." Both options below, costed
 honestly, meaning the second option's timeline is a real estimate against
 current and raised cadence, not a promise.
 
+**Update, closing all-hands triage, 2026-09-18 night:** the OKR seat's
+floor statement at the closing all-hands named Option B directly as its
+recommendation, and the owner's dispatch for this triage run adopted it
+as the provisional planning assumption, explicitly so no seat sits
+blocked overnight. Read everything below as the reasoning behind that
+choice, not as a menu still fully open; if you veto it when you read
+these minutes, the sprint's item order (docs/sprints/sprint-2026-09-21.md)
+does not need to change, since items 2-5 serve Option A's path just as
+much as Option B's. Only the paid-spine timeline framing would change.
+
 **What "a five" would actually take.** The baseline (docs/okrs/okrs-2026-Q4.md,
 2026-09-17) scored alexandria 1.3-3.3 across five axes against Elicit,
 TLDR AI, and Anthropic's skills ecosystem; overall 2.6. Two of those axes
 are inside alexandria's control this week: judgment (is the digest
 accurate and does its claim graph hold up) and reader/agent actionability
 for what already exists (is a skill honestly validated, does a claim
-honestly cite). This sprint's revision 2 (docs/sprints/sprint-2026-09-21.md)
-targets exactly those. Two of the five axes are not a days problem at any
+honestly cite). This sprint (docs/sprints/sprint-2026-09-21.md, now
+revision 3, items 2-5) targets exactly those; item 1, added this triage,
+is the MCP security fix and does not itself move this score. Two of the
+five axes are not a days problem at any
 price: **surface** (TLDR's 1.1M readers, Elicit's 2M-researcher product,
 Anthropic's 176.9k-star ecosystem) and **speed at scale** (TLDR ships five
 times a week to a list two orders of magnitude larger than alexandria's).
@@ -181,8 +247,10 @@ with calendar time and compounding, not sprints.
   controls today, accuracy, judgment, and an honestly validated library,
   brought to full and demonstrated as holding for more than one issue
   (so a clean week reads as a floor, not a lucky one-off), that is
-  plausibly a 2-sprint problem: this sprint's items 1-4 land clean
-  (5 engineer days), then one more sprint's digest repeats clean under
+  plausibly a 2-sprint problem: this sprint's items 2-5 land clean
+  (5 engineer days, unchanged from before item 1 was added, since item 1
+  is a same-week security fix that does not add engineer-days to this
+  count), then one more sprint's digest repeats clean under
   the same checklist (another 5 days). Call it **10-14 engineer days,
   landing a conditional launch in the last week of October**, with the
   explicit caveat that the surface and speed axes still would not read
@@ -197,8 +265,9 @@ with calendar time and compounding, not sprints.
   week, one validated so far), reaching a credible double-digit library
   (per docs/market/report-2026-09.md §7's own bar for the tier) is
   roughly **8-10 more weeks, mid-to-late November**. At a raised cadence
-  (multiple validated skills a week, the shape this dispatch asked for,
-  conditioned on staying honest rather than padded), it is plausibly
+  (a second weekly extraction session, adopted this triage as a
+  charter-and-workflow proposal in docs/ideas.md, conditioned on staying
+  honest rather than padded), it is plausibly
   **4-6 more weeks, mid-to-late October**, contingent on the ADR-13
   panel or an equivalent honest check existing to validate them, since
   "validated" cannot mean "shipped fast" without becoming exactly the
@@ -243,14 +312,67 @@ not just what hides it.
 
 | Surface | What's there today | Removal path |
 |---|---|---|
-| `/pricing`, both tier pills | Two "Coming soon" pills gate the only calls to action on the page, on top of stale $10/$30 tier copy | PR #23 (open) fixes the tier copy to free-plus-$20 but leaves both pills in place on purpose, as the insertion point for email capture. The pills do not come down honestly until that cut sprint item (email capture, or real Stripe checkout) is built and wired in; until then this page still oversells "coming soon" against something a visitor cannot yet do. |
-| `/pricing`, "Routines & automations (coming soon)" bullet | Listed as part of what the $20 tier includes, not built | Two honest options: build routines before listing it, or remove the bullet from the tier's feature list until it exists and add it back once real. The second is nearly free and should not wait on a sprint slot. |
-| `/routines` | Entire page is "Coming soon." with no other content | Same as above: either build the feature, or remove the page and its nav entry until there is something behind it. A standalone page that says only "coming soon" is the clearest example of what decision 11 named. |
-| `/library` (archive) | Renders zero issues on `main` today, because `listIssues()` reads a gitignored directory with nothing checked in | PR #23 (open) fixes this with one real checked-in issue fixture. Its own PR body already names the next gap: the archive still needs to read the live `digests` table so future weeks do not require the same manual git-history recovery every time; that is a new proposed ledger entry from that PR, not yet built. |
-| `/skills` | Renders real content, not empty, but lists exactly one skill against copy that promises "the best techniques the research has produced" | Not a coming-soon page, so not in scope of this audit's literal ask, but the same honesty problem in substance: this sprint's items 4 and 5 (validation extended to both gold skills, receipts rendered) are the fix in progress, and the market agent's own read (report-2026-09.md §6) already calls this "a promise, not a product" at n=1. |
+| `/pricing`, both tier pills | Two "Coming soon" pills gate the only calls to action on the page, on top of stale $10/$30 tier copy | PR #23 (merged) fixed the tier copy to free-plus-$20 but left both pills in place on purpose, as the insertion point for email capture. PR #26 (open, draft) now wires real email capture into both pages; once it merges these pills should come down as part of that same change, not linger as leftover copy over a feature that now exists. |
+| `/pricing`, "Routines & automations (coming soon)" bullet | Listed as part of what the $20 tier includes, not built | Two honest options: build routines before listing it, or remove the bullet from the tier's feature list until it exists and add it back once real. The second is nearly free and should not wait on a sprint slot. Still open as of this triage. |
+| `/routines` | Entire page is "Coming soon." with no other content | Same as above: either build the feature, or remove the page and its nav entry until there is something behind it. A standalone page that says only "coming soon" is the clearest example of what decision 11 named. Still open as of this triage. |
+| `/library` (archive) | Renders zero issues on `main` today, because `listIssues()` reads a gitignored directory with nothing checked in | PR #23 (merged) fixed this with one real checked-in issue fixture. Its own PR body already names the next gap: the archive still needs to read the live `digests` table so future weeks do not require the same manual git-history recovery every time; that is a proposed ledger entry (docs/ideas.md, engineer agent), not yet built. |
+| `/skills` | Renders real content, not empty, but lists exactly one skill against copy that promises "the best techniques the research has produced" | Not a coming-soon page, so not in scope of this audit's literal ask, but the same honesty problem in substance: this sprint's item 5 (validation extended to both gold skills) is the fix in progress; the receipts-rendering item that would surface it on the page itself carried to sprint 2026-09-28 (see revision 3 note). The market agent's own read (report-2026-09.md §6) already calls this "a promise, not a product" at n=1. |
 
-Four items render as literally empty or "coming soon" today. Two already
-have a merge-ready fix in flight (PR #23). Two (the routines bullet and
-page) have no build dependency at all and could be corrected as a copy-
-only change whenever an engineer session has a spare few minutes, ahead
-of any sprint slot.
+Four items were flagged as literally empty or "coming soon." Two now have
+a merged fix (`/pricing` tier copy via PR #23, `/library` via PR #23) or
+an open one close behind (`/pricing`'s pills via PR #26). Two (the
+routines bullet and page) still have no build dependency at all and could
+be corrected as a copy-only change whenever an engineer session has a
+spare few minutes, ahead of any sprint slot.
+
+## Triage memo: the closing all-hands, 2026-09-18 night
+
+One line per seat's ask (docs/allhands/2026-09-18-close.md), decided or
+deferred-to-owner, and why. Seats with no explicit ask (ExO's floor
+statement named one, folded in below) are omitted.
+
+1. **Engineer** — "merge #24 or say which sprint file is live." Decided:
+   revision 3 of sprint-2026-09-21.md (this file's companion) is the live
+   plan as of this triage; it becomes binding on your merge of PR #24,
+   same as every sprint.
+2. **PM (self)** — "the decision 11 ruling." Decided provisionally: the
+   phased gate (Option B), pending your veto. See "Release-gate
+   reconciliation" above.
+3. **OKR** — "the written decision 11 ruling, so October's KR1 has one
+   target." Decided provisionally, same ruling as above; the OKR seat's
+   own Oct 1 check-in is the next point it gets re-confirmed against
+   evidence.
+4. **Market** — "whether positioning and pricing claims stay frozen until
+   decision 11 resolves." Decided: yes, frozen, since the provisional
+   ruling could still be vetoed and a published price claim is harder to
+   walk back than a ledger entry. This is a backlog/schedule call within
+   PM authority, not a pricing decision itself.
+5. **ExO** — "the workflow-scope PAT decision." Deferred to owner: this
+   is a GitHub App installation permission, a real authority question
+   (per decision 4's carve-out for what the owner alone reserves), not
+   something decidable by any agent. Tracked above as items 5 and 13.
+6. **Security** — "a decision on the digest-history rewrite." Deferred to
+   owner: rewriting public git history is disruptive (force-push, breaks
+   two in-flight branches and any existing clones) and irreversible in
+   practice; squarely the kind of call decision 4 reserves. Tracked above
+   as item 4.
+7. **Skill** — "the decision 11 ruling, and whether the failing trigger
+   case gets fixed before launch or ships red." Decision 11: same
+   provisional ruling as above. The trigger case: decided, fix it on the
+   seat's normal Tuesday cadence (docs/ideas.md, accepted this run).
+8. **Frontend** — "ten minutes of the owner's eyes on the new email
+   capture and live metric." Deferred to owner: her attention is the ask
+   itself. Tracked above as item 12.
+9. **Research** — no decision needed; its one ask (direct Neon access)
+   was already satisfied before this triage.
+10. **Finance** — "the Claude subscription's monthly figure." Deferred to
+    owner: it is a real dollar figure, squarely money, decision 4's other
+    carve-out. Tracked above as item 11.
+11. **Sales** — "merge PR #22." Deferred to owner: a PR merge is always
+    hers. Its three named morning triggers, decided separately: the
+    multi-seat Stripe question is already a proposed ledger entry inside
+    PR #22 itself, no new action needed; sending the first ten outreach
+    notes is deferred to owner (item 10 above, "you send, per the law");
+    the Left-Behind Index page is decided (accepted, docs/ideas.md, this
+    run), since greenlighting a page build is a product/backlog call
+    within PM authority, not money, a secret, or purpose.

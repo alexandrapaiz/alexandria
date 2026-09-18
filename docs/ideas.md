@@ -329,7 +329,21 @@ below.
 - First step: surface the newest deprecated claim with its evidence as
   a home-page card
 - Cost: $0
-- Status: proposed
+- Status: accepted
+- Groomed 2026-09-18 (PM, closing all-hands triage): accepted. Sales'
+  redispatched plan (PR #22, open) independently proposes a "Left-Behind
+  Index" public page as a lane-C gate for two already-drafted outreach
+  notes, and the sales floor statement at the 2026-09-18 closing
+  all-hands asked the owner to greenlight it. This is a product/backlog
+  call, not money, a secret, or purpose, so it is decidable under
+  standing liberty (all-hands decision 4) rather than owner-only.
+  Accepting this entry (the weekly public verdict) covers the same
+  ground sales' page-shaped version needs; when PR #22 merges, treat its
+  "Left-Behind Index" entry as the same accepted idea rather than a
+  second build. Not yet carded into a specific sprint; the first step
+  above (one home-page card from the newest deprecated claim) is
+  small enough to fold into whichever sprint has a spare slot, and
+  directly serves the two gated outreach notes sales is waiting on.
 
 ### 2026-09-18 — Agent-readable public surface: llms.txt and a skills manifest (market agent)
 - Trigger: the skills standard's own site ships an llms.txt index for
@@ -1043,7 +1057,14 @@ build.
   record the new bundle next to the failing one so the before and after
   both stay on the record.
 - Cost: $0
-- Status: proposed
+- Status: accepted
+- Groomed 2026-09-18 (PM, closing all-hands triage): the skill seat's own
+  ask at the closing all-hands was whether this ships red or gets fixed
+  before launch. Decided: fix it, on the skill agent's normal Tuesday
+  cadence (next run 2026-09-22), not as an engineer sprint item. The V4
+  regression gate not existing yet is a reason to record the before/after
+  bundle carefully, per this entry's own first step, not a reason to
+  leave a known, cheap, one-clause fix red through launch.
 
 ### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
 - Trigger: the verification-badge schema entry filed earlier on
@@ -1283,4 +1304,64 @@ hand. Statuses left blank for the owner as always.
   charter sweep) or for the owner to apply directly if she would rather
   decide the exact number herself.
 - Cost: $0
+- Status: proposed
+- Groomed 2026-09-18 (PM, closing all-hands triage): PR #18 merged
+  2026-09-18 without picking this up. Superseded by the entry directly
+  below, which the skill seat's own closing all-hands floor statement
+  made concrete: not "more skills per run" but a second parallel
+  extraction session per week on a different claim cluster, same quality
+  bar. That is the shape this entry left underspecified. See "Adopt a
+  second weekly skill-extraction session" below for the exact charter
+  and workflow text.
+
+### 2026-09-18 — Adopt a second weekly skill-extraction session (charter-and-workflow proposal, PM-decided for the ExO and owner to apply)
+
+- Trigger: the skill seat's own floor statement at the closing all-hands
+  (docs/allhands/2026-09-18-close.md): "the honest state: two skills, one
+  validation that is n of 1... At one skill per week the library reaches
+  five or six by Oct 13," short of docs/market/report-2026-09.md §7's
+  double-digit, validated bar. The proposal, in the skill seat's own
+  words: "not more skills per run but a second parallel extraction
+  session per week on a different claim cluster, same quality bar,
+  doubling throughput without padding." The owner's dispatch for this
+  triage run named the decision explicitly as this seat's to rule on, to
+  be written as a charter-and-workflow proposal for her merge if adopted.
+- Decision: **adopted**. Reasoning: the proposal keeps every discipline
+  the entry above worried about losing (one skill per session, quality
+  over count, a recorded validation before promotion) and only adds a
+  second, independent session against a different cluster. It does not
+  ask the agent to draft two skills in one sitting, which would be the
+  actual padding risk; it asks for two normal sessions in a week instead
+  of one. This is the floor's own "doubling throughput without padding"
+  framing, taken at face value, and it directly serves decision 11's
+  phased gate (this same triage, adopted provisionally above): the paid
+  spine's gate opens at a benchmark five, which needs the skill library
+  at double digits, validated, and one session a week does not reach
+  that on any date this quarter.
+- What: the exact charter and workflow text for the ExO to apply and the
+  owner to merge, since both charters and workflow files are owner-merge
+  only (this PM run's writable surface is docs/sprints/ and grooming
+  notes in docs/ideas.md, neither of which includes prompts/ or
+  .github/workflows/):
+  - `prompts/skill-agent.md`, line 6: change "You run once a week,
+    Tuesdays, in a fresh cloud session." to "You run twice a week,
+    Tuesdays and Fridays, in a fresh cloud session each time." Step 1's
+    "One skill per run, quality over count" is unchanged text, since it
+    already states the per-session rule this proposal relies on; add one
+    sentence after it: "The Friday session works a different claim
+    cluster than the one already picked (or in progress) that week, so
+    the two sessions never compete for the same evidence."
+  - `.github/workflows/agent-skill.yml`: add a second cron entry
+    alongside the existing Tuesday one, `- cron: "0 12 * * 5" # 8:00 AM
+    ET Fridays`, under the same `schedule:` key. No other change to the
+    workflow file; the embedded prompt already reads the charter fresh
+    each run, so it needs no edit once the charter line above changes.
+  - `docs/agents/org-chart.md`'s skill row (`Tue 8:00 ET`) should become
+    `Tue + Fri 8:00 ET` once this lands; flagged here since org-chart.md
+    is also outside this run's writable surface tonight.
+- Cost: $0 in new services. It roughly doubles the skill seat's weekly
+  usage against the existing Claude subscription; docs/sprints/pending.md
+  already carries the subscription's monthly figure as an owner-only,
+  not-yet-costed item, so this is worth re-checking once that figure
+  exists rather than assumed free of any real cost.
 - Status: proposed
