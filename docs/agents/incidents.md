@@ -67,3 +67,15 @@ turns patterns into charter or workflow fixes.
    `--model opus` set explicitly on all six workflows. Lesson: a
    routing policy is config plus verification; assert the model from
    run logs, never from intention.
+
+10. **Turn-cap starvation is a pattern, not a one-off (ExO owns the
+   postmortem).** Second and third occurrences: the PM's views/triage
+   run and its scrum-overhaul run both died or shipped nothing under a
+   60-turn cap, after the frontend's first run died at 150. Owner
+   escalated 2026-09-18: "pass this issue on to EXO because it's the
+   second time it's happened." Interim fixes: PM raised to 140,
+   frontend to 250. ExO's Sunday postmortem should right-size every
+   seat's cap against its real workload, and pair it with the
+   draft-PR-first rule so a starved run still leaves partial work
+   instead of nothing. A cap that silently eats a run's entire output
+   is a harness bug, not an agent failure.
