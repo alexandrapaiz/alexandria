@@ -158,3 +158,37 @@ system's *judgment* (prompts, sources) but not its *machinery* (pipeline code,
 schema, this file) — machinery changes stay human-authored. Cadence is bounded
 in the prompt (≤1 proposal/week, evidence must be a pattern), and the human
 merge remains the only way any proposal takes effect.
+
+## ADR-13: The gate is an agent panel, not a human
+
+Owner's decision (2026-09-17), superseding the human-merge gate of ADR-7/12:
+the skill lifecycle runs fully autonomously. Review does not disappear — it is
+reassigned. A proposal (a `propose_skill` or `propose_change` PR) is judged by
+a panel of independent reviewer agents, and merges when the panel passes it.
+No human approval is required anywhere in the loop; the owner can still read,
+revert, or override anything after the fact. Human optional, exactly as
+vision §3 always declared.
+
+The panel is harness engineering applied to our own system — each reviewer is
+a small, stable, verifiable step with fresh context (independent samples, no
+shared context with the author, so agreement is evidence rather than an echo):
+
+- **Provenance reviewer.** Every claim id the skill cites must exist, and the
+  cited claim must actually support the sentence citing it. Practical judgment
+  not backed by a claim must be marked as ours, not the paper's.
+- **Adversary.** Searches the claim graph for contradicting or refining claims
+  the draft ignored. If the graph disagrees with the skill, the PR fails.
+- **Validator.** Runs the A/B trial — bare model vs. skill-loaded on held-out
+  prompts — and passes only if behavior moves in the direction the evidence
+  supports.
+
+Every verdict is a structured `promotions` row, so the audit trail replaces
+the approval gate: **change under evidence** is preserved by recording the
+evidence, not by queuing on a person. Unanimous pass merges the PR via the
+server-held GitHub token; any failure leaves the PR open with the verdicts
+attached for the next weekly run to address.
+
+Scope is still bounded by the ADR-12 whitelist: the panel can merge judgment
+(`skills/`, `prompts/*.md`, `sources.yaml`) but never machinery (pipeline
+code, schema, these docs). Autonomy applies to what the system knows, not to
+what the system is.

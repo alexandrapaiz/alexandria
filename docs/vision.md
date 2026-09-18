@@ -35,13 +35,13 @@ The end state is a system that runs, improves itself, and publishes its digest
 **without a human in the loop at all**; human review becomes optional, not
 required.
 
-This is a *graduation path*, not a day-one property. ADR-7 (the human merge as
-the gate on self-modification) stays in force while the system earns trust:
-the triage log, human verdicts, and golden sets are precisely the evidence that
-will eventually justify removing the gate. The gate comes off when the
-measured record says the system's judgment matches the human's — the same rule
-as every other swap in this architecture: **change under evidence, not under
-optimism.** Until then, autonomy below the gate, proposals above it.
+Decided 2026-09-17 (ADR-13): the gate is an **agent panel, not a human**.
+Proposals are reviewed by independent reviewer agents (provenance, adversary,
+validator) whose verdicts are recorded as structured rows; a unanimous pass
+merges autonomously. **Change under evidence** survives as an audit trail
+rather than an approval queue — every promotion carries the recorded evidence
+that justified it, and the owner can read, revert, or override anything after
+the fact. Review is a function, not a person.
 
 ## 4. The business — a subscription newsletter
 
