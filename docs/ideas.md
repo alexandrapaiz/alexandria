@@ -950,3 +950,75 @@ build.
   failure mode.
 - Cost: $0
 - Status: built
+
+## ExO findings (2026-09-18, second run)
+
+Filed by the ExO agent under charter §5b: staleness found in surfaces
+that belong to other seats, flagged here rather than edited there. Each
+is a documented fact contradicting a decision the owner has already
+made, so none of these needs a new decision, only the owning seat's
+hand. Statuses left blank for the owner as always.
+
+### 2026-09-18 — pipeline/weekly.py still calls the newsletter the paid product (engineer)
+- Trigger: README and diagram audit. `pipeline/weekly.py`'s module
+  docstring says the digest "goes to subscribers by email ... the
+  newsletter is the paid product." The owner decided the opposite on
+  2026-09-17, recorded in vision.md §0: the digest is free and full as
+  the acquisition engine, and the $20 spine is the operational layer.
+- What: correct the docstring to the current pricing. The code is right,
+  only the prose about why it exists is wrong, which is the lying-
+  docstring class the security seat's charter already hunts.
+- First step: one docstring, engineer or security, whoever runs first
+- Cost: $0
+- Status:
+
+### 2026-09-18 — four product docs still point at prompts/weekly-agent.md (engineer)
+- Trigger: ADR-25 renamed the weekly seat to the research agent and moved
+  its charter to `prompts/research-agent.md`. Nine references to the old
+  path survive in `docs/product/architecture-next.md`,
+  `docs/product/source-discovery.md` and `docs/product/pipeline.md`, two
+  of which also name an `agent-weekly.yml` that does not exist. A reader
+  following any of them lands on nothing. The README and ADR-12 were
+  fixed in the ExO's PR this run; these are the engineer's surface.
+- What: update the paths, and check whether the self-application step
+  those docs propose is now the research seat's step 4 rather than a new
+  one.
+- First step: `grep -rn weekly-agent docs/product/`
+- Cost: $0
+- Status:
+
+### 2026-09-18 — skills/README.md says the gold layer is empty (skill agent)
+- Trigger: `skills/README.md` reads "Empty is the honest starting state."
+  Two skills are merged and live: `harness-engineering` (2026-09-12) and
+  `self-improving-post-training-loops` (2026-09-18). Honesty was the
+  point of that sentence, so it should keep being honest.
+- What: describe what is actually in gold, and what a reader should
+  expect a skill file to contain, since skills are the sellable product.
+- First step: rewrite three lines, skill agent's next Tuesday run
+- Cost: $0
+- Status:
+
+### 2026-09-18 — the Q4 OKR file calls the mission unapproved (okr agent)
+- Trigger: `docs/okrs/okrs-2026-Q4.md` says the mission is "proposed
+  2026-09-18, pending the owner's approval, not yet canonical."
+  vision.md §0 records it as the owner's words, final, same day:
+  *accelerate every builder to frontier speed.* The OKR file is the
+  document that holds every quarter against the mission, so it is the
+  worst single place for that line to be stale.
+- What: cite the approved mission and drop the pending language.
+- First step: the OKR agent's next run, or sooner if the owner prefers
+- Cost: $0
+- Status:
+
+### 2026-09-18 — the diagram atlas needs fresh counts from the database (engineer)
+- Trigger: `docs/diagrams.md` diagram 1 carries per-node counts from
+  2026-09-08 (2,312 papers, 1,446 triaged, 80 claims, 22 edges). The one
+  verified newer number is 441 claims on 2026-09-18 (PR #16). The ExO
+  fixed which stations are live and labelled the counts as stale this
+  run, but has no database access and will not guess numbers.
+- What: refresh the five counts in diagram 1 and the four in diagram 2
+  from a live query, and consider printing the query beside them so any
+  future run can re-check rather than re-guess.
+- First step: five `select count(*)` statements, engineer's next run
+- Cost: $0
+- Status:
