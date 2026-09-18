@@ -22,11 +22,15 @@ hands-on walkthrough, 2026-09-18, plus a repo check the same day.
    in this calendar that asks a stranger to "sign up" can go out
    before this is fixed. Pre-launch posts below route to the public
    GitHub repo instead, which is real and already a receipt.
-2. **One skill in gold**, not a library. Every draft says "a growing
-   library, starting with X" or names the one skill directly — never
-   "the skill library" or a count. Fix this by revising copy, not by
-   waiting; O2 KR1's twelve-skill target is a Q4 arc, not a launch-day
-   fact.
+2. **Two skills in gold, not a library** (updated 2026-09-18:
+   `harness-engineering` and `self-improving-post-training-loops`; this
+   line said "one" when first written and that is no longer true). Every
+   draft names the two directly — never "the skill library" and never a
+   projected count. Fix this by revising copy, not by waiting; O2 KR1's
+   twelve-skill target is a Q4 arc, not a launch-day fact. Note for the
+   skill seat: `self-improving-post-training-loops` has an empty
+   `validated:` field, and the dated A/B line is the single best sales
+   sentence we own.
 3. **The homepage's "papers ingested this week" counter is
    hardcoded**, per the market report. If it still is on launch day,
    no draft below should point to it as a live metric — this audience
@@ -87,3 +91,7 @@ exist yet to draw from.
 ## Change log
 
 - 2026-09-18: first calendar, this run.
+- 2026-09-18 (fourth run): dependency 2 corrected from one gold skill
+  to two. The launch-month schedule this calendar covers is expanded
+  day by day in docs/sales/first-customers.md, which this calendar now
+  defers to for everything between 2026-10-13 and 2026-11-11.
