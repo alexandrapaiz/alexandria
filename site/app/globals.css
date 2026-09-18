@@ -100,6 +100,76 @@ a {
   font-weight: 600;
 }
 
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.mobile-nav {
+  display: none;
+  position: relative;
+}
+
+.mobile-nav-toggle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mobile-nav-toggle span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: var(--ink);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.mobile-nav-toggle span.open:first-child {
+  transform: translateY(3.25px) rotate(45deg);
+}
+
+.mobile-nav-toggle span.open:last-child {
+  transform: translateY(-3.25px) rotate(-45deg);
+}
+
+.mobile-nav-panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  min-width: 160px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-nav-panel a {
+  padding: 11px 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.mobile-nav-panel a:hover {
+  background: #f5f5f5;
+}
+
+@media (max-width: 780px) {
+  .mobile-nav { display: block; }
+}
+
 .pill {
   display: inline-block;
   background: var(--ink);
@@ -108,17 +178,28 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.15s ease;
+  /* a back-out curve overshoots past the target scale and settles,
+     the spring feel behind Elicit's hover, translated to our identity
+     as motion only (no color) */
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
-  transform: scale(1.03);
+  transform: scale(1.06);
 }
 
 .pill.ghost {
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
+}
+
+/* the pill's own color (black bg or white bg) matches the browser's
+   default focus ring closely enough to make keyboard focus invisible;
+   a white-gap-then-black ring reads on either variant */
+.pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
 }
 
 .footer {
@@ -187,6 +268,7 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .hero-follow > * { animation: none; }
+  .pill { transition: none; }
 }
 
 .wordmark .embed {
