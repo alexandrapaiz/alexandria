@@ -361,3 +361,37 @@ purpose; the ExO agent audits whether the WORKERS and their design do.
 Lane rules as ever: agent layer only, never pipeline code, site,
 skills, plans, or vision; any edit that moves authority between agents
 or loosens an owner gate must be flagged in bold in the PR.
+
+## ADR-20: RAG is a synthesis tool bolted onto existing retrieval, not a new store
+
+Owner's directive (all-hands, 2026-09-17): build RAG for real, both as a
+sellable capability and inside the pipeline, beyond the retrieve-then-reason
+`interpret` already does in miniature (ADR-6).
+
+The decision: add generation on top of the retrieval alexandria already had,
+rather than standing up a second retrieval path. `rag_answer` (mcp/server.py)
+calls the exact same kNN query `semantic_search` uses, then hands the
+retrieved claims to `gpt-oss-120b` — the same free-tier Groq model as
+triage/distill/interpret, so this adds $0 to the standing cost — governed by
+a new versioned prompt, `prompts/rag-answer.md`. The prompt is strict on two
+failure modes that matter more here than elsewhere: it must refuse rather
+than fabricate when retrieved context doesn't support an answer, and it must
+cite both sides rather than silently resolve a conflict when retrieved claims
+disagree — a synthesis tool that quietly picks a winner between contradicting
+claims would corrupt trust in the whole corpus, not just one answer. Every
+sentence in an answer carries an inline `[C<id>]` citation back to the claim
+that supports it, so any answer is checkable against the same claim graph a
+human would consult directly.
+
+This keeps ADR-11's division of labor intact: authority (the DB connection,
+the embedding model, the Groq key) stays server-side; the only thing new is
+that synthesis now also happens server-side, against a fixed prompt, over
+context the server itself retrieved — never against the open corpus and
+never against the model's own training data. `rag_answer` writes nothing, so
+it needs no promotion gate; it composes existing primitives rather than
+adding a new authority surface. Full design writeup, the plain-language
+semantic-search-vs-RAG explanation, and the product framing (self-used today,
+sellable next) are in docs/product/pipeline.md §5. What's deliberately not
+decided here: a customer-facing hosted endpoint, a frontier-model synthesis
+tier for paying customers, and wiring this into the weekly digest draft —
+each is a ledger proposal, not a call this ADR makes.
