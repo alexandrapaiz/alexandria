@@ -396,3 +396,131 @@ rule to come out of it: the generator prompt plus a worst-case
 payload must fit the pipeline model's request limit with margin,
 measured in CI or at deploy, so an editorial merge can never break
 the press again.
+## 2026-09-18 evening — the six-failure day
+
+Postmortem by the ExO agent, owner-dispatched. Blameless: every fact
+below is read from run logs and from git, not from what any run said
+about itself. Numbering continues at 15 because 11, 12 and 13 are each
+used twice above; see the note at the end of item 16.
+
+15. **Six runs failed in one day, all of them turn-cap collisions, and
+    the two reactive cap raises were outgrown by the seats that got
+    them.** This is incident 10's third escalation to this seat. The
+    owner's instruction was to stop guessing, and this is why.
+
+    The six, verified from `num_turns` and `CLAUDE_ARGS` in each log:
+
+    | Run | Seat | Turns | Cap | Flavor | Work |
+    |---|---|---|---|---|---|
+    | 35299288455 | security | 108 | 100 | false failure | shipped, PR #8 merged |
+    | 35301912056 | pm | 61 | 60 | hard starvation | nothing pushed |
+    | 35305207776 | frontend | 151 | 150 | hard starvation | nothing pushed |
+    | 35306459296 | frontend | 286 | 250 | false failure | shipped, PR #15 merged |
+    | 35307268573 | pm | 61 | 60 | hard starvation | nothing pushed |
+    | 35311930240 | pm | 141 | 140 | hard starvation | shipped anyway, PR #24 merged |
+
+    **These are not six new incidents, and reading them as six is what
+    hid the real finding.** Four were already on this register: the
+    security run is item 11, the frontend 151 is item 4, and the two pm
+    runs at 60 are item 10's second and third occurrences. Only two are
+    new, and the two new ones are the ones that matter, because each one
+    happened *after* its seat's cap had already been raised in response
+    to the earlier failure.
+
+    - Frontend died at 150 at 03:58. The cap was raised to 250. The very
+      next frontend run, at 04:18, used 286. Twenty minutes.
+    - PM died at 60 at 03:06 and again at 04:31. The cap was raised to
+      140. Three pm runs passed comfortably, and the fourth, at 05:43,
+      used 141.
+
+    **Why it happened, technically.** A cap raised in reaction to a
+    failure is set just above the number that failed, so it encodes the
+    largest run the org has already seen rather than the largest it is
+    about to see. Meanwhile the seats' work was growing the same day:
+    frontend gained Playwright screenshot batches, pm gained the board
+    plus the sprint plus a closing all-hands triage. Reaction chases a
+    moving number and always lands behind it. The fix is a ratio, not a
+    number, and it now lives in
+    [turn-caps.md](turn-caps.md): twice the highest observed turn count,
+    rounded up to the next 50, floor 100, re-derived monthly from the
+    logs and immediately whenever a cap is hit or a charter grows a
+    seat's duties.
+
+    **What the org grew from it, and the one genuinely good outcome.**
+    "Ship first, then work" landed on main at 05:11:42 (PR #18). Every
+    one of the three runs that lost all its work started before that
+    moment. Run 35311930240 is the first cap-killed run after it: the
+    cap killed it at 06:00:28, and the owner merged its PR #24 at
+    06:01:07, thirty-nine seconds later. The rule converted a total loss
+    into a delivered sprint revision. That is the clearest evidence the
+    org has that draft-PR-first works, and it argues for keeping the
+    no-ship tripwire queued in
+    [pending-workflow-changes.md](pending-workflow-changes.md) rather
+    than letting the cap fix substitute for it. Caps reduce how often a
+    run is killed. Shipping first decides what a killed run costs.
+
+    **Still unfixed at the time of writing.** Three caps remain below
+    what the rule requires, because the chair's raises were also read
+    from today's failures rather than from the ratio: frontend 400 needs
+    600, pm 250 needs at least 300, security 200 needs 250. Queued in
+    pending-workflow-changes.md, since no agent can push a workflow
+    file.
+
+16. **The false failure: a run finishes its work, reports success, and
+    the action fails it anyway. Second occurrence, now a named defect
+    class.** First seen as item 11 above (security, 108 against 100) and
+    repeated the same day by frontend (286 against 250), which is what
+    promotes it from a one-off to a class under the standing rule.
+
+    **What the logs actually show.** Both runs ended with
+    `"subtype": "success"` and `"is_error": false`. Neither shows
+    `error_max_turns`. The action then emitted
+    `Claude reported a successful result after 286 turns, exceeding the
+    configured maximum of 250` and failed the job. Both runs' output was
+    complete, reviewed, and merged.
+
+    **Why it happens, technically.** The two flavors leave different
+    fingerprints, and the difference is the whole diagnosis. A hard
+    starvation ends at exactly the cap plus one: 61/60, 151/150,
+    141/140, without exception in today's data. A false failure ends far
+    past the cap: 108 against 100, 286 against 250. A single counter
+    enforced at the cap cannot produce both shapes. So the counter the
+    run stops itself on and the `num_turns` the run reports at the end
+    are not the same number, and `claude-code-action` compares the
+    reported one against the configured maximum after the fact and fails
+    the job on it. The overshoot is the gap between the two counters,
+    which is why it grows with the size of the run: 8 turns on a
+    108-turn run, 36 on a 286-turn run. Stated as a hypothesis, because
+    it is inferred from the two counters disagreeing rather than from
+    the action's source, but the shape of the data leaves little else.
+
+    **Consequences, and they are not cosmetic.** The damage is to
+    monitoring, which is how the org knows anything. A red run that
+    shipped everything trains reviewers to shrug at red, and a day with
+    six red runs of two different kinds cost this seat most of a run to
+    sort out. It is the exact inverse of item 8, where a green
+    conclusion hid a run that shipped nothing. Both point one way, and
+    it is now the house rule for reading any run: **judge a run by its
+    artifacts, never by its conclusion.** The three-command triage for
+    doing that in under a minute is in
+    [turn-caps.md](turn-caps.md).
+
+    **The fix, and its honest limit.** A cap sized by the ratio makes
+    both flavors rare, because a run would have to double its seat's
+    historical peak to reach either. That is all the org can do from
+    inside. The action's post-hoc check is upstream code this repository
+    does not own, and no `max-turns` value makes a false failure
+    impossible, only unlikely. So the rule stands alongside the cap: a
+    red run is a question, not a verdict.
+
+    **On the numbering.** Items 11, 12 and 13 each appear twice above,
+    because independent seats appended at the same anchor on the same
+    day, which is item 6's pattern playing out in the register itself.
+    Item 14 flagged it here rather than renumbering, correctly:
+    renumbering breaks every cross-reference pointing at the old
+    numbers, including the ones in the charters. This run does not
+    renumber either. The durable fix is to stop appending at a shared
+    anchor, so from now on **each entry is added under a new dated
+    `##` section with the next free number**, which is what this section
+    does. Where a duplicated number must be cited, cite it by seat and
+    run id as well, the way item 15 cites item 11 as "the security run".
