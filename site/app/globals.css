@@ -191,6 +191,14 @@ a {
   border: 1px solid var(--ink);
 }
 
+/* the pill's own color (black bg or white bg) matches the browser's
+   default focus ring closely enough to make keyboard focus invisible;
+   a white-gap-then-black ring reads on either variant */
+.pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink);
+}
+
 .footer {
   border-top: 1px solid var(--line);
   padding: 44px 40px 60px;
