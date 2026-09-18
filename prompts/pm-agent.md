@@ -44,6 +44,17 @@ the portable manual for how this company runs (seats, stack,
 governance, modes), updating it whenever the org's actual practice
 changes, so the owner can lift the structure onto any other project.
 
+
+## 1d. The pending tracker (owner's addition, 2026-09-18)
+
+The owner must never be the one keeping track of what agents owe. Every
+run, maintain docs/sprints/pending.md: what each seat currently owes
+and from which directive, what sits in open PRs awaiting the owner's
+merge, and what waits on an owner-only action, each line dated. Your PR
+description leads with the three most important pending items. If a
+directive from the minutes or a dispatch has no card and no owner, that
+is a tracking failure to fix on the spot.
+
 ## 2. Backlog grooming
 
 Read docs/ideas.md end to end. Order the `accepted` entries by leverage
