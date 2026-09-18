@@ -1,0 +1,54 @@
+{
+  "skill": "self-improving-post-training-loops",
+  "suite_version": 1,
+  "written": "2026-09-18",
+  "author": "skill agent (ADR-22)",
+  "note": "Machine-readable form of the five-prompt trigger test prompts/skill-agent.md requires, plus one confusion case the executable form makes possible. Run with skills/_validation/trigger_test.py.",
+  "cases": [
+    {
+      "id": "pt-pos-1",
+      "kind": "positive",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "We are building a training loop where the model grades its own rollouts and trains on them. Response lengths are drifting upward and the run feels like it is collapsing. What should we check?",
+      "anchor": "when a self-distillation or self-improvement run destabilizes or collapses",
+      "rationale": "Self-referential supervision plus an observed collapse symptom is the skill's core case, and the calibration section speaks to it directly."
+    },
+    {
+      "id": "pt-pos-2",
+      "kind": "positive",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "Before we distil from our large teacher model, how do we know its answers are actually right on the prompts we care about?",
+      "anchor": "when deciding whether a teacher model's outputs can be trusted before distilling from them",
+      "rationale": "This is the teacher-gating finding, including the fallback when the gate fails. The question names the decision the skill exists to answer."
+    },
+    {
+      "id": "pt-pos-3",
+      "kind": "positive",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "We need a reward signal for training a long-horizon web agent, but there is no verifier for these tasks and no ground-truth answer. How do we assign credit to individual steps?",
+      "anchor": "when designing a reward or rubric for long-horizon agent training without a verifier",
+      "rationale": "Dynamic rubrics with closed-form step redistribution is the answer, and the no-verifier constraint is stated in the activation conditions."
+    },
+    {
+      "id": "pt-neg-1",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "What learning rate and batch size should we use to fine-tune Qwen3-8B on fifty thousand labelled support tickets?",
+      "rationale": "Hard negative: fine-tune, model, and training all match, but the supervision is human labels, not the model's own output. Nothing here is self-referential, so none of the skill's evidence applies. This is the false positive a topic-label description would produce."
+    },
+    {
+      "id": "pt-neg-2",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our retrieval pipeline keeps returning stale documents after a reindex. How should we invalidate the embedding cache?",
+      "rationale": "Hard negative on the pipeline and embedding vocabulary the skill uses in its data-selection section, with an actual need that is cache invalidation. Silence is correct."
+    },
+    {
+      "id": "pt-conf-1",
+      "kind": "confusion",
+      "expect": "self-improving-post-training-loops",
+      "prompt": "Our asynchronous on-policy distillation run is burning teacher GPU time on prompts the student already answers correctly. How should we decide which prompts actually need the teacher?",
+      "rationale": "Mirror of the harness-engineering confusion case: a distillation question inside an agent training loop, where the gating finding (idle teacher capacity, 9.8 to 78.9 percent utilisation) belongs to this skill and not to the harness one."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "note": "The null model for the trigger test. These are plausible skills a working engineer's library would hold, written in the same house format as a real SKILL.md description, covering domains alexandria's library deliberately does not. A library skill fires only when it outranks every decoy on the prompt, which turns 'should this skill stay silent?' into a comparison against a calibrated null instead of an arbitrary score cutoff. Fixed instrument: adding, removing, or rewording a decoy is a versioned change to the policy, not a per-run adjustment.",
+  "version": 1,
+  "written": "2026-09-18",
+  "decoys": [
+    {
+      "name": "decoy-frontend-layout",
+      "description": "Debugging and fixing web page layout. Use when a page renders differently across browsers, when a CSS grid or flex layout collapses at a breakpoint, when component styles leak into siblings, when fonts or spacing shift after a deploy, or when a responsive design breaks on mobile."
+    },
+    {
+      "name": "decoy-postgres-tuning",
+      "description": "Relational database performance work. Use when a SQL query is slow, when deciding which index to add or drop, when a migration locks a table in production, when the query planner picks a sequential scan, or when a connection pool saturates."
+    },
+    {
+      "name": "decoy-cluster-capacity",
+      "description": "Sizing and operating a container cluster. Use when pods are OOM-killed or evicted, when setting CPU and memory requests and limits, when a rollout fails its readiness checks, when autoscaling thrashes under load, or when a serving deployment needs capacity planning for inference traffic."
+    },
+    {
+      "name": "decoy-product-copy",
+      "description": "Writing user-facing words. Use when drafting landing page copy, onboarding emails, release notes, error messages, or a chatbot persona and its system prompt, where the need is tone, clarity, and wording rather than a technical design decision."
+    },
+    {
+      "name": "decoy-data-pipeline-ops",
+      "description": "Operating batch data pipelines. Use when a scheduled job fails or backfills the wrong window, when a cache or search index goes stale after a reindex, when designing retries and idempotency, when deduplicating records, or when a warehouse table drifts from its source."
+    },
+    {
+      "name": "decoy-api-integration",
+      "description": "Integrating third-party services. Use when wiring up a vendor API, when OAuth tokens expire or refresh incorrectly, when handling rate limits and backoff, when webhooks arrive out of order or twice, or when a sandbox behaves differently from production."
+    },
+    {
+      "name": "decoy-dependency-management",
+      "description": "Keeping a build working. Use when a dependency conflict breaks an install, when deciding how tightly to pin versions, when a build passes locally but fails in CI, when a transitive upgrade breaks an interface, or when a lockfile needs regenerating."
+    },
+    {
+      "name": "decoy-incident-response",
+      "description": "Handling production incidents. Use when a live service is degraded or down, when triaging a paging alert, when deciding whether to roll back, when communicating status to customers, or when writing the postmortem afterwards."
+    }
+  ]
+}
