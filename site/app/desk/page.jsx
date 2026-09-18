@@ -11,6 +11,7 @@ const LANES = {
   okr: "okr",
   exo: "exo",
   sec: "sec",
+  skill: "skill",
 };
 
 const lane = (branch) => LANES[branch.split("/")[0]] || "other";

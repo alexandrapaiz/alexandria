@@ -134,7 +134,8 @@ below.
   unmetered friends-and-family tier first
 - Cost: $0 to build; a per-query or per-seat price is a pricing proposal for
   the owner before anything is charged
-- Status: proposed
+- Status: rejected
+- Owner verdict 2026-09-18: rejected for Q4 by the skills-focus decision (all-hands decision 6). Not current work; may be re-proposed after Q4.
 
 ### 2026-09-18 — Frontier-model synthesis tier for RAG
 - Trigger: ADR-5's right-size-the-model rule (cheap model for routine work,
@@ -149,7 +150,8 @@ below.
   (docs/evals/2026-09-07-distill-bakeoff.json), before spending anything
 - Cost: metered Anthropic API cost per paid query — a pricing proposal, not
   an action this ledger authorizes
-- Status: proposed
+- Status: rejected
+- Owner verdict 2026-09-18: rejected for Q4 by the skills-focus decision (all-hands decision 6). Not current work; may be re-proposed after Q4.
 
 ### 2026-09-18 — Harness audit as a sellable service
 - Trigger: docs/product/pipeline.md §3 — the five harness disciplines
@@ -165,7 +167,8 @@ below.
   review of their own system
 - Cost: $0 to build the checklist/template; delivery is a sold service, not
   an automation, so it costs nothing standing
-- Status: proposed
+- Status: rejected
+- Owner verdict 2026-09-18: rejected for Q4 by the skills-focus decision (all-hands decision 6). Not current work; may be re-proposed after Q4.
 
 ### 2026-09-18 — Agent packs: skill + activation prompt as a priced SKU
 - Trigger: this run's competitive scan (above) — marketplaces built on
@@ -201,7 +204,8 @@ below.
 - First step: publish one full issue body as a public fixture the
   library page renders when no member session exists
 - Cost: $0
-- Status: proposed
+- Status: rejected
+- Owner verdict 2026-09-18: rejected for Q4 by the skills-focus decision (all-hands decision 6). Not current work; may be re-proposed after Q4.
 
 ### 2026-09-18 — Email capture before payments exist (market agent)
 - Trigger: the Subscribe CTA dead-ends at a "Coming soon" pricing page

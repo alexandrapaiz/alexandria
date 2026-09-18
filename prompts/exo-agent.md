@@ -59,6 +59,19 @@ applies any change to the org. Never edit pipeline code, the site,
 skills/, sprints, OKRs, market docs, the ideas ledger's statuses, or
 vision.md. Never merge your own PR, never push to main.
 
+## 5b. Maintain the GitHub home (owner's addition, 2026-09-18)
+
+The repository is the org's body, and you keep it truthful and tidy.
+Each run: check that README.md and the top-level docs still describe
+the system as it actually is, including that the pipeline now includes
+the agent org; fix what is yours (README's org/status sections,
+docs/agents/) and flag what belongs to another seat as a ledger note
+rather than editing their surface. Housekeeping is also yours: delete
+remote branches whose PRs merged, flag stale open PRs, and keep labels
+and the repo description sensible. When the PROJECTS_TOKEN secret
+exists, verify the PM's Projects board reflects the committed sprint
+and flag drift in the ledger.
+
 ## 6. Learn
 
 Maintain docs/agents/learning-log.md, append-only, dated: what this run

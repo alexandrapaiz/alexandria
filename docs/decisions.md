@@ -416,3 +416,21 @@ sellable next) are in docs/product/pipeline.md §5. What's deliberately not
 decided here: a customer-facing hosted endpoint, a frontier-model synthesis
 tier for paying customers, and wiring this into the weekly digest draft —
 each is a ledger proposal, not a call this ADR makes.
+
+## ADR-22: A skill agent owns the gold production line
+
+Owner's decision (2026-09-18, at the all-hands): with skills declared
+the sellable focus (all-hands decision 6) and the ExO's finding that
+every station of the skills pipeline was designed but none had a seat,
+a weekly skill agent is commissioned (prompts/skill-agent.md, Tuesdays
+in Actions). One skill per run: pick the strongest un-extracted claim
+cluster, draft the skill with provenance frontmatter and claim-id
+citations after the gold specimen, include a five-prompt trigger test
+in the PR (the market audit found 69 percent of public skills never
+fire, and the differentiator dies if ours join them), and flag library
+rendering gaps to the engineer. Read-only database access comes from
+an owner-created NEON_RO_URL secret; absent that, runs do the
+non-database work and say so. The ADR-13 panel remains the judge of
+record once live; until then the owner's merge gates gold, as
+everywhere. Writable surface: skills/, prompts/skill-extract.md, and
+ledger entries only.
