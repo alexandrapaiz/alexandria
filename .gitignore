@@ -8,3 +8,4 @@ digests/
 site/node_modules/
 site/.next/
 site/content/digests/
+.claude/worktrees/
