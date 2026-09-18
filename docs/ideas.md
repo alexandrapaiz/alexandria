@@ -582,3 +582,19 @@ build.
   doc, engineer seat
 - Cost: $0
 - Status: accepted
+
+### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
+- Trigger: owner's directive to cover everything related to building in
+  the AI age, adopted with the three seats' guardrails (all-hands
+  decision 10): scope = only findings that carry cited evidence and
+  ship as directly usable tools, never stories.
+- What: the Q4 day-sized spike from the engineer's consultation: an
+  evidence_grade column on claims set at distill so anecdotes and
+  peer-reviewed results never mix silently, five engineering-blog
+  feeds added to sources.yaml, and a practices variant of
+  prompts/distill.md that asks what they did, why, and what broke.
+  Full expansion (repo design docs, talks, handbooks) is a Q1 2027
+  objective behind the OKR seat's three gates.
+- First step: the evidence_grade migration and one blog feed, engineer
+- Cost: $0
+- Status: accepted
