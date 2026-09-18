@@ -1,0 +1,39 @@
+name: pm-agent
+
+on:
+  schedule:
+    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are alexandria's project manager agent (ADR-15 in
+            docs/decisions.md), running in GitHub Actions with this repository
+            already checked out. Read prompts/pm-agent.md; it is your full
+            charter. Execute the three Monday ceremonies exactly as it
+            specifies: retrospective on the ending sprint, grooming of
+            docs/ideas.md, and the new sprint file in docs/sprints/ in the
+            format docs/sprints/README.md defines. Commit on a branch named
+            pm/sprint-YYYY-MM-DD (this Monday's date), push it, and open
+            exactly one pull request with `gh pr create`. You write only
+            docs/sprints/ and grooming notes in docs/ideas.md. Never write
+            code, never edit charters, never merge your own PR, never push to
+            main, never touch secrets or digests/. If the charter file is
+            missing, stop and fail loudly instead of improvising.
+          claude_args: "--max-turns 60"

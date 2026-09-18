@@ -718,3 +718,57 @@ a {
   font-size: 16px;
   max-width: 460px;
 }
+
+/* ---------- desk (owner review page) ---------- */
+.desk { padding-bottom: 120px; }
+.desk-h {
+  margin: 56px 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid #000;
+  padding-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.desk-count { font-variant-numeric: tabular-nums; }
+.desk-list { display: flex; flex-direction: column; }
+.desk-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e5e5e5;
+  text-decoration: none;
+  color: #000;
+}
+.desk-row.done { color: #888; }
+.desk-lane {
+  flex: 0 0 76px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border: 1px solid currentColor;
+  padding: 2px 0;
+  text-align: center;
+}
+.desk-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.desk-main b { font-weight: 600; font-size: 15px; }
+.desk-main i { font-style: normal; font-size: 12px; color: #888; }
+.desk-go { font-size: 12px; white-space: nowrap; opacity: 0; }
+.desk-row:hover .desk-go { opacity: 1; }
+.desk-empty { font-size: 14px; color: #888; margin: 10px 0 0; }
+.desk-doc {
+  border: 1px solid #e5e5e5;
+  padding: 20px 24px;
+  margin-top: 12px;
+}
+.desk-doc h1 { font-size: 18px; margin: 0 0 12px; }
+.desk-doc h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; margin: 20px 0 8px; }
+.desk-foot { margin-top: 64px; font-size: 12px; color: #888; }
+.desk-foot a { color: #000; }
+@media (max-width: 560px) {
+  .desk-row { flex-wrap: wrap; }
+  .desk-lane { flex-basis: 64px; }
+}

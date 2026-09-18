@@ -304,3 +304,30 @@ on free public surfaces — no accounts, no posting, no contact with
 anyone, no paywall scraping — because the agent gathers intelligence and
 the owner alone acts in the market. Pricing decisions stay hers; the
 positioning doc exists so she never makes one blind.
+
+## ADR-18: The agent org runs in the cloud, not on the owner's laptop
+
+Owner's finding (2026-09-17), the same day the org was born: the four
+agents launched as desktop scheduled tasks, which run only while her app
+is open on her machine. That fails the purpose's own tiebreak — an
+organism whose heartbeat is a laptop lid is not autonomous.
+
+The fix is the compute fallback ADR-2 documented from the start: GitHub
+Actions. Each agent is a scheduled workflow in .github/workflows/
+(agent-engineer daily, agent-pm Mondays, agent-market Fridays, agent-okr
+monthly, plus workflow_dispatch for manual runs) that checks out the
+repo and runs Claude Code headlessly via anthropics/claude-code-action.
+The workflow prompt is deliberately thin — identity, the charter file to
+obey, and the hard boundaries — because the charters stay the single
+source of truth and remain owner-merged files.
+
+Cost stays $0 the same way everything else does: Actions minutes are
+free on a public repo, and the model runs on the owner's existing Claude
+subscription through a long-lived OAuth token (`claude setup-token`)
+stored as the CLAUDE_CODE_OAUTH_TOKEN repository secret. Two setup steps
+are owner-only, since secrets never pass through the system: minting
+that token, and enabling "Allow GitHub Actions to create and approve
+pull requests" in the repo's Actions settings. The desktop scheduled
+tasks are retired once the first cloud runs go green; they remain the
+documented fallback if Actions cron ever proves unpunctual for a
+time-sensitive agent.
