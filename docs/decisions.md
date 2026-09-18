@@ -434,3 +434,22 @@ non-database work and say so. The ADR-13 panel remains the judge of
 record once live; until then the owner's merge gates gold, as
 everywhere. Writable surface: skills/, prompts/skill-extract.md, and
 ledger entries only.
+
+## ADR-23: A frontend engineer verifies the product visually
+
+Owner's decision (2026-09-18): the ninth seat. A weekly frontend
+engineer (prompts/frontend-agent.md, Wednesdays in Actions) owns how
+the product looks and feels on every screen, from iPhone to iPad to
+desktop, and its defining rule is the owner's: verification is VISUAL.
+The run builds the site, screenshots every page at three viewports
+with Playwright, and the agent reads the rendered pixels before
+judging anything; a page is never fine because the code reads right.
+It fixes what it sees, benchmarks best-in-class AI product sites for
+interaction craft (the owner's named exemplar: Elicit's satisfying
+bouncy hover), implements at most two verified polish refinements per
+run translated into the fixed B&W Apple-clean identity, and ships
+before-and-after screenshots in the PR as evidence. Hard protections:
+the hero mark's owner-approved geometry is untouchable without her
+word, no color enters the palette, sprint feature builds stay the
+engineer's. Same authority as every seat: one PR per run, owner's
+merge, lane-bounded writes (site/, docs/design/, ledger, board).
