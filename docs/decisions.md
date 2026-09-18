@@ -251,3 +251,30 @@ against merged PRs only, so the retro naturally surfaces the one queue
 only the owner can drain. Blackboard coordination again, one level up:
 the agents never talk to each other, they read and write the repo, and
 the sprint file is the blackboard.
+
+## ADR-16: A monthly OKR agent guards the purpose
+
+Owner's decision (2026-09-17), with the purpose settled on the record
+first (vision.md §0): autonomy wins tiebreaks, the end state is a
+standalone knowledge business, and the north star is **quality of the
+product, benchmarked monthly against industry-grade competitors** — her
+words: "we must benchmark with industry grade competitors."
+
+The OKR agent completes the planning hierarchy: purpose (owner) → OKRs
+(quarterly, checked monthly) → sprints (PM, weekly) → days (engineer,
+daily). Charter at prompts/okr-agent.md; artifacts in docs/okrs/, one
+file per quarter with monthly check-ins appended. Each monthly run does
+four things: reads the north star directly (a five-axis scoring of the
+live product against three real competitors, rotating through the
+Elicit/Consensus class, the TLDR/Import AI class, and agent-knowledge
+ecosystems — the score trendline IS the metric), scores every key
+result with evidence, audits the month's sprints and ledger for drift
+(orphan work, orphan objectives, manual substitutions for autonomy),
+and drafts or adjusts OKRs — new objectives only at quarter turns.
+
+Authority is consistent with ADR-14/15: one PR per run, owner's merge
+commits the OKRs, writable surface is docs/okrs/ plus dated ledger
+notes, and purpose itself is untouchable — vision.md §0 changes only by
+the owner's own hand. The PM reads the committed OKRs when planning, so
+every sprint goal names the objective it serves and the chain from a
+Tuesday PR to the purpose is inspectable end to end.

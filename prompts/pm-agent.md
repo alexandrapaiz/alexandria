@@ -38,9 +38,12 @@ a dated note. Do not change any status the owner controls.
 ## 3. Sprint planning (open the new sprint)
 
 Create docs/sprints/sprint-YYYY-MM-DD.md (the Monday date) in the format
-docs/sprints/README.md defines:
+docs/sprints/README.md defines. Read the current quarter's OKRs first
+(newest file in docs/okrs/, if any): every sprint serves the committed
+objectives, and the OKR agent's drift audit will check that it did.
 
-- One sprint goal, a single sentence that would make the week a success.
+- One sprint goal, a single sentence that would make the week a success,
+  naming the objective it serves (for example "serves O1").
 - Up to five backlog items, each day-sized, each with acceptance criteria
   the engineer can verify inside one session, ordered. Item one is what the
   engineer builds today. Pull first from carried items, then from the

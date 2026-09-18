@@ -3,6 +3,33 @@
 Recorded 2026-09-08. This is what the pipeline is being built *toward*; the
 status checklist in the README tracks distance from it.
 
+## 0. Purpose
+
+Recorded 2026-09-17, the owner's calls on the record. alexandria is an
+**autonomous research organism building a standalone knowledge business**:
+it turns the moving frontier of AI research into operational knowledge, a
+digest people read and skills agents load.
+
+Three decisions govern every agent that plans or builds here:
+
+- **Tiebreak: autonomy.** When the system's three souls conflict (the
+  school of the ADRs, the business of the subscription, the organism that
+  improves itself), prefer the choice that increases what alexandria can
+  do without its owner. A manual shortcut that ships faster still loses.
+- **End state: a standalone knowledge business.** In three years, a real
+  subscription company: subscribers at scale, the canonical skills library
+  for agents, run by its own agents with the owner as owner.
+- **North star: quality of the product, benchmarked against industry-grade
+  competitors.** Not autonomy for its own sake and not growth for its own
+  sake. The digest and the library must be measured monthly against the
+  best the industry offers (the Elicit and Consensus class of research
+  tools, the TLDR AI and Import AI class of digests) and must be winning
+  on judgment, speed to the frontier, and actionability. Growth is
+  downstream of beating the benchmark.
+
+The school continues as a byproduct: the ADR habit is institutionalized
+and no longer needs protecting.
+
 ## 1. The weekly digest
 
 The end product of the reading loops is a well-drafted weekly digest with three
