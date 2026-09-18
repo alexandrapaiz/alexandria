@@ -304,3 +304,4 @@ proving each was an ancestor of main.
   and the merge order is declared in PR #18's description as the rule
   requires. Check whether other seats' PR descriptions do the same, or
   whether it reads as unused boilerplate.
+
