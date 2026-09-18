@@ -14,3 +14,7 @@ site/content/digests/
 # against whatever needs looking at, so none of them belong in the repo.
 site/*.mjs
 !site/next.config.mjs
+
+# Local volume-test fixtures for the skills library UI (never committed).
+# Convention: dummy skills for layout verification live at skills/fixture-*
+skills/fixture-*/
