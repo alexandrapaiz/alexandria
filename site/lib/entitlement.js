@@ -9,10 +9,18 @@ import { neon } from "@neondatabase/serverless";
 // db/schema.sql. 'full' is the $20 tier.
 export const SPINE_TIER = "full";
 
-// Clerk is not wired yet: its keys are the owner's action, due 2026-09-19.
-// Until then there is no session to read and every visitor is signed out.
-// When Clerk lands this is the only function that changes, and it returns the
-// signed-in user's primary email address.
+// STUB. Clerk's components and middleware landed on 2026-09-18 (sign-in,
+// sign-up, ClerkProvider, clerkMiddleware), but this function was never
+// switched over, so it still reports every visitor as signed out and
+// hasSpine() below can therefore never return true for anybody. That is safe
+// (it fails closed) but it means the $20 spine is shut to paying subscribers
+// too, which matters before Stripe goes live 2026-09-26.
+//
+// Finishing it needs Clerk's server-side session, plus the Clerk keys that
+// are still the owner's pending action, so it belongs to the engineer seat
+// and not to a comment. Tracked as urgent in docs/ideas.md (2026-09-18).
+// When it lands, this stays the only function that changes, and it returns
+// the signed-in user's primary email address.
 export async function currentEmail() {
   return null;
 }
