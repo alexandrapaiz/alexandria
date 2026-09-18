@@ -10,3 +10,6 @@ site/node_modules/
 site/.next/
 site/content/digests/
 .claude/worktrees/
+site/shot.mjs
+site/audit.mjs
+site/bench.mjs

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Show, SignInButton } from "@clerk/nextjs";
 
 const LINKS = [
   ["/library", "Library"],
@@ -32,6 +33,14 @@ export default function MobileNav() {
               {label}
             </Link>
           ))}
+          {/* the nav bar has no room for this on a phone, so the panel carries it */}
+          <Show when="signed-out">
+            <SignInButton mode="modal">
+              <button type="button" className="mobile-nav-signin">
+                Sign in
+              </button>
+            </SignInButton>
+          </Show>
         </div>
       )}
     </div>

@@ -16,13 +16,12 @@ export default async function Skills() {
   return (
     <main className="page">
       <p className="page-kicker">Skills</p>
-      <h1 className="page-title">Research that installs.</h1>
+      <h1 className="page-title">Skills your agents can load.</h1>
       <p className="page-intro">
-        The best techniques the research has produced, packaged so your
-        agents can use them: harness design, training recipes, debugging
-        methods for multi-agent systems. Each skill is proven before it
-        ships, updated as the science sharpens, and retired with an
-        explanation if it is overturned.
+        Each skill is a file your agent loads to do one thing well, from
+        designing an agent harness to running a training loop. Every skill
+        names the papers it came from, and it is revised when the research
+        moves and retired with an explanation when it is overturned.
       </p>
       {skills.map((s) => (
         <div key={s.name} className="skill-card">
@@ -45,9 +44,9 @@ export default async function Skills() {
             />
           ) : (
             <div className="skill-lock">
-              <span>The full skill file is part of the spine.</span>
+              <span>The full skill file comes with the paid plan.</span>
               <Link href="/pricing" className="pill">
-                Get access
+                See pricing
               </Link>
             </div>
           )}

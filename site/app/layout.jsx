@@ -6,7 +6,7 @@ import MobileNav from "./components/MobileNav";
 export const metadata = {
   title: "library of alexandr.ia",
   description:
-    "A library live with the latest AI research: what the field knows right now, and the best known methods, ready for your agents to load.",
+    "Every week the library reads new AI research and tells you what changed. Your agents load the same answers you do.",
 };
 
 export default function RootLayout({ children }) {
@@ -29,14 +29,14 @@ export default function RootLayout({ children }) {
           <MobileNav />
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <button className="pill ghost" style={{ cursor: "pointer", marginRight: 10 }}>Sign in</button>
+              <button className="pill ghost nav-signin" style={{ cursor: "pointer" }}>Sign in</button>
             </SignInButton>
           </Show>
           <Show when="signed-in">
-            <span style={{ marginRight: 10, display: "inline-flex", verticalAlign: "middle" }}><UserButton /></span>
+            <span className="nav-user"><UserButton /></span>
           </Show>
           <Link href="/pricing" className="pill">
-          Subscribe
+          Pricing
           </Link>
           </div>
           </nav>

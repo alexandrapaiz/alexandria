@@ -103,8 +103,8 @@ export default async function Desk() {
         <p className="page-kicker">Owner</p>
         <h1 className="page-title">The Desk</h1>
         <p className="page-intro">
-          Every agent&apos;s output lands here as a pull request. Your merge is
-          the gate; your verdicts steer the ledger.
+          Every agent&apos;s output lands here as a pull request. Your merge
+          is the gate, and your verdicts steer the ledger.
         </p>
 
         {offline && (
@@ -167,8 +167,8 @@ export default async function Desk() {
           />
         ) : (
           <p className="desk-empty">
-            No sprint on main yet. The PM&apos;s plan arrives as a PR above;
-            merging it starts the sprint.
+            No sprint on main yet. The PM&apos;s plan arrives as a pull
+            request above, and merging it starts the sprint.
           </p>
         )}
 

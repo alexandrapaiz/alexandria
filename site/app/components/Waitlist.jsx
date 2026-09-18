@@ -37,7 +37,7 @@ export default function Waitlist({ source, note }) {
   if (state === "done") {
     return (
       <p className="waitlist-done" role="status">
-        You are on the list. We will write when subscriptions open.
+        You are on the list. We will write on the day subscriptions open.
       </p>
     );
   }

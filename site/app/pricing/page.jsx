@@ -6,12 +6,11 @@ export default function Pricing() {
   return (
     <main className="page">
       <p className="page-kicker">Pricing</p>
-      <h1 className="page-title">Two ways in.</h1>
+      <h1 className="page-title">Read for free. Build for $20.</h1>
       <p className="page-intro">
-        The weekly digest is free, in full, and always will be. One paid plan
-        adds the operational layer underneath it: the skills your agents load,
-        the claim graph they are drawn from, and the automations that keep both
-        current.
+        The weekly digest stays free and arrives in full. The paid plan adds
+        the three things your agents run on. You get the skill library, the
+        claim graph behind it, and the routines that keep both current.
       </p>
       <div className="tiers">
         <div className="tier">
@@ -19,44 +18,45 @@ export default function Pricing() {
           <div className="price">Free</div>
           <span className="per">every Monday</span>
           <ul>
-            <li>The weekly digest by email</li>
-            <li>Every issue in full, nothing held back</li>
-            <li>The complete archive in the library</li>
+            <li>The weekly digest, by email</li>
+            <li>Every issue in full</li>
+            <li>The complete archive</li>
           </ul>
-          <span className="pill ghost">Coming soon</span>
+          <span className="pill ghost">Opens October 13</span>
         </div>
         <div className="tier featured">
-          <h2>The spine</h2>
+          <h2>Full access</h2>
           <div className="price">$20</div>
           <span className="per">per month</span>
           <ul>
-            <li>Everything in the free digest</li>
-            <li>The full skill library, for any AI agent</li>
-            <li>The claim graph, explorable</li>
-            <li>Skill revisions as the research moves</li>
-            <li>Routines &amp; automations (coming soon)</li>
+            <li>Everything in the digest</li>
+            <li>The full skill library, for any agent</li>
+            <li>The claim graph, node by node</li>
+            <li>Skill updates as the research moves</li>
+            <li>Routines, once they ship</li>
           </ul>
-          <span className="pill">Coming soon</span>
+          <span className="pill">Opens October 13</span>
         </div>
       </div>
       <section className="waitlist-block" id="waitlist">
-        <h3>Be told when they open</h3>
+        <h3>Hear when it opens</h3>
         <p>
-          Leave an email and we will write to you once, on the day
-          subscriptions open. Until then nothing else arrives.
+          Leave your email and we will write once, on the day subscriptions
+          open. Nothing else will arrive before then.
         </p>
         <Waitlist
           source="pricing"
-          note="One email, and you can leave the list from any of them."
+          note="We send one email, and it carries an unsubscribe link."
         />
       </section>
       <div className="billing-note">
         <h3>How billing works</h3>
         <p>
-          You choose how your subscription behaves. It can renew automatically,
-          or it can stop at the end of each month until a reminder arrives and
-          you decide to continue. Subscription businesses often count on being
-          forgotten, and we would rather earn the renewal than collect it.
+          You choose how your subscription behaves. It can renew
+          automatically, or it can stop at the end of each month until a
+          reminder arrives and you decide to continue. Many subscription
+          businesses count on being forgotten, and we would rather earn the
+          renewal than collect it.
         </p>
       </div>
     </main>

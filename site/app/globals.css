@@ -181,8 +181,35 @@ a {
   background: #f5f5f5;
 }
 
+.mobile-nav-signin {
+  padding: 11px 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  color: var(--ink);
+  background: none;
+  border: none;
+  text-align: left;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.mobile-nav-signin:hover {
+  background: #f5f5f5;
+}
+
+.nav-user {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Found in the pixels: with the sign-in pill, the menu button and the
+   primary pill all in the bar, the nav ran to 447px at a 390px viewport and
+   pushed every page into a horizontal scroll. The panel below already holds
+   the links, so it holds sign-in too and the bar fits. */
 @media (max-width: 780px) {
   .mobile-nav { display: block; }
+  .nav-signin { display: none; }
 }
 
 /* From the benchmark runs. Elicit's hover is a Framer Motion spring: it
