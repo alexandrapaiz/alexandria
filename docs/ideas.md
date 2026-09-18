@@ -511,3 +511,56 @@ build.
   then test the MCP server still deploys and authenticates after the bump.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-18 — Automate the weekly meta-review seat (engineer agent)
+- Trigger: writing docs/product/source-discovery.md (owner's discovery
+  addendum) meant tracing where Step 4 of prompts/weekly-agent.md
+  (the ADR-12 meta-review, now also this doc's discovery step) actually
+  runs. It doesn't: README's status checklist still carries "Claude
+  weekly agent scheduled task" unchecked, and unlike engineer, PM,
+  market, OKR, security, exo, and skill, there is no `agent-weekly.yml`
+  in .github/workflows/. Step 3 (skill authoring) was superseded by the
+  dedicated skill agent (ADR-22); Step 4 has no seat at all
+- What: add `agent-weekly.yml` on the pattern the other seven seats
+  already use, running prompts/weekly-agent.md with direct database
+  access the way skill-agent.md already does (NEON_RO_URL, psql)
+  instead of depending on the MCP server's human-oriented OAuth login,
+  which was designed for the owner's own claude.ai connector, not a bot
+- First step: stand up the workflow file and a Sunday or Monday
+  schedule (before or after the PM's Monday grooming), pointed at the
+  existing charter unchanged; confirm Step 4's propose_change calls
+  work the same way gh pr create already does for every other seat
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — Store each paper's arXiv category (engineer agent)
+- Trigger: same doc. The arXiv firehose can only ever confirm categories
+  already listed in sources.yaml, by construction, so it can never
+  discover that an untracked category now matters. hf_daily_papers is
+  the one source we ingest that isn't category-filtered, but papers has
+  no category column, so a paper landing there from an uncovered
+  category leaves no trace to query against
+- What: add `category text` to papers, populated in ingest.py's
+  fetch_arxiv (from the source category) and fetch_hf_daily (from the
+  arXiv id's primary category, one extra field already in HF's payload)
+- First step: the schema migration plus the two ingest.py call sites;
+  a follow-up query (repeated hf-daily hits in an uncovered category)
+  is the actual discovery signal and can wait for a few weeks of data
+- Cost: $0
+- Status: proposed
+
+### 2026-09-18 — sources.yaml watchlist for authors and institutions (engineer agent)
+- Trigger: same doc. discovery_report's rising_authors and
+  rising_institutions signals (mcp/server.py) often name a researcher
+  or lab with no blog or RSS feed to add as a `feeds:` entry — the
+  current schema (arxiv categories + feeds only) has no way to
+  represent "watch this person or lab" directly, so today those
+  findings can only become a ledger note, not a structural change
+- What: a `watchlist: {authors: [...], institutions: [...]}` block in
+  sources.yaml; triage.py applies a tier-b-equivalent prior when a
+  paper's authors or institutions match an entry, even before a
+  dedicated feed exists for them
+- First step: the sources.yaml schema addition plus the triage.py
+  lookup, proposed together so the field is never dead configuration
+- Cost: $0
+- Status: proposed
