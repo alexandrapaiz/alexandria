@@ -11,6 +11,91 @@ scheduled PM ceremony (retro on sprint-2026-09-21, grooming, sprint
 2026-09-28) runs Monday 2026-09-28 on its normal cadence; this file does
 not replace that run.
 
+## Board reorg (owner dispatch, 2026-09-18, done)
+
+A second same-day dispatch, separate from the ops dispatch above: bring
+GitHub Projects board #4 ("alexandria scrum") up to real Scrum
+structure. Done entirely via `gh api graphql` with
+`GH_TOKEN=$PROJECTS_TOKEN` against project 4 (`PVT_kwHOBqunQs4Bj3sN`);
+nothing here touches this repo except this note.
+
+**1. Status field rebuilt as a real flow.** Old: Todo / In Progress /
+Done. New, in this order: **Backlog / Sprint Ready / In Progress / In
+Review / Done**. `Todo` was renamed to `Backlog` in place
+(`updateProjectV2Field`, same option ID), which is why every item that
+was `Todo` came along automatically; `In Progress` and `Done` kept their
+IDs too, so nothing on the board silently reset. `Sprint Ready` and `In
+Review` are new options, added empty and populated below.
+
+**2. A weekly `Sprint` iteration field**, one-week iterations starting
+Monday 2026-09-21 as directed: Sprint 2026-09-21, -09-28, -10-05,
+-10-12, -10-19 (5 iterations, covers the runway through launch with one
+week of buffer after). Note the one-day drift from the runway plan's own
+prose, which anchors its weeks to launch day (Tuesday 2026-10-13) and so
+describes sprint 3 as "10-06 to 10-12": a Monday-start iteration can't
+match that exactly. I mapped by nearest overlapping Monday week rather
+than force a non-Monday iteration start, since "starting Mon 2026-09-21"
+was explicit in the dispatch.
+
+**3. Every card mapped truthfully**, checked against `gh pr list` and
+this file's own open-PR tracking, not left as whatever the prior pass
+left it:
+
+- Moved to **Done** (all previously `Todo`, all confirmed merged):
+  Sprint 09-21 items 1-3 (PR #23), "Design the skill validation system"
+  (PR #21), "Define alexandria's distribution system (Thiel)" (PR #17;
+  was stale at `In Progress`), "Charter fix: draft PR first" (landed in
+  commit d47148b), "Carry: finish the 2026-09-18 visual run" (its three
+  named pieces — desk alignment, mobile nav, focus ring, hover polish —
+  all shipped across PR #15 and #19).
+- Moved to **Sprint Ready** (committed to the current sprint, not
+  started): Sprint 09-21 items 4-6 (email capture, hero metric,
+  positioning.md).
+- **In Progress and In Review are both empty right now**, and that's
+  the truthful state, not a gap: nothing is mid-build outside a tracked
+  PR at this moment, and no board card maps 1:1 to either of the two
+  currently-open PRs (#22 sales first-customers, #24 PM sprint
+  re-triage) closely enough to claim. Noted below as a real gap.
+- **Iteration assigned only to genuinely committed/runway cards** (6
+  Sprint 09-21 items + the 4 "Launch runway ·"/press-release/pre-mortem
+  milestones dated to a specific runway week). Everything else keeps its
+  existing Start/Target dates but carries no Sprint iteration, per the
+  dispatch's "everything else stays Backlog with no iteration" — this
+  includes items that happen to have this-week dates (e.g. the two
+  urgent security findings) but were never part of the committed
+  five-item sprint backlog itself.
+
+**4. Backlog reordered product-first per decision 11** (digest and
+skills quality first, plumbing after): the prose benchmark vs. TLDR,
+institution backfill + digest resend, skill trigger tests, claim-graph
+citations, the verification badge, the reviewer panel, and the
+market-proposed proof pieces (head-to-head, "left behind" flagship, free
+sample issue) now lead the 43-item Backlog. Launch-mechanics and urgent
+items sit in the middle. Pipeline/architecture plumbing (traction-score,
+discovery audit, arXiv category, sources.yaml, knowledge-graph upgrade,
+CI/security hardening) sits at the bottom. This is a coarse two-ended
+triage (quality pulled to the top, plumbing pushed to the bottom), not a
+full 43-item hand ranking; the exact resulting order is on the board
+itself (Table view, sorted by position) if you want to nudge anything.
+
+**5. Views.** Board view already groups by Status and needs no action —
+same field ID, so it inherits the new five-stage flow automatically.
+Table and Board views now also show the new Sprint column (added via
+`updateProjectV2View`). **Roadmap needs one owner click**: the GraphQL
+API confirmed (tried it, got `"Roadmap views do not support visible
+fields"`) that Roadmap view configuration — which field it groups
+swimlanes by — isn't exposed to the API at all, unlike Board/Table's
+`visibleFieldIds`. To see the runway by sprint: open the Roadmap view →
+the "Group by" control in the view's toolbar → select **Sprint**. One
+click, nothing else needed.
+
+**Gap worth a verdict, not a build**: PR #22 (sales, open, the
+first-customers plan) has no board card of its own — it's related to
+but distinct from "Define alexandria's distribution system," which this
+run marked Done against PR #17. Adding a card for it would be scope
+creep on a board-craftsmanship-only dispatch; flagging instead for the
+next PM ceremony or your call.
+
 ## Open PRs waiting on your merge
 
 1. **PR #18** — exo, `exo/2026-09-18` (run 2), opened 2026-09-18. Still in
