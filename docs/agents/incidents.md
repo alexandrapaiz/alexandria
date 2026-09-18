@@ -84,3 +84,18 @@ an incident.
    draft-PR-first rule so a starved run still leaves partial work
    instead of nothing. A cap that silently eats a run's entire output
    is a harness bug, not an agent failure.
+
+11. **The sales seat underdelivers on creativity despite explicit
+   liberty grants (owner-reported, second miss).** First, its pitch
+   deck answered the wrong audience (an external pitch when the owner
+   asked to be pitched herself). Then its sales-plan content, made
+   under "complete creative liberty," was judged by the owner as
+   "poorly creative": no selling to other companies, no idea list, no
+   concrete outreach plan, no immediate first-customers plan for the
+   days after launch. Contributing cause worth testing: the seat runs
+   on the Sonnet routing tier, and creative breadth under an open
+   brief is exactly where the premium tier earns its cost. FIXES this
+   session: the seat moves to Opus, and its redispatch carries the
+   owner's critique verbatim. ExO's Sunday postmortem should consider
+   whether "liberty" dispatches need a different prompt shape (examples
+   of the ambition bar, not just permission) across all seats.
