@@ -70,8 +70,10 @@ Create docs/sprints/sprint-YYYY-MM-DD.md (the Monday date) in the format
 docs/sprints/README.md defines. Read the current quarter's OKRs first
 (newest file in docs/okrs/, if any): every sprint serves the committed
 objectives, and the OKR agent's drift audit will check that it did. Also
-read the newest market brief (docs/market/briefs/, if any); its "so
-what" lines and the week's clearest unmet need are planning inputs.
+read the newest market brief (docs/market/briefs/, if any) and the
+newest curation brief (docs/research/briefs/, if any); their "so
+what" lines, extraction targets, and the week's clearest unmet need
+are planning inputs.
 
 - One sprint goal, a single sentence that would make the week a success,
   naming the objective it serves (for example "serves O1").

@@ -13,6 +13,7 @@ const LANES = {
   sec: "sec",
   skill: "skill",
   weekly: "weekly",
+  research: "research",
   fe: "fe",
   fin: "fin",
   sales: "sales",

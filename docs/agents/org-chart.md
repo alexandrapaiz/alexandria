@@ -13,7 +13,7 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 | frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site |
 | market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20 |
 | pm | prompts/pm-agent.md | Mon 6:35 ET | sprints, backlog, board, org chart | Oct 13 launch runway |
-| weekly | prompts/weekly-agent.md | Mon 16:30 UTC | digest review, meta-review | digest quality; source discovery |
+| research | prompts/research-agent.md | Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
 | exo | prompts/exo-agent.md | Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
 | security | prompts/security-agent.md | 1st + 15th | debug + defensive audits | pre-launch hardening |
 | okr | prompts/okr-agent.md | 1st monthly | docs/okrs/ | Q4 OKRs; benchmark trendline |
