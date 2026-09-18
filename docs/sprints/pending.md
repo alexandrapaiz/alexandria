@@ -236,8 +236,11 @@ directly). Two PRs remain open:
    sentence used on the four beyond-skills product proposals decision 6
    named, but it is not one of those four. Worth confirming the status
    is what you intended.
-9. **The release-gate reconciliation — now a provisional ruling awaiting
-   your veto** (incident 12 / decision 11, 2026-09-18, updated per the
+9. ~~The release-gate reconciliation~~ — **resolved by the owner,
+   2026-09-18: ADR-26.** The gate is a benchmark FOUR, Oct 13 holds,
+   product-first until launch. Supersedes the provisional phased gate.
+   (Original framing kept below for the record.) Was: a provisional
+   ruling awaiting her veto (incident 12 / decision 11, 2026-09-18, updated per the
    closing all-hands and this triage) — the OKR seat's phased-gate
    proposal (free surfaces ship Oct 13, the paid spine's gate opens at a
    benchmark five) is adopted **provisionally** as of this dispatch so no
