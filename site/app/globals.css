@@ -720,7 +720,8 @@ a {
 }
 
 /* ---------- desk (owner review page) ---------- */
-.desk { padding-bottom: 120px; }
+.desk { padding-bottom: 120px; text-align: left; }
+.desk .page-kicker, .desk .page-title, .desk .page-intro { text-align: left; margin-left: 0; }
 .desk-h {
   margin: 56px 0 6px;
   font-size: 13px;
