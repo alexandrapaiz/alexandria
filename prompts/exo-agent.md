@@ -74,6 +74,16 @@ and flag drift in the ledger.
 
 ## 6. Learn
 
+Failures and the learning from them are yours (owner's directive,
+2026-09-18): you own the postmortem practice. docs/agents/incidents.md
+is the technical register of runs that failed, shipped nothing, or
+misbehaved in their sandboxes; read it every run (step 2), and after
+any incident write or complete its blameless postmortem there: what
+happened, why it happened technically, the fix, and what the org grew
+from it. Patterns across incidents become your charter and workflow
+edits in step 5. A failure recorded once and prevented forever is the
+org compounding; a failure rediscovered is your lane failing.
+
 Maintain docs/agents/learning-log.md, append-only, dated: what this run
 observed, what it changed and why, what the next run must check first.
 This file is the org's memory across your fresh contexts, so write it

@@ -70,6 +70,28 @@ defines. Statuses below are untouched; only the owner moves them.
   frontmatter for the provenance reviewer to check against the database.
   Inline numeric ids would make the prose unreadable without making it any
   more checkable, since the reviewer needs the stable id either way.
+- Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
+  the "first step" above is now done. `prompts/skill-extract.md` itself is
+  still only on the still-open PR #12 branch
+  (`skill/2026-09-18-production-line`), not yet merged to main, so this run
+  followed that branch's version as the extraction method rather than
+  re-proposing a second copy of the same new file in this PR. It held up
+  well end to end: the cluster-scoring criteria (procedure-rich,
+  cross-supported, on-topic, not-already-gold) picked out a real 5-paper,
+  21-claim cluster on self-improving post-training loops with genuine
+  supports/refines edges between all five papers, not just topic-tag
+  overlap, and the frontmatter/citation split (paper title in prose,
+  numeric id only in `provenance.claims`) worked cleanly against a second
+  real skill. One friction point worth a note for whoever finalizes
+  skill-extract.md: several of the strongest-looking supports edges by
+  confidence score (0.6-0.85) connected claims that were topically
+  unrelated in substance despite the topic-tag overlap the query filtered
+  on (e.g. a safety-tuning claim and a TPU-kernel-optimization claim both
+  "supporting" an unrelated search-agent claim); the prompt's cluster-
+  scoring section should say explicitly that an edge's existence and
+  confidence score are necessary but not sufficient, and that the drafting
+  agent must read the actual claim text of every edge before trusting it,
+  not just the edge table.
 
 ## Proposals
 
@@ -383,8 +405,8 @@ herself.
 - Cost: $0
 - Status: built
 - Owner outcome 2026-09-18, final after a full brainstorm: the mission is
-  "Accelerate every builder to frontier speed." alone, everywhere, with
-  "Living discovery that compounds." as a rarely used companion line.
+  "Accelerate every builder to frontier speed." alone, everywhere, no
+  subtitle or companion line (one was considered and deleted).
   Recorded at the top of vision.md §0. This entry is done.
 - Status: proposed
 
@@ -717,3 +739,58 @@ build.
   build task itself.
 - Cost: $0
 - Status: proposed
+### 2026-09-18 — Knowledge graph upgraded to industry standard
+- Trigger: owner's directive, verbatim: "the knowledge graph needs
+  maintenance and to be upgraded to be industry standard right now it's
+  very junior and behind and prehistoric and almost like a toy"
+- What: the claim graph grows up. Audit the current edges table against
+  industry practice (GraphRAG-class systems, entity resolution and
+  dedup, calibrated edge confidence, richer relation semantics, the
+  slow-loop re-judgment ADR-10 promised but never built, graph quality
+  metrics tracked over time), design the upgrade, and build it in
+  day-sized slices. ADR-10's escalation ladder (Apache AGE, Neo4j)
+  is on the table if the evidence justifies it, but the first gains
+  are likely in edge quality, not storage engine.
+- First step: a graph-quality audit with metrics (edge precision on a
+  sample, duplicate rate, contradiction coverage) and an upgrade design
+  doc, engineer seat
+- Cost: $0
+- Status: accepted
+
+### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
+- Trigger: owner's directive to cover everything related to building in
+  the AI age, adopted with the three seats' guardrails (all-hands
+  decision 10): scope = only findings that carry cited evidence and
+  ship as directly usable tools, never stories.
+- What: the Q4 day-sized spike from the engineer's consultation: an
+  evidence_grade column on claims set at distill so anecdotes and
+  peer-reviewed results never mix silently, five engineering-blog
+  feeds added to sources.yaml, and a practices variant of
+  prompts/distill.md that asks what they did, why, and what broke.
+  Full expansion (repo design docs, talks, handbooks) is a Q1 2027
+  objective behind the OKR seat's three gates.
+- First step: the evidence_grade migration and one blog feed, engineer
+- Cost: $0
+- Status: accepted
+
+## Skill agent findings (2026-09-18)
+
+### 2026-09-18 — NEON_RO_URL fixed, connection verified (skill agent)
+- Trigger: resolves the urgent entry "NEON_RO_URL has no usable value this
+  run," filed against the prior skill-agent run in the still-open PR #12
+  (`skill/2026-09-18-production-line`). That run found the secret present
+  as an environment variable name but empty in value.
+- What: this run's dispatch stated the owner had re-entered the secret.
+  Verified as the first action before anything else: `psql "$NEON_RO_URL"
+  -c 'select count(*) from claims;'` returned `441` with no error, so the
+  read-only connection works end to end. This run went on to query
+  `claims`, `claim_links`, `papers`, and `promotions` directly and drafted
+  a real skill against a live cluster
+  (`skills/self-improving-post-training-loops/SKILL.md`), which the prior
+  run could not do. O2 KR2's "at least one draft skill per week from claim
+  clusters" is unblocked as of this dispatch.
+- First step: none remaining on this finding. The one-liner above is the
+  standing re-verification check for any future run that hits the same
+  failure mode.
+- Cost: $0
+- Status: built

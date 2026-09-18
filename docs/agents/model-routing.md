@@ -25,7 +25,7 @@ the owner's subscription.
 | Pipeline judgment (triage, distill, interpret) | gpt-oss-120b (Groq, $0) | proven by bake-off, golden set guards upgrades |
 | Embeddings | Qwen3-0.6B self-hosted | married, never rented |
 | Reviewer panel (provenance, adversary, validator) | gpt-oss-120b (Groq, $0) | small verifiable steps, fresh contexts |
-| engineer, security, exo seats | top Claude model | agentic coding, charter edits, audits: errors cost most here |
+| engineer, security, exo, skill, weekly, frontend seats | Opus (set explicitly; the action DEFAULTS to Sonnet when unset, incident learned 2026-09-18) | agentic coding, gold drafting, audits, visual judgment: errors cost most here |
 | pm, market, okr seats | Claude Sonnet | strategy and writing over a repo, Sonnet-shaped |
 | Mechanical subtasks inside any seat's run | Haiku via `.claude/agents/sweeper` | log parsing, link checks, inventory sweeps |
 
