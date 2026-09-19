@@ -1799,3 +1799,83 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - First step: research seat's Monday brief includes the epitome-queries test against the corpus and names the three most valuable missing sources for this slice.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-19 — Verify the archive: the press may have printed once, not four times (engineer seat)
+- Trigger: measuring incident 22. The one issue in git history is
+  2026-W37, written 2026-09-08 with a 677-token generator prompt. Counted
+  with `o200k_base`, every request since has asked for more tokens than
+  `openai/gpt-oss-120b` allows in one request on Groq's free tier, which is
+  8,000: prompt plus payload plus the 6,000-token output reservation has
+  been over that ceiling since roughly 2026-09-11, and the prompt alone
+  passed it today at 8,651. Incident 22 is the first run that failed
+  loudly, not necessarily the first run that failed. The ledger's own note
+  of 2026-09-18 says the archive "will still show only 2026-W37 the day
+  2026-W38 sends," which points the same way.
+- What: settle it with one query against the database of record, then act
+  on the answer. `select week, created_at, model, prompt_sha from digests
+  order by week;`. If W38 and W39 are absent, the newsletter has sent once
+  in eleven days, subscribers have had eleven quiet days, and the honest
+  next move is a catch-up issue plus a note to them rather than a silent
+  resumption. The README's status checklist would also need its "weekly
+  digest live" line qualified.
+- Why it could not be settled today: the engineer workflow has no database
+  credentials (`NEON_RO_URL` is wired into the research and skill
+  workflows only), and `digests/` is gitignored, so this session could
+  measure the request and not the archive. The ledger already carries the
+  proposal to add `NEON_RO_URL` to `agent-engineer.yml`, filed 2026-09-18
+  for a different reason. This is the second reason.
+- First step: run the query. It takes a minute and it decides whether this
+  is a fixed bug or an eleven-day outage.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-19 — Budget every model call, not just the press (engineer seat)
+- Trigger: today's fix put a token budget around the digest generator, and
+  checking the other callers while doing it showed the press was only the
+  loudest one. `rag_answer` in `mcp/server.py` builds its context from a
+  caller-supplied `k` with no upper bound, concatenates untruncated claim
+  and evidence text into the prompt, and sets no `max_completion_tokens`
+  at all. An authenticated caller passing a large `k` gets a 413 back as
+  "synthesis model unavailable," and a caller doing it repeatedly spends
+  the day's token allowance on nothing. Triage, distill and interpret are
+  in better shape because they batch at fixed sizes, but none of them
+  states a budget anywhere a reader can check it.
+- What: point every Groq caller at `pipeline/budget.py`, which already
+  holds the published per-model limits and the arithmetic. Concretely:
+  cap `k` in `rag_answer` and truncate the claim and evidence text the way
+  `gather()` does, give it an explicit output reservation, and have each
+  batched job assert its batch fits before it sends. The module was built
+  for the press and is deliberately general, so this is wiring rather than
+  new machinery.
+- First step: cap `k` and add the reservation in `rag_answer`. That is the
+  one caller whose request size is set by someone outside the system, so
+  it is the one worth fixing first.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — Craft scan: AlphaSignal (alphasignal.ai)
+- Trigger: the engineer seat's daily craft scan, next in the landscape
+  rotation after Import AI (scanned 2026-09-18). Read with today's work in
+  mind, which was deciding which items a constrained issue keeps and which
+  it drops.
+- What is worth stealing: AlphaSignal ranks items by reader upvotes and
+  shows the count on every item, so the readers' judgment is a live input
+  to what surfaces next. alexandria has no reader signal at all. Every
+  ranking decision it makes, including the one the new trimmer makes when
+  it drops the tail of a week's claims, comes from triage score and the
+  claim graph. Those are the field's judgment, which is the right primary
+  axis, and they say nothing about whether the thing we chose was worth a
+  reader's Monday. A per-item signal in the email, even one link labelled
+  "this one was useful," would give the selection a second axis and would
+  cost a query string and a table.
+- What alexandria does better: AlphaSignal ranks by attention, and
+  attention cannot tell you what was wrong. An upvote feed has no way to
+  say that last month's result was overturned, because nothing in its
+  model of the world is a claim that can be contradicted. The "left
+  behind" section is a thing alexandria can print and a feed structurally
+  cannot.
+- First step: one tracked link per item in the email template, writing to
+  a small `item_feedback` table keyed by claim id and issue week. The
+  frontend seat already owns the template (PR #37).
+- Cost: $0.
+- Status: proposed
