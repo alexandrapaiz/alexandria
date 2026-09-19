@@ -307,10 +307,162 @@ proving each was an ancestor of main.
 
 ---
 
-## 2026-09-19 — Third run (owner order, relayed by the chair)
+## 2026-09-18 — Third run (owner order, relayed by the chair)
 
-*In progress. Dispatched with a binding owner order: register the two
-containerization smoke-test failures as incidents, judge the frontend
-seat's health honestly, plan the chair-to-seat authority transfer for
-the day the GitHub App private key lands, and add whatever else the
-register and tonight's velocity say the owner should hear.*
+Dispatched in parallel with the security seat on the same evidence. The
+order was specific: write the blameless postmortem for the day's six
+failures, update the incident register with the third occurrence and
+with the false-failure flavor as its own finding, define a standing
+right-sizing methodology so caps are never guessed again, and restate
+the one structural blocker for the owner. Four deliverables, one PR.
+
+### Purpose read
+
+Mission (vision.md §0, final 2026-09-18): *accelerate every builder to
+frontier speed*, alone, no subtitle. Tiebreak autonomy, end state a
+standalone knowledge business, north star product quality against the
+Elicit and TLDR-AI class. Free digest, $20 operational spine, launch
+2026-10-13, profitable at launch. The autonomy tiebreak matters directly
+to this run, because the blocker below is exactly a case where the org
+cannot act without its owner.
+
+### Observed
+
+Every number here came out of `num_turns` and `CLAUDE_ARGS` in the run
+logs, and every shipping claim out of `git log` against the run's
+window. Nothing was taken from a run's own conclusion.
+
+1. **The six failures are confirmed exactly as relayed, and they are not
+   six new incidents.** Four were already registered: the security 108
+   (item 11), the frontend 151 (item 4), and the two pm 61s (item 10's
+   second and third). Only two were new, and those two are the finding:
+   frontend died at 150, the cap went to 250, and the very next frontend
+   run used 286, twenty minutes later. PM died at 60 twice, the cap went
+   to 140, and its fourth run under the new cap used 141. **Both
+   reactive raises were outgrown by the seats that got them, the same
+   day.** That is the argument for a ratio instead of a number.
+
+2. **Ship first, then work has now been proven under fire, with a
+   timestamp.** The rule landed on main at 05:11:42 (PR #18). All three
+   runs that lost everything started before it. Run 35311930240 is the
+   first cap-killed run after it: killed at 06:00:28, its PR #24 merged
+   by the owner at 06:01:07. Thirty-nine seconds. The rule turned a
+   total loss into a delivered sprint revision. Keep the no-ship
+   tripwire queued regardless, because caps change how often a run dies
+   and shipping first changes what a death costs.
+
+3. **The two cap flavors have different fingerprints, and the difference
+   is diagnostic.** Hard starvation always ends at exactly the cap plus
+   one (61/60, 151/150, 141/140, no exceptions in the data). False
+   failures end far past it (108/100, 286/250) with `"subtype":
+   "success"` and `"is_error": false`. One counter cannot make both
+   shapes, so the counter a run stops itself on and the `num_turns` it
+   reports are different numbers, and the action fails the job on a
+   post-hoc comparison of the reported one. The overshoot scales with
+   run length, 8 turns on 108 and 36 on 286, which fits. Recorded as a
+   hypothesis, because it is inferred from the data rather than read
+   from the action's source.
+
+4. **Three caps are still short after the chair's raises, including two
+   this seat would not have guessed.** Measured against the rule:
+   frontend 400 needs 600, pm 250 needs at least 300, security 200 needs
+   250. Also worth knowing, the ExO's own last run used 93 turns against
+   a 100 cap. That was a near miss nobody logged, and it is why this
+   seat's cap is now in the table rather than assumed fine.
+
+5. **Item 10's stated limit is closed.** It recorded that the two pm
+   60-cap logs could not be retrieved. They retrieve fine now, and both
+   read 61 against 60, confirming the owner's account exactly. The gap
+   was timing, not missing data.
+
+6. **Housekeeping.** Seven merged remote branches deleted, including
+   `fe/2026-09-18-mission-and-hover`, which the last run flagged for
+   confirmation: `git cherry` shows all three of its commits already in
+   main by patch-id, so nothing was lost. `pm/sprint-2026-09-14` is left
+   alive on purpose, because its PR #1 was closed unmerged and its work
+   is not in main.
+
+### Changed
+
+Three improvements, plus the owner's fourth deliverable.
+
+1. **docs/agents/turn-caps.md, new.** The standing methodology: a cap is
+   at least twice the seat's highest observed turn count, rounded up to
+   the next 50, floor 100. Three clauses make it usable. A run that hit
+   its cap is a censored lower bound rather than a measurement, so
+   re-derive from the next free-running run. A seat that has never run
+   inherits its nearest twin's cap, marked provisional. Duty growth is a
+   re-measurement trigger, so a charter edit that adds work gets a cap
+   check instead of waiting for the failure. Four measurement commands
+   are written out and were each run against this repository before
+   being written down. The current table for all eleven seats is there
+   with dates.
+
+2. **incidents.md items 15 and 16.** Item 15 is the six-failure
+   postmortem: what happened, why reaction always lands behind a moving
+   number, what the org grew from it, and the three caps still short.
+   Item 16 promotes the false failure to its own named defect class on
+   its second occurrence, with the counter-mismatch diagnosis and the
+   honest limit that no cap value makes it impossible, because the
+   post-hoc check is upstream code this repo does not own. Both entries
+   sit under a new dated section, which is also the fix for the
+   register's duplicate numbering: entries now go under a new dated
+   heading with the next free number, never at a shared anchor, and
+   ambiguous numbers get cited with a descriptor rather than renumbered.
+
+3. **This charter, step 6.** Turn caps are now a named standing duty:
+   re-derive monthly in the first run of the month, and immediately
+   whenever a cap was hit or a charter edit grew a seat's duties, with
+   the two flavors' fingerprints written down so the next run diagnoses
+   before it theorizes. Two ambiguous incident cross-references in this
+   charter were also corrected, since the duplicate numbers had made
+   both of them point at the wrong entry.
+
+The owner's fourth deliverable, the structural blocker, is stated at the
+top of docs/agents/pending-workflow-changes.md rather than buried in an
+incident: no agent seat can fix the machinery that runs it, because
+`GITHUB_TOKEN` cannot hold the `workflow` scope and no `permissions:`
+block grants it. Six runs failed on caps and not one affected seat could
+raise its own. The decision is the owner's alone, stated with both sides
+of it, because a `workflow`-scoped PAT would also hand every run a token
+strong enough to rewrite what runs the agents.
+
+### Next run must check
+
+- **Were the three queued caps applied?** Verify with
+  `grep -HoE '\-\-max-turns [0-9]+' .github/workflows/agent-*.yml`,
+  never by trusting the queue page, and delete what landed. If any seat
+  hit a cap again in the interim, that is an immediate re-derivation, not
+  a monthly one.
+- **Re-derive the table regardless.** pm's 141 is censored and should be
+  replaced by its first free-running peak. security has exactly one
+  sample and it is the run that overshot. research and finance were
+  still unmeasured at the time of writing.
+- **Did the owner decide on the `workflow`-scoped PAT?** If she minted
+  it, §5 of this charter takes the workflow lane back and
+  pending-workflow-changes.md becomes a history file. If she declined,
+  say so in that file so no future run re-litigates it.
+- **Is the false-failure class still live?** It needs a run that exceeds
+  its cap and still reports success. If the corrected caps hold for a
+  month with no recurrence, item 16 can be marked dormant rather than
+  open.
+- **Did the register's new anchor convention hold?** If another seat
+  appended a duplicate number under an old heading, the convention needs
+  to move from this log into the charters that tell seats to write here.
+- **Did the research seat run on 2026-09-21, and did
+  docs/research/briefs/ appear?** Carried forward unanswered from the
+  last run. After 2026-09-21 a missing brief is a real finding.
+- **The no-ship tripwire is still queued and still unapplied.** It has
+  outlived two ExO runs now. If it is still unapplied at the next one,
+  that is itself worth an incident entry, because it is the same shape
+  as item 13.
+
+
+---
+
+## 2026-09-19 — Fourth run (owner order, relayed by the chair)
+
+*In progress. Register the two containerization smoke-test failures,
+judge the frontend seat's health honestly, plan the chair-to-seat
+handover for the day the GitHub App private key lands, and say what else
+the register and tonight's velocity mean.*
