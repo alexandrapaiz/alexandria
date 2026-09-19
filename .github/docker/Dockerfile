@@ -29,9 +29,12 @@ RUN npx --yes playwright@1.49.1 install --with-deps chromium \
     && rm -rf /root/.npm \
     && chmod -R a+rX /ms-playwright
 
-# The seats run as the image's non-root user (uid 1000): Claude Code
-# refuses bypassPermissions under root, by design, and it is the right
-# posture anyway. The workflows pass --user 1000:1000; everything the
-# runs need at runtime is already installed above.
+# The seats run as a non-root user: Claude Code refuses
+# bypassPermissions under root, by design, and it is the right posture
+# anyway. The uid must be 1001 because GitHub's hosted runners own the
+# mounted workspace as uid 1001, and any other uid cannot write the
+# runner's own state files (smoke test 2's catch). The workflows pass
+# --user 1001:1001; everything runs need is already installed above.
+RUN useradd -m -u 1001 runner
 
 CMD ["/bin/bash"]
