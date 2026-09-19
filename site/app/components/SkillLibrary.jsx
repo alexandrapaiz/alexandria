@@ -9,9 +9,19 @@ import Link from "next/link";
 // left-hand list, a search field at the top of it, and one plain sentence per
 // entry. That structure is what is borrowed here, in black and white.
 //
-// Every row says both things at once: the sentence a person reads, and,
-// behind a disclosure that names whose text it is, the line an agent matches
-// on. Same file, two audiences.
+// Row anatomy, rebuilt for volume on the owner's order of 2026-09-18. At rest
+// a skill is ONE line: its name, its version, its source count, and nothing
+// else. Everything a row used to say at rest, the description and the papers
+// and the routing text and the entitlement, now lives behind the disclosure,
+// because fifty rows saying all of it is a page nobody reaches the bottom of.
+//
+// The pricing call to action appears once, at the end of the page, rather
+// than once per row. Fifty identical buttons is not an offer, it is noise;
+// an open row still states the entitlement in words, so a reader never has to
+// guess what comes with the paid plan.
+//
+// A row is a native <details>, so it opens on click, on Enter, and on Space,
+// it is announced as a disclosure, and it works before the JavaScript lands.
 
 function matches(skill, shelfName, q) {
   if (!q) return true;
@@ -21,6 +31,50 @@ function matches(skill, shelfName, q) {
     .split(/\s+/)
     .filter(Boolean)
     .every((word) => hay.includes(word));
+}
+
+function SkillRow({ skill, entitled }) {
+  const s = skill;
+  return (
+    <details className="skill-row">
+      <summary className="skill-line">
+        <span className="skill-line-name">{s.name}</span>
+        <span className="skill-line-meta">
+          <span>v{s.version}</span>
+          {s.status && s.status !== "active" && <span>{s.status}</span>}
+          <span>
+            {s.papers.length} {s.papers.length === 1 ? "source" : "sources"}
+          </span>
+        </span>
+      </summary>
+      <div className="skill-panel">
+        <div className="skill-panel-in">
+          <p className="skill-row-summary">{s.summary}</p>
+
+          <h4 className="skill-detail-head">The papers behind it</h4>
+          <ul className="skill-sources">
+            {s.papers.map((p) => (
+              <li key={p}>{p.split(" — ")[0]}</li>
+            ))}
+          </ul>
+
+          <h4 className="skill-detail-head">What your agent matches on</h4>
+          <p className="skill-routing">{s.routing}</p>
+
+          {entitled ? (
+            <article
+              className="digest skill-body"
+              dangerouslySetInnerHTML={{ __html: s.html }}
+            />
+          ) : (
+            <p className="skill-row-lock">
+              The file itself comes with the paid plan.
+            </p>
+          )}
+        </div>
+      </div>
+    </details>
+  );
 }
 
 export default function SkillLibrary({ shelves, entitled }) {
@@ -95,56 +149,27 @@ export default function SkillLibrary({ shelves, entitled }) {
           {shelf.hits.length > 0 && (
             <div className="shelf-rows">
               {shelf.hits.map((s) => (
-                <article key={s.name} className="skill-row">
-                  <div className="skill-row-head">
-                    <h3>{s.name}</h3>
-                    <span className="skill-row-meta">
-                      <span>v{s.version}</span>
-                      {s.status && s.status !== "active" && (
-                        <span>{s.status}</span>
-                      )}
-                      <span>
-                        {s.papers.length}{" "}
-                        {s.papers.length === 1 ? "source" : "sources"}
-                      </span>
-                    </span>
-                  </div>
-                  <p className="skill-row-summary">{s.summary}</p>
-
-                  <div className="skill-row-more">
-                    <details>
-                      <summary>The papers behind it</summary>
-                      <ul className="skill-sources">
-                        {s.papers.map((p) => (
-                          <li key={p}>{p.split(" — ")[0]}</li>
-                        ))}
-                      </ul>
-                    </details>
-                    <details>
-                      <summary>What your agent matches on</summary>
-                      <p className="skill-routing">{s.routing}</p>
-                    </details>
-                  </div>
-
-                  {entitled ? (
-                    <article
-                      className="digest skill-body"
-                      dangerouslySetInnerHTML={{ __html: s.html }}
-                    />
-                  ) : (
-                    <div className="skill-row-lock">
-                      <span>The file itself comes with the paid plan.</span>
-                      <Link href="/pricing" className="pill ghost">
-                        See pricing
-                      </Link>
-                    </div>
-                  )}
-                </article>
+                <SkillRow key={s.name} skill={s} entitled={entitled} />
               ))}
             </div>
           )}
         </section>
       ))}
+
+      {/* The one pricing call to action on the page. It sits after the last
+          shelf, where a reader has seen what the library holds, rather than
+          on all fifty rows. */}
+      {shown > 0 && !entitled && (
+        <div className="lib-offer">
+          <p>
+            The catalogue is public. The skill files themselves come with the
+            paid plan.
+          </p>
+          <Link href="/pricing" className="pill ghost">
+            See pricing
+          </Link>
+        </div>
+      )}
     </>
   );
 }
