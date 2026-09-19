@@ -1590,3 +1590,157 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the skill agent's charter and `skills/`, so not this
   seat's. Filed for the owner.
 - Status: proposed
+
+### 2026-09-19 — The masthead is the recipe, and it is in code (writer seat)
+- Trigger: first editorial run (ADR-28) graded 2026-W37 against the ten
+  laws. Law 3 says sell the product, never the recipe. The issue's second
+  line is the recipe.
+- What is there now: `MASTHEAD` at `pipeline/weekly.py:311` prints under
+  every H1: "*The latest in AI research, read in full and distilled
+  weekly: what's new, what's gaining acceptance, and what newer evidence
+  has overturned.*" It describes how the digest is made, then recites its
+  own table of contents in the order the sections used to appear.
+- Why it is filed here rather than fixed: it is fixed in code, on purpose,
+  so the brand line never drifts. That reasoning is sound and this seat
+  does not write pipeline code. No change to prompts/digest.md can reach
+  it, so the structure-watch rule fires on the first run instead of the
+  third.
+- Two things make it worse than it was. The section order it recites is
+  now wrong, because this PR moves compounding work ahead of new work
+  under law 5. And a reader who opens the issue meets a description of
+  alexandria's process before meeting a single finding.
+- What to put there instead: a line that sells the product rather than
+  the method, and that does not enumerate sections. The dual-audience
+  close is the house's best sentence and already carries the promise:
+  "You read to decide. Your agents load to act." Either promote it to
+  the masthead as well as the close, or drop the masthead and let the
+  finding land first. This seat's recommendation is to drop it, because
+  the headline under law 4 now carries a real finding and a subtitle
+  between it and the opening only delays the payoff.
+- Cost: deleting or rewriting one constant and its helper, plus a test if
+  one covers `add_masthead`.
+- Whose call: the owner's on the words, the engineer's on the code.
+- Status: proposed
+
+### 2026-09-19 — The date range arrives as an en dash (writer seat, run 2)
+- Trigger: reading prompts/digest.md end to end. The prompt tells the
+  issue to print `dates` verbatim in the title, and it also forbids
+  non-ASCII punctuation, because typesetter characters break the reader's
+  search box and the agent that loads the issue. The payload's example
+  range is "September 7–13, 2026", with an en dash, so the two rules
+  contradict each other on the single most-read line of the issue.
+- Fixed for now in the prompt: the title rule normalizes the range to a
+  plain hyphen, and the payload glossary says the dash arrives and ships
+  as ASCII. That works, but it asks the model to remember a character
+  substitution on every issue, which is the least reliable place to put
+  it.
+- Better fix, in code: emit `dates` with an ASCII hyphen where the
+  payload is assembled, and the prompt rule becomes unnecessary.
+- Whose call: the engineer's. This seat does not write pipeline code.
+- Status: mostly moot as of run 3. The owner's ruling took the date range
+  out of the title entirely, so the en dash no longer reaches the
+  most-read line of the issue. The prompt still asks for an ASCII hyphen
+  where a range genuinely belongs in the prose, which is a much smaller
+  surface, and the code fix is still the better place for it if the
+  engineer is in there anyway.
+
+### 2026-09-19 — The newsletter prose guide was merged as a stub (writer seat, run 2)
+- Trigger: the owner ordered the market seat's prose guide applied to the
+  generator. `docs/market/newsletter-prose-guide.md` is on main, but it
+  contains its header, its commissioning note, and "Work in progress —
+  populating from primary sources now." No guidance points. PR #38's
+  description said "Research in progress — marking ready when the guide
+  is complete" and it was merged anyway.
+- Consequence: this run's craft changes came from the canon's References
+  section and the owner's taste rulings instead, which is stated plainly
+  in the run 2 review. The greeting, heading, item and sign-off rules now
+  in prompts/digest.md were not derived from any study of the actual
+  newsletters, because no such study exists yet in the repo.
+- What is owed: when the guide is populated, the writer seat re-applies
+  it on its own terms and reconciles it against what is already in the
+  prompt. Where it contradicts a taste ruling, the ruling wins.
+- Also worth deciding: whether a draft-in-progress PR should be
+  mergeable at all when a downstream seat is ordered to depend on it.
+  That is a process question for the PM, not a voice question.
+- Whose call: the market seat to finish it, this seat to apply it, the
+  PM on the process point.
+- Status: proposed
+
+### 2026-09-19 — A taste ruling reaches the register but not the generator (writer seat, run 3)
+- Trigger: incident 20, read from the inside. Her heading ruling was
+  recorded in docs/voice/taste.md the same hour, and prompts/digest.md,
+  docs/voice/ban-list.md and canon law 9 all still instructed the
+  violation. The model that printed "Gaining traction" was obeying the
+  file that writes issues. Recording a ruling is not enforcing it, and
+  the register is not where enforcement lives.
+- The gap is a missing step, not a missing rule. Nothing in the process
+  says "and now find every file that contradicts this". taste.md is
+  append-only by design, so a ruling lands there and stops.
+- Proposal: when a ruling is recorded in taste.md, the recorder also
+  names the files it now contradicts, and the writer seat's next run
+  clears that list. A one-line "contradicts:" note on the ruling would
+  be enough. Cheaper than an incident.
+- Whose call: the PM on the process, the chair on who records. This seat
+  has taken its own half already, as the taste-compliance first gate in
+  docs/voice/reviews/2026-09-19.md §8.
+- Status: proposed
+
+### 2026-09-19 — The heading gate, pre-registered for the pipeline (writer seat, run 3)
+- Trigger: the charter's structure-watch rule. The framework-name
+  violation has now happened twice, and run 3 answers it with a hard
+  check inside prompts/digest.md, which is still the model policing
+  itself. If it holds, nothing is owed. If the next issue prints one of
+  the eight banned strings as a heading, the prompt has failed twice at
+  the same fix and the third attempt belongs in code, not in the prompt.
+- The code fix, stated now so it is not designed in a hurry later: after
+  generation and before the insert into `digests`, scan the body's
+  heading lines for the banned strings and fail the run loudly rather
+  than publish. The banned list is small, the check is a few lines, and
+  failing loudly is right because a heading violation is the one defect
+  the owner has had to report twice.
+- Whose call: the engineer's, and only if the prompt gate fails. Filed
+  now so the trigger is unambiguous.
+- Status: proposed, conditional
+
+### 2026-09-19 — The title's date bracket becomes dead code on the site (writer seat, run 3)
+- Trigger: her ruling took the date out of the H1, and the prompt now
+  emits a bare title. `site/lib/content.js:31` parses the title with
+  `/^(.*?)\s*\[(.+)\]\s*$/` and falls back to `weekRange(week)` when no
+  bracket is there, so the archive keeps showing a date and nothing
+  breaks. Checked before the prompt change shipped.
+- What is left: once no issue carries a bracketed range, the parse branch
+  and its comment describe a format that no longer exists. Retiring it is
+  tidying, not a fix.
+- Whose call: the frontend seat's. This seat does not touch site code.
+- Status: proposed
+
+### 2026-09-19 — Does the newsletter get a first person? (writer seat, run 4)
+- Trigger: the prose benchmark. Import AI and Money Stuff score A on
+  voice for one reason, which is that a named person is visibly making
+  the judgments ("I think sometimes, in our age of artificial
+  intelligence..."). The Batch signs its letter "Andrew". Morning Brew
+  signs every item with the writer's initials. alexandria has no person
+  anywhere, and the benchmark grades the patched generator C+ on voice
+  largely because of it.
+- The question for the owner, not for this seat: may an issue say "I" or
+  "we" when it disagrees with a paper? A stance is the cheapest remaining
+  point of voice, and it is also a claim about who alexandria is.
+  Autonomy is the product's thesis, so an invented human byline is out,
+  but an unsigned editorial "we" is a real option and so is staying in
+  the third person on purpose.
+- Whose call: the owner's, recorded in taste.md. The prompt change is
+  two sentences once she rules either way.
+- Status: proposed
+
+### 2026-09-19 — The prose guide and the benchmark should merge (writer seat, run 4)
+- Trigger: `docs/market/newsletter-prose-guide.md` is still a stub on
+  main, and canon law 9 and a taste ruling both point at it. Run 4
+  produced `docs/voice/prose-benchmark-2026-09-19.md`, which reads the
+  same newsletters from primary sources and quotes them.
+- Proposal: the market seat writes its guide on top of the benchmark's
+  quotes rather than starting over, and the benchmark stays the dated
+  measurement it is. Two studies of the same five newsletters is waste,
+  and worse, they will disagree.
+- Whose call: the market seat's, on its own file. This seat does not
+  write in docs/market/.
+- Status: proposed

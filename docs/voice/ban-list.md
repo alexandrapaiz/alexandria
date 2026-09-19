@@ -29,3 +29,78 @@ the owner's word.
 12. Uniform enthusiasm. If every item is important, none is; the
     ranking must be visible in the prose's energy, not just the
     order.
+13. Typesetter punctuation. Non-breaking hyphens (U+2011) inside
+    "long-horizon" or "sparse-reward", narrow no-break spaces before a
+    percent sign ("28.5 %"), the multiplication sign in "3×". Ordinary
+    hyphens and ordinary spaces, always. The reader's search box and
+    the agent loading the issue both match on plain ASCII, and neither
+    matches on these. Added 2026-09-19 from 2026-W37, which carried 87
+    non-breaking hyphens and 19 narrow spaces.
+14. Internal vocabulary printed at the reader. "(3 supports)" is a
+    count of edges in alexandria's claim graph, not a fact about the
+    research, and no subscriber can decode it. Say what the number
+    means in plain words. The same goes for triage scores, tiers,
+    claim ids, and the ISO week code.
+15. The complete dump in place of a judged selection. A section that
+    prints every row the query returned has outsourced the editing to
+    the database. Nine "read these yourself" entries is a list; five
+    chosen ones is a recommendation, and the reader pays for the
+    choosing.
+16. One paper wearing several hats. Splitting a single paper across
+    two or three items, or calling two papers "several teams", makes a
+    thin week look broad. State plainly when findings share a source.
+17. The greeting that carries no information. "Welcome to another edition
+    of...", "Happy Monday", "Hope you had a great week." A newsletter
+    should say hello, and the owner asked for it back, but a hello that
+    would fit any issue of any newsletter on any day is a form being
+    filled in. The greeting earns its line by being true about this
+    particular day. Added 2026-09-19 with the greeting rule.
+18. The section that defends itself. An intro explaining why a section is
+    worth reading ("why tracking this matters: acting on stale results is
+    how systems get built on sand") is the ranking-narration tell wearing
+    a different hat. Frame the contents, never the container. Added
+    2026-09-19 from the owner's no-meta-commentary ruling.
+19. Headings that name a category instead of speaking. "Compounding", "New
+    and unproven", "Key takeaways", "What this means". A heading that
+    sorts rows reads as machine output no matter how good the prose under
+    it is. The four slots are the owner's and their order is fixed, but
+    their names belong to the skeleton and never to the page (canon law
+    12). Added 2026-09-19 from her heading ruling, amended the same day
+    after entry 20.
+20. The skeleton printed as the page. "Gaining traction", "Trailblazing",
+    "Left behind" and "Read these yourself" are the generator's internal
+    slot labels, and printing one as a heading hands the reader the
+    blueprint instead of the building. It is also the one tell the owner
+    has flagged twice, the second time in the word "AGAIN". The test is
+    blunt: a heading that would fit tomorrow's issue is furniture, so
+    write the one that fits today's. Added 2026-09-19 from incident 20.
+21. The fixed-length issue. Ten traction bullets and nine reading-list
+    entries in a week whose new work was two papers, or a real week cut
+    to the shape of a thin one. Length is a claim about how much
+    happened, so a padded thin day lies and a truncated heavy day
+    cheats. Added 2026-09-19 from canon law 11, after 2026-W37's ten
+    identical bullets.
+22. The date inside the headline. "[September 7-13, 2026]" spends part of
+    the only sentence most readers ever see, the email subject, on a fact
+    the email header, the issue metadata and the archive listing already
+    carry. The title is the finding alone. Added 2026-09-19 from her
+    ruling rescinding the bracketed range.
+23. The issue that never says what is in it. Morning Brew prints "In
+    today's newsletter, we'll get into:" and three lines, Money Stuff
+    prints a deck under the title, The Batch names its three items in
+    the issue title, and TLDR puts them in the subject. 2026-W37 made
+    the reader scroll to find out. Contents are not methodology, and a
+    reader who cannot see the shape of an issue in the first screen has
+    no reason to stay in it. Added 2026-09-19 from the prose benchmark.
+24. The bare number. "Resolves 64% of tasks" with no baseline beside it,
+    or "gaining three independent supports" with no number at all. Every
+    contender puts the comparison in the same sentence as the figure
+    ("45.9 percent success with the memory model versus 37.6 percent
+    without it", The Batch, issue 371). A number the reader cannot place
+    is decoration. Added 2026-09-19 from the prose benchmark.
+25. The item that ends on its citation. 2026-W37 closed every entry on a
+    URL, which makes the last thing the reader sees a bibliography line
+    and leaves the consequence for them to work out. The Batch ends on
+    "We're thinking", Import AI on "Why this matters", Morning Brew on a
+    writer's initials. End on the judgment, then the source. Added
+    2026-09-19 from the prose benchmark.
