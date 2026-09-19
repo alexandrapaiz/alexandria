@@ -955,3 +955,90 @@ mechanism. The other half is a line in whoever's charter produces the
 artifact, and the two ship together or the register is decoration. The
 detector of last resort, the owner saying a thing twice, stays in place
 and is now explicitly the worst case rather than the design.
+
+## Incident 22 — The PM seat was never present (2026-09-19, owner-reported)
+
+**Class, per ADR-29.** Enforcement gap, and arguably a fifth class the
+mandate does not yet name. The duty was ruled, recorded, and assigned to
+a seat that could not perform it, which is not quite "ruled but not
+checked at the artifact". Naming it is the owner's call and the proposal
+is at the end of this entry.
+
+### What happened
+
+The owner said it plainly: "right now i feel like im doing the PMs job,
+i want the pm to be proactive."
+
+Across a ten-hour working session on 2026-09-19 she personally convened
+seats, noticed every landed pull request, spotted every gap, ordered
+every dispatch, and repeated editorial rulings she had already given.
+The PM seat initiated nothing. It ran on its Monday cron and on explicit
+dispatches, and between those it did not exist.
+
+The numbers, taken from `gh run list` and `gh pr list` on the day:
+twenty-five agent runs started, fifteen pull requests opened, two ADRs
+recorded, two incidents registered, and zero PM runs. The PM's last run
+before the session was 2026-09-18 05:43 UTC. Every one of the day's
+twenty-five runs was dispatched by a human.
+
+### Why it happened, in three layers
+
+All three are real and none alone is sufficient, which is why the
+earlier fixes did not take.
+
+1. **Cadence.** The cron was `35 10 * * 1`, once every 168 hours, in a
+   company whose state changed roughly every forty minutes that day. A
+   seat awake for one hour a week cannot be proactive regardless of what
+   its charter says.
+2. **Authority, and this one is mechanical rather than cultural.** No
+   seat can start another seat's run. A `workflow_dispatch` made with
+   `GITHUB_TOKEN` creates no workflow run at all, because GitHub refuses
+   to let the runner's own token trigger further workflows. So even a PM
+   that noticed had no actuator, and its only available move was to
+   write a line in a file a human had to read. This is the same
+   constraint family as incident 12, re-probed and rejected again in
+   this run.
+3. **Charter framing.** The PM charter's verbs were all accounting
+   verbs: maintain, note, account, record, flag, reconcile. It gained
+   four new duties in forty-eight hours (the org chart, the pending
+   tracker, run health, the Linear trial note) and not one of them said
+   propose, decide, or initiate. It described a historian of the week
+   rather than a chief of staff for the day.
+
+### The fix
+
+Charter, shipped in this PR. prompts/pm-agent.md gains section 0 (two
+run modes), section 4 (the daily standup and the proposed dispatch
+queue, with the entry format and four rules that keep the queue from
+becoming noise), and section 5 (dispatch authority, drafted in full and
+marked dormant).
+
+Workflow, queued because no seat can apply it. The PM cron goes daily,
+the timeout to 75, the cap to 400 for duty growth, and the prompt block
+becomes mode-aware. Item 2 of
+[pending-workflow-changes.md](pending-workflow-changes.md), with the
+exact diffs. **The charter half of this fix is worth nothing until that
+cron changes**, which is the same shape as incident 13, where the
+draft-PR-first rule sat correct and unapplied for a week.
+
+Register, shipped in this PR. docs/agents/unowned-duties.md gains the
+cadence test: a duty is owned only when the naming seat's cron fires
+more often than the duty's trigger arrives. Applying it immediately
+found two more cadence gaps, one of them against the ExO seat itself.
+
+### What the org grew from it
+
+The pattern is in docs/agents/learning-log.md as **the presence
+gradient**, and the short form is that duties accrete to whoever is
+present rather than to whoever is named. The operational test is the
+cadence check above. It is now in the ExO charter's unowned-duty audit,
+so every future assignment is checked against the assignee's cron before
+it is called owned.
+
+**Proposal for the owner, and hers alone because ADR-29 is hers.** The
+mandate names four gap classes. This incident fits none of them cleanly,
+because nothing was unaware, unreachable, unprocessed, or unchecked. The
+duty was known, assigned, and structurally unperformable. If a fifth
+class is worth adding, it is **cadence gaps: a duty owned by a seat that
+does not run often enough to hold it**, its hunter is the ExO's
+unowned-duty audit, and its detection cycle is every ExO run.
