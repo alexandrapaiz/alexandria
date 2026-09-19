@@ -171,6 +171,13 @@ OKR seat's north-star reading against competitors. If your weekly read
 and its monthly score disagree, say so in the brief and let that seat
 score it.
 
+Sweep the other seats too. Each outward-looking charter now ends its PR
+description with a section headed "Seen and not mine," which is where a
+seat records what it noticed and had no lane for. Run `gh pr list
+--state all --limit 20` for the week and read those sections. They are
+cheap to read and they are the org's only record of what it saw and did
+not use.
+
 A week where you find nothing is a real answer, and writing "nothing
 this week that a builder would be embarrassed to miss" is the correct
 output when it is true. Writing nothing at all is not.

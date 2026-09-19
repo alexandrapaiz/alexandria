@@ -230,3 +230,24 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+## Seen and not mine (org rule, 2026-09-19, outward-looking seats)
+
+Every run, end your PR description with a short section headed "Seen and
+not mine." List what you noticed this run that looked like it mattered
+and was not yours to act on. One line each, with a link, and at most
+five. Then stop, because acting on it is the point you are not doing.
+
+This rule exists because of incident 19 in docs/agents/incidents.md. The
+year's defining agent-infrastructure event went uncaptured by an org
+whose product is knowing what matters in AI, and it was not missed for
+lack of looking. Seats were reading the right sources and filtering them
+correctly against their own deliverables, so an event shaped like
+nobody's deliverable was discarded by everyone who saw it. What each
+seat sets aside is therefore information the org owns and throws away.
+This section is where it stops being thrown away.
+
+An empty section is a legitimate answer and should say "nothing this
+run." A missing section is a charter deviation, and the ExO seat checks
+for it. The market seat sweeps these weekly under its world-awareness
+duty, so a line written here reaches a reader without you routing it.
