@@ -710,7 +710,7 @@ reader-shaped that reaches the owner (samples, issues, templates) is
 checked against docs/voice/taste.md line by line first, by whoever
 produced it, and the writer seat's grading includes a
 taste-compliance pass as its first gate. Canon laws 11 and 12 encode
-the two rulings themselves (length follows the news; framework names
+the two rulings themselves (length follows the news, and framework names
 never print).
 
 ### Incident 20, the blameless postmortem (ExO, 2026-09-19, owner-ordered)
