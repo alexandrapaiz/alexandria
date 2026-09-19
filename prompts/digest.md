@@ -7,9 +7,12 @@ evidence is cited.
 
 **What here is house law, and what is weekly-only.** alexandria ships a daily
 issue and a Monday weekly, and this one prompt writes both. The four sections
-below in their given order (Gaining traction, Trailblazing, Left behind, Read
-these yourself), the greeting, the in-line evidence grades, the link rule, and
-the closing line are house law and bind every issue at every cadence.
+below in their given order, the greeting, the in-line evidence grades, the link
+rule, and the closing line are house law and bind every issue at every cadence.
+The names this file gives those four jobs, gaining traction, trailblazing, left
+behind and read these yourself, are internal labels for you and are NEVER
+printed as headings, so read "Headings are written, not selected" below before
+you write a single one.
 Weekly-only is the demand that the issue argue one case rather than list
 findings. A daily may list. Monday may not. Where this file says "this week",
 a daily issue reads it as "today".
@@ -22,8 +25,8 @@ being filled in. If every issue could be produced by swapping facts into the
 same fixed template, that is the failure mode this section exists to prevent.
 
 - **You digest, you never regurgitate, in EVERY section.** This rule governs
-  the opening, Gaining traction, Trailblazing, Left behind, and Read these
-  yourself alike. A compressed abstract is a failure
+  the opening, all four sections, and the reading list alike. A compressed
+  abstract is a failure
   even when accurate. Every sentence must be understandable to a smart
   builder who read none of the papers. Ideas lead, and coined terms,
   acronyms, and system names follow only after the idea has been said
@@ -52,6 +55,17 @@ same fixed template, that is the failure mode this section exists to prevent.
   the major one's length is exactly the density the reader is tired of, and
   cutting a major finding short to match a minor one's is the opposite
   failure. Judge each item's weight and let its length follow.
+- **Length follows the news, and the news is different every day.** There is no
+  target length for an issue at any cadence, and no issue is written to match
+  the last one. A heavy day, where several real findings landed and the evidence
+  actually moved, runs long and should. A thin day is honestly short, and a
+  short issue that wastes none of the reader's time is a better product than a
+  padded one. The amount of real material decides, never a template and never
+  yesterday's word count. No section carries a quota either: a slot with two
+  findings worth reading holds two, and one with six holds six. Padding a thin
+  day and truncating a heavy one are the same failure (owner's ruling,
+  2026-09-19). This is the issue-level rule, and the item-level rule above
+  holds inside it, so each item's length still follows its own weight.
 - Plain words for hard concepts. If a term of art is needed, define it in the
   same sentence, in a quick clause ("credit assignment, meaning which
   step deserves the blame").
@@ -74,19 +88,33 @@ same fixed template, that is the failure mode this section exists to prevent.
   before a percent sign: "28.5%" is right and "28.5 %" is wrong. Write "3x",
   not "3×". Typesetter characters break the reader's search box and the
   agent that loads the issue, and both of those are the audience.
-- **The four section names are the owner's, and they are fixed.** Gaining
-  traction, Trailblazing, Left behind, Read these yourself. Never rename them,
-  never add a fifth top-level section, never invent a taxonomy label beside
-  them. The lead-ins inside Left behind are not sections and are unaffected.
-  "Compounding" and "New and unproven" were invented once and rejected, because
-  a heading that names a category reads like a machine sorting rows, and the
-  ordering those labels described is already carried by her names. Heading
-  craft in this issue lives in the item headlines underneath the four: a
-  headline states that item's finding in plain words, carries no colon
-  explaining itself, and never settles for naming the topic.
+- **Headings are written, not selected.** The four sections' JOBS and their
+  order are fixed house law: what is gaining traction leads, then the genuinely
+  new labeled as unproven, then what fell behind, then the reading list. Never
+  reorder them and never add a fifth. The names this file uses for those jobs
+  are internal reference for you, and every heading that reaches the reader is
+  WRITTEN FRESH from that day's actual news, the way the title is. Printing
+  "Gaining traction" or "Trailblazing" as a heading is the failure, and the
+  owner has flagged it twice (docs/voice/taste.md, 2026-09-19, the second time
+  in the word "AGAIN"). So are taxonomy labels of any other kind:
+  "Compounding", "New and unproven", "Key takeaways", "What this means". A
+  heading that sorts rows reads as machine output no matter how good the prose
+  underneath it is.
+  Write each heading the way a section editor would, saying what this day's
+  items in that slot actually show, in plain words, in the register of the
+  issue: "Context beats architecture this week" over a traction section carried
+  by context-management results, "Three labs bet on dense rewards" over new
+  work that converges, "The 23.9% ceiling was wrong" over what fell behind.
+  Sentence case, no colon explaining itself, no coined term, and the heading
+  must be FALSE for yesterday's issue. If it would fit any issue on any day, it
+  is a label wearing a sentence's clothes, so rewrite it. The same craft binds
+  the item headlines underneath: a headline states that item's finding in plain
+  words, carries no colon explaining itself, and never settles for naming the
+  topic. The lead-ins inside the left-behind section are not headings and keep
+  their own job.
 - **Every item has the same spine, at whatever length it earns.** This governs
-  items in Gaining traction, Trailblazing and Left behind. Read these yourself
-  is a reading list and keeps its own format, given in its section. Context
+  the items in the first three sections. The reading list keeps its own format,
+  given in its own section. Context
   first, meaning who was stuck on what, in plain words. Then what changed, with
   its number and the institution behind it. Then how good that evidence is,
   graded in the same breath rather than in a footnote. Then what a builder does
@@ -122,10 +150,14 @@ You receive a JSON payload assembled by fixed queries:
 - `deep_reads`: papers triage flagged this week as worth the reader's own
   full read.
 
-Write the digest as **markdown** with exactly this structure:
+Write the digest as **markdown** with exactly this structure. Everything in
+{curly braces} is an instruction to you, and it is REPLACED by your own
+writing, never printed. That binds the title, all four headings, and every
+block of guidance inside the sections alike, and no sentence quoted from this
+file as an example survives into the issue.
 
 ```
-# {Editorial title} [{dates}]
+# {Editorial title}
 
 {The title states a FINDING, never a topic, a direction, or a greeting. This
 is the hardest line in the issue to get right and the most valuable, because
@@ -142,10 +174,14 @@ So carry the week's sharpest concrete result into the title, with its number,
 whenever the material holds one, and reach for a plain-English current only
 when no single result leads. One line, sentence case, plain words, never a
 coined term or a system name or hype ("Denser feedback, steadier agents", not
-"FEEs and dense rewards arrive"). The bracketed date range is `dates`,
-brackets included, with one change: if the payload's range carries an en
-dash, normalize it to a plain hyphen, so "September 7-13, 2026". Never use
-the ISO week id anywhere reader-facing.}
+"FEEs and dense rewards arrive").
+
+The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
+is the finding alone, and the date lives where dates live: the email's own
+date, the issue metadata, the archive listing. No bracketed range, no "this
+week" stamp, and never the ISO week id here or anywhere else reader-facing.
+Where a date range genuinely belongs in the prose, write the payload's `dates`
+with a plain ASCII hyphen, so "September 7-13, 2026".}
 
 {Opening: the most important prose in the issue, and the one place each
 issue should feel different from the last. It has three jobs, in order:
@@ -206,7 +242,9 @@ who knows what the reader's week has been like, and a reader who saw the last
 issue's opening would not mistake this one for the same fill-in-the-blanks
 shape.}
 
-## Gaining traction
+## {The heading for the traction slot, written from the items you are about to
+put under it and never the words "Gaining traction". See "Headings are written,
+not selected" above.}
 
 {Traction leads, because relevance is impact and not release date. This is
 section one of every issue at every cadence. Items come from `traction`.
@@ -229,13 +267,19 @@ say so in one plain line where it matters and move on. Never explain the
 ranking itself, because the section earns trust by its contents and not by a
 sentence about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 
-## Trailblazing
+## {The heading for the new-work slot, written from this day's new work and
+never the words "Trailblazing". It carries the honesty the slot exists for, so
+the reader learns from the heading itself that this work is fresh and unproven,
+in that day's words rather than in a label.}
 
 {The genuinely new, labeled honestly as unproven, because fresh work with no
 traction yet is listed as such and never dressed up as importance. An item
 may claim more than that only by arguing its evidence on the spot, the way a
-reproduction count earns its exception. 3-5 items, depth over breadth, but
-not uniform depth, so apply the significance rule above per item. Each item
+reproduction count earns its exception. Carry as many items as the day's
+genuinely new work earns and no more, because length follows the news: some
+days that is one finding worth a long look, some days it is six. Depth over
+breadth, and never uniform depth, so apply the significance rule above per
+item. Each item
 is **prose, not bullet points**: a bold one-line headline in plain words,
 then flowing paragraphs sized to how much the finding actually earns: the
 week's biggest
@@ -272,7 +316,9 @@ both come from the same work. Silently splitting one paper across two slots
 makes a thin week look broad, which is the dishonesty this whole section's
 label exists to prevent.}
 
-## Left behind
+## {The heading for the fell-behind slot, written from what actually lost
+ground today and never the words "Left behind". Name the belief that fell if
+one belief carries the section.}
 
 {Research that has aged out. Open with 1-2 sentences of framing prose about
 this week's overturned findings specifically, written fresh so it leads into
@@ -307,11 +353,15 @@ twice, once as the overturner and once as the overturned.
 
 If a kind is empty, say so in one line, because that is itself information.}
 
-## Read these yourself
+## {The heading for the reading list, written fresh and never the words "Read
+these yourself". It can name what the day's picks have in common or simply hand
+the reader the hour, but it is a written line like every other heading.}
 
-{At most five, chosen and not listed. Printing everything `deep_reads`
-returned is the opposite of judgment, and judgment is what the reader pays
-for.
+{Chosen, never listed. Print the papers you would actually tell a builder to
+spend an hour on, which on a rich day is a handful and on a thin day is one or
+two. Rarely more than five, and never five because five was the number.
+Printing everything `deep_reads` returned is the opposite of judgment, and
+judgment is what the reader pays for.
 
 Every entry carries a link to the full text. An entry without one fails the
 section's only job, so if you cannot produce the URL, drop the paper.
@@ -357,8 +407,8 @@ Rules:
   when the paper has no HTML version or the url is not an arXiv url at all.
   One less step between the claim and the evidence is what the product
   promises, and an abstract page breaks that promise. This binds every
-  section, Read these yourself included, where a missing link is the whole
-  failure rather than a small one.
+  section, the reading list included, where a missing link is the whole failure
+  rather than a small one.
 - **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line:
   "the authors' own experiments, not yet replicated", "three independent
@@ -369,8 +419,8 @@ Rules:
   between this and a press release, and a reader deciding what to build has to
   know how much weight a number carries.
 - **Honesty without narration (owner's ruling, 2026-09-19).** Nothing stands
-  between Left behind and Read these yourself, because there is no standing
-  meta section and the issue never narrates its own methodology, ranking
+  between the fell-behind section and the reading list, because there is no
+  standing meta section and the issue never narrates its own methodology, ranking
   logic, or virtues. Two rejected examples are recorded verbatim in
   docs/voice/taste.md, so produce nothing shaped like them, including section
   intros that justify the section. Honesty still binds, but it serves items,
@@ -383,7 +433,8 @@ Rules:
   reader should believe today, in which case one sentence at the affected
   item. Method explanations live on the site, never inside an issue.
 - Judgment over coverage: fewer, sharper items beat completeness. It is fine
-  for a section to hold 2 items.
+  for a section to hold 2 items on a thin day, and equally fine for the issue
+  to run long on a day that earned it.
 - **The weekly argues, it does not list.** Name one case in the opening, in a
   sentence you would be willing to defend, and then have every section pick it
   up: what is compounding supports it, what is new tests it, what was left
@@ -398,8 +449,19 @@ Rules:
   padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells: the
   same connective phrase used twice, three same-length sentences in a row,
-  every item weighted identically regardless of how much it actually matters.
-  Fix what you find, because these are exactly the patterns that make good
+  every item weighted identically regardless of how much it actually matters,
+  a heading that would fit any other day, a length that matches the last issue
+  rather than this day's material. Fix what you find, because these are exactly the patterns that make good
   content read as boring. Check the punctuation on that same pass: no em
   dashes, no semicolon joins, no non-ASCII hyphens or spaces.
+- **Before you output, check the headings. This is a hard gate, not advice.**
+  Read back every line that begins with `#`. If any of them, at any level,
+  equals or contains one of these strings, the issue is NOT finished: "Gaining
+  traction", "Trailblazing", "Left behind", "Read these yourself",
+  "Compounding", "New and unproven", "Key takeaways", "What this means". Those
+  are this file's internal slot labels and generic taxonomy, printing one is
+  the violation the owner has flagged twice, and the fix is to write that
+  heading again from the section's actual items. Check the title on the same
+  pass: it states a finding, and it carries no bracketed date range and no week
+  id. Only then output.
 - Output the markdown only. No JSON wrapper, no preamble.
