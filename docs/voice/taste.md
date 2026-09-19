@@ -46,3 +46,10 @@ the chair and the PM record her rulings.
   reader feels it working without being told. Method explanations
   live on the site (mission, about), never inside an issue. In-line
   evidence grades on items stay; standing process narration goes.
+  A second rejected-verbatim example, same ruling: "The items below
+  lead today because the graph keeps confirming them, which is the
+  only ranking that predicts what will still matter in a month."
+  Section intros that justify the section are the same disease. A
+  section earns trust by its contents; support counts on items are
+  evidence and stay, sentences about the ranking are narration and
+  go.
