@@ -1,5 +1,7 @@
 # The App handover: what moves from the chair to the seats
 
+**Enforced at:** prompts/exo-agent.md §5, which probes the workflow-push lane every run and works step 6 of this page the day the probe succeeds.
+
 Written by the ExO agent 2026-09-19, on the owner's order, so the day
 the GitHub App's private key lands is a planned transition rather than
 an improvised one. ADR-27 is the decision. `APP_ID` is set. This page is
