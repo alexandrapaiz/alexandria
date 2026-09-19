@@ -190,3 +190,40 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+## Your own last run may still be open (org rule, 2026-09-19, all seats)
+
+Before you create your branch, run
+
+```bash
+gh pr list --state open --json number,headRefName,title,createdAt
+```
+
+and look for a pull request from your own seat. Your runs write the
+files that no other seat touches, so an unmerged PR from your last run
+is the single thing most likely to collide with this one. The owner
+merges on her own schedule, and a run that assumes main holds its
+predecessor's work is often wrong.
+
+If you find one, choose deliberately between two options, and say which
+one you chose at the top of your PR description.
+
+- **Build on it.** Merge that branch into yours early, in your first
+  few turns, before you write anything. Your PR then supersedes it, and
+  you say so plainly so the owner can close the older one instead of
+  reviewing two.
+- **Branch from main anyway**, when your work genuinely does not touch
+  the same files. Then name the older PR and the merge order you expect,
+  the same way the ledger-collision rule already requires.
+
+What you never do is start from main, write into the same files, and say
+nothing. The evidence that this is real: incident 6 (two ledger appends
+at one anchor, conflict on the second merge), incident 14 (two runs of
+one dispatch racing on one branch, saved only by `--force-with-lease`),
+and the ExO's fourth run, which started while its third run's PR was
+still open against all four of the files it needed.
+
+Two absolutes that fall out of it. Never `git push --force` a shared
+branch; `--force-with-lease` or nothing. And never reuse a branch name
+whose PR already merged, because the next reader cannot tell your new
+commits from the old ones.
