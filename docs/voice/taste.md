@@ -74,3 +74,12 @@ the chair and the PM record her rulings.
   is the finding alone, and the date lives in the date field (the
   email's own date, the issue metadata, the archive listing), never
   inside the headline.
+- 2026-09-19 — Section headers: same FRAMEWORK, never the same
+  verbatim words every issue. The sections' jobs are fixed (the
+  traction-led lead, the new-and-honest, what fell behind, the deep
+  reads), but each issue phrases its own headings fresh, in voice,
+  the way the editorial title already varies. A heading repeated
+  verbatim every issue becomes template furniture; a heading written
+  for that day's content is craft. The framework names in the
+  instruction are for the generator's internal reference, not for
+  printing verbatim.
