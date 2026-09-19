@@ -530,3 +530,87 @@ used twice above, for the reason set out at the end of item 16.
     `##` section with the next free number**, which is what this section
     does. Where a duplicated number must be cited, cite it by seat and
     run id as well, the way item 15 cites item 11 as "the security run".
+### Incident 19, the blameless postmortem (ExO, 2026-09-19, owner-ordered)
+
+**The finding that changes the diagnosis.** The first explanation on the
+day was that nothing watched the world, so the fix was to add feeds. The
+evidence does not support that explanation. The market seat's charter
+already said, before any patch landed, to visit competitors' free
+surfaces every week and to read newsletter archives and Hacker News for
+demand signals, naming TLDR AI, Import AI, and The Batch by name in its
+seed set. That seat ran three times with those instructions, on
+2026-09-18 twice and 2026-09-19 once, every run after the incident was
+public. The words "Hugging Face" appear nowhere in `docs/market/`. The
+inputs were open, the sources were read, and the event went past.
+
+So the org did not fail to look. It failed to claim what it saw.
+
+**Why, mechanically.** Every charter tells a seat what to produce, and a
+seat reading the world for its own artifact keeps what feeds that
+artifact and discards the rest. Market read competitors for positioning
+moves, so an industry security event was not a positioning move.
+Research read papers for claims, and a postmortem of an incident is in
+no arXiv category. Security read our own code for vulnerabilities, and
+the compromise was upstream of our code. Each filter was correct. The
+org's awareness turned out to be the union of its deliverables rather
+than the union of what its seats saw, and an event shaped like nobody's
+deliverable passed through twelve pairs of eyes unclaimed.
+
+This is worth stating in the strongest form, because the weaker form
+invites the wrong fix. Adding sources does not close it. The four
+ecosystem feeds are a good change for other reasons, and they would not
+have caught this, because the seat that would have read them was already
+reading better sources and discarding this exact item.
+
+**The class, named.** Correct seats, blind org. A duty that is nobody's
+deliverable is invisible to every audit the org runs, because every
+other audit measures a seat against its charter and this duty is in no
+charter. The detection rule is in docs/agents/learning-log.md under the
+pattern of the same name, and the live register of such duties is
+docs/agents/unowned-duties.md.
+
+**Blame, allocated honestly.** None to the seats. The market seat
+executed its charter, and a charter that says "record what competitors
+shipped" does not say "record what the world learned." The failure is in
+the charter set, which is this seat's lane, and specifically in the
+absence of any instruction anywhere that an outward-looking seat must
+record what it saw and set aside. That instruction now exists in four
+charters as of this run.
+
+**Three further instances of the same class, found by the same method.**
+Legal and compliance posture, free-tier and quota headroom, and the
+survival of the corpus if its one database is lost. All three are
+written up with evidence and a proposed check in
+docs/agents/unowned-duties.md. All three are owner decisions rather than
+charter edits, so this run proposes and does not assign.
+
+**The resonance, recorded and not acted on.** The mechanism of the
+outside event was agents coordinating past their containment, and this
+org runs twelve seats on `--permission-mode bypassPermissions`. That
+question belongs to the security seat, which is holding it in PR #41 and
+in the research seat's containment deep dive in PR #42, and nothing in
+this entry preempts their technical answer.
+
+What is recorded here is the organizational contingency, written now so
+that it is not improvised under pressure later. If the security answer
+comes back uncomfortable, meaning that a seat can reach a surface its
+charter forbids and the only thing stopping it is the charter text, then
+the guardrail this seat would propose is containment by identity rather
+than by instruction. One credential per seat, scoped to the paths that
+seat is allowed to write, so that the engineer's token cannot push a
+charter and the ExO's token cannot push pipeline code. The owner's merge
+gate stays exactly as it is, because it already works. What changes is
+that a boundary currently written in prose a model reads would become a
+permission a runner enforces. ADR-27's shared GitHub App is the wrong
+shape for that, since one shared identity holding every permission is
+the opposite of least privilege, so the handover plan in
+docs/agents/app-identity-handover.md would need a section on per-seat
+scoping before that key becomes the org's single key.
+
+That is a proposal for a future run to make, with the security seat's
+findings in hand. This run files it and stops.
+
+**Numbering.** Still 19 on this branch. PR #39 renumbers the founding
+incidents, 11 becomes 12 and 12 becomes 13, so whichever of #39 and #43
+merges second must renumber this entry and fix the references to it in
+docs/agents/learning-log.md and docs/agents/unowned-duties.md.
