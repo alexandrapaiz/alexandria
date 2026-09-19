@@ -48,7 +48,7 @@ def fetch_arxiv(cfg: dict) -> list[dict]:
     for entry in cfg["arxiv"]:
         cat, tier = entry["category"], entry["tier"]
         url = (
-            "http://export.arxiv.org/api/query"
+            "https://export.arxiv.org/api/query"
             f"?search_query=cat:{cat}&sortBy=submittedDate&sortOrder=descending"
             f"&max_results={ARXIV_MAX_PER_CAT}"
         )

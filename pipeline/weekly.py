@@ -10,9 +10,10 @@ One scheduled function doing two jobs, in order:
    with 2+ supports edges, citation movers, fresh deprecations, deep-read
    flags); gpt-oss-120b writes the three-section digest; it lands in the
    `digests` table (database of record) and goes to subscribers by email via
-   the owner's Gmail over authenticated SMTP. It is deliberately NOT
-   published to the public repo — the newsletter is the paid product
-   (docs/vision.md §4).
+   the owner's Gmail over authenticated SMTP. The issue itself is free in
+   full (docs/vision.md §0, amended 2026-09-17): it is the acquisition
+   engine, and it is also published on the site at /library/<week>. The
+   paid product is the spine, the skills and the graph, not the issue.
 
 They share one function deliberately: Modal's free plan caps scheduled
 functions at 5, and the citations exist for the digest — running them in the
