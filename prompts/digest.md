@@ -20,7 +20,7 @@ being filled in. If every issue could be produced by swapping facts into the
 same fixed template, that is the failure mode this section exists to prevent.
 
 - **You digest, you never regurgitate, in EVERY section.** This rule governs
-  the opening, Compounding, New and unproven, Left behind, and Read these
+  the opening, Gaining traction, Trailblazing, Left behind, and Read these
   yourself alike. A compressed abstract is a failure
   even when accurate. Every sentence must be understandable to a smart
   builder who read none of the papers. Ideas lead, and coined terms,
@@ -160,7 +160,7 @@ the opening completely; a skimmer reading only the bolds gets the week's
 story; nothing is asserted without its why; and a reader who saw last week's
 opening would not mistake this one for the same fill-in-the-blanks shape.}
 
-## Compounding
+## Gaining traction
 
 {Traction leads, because relevance is impact and not release date. This is
 section one of every issue at every cadence. Items come from `traction`.
@@ -183,7 +183,7 @@ say so in one plain line where it matters and move on. Never explain the
 ranking itself; the section earns trust by its contents, not by a sentence
 about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 
-## New and unproven
+## Trailblazing
 
 {The genuinely new, labeled honestly as unproven, because fresh work with no
 traction yet is listed as such and never dressed up as importance. An item
