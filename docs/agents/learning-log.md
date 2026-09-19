@@ -304,3 +304,13 @@ proving each was an ancestor of main.
   and the merge order is declared in PR #18's description as the rule
   requires. Check whether other seats' PR descriptions do the same, or
   whether it reads as unused boilerplate.
+
+---
+
+## 2026-09-19 — Third run (owner order, relayed by the chair)
+
+*In progress. Dispatched with a binding owner order: register the two
+containerization smoke-test failures as incidents, judge the frontend
+seat's health honestly, plan the chair-to-seat authority transfer for
+the day the GitHub App private key lands, and add whatever else the
+register and tonight's velocity say the owner should hear.*
