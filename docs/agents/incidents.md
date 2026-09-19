@@ -718,3 +718,39 @@ rule this seat proposes alongside it: **a failure whose diagnosis took
 more than a minute gets an entry, whether or not it repeats, and whether
 or not it is already fixed.** Writing it down costs five minutes once.
 Rediscovering it costs a run.
+
+## 2026-09-19 — the register's own unpaid debt
+
+19. **The no-ship tripwire has now outlived three ExO runs, which is
+    item 13 happening a second time.** Queued on 2026-09-18 in
+    [pending-workflow-changes.md](pending-workflow-changes.md), carried
+    forward by the 2026-09-18 evening run, and verified unapplied again
+    on 2026-09-19: no file under `.github/workflows/` contains the
+    string `tripwire`. The previous ExO run wrote, in its own learning
+    log, that if it was still unapplied at the next run that would
+    itself be worth an entry. It was. This is that entry.
+
+    **Why it is not the same as forgetting.** Item 13 was a fix nobody
+    held, sitting in a register nobody read as a to-do. This one is
+    held, written out in full, ready to paste, and read every run. It
+    does not ship because the seat that wrote it cannot push the file it
+    belongs in, and the human who can has spent two days applying more
+    urgent workflow edits by hand: OIDC, permission mode, model routing,
+    twelve caps, two timeouts, container config, a new seat's whole
+    workflow. The tripwire is the least urgent item on a queue that only
+    drains through one pair of hands, so it is always the one left over.
+
+    **That makes it a measurement rather than a failure.** The queue
+    depth through the human bottleneck is now visible, and the tripwire
+    is its low-water mark. Any org fix that is genuinely valuable but
+    never the most urgent thing will never ship while that bottleneck
+    exists. Which is the strongest available argument for ADR-27's App,
+    stated without any appeal to autonomy as a principle: see
+    [app-identity-handover.md](app-identity-handover.md).
+
+    **Status: still queued, deliberately not re-escalated.** The fix is
+    unchanged and correct. The right resolution is the handover, not a
+    third request that the chair apply it by hand. If the App has not
+    landed by the next ExO run and the tripwire is still out, record the
+    third occurrence here and say plainly that the org has been running
+    without its shipping check for two weeks.
