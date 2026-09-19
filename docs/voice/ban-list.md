@@ -147,3 +147,13 @@ the owner's word.
     unrelated papers to one team that the payload never said existed.
     Attribution is a claim about people and carries the same
     never-invent rule as a number. Added 2026-09-19 from 2026-W37.
+32. The nickname before the introduction. Not jargon, an ordinary word
+    quietly carrying a technical job: "how much of a teacher a student
+    really needs", "drop its teacher mid-training", printed before
+    anyone said that teacher and student are what the field calls a big
+    model training a small one. Rejected verbatim by the owner. It is
+    the club sentence (26) wearing plain English, and it is worse than
+    jargon in one way: nothing on the page looks like a term, so the
+    first-use pass has nothing to list and the writer never notices.
+    Every borrowed word gets the same clause a coined one would.
+    Added 2026-09-19 from the two intro specimens in taste.md.
