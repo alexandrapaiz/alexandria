@@ -1245,3 +1245,185 @@ are the mechanism and the map is only the map.
   runs were in flight at the time of writing, writer, engineer and this
   one, so their outcomes are the first thing to read.
 
+
+## 2026-09-19, the fifth run: the presence gradient
+
+Dispatched by the owner, not scheduled, with one order and her own words
+attached: "right now i feel like im doing the PMs job, i want the pm to
+be proactive." This entry is written for a successor who knows nothing,
+so it starts with what was actually true that day.
+
+### What this run observed
+
+The day's numbers, from `gh run list` and `gh pr list` at 18:20 UTC on
+2026-09-19. Twenty-five agent runs started. Fifteen pull requests
+opened. Two ADRs recorded, 28 and 29. Two incidents registered, 19 and
+20. One all-hands. And zero PM runs, the seat's last having been
+2026-09-18 05:43 UTC. Every single one of those twenty-five runs was
+started by a human typing a dispatch.
+
+Three greps did the rest of the diagnosis and they took a minute.
+
+- `grep -c cron .github/workflows/agent-pm.yml` against the org's actual
+  rate of change: one run per 168 hours in a company that changed state
+  every forty minutes.
+- `grep -ril "workflow run\|workflow_dispatch" prompts/*.md` returned one
+  file, and that hit was the finance charter counting runs for cost, not
+  starting them. **No charter in this org authorizes any seat to start
+  another seat's run.** Twelve charters say what a seat produces when it
+  is woken. None says who decides a seat should be woken.
+- The PM charter's own verbs, counted: maintain, note, record, account,
+  flag, reconcile. The word "dispatch" appears twice and both times
+  refers to a dispatch that happened TO the seat.
+
+And one probe, run rather than assumed, because charters get stale about
+their own limits: pushing a one-line comment change to
+`.github/workflows/agent-pm.yml` was rejected again with "refusing to
+allow a GitHub App to create or update workflow ... without `workflows`
+permission". Incident 12 still holds as of this run.
+
+### The pattern, which is bigger than the PM
+
+**Duties accrete to whoever is present.**
+
+In an org of scheduled agents, authority does not settle where the org
+chart puts it. It settles on whoever is awake when the thing happens.
+Every seat here is a pulse. It exists for forty minutes and is absent
+for the rest of the week. The owner is the only continuous process in
+the building. So every duty arising between pulses lands on her by
+default rather than by decision, and it lands there no matter which
+charter names it, because a charter cannot be read by a seat that is not
+running.
+
+That explains something this seat had been misreading for three runs.
+The PM's charter kept growing, four new duties in forty-eight hours, and
+the owner kept doing those duties anyway. The obvious reading is that
+the seat was underperforming. The correct reading is that the seat was
+never there. Every one of those additions was an instruction addressed
+to a process that would not run again for six days.
+
+It also explains why adding sections has diminishing returns as a fix.
+This seat's last four runs added §2b, §3b, §3c, §3d, "check the register
+before you ship" across twelve charters, and a register map. All of that
+is correct, and all of it is instructions to processes that are absent
+most of the time. **Charter edits raise the ceiling on what a seat does
+when it runs. Only cron edits change how often it is there to do it.**
+The org had been optimizing the first variable exclusively because it is
+the only one the seats can write.
+
+### What presence means for an agent, stated so it can be tested
+
+Not continuous execution. Nobody is paying for that and it is not
+needed. A seat is present when **its cadence is shorter than the rate at
+which its duties are triggered.** That yields a test you can run on a
+charter before shipping it: put the duty's trigger rate and the seat's
+cron side by side, and if the cron is slower, the duty is not owned. It
+is being performed by whoever is present, which is the human.
+
+Applying that test to the org's own register the moment it was written
+found two more gaps, one of them here:
+
+- "Runs that fail get reported to the owner", assigned to the PM on
+  2026-09-19, trigger rate daily, cadence weekly. It was false within
+  hours of being written, and the owner found two failed frontend runs
+  herself that same day.
+- "Runs that fail get diagnosed", assigned to this seat, trigger rate
+  daily, cadence weekly Sunday. **That is a cadence gap against the ExO
+  seat itself and this run did not fix it**, because the owner's order
+  was about the PM and because a seat proposing its own extra runs is
+  the kind of thing she should decide rather than read about
+  afterwards. It is the first thing the next run should raise.
+
+The register bug underneath all of this is worth naming separately. A
+register that tests for the presence of words in a charter will mark a
+duty owned whenever someone has written a sentence about it. It cannot
+distinguish an owned duty from a documented one. Adding the cadence
+column is what makes the difference visible, and the reason it matters
+more than it sounds is that a cadence gap reads as *covered* in every
+audit, including this seat's, which makes it strictly worse than an
+unowned row that at least reads as open.
+
+### What this run changed
+
+1. **prompts/pm-agent.md**, the substantive one. Section 0 splits the
+   seat into two run modes. Section 4 is the daily standup and the
+   proposed dispatch queue, with the entry format written out, because
+   the product is a command the owner can copy rather than a report she
+   has to read. Section 5 drafts dispatch authority in full and marks it
+   dormant. The opening paragraph now carries her sentence as the seat's
+   standing obligation, above every ceremony.
+2. **Item 2 of pending-workflow-changes.md**, the cron change this all
+   depends on, with the exact diffs and the new prompt block. Note the
+   shape: charter shipped, machinery queued, exactly like incident 13.
+   If a future run reads this entry and finds the PM still weekly, the
+   fix did not land and the charter sections above are decoration.
+3. **docs/agents/unowned-duties.md**, the cadence test plus the fourth
+   open row, which is the duty of deciding what happens next between
+   Mondays.
+4. **prompts/exo-agent.md**, the cadence clause in §3b and a new §2c
+   that makes dispatch an audited act, both now and on key day.
+5. **docs/agents/app-identity-handover.md**, PM dispatch authority added
+   as the second grant the key unlocks, with the two-act activation
+   (a repository variable the owner sets, and an amendment she merges)
+   and a one-command probe to check that the App token is actually
+   exempt from the recursion guard before anyone builds policy on it.
+6. **docs/playbook.md**, a presence section and a changed setup order,
+   so the next company started from this playbook makes its operations
+   seat daily on day one instead of promoting it after the owner
+   complains. That is the parent-level lesson and it is the reason this
+   entry is long.
+7. **Incident 22**, with a proposed fifth ADR-29 gap class, cadence
+   gaps, left as a proposal because ADR-29 is hers.
+
+### The honest limits of this fix
+
+Three, and a successor should not be surprised by any of them.
+
+**The daily PM is still a pulse.** Seven pulses a week instead of one is
+a large improvement and it is not presence. A gap that opens at 09:00
+and matters by 11:00 still reaches the owner first. The only designs
+that close that are an event-driven trigger (a workflow on
+`pull_request` or `workflow_run`) or a genuinely long-running process,
+and both are larger changes than this order called for. Name them if the
+daily standup turns out to be insufficient rather than guessing now.
+
+**More runs is more pull requests.** Six extra small PRs a week is real
+friction for the one person who merges everything. The charter bounds it
+by requiring an empty queue to be reported in a draft PR and closed
+cheaply, and by putting the queue in the PR description so she can act
+without merging. Watch whether that holds. If she starts leaving standup
+PRs open unread, the format is wrong and the next iteration should make
+the standup write into one long-lived file instead.
+
+**This seat just did to the PM what it warns about.** The fix for a seat
+with too many charter sections was, in part, more charter sections. The
+difference is that this one comes with a cron change, and the cron
+change is the part that does the work. If the owner applies only the
+charter and not the workflow, this run made the problem worse.
+
+### What the next run must check first
+
+- **Did the PM cron change land?** `grep cron .github/workflows/agent-pm.yml`.
+  If it still reads `* * 1`, item 2 of pending-workflow-changes.md is
+  unapplied and nothing in this entry is in force. Raise it before
+  anything else.
+- **Did a standup actually run, and what did it cost?** Measure its
+  `num_turns` and replace the provisional row in turn-caps.md. Then read
+  its dispatch queue and judge it against the one test that matters:
+  could the owner have fired an entry by copying it.
+- **The number to track, which is the whole measure of this run.**
+  `gh run list --event workflow_dispatch` for the week, and for each run
+  ask who wrote the instructions. It was 100% her through 2026-09-19.
+  It should fall. §2c of this charter now makes that a standing count.
+- **The ExO's own cadence gap.** Named above, unfixed, and the next run
+  should put the question to the owner rather than answer it.
+- **Merge state of #45 and #46.** This run stacked #46 on #45 rather
+  than branching from main, because #45 touches prompts/pm-agent.md and
+  every org doc this run needed. If #45 merged, #46 rebases onto main
+  cleanly. If neither merged, do not open a third branch into the same
+  files.
+- **Run failures since this run.** At 18:20 UTC on 2026-09-19 the only
+  failures in the last 40 runs were the two frontend runs at 01:54 and
+  01:58, both already diagnosed in PR #39. Two runs were in flight, the
+  writer's scheduled 18:15 and this one, so their outcomes are the first
+  thing to read in `gh run list`.
