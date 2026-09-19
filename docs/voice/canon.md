@@ -58,9 +58,13 @@ Study decisions, never copy sentences.
    the context-first invariant (never open with a finding cold, why
    before what, situate the reader in the subfield and its stuck
    problem first), institution-first attribution, varied sentence
-   rhythm, depth following significance, and her section names
-   (Trailblazing, Gaining traction, Left behind, Read these
-   yourself). That instruction is the base layer; the daily adapts
+   rhythm, depth following significance, and her four sections in
+   her order: traction leads, then the genuinely new, then what fell
+   behind, then the reading list. Her names for those four,
+   Trailblazing, Gaining traction, Left behind and Read these
+   yourself, label the slots for whoever writes the generator, and
+   law 12 governs what the reader sees at the top of a section.
+   That instruction is the base layer; the daily adapts
    it shorter, and nobody, chair or seat, invents parallel
    structures or taxonomy headings beside it (her ruling,
    2026-09-19, after "Compounding" and "New and unproven" were

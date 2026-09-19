@@ -63,5 +63,25 @@ the owner's word.
 19. Headings that name a category instead of speaking. "Compounding", "New
     and unproven", "Key takeaways", "What this means". A heading that
     sorts rows reads as machine output no matter how good the prose under
-    it is. The four section names are the owner's and are fixed. Added
-    2026-09-19 from her heading ruling.
+    it is. The four slots are the owner's and their order is fixed, but
+    their names belong to the skeleton and never to the page (canon law
+    12). Added 2026-09-19 from her heading ruling, amended the same day
+    after entry 20.
+20. The skeleton printed as the page. "Gaining traction", "Trailblazing",
+    "Left behind" and "Read these yourself" are the generator's internal
+    slot labels, and printing one as a heading hands the reader the
+    blueprint instead of the building. It is also the one tell the owner
+    has flagged twice, the second time in the word "AGAIN". The test is
+    blunt: a heading that would fit tomorrow's issue is furniture, so
+    write the one that fits today's. Added 2026-09-19 from incident 20.
+21. The fixed-length issue. Ten traction bullets and nine reading-list
+    entries in a week whose new work was two papers, or a real week cut
+    to the shape of a thin one. Length is a claim about how much
+    happened, so a padded thin day lies and a truncated heavy day
+    cheats. Added 2026-09-19 from canon law 11, after 2026-W37's ten
+    identical bullets.
+22. The date inside the headline. "[September 7-13, 2026]" spends part of
+    the only sentence most readers ever see, the email subject, on a fact
+    the email header, the issue metadata and the archive listing already
+    carry. The title is the finding alone. Added 2026-09-19 from her
+    ruling rescinding the bracketed range.
