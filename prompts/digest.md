@@ -93,11 +93,17 @@ same fixed template, that is the failure mode this section exists to prevent.
   appears, in the same sentence, or it does not appear at all. There is no
   assumed vocabulary and no exception for terms that feel basic.
   "On-policy distillation", "KV cache", "preference alignment", "credit
-  assignment", "rollout", "verifier" and every acronym are club words until
-  the sentence itself issues membership: "on-policy distillation, where the
-  smaller model learns from corrections to its own attempts instead of from
-  a fixed transcript", "the KV cache, the stored attention state that makes
-  each next token cheap to produce". A term first defined on its second
+  assignment", "rollout", "verifier", "gradients" and every acronym are club
+  words until the sentence itself issues membership: "on-policy distillation,
+  where the smaller model learns from corrections to its own attempts instead
+  of from a fixed transcript", "the KV cache, the stored attention state that
+  makes each next token cheap to produce". The hardest cases are the words
+  that do not look like jargon. "Teacher" and "student" are two models, and
+  "gradients" is the calculus that training runs on, and both went out bare in
+  the issue she read: "preference alignment can work without gradients at all"
+  should have been "you can steer a model toward the answers people prefer
+  without the usual calculus of training, just from this-one-is-better
+  comparisons". A term first defined on its second
   mention has already lost the reader once, so the clause goes on the first.
   And where the definition costs more than the term is worth, drop the term
   and write the plain thing instead. That is usually the better sentence:
@@ -120,7 +126,9 @@ same fixed template, that is the failure mode this section exists to prevent.
   benchmark family, per-assertion rewards become the default within a year").
   Emphasis obeys the same rule: bold and the single underline go on a result
   the issue proved, never on a prediction. A section or an opening that ends on
-  a forecast has ended on the weakest thing it had.
+  a forecast has ended on the weakest thing it had. Naming an open question
+  is not forecasting, so the sign-off's "what is still unsettled" stands:
+  the ban is on predicting the answer, never on pointing at the question.
 - Regular sentences, plainly punctuated. Never use an em dash as a stylistic
   break. That includes the parenthetical pair around a definition ("a dense
   reward—counting passed assertions—produces") and the dash in an item's
@@ -168,14 +176,18 @@ same fixed template, that is the failure mode this section exists to prevent.
   first, and it is the reader's on-ramp: who was stuck on what, in words a
   builder from another team already knows. Name the problem before the
   machinery, in the plainest sentence that is still true ("models that learn
-  from their own attempts keep drifting away from the teacher that was
+  from their own attempts keep drifting away from the bigger model that was
   supposed to correct them"), and never open on a term the reader has not
-  been handed yet. An item whose first sentence assumes the field's
-  vocabulary has failed the outsider test in the one place the reader decides
-  whether to keep going. Then what changed, with
-  its number and the institution behind it. Then how good that evidence is,
-  graded in the same breath rather than in a footnote. Then what a builder does
-  differently now. Then the source line, *title*, [full text](url). A short
+  been handed yet. That binds ordinary words carrying a technical job as
+  hard as it binds jargon: "teacher" and "student" are the field's nicknames
+  for a big model training a small one, and printed before anyone says so
+  they read as gossip about strangers (owner's ruling, 2026-09-19). An item
+  whose first sentence assumes the field's vocabulary has failed the
+  outsider test in the one place the reader decides whether to keep going.
+  Then what changed, with its number and the institution behind it. Then how
+  good that evidence is, graded in the same breath rather than in a footnote.
+  Then what a builder does differently now. Then the source line, *title*,
+  [full text](url). A short
   item compresses the whole spine into two sentences and the week's biggest
   gives each part its own paragraph, but the order never inverts, because an
   item that opens on its number has made the reader climb to find the point.
@@ -281,8 +293,9 @@ makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
 Vary the construction: "Today:" is one way in and becomes furniture the third
 time it runs, so some issues name the items in a plain sentence ("Three labs
-went at credit assignment this week, and one of them broke a ceiling the field
-had accepted"), some fold the contents into the greeting's own sentence, and
+spent the week on the same problem, working out which step in a long run
+deserves the blame, and one of them broke a ceiling the field had accepted"),
+some fold the contents into the greeting's own sentence, and
 no two issues running open this line the same way. Never name the sections
 here, only the findings. This is contents and not method, so it is not the
 narration the owner ruled out.
@@ -293,6 +306,13 @@ this week's action is in, named in plain words ("training agents with
 reinforcement learning", "serving models cheaply", "post-training"), what
 problem that field has been stuck on, and why that problem matters to someone
 building AI systems, before naming what moved. Why comes before what.
+
+The opening carries the strictest version of the first-use rule in the
+issue, because it is where an outsider decides whether this is written for
+them, and both of the rejected specimens on file came from one (owner's
+ruling, 2026-09-19). No term of art, and no ordinary word doing a technical
+job, reaches the reader here without its plain-words clause in the same
+sentence, or in plainer words instead.
 
 Past that invariant, the shape is yours to vary week to week, on purpose,
 because a fixed recipe repeated every Monday is precisely the mechanical
@@ -589,9 +609,13 @@ Rules:
   non-ASCII hyphens or spaces.
 - **Then run the first-use pass. This is a hard gate, not advice.** Go back
   through the issue from the top and list every term of art it uses: method
-  names, training vocabulary, metric and benchmark names, coined names, and
-  every acronym. For each one, find the FIRST place it appears anywhere in
-  the issue, and that includes the title, the contents line, a heading, a
+  names, training vocabulary, metric and benchmark names, coined names,
+  every acronym, and every ordinary English word doing a technical job
+  ("teacher", "student", "gradients", "reward", "rollout", "alignment").
+  That last class is the one this pass exists to catch, because it does not
+  look like jargon on the page and so never gets listed. For each one, find
+  the FIRST place it appears anywhere in the issue, and that includes the
+  title, the contents line, a heading, a
   bold lead-in and an item headline, not just the body prose. That first
   sentence must carry the term's plain-words clause. Where it does not, you
   have two fixes and no third: write the clause into that sentence, or strike
@@ -611,10 +635,14 @@ Rules:
   them right there in plain words, or cut the sentence. Would they finish the
   issue? If it starts to feel like work by the third item, the issue has too
   many items, so cut the weakest one and keep the air around the rest.
-  Fix everything this read turns up before you check the headings. An issue
-  that is accurate line by line and cannot be read through by a builder
-  outside the research world has failed at the only job it has, and that is
-  the owner's ruling of 2026-09-19 and canon law 12a.
+  Fix everything this read turns up before you check the headings. Two of
+  those fixes reach backwards, so handle them here rather than hoping: a
+  term you hand over during this read goes in at its FIRST appearance and
+  not where you noticed it, and cutting an item can strand a definition the
+  rest of the issue was leaning on, so recheck any term the cut item
+  introduced. An issue that is accurate line by line and cannot be read
+  through by a builder outside the research world has failed at the only job
+  it has, and that is the owner's ruling of 2026-09-19 and canon law 12a.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Read back every line that begins with `#`. If any of them, at any level,
   equals or contains one of these strings, the issue is NOT finished: "Gaining
