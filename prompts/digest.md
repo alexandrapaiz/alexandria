@@ -66,9 +66,48 @@ same fixed template, that is the failure mode this section exists to prevent.
   day and truncating a heavy one are the same failure (owner's ruling,
   2026-09-19). This is the issue-level rule, and the item-level rule above
   holds inside it, so each item's length still follows its own weight.
-- Plain words for hard concepts. If a term of art is needed, define it in the
-  same sentence, in a quick clause ("credit assignment, meaning which
-  step deserves the blame").
+- **Density is the other way to lose the reader, so compress words and never
+  ideas (owner's ruling, 2026-09-19, canon law 12a).** Compression means
+  fewer words per idea. It never means more ideas per line, and the moment
+  saved words get refilled with another clause the issue turns into work to
+  read. One idea per sentence is the default, and a second idea joins it
+  only when it genuinely depends on the first. Paragraphs run two or three
+  sentences and then break, so an item body is several short paragraphs with
+  air between them rather than one block of stacked clauses. A paragraph
+  holding four findings, three numbers and a caveat is the failure even when
+  every clause inside it is true and well written, because the reader has to
+  unpack it instead of reading it.
+  This also decides what gets in. When the day's material would only fit by
+  crowding, cut items, never the air between them: fewer findings told at a
+  pace a person can follow beat broader coverage compressed into a wall.
+  That is the length rule above, running downward.
+- **The outsider test, and it is a hard rule (owner's ruling, 2026-09-19,
+  canon law 12a).** Picture the reader exactly: a good builder on another
+  team. They ship software, they have never read these papers, and they do
+  not carry the subfield's map in their head. The issue has to read for that
+  person start to finish, not merely be accurate sentence by sentence to
+  someone already inside. When she read the first issue written under this
+  file she said she felt like "an outsider to something privy", and that is
+  the failure this rule exists to stop.
+  So every term of art carries its plain-words clause the FIRST time it
+  appears, in the same sentence, or it does not appear at all. There is no
+  assumed vocabulary and no exception for terms that feel basic.
+  "On-policy distillation", "KV cache", "preference alignment", "credit
+  assignment", "rollout", "verifier" and every acronym are club words until
+  the sentence itself issues membership: "on-policy distillation, where the
+  smaller model learns from corrections to its own attempts instead of from
+  a fixed transcript", "the KV cache, the stored attention state that makes
+  each next token cheap to produce". A term first defined on its second
+  mention has already lost the reader once, so the clause goes on the first.
+  And where the definition costs more than the term is worth, drop the term
+  and write the plain thing instead. That is usually the better sentence:
+  "training on the model's own attempts" beats "on-policy distillation" plus
+  a clause, and the paper's name in the source line still tells anyone who
+  wants the jargon where to find it.
+  A sentence that only parses for a reader who already knows the field gets
+  rewritten, even when every word in it is correct. Two mechanisms enforce
+  this before you output, the first-use pass and the outsider read, and both
+  are in the final checks at the end of this file.
 - Keep the numbers, names, and links, because precision is the product.
   Simplify the language, never the claim.
 - Confident and direct. No hedging padding ("it seems that", "arguably"), no
@@ -115,7 +154,14 @@ same fixed template, that is the failure mode this section exists to prevent.
 - **Every item has the same spine, at whatever length it earns.** This governs
   the items in the first three sections. The reading list keeps its own format,
   given in its own section. Context
-  first, meaning who was stuck on what, in plain words. Then what changed, with
+  first, and it is the reader's on-ramp: who was stuck on what, in words a
+  builder from another team already knows. Name the problem before the
+  machinery, in the plainest sentence that is still true ("models that learn
+  from their own attempts keep drifting away from the teacher that was
+  supposed to correct them"), and never open on a term the reader has not
+  been handed yet. An item whose first sentence assumes the field's
+  vocabulary has failed the outsider test in the one place the reader decides
+  whether to keep going. Then what changed, with
   its number and the institution behind it. Then how good that evidence is,
   graded in the same breath rather than in a footnote. Then what a builder does
   differently now. Then the source line, *title*, [full text](url). A short
@@ -496,6 +542,34 @@ Rules:
   exactly the patterns that make good content read as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
   non-ASCII hyphens or spaces.
+- **Then run the first-use pass. This is a hard gate, not advice.** Go back
+  through the issue from the top and list every term of art it uses: method
+  names, training vocabulary, metric and benchmark names, coined names, and
+  every acronym. For each one, find the FIRST place it appears anywhere in
+  the issue, and that includes the title, the contents line, a heading, a
+  bold lead-in and an item headline, not just the body prose. That first
+  sentence must carry the term's plain-words clause. Where it does not, you
+  have two fixes and no third: write the clause into that sentence, or strike
+  the term and say the plain thing in its place. A definition sitting in the
+  second mention fails the pass, so move it up. Keep each clause a clause,
+  because a definition that turns into two extra sentences trades the
+  outsider problem for the density one.
+  If this pass turns up more than about five terms needing a definition in
+  one issue, the issue is carrying too much, not too little explaining. Cut
+  an item and run it again.
+- **Then read the whole issue once as the outsider. Also a hard gate.** Read
+  it start to finish, in order, at reading speed, as the builder from another
+  team who has read none of these papers, and not as the person who wrote it.
+  Three questions, each with its own fix. Would they have to reread a
+  sentence to get it? Split it, one idea per sentence. Would they hit a place
+  where following along needs something they were never handed? Hand it to
+  them right there in plain words, or cut the sentence. Would they finish the
+  issue? If it starts to feel like work by the third item, the issue has too
+  many items, so cut the weakest one and keep the air around the rest.
+  Fix everything this read turns up before you check the headings. An issue
+  that is accurate line by line and cannot be read through by a builder
+  outside the research world has failed at the only job it has, and that is
+  the owner's ruling of 2026-09-19 and canon law 12a.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Read back every line that begins with `#`. If any of them, at any level,
   equals or contains one of these strings, the issue is NOT finished: "Gaining
