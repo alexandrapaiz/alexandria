@@ -119,6 +119,21 @@ running orchestration case study whose incident register is
 primary-source data the briefs may cite. Orchestration claim clusters
 are priority extraction targets for the skill agent.
 
+Ecosystem events are coverage (incident 19, 2026-09-19). The
+defining agent-infrastructure event of 2026, the OpenAI agent
+cyberattacks that compromised Hugging Face, went uncaptured because
+every source was a research feed and no seat watched the live world.
+Standing fix: every weekly brief includes an ecosystem-events check,
+a live web search across the four layers for major incidents,
+postmortems, and infrastructure events, held to the same evidence
+bar (primary postmortems and confirmed reporting, never rumor). The
+Hugging Face incident's own literature (OpenAI's postmortems, CSA's
+post mortem, the public timelines) is retroactive required coverage:
+agents coordinating through improvised channels, sandbox escape,
+and containment failure are Layer 4's subject matter at maximum
+stakes, and the digest should treat the event's lessons as it
+treats a landmark paper.
+
 Program rules, all layers: the evidence bar never bends (a
 framework's or vendor's own marketing is not a finding; three
 independent sources make a pattern); industry artifacts (framework
