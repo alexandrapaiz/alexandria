@@ -638,3 +638,267 @@ containerization smoke-test failures as incidents, judge the frontend
 seat's health honestly, plan the chair-to-seat authority transfer for
 the day the GitHub App private key lands, and add whatever else the
 register and tonight's velocity say the owner should hear.*
+Dispatched with a binding four-part order and the evidence already
+verified by the chair: register the containerization migration's two
+failures, judge the frontend seat's health honestly across its whole
+history, state what transfers from chair to seats the day the GitHub
+App's private key lands, and add whatever else the register and
+tonight's velocity say the owner should hear.
+
+### Purpose read
+
+Mission unchanged (vision.md §0): accelerate every builder to frontier
+speed, autonomy as the tiebreak, a standalone knowledge business as the
+end state. Q4 OKRs in docs/okrs/okrs-2026-Q4.md, sprint in
+docs/sprints/sprint-2026-09-21.md, launch 2026-10-13, free digest plus a
+$20 operational spine. Newest ADRs are 27 (one shared GitHub App
+identity for the seats) and 28 (the writer seat, editor-in-chief). The
+org is twelve seats now, not eleven.
+
+### The first thing this run found, before any of the order
+
+**This seat collided with itself.** PR #30, the third ExO run's entire
+output, was still open and unmerged when this run started, and it
+touches four of the files this run needed: incidents.md, learning-log.md,
+pending-workflow-changes.md and prompts/exo-agent.md. Branching from
+main would have guaranteed a four-file conflict and put two competing
+ExO PRs in front of the owner at once.
+
+Resolved by merging `origin/exo/2026-09-18` into this branch in the
+run's first turns, before writing anything. **This PR therefore contains
+PR #30's work in full.** Merge this one and close #30, or merge #30
+first and this one still applies cleanly. Either order works; merging
+both is unnecessary.
+
+That is also where improvement 3 below came from. The rule that would
+have prevented this did not exist, and it now does, in all twelve
+charters.
+
+### Observed
+
+1. **The two containerization failures, confirmed from the logs.** Run
+   35414079812 died on `--dangerously-skip-permissions cannot be used
+   with root/sudo privileges`, and run 35414292823 died on `EACCES ...
+   /__w/_temp/_runner_file_commands/save_state_*` as uid 1000. Both
+   causes exactly as the chair reported them. Smoke test 3 (35415086885)
+   passed in 12 turns. Registered as incidents 17 and 18.
+
+2. **The frontend seat's whole history, with turn counts read from the
+   logs.** Ten runs. This is the evidence behind the verdict below.
+
+   | # | Run | When | Result | Turns/cap | What it was |
+   |---|---|---|---|---|---|
+   | 1 | 35305207776 | 09-18 03:58 | red | 151/150 | died mid-work (incident 4) |
+   | 2 | 35306459296 | 09-18 04:18 | red | 286/250 | finished, shipped PR #15, failed after the fact (incident 16) |
+   | 3 | 35308546561 | 09-18 04:51 | green | 175/250 | PR #19 |
+   | 4 | 35312532502 | 09-18 05:52 | green | 141/250 | |
+   | 5 | 35314931812 | 09-18 06:27 | green | 147/250 | PR #26 |
+   | 6 | 35317939561 | 09-18 07:07 | green | 126/250 | PR #27 |
+   | 7 | 35414079812 | 09-19 01:54 | red | n/a | container root (incident 17) |
+   | 8 | 35414292823 | 09-19 01:58 | red | n/a | container uid (incident 18) |
+   | 9 | 35415086885 | 09-19 02:14 | green | 12/600 | smoke test 3 |
+   | 10 | 35418265554 | 09-19 03:20 | green | 86/600 | PR #37, the email template |
+
+3. **The no-ship tripwire is still unapplied**, verified by grepping
+   every workflow file for the string. Third ExO run in a row. Recorded
+   as incident 19, and deliberately not re-escalated, for the reason
+   given there.
+
+4. **The three short caps landed.** frontend is at 600, pm at 300,
+   security at 250, all verified against the workflow files rather than
+   against the page that requested them. Item 2 of
+   pending-workflow-changes.md is deleted as applied. Three seats that
+   had never run now have real measurements: research 54, finance 29,
+   writer 53 and 51. Every cap in the org clears the rule.
+
+5. **The workflow lane is still shut.** Probed by attempting it, per
+   the charter: appended a comment to agent-exo.yml on a throwaway
+   branch and pushed. Rejected, same message as incident 12. `APP_ID`
+   is set, the key is not, and nothing has changed yet.
+
+6. **Merging stopped while producing did not.** 39 PRs exist. 26 are
+   merged, and 25 of those merged on 2026-09-18 before 07:10, usually
+   within twenty minutes of opening. Since 07:10 on 2026-09-18, eleven
+   PRs have opened and exactly one (#38) has merged. Eleven are open
+   now. This is the finding under part 4 of the order, and it is
+   developed below.
+
+7. **Six open PRs append to docs/ideas.md** (#28, #29, #31, #35, #36 and
+   this one). All six append at the end of the file, so every merge
+   after the first conflicts textually. The run-1 ledger rule is working
+   as designed, in that the collisions are visible in advance, but six
+   at once is past what a rule about declaring merge order can absorb.
+
+### The four answers the owner asked for
+
+**1. Registered, and yes, smoke-test-first should be standing org law.**
+
+Incidents 17 and 18 are written up properly in the register, as first
+occurrences of a class it had not seen: environment-migration failures,
+where the agent is correct, its charter is correct, and the ground under
+both moved. The answer to her question is unqualified. Neither failure
+reached a scheduled run. Both were caught by smoke tests fired on
+purpose on a throwaway branch, and the entire cost was two red runs and
+one 12-turn verification. The counterfactual is the frontend seat's
+Wednesday 08:00 cron being the first containerized execution, dying on
+an eight-word stderr line nobody was watching for, and the seat sitting
+dead until a human read the log.
+
+The law is docs/agents/runtime-changes.md: the next cron is never the
+first execution of new machinery. It names what counts as a runtime
+change (including turn caps and timeouts, which look like numbers rather
+than machinery and caused a six-failure day), gives the five-step ladder
+the chair actually ran, and gives the checklist a smoke run must print
+as verbatim output rather than as an agent's assurance.
+
+**2. The frontend seat is healthy. The red X's she is seeing are two
+different kinds of artifact, and neither is the seat.**
+
+Of four red runs, zero are the agent working badly.
+
+- Run 1 is the only one where work was genuinely lost, and it was a cap
+  set before the seat had ever run. Already incident 4, already fixed.
+- Run 2 is red on a run that shipped PR #15, which the owner merged. It
+  used 286 turns against a 250 cap and reported success; the action
+  failed it afterwards. That is incident 16's false-failure class, not a
+  defect in the work.
+- Runs 7 and 8 are the migration, and the seat was the deliberate
+  test subject because it has the most demanding environment in the org.
+  Being the one that finds the bugs is the job it was given.
+
+Against that, six green runs on real work, every one of which shipped a
+PR the owner merged or is reviewing. And the trend inside the green runs
+is the healthiest signal available: 175, 141, 147, 126, then 86 once
+containerized. The seat is getting cheaper per run while its output
+holds. Incident 4 predicted this exact fix in its own note, that the
+future fix was making turns go to judgment rather than plumbing, and
+baking Chromium into the image is that fix arriving.
+
+**Nothing systemic needs fixing in this seat.** One thing to watch, not
+to act on: 600 turns against a post-container peak of 86 is generous.
+Keep it, because a cap is a ceiling and costs nothing unspent, and one
+measurement of a new environment is not a trend. Re-measure after four
+containerized runs. If the peak holds under 150, the honest cap is 300.
+
+**3. The handover plan is docs/agents/app-identity-handover.md.**
+
+It names what the chair has applied by hand in two days and which seat
+should have owned each item, states what transfers on key day and what
+never transfers, gives the risk plainly (a token with the `workflows`
+permission lets a run rewrite what runs the agents), proposes two cheap
+mitigations, and gives the six-step sequence, which runs up the
+smoke-test ladder rather than landing everywhere at once. It contains
+one authority proposal, flagged in bold in the document and in the PR:
+that the ExO seat own the Dockerfile and the image build alongside the
+workflows.
+
+The test of whether it worked is one line: an agent seat raises its own
+turn cap in a PR and the owner merges it. Until that has happened once,
+the handover is configured rather than working.
+
+**4. What else she should hear, briefly.**
+
+The org's bottleneck moved, and nothing in the org has noticed. For the
+first day, agent capability was the constraint: runs died on caps, on
+permissions, on OIDC. All of that is fixed, and the seats now produce
+faster than one merge gate drains. Eleven PRs are open, the oldest for
+twenty hours, and one has merged in the last twenty.
+
+This is not a criticism of the merge gate. The gate is the authority
+boundary and it should stay exactly where ADR-27 puts it. It is a
+statement about what unmerged PRs cost as they age, which is not zero
+and is not obvious:
+
+- Every seat branches from main. Work sitting in an open PR is invisible
+  to the next run of any seat, so runs rediscover and redo it. This run
+  spent its first turns absorbing PR #30 for precisely that reason.
+- Six of the eleven append to docs/ideas.md, so five of them will
+  conflict on merge no matter what order she picks.
+- Incident 14's near-miss data loss came from exactly this shape: a run
+  cut from a stale base carrying a revert of the thing its own dispatch
+  was about.
+
+Three things would help, in order of how cheap they are. Merge or close
+the oldest PRs first rather than the newest, because age is what turns a
+clean patch into a conflict. Close PR #30 rather than merging it, since
+this PR contains it. And treat the ideas ledger's six-way collision as
+the signal that the append-and-verdict contract wants a per-seat file
+rather than one shared anchor, which is a proposal for the engineer
+whose file it is, filed in the ledger this run.
+
+The second thing, and it is smaller. Three of tonight's seats did work
+that never shipped anywhere a future run will find it: the chair
+diagnosed and fixed two real failures without filing them, which is the
+thing this register exists to stop. The register is only as good as the
+habit, and the habit has one gap the standing rule does not cover. The
+rule covers repeats. It does not cover first occurrences solved so fast
+they felt too small to write down, and those are exactly the ones that
+get rediscovered. Proposed in incident 17: a failure whose diagnosis
+took more than a minute gets an entry, whether or not it repeats and
+whether or not it is already fixed.
+
+### Changed
+
+Three improvements, each with a trigger above.
+
+1. **Incidents 17 and 18, and docs/agents/runtime-changes.md.** The
+   migration's two failures registered as a new class, and the rollout
+   method that caught them promoted to standing law. Enforced by this
+   seat: charter step 2 now diffs `.github/workflows/` and
+   `.github/docker/` every run and treats a runtime change with no smoke
+   run behind it as a finding.
+
+2. **docs/agents/app-identity-handover.md**, plus the conditional clause
+   in charter §5. The charter no longer just disclaims the workflow
+   lane; it says the disclaimer has an expiry date, tells the next run
+   to probe the lane by attempting a push every run, and lists exactly
+   what to do the first time that push succeeds.
+
+3. **"Your own last run may still be open", in all twelve charters.**
+   The run-1 ledger-collision check generalized from one file to a
+   seat's whole output. Evidence: incident 6, incident 14, the frontend
+   seat reusing a merged branch name for PR #27, and this run finding
+   its own predecessor's PR open across four files. It names the two
+   legitimate choices, requires saying which one you took, and adds the
+   two absolutes that fall out: never plain `--force` a shared branch,
+   never reuse a merged branch name.
+
+Housekeeping under §5b, not counted as improvements. Turn caps
+re-measured, with first real numbers for research, finance and writer,
+and the applied items deleted from pending-workflow-changes.md. README
+corrected to twelve seats, with the writer row, the containerized runs,
+and the ADR range to 28; both of its mermaid diagrams rendered before
+shipping, which needed `--no-sandbox` on this uncontainerized runner.
+One merged remote branch deleted. Four cross-seat flags filed in the
+ledger rather than edited.
+
+### Next run must check
+
+- **Did the App key land?** Probe the workflow lane by attempting a
+  push, first thing. If it succeeded, work step 6 of
+  app-identity-handover.md in full: ship the tripwire, rewrite charter
+  §5, delete pending-workflow-changes.md, close incident 12, and update
+  ADR-27 with what actually happened.
+- **Is the tripwire still out?** If yes, that is the third occurrence of
+  incident 19 and it should be said plainly: the org has run for two
+  weeks without its shipping check.
+- **Did the merge queue drain?** Eleven PRs were open on 2026-09-19 at
+  04:00, the oldest #27 from 2026-09-18T07:31. If the number is higher
+  rather than lower, the bottleneck has hardened and it deserves a full
+  improvement rather than a paragraph.
+- **Was PR #30 closed rather than merged?** This run's PR contains it.
+  If both merged, check docs/agents/ for duplicated sections.
+- **Did any seat actually use the new own-open-PR rule?** The cheap test
+  is whether a PR description says which of the two options it took. If
+  no description mentions it in two weeks, it is boilerplate and should
+  be cut or moved somewhere a run cannot skip.
+- **Re-measure the frontend cap after four containerized runs.** Peak
+  before the container was 286; the first two containerized runs were 12
+  and 86. If the post-container peak holds under 150, propose 300.
+- **Did more seats containerize, and did each go up the ladder?**
+  runtime-changes.md is now law, so a seat that migrated without a smoke
+  run is a finding for the register even if it worked.
+- **Is org-chart.md fixed?** It is missing the writer seat and calls
+  finance dormant after finance ran. Filed for the PM in the ledger; if
+  it is still wrong, the PM's charter may not actually require the
+  update it claims in §1b.
