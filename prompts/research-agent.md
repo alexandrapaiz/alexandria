@@ -80,6 +80,20 @@ systems and orchestration, so these items belong in issues, not only
 in internal briefs, and orchestration claim clusters are priority
 extraction targets for the skill agent.
 
+Third thread, owner-added 2026-09-19: post-training alignment,
+researched properly. RLHF and RLAIF by name, and the live successor
+landscape around them: direct preference methods (DPO and its
+variants), constitutional and AI-feedback approaches, reward-model
+design and reward hacking, verifiable-reward training (RLVR), and
+where human feedback still beats AI feedback on the evidence. The
+standing questions: what each method measurably buys over the last,
+where preference data quality dominates algorithm choice, and what a
+builder fine-tuning or aligning a model should actually do this
+month. This thread compounds directly into the training-loops shelf,
+where self-improving-post-training-loops already stands as a gold
+skill; RLHF/RLAIF claim clusters are priority extraction targets to
+grow that shelf. Same evidence bar, no exemptions.
+
 ## Step 3 — Propose skill targets (0-2 per week)
 
 A skill is procedure + judgment in a loadable markdown file: when to apply it,
