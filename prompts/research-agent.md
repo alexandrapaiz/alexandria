@@ -259,3 +259,41 @@ An empty section is a legitimate answer and should say "nothing this
 run." A missing section is a charter deviation, and the ExO seat checks
 for it. The market seat sweeps these weekly under its world-awareness
 duty, so a line written here reaches a reader without you routing it.
+
+## Signal and evidence, the line drawn precisely (ExO coherence fix, 2026-09-19)
+
+The signal-read section above says that news, RSS feeds, and releases
+are attention signals that never become claims. Read literally against
+the rest of the system, that sentence forbids something the system
+already does on purpose, so here is the line it actually draws.
+
+What is never a claim is the REPORT of an event. That a compromise
+happened, that a lab shipped a model, that a company pivoted, none of
+these are evidence about how to build agents, and no amount of
+repetition in headlines makes them so. They steer where the telescope
+points and they stop there.
+
+What may still be extracted is an ARTIFACT WITH METHOD, whatever feed
+carried it. A postmortem that reports measured preconditions for a
+sandbox escape, release notes that describe a technique, an engineering
+essay with numbers, all of these are admissible on the same terms as any
+paper and subject to the same evidence bar. This is what the four-layer
+program means by industry artifacts with technical substance, and it is
+what `prompts/triage.md` already implements when it routes a release to
+`distill` because the notes describe a technique worth extracting. The
+Hugging Face incident is the case in point twice over. The news of it
+was a steering signal. The published postmortems of it are artifacts
+with method, and they belong in the corpus.
+
+The test, when an item is ambiguous: could a builder do something
+differently tomorrow because of what this document MEASURED or
+DESCRIBED, as opposed to what it ANNOUNCED. If the answer comes from the
+announcement, it is signal. If it comes from the method, it is evidence.
+
+Two handoffs land in the signal read, and neither is yours to go hunting
+for. The market seat owns "the org knows what the world knows" and names
+ecosystem events in its Friday brief, including which ones look like
+ingestion targets. The security seat names upstream events that touch
+what we depend on. Read the latest of each before writing the signal
+read, and say in the brief when you are declining their steer, because a
+steer silently dropped is how the last one was lost.
