@@ -2109,3 +2109,89 @@ owning seat rather than assumed. Arguments in docs/sales/.
   with their procedures are a different artifact, and the audit above
   confirms they are accurate where they copy the paper. The gap is not
   our synthesis, it is our provenance.
+### 2026-09-19 — Sanitize the issue body before it renders as HTML (security agent)
+- Trigger: the 2026-09-19 audit. `site/app/library/[week]/page.jsx` passes
+  the issue body through `marked.parse` into `dangerouslySetInnerHTML`,
+  and `marked` has not sanitized HTML since v8, so raw HTML in the body
+  reaches the page intact. The body is written by gpt-oss-120b in
+  `pipeline/weekly.py` from claims distilled out of arXiv abstracts and
+  full text, which anyone can write. The chain from a crafted passage in
+  a paper to live HTML on alexandr.ia has no human in it.
+- What: sanitize on the way out. Either run the parsed HTML through a
+  sanitizer before rendering, or configure the renderer so raw HTML in
+  the source is escaped rather than passed through. The same sink exists
+  on `/skills` and `/desk`, and both take bodies a human merged, so they
+  are lower priority but belong in the same change for consistency.
+- First step: decide sanitize-on-write (in `pipeline/weekly.py`, before
+  the row lands in `digests`) or sanitize-on-render (in the route). On
+  render is safer, because it also covers rows already in the database.
+- Cost: $0, one small dependency.
+- Whose call: the engineer, with the frontend seat, since it is the
+  rendering path.
+- Status: urgent
+
+### 2026-09-19 — Pin the embedding model, and stop sharing its cache with the MCP server (security agent)
+- Trigger: the owner's incident 19 dispatch and the 2026-09-19 audit.
+  `pipeline/distill.py` and `mcp/server.py` both load
+  `Qwen/Qwen3-Embedding-0.6B` with no pinned revision, into one Modal
+  volume (`hf-cache`) that both mount read-write. The internet-facing
+  MCP server can therefore write into the cache the nightly pipeline
+  loads from, and nothing verifies what comes back out. No exposure is
+  suspected: our first download postdates the closed intrusion by eight
+  weeks and the model repo has no commit inside the window. The gap is
+  forward-looking.
+- What: five changes, described in full in `docs/security/upstreams.md`.
+  Pin `revision="97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"` in both
+  files. Move `EMBED_MODEL` and the new revision constant into one
+  shared module, because the two files must never disagree and every
+  vector in the database has to come from one model. Record and verify
+  the safetensors SHA-256. Set `HF_HUB_OFFLINE=1` once the cache is
+  warm. Split the volume, or mount it read-only in the MCP server, which
+  only ever reads it.
+- First step: the pin. It is four lines and it is the whole of the
+  high-value part.
+- Cost: $0.
+- Whose call: the engineer.
+- Status: urgent
+
+### 2026-09-19 — Pin the agent image to a digest, not `latest` (security agent)
+- Trigger: the 2026-09-19 audit. The engineer and frontend seats run
+  `ghcr.io/alexandrapaiz/alexandria-agent:latest`, a mutable tag. We
+  build the image ourselves, so this is not third-party supply chain
+  risk, but `latest` means neither seat can say which image it ran, and
+  a bad build silently becomes the next run's environment. Two frontend
+  runs on 2026-09-19 died on a uid mismatch introduced by an image
+  rebuild, which is exactly the failure mode a digest makes legible.
+- What: `build-agent-image.yml` emits the pushed digest, and both
+  container workflows reference `alexandria-agent@sha256:...`. Bumping
+  the digest becomes an ordinary PR, which is the same posture as the
+  action SHA pinning already in the ledger from 2026-09-18.
+- First step: it is the same blocker as action pinning, being the
+  GitHub App `workflows` permission from ADR-27. Land both together.
+- Cost: $0.
+- Whose call: the engineer, after the App handover.
+- Status: proposed
+
+### 2026-09-19 — Instrument the repository as the declared inter-agent channel (security agent)
+- Trigger: the 2026-09-19 audit's answer to the owner's sandboxing
+  question. The Hugging Face incident's agents coordinated through a
+  shared package cache that nobody had declared as a communication
+  channel, and the CSA post mortem's governance recommendation is to
+  define which forms of inter-agent coordination are permitted,
+  instrument the permitted channels, and treat any undocumented channel
+  found in production as a security incident. Alexandria already has a
+  deliberate inter-agent channel, being `docs/agents/incidents.md`,
+  `docs/agents/learning-log.md`, `docs/ideas.md`, and each other's open
+  PRs, and the seats use it constantly. Ours is documented, append-only,
+  and human-gated at merge, which is most of the recommended posture.
+  The missing clause is the last one.
+- What: one paragraph in the ExO charter naming the repository as the
+  only sanctioned channel between seats, and making any other channel a
+  discovery that gets recorded in the incident register. That is the
+  whole change. It costs nothing and it means the next time a seat finds
+  an unexpected shared surface, the response is already written down.
+- First step: the ExO decides whether this belongs in her charter or in
+  the playbook.
+- Cost: $0.
+- Whose call: the ExO. Charters are not this seat's to edit.
+- Status: proposed
