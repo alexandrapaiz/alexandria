@@ -321,3 +321,17 @@ as this is written; these fire the moment it lands):
    compounds when the library never burns. It must not crowd the
    mission line, which stays exactly "Accelerate every builder to
    frontier speed." The retired subtitle stays retired.
+
+## Agent identity: the Entra question (owner, 2026-09-18, ExO to deepen)
+
+The owner saw Microsoft Entra Agent ID at NEXO: agents get first-class
+directory identities like employees. She wants the alternatives for
+alexandria considered before anything is adopted. The chair's opening
+analysis is in the session record; candidates to compare properly:
+one shared GitHub App (badge for all seats, holds the workflows
+permission, closes the PAT question), per-seat GitHub Apps (full
+least-privilege, more setup), machine user accounts (crude, seat-count
+billing risk), per-seat fine-grained PATs (simplest, all minted off
+the owner), and actual Entra with OIDC federation (enterprise-grade,
+Microsoft dependency, overkill today). ExO's Sunday run should turn
+this into a one-page recommendation with the migration cost of each.

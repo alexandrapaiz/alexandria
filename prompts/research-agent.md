@@ -50,6 +50,21 @@ what is rising in them every week, and source or watchlist proposals
 that strengthen them are welcome. The evidence bar does not bend for
 them; they are named because they matter, not exempted.
 
+Added the same day, for the NEWSLETTER as well as the brief: agent
+infrastructure is coverage. Two named threads to track and to feed
+the digest when the evidence supports an item: (1) agent identity and
+governance, where Microsoft's Entra Agent ID gives agents first-class
+directory identities like employees, and the open question is what
+the equivalents are outside the Microsoft world (GitHub Apps, SPIFFE
+workload identity, OAuth client credentials per agent); (2) agent
+orchestration runtimes, LangGraph and its checkpointed-graph model
+foremost, and the workflow-versus-agent design question it sharpens.
+Industry artifacts (framework releases, identity standards) qualify
+alongside papers here when they carry real technical substance; the
+digest's differentiation is exactly this territory, directly
+applicable systems and orchestration, so these items belong in
+issues, not only in internal briefs.
+
 ## Step 3 — Propose skill targets (0-2 per week)
 
 A skill is procedure + judgment in a loadable markdown file: when to apply it,
