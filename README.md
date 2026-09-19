@@ -12,7 +12,7 @@ Two layers make that happen, and both of them run themselves.
 
 1. **The pipeline** reads, triages, distills, connects, and publishes. It runs
    on crons over one Postgres database, with no worker ever calling another.
-2. **The agent org** builds and steers the pipeline. Eleven agent seats run on
+2. **The agent org** builds and steers the pipeline. Twelve agent seats run on
    GitHub Actions schedules, each with a versioned charter, each shipping one
    pull request per run. The owner's merge is the only thing that takes effect.
 
@@ -33,7 +33,7 @@ week. That circle is the whole company.
 
 ```mermaid
 flowchart TB
-    subgraph ORG["The org: eleven seats, GitHub Actions cron, one PR per run"]
+    subgraph ORG["The org: twelve seats, GitHub Actions cron, one PR per run"]
         direction TB
         BUILD["<b>Build</b><br/>engineer · daily 7:06 ET<br/>skill · Tue<br/>frontend · Wed"]
         STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
@@ -111,6 +111,7 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 | skill | Tue 8:00 ET | the gold production line in skills/ | ADR-22 |
 | frontend | Wed 8:00 ET | the site, verified visually from screenshots | ADR-23 |
 | market | Fri 7:00 ET | the outside view in docs/market/ | ADR-17 |
+| writer | daily, after the digest | the words as a craft: docs/voice/ and the digest prompt | ADR-28 |
 | exo | Sun 10:00 ET | the org itself: charters, workflows, this README | ADR-19 |
 | security | 1st and 15th | debug sweeps and defensive audits | ADR-20 |
 | okr | monthly | quarterly objectives and purpose drift | ADR-16 |
@@ -150,7 +151,7 @@ flowchart TB
     end
 
     subgraph GHA["GitHub Actions: the agent org"]
-        SEATS["Eleven seats on cron<br/>Claude Code, the owner's subscription token"]
+        SEATS["Twelve seats on cron<br/>Claude Code, the owner's subscription token<br/>two of them in a prebaked container image"]
     end
 
     FEEDS --> DAILY
@@ -216,7 +217,7 @@ prompts/                  two kinds of versioned prompt, both proposed against b
 .github/workflows/        agent-*.yml, one scheduled workflow per seat
 skills/                   the gold layer: promoted skills and pattern notes
 docs/vision.md            the mission and the declared end state
-docs/decisions.md         architecture decision records, ADR-1 through ADR-25
+docs/decisions.md         architecture decision records, ADR-1 through ADR-28
 docs/diagrams.md          the diagram atlas: pipeline status, blackboard, org, agent loop
 docs/agents/              the org's memory: org chart, learning log, incidents, model routing, turn caps
 docs/okrs/                quarterly objectives and key results
@@ -263,19 +264,26 @@ The pipeline, built bottom-up.
 - [ ] Upgrade the judgment model beyond free tiers when budget allows (a bake-off decides
       if it is needed)
 
-The org, built after it (ADR-14 through ADR-25, all in one week of September 2026).
+The org, built after it (ADR-14 through ADR-28, all in one week of September 2026).
 
-- [x] Agent org live in the cloud, not on a laptop (ADR-18): eleven seats, nine on cron,
+- [x] Agent org live in the cloud, not on a laptop (ADR-18): twelve seats, ten on cron,
       each a GitHub Actions workflow running its charter
+- [x] Seats run in a prebaked container image (`.github/docker/Dockerfile`), so a run
+      spends its first minutes working rather than installing. Frontend and engineer
+      migrated; the rest follow
 - [x] Charters versioned in prompts/, one file per seat, owner-merged like any code
 - [x] ExO loop live (ADR-19): the org reviews and improves the org, weekly
-- [x] Org memory in docs/agents/: org chart, learning log, incident register, model routing, turn caps
+- [x] Org memory in docs/agents/: org chart, learning log, incident register, model routing,
+      turn caps, the runtime-change law
 - [x] Planning hierarchy live: mission, Q4 OKRs, weekly sprints, daily runs
-- [ ] First curation brief from the research seat (ADR-25), due with its first
-      scheduled run
+- [ ] First curation brief from the research seat (ADR-25) merged into
+      docs/research/briefs/. The seat has now run and the first brief is in review
+- [ ] One shared GitHub App identity for the seats (ADR-27), which is what lets a seat
+      fix its own machinery. `APP_ID` is set; the private key is pending
 - [ ] GitHub Projects board reconciled automatically by the PM seat, which waits on the
       owner-created `PROJECTS_TOKEN`
-- [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each
+- [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
+      Both have now run once on dispatch
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 
