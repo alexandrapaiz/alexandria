@@ -638,3 +638,47 @@ tier setting it permanently and the trial setting it with an expiry
 the webhook later confirms or revokes. The pricing page copy follows
 the writer seat's site-copy rules; the site's current "Opens
 October 13" pills become the three offers.
+## ADR-30: Accounts via Clerk, payments via Polar as Merchant of Record
+
+**Status.** Accepted 2026-09-19, owner-directed.
+
+**Identity: Clerk.** Already the de facto choice — `@clerk/nextjs` 7.9.4,
+`clerkMiddleware()`, and the sign-in/sign-up routes are in the tree. This
+ADR ratifies it and names what was missing: Neon is the system of
+record. A `users` table keyed by `clerk_id` holds the durable graph, so
+Clerk stays a swappable surface rather than a dependency (the company's
+law from epito.me ADR-6: integrations are surfaces, never dependencies).
+Migration away means re-issuing credentials by email re-auth, never
+losing users or their history.
+
+**Payments: Polar, as Merchant of Record.** Not Stripe: Stripe operates
+in 46 countries and Guatemala, where the owner is based, is not one of
+them. Using Stripe directly would require incorporating in a supported
+country — a corporate-structure decision, not a migration, and deferred
+until revenue justifies it. Not a storefront (Shopify et al.): there is
+no catalog. Alexandria sells one $20/month subscription, which is the
+payments category.
+
+Polar is the Merchant of Record, which means Polar is the legal seller:
+it registers, collects and files VAT and sales tax worldwide, issues
+invoices, and absorbs refunds and chargebacks. Verified 2026-09-19 to
+pay out to Guatemala via Stripe Connect Express. Fee ~4% + 40c,
+revenue-contingent, so $0 until someone pays. Lemon Squeezy (~5% + 50c,
+bank/PayPal payouts, Stripe-owned) is the fallback if Polar's smaller
+size proves a risk.
+
+The owner still owes what no processor can assume: a privacy policy and
+terms as data controller, and Guatemalan income tax on what she
+receives.
+
+**Launch posture: door closed.** The accounts plumbing is built now; the
+free digest ships publicly with no accounts, since it is the acquisition
+engine by the distribution plan and needs none. Public signup and
+payments open as a separate, later decision, on evidence.
+
+**Consequences.** The `users` table, a Clerk webhook syncing
+`user.created` into Neon, linkage of existing `subscribers` rows by
+email, and a gating helper are engineer work. Per-user MCP identity (the
+server is single-passphrase today, ADR-11) is the immediate follow-on:
+it is what makes the paid tier reachable from inside Claude. Third-party
+machine principals (Clerk M2M tokens) are a ledger idea, not launch work.
