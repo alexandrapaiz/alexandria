@@ -19,7 +19,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     env:
       GH_TOKEN: ${{ github.token }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}

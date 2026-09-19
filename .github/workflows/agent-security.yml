@@ -19,7 +19,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 75
     env:
       GH_TOKEN: ${{ github.token }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
@@ -50,4 +50,4 @@ jobs:
             Owner instructions for this dispatch, binding for this run and
             extending the charter (empty on scheduled runs):
             ${{ inputs.owner_instructions }}
-          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model opus"
+          claude_args: "--max-turns 250 --permission-mode bypassPermissions --model opus"
