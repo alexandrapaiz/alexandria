@@ -1,0 +1,52 @@
+# Does the press still fit?
+#
+# Incident 22 (docs/agents/incidents.md): an editorial merge grew the digest
+# generator's prompt past the model's per-request token ceiling. Nothing in the
+# repository noticed, and the next scheduled run answered 413 with no issue
+# written. This workflow is the thing that notices, before a merge rather than
+# after one.
+#
+# It runs on any change to a generator prompt or the pipeline, which is exactly
+# the set of changes that can move the sum. The writer seat's editorial merges
+# are inside that set on purpose: the laws are hers, the budget is the
+# engineer's, and this is where the two meet.
+name: checks
+
+on:
+  pull_request:
+    paths:
+      - "prompts/digest.md"
+      - "prompts/daily.md"
+      - "pipeline/**"
+      - ".github/workflows/checks.yml"
+  push:
+    branches: [main]
+    paths:
+      - "prompts/digest.md"
+      - "prompts/daily.md"
+      - "pipeline/**"
+      - ".github/workflows/checks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  digest-budget:
+    name: digest request fits the model's budget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # tiktoken makes the count exact. budget.py falls back to a pessimistic
+      # chars-per-token ratio without it, so a failure to install would make
+      # the guard stricter, never laxer.
+      - name: install the tokenizer
+        run: pip install "tiktoken==0.8.0"
+
+      - name: prompt + worst-case payload + output reservation vs the limit
+        run: python3 pipeline/budget.py

@@ -8,7 +8,7 @@ One scheduled function doing two jobs, in order:
    what our corpus thinks, citations show what the field thinks.
 2. **Digest** — fixed SQL gathers five evidence streams (new claims, claims
    with 2+ supports edges, citation movers, fresh deprecations, deep-read
-   flags); gpt-oss-120b writes the three-section digest; it lands in the
+   flags); the generator model writes the three-section digest; it lands in the
    `digests` table (database of record) and goes to subscribers by email via
    the owner's Gmail over authenticated SMTP. It is deliberately NOT
    published to the public repo — the newsletter is the paid product
@@ -24,12 +24,19 @@ Needs secrets: `neon`, `groq`, and the Gmail secret(s) (GMAIL_ADDRESS +
 GMAIL_APP_PASSWORD) once the newsletter is live; until then the run succeeds
 and only skips the email.
 
+    python3 pipeline/budget.py           # does the request fit? run before deploy
     modal run pipeline/weekly.py         # one-off manual run (citations + digest)
     modal deploy pipeline/weekly.py      # install the Monday schedule
+
+The budget check is not optional ceremony. Incident 22: an editorial merge
+grew the generator prompt past the model's per-request token ceiling, Groq
+answered 413, and no issue was written. CI runs the same check on every pull
+request that touches a generator prompt or this pipeline, and the run below
+refuses to call Groq when the sums do not work.
 """
 
 import hashlib
-import json
+import pathlib
 import re
 import time
 from datetime import date, timedelta
@@ -37,7 +44,21 @@ from datetime import date, timedelta
 import modal
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "openai/gpt-oss-120b"
+
+# Incident 22: `openai/gpt-oss-120b` is capped at 8,000 tokens per request on
+# Groq's free tier, and the generator prompt alone is 8,651. No payload
+# selection can rescue that, so the press moved to the one free-tier model with
+# room to print: `groq/compound`, at 70,000. It is an agentic system, which the
+# digest must not be (ADR-6: every query is known in advance, the model only
+# writes), so every request disables its built-in tools and every response is
+# checked for a tool that fired anyway. Rollback is this one line, and
+# pipeline/budget.py will then say precisely how far over the old model is.
+MODEL = "groq/compound"
+
+# Built-in tools off. An issue's whole claim is that it was written from our
+# corpus, and a writer that can quietly search the web is a writer that can
+# quietly source from somewhere else.
+COMPOUND_CUSTOM = {"tools": {"enabled_tools": []}}
 
 S2_BATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
 S2_BATCH_SIZE = 100       # ids per API call (S2 allows up to 500; be gentle)
@@ -47,8 +68,12 @@ RECHECK_DAYS = 6          # at most one check per paper per weekly cycle
 
 image = (
     modal.Image.debian_slim()
-    .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "markdown==3.7")
+    .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "markdown==3.7",
+                 "tiktoken==0.8.0")
     .add_local_file("prompts/digest.md", "/root/prompts/digest.md")
+    # the budget guard runs in the container too, so a request that cannot fit
+    # is refused here with the arithmetic rather than 413'd by Groq
+    .add_local_file("pipeline/budget.py", "/root/budget.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -207,6 +232,8 @@ def gather(conn) -> dict:
         where l.relation = 'contradicts'
           and coalesce(l.confidence, 0) >= 0.7
           and l.created_at > now() - interval '7 days'
+        order by l.confidence desc
+        limit 8
         """
     ).fetchall()
 
@@ -259,19 +286,51 @@ def gather(conn) -> dict:
     }
 
 
-# Groq's free tier caps request size (413 above it); trim the least-critical
-# evidence (the tail of new_claims, already sorted best-first) until we fit
-# the request Groq sees is prompt + payload, and the prompt has grown with
-# editorial rules — keep the sum under the free tier's 413 threshold
-MAX_PAYLOAD_CHARS = 17000
+def budget():
+    """pipeline/budget.py, wherever this is running from.
+
+    Modal drops it at /root/budget.py; a local `python3 pipeline/weekly.py`
+    import finds it beside this file. Either way the constants the guard
+    checks in CI are the constants the run uses, which is the whole point.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import budget as module
+
+    return module
 
 
-def shrink(payload: dict) -> str:
-    body = json.dumps(payload, separators=(",", ":"), default=str)
-    while len(body) > MAX_PAYLOAD_CHARS and payload["new_claims"]:
-        payload["new_claims"].pop()
-        body = json.dumps(payload, separators=(",", ":"), default=str)
-    return body
+def shrink(payload: dict, prompt: str, max_completion: int) -> str:
+    """Trim the payload until the whole request fits the model's budget.
+
+    The old version counted characters against a fixed 17,000 cap and only
+    ever trimmed new_claims, so a run with many deprecations could exhaust
+    new_claims and still return a body over the cap. This one counts tokens
+    against the model's actual per-request ceiling, trims every stream in a
+    stated order, and raises rather than returning something that will 413.
+    """
+    return budget().fit_payload(payload, prompt, max_completion, MODEL)
+
+
+# Depth sections got truncated at the default cap, so the issue asks for room.
+# Every one of these tokens is spent the moment the request is sent, whether or
+# not the model writes them: Groq's per-request ceiling counts the reservation,
+# not the output. The one issue the press has actually written came to 1,103
+# tokens, so 6,000 is generous rather than tight.
+MAX_COMPLETION_TOKENS = 6000
+
+
+def log_limits(resp) -> None:
+    """Groq's own account of the budget, which outranks anything we assume."""
+    limit = resp.headers.get("x-ratelimit-limit-tokens")
+    remaining = resp.headers.get("x-ratelimit-remaining-tokens")
+    if limit:
+        print(f"groq says: limit {limit} tokens, {remaining} remaining. If that "
+              f"disagrees with budget.MODELS[{MODEL!r}], the header is right.")
 
 
 def write_digest(payload: dict, prompt: str) -> str:
@@ -279,8 +338,16 @@ def write_digest(payload: dict, prompt: str) -> str:
 
     import httpx
 
-    user = shrink(payload)
+    guard = budget()
+    user = shrink(payload, prompt, MAX_COMPLETION_TOKENS)
+    report = guard.check_request(prompt, user, MAX_COMPLETION_TOKENS, MODEL)
     print(f"payload: {len(user)} chars, {len(payload['new_claims'])} new claims kept")
+    print(f"budget: {report.summary()}")
+    if not report.fits:
+        # shrink() should have made this impossible; if it did not, say so here
+        # rather than letting Groq say it with a 413 and no issue
+        raise guard.BudgetExceeded(report.summary())
+
     for attempt in range(4):
         resp = httpx.post(
             GROQ_URL,
@@ -288,7 +355,8 @@ def write_digest(payload: dict, prompt: str) -> str:
             json={
                 "model": MODEL,
                 "temperature": 0.3,
-                "max_completion_tokens": 6000,  # depth sections got truncated at the default cap
+                "max_completion_tokens": MAX_COMPLETION_TOKENS,
+                "compound_custom": COMPOUND_CUSTOM,
                 "messages": [
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": user},
@@ -296,13 +364,28 @@ def write_digest(payload: dict, prompt: str) -> str:
             },
             timeout=300,
         )
+        log_limits(resp)
         if resp.status_code == 429 and attempt < 3:
             wait = float(resp.headers.get("retry-after") or 30 * (attempt + 1))
             print(f"rate limited; backing off {wait:.0f}s")
             time.sleep(min(wait, 180))
             continue
+        if resp.status_code >= 400:
+            # incident 22 cost a day partly because raise_for_status() prints
+            # the status and throws the body away. The body is where Groq
+            # states the actual limit and the actual request size.
+            print(f"groq {resp.status_code}: {resp.text[:1000]}")
         resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"].strip()
+        message = resp.json()["choices"][0]["message"]
+        fired = message.get("executed_tools") or []
+        if fired:
+            # tools are disabled per request; if one ran anyway, the issue may
+            # contain something that did not come from our corpus
+            names = ", ".join(sorted({t.get("type", "?") for t in fired}))
+            print(f"WARNING: {MODEL} executed built-in tools ({names}) despite "
+                  "compound_custom disabling them. Treat this issue as "
+                  "unverified and check it against the payload before sending.")
+        return message["content"].strip()
     raise RuntimeError("groq: exhausted retries")
 
 
@@ -441,5 +524,15 @@ def weekly() -> str:
 
 @app.local_entrypoint()
 def main():
+    # The budget check runs here, before anything is spent, because `modal run`
+    # is how a human starts this press by hand and how the chair will start it
+    # after an editorial merge. It is the same check CI runs
+    # (.github/workflows-pending/checks.yml) and the same one the container
+    # runs before it calls Groq. Incident 22 is the reason it runs three times.
+    if budget().main() != 0:
+        raise SystemExit(
+            "budget check failed; the request would not fit the model and no "
+            "issue would be written. Nothing was run."
+        )
     body = weekly.remote()
     print("\n" + body)
