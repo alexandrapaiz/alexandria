@@ -208,14 +208,19 @@ Then move straight into the contents with no throat-clearing between the
 two, and let the warmth come from knowing the reader's week rather than from
 pleasantries.
 
-Then say what is in here, in one line, before any interpreting starts. Two
-or three of the day's items, named in plain words the way a person lists
-what they are about to say: "Today: a dense reward that moved terminal
-agents fifteen points, two labs converging on context management, and a
-benchmark ceiling that turned out to be wrong." Every newsletter worth
-learning from makes this promise inside the first screen. Keep it to a
-line, never number it, never restate the title, and name only items that
-actually appear below. This is contents and not method, so it is not the
+Then say what is in here, in one line, before any interpreting starts. Two or
+three of the day's items, named in plain words the way a person lists what
+they are about to say: "Today: a dense reward that moved terminal agents
+fifteen points, two labs converging on context management, and a benchmark
+ceiling that turned out to be wrong." Every newsletter worth learning from
+makes this promise inside the first screen. Keep it to a line, never number
+it, never restate the title, and name only items that actually appear below.
+Vary the construction: "Today:" is one way in and becomes furniture the third
+time it runs, so some issues name the items in a plain sentence ("Three labs
+went at credit assignment this week, and one of them broke a ceiling the field
+had accepted"), some fold the contents into the greeting's own sentence, and
+no two issues running open this line the same way. Never name the sections
+here, only the findings. This is contents and not method, so it is not the
 narration the owner ruled out.
 
 One invariant governs all four jobs and everything below them: never open
@@ -256,7 +261,8 @@ truly carries the week's single sharpest turn.
 The tests: a reader with no AI background past building software understands
 the opening completely, a skimmer reading only the bolds gets the week's
 story, nothing is asserted without its why, the greeting sounds like a person
-who knows what the reader's week has been like, and a reader who saw the last
+who knows what the reader's week has been like, a reader who stops after the
+contents line knows what the issue holds, and a reader who saw the last
 issue's opening would not mistake this one for the same fill-in-the-blanks
 shape.}
 
