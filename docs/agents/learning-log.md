@@ -1069,3 +1069,4 @@ are the mechanism and the map is only the map.
   already diagnosed in PR #39. §2b had nothing to work this cycle. Three
   runs were in flight at the time of writing, writer, engineer and this
   one, so their outcomes are the first thing to read.
+
