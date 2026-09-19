@@ -34,9 +34,10 @@ Three facts, each one query:
    `sources.yaml` lists `cs.MA` (the multi-agent category, tier `a`) and it
    has produced nothing, because `pipeline/triage.py` orders the queue
    `b → c → d → a → a-low` and the model has judged **210 papers total in 11
-   days** while roughly **330 papers/day** arrive. Tier `a` is last in a line
-   that grows about fifteen times faster than it drains. The arXiv firehose
-   is not a slow source; it is an unreachable one.
+   days** (~19/day) while ingest brought in **315, 338 and 458 papers** on the
+   last three days alone. Tier `a` is last in a line that grows roughly an
+   order of magnitude faster than it drains. The arXiv firehose is not a slow
+   source; it is an unreachable one.
 
 3. **The orchestration feeds the owner named have never been judged at all.**
    `gh-langgraph` (2), `gh-autogen` (10) and `gh-mcp-spec` (7) — 19 releases,
@@ -181,7 +182,7 @@ publishes measured failure rates for its own topology — see §3.
 
 `microsoft/autogen`'s latest release in its feed is **`python-v0.7.5`,
 2025-09-30** — nearly a year stale. The community fork **AG2** (`ag2ai/ag2`)
-has shipped **v1.0.0 through v1.0.5 between 2026-07 and 2026-09-11**.
+has shipped **v1.0.1 through v1.0.5 between 2026-07-29 and 2026-09-11**.
 `sources.yaml` watches `gh-autogen` (the stale repo) and not AG2. This is a
 concrete, checkable miss and §4 fixes it.
 
@@ -333,7 +334,7 @@ named gap:
 
 | Add | Tier | Why, with evidence |
 |---|---|---|
-| `gh-ag2` — `ag2ai/ag2` releases | `d` | §1.4: the AutoGen line's active development moved here (v1.0.0-v1.0.5, 2026-07→09) while our `gh-autogen` feed's latest is 2025-09-30. |
+| `gh-ag2` — `ag2ai/ag2` releases | `d` | §1.4: the AutoGen line's active development moved here (v1.0.1-v1.0.5, 2026-07-29→09-11) while our `gh-autogen` feed's latest is 2025-09-30. |
 | `gh-openai-agents` — `openai/openai-agents-python` releases | `d` | Owner-named framework, entirely absent. Primary home of the **handoff** primitive (§1.3). Shipping actively (v0.22.3, 2026-09-17). |
 | `gh-crewai` — `crewAIInc/crewAI` releases | `d` | Owner-named framework, entirely absent. Only source for the sequential-vs-hierarchical process contrast (§1.3). Active (1.15.22, 2026-09-16). |
 | `gh-temporal` — `temporalio/temporal` releases | `d` | Owner-named durable execution. §1.2's pattern needs the pre-LLM durability lineage. Near-daily releases (2026-09-18). |
@@ -490,7 +491,7 @@ Recommended, for the owner and the engineer seat:
 **Also found, logged for the ledger, not proposed this week:**
 
 - **Throughput (the §0 defect).** Model triage: 210 papers in 11 days against
-  ~330/day arriving; 3,057 untriaged. Not a prompt problem — it is the Groq
+  300+/day arriving on recent days; 3,057 untriaged. Not a prompt problem — it is the Groq
   free-tier token cap meeting `BATCH * max_calls`. Needs an owner decision
   about budget or a cheaper first-pass filter.
 - **Routing (the §0 defect).** Two rules jointly guarantee no orchestration

@@ -48,7 +48,7 @@ feeds:
   - {name: gh-langgraph, url: "https://github.com/langchain-ai/langgraph/releases.atom", tier: d}
   # gh-autogen is the reference line, kept for its archive: its newest release is
   # python-v0.7.5 (2025-09-30). Active development moved to the AG2 fork, which
-  # shipped v1.0.0-v1.0.5 between 2026-07 and 2026-09 (research brief 2026-09-19 §1.4).
+  # shipped v1.0.1-v1.0.5 between 2026-07-29 and 2026-09-11 (research brief 2026-09-19 §1.4).
   - {name: gh-autogen, url: "https://github.com/microsoft/autogen/releases.atom", tier: d}
   - {name: gh-ag2, url: "https://github.com/ag2ai/ag2/releases.atom", tier: d}
   - {name: gh-openai-agents, url: "https://github.com/openai/openai-agents-python/releases.atom", tier: d}
