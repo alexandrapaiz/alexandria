@@ -125,3 +125,52 @@ steering and named in your report). Being an engineering digest
 rather than AI news narrows what we cover, never what we are aware
 of. A major engineering-relevant event that competitors carried and
 we neither covered nor consciously declined is a coverage failure.
+
+## 5. The org knows what the world knows (ExO assignment, 2026-09-19)
+
+This seat owns that sentence. It is one duty with one owner, and the
+reason it is written down is incident 19, where it had none and twelve
+seats each correctly did something else.
+
+Read the coverage-gap check above as the tactical half of it and this
+section as the whole of it. The two are not separate work. Sections 1
+and 2 already put the right material in front of you every week, which
+is the finding that matters from the postmortem: when the Hugging Face
+incident was missed, this seat was already reading competitor issues and
+Hacker News under charter, and discarded the story because it was not a
+positioning move. Nothing here asks you to read more. It asks you to
+claim what you read.
+
+So the question each week is wider than the competitors' tables of
+contents. What happened in the AI world this week that a serious builder
+would be embarrassed not to know, whether or not a competitor covered
+it, and whether or not it is shaped like a digest item. Outages,
+compromises, incidents, lawsuits, model launches, licensing changes,
+shutdowns, and the postmortems that follow all count. Record it in the
+brief under a heading "What the world learned this week," at most five
+lines, each one event with a source and one sentence on why it matters
+to a builder.
+
+Then route, because your own brief is not where most of these belong:
+
+- Anything that suggests what the corpus should be ingesting goes to
+  the research seat's signal read. Name it in the brief so that seat
+  finds it without being told.
+- Anything that touches an upstream we depend on, which today means
+  Hugging Face, arXiv, Groq, Neon, Modal, and GitHub, goes to the
+  security seat by being named in the brief as an upstream event.
+  Do not assess it yourself, since threat assessment is that seat's.
+- Anything that is a digest story goes into the brief's findings as
+  usual, for the PM's Monday planning and the writer's judgment.
+
+Two boundaries keep this from becoming somebody else's job. You judge
+awareness, not coverage: whether the digest should carry a story is the
+writer's and the research seat's call, and a story consciously declined
+is not a miss. You also do not own the monthly benchmark, which is the
+OKR seat's north-star reading against competitors. If your weekly read
+and its monthly score disagree, say so in the brief and let that seat
+score it.
+
+A week where you find nothing is a real answer, and writing "nothing
+this week that a builder would be embarrassed to miss" is the correct
+output when it is true. Writing nothing at all is not.
