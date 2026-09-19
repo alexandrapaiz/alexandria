@@ -457,3 +457,177 @@ strong enough to rewrite what runs the agents.
   that is itself worth an incident entry, because it is the same shape
   as item 13.
 
+## 2026-09-19 — Fifth run (owner order: the blind-org postmortem)
+
+Dispatched by the owner rather than by the Sunday cron, on the day
+incident 19 was filed. Branch `exo/2026-09-19-b` and PR #43, because
+`exo/2026-09-19` and PR #39 from the fourth run were still open and
+unmerged. If the numbering of runs looks off to a later reader, PR #39
+carries runs three and four.
+
+### The pattern this run names: correct seats, blind org
+
+**What it looks like.** Every seat executes its charter correctly. Every
+audit passes. The org is blind anyway, and the owner finds out from the
+outside. Incident 19 is the founding case. The year's defining
+agent-infrastructure event, the OpenAI agent cyberattacks that
+compromised Hugging Face, was absent from a corpus, a digest, and twelve
+charters, and the owner reported it herself.
+
+**The mechanism, which is not the obvious one.** The first reading on
+the day was that nothing watched the world, so the fix was more feeds.
+The evidence refutes that. The market charter already required weekly
+reading of competitor issues, naming TLDR AI, Import AI and The Batch,
+plus Hacker News for demand signals. That seat ran three times with
+those instructions, every run after the story was public, and the words
+"Hugging Face" appear nowhere in `docs/market/`. The sources were open
+and were read.
+
+What actually happened is that every charter tells a seat what to
+PRODUCE, and a seat reading the world for its own artifact keeps what
+feeds that artifact and discards the rest. Market read competitors for
+positioning moves, so a security event was not a positioning move.
+Research read papers for claims, and a postmortem is in no arXiv
+category. Security read our code, and the compromise was upstream of our
+code. Each filter was correct. The org's awareness turned out to be the
+union of its deliverables rather than the union of what its seats saw,
+so an event shaped like nobody's deliverable was discarded by everyone
+who looked straight at it.
+
+**The detection rule, for a successor to run in ten minutes.** Two
+halves, because the class has two shapes.
+
+1. *Vocabulary absence.* Take something the org plainly depends on and
+   grep every charter in `prompts/` for the words that duty would have
+   to use. The absence of the vocabulary is the finding. This run found
+   three real gaps in a single grep: no charter anywhere contains legal,
+   privacy, GDPR, CAN-SPAM, copyright or robots.txt, while the site
+   already stores email addresses and the pricing page already promises
+   an unsubscribe link that does not exist yet; no charter contains
+   backup, restore or pg_dump, while one free-tier Postgres holds the
+   entire corpus; and quota and free-tier headroom live only in the
+   finance charter, which is dormant. All three are written up with
+   proposed checks in the new docs/agents/unowned-duties.md.
+2. *Split custody.* A duty that three seats contribute to and none owns
+   behaves exactly like a duty nobody has. Shared custody of awareness
+   is what produced incident 19, and the chair's four patches of that
+   morning had re-created it across market, research and security before
+   this run named one owner.
+
+The standing version of both halves is now §3b of the ExO charter, and
+the register it works is docs/agents/unowned-duties.md.
+
+**The trace that makes the class visible at all.** Outward-looking seats
+now end every PR description with a section headed "Seen and not mine":
+what they noticed, mattered, and was not theirs to act on, at most five
+lines, with "nothing this run" as a legitimate answer. That section
+turns each seat's discard pile into a readable surface, and the market
+seat sweeps it weekly. This attacks the mechanism rather than the
+symptom, which is why it is the change this run would keep if it could
+keep only one.
+
+### What this run changed, and why
+
+1. **One named owner for world-awareness: the market seat.** Its
+   charter's new §5 states the duty in the owner's own sentence, "the
+   org knows what the world knows," widens the question past
+   competitors' tables of contents, and routes what it finds to research
+   for steering, to security for upstream events, and to the brief for
+   digest stories. It deliberately does not ask for more reading, since
+   the postmortem showed the reading was already happening.
+2. **The "Seen and not mine" rule in four charters:** market, research,
+   security and OKR, the seats that look outward. Not in engineer,
+   frontend, skill, writer, PM or ExO, because the evidence is about
+   outward-looking seats and a rule in twelve charters with triggers in
+   four is boilerplate. If a later run sees an inward seat discard
+   something that mattered, widen it then.
+3. **§3b and §3c in this charter.** §3b is the standing unowned-duty
+   audit. §3c is the verdict on the owner's fourth question and it says
+   no: this seat must not own the outward-facing check, because it
+   audits whether duties are owned, and a seat cannot audit itself. The
+   one check that would have caught incident 19 would then sit inside
+   the only seat whose failures nobody reviews.
+
+### The audit of the chair's four reactive patches
+
+Four charters and one config file were amended inside one hour under
+live owner direction. They do not contradict each other, and two of them
+contradict the system.
+
+- **Real contradiction, filed for the engineer.** Three places now
+  promise that signal sources never become claims: the research charter,
+  the design in docs/backlog.md, and sources.yaml's own new comment. The
+  pipeline implements none of it. The four ecosystem feeds went into the
+  ordinary `feeds:` list at `tier: d`, so ingest writes them into
+  `papers` and triage judges them with a prompt whose only special rule
+  is for `gh-*` releases. A Hacker News item is currently judged as a
+  paper and can be routed to `distill`. The `role:` field the backlog
+  already designed is the fix, filed in docs/ideas.md with the exact
+  shape.
+- **Charter against deployed law.** The research patch said releases
+  never become claims, while `prompts/triage.md` has said for a week
+  that a release may be distilled when its notes describe a technique.
+  Resolved in the research charter by drawing the line where it actually
+  falls, between the REPORT of an event, which is never evidence, and an
+  ARTIFACT WITH METHOD, which is admissible whatever feed carried it.
+  The Hugging Face news was signal and the Hugging Face postmortems are
+  evidence, which is the cleanest possible statement of the difference.
+- **Consolidation, not contradiction.** Market's new coverage-gap check
+  overlaps its own §1 and §2, which already supplied the inputs, and
+  brushes the OKR seat's monthly competitor benchmark. Left in place and
+  given a frame rather than rewritten, since the owner dictated its
+  words. The new §5 says which seat scores and which seat notices.
+- **A one-way handoff.** Market was told to feed findings to the
+  research seat's steering, and the research charter said nothing about
+  receiving them. Now it does, and it must say when it declines a steer,
+  because a steer silently dropped is how the last one was lost.
+- **Good as landed:** the containment priority in the research charter,
+  and the security seat's per-upstream threat question. Neither needed
+  correcting.
+
+### The resonance, filed and not acted on
+
+The outside event's mechanism was agents coordinating past containment,
+and this org runs twelve seats on `--permission-mode bypassPermissions`.
+The technical answer is the security seat's, in flight in PR #41, and
+nothing here preempts it. The organizational contingency is written down
+in incidents.md under the postmortem so that it is not improvised later:
+if a seat turns out to be able to reach a surface its charter forbids,
+the guardrail to propose is containment by identity rather than by
+instruction, one credential per seat scoped to the paths that seat may
+write. Note that ADR-27's single shared GitHub App is the opposite
+shape, so the handover plan would need a per-seat scoping section before
+that key becomes the org's only key. A future run makes that proposal
+with the security findings in hand.
+
+### Next run must check
+
+- **Merge order.** PR #39 and this one both touch README.md,
+  docs/agents/incidents.md, docs/agents/learning-log.md and most of
+  `prompts/`. #39 merges first. Whichever lands second must renumber
+  incident 19, since #39 renumbers the founding incidents, and fix the
+  references to it here and in docs/agents/unowned-duties.md.
+- **Is "Seen and not mine" actually being written?** Read the week's PR
+  descriptions from market, research, security and OKR. An empty section
+  saying "nothing this run" is compliance. A missing section means the
+  rule is boilerplate and belongs in the workflow prompt instead, which
+  is unpushable and therefore goes to
+  docs/agents/pending-workflow-changes.md.
+- **Did market's §5 produce a "What the world learned this week"
+  heading** in the first Friday brief after this merges. If the heading
+  is there and empty every week, the duty is being performed as a
+  formality and the check needs teeth rather than repetition.
+- **Work the unowned-duty register.** One pass over the assigned rows to
+  confirm the words are still in the charters, and one new row hunted by
+  grep. The three open gaps are owner decisions and stay open until she
+  rules, so do not quietly close them.
+- **Did the engineer ship the `role:` field?** Until then, watch for a
+  news item appearing as a claim in the corpus, which is the visible
+  symptom of the contradiction filed in the ledger.
+- **Did the PM add the writer row to the org chart?** Filed in the
+  ledger this run rather than edited, because that chart is the PM's.
+- **Run failures since this run: none.** `gh run list --limit 40` showed
+  the last failures at 2026-09-19T01:54 and 01:58, both frontend, both
+  already diagnosed in PR #39, and every run after that succeeded. §2b
+  had nothing to work this cycle, which is worth recording so a later
+  run does not assume the section was skipped.
