@@ -347,3 +347,36 @@ produced it, and the writer seat's grading includes a
 taste-compliance pass as its first gate. Canon laws 11 and 12 encode
 the two rulings themselves (length follows the news; framework names
 never print).
+
+## Incident 21 — The first real agent user queried alexandria and got nothing (2026-09-19, owner-reported)
+
+The mission's first live test, and it failed. An agent working on
+epitome (the owner's agent-identity venture) ran two semantic
+searches over the claim corpus: agent identity and portability, and
+frameworks and credential security. Best match: a weak 0.69 on
+papers about entirely different questions. Its verdict, quoted:
+"alexandria: searched, not useful for this." The epitome session
+found what it needed through plain web research instead.
+
+Why this is an incident and not a shrug: (1) it is the first
+recorded use of the product's agent-facing promise ("your agents
+load the same claims to act") by a genuine outside agent with a
+genuine builder's question, and the product returned nothing;
+(2) the territory is inside DECLARED scope, Layer 4 named agent
+identity and governance as coverage on 2026-09-18; (3) the owner's
+own words: "remember the okr mission. we are not achieving it."
+
+Root cause is the compound of already-registered gaps, now measured
+by a user: reach (identity and interop knowledge lives in standards
+bodies and vendor changelogs, not arXiv; ADR-29 class 2), and
+processing (what arXiv does carry sits in the untriaged 64%,
+incident-adjacent E1). Actions taken same-day: three interop and
+identity signal feeds added and deployed (A2A protocol releases,
+SPIFFE releases, MCP spec releases, all verified live); ledger
+proposal filed per epitome's offer, the pipeline grows an eye for
+agent-interop and identity papers and standards; evidence forwarded
+to the OKR seat's October scoring, where the
+actionability-for-agents axis must count this query as its baseline
+failure case. The zero-gap mandate's detection worked only because
+the owner relayed it; the census and steering must learn to catch
+this class before a user does.

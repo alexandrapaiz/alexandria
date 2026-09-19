@@ -1792,3 +1792,10 @@ owning seat rather than assumed. Arguments in docs/sales/.
   exists in the schema, so this is a fill rather than a migration.
 - Whose call: the engineer's. This seat does not touch pipeline code.
 - Status: proposed
+
+### 2026-09-19 — Grow an eye for epitome's territory: agent interop and identity coverage
+- Trigger: incident 21. The first real agent user (epitome's session) searched the corpus for agent identity, portability, and credential security and found nothing; best similarity 0.69 on unrelated capability papers. Filed on the epitome session's own offer, relayed by the owner.
+- What: make agent-interop and identity a reachable, processed slice of the corpus: (a) signal feeds added same-day (A2A releases, SPIFFE releases; MCP spec was already watched); (b) research seat steers ingestion toward delegation protocols, agent credentials, A2A-class interop papers wherever they publish (cs.CR now ingested, cs.MA watched); (c) the monthly source census (ADR-29) measures this slice explicitly: "could epitome's two queries be answered from the corpus" is the acceptance test, re-run until yes or consciously declined.
+- First step: research seat's Monday brief includes the epitome-queries test against the corpus and names the three most valuable missing sources for this slice.
+- Cost: $0.
+- Status: proposed
