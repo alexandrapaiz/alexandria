@@ -52,6 +52,53 @@ is the single largest capability unlock available to this org right now.
 attributing to the App's bot name. The org becomes legible in `git log`:
 you can see which work was an agent's and which was hers.
 
+**To the PM seat, and this is the one the owner asked for by name.**
+Today no seat can start another seat's run, and that is mechanical. A
+`workflow_dispatch` made with `GITHUB_TOKEN` creates no workflow run at
+all, because GitHub refuses to let the runner's own token trigger
+further workflows, which is the recursion guard rather than a
+permission we forgot to grant. An App installation token is not subject
+to that guard. So the day the key lands, the PM's proposed dispatch
+queue can stop being a list a human fires and start being a list the PM
+fires, which is the difference between a seat that recommends and a seat
+that operates.
+
+**BOLD FLAG, AUTHORITY: this is the second-largest grant in this
+document, and it is written to be refusable.** The terms are already
+drafted as section 5 of prompts/pm-agent.md, marked dormant, so merging
+that charter grants nothing. Activation needs two separate acts by the
+owner, and either one alone does nothing.
+
+1. She sets the repository variable `PM_DISPATCH_ENABLED` to `true`. No
+   agent run can write a repository variable, so this is a switch the
+   org cannot flip for itself, and it is an off switch she can hit in
+   one click at any hour without merging anything.
+2. She merges an amendment removing the dormant marker from section 5.
+
+The guardrails in that section, in short: eight seats dispatchable and
+four not, where the four are exo (a seat must not schedule its own
+auditor), the PM itself (a seat that dispatches itself has no cadence),
+and the two dormant seats (activation is hers). Three dispatches a day,
+one per seat, ten a rolling week. No dispatch to a seat with an open PR
+from its last run. No dispatch within two hours of any other dispatch,
+because that means the chair is driving and two dispatchers is how
+incident 14 happened. No instruction may carry a judgment she has not
+made, only a ruling that exists in a file and is cited. And the merge
+gate is untouched, because a PM-initiated run opens a pull request
+exactly like every other run.
+
+The verification step, on key day, is one command rather than an
+argument:
+
+```bash
+gh workflow run agent-writer.yml -f owner_instructions='probe, do nothing'
+gh run list --workflow=agent-writer.yml --limit 1   # a run exists, or the guard still holds
+```
+
+If no run appears, the App token is subject to the same guard and the
+whole of section 5 is void. Find that out with the probe above before
+anyone writes a line of policy on top of it.
+
 **BOLD FLAG, AUTHORITY: this proposes that the ExO seat own
 `.github/docker/Dockerfile` and `build-agent-image.yml`** alongside the
 workflows, because the agent image is the seats' workstation rather than
@@ -139,6 +186,13 @@ at once.
    - close incident 12 with the date the lane opened
    - update ADR-27 with what actually happened, and record whether
      per-seat Apps still look like the right second step
+   - run the PM dispatch probe above, and either propose the amendment
+     that activates prompts/pm-agent.md section 5 or record that the
+     guard still holds and strike the section
+   - add the dispatch-log audit to this seat's weekly work: every
+     PM-initiated run in `gh run list --event workflow_dispatch` must
+     appear in the PM's own log in `docs/sprints/dispatch-queue.md`, and
+     a dispatch that happened and was not logged is an incident
 
 ## How to tell it worked
 
