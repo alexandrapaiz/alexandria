@@ -1,0 +1,96 @@
+<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><body style='margin:0;background:#fff'><div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;font-size:16px;line-height:1.6;color:#222'><h1>alexandria digest — 2026‑W37</h1>
+<p>This week the most active ideas revolve around two themes. First, <strong>feedback‑enriched environments</strong> are shown to let agents absorb guidance during training and to explore harder state spaces without extra test‑time tricks. Second, a set of training tricks—dense verification rewards, token‑stream alignment, and a focused reinforcement‑learning loop—push a 122 B Mixture‑of‑Experts terminal agent past the 60 % success barrier on long‑horizon benchmarks. Both currents promise more reliable, self‑sufficient agents that need less hand‑crafted inference scaffolding.</p>
+<h2>Trailblazing</h2>
+<ul>
+<li>
+<p><strong>Feedback‑Enriched Environments let agents learn guidance and explore without test‑time cues.</strong><br />
+  The paper introduces environments that add extra observation signals while training. Agents trained this way keep their performance even when those signals are removed at test time, showing that the guidance has been baked into the policy. They also visit broader parts of the state space and succeed more often on sparse‑reward tasks.  </p>
+</li>
+<li>
+<p>Agents internalize environmental guidance into policy weights rather than relying on inference‑time priors.  </p>
+</li>
+<li>Exploration covers larger state regions, raising success rates on difficult tasks.  </li>
+<li>
+<p>Training becomes more stable because intra‑group feedback consistency reduces entropy volatility.<br />
+<em>Environments as Scaffold: Enriching Feedback to Bootstrap Self‑Evolving Agents in Long‑Horizon Tasks</em> — <a href="https://arxiv.org/abs/2609.08404">https://arxiv.org/abs/2609.08404</a></p>
+</li>
+<li>
+<p><strong>Training with a dense verification reward lifts task resolution by 28 % relative to the supervised baseline.</strong><br />
+  A dense verification reward counts how many logical assertions a generated answer satisfies. The reward is scaled globally and fed to the critic at the final token, then the actor is updated with PPO using a learning‑rate ratio of 30 : 1. This simple change lets the agent improve from 49.4 % to 64.0 % resolved tasks after three PPO epochs, while a binary reward never beats the baseline.  </p>
+</li>
+<li>
+<p>For each task, a held‑out verifier emits per‑assertion outcomes.  </p>
+</li>
+<li>The dense reward equals the number of passed assertions.  </li>
+<li>The reward is scaled on a fixed global scale shared across all tasks.  </li>
+<li>The scaled reward is given to the critic at the final response token.  </li>
+<li>
+<p>The critic learns with a learning rate 30 × the actor’s, then the actor is updated via PPO using the dense reward.<br />
+<em>T1: Terminal Agent Reinforcement Learning for Long‑Horizon Tasks</em> — <a href="https://arxiv.org/abs/2609.11042">https://arxiv.org/abs/2609.11042</a></p>
+</li>
+<li>
+<p><strong>Aligning training and inference token streams cuts the probability gap and eliminates token drift.</strong><br />
+  The authors propose two mechanisms. Token‑In‑Token‑Out (TITO) preserves token prefixes across turn boundaries and masks loss to keep continuity. Rollout‑Routing‑Replay (R³) records expert routing decisions during rollouts and replays them during training updates. Together they shrink the log‑probability difference between training and inference from 0.021 to 0.013 and achieve zero token drift in the loss region.  </p>
+</li>
+<li>
+<p>Preserve token prefixes across turn boundaries (Token‑In) to avoid re‑encoding drift.  </p>
+</li>
+<li>Stitch token streams at turn boundaries with loss masking (Token‑Out) to keep continuity.  </li>
+<li>Record per‑token expert routing decisions during each rollout.  </li>
+<li>Replay the recorded routing decisions during training updates.  </li>
+<li>
+<p>Apply loss masking so only sampled tokens contribute to the loss.<br />
+<em>T1: Terminal Agent Reinforcement Learning for Long‑Horizon Tasks</em> — <a href="https://arxiv.org/abs/2609.11042">https://arxiv.org/abs/2609.11042</a></p>
+</li>
+<li>
+<p><strong>A 122 B Mixture‑of‑Experts terminal agent resolves 64 % of tasks on the standard benchmark.</strong><br />
+  Starting from a supervised checkpoint at 49.4 % resolved, the authors run three epochs of PPO with the dense verification reward described above. After training, the agent outperforms GPT‑3.5‑Turbo (54.8 %) and DeepSeek‑V4‑Flash (56.9 %) and comes close to Claude Opus 4.7 (66.1 %). The result shows that a focused RL loop can bridge most of the gap to the strongest proprietary models.  </p>
+</li>
+<li>
+<p>Begin from a supervised checkpoint that resolves 49.4 % of benchmark tasks.  </p>
+</li>
+<li>Run three PPO epochs on a quality‑filtered dataset of 15 k examples.  </li>
+<li>Use the dense verification reward to guide the critic and actor.  </li>
+<li>Update the actor after each critic step.  </li>
+<li>Evaluate on the benchmark; the final resolution rate is 64.0 %.<br />
+<em>T1: Terminal Agent Reinforcement Learning for Long‑Horizon Tasks</em> — <a href="https://arxiv.org/abs/2609.11042">https://arxiv.org/abs/2609.11042</a></li>
+</ul>
+<h2>Gaining traction</h2>
+<ul>
+<li><strong>Puffin‑World</strong> unifies physics, geometry, and appearance as native world states, gaining three independent supports.  </li>
+<li><strong>Compile‑by‑training</strong> turns natural‑language specifications into reusable neural functions, also with three supports.  </li>
+<li><strong>Inference‑time context management</strong> (limited tool set, fixed judge) shows larger gains than most system changes, supported by three citations.  </li>
+<li><strong>One‑shot on‑policy distillation</strong> improves performance for hundreds of steps and recovers most of full‑data gains, backed by two supports.  </li>
+<li><strong>Rationale‑only supervision</strong> reduces false refusals while keeping overall safety, with two supports.  </li>
+<li><strong>Random Attention</strong> matches the strongest KV‑cache evictor while delivering 32 %–43 % higher throughput, supported twice.  </li>
+<li><strong>RISE</strong> combines outcome‑based rewards with on‑policy distillation in a complementary loop, with two supports.  </li>
+<li><strong>WorldReward</strong> structures visual evidence from video chunks and aggregates decisions by voting, also with two supports.  </li>
+<li><strong>Boilerplate refusals</strong> harm model discrimination between harmful and benign queries, supported twice.  </li>
+<li><strong>Diverse queries in OPD</strong> reach 98.9 % state coverage and match full‑data validation accuracy, with two supports.</li>
+</ul>
+<p>No citation‑mover data appeared this week.</p>
+<h2>Left behind</h2>
+<p><strong>Contradicted</strong>  </p>
+<ul>
+<li>The claim that Claude Opus 5 under Claude Code solves only 23.9 % of simulations is overturned by an expert‑authored reference implementation that reaches 82.2 % success. Builders should no longer treat the lower figure as a ceiling.  </li>
+<li>The claim that a single ReAct agent without sub‑agents can solve the hardest rollouts is contradicted by a shared executable‑skill interface that combines high‑level skill selection, bounded low‑level VLA execution, and post‑action verification. Systems should adopt the skill‑interface architecture instead.  </li>
+<li>The claim that the expert‑authored reference implementation sets an 82.2 % ceiling is contradicted on four memory‑dependent tasks where the same approach attains only 12.5 % average success. Designers must recognize that the high ceiling does not hold for memory‑intensive benchmarks.</li>
+</ul>
+<p><strong>Replaced</strong>  </p>
+<ul>
+<li>No superseded claims this week.</li>
+</ul>
+<h2>Read these yourself</h2>
+<ul>
+<li><em>MaxKernel: Agentic Kernel Generation for TPUs</em> — <a href="https://arxiv.org/abs/2609.04523">https://arxiv.org/abs/2609.04523</a> – Shows a multi‑agent system that writes TPU kernels autonomously, a concrete example of loop engineering and real‑time feedback.  </li>
+<li><em>Iris: Climbing to the Search Frontier</em> – <a href="https://arxiv.org/abs/2609.04304">https://arxiv.org/abs/2609.04304</a> – Details large‑scale search agents with RL‑based policy climbing and context management, directly relevant to search‑based agent design.  </li>
+<li><em>EmbodiedSkills: A Unified Framework for Orchestrating, Training, and Deploying VLA Agents</em> – <a href="https://arxiv.org/abs/2609.01281">https://arxiv.org/abs/2609.01281</a> – Provides a full framework for skill orchestration and verification in VLA agents.  </li>
+<li><em>Environments as Scaffold: Enriching Feedback to Bootstrap Self‑Evolving Agents in Long‑Horizon Tasks</em> – <a href="https://arxiv.org/abs/2609.08404">https://arxiv.org/abs/2609.08404</a> – Introduces Feedback‑Enriched Environments that reshape reward signals for long‑horizon LLM agents.  </li>
+<li><em>NeoHorse‑1: Towards Recursive Self‑Improvement via Agentic Post‑Training with Routing Harness</em> – <a href="https://arxiv.org/abs/2609.08183">https://arxiv.org/abs/2609.08183</a> – Presents a routing‑harness loop that ties evaluation feedback to training mixtures, a potential paradigm shift for agent improvement.  </li>
+<li><em>Procedural Graphs: Self‑Evolving Execution Structures for LLM Agents</em> – <a href="https://arxiv.org/abs/2609.09153">https://arxiv.org/abs/2609.09153</a> – Offers a novel self‑evolving execution structure that may replace flat memory‑based planning.  </li>
+<li><em>Miles v0.1: Production‑Level Post‑Training</em> – <a href="https://arxiv.org/abs/2609.08368">https://arxiv.org/abs/2609.08368</a> – Describes a modular RL training stack for frontier‑scale agents, exposing design patterns we can adopt.  </li>
+<li><em>Omni Interaction Agent Technical Report</em> – <a href="https://arxiv.org/abs/2609.08977">https://arxiv.org/abs/2609.08977</a> – Introduces a cerebellum‑brain streaming architecture for continuous multimodal interaction, suggesting new runtime designs.  </li>
+<li><em>T1: Terminal Agent Reinforcement Learning for Long‑Horizon Tasks</em> – <a href="https://arxiv.org/abs/2609.11042">https://arxiv.org/abs/2609.11042</a> – Details a 122 B MoE agent trained with RL for tool use, advancing both pipelines and evaluation.</li>
+</ul>
+<hr />
+<p>3431 papers ingested / 216 claims distilled / 80 edges drawn this week</p><hr><p style='font-size:12px;color:#888'>You're receiving this as a friend of alexandria. Reply to this email to unsubscribe.</p></div></body>
