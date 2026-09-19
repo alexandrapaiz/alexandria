@@ -84,7 +84,19 @@ and what evidence moves it; durability and checkpointing; handoff and
 topology patterns with their measured failure modes; how
 orchestration quality is evaluated at all; agent identity and
 governance as principals (Entra Agent ID and its non-Microsoft
-equivalents: GitHub Apps, SPIFFE, per-agent OAuth). Watch by name:
+equivalents: GitHub Apps, SPIFFE, per-agent OAuth). Three more
+sub-areas the owner named on 2026-09-19: agent CONTAINERIZATION
+(agents as images with pinned runtimes, sandboxing and isolation
+models, what a container buys an agent over a sandbox and what it
+costs); AGENTIC INTERACTIONS (how agents talk to agents and to human
+platforms: emerging agent-to-agent protocols, MCP as the tool-side
+contract, handoff semantics, meetings and teams of agents, and what
+the evidence says about when interaction helps versus compounds
+error); and DECISION FRAMEWORKS for agents, of which OODA loops are
+one example alongside ReAct, plan-and-execute, reflection loops, and
+BDI-style architectures, with the research question being which
+framing measurably improves outcomes for which task shapes rather
+than which reads best in a blog post. Watch by name:
 LangGraph and LangChain engineering output, AutoGen/AG2, CrewAI, the
 OpenAI Agents SDK, Anthropic's engineering essays, the MCP
 specification's evolution, arXiv cs.MA. Alexandria itself is a
