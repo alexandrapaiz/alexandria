@@ -118,7 +118,8 @@
     <div class="ink" style="padding-top:8px; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:17px; line-height:25px; mso-line-height-rule:exactly; letter-spacing:-0.022em; color:#0a0a0a;">The paper introduces environments that add extra observation signals while training. Agents trained this way keep their performance even when those signals are removed at test time, showing that the guidance has been baked into the policy. They also visit broader parts of the state space and succeed more often on sparse‑reward tasks.</div>
     
     
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin-top:12px;">
+    <div style="height:12px; line-height:12px; mso-line-height-rule:exactly; font-size:1px;">&nbsp;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
       
       <tr>
         <td class="quiet" valign="top" width="24" style="width:24px; padding:4px 0 0 0; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; mso-line-height-rule:exactly; color:#86868b;">·</td>
@@ -155,7 +156,8 @@
     <div class="ink" style="padding-top:8px; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:17px; line-height:25px; mso-line-height-rule:exactly; letter-spacing:-0.022em; color:#0a0a0a;">A dense verification reward counts how many logical assertions a generated answer satisfies. The reward is scaled globally and fed to the critic at the final token, then the actor is updated with PPO using a learning‑rate ratio of 30 : 1. This simple change lets the agent improve from 49.4% to 64.0% resolved tasks after three PPO epochs, while a binary reward never beats the baseline.</div>
     
     
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin-top:12px;">
+    <div style="height:12px; line-height:12px; mso-line-height-rule:exactly; font-size:1px;">&nbsp;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
       
       <tr>
         <td class="quiet" valign="top" width="24" style="width:24px; padding:4px 0 0 0; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; mso-line-height-rule:exactly; color:#86868b;">1.</td>
@@ -202,7 +204,8 @@
     <div class="ink" style="padding-top:8px; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:17px; line-height:25px; mso-line-height-rule:exactly; letter-spacing:-0.022em; color:#0a0a0a;">The authors propose two mechanisms. Token‑In‑Token‑Out (TITO) preserves token prefixes across turn boundaries and masks loss to keep continuity. Rollout‑Routing‑Replay (R³) records expert routing decisions during rollouts and replays them during training updates. Together they shrink the log‑probability difference between training and inference from 0.021 to 0.013 and achieve zero token drift in the loss region.</div>
     
     
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin-top:12px;">
+    <div style="height:12px; line-height:12px; mso-line-height-rule:exactly; font-size:1px;">&nbsp;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
       
       <tr>
         <td class="quiet" valign="top" width="24" style="width:24px; padding:4px 0 0 0; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; mso-line-height-rule:exactly; color:#86868b;">1.</td>
@@ -249,7 +252,8 @@
     <div class="ink" style="padding-top:8px; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:17px; line-height:25px; mso-line-height-rule:exactly; letter-spacing:-0.022em; color:#0a0a0a;">Starting from a supervised checkpoint at 49.4% resolved, the authors run three epochs of PPO with the dense verification reward described above. After training, the agent outperforms GPT‑3.5‑Turbo (54.8%) and DeepSeek‑V4‑Flash (56.9%) and comes close to Claude Opus 4.7 (66.1%). The result shows that a focused RL loop can bridge most of the gap to the strongest proprietary models.</div>
     
     
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; margin-top:12px;">
+    <div style="height:12px; line-height:12px; mso-line-height-rule:exactly; font-size:1px;">&nbsp;</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
       
       <tr>
         <td class="quiet" valign="top" width="24" style="width:24px; padding:4px 0 0 0; font-family:'Public Sans','Helvetica Neue',Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; mso-line-height-rule:exactly; color:#86868b;">1.</td>
