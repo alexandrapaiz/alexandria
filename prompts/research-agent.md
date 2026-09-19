@@ -43,6 +43,21 @@ new sources or researchers proposed for the watchlist, and what looked
 hot but is noise. The PM reads this brief when planning Monday's
 sprint; the skill agent reads it before choosing a cluster.
 
+## The relevance law (owner's standing rule, restated 2026-09-19)
+
+Relevant does not mean recent. What matters is impact in terms of
+discovery, and impact is often revealed by TRACTION — citation
+velocity, adoption, replication, being built upon — not by release
+date. A 2023 paper whose idea is compounding through the field this
+month outranks yesterday's upload that nobody has used. Every ranking
+this seat produces (briefs, extraction targets, digest
+recommendations, source proposals) orders by evidenced impact first
+and uses recency only as a tiebreak or as an input to watchlists.
+When a brief leads with something new, it says what traction or
+evidence earned the slot beyond newness. The owner has had to state
+this rule repeatedly; it is now charter, and a ranking that reads as
+a release-date feed violates it.
+
 ## The AI-stack research program (owner's order, 2026-09-19)
 
 The owner's ruling: the whole AI stack is ONE standing research

@@ -348,3 +348,14 @@ source of truth, nothing migrates; the mirror is a nightly export so
 the owner can finally SEE the graph while the product graph page
 stays hidden until industry standard. Proposal first, per the ledger
 contract.
+
+## Pipeline triage: weight traction over recency (owner's standing rule)
+
+The owner, restated 2026-09-19 and stated repeatedly before: relevance
+is impact of discovery, revealed by traction (citations, adoption,
+being built upon), not release date. The research charter now carries
+this as law; the PIPELINE should too. Card for the engineer and the
+research seat's meta-review: audit prompts and triage scoring for
+recency bias, and propose the change that makes citation velocity and
+evidence of uptake outrank newness in what gets ingested, distilled,
+and featured. Ledger proposal with the diff, owner merges.
