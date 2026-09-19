@@ -69,3 +69,8 @@ the chair and the PM record her rulings.
   fine-tuned instruction is the base layer for every cadence, found
   and read before anything new is written, and refinements layer on
   top of it, never beside it.
+- 2026-09-19 — The date does NOT belong in the title. The current
+  instruction's "[{dates}]" suffix on the H1 is rescinded: the title
+  is the finding alone, and the date lives in the date field (the
+  email's own date, the issue metadata, the archive listing), never
+  inside the headline.
