@@ -53,9 +53,15 @@ Study decisions, never copy sentences.
 8. Links go to the full text (arxiv.org/html/... when it exists, the
    abstract page as fallback): one less step between claim and
    evidence is the product promise.
-9. Structure of the daily: Compounding (traction-ranked), New and
-   unproven (labeled as such), Left behind (what lost ground), the
-   dual-audience close. No standing meta sections. The weekly is the
+9. Structure is law, labels are craft. The daily's ORDER is fixed:
+   traction-led lead, new work honestly labeled unproven, what lost
+   ground, the dual-audience close, no standing meta sections. The
+   section HEADING NAMES are not fixed and must never read as
+   taxonomy (the owner rejected "Compounding" and "New and unproven"
+   as headings, 2026-09-19); they are newsletter craft, warm and
+   voiced, guided by docs/market/newsletter-prose-guide.md. A real
+   newsletter also greets its reader; the opening is a greeting that
+   lands the day's finding, not a cold abstract. The weekly is the
    synthesis and must argue, not list.
 10. "You read to decide. Your agents load to act." The dual audience
     appears in every issue's close.

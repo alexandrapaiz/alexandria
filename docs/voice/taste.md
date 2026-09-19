@@ -53,3 +53,12 @@ the chair and the PM record her rulings.
   section earns trust by its contents; support counts on items are
   evidence and stay, sentences about the ranking are narration and
   go.
+- 2026-09-19 — Section headings must be newsletter craft, not
+  taxonomy. "Compounding" and "New and unproven" are REJECTED as
+  headings: they read as any AI-generated thing, and she has refined
+  this before. The ordering principle stays law (traction leads, new
+  work labeled as unproven, what fell behind, the close), but the
+  HEADING NAMES and the reader-facing warmth are craft learned from
+  the best newsletters, including greeting the reader. The market
+  seat's newsletter-prose guide is the reference; the writer applies
+  it to the generator.
