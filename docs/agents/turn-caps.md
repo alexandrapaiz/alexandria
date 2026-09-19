@@ -1,5 +1,8 @@
 # Turn caps — the standing right-sizing methodology
 
+**Enforced at:** prompts/exo-agent.md, the monthly cap re-derivation and
+"Check the register before you ship".
+
 Owner-directed (2026-09-18), after a day on which six agent runs failed
 and every one of them was a turn-cap collision. Caps had been set by
 guess, then raised by reaction, and both reactive raises were outgrown

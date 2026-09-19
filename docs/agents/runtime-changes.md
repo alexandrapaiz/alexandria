@@ -1,5 +1,9 @@
 # Runtime changes: smoke-test first, always
 
+**Enforced at:** the engineer, frontend, security and ExO charters,
+under "Check the register before you ship", before any edit to a
+workflow, the image, a secret, a turn cap or a timeout.
+
 Standing org law, proposed by the ExO agent 2026-09-19 on the owner's
 question, evidenced by incidents 17 and 18 in
 [incidents.md](incidents.md). It binds every seat and the chair. It

@@ -142,6 +142,45 @@ input. The OKR seat scores the result monthly against competitors. This
 seat audits that the duty was performed and that its owner is still
 named, which is §3b, and never performs it.
 
+## 3d. The register-gate sweep (owner's order, 2026-09-19, incident 20)
+
+Every run, one pass over docs/agents/registers.md, which is yours to
+keep current. The pattern it exists to catch is named in the learning
+log as **recording is not enforcing**: a rule written into the right
+register by the right seat at the right moment, and broken anyway by the
+next artifact, because no step between the register and the artifact
+ever opened the file.
+
+The detection rule is mechanical, and it deliberately does not wait for
+the owner to repeat herself.
+
+```bash
+# every register the org keeps must name its artifact-side gate
+grep -L "Enforced at:" docs/agents/*.md docs/voice/*.md docs/design/*.md
+# and something must actually check it before shipping
+for f in docs/voice/*.md docs/design/*.md docs/agents/*.md; do
+  echo "$f: $(grep -rl "$f" prompts/*-agent.md | wc -l) charters"
+done
+```
+
+A register named by zero charters is unenforced. A register named only
+inside the ship-first boilerplate, as the evidence for some other rule,
+is also unenforced, and that reading needs your eyes rather than the
+grep, because the count will look healthy. Eleven charters cited
+docs/agents/incidents.md on 2026-09-19 and not one of them told its seat
+to open it.
+
+Three things follow each run. Update the table in registers.md with what
+changed. Propose the artifact-side check for anything still marked GAP,
+which is usually one line in one charter saying check X against Y before
+shipping. And where the register belongs to another seat's surface, file
+the check as a charter edit here rather than editing their file, because
+the charter is the gate and their file is only the record.
+
+The owner repeating herself is the detector of last resort. When it
+fires, the entry goes in the incident register and the gap it exposes
+goes in registers.md the same run.
+
 ## 4. Decide
 
 Choose at most three organizational improvements this week, each
@@ -302,3 +341,39 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+## Check the register before you ship (org rule, 2026-09-19, all seats)
+
+Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
+taste ruling that was written into the right register, by the right
+seat, within the hour, and violated by the very next artifact anyway,
+because nothing between the ruling and the artifact ever opened the
+file. The owner had to give the same ruling twice. Every register the
+org keeps needs two gates: one that decides something gets written
+down, and one that decides something gets checked before it ships. The
+second is the one the org keeps forgetting. The full map of which
+register has which gate is docs/agents/registers.md.
+
+So before you call `gh pr ready`, two checks.
+
+**1. The registers your output is bound by.**
+
+- `docs/agents/registers.md`, the map you maintain, checked in §3b.
+- `docs/agents/runtime-changes.md` and `docs/agents/turn-caps.md`
+  before proposing any workflow edit.
+- `docs/agents/model-routing.md`, which names this seat as its owner
+  and which no run had opened since 2026-09-17. Use it or retire it.
+- `docs/voice/ban-list.md` for the PR description itself.
+
+**2. Repeats go in the incident register.** If anything in this run
+failed the same way something has failed before, append it to
+docs/agents/incidents.md in this PR. The standing rule at the top of
+that file says any issue occurring more than once is always recorded at
+the moment it repeats, with no exceptions, and that rule binds you, not
+only the ExO seat that reads the file weekly. A repeat that goes
+unrecorded is itself an incident.
+
+One note on the House voice rules quoted in this charter. They are a
+snapshot of docs/voice/ban-list.md, taken when this charter was written.
+The file is the authority and it grows as the writer seat spots new
+tells, so when the two disagree, the file wins.

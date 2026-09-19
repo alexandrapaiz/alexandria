@@ -1,5 +1,10 @@
 # Incident register — agent runs and sandboxes
 
+**Enforced at:** every charter's "Check the register before you ship"
+step, which requires each seat to append a repeat in the PR that
+produced it, plus prompts/pm-agent.md §1f for run failures and
+prompts/exo-agent.md §2 weekly.
+
 Owner-directed (2026-09-18): a technical record of agents not properly
 running, shutting down, or losing work, so failures are learned from
 once instead of rediscovered. Append-only, dated, any seat or the chair

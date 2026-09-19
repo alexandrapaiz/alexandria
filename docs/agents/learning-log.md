@@ -1,5 +1,8 @@
 # ExO agent learning log
 
+**Enforced at:** prompts/exo-agent.md §2, read before anything else in
+the run, and §6, appended at the end of it.
+
 Append-only, dated, newest run at the bottom. This file is the org's
 memory across the ExO agent's fresh contexts. Write for a successor who
 knows nothing and has not read this run's transcript.
