@@ -106,7 +106,8 @@ twice that, rounded up to the next 50, floor 100.
 | Seat | Runs measured | Peak turns | Cap in force | Required | Verdict |
 |---|---|---|---|---|---|
 | frontend | 8 | 286 | 600 | 600 | ok |
-| pm | 8 | 141 (censored) | 300 | 300 | ok, and still censored |
+| pm (ceremony) | 8 | 141 (censored) | 300 | 400 queued | censored, and duties grew 2026-09-19 |
+| pm (standup) | 0 | unmeasured | shares the pm cap | n/a | provisional, measure after the first run |
 | security | 2 | 108 | 250 | 250 | ok |
 | engineer | 7 | 75 | 200 | 150 | ok |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
@@ -142,6 +143,23 @@ Notes on the rows that need them.
 - **pm** is still the only censored number in the table. Its 141 is a run
   that died at a 140 cap, so real demand is unknown and at least 141.
   The 300 is a lower bound until a pm run finishes freely above 141.
+  **Duty growth fired on this row on 2026-09-19**, which is clause 3 of
+  the rule rather than a failure: the seat gained the daily standup and
+  the dispatch queue (prompts/pm-agent.md section 4), and the Monday
+  ceremony run now carries that section on top of its three ceremonies.
+  A raise to 400, with the timeout to 75, is queued in
+  [pending-workflow-changes.md](pending-workflow-changes.md) item 2.
+  Raising a censored row is the right direction to be wrong in.
+- **The pm standup is a new run shape, and it does not get its own
+  cap.** Clause 2 says an unmeasured shape inherits from its nearest
+  twin, and the nearest twin here is the seat itself. Sharing the pm cap
+  is not laziness, it is the tripwire principle: the standup is expected
+  to finish in 40 to 60 turns, an unspent cap costs nothing, and a
+  second workflow file existing only to hold a smaller number would be
+  two files to keep in sync for no gain. Mark the standup provisional,
+  measure it after its first free-running run, and if the seat's two
+  modes ever diverge enough that one number cannot serve both, that is
+  the evidence for splitting the workflow and not before.
 - **exo and sales have no headroom.** Both sit exactly at their required
   figure, so the next run that grows either seat's duties puts it short
   the same day. This seat's own duties grew twice this week.
