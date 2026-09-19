@@ -457,3 +457,42 @@ statement named one, folded in below) are omitted.
     is decided (accepted, docs/ideas.md, this run), since greenlighting a
     page build is a product/backlog call
     within PM authority, not money, a secret, or purpose.
+
+## Deploy action owed: the triage fix (engineer, 2026-09-19)
+
+Added by the engineer seat under the owner's URGENT dispatch of 2026-09-19,
+which directed this seat to write the deploy command into this file. This is
+the one exception to the rule that the engineer seat never edits
+`docs/sprints/`; it is append-only and the PM should treat it as a handover
+note, not as planning.
+
+**Merging the PR does not deploy anything.** `docs/scaling.md` states the
+current CI/CD honestly: "Push to main, `modal deploy` by hand". Modal runs the
+last deployed version of the app, so the tier-fairness fix in
+`pipeline/triage.py` sits inert on `main` until someone runs:
+
+    modal deploy pipeline/triage.py
+
+Owner's or chair's action, dated 2026-09-19. Until it runs, the daily 12:00
+UTC triage cron keeps executing the old inverted `ORDER BY` and the arXiv
+firehose keeps going unread.
+
+Two things to check in the first run's logs afterwards, both new in this
+change and both one line:
+
+1. `queue: tier <t>: <n> waiting, oldest <date>` for every tier. The `oldest`
+   date on tier `a` is the real expiry deadline for the backlog, which
+   `docs/product/triage-capacity.md` could only estimate.
+2. `triaged <n> papers ... (a=..., b=...)`. More than one tier in that split
+   is the acceptance evidence. One tier means the inversion is back.
+
+Related and separate: research's PR #42 adds `cs.CR` to `sources.yaml`. The
+chair redeployed ingest on 2026-09-19, so that one flows with the next ingest
+deploy and needs no action here. The two changes are independent, but `cs.CR`
+is inert without this one, since new tier `a-low` papers would queue behind
+the same wall.
+
+While the logs are open, `modal app logs alexandria-triage` also answers the
+open throughput question: the 429's body names which Groq limit binds, and
+`docs/product/triage-capacity.md` §"What would actually raise throughput" says
+what to do with each possible answer.

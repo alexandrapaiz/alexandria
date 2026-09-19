@@ -2195,3 +2195,84 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Cost: $0.
 - Whose call: the ExO. Charters are not this seat's to edit.
 - Status: proposed
+### 2026-09-19 — The 60-day backfill rule silently writes off unread papers
+- Trigger: found while sizing the triage backlog for the URGENT dispatch.
+  `BACKFILL_DAYS = 60` in `pipeline/triage.py` auto-marks any untriaged paper
+  older than 60 days as `index` with `model = 'rule:backfill'`, and
+  `distill_queue` in `db/schema.sql` explicitly excludes `rule:backfill` rows.
+  So a paper that waits 60 days in the queue is not just late, it is
+  permanently excluded from ever producing a claim, and it leaves the queue
+  without anyone deciding anything about it.
+- What: the rule is correct for what it was written for, the one-time
+  historical import, where spending model budget on old blog archives would be
+  waste. It is wrong for a live firehose that is behind, which is what we now
+  have. The 2,445-paper backlog is not sitting still; it is aging out at
+  roughly the rate it arrived. Two candidate fixes, and the choice needs the
+  owner because it is a judgment about what "we read the field" means: either
+  exempt papers whose `ingested_at` is recent (age the rule off ingestion, not
+  publication, so the rule only catches genuine historical imports), or keep
+  the rule and record the write-off honestly with a distinct decision value so
+  the digest can say how much it did not read.
+- First step: a one-line query against `papers` joined to `triage_log` for how
+  many rows already carry `rule:backfill` while having been ingested by the
+  live firehose. That number is either small, and this is a future problem, or
+  large, and the corpus is already quieter than it looks.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — Read the Groq 429 body before guessing at throughput
+- Trigger: the triage fix shipped today makes the drain fair but not faster,
+  and there are three free ways to make it faster which are mutually exclusive
+  in what they imply. Raising `BATCH` helps if the limit is per-request; it
+  does nothing if the limit is per-token. Shortening the 1,500-character
+  abstract slice helps if the limit is per-token; it costs triage quality for
+  nothing if the limit is per-request. Nobody has read the 429.
+- What: run `modal app logs alexandria-triage`, read what the 429 body says,
+  and write the answer into `docs/product/triage-capacity.md` where the three
+  branches are already spelled out. Then take the branch it names. This is
+  perhaps ten minutes of work that decides whether the backlog is a budget
+  problem or a batching problem, and the pipeline has been guessing about it
+  for its whole life.
+- First step: the log read itself. It needs Modal credentials, which the
+  engineer seat's GitHub Actions runner does not carry, so this is the chair's
+  or the owner's to run, or it needs a Modal token available to this seat.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-19 — Every queue view should log its depth per partition
+- Trigger: the tier starvation fixed today was invisible for the pipeline's
+  entire life, and it took a research seat querying Neon by hand to find it.
+  The triage cron printed how many papers it triaged and never once printed how
+  many were waiting, so a run that read 20 papers out of 2,445 and a run that
+  read 20 out of 20 produced identical-looking logs.
+- What: the blackboard design (ADR-9) gives every worker a queue view, so the
+  same blind spot exists in `distill_queue`, `interpret_queue` and the digest's
+  own inputs. Add the one-line depth log this change added to triage to each of
+  them, partitioned by whatever dimension that queue could starve on (tier for
+  distill, source for interpret). The rule worth adopting: a worker that drains
+  a queue must log the depth of the queue it did not drain.
+- First step: `pipeline/distill.py`, the same three-line query and print this
+  PR added to `pipeline/triage.py`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — Competitive scan: Elicit's screening step
+- Elicit's paper screening puts its inclusion and exclusion criteria in front
+  of the user as an editable list, then shows, per paper, which criterion
+  decided it. The screening is the product surface, not a hidden preprocessing
+  step.
+- **Worth stealing:** we already have this data and throw it away. Every
+  `triage_log` row carries a decision, a score and the model's reasoning, and
+  none of it is visible anywhere. A page that showed what the pipeline read
+  this week and why it discarded most of it would be the most honest thing on
+  the site, and after today's fix it would finally show more than one feed.
+  Filed here rather than built because it is a site change and belongs to the
+  frontend seat's lane.
+- **Where alexandria is better:** Elicit screens a corpus you bring to it. The
+  screening quality is bounded by your search query, so a blind spot in the
+  query is a blind spot in the result and nothing tells you it is there.
+  alexandria screens a standing firehose against standing sources, which means
+  its blind spots are properties of a checked-in file, `sources.yaml`, that a
+  research seat can audit and diff. Today's finding is the case in point: the
+  blind spot was real, and it was findable, and it was fixable in one file,
+  because the corpus is ours rather than a query's leftovers.

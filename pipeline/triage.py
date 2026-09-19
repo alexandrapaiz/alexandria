@@ -175,7 +175,7 @@ def triage(max_calls: int = 25):
             from triage_queue group by tier order by count(*) desc
             """
         ).fetchall():
-            print(f"  queue: tier {tier or chr(63)}: {depth} waiting, oldest {oldest}")
+            print(f"  queue: tier {tier or 'unknown'}: {depth} waiting, oldest {oldest}")
 
         # Take each tier's candidates separately so no tier can be crowded out of
         # the result set before the planner ever sees it.
