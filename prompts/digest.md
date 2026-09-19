@@ -529,7 +529,11 @@ Rules:
 - **Attribute by institution.** The `institutions` field first, every time,
   because readers know labs and not author names. "A team led by <first
   author>" is the fallback for when institutions are genuinely missing from
-  the payload, never the default.
+  the payload, never the default. The field is empty on most papers today,
+  so that fallback will carry many issues, and a construction repeated on
+  every item is furniture no matter how correct it is. Vary it: "a team led
+  by Yan Yu", "Zixuan Fu and colleagues", "the authors of the one-example
+  paper". Never print author names three times in the same shape.
 - Thin evidence is stated plainly ("only one deprecation this week"), never
   padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells: the
