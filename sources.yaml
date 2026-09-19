@@ -37,6 +37,7 @@ feeds:
   - {name: simonwillison, url: "https://simonwillison.net/atom/everything/", tier: d}
   - {name: interconnects, url: "https://www.interconnects.ai/feed", tier: d}
   - {name: langchain, url: "https://www.langchain.com/blog/rss.xml", tier: d}
+  - {name: langchain-blog, url: "https://blog.langchain.com/rss/", tier: d}
   # ---- tools & software: GitHub release feeds (releases.atom, all verified 200) ----
   # The unit here is a release, not a paper: triage routes major capability
   # releases to index/distill and patch releases to discard (see prompts/triage.md).
@@ -45,7 +46,16 @@ feeds:
   - {name: gh-llamacpp, url: "https://github.com/ggml-org/llama.cpp/releases.atom", tier: d}
   - {name: gh-transformers, url: "https://github.com/huggingface/transformers/releases.atom", tier: d}
   - {name: gh-langgraph, url: "https://github.com/langchain-ai/langgraph/releases.atom", tier: d}
+  # gh-autogen is the reference line, kept for its archive: its newest release is
+  # python-v0.7.5 (2025-09-30). Active development moved to the AG2 fork, which
+  # shipped v1.0.1-v1.0.5 between 2026-07-29 and 2026-09-11 (research brief 2026-09-19 §1.4).
   - {name: gh-autogen, url: "https://github.com/microsoft/autogen/releases.atom", tier: d}
+  - {name: gh-ag2, url: "https://github.com/ag2ai/ag2/releases.atom", tier: d}
+  - {name: gh-openai-agents, url: "https://github.com/openai/openai-agents-python/releases.atom", tier: d}
+  - {name: gh-crewai, url: "https://github.com/crewAIInc/crewAI/releases.atom", tier: d}
+  # Durable execution predates LLM agents and is the lineage the frameworks draw on
+  # for checkpoint/resume (research brief 2026-09-19 §1.2).
+  - {name: gh-temporal, url: "https://github.com/temporalio/temporal/releases.atom", tier: d}
   - {name: gh-mcp-spec, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/releases.atom", tier: d}
   - {name: gh-claude-code, url: "https://github.com/anthropics/claude-code/releases.atom", tier: d}
   - {name: gh-ollama, url: "https://github.com/ollama/ollama/releases.atom", tier: d}
