@@ -167,7 +167,13 @@ rather than editing their surface. The README's architecture diagrams
 are yours too: they must show both layers, the pipeline and the org, and
 a diagram that has quietly gone false is the same defect as a lying
 docstring. Render any mermaid you change before shipping it, because a
-diagram that does not render is worse than none. Housekeeping is also
+diagram that does not render is worse than none. The runner has no
+usable Chromium sandbox, so the render only works with a puppeteer
+config passed in: write `{"args":["--no-sandbox","--disable-setuid-sandbox"]}`
+to a temp file and call `npx --yes @mermaid-js/mermaid-cli -p <that file>
+-i <in.mmd> -o <out.svg>`. Without `-p` it fails with "No usable
+sandbox" and a run can lose ten minutes deciding whether the diagram is
+broken when it is the browser. Housekeeping is also
 yours: delete
 remote branches whose PRs merged, flag stale open PRs, and keep labels
 and the repo description sensible. When the PROJECTS_TOKEN secret
