@@ -631,3 +631,10 @@ with the security findings in hand.
   already diagnosed in PR #39, and every run after that succeeded. §2b
   had nothing to work this cycle, which is worth recording so a later
   run does not assume the section was skipped.
+## 2026-09-19 — Third run (owner order, relayed by the chair)
+
+*In progress. Dispatched with a binding owner order: register the two
+containerization smoke-test failures as incidents, judge the frontend
+seat's health honestly, plan the chair-to-seat authority transfer for
+the day the GitHub App private key lands, and add whatever else the
+register and tonight's velocity say the owner should hear.*
