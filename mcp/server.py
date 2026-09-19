@@ -14,7 +14,10 @@ against the open corpus or the model's own training data.
 Auth is OAuth 2.1 as the MCP spec standardizes it: authorization code + PKCE +
 dynamic client registration, implemented stateless with signed JWTs and a
 single passphrase login (one user). claude.ai custom connectors speak this flow
-natively.
+natively. Registration is stateless too: the `client_id` is itself a signed
+token carrying the client's redirect URIs, so `/authorize` can reject a
+redirect URI the client never registered without a store to look it up in. See
+mcp/oauth_flow.py, which holds that check outside this container so it is testable.
 
 Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `JWT`
 (AUTH_JWT_SECRET — long random signing string), `MCP` (MCP_PASSPHRASE — the
@@ -40,6 +43,7 @@ image = (
         "sentence-transformers",
     )
     .add_local_file("prompts/rag-answer.md", "/root/prompts/rag-answer.md")
+    .add_local_file("mcp/oauth_flow.py", "/root/oauth_flow.py")
 )
 
 app = modal.App("alexandria-mcp", image=image)
@@ -61,18 +65,18 @@ hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
 @modal.asgi_app()
 def serve():
     import base64
-    import hashlib
-    import hmac
     import os
     import re
+    import sys
     import time
-    import uuid
 
     import httpx
-    import jwt
     import psycopg
-    from fastapi import FastAPI, Form, Request
-    from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+
+    sys.path.insert(0, "/root")  # where the image put oauth_flow.py
+    import oauth_flow as oauth_clients
+    from fastapi import FastAPI, Request
+    from fastapi.responses import JSONResponse
     from fastmcp import FastMCP
 
     JWT_SECRET = os.environ["AUTH_JWT_SECRET"]
@@ -117,17 +121,6 @@ def serve():
         )
         resp.raise_for_status()
         return json.loads(resp.json()["choices"][0]["message"]["content"])
-
-    def mint(claims: dict, ttl: int) -> str:
-        return jwt.encode({**claims, "iat": int(time.time()), "exp": int(time.time()) + ttl},
-                          JWT_SECRET, algorithm="HS256")
-
-    def read_token(token: str, expected_type: str) -> dict | None:
-        try:
-            claims = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            return claims if claims.get("typ") == expected_type else None
-        except jwt.PyJWTError:
-            return None
 
     # ---------------- MCP tools ----------------
 
@@ -471,113 +464,18 @@ def serve():
         return {"pr_url": pr["html_url"]}
 
     # ---------------- OAuth 2.1 (spec flow, stateless via JWTs) ----------------
+    #
+    # The endpoints live in mcp/oauth_flow.py, mounted here. That is not tidiness: it
+    # is what lets tests/test_oauth_redirect_uri.py drive the real authorize and
+    # token handlers in-process, with no Modal deployment and no secrets.
 
     mcp_app = mcp.http_app(path="/mcp")
     api = FastAPI(lifespan=mcp_app.lifespan)
 
-    def base_url(request: Request) -> str:
-        return f"https://{request.headers['host']}"
-
-    @api.get("/.well-known/oauth-authorization-server")
-    def auth_metadata(request: Request):
-        b = base_url(request)
-        return {
-            "issuer": b,
-            "authorization_endpoint": f"{b}/authorize",
-            "token_endpoint": f"{b}/token",
-            "registration_endpoint": f"{b}/register",
-            "response_types_supported": ["code"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "code_challenge_methods_supported": ["S256"],
-            "token_endpoint_auth_methods_supported": ["none"],
-        }
-
-    @api.get("/.well-known/oauth-protected-resource")
-    @api.get("/.well-known/oauth-protected-resource/mcp")
-    def resource_metadata(request: Request):
-        b = base_url(request)
-        return {"resource": f"{b}/mcp", "authorization_servers": [b]}
-
-    @api.post("/register")
-    async def register(request: Request):
-        body = await request.json()
-        return JSONResponse(
-            {"client_id": uuid.uuid4().hex,
-             "redirect_uris": body.get("redirect_uris", []),
-             "token_endpoint_auth_method": "none",
-             "client_id_issued_at": int(time.time())},
-            status_code=201,
-        )
-
-    LOGIN_FORM = """<!doctype html><title>alexandria</title>
-    <body style="font-family:system-ui;max-width:22rem;margin:15vh auto">
-    <h2>alexandria</h2><p>{msg}</p>
-    <form method="post" action="/authorize">
-    {hidden}
-    <input type="password" name="passphrase" placeholder="passphrase" autofocus
-           style="width:100%;padding:.5rem;font-size:1rem">
-    <button style="margin-top:.75rem;padding:.5rem 1.25rem;font-size:1rem">Authorize</button>
-    </form></body>"""
-
-    AUTH_PARAMS = ["response_type", "client_id", "redirect_uri", "state",
-                   "code_challenge", "code_challenge_method"]
-
-    @api.get("/authorize")
-    def authorize_form(request: Request):
-        q = request.query_params
-        if q.get("response_type") != "code" or q.get("code_challenge_method") != "S256":
-            return JSONResponse({"error": "unsupported_response_type"}, status_code=400)
-        hidden = "".join(
-            f'<input type="hidden" name="{p}" value="{q.get(p, "")}">' for p in AUTH_PARAMS
-        )
-        return HTMLResponse(LOGIN_FORM.format(msg="Enter the passphrase to connect.", hidden=hidden))
-
-    @api.post("/authorize")
-    def authorize_submit(request: Request,
-                         passphrase: str = Form(""), response_type: str = Form(""),
-                         client_id: str = Form(""), redirect_uri: str = Form(""),
-                         state: str = Form(""), code_challenge: str = Form(""),
-                         code_challenge_method: str = Form("")):
-        if not hmac.compare_digest(passphrase, PASSPHRASE):
-            hidden = "".join(
-                f'<input type="hidden" name="{p}" value="{v}">'
-                for p, v in [("response_type", response_type), ("client_id", client_id),
-                             ("redirect_uri", redirect_uri), ("state", state),
-                             ("code_challenge", code_challenge),
-                             ("code_challenge_method", code_challenge_method)]
-            )
-            return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase — try again.", hidden=hidden),
-                                status_code=401)
-        code = mint({"typ": "code", "cid": client_id, "ru": redirect_uri,
-                     "cc": code_challenge}, ttl=600)
-        sep = "&" if "?" in redirect_uri else "?"
-        return RedirectResponse(f"{redirect_uri}{sep}code={code}&state={state}", status_code=302)
-
-    @api.post("/token")
-    def token(grant_type: str = Form(...), code: str = Form(None),
-              redirect_uri: str = Form(None), client_id: str = Form(None),
-              code_verifier: str = Form(None), refresh_token: str = Form(None)):
-        if grant_type == "authorization_code":
-            claims = read_token(code or "", "code")
-            if not claims or claims.get("ru") != redirect_uri or claims.get("cid") != client_id:
-                return JSONResponse({"error": "invalid_grant"}, status_code=400)
-            digest = hashlib.sha256((code_verifier or "").encode()).digest()
-            challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
-            if not hmac.compare_digest(challenge, claims.get("cc", "")):
-                return JSONResponse({"error": "invalid_grant", "error_description": "pkce"},
-                                    status_code=400)
-        elif grant_type == "refresh_token":
-            claims = read_token(refresh_token or "", "refresh")
-            if not claims:
-                return JSONResponse({"error": "invalid_grant"}, status_code=400)
-        else:
-            return JSONResponse({"error": "unsupported_grant_type"}, status_code=400)
-        return {
-            "access_token": mint({"typ": "access"}, ACCESS_TTL),
-            "token_type": "Bearer",
-            "expires_in": ACCESS_TTL,
-            "refresh_token": mint({"typ": "refresh"}, REFRESH_TTL),
-        }
+    read_access_token = oauth_clients.install_oauth(
+        api, jwt_secret=JWT_SECRET, passphrase=PASSPHRASE,
+        access_ttl=ACCESS_TTL, refresh_ttl=REFRESH_TTL,
+    )
 
     # ---------------- bearer guard on /mcp, then mount ----------------
 
@@ -585,9 +483,9 @@ def serve():
     async def guard(request: Request, call_next):
         if request.url.path.startswith("/mcp"):
             auth = request.headers.get("authorization", "")
-            token_ok = auth.startswith("Bearer ") and read_token(auth[7:], "access")
+            token_ok = auth.startswith("Bearer ") and read_access_token(auth[7:])
             if not token_ok:
-                meta = f"{base_url(request)}/.well-known/oauth-protected-resource"
+                meta = f"https://{request.headers['host']}/.well-known/oauth-protected-resource"
                 return JSONResponse(
                     {"error": "unauthorized"},
                     status_code=401,

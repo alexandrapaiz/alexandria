@@ -1,0 +1,8 @@
+# Test and local-check dependencies, not shipped to Modal.
+# The runtime image pins its own versions in mcp/server.py.
+#     pip install -r requirements-dev.txt && python3 -m pytest tests/ -q
+fastapi>=0.115
+httpx
+python-multipart
+pyjwt>=2.9
+pytest>=8
