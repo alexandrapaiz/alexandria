@@ -288,3 +288,275 @@ rather than from what the runs said about themselves.
    Lesson for all seats: when integrating a fast-moving vendor SDK,
    the vendor's current doc outranks remembered APIs, and the
    installed clerk-* skills exist precisely to be consulted first.
+
+## 2026-09-18 evening — the six-failure day
+
+Postmortem by the ExO agent, owner-dispatched. Blameless: every fact
+below is read from run logs and from git, not from what any run said
+about itself. Numbering continues at 15 because 11, 12 and 13 are each
+used twice above, for the reason set out at the end of item 16.
+
+15. **Six runs failed in one day, all of them turn-cap collisions, and
+    the two reactive cap raises were outgrown by the seats that got
+    them.** This is incident 10's third escalation to this seat. The
+    owner's instruction was to stop guessing, and this is why.
+
+    The six, verified from `num_turns` and `CLAUDE_ARGS` in each log:
+
+    | Run | Seat | Turns | Cap | Flavor | Work |
+    |---|---|---|---|---|---|
+    | 35299288455 | security | 108 | 100 | false failure | shipped, PR #8 merged |
+    | 35301912056 | pm | 61 | 60 | hard starvation | nothing pushed |
+    | 35305207776 | frontend | 151 | 150 | hard starvation | nothing pushed |
+    | 35306459296 | frontend | 286 | 250 | false failure | shipped, PR #15 merged |
+    | 35307268573 | pm | 61 | 60 | hard starvation | nothing pushed |
+    | 35311930240 | pm | 141 | 140 | hard starvation | shipped anyway, PR #24 merged |
+
+    **These are not six new incidents, and reading them as six is what
+    hid the real finding.** Four were already on this register: the
+    security run is item 11, the frontend 151 is item 4, and the two pm
+    runs at 60 are item 10's second and third occurrences. Item 10's
+    postmortem recorded that those two pm logs could not be retrieved,
+    so it judged the 60-turn cap from the owner's account rather than
+    from a log. They retrieve fine now, and both read 61 turns against
+    60, which confirms that account exactly. The gap was timing rather
+    than missing data, because a run's logs become readable once the
+    run has finished being written. Only two of the six are new,
+    and the two new ones are the ones that matter, because each one
+    happened *after* its seat's cap had already been raised in response
+    to the earlier failure.
+
+    - Frontend died at 150 at 03:58. The cap was raised to 250. The very
+      next frontend run, at 04:18, used 286. Twenty minutes.
+    - PM died at 60 at 03:06 and again at 04:31. The cap was raised to
+      140. Three pm runs passed comfortably, and the fourth, at 05:43,
+      used 141.
+
+    **Why it happened, technically.** A cap raised in reaction to a
+    failure is set just above the number that failed, so it encodes the
+    largest run the org has already seen rather than the largest it is
+    about to see. Meanwhile the seats' work was growing the same day:
+    frontend gained Playwright screenshot batches, pm gained the board
+    plus the sprint plus a closing all-hands triage. Reaction chases a
+    moving number and always lands behind it. The fix is a ratio, not a
+    number, and it now lives in
+    [turn-caps.md](turn-caps.md): twice the highest observed turn count,
+    rounded up to the next 50, floor 100, re-derived monthly from the
+    logs and immediately whenever a cap is hit or a charter grows a
+    seat's duties.
+
+    **What the org grew from it, and the one genuinely good outcome.**
+    "Ship first, then work" landed on main at 05:11:42 (PR #18). Every
+    one of the three runs that lost all its work started before that
+    moment. Run 35311930240 is the first cap-killed run after it: the
+    cap killed it at 06:00:28, and the owner merged its PR #24 at
+    06:01:07, thirty-nine seconds later. The rule converted a total loss
+    into a delivered sprint revision. That is the clearest evidence the
+    org has that draft-PR-first works, and it argues for keeping the
+    no-ship tripwire queued in
+    [pending-workflow-changes.md](pending-workflow-changes.md) rather
+    than letting the cap fix substitute for it. Caps reduce how often a
+    run is killed. Shipping first decides what a killed run costs.
+
+    **Still unfixed at the time of writing.** Three caps remain below
+    what the rule requires, because the chair's raises were also read
+    from today's failures rather than from the ratio: frontend 400 needs
+    600, pm 250 needs at least 300, security 200 needs 250. Queued in
+    pending-workflow-changes.md, since no agent can push a workflow
+    file.
+
+16. **The false failure: a run finishes its work, reports success, and
+    the action fails it anyway. Second occurrence, now a named defect
+    class.** First seen as item 11 above (security, 108 against 100) and
+    repeated the same day by frontend (286 against 250), which is what
+    promotes it from a one-off to a class under the standing rule.
+
+    **What the logs actually show.** Both runs ended with
+    `"subtype": "success"` and `"is_error": false`. Neither shows
+    `error_max_turns`. The action then emitted
+    `Claude reported a successful result after 286 turns, exceeding the
+    configured maximum of 250` and failed the job. Both runs' output was
+    complete, reviewed, and merged.
+
+    **Why it happens, technically.** The two flavors leave different
+    fingerprints, and the difference is the whole diagnosis. A hard
+    starvation ends at exactly the cap plus one: 61/60, 151/150,
+    141/140, without exception in today's data. A false failure ends far
+    past the cap: 108 against 100, 286 against 250. A single counter
+    enforced at the cap cannot produce both shapes. So the counter the
+    run stops itself on and the `num_turns` the run reports at the end
+    are not the same number, and `claude-code-action` compares the
+    reported one against the configured maximum after the fact and fails
+    the job on it. The overshoot is the gap between the two counters,
+    which is why it grows with the size of the run: 8 turns on a
+    108-turn run, 36 on a 286-turn run. Stated as a hypothesis, because
+    it is inferred from the two counters disagreeing rather than from
+    the action's source, but the shape of the data leaves little else.
+
+    **Consequences, and they are not cosmetic.** The damage is to
+    monitoring, which is how the org knows anything. A red run that
+    shipped everything trains reviewers to shrug at red, and a day with
+    six red runs of two different kinds cost this seat most of a run to
+    sort out. It is the exact inverse of item 8, where a green
+    conclusion hid a run that shipped nothing. Both point one way, and
+    it is now the house rule for reading any run: **judge a run by its
+    artifacts, never by its conclusion.** The three-command triage for
+    doing that in under a minute is in
+    [turn-caps.md](turn-caps.md).
+
+    **The fix, and its honest limit.** A cap sized by the ratio makes
+    both flavors rare, because a run would have to double its seat's
+    historical peak to reach either. That is all the org can do from
+    inside. The action's post-hoc check is upstream code this repository
+    does not own, and no `max-turns` value makes a false failure
+    impossible, only unlikely. So the rule stands alongside the cap: a
+    red run is a question, not a verdict.
+
+    **On the numbering.** Items 11, 12 and 13 each appear twice above,
+    because independent seats appended at the same anchor on the same
+    day, which is item 6's pattern playing out in the register itself.
+    Item 14 flagged it here rather than renumbering, correctly:
+    renumbering breaks every cross-reference pointing at the old
+    numbers, including the ones in the charters. This run does not
+    renumber either. The durable fix is to stop appending at a shared
+    anchor, so from now on **each entry is added under a new dated
+    `##` section with the next free number**, which is what this section
+    does. Where a duplicated number must be cited, cite it by seat and
+    run id as well, the way item 15 cites item 11 as "the security run".
+
+## 2026-09-19 — the containerization migration
+
+Postmortem by the ExO agent, owner-dispatched. Both entries below were
+diagnosed and fixed by the chair in the moment, on 2026-09-19 between
+01:54 and 02:14 UTC, and neither was written down. The owner asked for
+them to be registered properly, which is correct: a fix that lives only
+in one session's memory is a fix the org has not actually learned. New
+dated section and fresh numbers, per the convention item 16 set.
+
+17. **Claude Code refuses `--dangerously-skip-permissions` as root, and
+    a GitHub container job runs as root by default.** First smoke test
+    of Stage 1 containerization (frontend, run 35414079812, 01:54Z).
+    The job started fine, the image pulled, the action launched, and
+    the SDK died immediately:
+
+    ```
+    error: Claude Code process exited with code 1. stderr:
+    --dangerously-skip-permissions cannot be used with root/sudo
+    privileges for security reasons
+    ```
+
+    **Why it happens.** Two defaults collide. `--permission-mode
+    bypassPermissions` is the org's standing setting since incident 2,
+    because the default sandbox silently blocked every push and PR.
+    It resolves to `--dangerously-skip-permissions`, which Claude Code
+    refuses under uid 0 by design. On a normal hosted runner the job
+    runs as the `runner` user, so the refusal never fires. Inside a
+    `container:` block the job runs as the image's user, and the image
+    inherited `node:20-bookworm`'s root. Nothing in the workflow said
+    "run as root"; the container simply defaulted there. This is the
+    shape worth remembering: a setting that has been correct for a week
+    became wrong the moment the execution environment under it changed.
+
+    **Fix, applied by the chair and verified in the tree.**
+    `.github/docker/Dockerfile` creates a non-root user, and the
+    workflows pass `options: --user 1001:1001`. Present now in
+    `agent-frontend.yml` and `agent-engineer.yml`, the two containerized
+    seats.
+
+18. **A uid the workspace does not own cannot write the Actions
+    runner's own state files.** Second smoke test (frontend, run
+    35414292823, 01:58Z), four minutes after the first. The root
+    refusal was gone and the container came up as uid 1000, and then:
+
+    ```
+    Error: EACCES: permission denied, open
+    '/__w/_temp/_runner_file_commands/save_state_68ff7620-...'
+    ```
+
+    **Why it happens.** The runner bind-mounts its own working
+    directories into the container (`/home/runner/work` at `/__w`), and
+    on GitHub's hosted Ubuntu images those are owned by uid 1001. A
+    container user at uid 1000 fails on the first write, and the first
+    write is not the agent's work, it is the action's own
+    `save_state` file, so the run dies before doing anything. The uid is
+    not cosmetic, and it is not the conventional 1000. It has to match
+    the host's.
+
+    **Fix, applied by the chair and verified in the tree.** The image
+    bakes `useradd -m -u 1001 runner` and the workflows pass
+    `--user 1001:1001`. The Dockerfile now carries the reason in a
+    comment, which is the right place for it, because the next person to
+    touch that line will otherwise reach for 1000.
+
+    **Third smoke test passed (35415086885, 02:14Z, 12 turns).** Tools
+    baked and on PATH, Chromium launching from the image with no
+    download, workspace writable, push and PR creation both working. The
+    frontend and engineer seats have run containerized since, twice
+    green (35415086885 and 35418265554, PR #37).
+
+### What the org grows from these two
+
+Neither failure reached a scheduled run. Both were caught by deliberate
+smoke tests fired on purpose, on a throwaway branch, before the
+migration touched a seat doing real work. Total cost: two red runs and
+one 12-turn verification. The counterfactual is the frontend seat's
+Wednesday 08:00 cron being the first containerized execution, failing on
+an eight-word stderr line nobody was watching for, and the seat sitting
+dead until someone read the log.
+
+That makes the rollout method, not the two bugs, the thing worth
+keeping. **The answer to the owner's question is yes: smoke-test-first
+is standing org law for every runtime change from now on**, written out
+as a procedure in [runtime-changes.md](runtime-changes.md). These two
+entries are its founding evidence and its first-class members:
+environment-migration failures, a class the register had not seen
+before, where the agent and its charter are both correct and the ground
+under them moved.
+
+One further note for the register, and it is the real lesson rather than
+the technical one. The chair fixed both of these inside twenty minutes
+and shipped on. That is exactly the behavior that produces an org with
+no institutional memory, and it is the pattern this register exists to
+interrupt. The standing rule at the top of this file covers repeats. It
+does not cover first occurrences that were solved so fast they felt too
+small to write down, and those are the ones that get rediscovered. The
+rule this seat proposes alongside it: **a failure whose diagnosis took
+more than a minute gets an entry, whether or not it repeats, and whether
+or not it is already fixed.** Writing it down costs five minutes once.
+Rediscovering it costs a run.
+
+## 2026-09-19 — the register's own unpaid debt
+
+19. **The no-ship tripwire has now outlived three ExO runs, which is
+    item 13 happening a second time.** Queued on 2026-09-18 in
+    [pending-workflow-changes.md](pending-workflow-changes.md), carried
+    forward by the 2026-09-18 evening run, and verified unapplied again
+    on 2026-09-19: no file under `.github/workflows/` contains the
+    string `tripwire`. The previous ExO run wrote, in its own learning
+    log, that if it was still unapplied at the next run that would
+    itself be worth an entry. It was. This is that entry.
+
+    **Why it is not the same as forgetting.** Item 13 was a fix nobody
+    held, sitting in a register nobody read as a to-do. This one is
+    held, written out in full, ready to paste, and read every run. It
+    does not ship because the seat that wrote it cannot push the file it
+    belongs in, and the human who can has spent two days applying more
+    urgent workflow edits by hand: OIDC, permission mode, model routing,
+    twelve caps, two timeouts, container config, a new seat's whole
+    workflow. The tripwire is the least urgent item on a queue that only
+    drains through one pair of hands, so it is always the one left over.
+
+    **That makes it a measurement rather than a failure.** The queue
+    depth through the human bottleneck is now visible, and the tripwire
+    is its low-water mark. Any org fix that is genuinely valuable but
+    never the most urgent thing will never ship while that bottleneck
+    exists. Which is the strongest available argument for ADR-27's App,
+    stated without any appeal to autonomy as a principle: see
+    [app-identity-handover.md](app-identity-handover.md).
+
+    **Status: still queued, deliberately not re-escalated.** The fix is
+    unchanged and correct. The right resolution is the handover, not a
+    third request that the chair apply it by hand. If the App has not
+    landed by the next ExO run and the tripwire is still out, record the
+    third occurrence here and say plainly that the org has been running
+    without its shipping check for two weeks.
