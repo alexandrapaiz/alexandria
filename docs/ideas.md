@@ -1946,3 +1946,59 @@ owning seat rather than assumed. Arguments in docs/sales/.
   follow, not prose it has to trust. Most connectors on this platform
   wrap an API and return whatever it returned. The retrieval is the
   product here, and the protocol is the doorway.
+### 2026-09-19 — Wire the digest email template into the send path (frontend, for the engineer)
+
+- Trigger: the owner's order of 2026-09-19, relayed by the chair. "The daily
+  sample does not look like a newsletter. Also i want it sent via email,
+  theres no design otherwise." `site/emails/digest.html` and its slot
+  contract in `site/emails/README.md` ship in the frontend PR of the same
+  date. Nothing sends through it until the pipeline fills it, and filling it
+  is engineer's lane, so this is the handoff.
+- The exact insertion point: `send_newsletter()` in `pipeline/weekly.py`,
+  the `html = (` assignment at line 363 on main and line 552 on PR #35's
+  branch `engineer/2026-09-19-daily-digest`. That one statement, which wraps
+  `html_body` in a Georgia serif div, is the whole change. It becomes a read
+  of `/root/site/emails/digest.html` and a fill. Everything around it stays:
+  the multipart message, the plain-text part, the subscriber loop.
+- One more line, in the image definition: `.add_local_file("site/emails/
+  digest.html", "/root/site/emails/digest.html")` next to the existing
+  `prompts/digest.md` line, `weekly.py` line 51 on main and line 67 on the
+  PR #35 branch. Without it the file is not in the container.
+- It covers the daily too, with no second change. PR #35 renamed the function
+  to `digest()` and branches on `kind_for(today)`, but both kinds still send
+  through the one `send_newsletter()`. Wiring the template there wires both.
+  The template's sections are generic, so an issue's H2s become its sections
+  whatever they are called.
+- Already correct, and worth not breaking: the subject line is the issue's
+  H1 (lines 376 to 378 on main), which is the owner's "the subject is the
+  title, and the title is a finding".
+- `docs/design/reviews/2026-09-19/render_sample.py` is a working filler,
+  standard library plus `markdown`, both already in the Modal image. It parses
+  the digest markdown into the slots and it is the file to lift or to read,
+  not a file to import from `docs/`.
+- The one open dependency: `{{unsubscribe_url}}`. There is no unsubscribe
+  endpoint, so the honest value today is a `mailto:` to the sending address
+  with an unsubscribe subject, which is what the current email means when it
+  says "reply to this email". The real endpoint is already an idea in this
+  file from PR #35 and should land before the list outgrows twenty people.
+- Two fill-time details the template assumes, both verified at 3x on
+  2026-09-19: values arrive HTML-escaped, and narrow no-break spaces (U+202F,
+  30 of them in 2026-W37 alone) are normalised, because Helvetica draws them
+  so tight that "Claude Opus 5" reads as "ClaudeOpus5" in a mail client.
+- Cost: $0. No new dependency, no new service, no new font.
+- Status: proposed
+
+### 2026-09-19 — The writing model emits narrow no-break spaces (frontend observation, for the writer)
+
+- What: `site/content/issues/2026-W37.md` contains 30 U+202F narrow no-break
+  spaces, inside names ("Claude Opus 5", "122 B") and before percent signs
+  ("23.9 %"). English takes no space before a percent sign, and the tight
+  gaps inside names are a legibility bug in any client that renders U+202F
+  faithfully. Screenshots: `fix-narrow-space-3x-before.png` in this date's
+  review folder.
+- The email template's filler normalises them so the delivered issue reads
+  correctly, but the database row, the site and the plain-text part still
+  carry them. The fix at the source is a line in the digest prompt.
+- Whose call: the writer seat owns `prompts/digest.md` and `prompts/daily.md`.
+  Filed here rather than edited.
+- Status: proposed
