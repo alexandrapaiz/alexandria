@@ -44,14 +44,28 @@ Study decisions, never copy sentences.
    ranking says what earned each slot (the relevance law).
 6. Evidence grades in-line: "authors' own experiments, not yet
    replicated" is product, not weakness.
-7. Honesty notes are product: when an instrument is under-powered or
-   a bias exists, the issue says so plainly.
+7. Honesty serves items, never the method: grade an item's evidence
+   in-line, and disclose a bias or limitation only when it materially
+   affects that day's content, in one plain sentence. The issue NEVER
+   narrates its own methodology, ranking logic, or virtues (owner's
+   ruling, 2026-09-19); method explanations live on the site, not in
+   the reader's way.
 8. Links go to the full text (arxiv.org/html/... when it exists, the
    abstract page as fallback): one less step between claim and
    evidence is the product promise.
-9. Structure of the daily: Compounding (traction-ranked), New and
-   unproven (labeled as such), Left behind (what lost ground), the
-   instrument note, the dual-audience close. The weekly is the
+9. The fine-tuned instruction is the foundation. The owner refined
+   the digest's prose and structure herself in prompts/digest.md:
+   the context-first invariant (never open with a finding cold, why
+   before what, situate the reader in the subfield and its stuck
+   problem first), institution-first attribution, varied sentence
+   rhythm, depth following significance, and her section names
+   (Trailblazing, Gaining traction, Left behind, Read these
+   yourself). That instruction is the base layer; the daily adapts
+   it shorter, and nobody, chair or seat, invents parallel
+   structures or taxonomy headings beside it (her ruling,
+   2026-09-19, after "Compounding" and "New and unproven" were
+   invented and rejected). Refinements layer ON TOP of her
+   fine-tuning through the writer seat, with her merge. The weekly is the
    synthesis and must argue, not list.
 10. "You read to decide. Your agents load to act." The dual audience
     appears in every issue's close.

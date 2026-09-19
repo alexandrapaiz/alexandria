@@ -38,3 +38,34 @@ the chair and the PM record her rulings.
 - 2026-09-19 — Daily cadence adopted so the product can be seen and
   improved easily; the weekly stays the synthesis and must argue,
   not list.
+- 2026-09-19 — NO meta-commentary inside the newsletter. Her example,
+  rejected verbatim: "Ranked by traction in the claim graph, not by
+  release date. A claim rises here when independent papers keep
+  supporting it." The issue never narrates its own methodology,
+  ranking logic, or virtues. The ranking must simply be right; the
+  reader feels it working without being told. Method explanations
+  live on the site (mission, about), never inside an issue. In-line
+  evidence grades on items stay; standing process narration goes.
+  A second rejected-verbatim example, same ruling: "The items below
+  lead today because the graph keeps confirming them, which is the
+  only ranking that predicts what will still matter in a month."
+  Section intros that justify the section are the same disease. A
+  section earns trust by its contents; support counts on items are
+  evidence and stay, sentences about the ranking are narration and
+  go.
+- 2026-09-19 — Section headings must be newsletter craft, not
+  taxonomy. "Compounding" and "New and unproven" are REJECTED as
+  headings: they read as any AI-generated thing, and she has refined
+  this before. The ordering principle stays law (traction leads, new
+  work labeled as unproven, what fell behind, the close), but the
+  HEADING NAMES and the reader-facing warmth are craft learned from
+  the best newsletters, including greeting the reader. The market
+  seat's newsletter-prose guide is the reference; the writer applies
+  it to the generator.
+- 2026-09-19 — "A lot of things are given with 0 context. I did this
+  fine-tuning before." The weeklies were much better because her own
+  instruction in prompts/digest.md carries the context-first
+  invariant and the craft rules. Standing consequence: her
+  fine-tuned instruction is the base layer for every cadence, found
+  and read before anything new is written, and refinements layer on
+  top of it, never beside it.

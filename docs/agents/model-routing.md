@@ -66,3 +66,11 @@ the owner's subscription.
   monthly benchmark is the detector.
 - Model changes are evidence changes: golden sets before and after,
   archived in docs/evals/, per the ADR-5 habit.
+
+## Addendum 2026-09-19: the writer seat
+
+The writer agent (ADR-28, editor-in-chief) runs on **Opus**, explicit
+`--model opus` in agent-writer.yml, because editorial judgment on
+prose quality is exactly where the premium tier earns its cost. Cap
+150 turns, timeout 75 minutes, daily after the digest publishes.
+Verify from run logs' modelUsage as with every seat.
