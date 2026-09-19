@@ -238,3 +238,124 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+## Seen and not mine (org rule, 2026-09-19, outward-looking seats)
+
+Every run, end your PR description with a short section headed "Seen and
+not mine." List what you noticed this run that looked like it mattered
+and was not yours to act on. One line each, with a link, and at most
+five. Then stop, because acting on it is the point you are not doing.
+
+This rule exists because of incident 19 in docs/agents/incidents.md. The
+year's defining agent-infrastructure event went uncaptured by an org
+whose product is knowing what matters in AI, and it was not missed for
+lack of looking. Seats were reading the right sources and filtering them
+correctly against their own deliverables, so an event shaped like
+nobody's deliverable was discarded by everyone who saw it. What each
+seat sets aside is therefore information the org owns and throws away.
+This section is where it stops being thrown away.
+
+An empty section is a legitimate answer and should say "nothing this
+run." A missing section is a charter deviation, and the ExO seat checks
+for it. The market seat sweeps these weekly under its world-awareness
+duty, so a line written here reaches a reader without you routing it.
+
+## Signal and evidence, the line drawn precisely (ExO coherence fix, 2026-09-19)
+
+The signal-read section above says that news, RSS feeds, and releases
+are attention signals that never become claims. Read literally against
+the rest of the system, that sentence forbids something the system
+already does on purpose, so here is the line it actually draws.
+
+What is never a claim is the REPORT of an event. That a compromise
+happened, that a lab shipped a model, that a company pivoted, none of
+these are evidence about how to build agents, and no amount of
+repetition in headlines makes them so. They steer where the telescope
+points and they stop there.
+
+What may still be extracted is an ARTIFACT WITH METHOD, whatever feed
+carried it. A postmortem that reports measured preconditions for a
+sandbox escape, release notes that describe a technique, an engineering
+essay with numbers, all of these are admissible on the same terms as any
+paper and subject to the same evidence bar. This is what the four-layer
+program means by industry artifacts with technical substance, and it is
+what `prompts/triage.md` already implements when it routes a release to
+`distill` because the notes describe a technique worth extracting. The
+Hugging Face incident is the case in point twice over. The news of it
+was a steering signal. The published postmortems of it are artifacts
+with method, and they belong in the corpus.
+
+The test, when an item is ambiguous: could a builder do something
+differently tomorrow because of what this document MEASURED or
+DESCRIBED, as opposed to what it ANNOUNCED. If the answer comes from the
+announcement, it is signal. If it comes from the method, it is evidence.
+
+Two handoffs land in the signal read, and neither is yours to go hunting
+for. The market seat owns "the org knows what the world knows" and names
+ecosystem events in its Friday brief, including which ones look like
+ingestion targets. The security seat names upstream events that touch
+what we depend on. Read the latest of each before writing the signal
+read, and say in the brief when you are declining their steer, because a
+steer silently dropped is how the last one was lost.
+## Your own last run may still be open (org rule, 2026-09-19, all seats)
+
+Before you create your branch, run
+
+```bash
+gh pr list --state open --json number,headRefName,title,createdAt
+```
+
+and look for a pull request from your own seat. Your runs write the
+files that no other seat touches, so an unmerged PR from your last run
+is the single thing most likely to collide with this one. The owner
+merges on her own schedule, and a run that assumes main holds its
+predecessor's work is often wrong.
+
+If you find one, choose deliberately between two options, and say which
+one you chose at the top of your PR description.
+
+- **Build on it.** Merge that branch into yours early, in your first
+  few turns, before you write anything. Your PR then supersedes it, and
+  you say so plainly so the owner can close the older one instead of
+  reviewing two.
+- **Branch from main anyway**, when your work genuinely does not touch
+  the same files. Then name the older PR and the merge order you expect,
+  the same way the ledger-collision rule already requires.
+
+What you never do is start from main, write into the same files, and say
+nothing. The evidence that this is real: incident 6 (two ledger appends
+at one anchor, conflict on the second merge), incident 14 (two runs of
+one dispatch racing on one branch, saved only by `--force-with-lease`),
+and the ExO's fourth run, which started while its third run's PR was
+still open against all four of the files it needed.
+
+Two absolutes that fall out of it. Never `git push --force` a shared
+branch; `--force-with-lease` or nothing. And never reuse a branch name
+whose PR already merged, because the next reader cannot tell your new
+commits from the old ones.
+
+## Check the register before you ship (org rule, 2026-09-19, all seats)
+
+Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
+taste ruling that was written into the right register, by the right
+seat, within the hour, and violated by the very next artifact anyway,
+because nothing between the ruling and the artifact ever opened the
+file. The owner had to give the same ruling twice. Every register the
+org keeps needs two gates: one that decides something gets written
+down, and one that decides something gets checked before it ships. The
+second is the one the org keeps forgetting. The full map of which
+register has which gate is docs/agents/registers.md.
+
+So before you call `gh pr ready`, two checks.
+
+**1. The registers your output is bound by.**
+
+- `docs/voice/ban-list.md` for the synthesis and the curation brief.
+
+**2. Repeats go in the incident register.** If anything in this run
+failed the same way something has failed before, append it to
+docs/agents/incidents.md in this PR. The standing rule at the top of
+that file says any issue occurring more than once is always recorded at
+the moment it repeats, with no exceptions, and that rule binds you, not
+only the ExO seat that reads the file weekly. A repeat that goes
+unrecorded is itself an incident.

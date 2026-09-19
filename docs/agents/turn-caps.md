@@ -1,5 +1,8 @@
 # Turn caps — the standing right-sizing methodology
 
+**Enforced at:** prompts/exo-agent.md, the monthly cap re-derivation and
+"Check the register before you ship".
+
 Owner-directed (2026-09-18), after a day on which six agent runs failed
 and every one of them was a turn-cap collision. Caps had been set by
 guess, then raised by reaction, and both reactive raises were outgrown
@@ -95,51 +98,92 @@ gh run view <run-id> --json createdAt,updatedAt --jq '[.createdAt,.updatedAt]|@t
 git log --all --since="<createdAt>" --until="<updatedAt>" --format='%cI %h %s'
 ```
 
-## The table, measured 2026-09-18 20:50 UTC
+## The table, re-measured 2026-09-19 04:10 UTC
 
 Peak is the highest `num_turns` on record for the seat. Required is
 twice that, rounded up to the next 50, floor 100.
 
 | Seat | Runs measured | Peak turns | Cap in force | Required | Verdict |
 |---|---|---|---|---|---|
-| frontend | 6 | 286 | 400 | 600 | **short** |
-| pm | 8 | 141 (censored) | 250 | 300 | **short** |
-| security | 1 | 108 | 200 | 250 | **short** |
-| exo | 3 | 93 | 200 | 200 | ok, no headroom |
+| frontend | 8 | 286 | 600 | 600 | ok |
+| pm (ceremony) | 8 | 141 (censored) | 300 | 400 queued | censored, and duties grew 2026-09-19 |
+| pm (standup) | 0 | unmeasured | shares the pm cap | n/a | provisional, measure after the first run |
+| security | 2 | 108 | 250 | 250 | ok |
+| engineer | 7 | 75 | 200 | 150 | ok |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
-| engineer | 6 | 73 | 200 | 150 | ok |
 | skill | 3 | 67 | 180 | 150 | ok |
-| market | 2 | 47 | 160 | 100 | ok |
+| research | 1 | 54 | 180 | 120 | ok, first measurement |
+| writer | 2 | 53 | 150 | 110 | ok, first measurement |
+| exo | 4 | 93 | 200 | 200 | ok, no headroom |
+| market | 3 | 47 | 160 | 100 | ok |
 | okr | 1 | 33 | 160 | 100 | ok |
-| research | 0 | never run | 180 | provisional | unmeasured |
-| finance | 0 | never run | 120 | provisional | unmeasured |
+| finance | 1 | 29 | 120 | 100 | ok, first measurement |
+
+**Every cap in the org now clears the rule.** The three that were short
+on 2026-09-18 (frontend 400, pm 250, security 200) were applied by the
+chair and verified against the workflow files in this run, so item 2 of
+pending-workflow-changes.md is deleted as applied.
 
 Notes on the rows that need them.
 
-- **pm** is the only censored number in the table. Its 141 is a run that
-  died at a 140 cap, so the work's real demand is unknown and at least
-  141. The required figure of 300 is therefore itself a lower bound, and
-  the seat should be re-measured from its next run that finishes freely.
-- **frontend** holds the org's highest demand by a wide margin. Its
-  286-turn run took 31 minutes, so even at 600 turns it lands near 65
-  minutes, inside the 90-minute job timeout already in force.
-- **exo** ran 93 turns against a 100 cap on 2026-09-18. That was a near
-  miss nobody logged, and it is the reason this seat's own cap is in the
-  table rather than assumed fine.
-- **security** has exactly one run on record and it is the run that
-  overshot. One sample is thin, so treat 250 as a starting point rather
-  than a settled number.
-- Job timeouts were checked against the required caps at the measured
-  rate of roughly nine turns per minute. Every seat's current
-  `timeout-minutes` clears its required cap, so no timeout change is
-  needed alongside these.
+- **The three provisional rows are now measured.** research ran 54
+  (35416201317), finance 29 (35410872874), writer 53 and 51 (35417517511
+  and 35419120149). All three inherited caps that turned out generous,
+  which is the right direction for a guess to be wrong in. The writer
+  seat is new with ADR-28 and appears in this table for the first time.
+- **frontend's peak is now a stale high, and this is the interesting
+  row.** The 286 was set on 2026-09-18 under a cap that failed it. Since
+  then the seat has run 175, 141, 147, 126, and, once containerized, 12
+  and 86. Chromium is baked into the image, so the turns that used to go
+  to installing a browser now go to judgment, which is exactly the fix
+  incident 4 asked for. Keep 600 anyway: a cap is a ceiling, not a
+  budget, it costs nothing unspent, and one measurement of a new
+  environment is not a trend. Re-measure after four containerized runs,
+  and if the post-container peak holds under 150, the honest cap is 300.
+- **pm** is still the only censored number in the table. Its 141 is a run
+  that died at a 140 cap, so real demand is unknown and at least 141.
+  The 300 is a lower bound until a pm run finishes freely above 141.
+  **Duty growth fired on this row on 2026-09-19**, which is clause 3 of
+  the rule rather than a failure: the seat gained the daily standup and
+  the dispatch queue (prompts/pm-agent.md section 4), and the Monday
+  ceremony run now carries that section on top of its three ceremonies.
+  A raise to 400, with the timeout to 75, is queued in
+  [pending-workflow-changes.md](pending-workflow-changes.md) item 2.
+  Raising a censored row is the right direction to be wrong in.
+- **The pm standup is a new run shape, and it does not get its own
+  cap.** Clause 2 says an unmeasured shape inherits from its nearest
+  twin, and the nearest twin here is the seat itself. Sharing the pm cap
+  is not laziness, it is the tripwire principle: the standup is expected
+  to finish in 40 to 60 turns, an unspent cap costs nothing, and a
+  second workflow file existing only to hold a smaller number would be
+  two files to keep in sync for no gain. Mark the standup provisional,
+  measure it after its first free-running run, and if the seat's two
+  modes ever diverge enough that one number cannot serve both, that is
+  the evidence for splitting the workflow and not before.
+- **exo and sales have no headroom.** Both sit exactly at their required
+  figure, so the next run that grows either seat's duties puts it short
+  the same day. This seat's own duties grew twice this week.
+- **Containerization changes what a turn costs, not how many are
+  needed.** Two seats (frontend, engineer) now run in the prebaked
+  image. Watch for the peak moving in either direction as the rest
+  migrate, and treat the migration as duty growth that triggers
+  re-measurement, per the rule above.
+- Job timeouts were re-checked against the required caps at roughly nine
+  turns per minute. Every seat's `timeout-minutes` clears its required
+  cap, so no timeout change is needed.
 
 ## Who applies a cap change
 
-Not the seats. No agent run can push `.github/workflows/`, because
-`GITHUB_TOKEN` cannot hold the `workflow` scope (incident 12). Cap
-changes are written out in
-[pending-workflow-changes.md](pending-workflow-changes.md) and applied
+Not the seats, for now. No agent run can push `.github/workflows/`,
+because `GITHUB_TOKEN` cannot hold the `workflow` scope (incident 12,
+re-probed and rejected again on 2026-09-19). Cap changes are written out
+in [pending-workflow-changes.md](pending-workflow-changes.md) and applied
 by the chair or the owner. This is the standing constraint on the whole
 practice: the org can measure its caps in a minute and cannot fix them
 at all without a human hand.
+
+That constraint lifts with ADR-27's GitHub App. See
+[app-identity-handover.md](app-identity-handover.md): on the day the
+App's private key lands, a cap change becomes an ordinary PR from the
+seat that measured it, and "an agent raises its own cap and the owner
+merges it" is the test that the handover actually worked.

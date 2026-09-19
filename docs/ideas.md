@@ -2276,3 +2276,155 @@ owning seat rather than assumed. Arguments in docs/sales/.
   research seat can audit and diff. Today's finding is the case in point: the
   blind spot was real, and it was findable, and it was fixable in one file,
   because the corpus is ours rather than a query's leftovers.
+### 2026-09-19 — Signal feeds are routed by a triage prompt that has never heard of them (ExO finding)
+
+- Trigger: the coherence audit of the four ecosystem patches merged on
+  2026-09-19, ordered by the owner after incident 19.
+- The contradiction, stated plainly. Three places now say that signal
+  sources never become claims: the research charter ("news, RSS feeds,
+  and releases are ATTENTION SIGNALS ... never become claims"), the
+  design agreed in docs/backlog.md ("signal sources are never distilled
+  into claims"), and the new comment in sources.yaml itself ("never
+  laundered into claims"). The pipeline does not implement any of it.
+  The four new feeds, `hf-blog`, `openai-blog`, `deepmind-blog` and
+  `hn-frontpage`, were added to the same `feeds:` list as everything
+  else with `tier: d`, so `ingest.py` writes them into `papers` and
+  `triage.py` hands them to `prompts/triage.md`, which has exactly one
+  special rule and it is for `gh-*` release feeds. A Hacker News
+  front-page item is therefore judged as if it were a paper, and
+  nothing stops it being routed to `distill` or `deep_read`.
+- Second, smaller inconsistency in the same commit: the sources.yaml
+  comment says triage "routes technical substance to index and news-only
+  items to discard," which is a behavior nobody implemented, in a file
+  that cannot cause behavior. A comment describing a routing rule
+  belongs in the triage prompt, which is where routing happens.
+- Third: `hnrss.org/frontpage` entries carry a comments-link blob as
+  their summary rather than an abstract, so `ingest.py` line 65 will
+  store that blob as the abstract and triage will judge the item on it.
+  Worth one look before the next ingest run.
+- What: the `role:` field the backlog already designed, wired for real.
+  `role: signal` on the four new feeds plus the 19 existing blog and
+  release feeds, `role: evidence` on arXiv and HF daily papers, a
+  `roles` default of evidence so nothing breaks on the way in, and one
+  paragraph in `prompts/triage.md` saying that a signal-role item is
+  `index` at most unless it contains a technique or a measurement, in
+  which case it is `distill` on the same evidence bar as a paper. That
+  last clause matters and should not be dropped: the research charter's
+  coherence fix of 2026-09-19 turns on the difference between the report
+  of an event, which is never evidence, and an artifact with method,
+  which is admissible whatever feed carried it. The published Hugging
+  Face postmortems are the case that proves it.
+- Cost: $0. One field in a yaml file, one filter in ingest or triage,
+  one paragraph in a prompt.
+- Whose call: the engineer's, since sources.yaml, `pipeline/` and
+  `prompts/triage.md` are all outside this seat's writable surface.
+  Filed rather than fixed for that reason.
+- Status: proposed
+
+### 2026-09-19 — The org chart is missing a seat (ExO finding, for the PM)
+
+- Trigger: §5b upkeep during the 2026-09-19 ExO run.
+- What: `docs/agents/org-chart.md` lists nine active seats and two
+  dormant ones. The writer seat is neither. It has a charter at
+  `prompts/writer-agent.md`, a workflow at `.github/workflows/agent-writer.yml`
+  running daily at 16:00 UTC after the digest publishes, an ADR at
+  ADR-28, two successful runs on 2026-09-19, and an open PR at #36. The
+  org's own chart of itself has been missing a working seat since that
+  seat was created. README is already fixed in open PR #39, which takes
+  the count to twelve and adds the writer row, so the chart is the last
+  stale copy.
+- Why it is filed here rather than fixed: the chart's header says the PM
+  maintains it under charter §1b, and quietly editing another seat's
+  living document is how two seats start disagreeing about the truth.
+- The smaller point worth carrying into that edit: this is the same
+  shape as incident 19 in miniature. Nobody was wrong, and the org's
+  self-description drifted from the org anyway, because keeping it true
+  is a duty whose failure is silent.
+- Cost: $0, one row and one count.
+- Whose call: the PM's.
+- Status: proposed
+### 2026-09-19 — ExO cross-seat flags (four surfaces, none of them this seat's)
+- Trigger: the ExO run's §5b housekeeping pass over the GitHub home.
+  Filed rather than edited, because each belongs to another seat.
+- What, in order of how wrong each is today:
+  - **`docs/agents/org-chart.md` is missing the writer seat and calls
+    finance dormant.** ADR-28 created the writer seat and it has run
+    twice (35417517511, 35419120149). The finance seat ran once on
+    dispatch (35410872874) and opened PR #32. The file is the PM's by
+    charter §1b, so the PM updates it, not this seat.
+  - **The ExO seat should be the next one containerized.** Its §5b duty
+    is to render any mermaid it changes before shipping it, which needs
+    a browser. On the uncontainerized runner that costs a download and
+    then fails anyway on the Chromium sandbox until `--no-sandbox` is
+    passed by hand, which this run had to do. The image already bakes
+    Chromium at a fixed path. One workflow edit, and the seat can do its
+    own job. Whose call: the owner, since no seat can push a workflow.
+  - **`pm/sprint-2026-09-14` is a stale remote branch** carrying PR #1,
+    which was closed without merging. Not deleted by this run, because
+    deleting an unmerged branch destroys work and the call is the PM's.
+  - **There is no ADR for Stage 1 containerization.** The Dockerfile's
+    own header says "ADR pending". Decisions of this size belong in
+    docs/decisions.md, and recording an owner decision is the chair's
+    job rather than this seat's.
+- Cost: $0 for all four.
+- Status: proposed
+- **Merge order, per the ledger-collision rule.** Five other open PRs
+  append to this file: #28 (market), #29 (engineer), #31 (security), #35
+  (engineer), #36 (writer). Every one of them appends at the end, so
+  whichever merges second onward conflicts textually. This note is the
+  cheapest of the six to re-apply by hand, so merge it last.
+
+### 2026-09-19 — The `Enforced at:` line belongs on the voice and design registers too (ExO finding)
+
+- Trigger: the enforcement-gate audit ordered by the owner after
+  incident 20. Every register the org keeps was mapped to the place its
+  rules are actually checked, in docs/agents/registers.md.
+- What: the audit established one cheap invariant, that every register
+  carries an `Enforced at:` line near its top naming the charter and
+  step that checks artifacts against it. A register that cannot name one
+  is documentation and says so, which makes the gap visible by grep
+  instead of by postmortem.
+- The seven registers under docs/agents/ carry the line as of this PR.
+  Five do not, and none of them are this seat's to edit:
+  - `docs/voice/canon.md`, `docs/voice/ban-list.md` and
+    `docs/voice/taste.md`, the writer's surface. The enforcement itself
+    already shipped, in the writer's charter, which now runs a
+    taste-compliance pass as its first grading gate. What is missing is
+    only the marker line.
+  - `docs/design/canon.md`, `docs/design/ban-list.md`,
+    `docs/design/taste.md` and `docs/design/motion.md`, the frontend's
+    surface, same situation.
+  - `docs/agents/org-chart.md` and `docs/agents/frameworks.md`, the
+    PM's. Both are genuinely enforced at the PM's own steps, so the line
+    is a one-line confirmation rather than a fix.
+- Whose call: the writer seat, the frontend seat and the PM, each in
+  their own next run. One line each.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — A CI job could make the register checks mechanical (ExO proposal, not built)
+
+- Trigger: the honest limit at the end of the incident 20 postmortem. A
+  charter line is an instruction to a model, not a gate a runner
+  enforces. This run moved the rules from files nobody opens into files
+  every seat opens, which is real and is not enforcement.
+- What: a GitHub Actions check on pull requests that greps the diff for
+  the cheap, mechanical entries in the ban lists and taste registers,
+  and fails when an artifact violates one. The genuinely checkable subset
+  is small and worth having anyway: the printed framework names
+  ("Gaining traction", "Trailblazing", "Left behind", "Read these
+  yourself" as headings), the stylistic em dash, the semicolon join, and
+  the named ban-list buzzwords.
+- Why it is filed rather than built: a CI job is a runtime change under
+  docs/agents/runtime-changes.md, so it needs a smoke test on a throwaway
+  branch and the owner's merge. It is also a workflow file, which no
+  seat's token can push.
+- Whose call: the owner, with the engineer implementing.
+- Cost: $0, GitHub Actions minutes on a public repo.
+- Status: proposed
+
+- **Merge order for these two entries.** They append at the end of this
+  file, like every other open PR's ledger note. PR #45 merges after #39
+  and #43, whose notes are above, and it already carries both of them,
+  so only the seats' PRs (#28, #29, #31, #35, #36) conflict here. These
+  two are cheap to re-apply by hand, so merge them last.

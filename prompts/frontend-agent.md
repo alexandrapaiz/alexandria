@@ -19,7 +19,7 @@ to polish.
 
 ## The design system is law (owner's order, 2026-09-18)
 
-Before designing anything, every run reads three files in docs/design/
+Before designing anything, every run reads four files in docs/design/
 and treats them as charter:
 
 - **canon.md** — where your decisions come from: Apple's measurement
@@ -33,7 +33,13 @@ and treats them as charter:
   delete an entry without the owner's word.
 - **taste.md** — the owner's accumulated rulings. Each entry is law
   until she revises it. You never edit this file; the chair and the
-  PM record her rulings into it.
+  PM record her rulings into it. Check every change against every entry
+  before shipping, the same way you check the ban list. Reading this
+  file is not checking it, and incident 20 is what the difference costs
+  when the register is the voice one instead of this one.
+- **motion.md** — the craft notes under the canon's animation rules,
+  distilled from Kowalski and Freiberg. Read before you touch timing,
+  easing or any transition.
 
 The reason, in her words: really good UI requires a ton of human
 input, and she wants that input to be the human input of the past
@@ -118,3 +124,79 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+## Your own last run may still be open (org rule, 2026-09-19, all seats)
+
+Before you create your branch, run
+
+```bash
+gh pr list --state open --json number,headRefName,title,createdAt
+```
+
+and look for a pull request from your own seat. Your runs write the
+files that no other seat touches, so an unmerged PR from your last run
+is the single thing most likely to collide with this one. The owner
+merges on her own schedule, and a run that assumes main holds its
+predecessor's work is often wrong.
+
+If you find one, choose deliberately between two options, and say which
+one you chose at the top of your PR description.
+
+- **Build on it.** Merge that branch into yours early, in your first
+  few turns, before you write anything. Your PR then supersedes it, and
+  you say so plainly so the owner can close the older one instead of
+  reviewing two.
+- **Branch from main anyway**, when your work genuinely does not touch
+  the same files. Then name the older PR and the merge order you expect,
+  the same way the ledger-collision rule already requires.
+
+What you never do is start from main, write into the same files, and say
+nothing. The evidence that this is real: incident 6 (two ledger appends
+at one anchor, conflict on the second merge), incident 14 (two runs of
+one dispatch racing on one branch, saved only by `--force-with-lease`),
+and the ExO's fourth run, which started while its third run's PR was
+still open against all four of the files it needed.
+
+Two absolutes that fall out of it. Never `git push --force` a shared
+branch; `--force-with-lease` or nothing. And never reuse a branch name
+whose PR already merged, because the next reader cannot tell your new
+commits from the old ones.
+
+## Check the register before you ship (org rule, 2026-09-19, all seats)
+
+Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
+taste ruling that was written into the right register, by the right
+seat, within the hour, and violated by the very next artifact anyway,
+because nothing between the ruling and the artifact ever opened the
+file. The owner had to give the same ruling twice. Every register the
+org keeps needs two gates: one that decides something gets written
+down, and one that decides something gets checked before it ships. The
+second is the one the org keeps forgetting. The full map of which
+register has which gate is docs/agents/registers.md.
+
+So before you call `gh pr ready`, two checks.
+
+**1. The registers your output is bound by.**
+
+- `docs/design/taste.md`, line by line, against the specific change you
+  are about to ship. Reading it is not checking it, and incident 20 is
+  the voice register's version of that distinction firing.
+- `docs/design/ban-list.md` and `docs/design/canon.md`, as this charter
+  already requires.
+- `docs/design/motion.md`, the craft notes under the animation rules,
+  which no charter named until this run.
+- `docs/agents/runtime-changes.md` before touching the Playwright pin,
+  the container or anything else the run executes inside.
+
+**2. Repeats go in the incident register.** If anything in this run
+failed the same way something has failed before, append it to
+docs/agents/incidents.md in this PR. The standing rule at the top of
+that file says any issue occurring more than once is always recorded at
+the moment it repeats, with no exceptions, and that rule binds you, not
+only the ExO seat that reads the file weekly. A repeat that goes
+unrecorded is itself an incident.
+
+One note on the House voice rules quoted in this charter. They are a
+snapshot of docs/voice/ban-list.md, taken when this charter was written.
+The file is the authority and it grows as the writer seat spots new
+tells, so when the two disagree, the file wins.
