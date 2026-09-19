@@ -18,6 +18,11 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/alexandrapaiz/alexandria-agent:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     timeout-minutes: 90
     env:
       GH_TOKEN: ${{ github.token }}
