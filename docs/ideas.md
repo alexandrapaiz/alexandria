@@ -2447,3 +2447,160 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the engineer's. The prompt rule stays either way, because
   the daily may not run through the same code path.
 - Status: proposed
+
+## Research agent findings (2026-09-19, run b — owner's off-schedule dispatch)
+
+Full charter run against the live corpus (`NEON_RO_URL` set). Every item
+below is reproducible from Appendix A of
+[docs/research/briefs/2026-09-19-b.md](research/briefs/2026-09-19-b.md).
+The "all claims come from hf-daily" finding is PR #34's and is not
+re-claimed here; these are additive to #34 and #42 and engineer PR #44.
+
+### 2026-09-19 — The tier c/d index ceiling: feeds have never produced a claim
+- Trigger: the epitome acceptance test (incident 21) re-run and still
+  failing. Best similarity 0.562 ("agent identity and portability") and
+  0.543 ("frameworks and credential security"), with no identity,
+  delegation, credential or portability result in either top-8.
+- The measurement: triage has decided 1,464 tier `c`/`d` papers all time
+  and routed **100% of them to `index`**. Zero have ever become a claim.
+  That is separate from the tier `a` priority inversion PR #44 fixes —
+  those papers were read and decided, not skipped.
+- Why it matters: `semantic_search` searches claims only, so `index` means
+  invisible to the agent-facing product. Incident 21's same-day
+  remediation added three tier `d` identity feeds; under the current
+  ceiling they cannot produce a single claim, before or after #44 merges.
+  Searching against `papers.embedding` confirms it: every nearest paper on
+  every identity phrasing tried is `distilled = false`, including
+  "Securing the future of AI agents" and "LangSmith LLM Gateway: runtime
+  governance". The material is reached and declined, not missed.
+- The tension is in the charter, not the pipeline: it says feeds are
+  attention signals that "never become claims, because a headline is not
+  evidence," and also that "identity standards qualify alongside papers
+  when they carry real technical substance." Both cannot hold for a SPIFFE
+  spec.
+- Whose call: the owner's. This is the ruling that unblocks the mission's
+  first live user failure; no prompt or source diff should precede it.
+- Status: proposed
+
+### 2026-09-19 — gh-spiffe is a permanently empty feed that passes a 200 check
+- Trigger: verifying the dispatch's claim that the interop feeds are flowing.
+- The measurement: `https://github.com/spiffe/spiffe/releases.atom` returns
+  **HTTP 200 with zero entries** — `spiffe/spiffe` holds the specification
+  and cuts no GitHub releases. Incident 21 records these feeds as "all
+  verified live," which is what a status-code check reports.
+- Fix, verified 2026-09-19: `https://github.com/spiffe/spire/releases.atom`
+  → 10 entries. A2A (10), MCP spec (9), HF blog (862) and HN (20) are
+  genuinely fine and will flow at the next deploy.
+- Also in `sources.yaml`: `openai`/`openai-blog` and `deepmind`/`deepmind-blog`
+  are duplicate URLs at conflicting tiers (`c` and `d`). Ingest dedupes by
+  URL so the `-blog` twins are inert, but the file misreports its coverage.
+- Not proposed as a diff this week: PR #42 already edits `sources.yaml` and
+  a second diff only creates a conflict. For whoever merges #42.
+- Whose call: the engineer's, alongside #42.
+- Status: proposed
+
+### 2026-09-19 — Merging sources.yaml or prompts/*.md does nothing until someone deploys
+- Trigger: asking why feeds added to `main` at 11:31 and 13:41 today had
+  produced no rows.
+- The measurement: `pipeline/ingest.py:23` bakes `sources.yaml` into the
+  Modal image with `add_local_file`, and every prompt is baked the same way
+  (`triage.md`, `distill.md`, `interpret.md`, `digest.md`, `rag-answer.md`).
+  `grep -rl "modal deploy" .github/` returns nothing — no workflow deploys
+  the pipeline.
+- Why it matters: `sources.yaml` and `prompts/*.md` are exactly the ADR-12
+  whitelist. The self-improvement channel ADR-7 describes terminates at a
+  manual `modal deploy` that is written down nowhere, so every meta-review
+  proposal this seat has ever merged may still be inert. Under the vision's
+  autonomy tiebreak this outranks most of what is in flight.
+- Whose call: the engineer's and the chair's.
+- Status: proposed
+
+### 2026-09-19 — 29% of claims have no embedding and are invisible to search
+- The measurement: 158 of 543 claims have `embedding is null`, and every
+  one was created between 2026-09-17 and 2026-09-19. Before 09-17 the rate
+  is zero, so this is a regression in the distill run's embedding step, not
+  a backlog.
+- Why it matters: unembedded claims cannot be returned by `semantic_search`
+  and cannot be reached by `interpret`'s neighbour query, so they draw no
+  edges. The corpus is silently three days stale to its own agent-facing
+  surface, which compounds the epitome failure above. It also means the
+  `discovery_report` novelty signal is computed blind to the newest claims.
+- Whose call: the engineer's. Backfill, then re-run novelty.
+- Status: proposed
+
+### 2026-09-19 — The digest's traction section counts papers citing themselves
+- The measurement: as of the 2026-W37 digest's publication, **8 of its 10
+  "Gaining traction" items had zero external support** — every supporting
+  edge came from the same paper as the claim. C73 and C34 were 3-for-3
+  self-supporting. Only C4 (Iris) had a meaningful external majority.
+- Cause: `weekly.py:170-181` counts every `supports` edge with no origin
+  check. The guard already exists twelve lines above, in the `superseded`
+  query: `old.paper_id != new.paper_id`, commented "a paper refining itself
+  is not a supersession." It was never applied to `supported`.
+- Vision §1 defines that section as claims "accepted by the community," so
+  this is a product-quality defect, not a cosmetic one.
+- To the digest's credit, its printed counts were correct at publication;
+  today's higher numbers are five more `interpret` runs, not a miscount.
+- Whose call: the engineer's (one clause in `weekly.py`).
+- Status: proposed
+
+### 2026-09-19 — The interpret neighbour query has no paper boundary
+- The measurement: 138 of 185 edges (75%) are intra-paper — 68/98
+  `supports`, 67/81 `refines`, 2/5 `contradicts`.
+- Cause, in code: `pipeline/interpret.py:78-85` selects neighbours with
+  only `where id < %s`, and the prompt is built from `[id] claim_text`
+  alone, so the model is never told which paper any claim came from. A
+  paper's claims are distilled from one text in one batch and are each
+  other's nearest neighbours by construction, so they dominate the
+  shortlist.
+- This is why a prompt-only fix is not enough, and it caught a mistake in
+  this run's own first draft: a proposed rule saying "same paper, never
+  `contradicts`" was unenforceable, because the model has no paper identity
+  to check. The shipped rule asks it to infer co-reporting from shared
+  system names and results-table shape instead.
+- Proposed fix (engineer's, one line): add
+  `and paper_id <> (select paper_id from claims where id = %s)` to the
+  neighbour query. Deletes the failure class, mirrors the guard already in
+  `weekly.py`, and spends the `NEIGHBORS` budget on other papers.
+- Status: proposed
+
+### 2026-09-19 — Two fabrications in the published digest
+- The measurement, against the claims the items rest on:
+  (a) the digest says T1 resolves 64% "surpassing **GPT-3.5-Turbo** and
+  approaching Claude Opus"; claim C204 says it outperforms **GPT-5.4
+  (54.8%)** and **DeepSeek-V4-Flash (56.9%)**. Neither GPT-3.5-Turbo nor
+  the Claude comparison exists in the corpus. A frontier-beating result was
+  published as a trivial one.
+  (b) the digest ties T1 to the FEE paper as "researchers at the same
+  group". FEE is Hongbang Yuan / Zhuoran Jin / Yixin Cao
+  (`arxiv:2609.08404`); T1 is Junyao Yang / Yucheng Shi / Zhongzhi Li /
+  Ruhan Wang (`arxiv:2609.11042`). No overlap; the relationship was invented.
+- Both are generation-layer, not graph-layer: the claims are right and the
+  writer departed from them. Points at `prompts/digest.md` and at the
+  factual-audit work already open in PR #40.
+- Whose call: the writer seat's.
+- Status: proposed
+
+### 2026-09-19 — Smaller corpus-hygiene findings
+- **127 arXiv version-twin paper rows** (`arxiv:X` and `arxiv:Xv1` both
+  ingested as separate rows). Claims attach to only one twin, so evidence
+  is not double-counted; the cost is wasted triage calls, on the budget
+  PR #44 shows is the binding constraint.
+- **24 off-vocabulary topic tags** against the closed 13-tag set
+  `prompts/distill.md` declares. Five are homoglyph splits using U+2011
+  non-breaking hyphens: `post‑training` (3) shadowing `post-training`
+  (209), plus `loop‑engineering`, `anti‑hacking`, `task‑refinement`,
+  `data‑augmentation`. Any `topics`-based grouping silently drops them.
+  Candidate for a future `prompts/distill.md` diff; below this week's
+  higher-value target.
+- **Citation velocity is not broken, it is mid-cycle.** `citation_log`
+  holds 68 rows and **zero papers have a second check** (`MIN_AGE_DAYS = 7`,
+  `RECHECK_DAYS = 6`, weekly cadence). The digest's "no citation movers
+  were recorded this week" was a mechanism that could not yet emit, not a
+  quiet week. First trajectories arrive with the 2026-09-21 run — which is
+  also when the relevance law's primary instrument becomes usable.
+- **Store epitome's verbatim query strings.** Incident 21 records "best
+  similarity 0.69"; re-running the topic labels it quotes gives 0.562 and
+  0.543. The direction is unchanged and the failure is starker, but the
+  acceptance test cannot be regression-tested without the exact strings.
+- Status: proposed
