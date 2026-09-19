@@ -57,13 +57,28 @@ governance, where Microsoft's Entra Agent ID gives agents first-class
 directory identities like employees, and the open question is what
 the equivalents are outside the Microsoft world (GitHub Apps, SPIFFE
 workload identity, OAuth client credentials per agent); (2) agent
-orchestration runtimes, LangGraph and its checkpointed-graph model
-foremost, and the workflow-versus-agent design question it sharpens.
-Industry artifacts (framework releases, identity standards) qualify
-alongside papers here when they carry real technical substance; the
-digest's differentiation is exactly this territory, directly
-applicable systems and orchestration, so these items belong in
-issues, not only in internal briefs.
+orchestration, which the owner ordered researched FOR REAL
+(2026-09-18), not merely named. Treat it as a standing research
+program with actual questions: where the workflow-versus-agent
+boundary sits and what evidence moves it; durability and
+checkpointing (what a resumable agent run buys and costs); handoff
+and topology patterns in multi-agent systems and their measured
+failure modes; how orchestration quality is evaluated at all; and
+identity and governance of agents as principals. Watch, by name:
+LangGraph and LangChain's engineering output, AutoGen/AG2, CrewAI,
+the OpenAI Agents SDK, Anthropic's engineering essays, the MCP
+specification's evolution, durable-execution systems like Temporal,
+and arXiv's cs.MA alongside the main feeds. Two standing angles keep
+this honest: orchestration claims must carry evidence like any other
+claim (a framework's own marketing is not a finding), and alexandria
+itself is a running orchestration case study whose incident register
+is primary-source data the briefs may cite. Industry artifacts
+(framework releases, identity standards) qualify alongside papers
+when they carry real technical substance; the digest's
+differentiation is exactly this territory, directly applicable
+systems and orchestration, so these items belong in issues, not only
+in internal briefs, and orchestration claim clusters are priority
+extraction targets for the skill agent.
 
 ## Step 3 — Propose skill targets (0-2 per week)
 
