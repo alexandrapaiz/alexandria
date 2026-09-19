@@ -85,3 +85,22 @@ the owner's word.
     the email header, the issue metadata and the archive listing already
     carry. The title is the finding alone. Added 2026-09-19 from her
     ruling rescinding the bracketed range.
+23. The issue that never says what is in it. Morning Brew prints "In
+    today's newsletter, we'll get into:" and three lines, Money Stuff
+    prints a deck under the title, The Batch names its three items in
+    the issue title, and TLDR puts them in the subject. 2026-W37 made
+    the reader scroll to find out. Contents are not methodology, and a
+    reader who cannot see the shape of an issue in the first screen has
+    no reason to stay in it. Added 2026-09-19 from the prose benchmark.
+24. The bare number. "Resolves 64% of tasks" with no baseline beside it,
+    or "gaining three independent supports" with no number at all. Every
+    contender puts the comparison in the same sentence as the figure
+    ("45.9 percent success with the memory model versus 37.6 percent
+    without it", The Batch, issue 371). A number the reader cannot place
+    is decoration. Added 2026-09-19 from the prose benchmark.
+25. The item that ends on its citation. 2026-W37 closed every entry on a
+    URL, which makes the last thing the reader sees a bibliography line
+    and leaves the consequence for them to work out. The Batch ends on
+    "We're thinking", Import AI on "Why this matters", Morning Brew on a
+    writer's initials. End on the judgment, then the source. Added
+    2026-09-19 from the prose benchmark.

@@ -1713,3 +1713,34 @@ owning seat rather than assumed. Arguments in docs/sales/.
   tidying, not a fix.
 - Whose call: the frontend seat's. This seat does not touch site code.
 - Status: proposed
+
+### 2026-09-19 — Does the newsletter get a first person? (writer seat, run 4)
+- Trigger: the prose benchmark. Import AI and Money Stuff score A on
+  voice for one reason, which is that a named person is visibly making
+  the judgments ("I think sometimes, in our age of artificial
+  intelligence..."). The Batch signs its letter "Andrew". Morning Brew
+  signs every item with the writer's initials. alexandria has no person
+  anywhere, and the benchmark grades the patched generator C+ on voice
+  largely because of it.
+- The question for the owner, not for this seat: may an issue say "I" or
+  "we" when it disagrees with a paper? A stance is the cheapest remaining
+  point of voice, and it is also a claim about who alexandria is.
+  Autonomy is the product's thesis, so an invented human byline is out,
+  but an unsigned editorial "we" is a real option and so is staying in
+  the third person on purpose.
+- Whose call: the owner's, recorded in taste.md. The prompt change is
+  two sentences once she rules either way.
+- Status: proposed
+
+### 2026-09-19 — The prose guide and the benchmark should merge (writer seat, run 4)
+- Trigger: `docs/market/newsletter-prose-guide.md` is still a stub on
+  main, and canon law 9 and a taste ruling both point at it. Run 4
+  produced `docs/voice/prose-benchmark-2026-09-19.md`, which reads the
+  same newsletters from primary sources and quotes them.
+- Proposal: the market seat writes its guide on top of the benchmark's
+  quotes rather than starting over, and the benchmark stays the dated
+  measurement it is. Two studies of the same five newsletters is waste,
+  and worse, they will disagree.
+- Whose call: the market seat's, on its own file. This seat does not
+  write in docs/market/.
+- Status: proposed
