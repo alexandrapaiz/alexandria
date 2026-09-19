@@ -203,6 +203,22 @@ stays $0. The real cost is six more short sonnet runs a week and six more
 small pull requests, and the charter caps that by requiring an empty
 queue to be reported and closed cheaply.
 
+**Two documentation lines change in the same hand, so the repo never
+describes a cadence it does not have.** The ExO run that queued this
+deliberately left README.md alone, because the README's job is to
+describe the system as it actually is and the cron is still weekly until
+someone applies the diff above. Apply these two at the same time:
+
+```diff
+-        STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
++        STEER["<b>Steer</b><br/>pm · daily<br/>okr · monthly<br/>exo · Sun"]
+```
+
+```diff
+-| pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
++| pm | daily 6:35 ET, Mon is the ceremony | the day's dispatch queue, sprints, backlog, board, org chart | ADR-15 |
+```
+
 **How to tell it worked.** One test, and it is the owner's to judge: a
 week goes by in which she dispatches seats without composing a single
 instruction herself, because the queue had already drafted them.

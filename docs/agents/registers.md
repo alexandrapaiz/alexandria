@@ -59,6 +59,7 @@ any seat to check an artifact against the file before 2026-09-19.
 | `docs/decisions.md` (ADRs) | chair | chair records | engineer, PM and ExO read, nine seats do not | partial, and mostly fine |
 | `docs/ideas.md` (the ledger) | all seats | append-only, owner decides status | the ledger contract in most charters | enforced |
 | `docs/agents/learning-log.md` | ExO | ExO appends every run | ExO §2, read first | enforced |
+| `docs/sprints/dispatch-queue.md` | PM | PM rewrites it every standup, PM §4 | ExO §2c counts dispatches against the log, because the actor never audits the act | new 2026-09-19, and the file does not exist until the first standup runs |
 
 ## What this run changed
 
