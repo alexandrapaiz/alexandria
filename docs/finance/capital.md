@@ -11,10 +11,10 @@ What has actually been put into alexandria, in cash, to date.
 
 | Item | Amount | Status |
 |---|---|---|
-| Domain: libraryofalexandria.dev | ~$19.99 (**estimate**, pending receipt) | Cash the owner put in on alexandria's behalf, 2026-09-18. First entry in this base. |
+| Domain: libraryofalexandria.dev | $16.19 (receipt, owner-reported 2026-09-18) | Cash the owner put in on alexandria's behalf, 2026-09-18. First entry in this base. |
 | Owner's time | **Not priced** | The charter allows this line as its own item once she confirms a rate, or leaves it explicitly unpriced. Neither has happened yet; carried as a named open line, not a guess. |
 
-**Alexandria invested-capital base as of 2026-09-18: ~$19.99
+**Alexandria invested-capital base as of 2026-09-18: $16.19
 (estimate), plus unpriced owner time.**
 
 Nothing from the parent book (Apple Developer Program, the Claude
@@ -34,7 +34,7 @@ and the growing skill library, were built with agent labor, not
 purchased cash spend, so they carry no cash CapEx figure even though
 they are economically the company's actual capital. This is worth
 saying plainly rather than smoothing over: the invested-capital base
-above (~$19.99) badly understates what has been built, because the
+above ($16.19) badly understates what has been built, because the
 main asset is unpriced work, not cash. Pricing that gap is exactly
 what the "owner's time" line above is for, once she sets a rate.
 
@@ -55,7 +55,7 @@ revenue.
 
 ## Funding scenarios (analysis only — the owner's call, never ours)
 
-At the current, near-zero cost base (~$21.67/month alexandria-book run
+At the current, near-zero cost base (~$21.35/month alexandria-book run
 rate once Vercel Pro goes live at launch, per docs/finance/opex.md;
 parent-book items not allocated), there is no case for outside capital
 yet:

@@ -19,7 +19,7 @@ reporting only.
 
 | Service | Tier | Status | Amount | Notes |
 |---|---|---|---|---|
-| Domain: libraryofalexandria.dev | GoDaddy, 1-year registration | Pending receipt | ~$19.99/yr (**estimate**) | Bought 2026-09-18 by the owner personally on GoDaddy. Alexandria's first direct cost. The owner has not yet reported the actual price; the placeholder is the typical GoDaddy first-year list price for a `.dev` domain, from public pricing research this run, not a receipt. Replace with the real figure once she reports it. |
+| Domain: libraryofalexandria.dev | GoDaddy, 1-year registration | Receipt | $16.19/yr (**receipt**) | Bought 2026-09-18 by the owner personally on GoDaddy. Alexandria's first direct cost. Figure owner-reported the same day, relayed by the chair. |
 | Vercel Pro | Pro | Committed at launch (2026-10-13) | ~$20/month (**forecast**) | Hobby tier is non-commercial; the Oct 13 commercial launch (ADR-26) requires Pro. Not yet incurred — booking now as a known near-term commitment, not a current-month cost. |
 | Modal | Starter credits | Active | $0 measured this run | Running against starter credits; no overage evidence found via public/repo surfaces this run. |
 | Neon | — | Active | $0 measured this run | No billing evidence found via public/repo surfaces this run; ask the owner if a paid tier has been selected. |
@@ -29,8 +29,8 @@ reporting only.
 | Stripe fees | — | Not yet live | $0 | Stripe account setup is still an owner-only pending item (docs/sprints/pending.md). No transactions exist. |
 
 **Alexandria-book known/forecast monthly run rate once Vercel Pro is
-live:** domain amortized (~$19.99/12 ≈ **$1.67/month**) plus Vercel Pro
-(**$20/month**) ≈ **~$21.67/month**. Everything else measured this run
+live:** domain amortized ($16.19/12 ≈ **$1.35/month**) plus Vercel Pro
+(**$20/month**) ≈ **~$21.35/month**. Everything else measured this run
 is $0 or unmeasured against free tiers.
 
 ## Parent book — shared infrastructure (notional allocation to alexandria)

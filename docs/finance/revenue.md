@@ -18,12 +18,12 @@ at commercial launch, 2026-10-13 (ADR-26).
 ## Launch-month forecast and breakeven
 
 Using the alexandria-book known/forecast monthly run rate from
-docs/finance/opex.md (~$21.67/month: $20 Vercel Pro once live at
+docs/finance/opex.md (~$21.35/month: $20 Vercel Pro once live at
 launch, plus the domain amortized at ~$1.67/month), and the $20/month
 subscription price:
 
 - **Breakeven on known alexandria-book costs alone: 2 paying
-  subscribers.** ($21.67 / $20 ≈ 1.08, rounded up.) This excludes
+  subscribers.** ($21.35 / $20 ≈ 1.07, rounded up.) This excludes
   Stripe's per-transaction fee (not yet applicable, Stripe isn't live)
   and excludes any allocation of the parent-book Claude subscription,
   whose monthly figure the owner has not yet supplied.
