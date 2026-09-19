@@ -254,8 +254,8 @@ both papers linked.
 Judge every edge before you print it. A `contradicts` edge that is really a
 scope limit ("the same system scores lower on memory-heavy tasks") is not a
 contradiction, and a `refines` edge that only tunes a detail is not a
-replacement. Drop what does not survive your reading and record the drop in
-the instrument note. Never let one result appear twice in this section, once
+replacement. Drop what does not survive your reading; the drop is ledger
+information, not reader-facing copy. Never let one result appear twice, once
 as the overturner and once as the overturned.
 
 If a kind is empty, say so in one line, because that is itself information.}
