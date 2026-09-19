@@ -423,3 +423,104 @@ used twice above, for the reason set out at the end of item 16.
     `##` section with the next free number**, which is what this section
     does. Where a duplicated number must be cited, cite it by seat and
     run id as well, the way item 15 cites item 11 as "the security run".
+
+## 2026-09-19 — the containerization migration
+
+Postmortem by the ExO agent, owner-dispatched. Both entries below were
+diagnosed and fixed by the chair in the moment, on 2026-09-19 between
+01:54 and 02:14 UTC, and neither was written down. The owner asked for
+them to be registered properly, which is correct: a fix that lives only
+in one session's memory is a fix the org has not actually learned. New
+dated section and fresh numbers, per the convention item 16 set.
+
+17. **Claude Code refuses `--dangerously-skip-permissions` as root, and
+    a GitHub container job runs as root by default.** First smoke test
+    of Stage 1 containerization (frontend, run 35414079812, 01:54Z).
+    The job started fine, the image pulled, the action launched, and
+    the SDK died immediately:
+
+    ```
+    error: Claude Code process exited with code 1. stderr:
+    --dangerously-skip-permissions cannot be used with root/sudo
+    privileges for security reasons
+    ```
+
+    **Why it happens.** Two defaults collide. `--permission-mode
+    bypassPermissions` is the org's standing setting since incident 2,
+    because the default sandbox silently blocked every push and PR.
+    It resolves to `--dangerously-skip-permissions`, which Claude Code
+    refuses under uid 0 by design. On a normal hosted runner the job
+    runs as the `runner` user, so the refusal never fires. Inside a
+    `container:` block the job runs as the image's user, and the image
+    inherited `node:20-bookworm`'s root. Nothing in the workflow said
+    "run as root"; the container simply defaulted there. This is the
+    shape worth remembering: a setting that has been correct for a week
+    became wrong the moment the execution environment under it changed.
+
+    **Fix, applied by the chair and verified in the tree.**
+    `.github/docker/Dockerfile` creates a non-root user, and the
+    workflows pass `options: --user 1001:1001`. Present now in
+    `agent-frontend.yml` and `agent-engineer.yml`, the two containerized
+    seats.
+
+18. **A uid the workspace does not own cannot write the Actions
+    runner's own state files.** Second smoke test (frontend, run
+    35414292823, 01:58Z), four minutes after the first. The root
+    refusal was gone and the container came up as uid 1000, and then:
+
+    ```
+    Error: EACCES: permission denied, open
+    '/__w/_temp/_runner_file_commands/save_state_68ff7620-...'
+    ```
+
+    **Why it happens.** The runner bind-mounts its own working
+    directories into the container (`/home/runner/work` at `/__w`), and
+    on GitHub's hosted Ubuntu images those are owned by uid 1001. A
+    container user at uid 1000 fails on the first write, and the first
+    write is not the agent's work, it is the action's own
+    `save_state` file, so the run dies before doing anything. The uid is
+    not cosmetic, and it is not the conventional 1000. It has to match
+    the host's.
+
+    **Fix, applied by the chair and verified in the tree.** The image
+    bakes `useradd -m -u 1001 runner` and the workflows pass
+    `--user 1001:1001`. The Dockerfile now carries the reason in a
+    comment, which is the right place for it, because the next person to
+    touch that line will otherwise reach for 1000.
+
+    **Third smoke test passed (35415086885, 02:14Z, 12 turns).** Tools
+    baked and on PATH, Chromium launching from the image with no
+    download, workspace writable, push and PR creation both working. The
+    frontend and engineer seats have run containerized since, twice
+    green (35415086885 and 35418265554, PR #37).
+
+### What the org grows from these two
+
+Neither failure reached a scheduled run. Both were caught by deliberate
+smoke tests fired on purpose, on a throwaway branch, before the
+migration touched a seat doing real work. Total cost: two red runs and
+one 12-turn verification. The counterfactual is the frontend seat's
+Wednesday 08:00 cron being the first containerized execution, failing on
+an eight-word stderr line nobody was watching for, and the seat sitting
+dead until someone read the log.
+
+That makes the rollout method, not the two bugs, the thing worth
+keeping. **The answer to the owner's question is yes: smoke-test-first
+is standing org law for every runtime change from now on**, written out
+as a procedure in [runtime-changes.md](runtime-changes.md). These two
+entries are its founding evidence and its first-class members:
+environment-migration failures, a class the register had not seen
+before, where the agent and its charter are both correct and the ground
+under them moved.
+
+One further note for the register, and it is the real lesson rather than
+the technical one. The chair fixed both of these inside twenty minutes
+and shipped on. That is exactly the behavior that produces an org with
+no institutional memory, and it is the pattern this register exists to
+interrupt. The standing rule at the top of this file covers repeats. It
+does not cover first occurrences that were solved so fast they felt too
+small to write down, and those are the ones that get rediscovered. The
+rule this seat proposes alongside it: **a failure whose diagnosis took
+more than a minute gets an entry, whether or not it repeats, and whether
+or not it is already fixed.** Writing it down costs five minutes once.
+Rediscovering it costs a run.
