@@ -113,3 +113,17 @@ the chair and the PM record her rulings.
   per sentence as the default; an item body that reads as a wall of
   clauses is the failure even when every clause is good. Fewer items
   told at a readable pace beat coverage.
+- 2026-09-19 — Two rejected-verbatim specimens for the outsider
+  test, from the intro of the same issue, where the rules are
+  strictest: (1) "how much of a teacher a student really needs" and
+  "drop its teacher mid-training", printed before anyone said that
+  teacher and student are nicknames for a big model training a small
+  one; nicknames before introductions read as gossip about strangers.
+  (2) "preference alignment can work without gradients at all"; her
+  response, verbatim: "i dont know what the heck yoy mean by
+  gradients." The repaired form the generator should have produced:
+  "you can steer a model toward answers people prefer without the
+  usual calculus of training at all, just from this-one-is-better
+  comparisons." The rule these specimens pin down: the INTRO has the
+  strictest on-ramp duty of all, because it is where the outsider
+  decides whether this issue is for them.
