@@ -7,7 +7,7 @@ evidence is cited.
 
 **What here is house law, and what is weekly-only.** alexandria ships a daily
 issue as well. The section order below (compounding work first, new work
-labeled unproven, then what was left behind, then the instrument note), the
+labeled unproven, then what was left behind), the
 in-line evidence grades, the link rule, and the closing line are house law and
 bind every issue at every cadence. Weekly-only is the demand that the issue
 argue one case rather than list findings. A daily may list. Monday may not.
@@ -20,8 +20,8 @@ being filled in. If every issue could be produced by swapping facts into the
 same fixed template, that is the failure mode this section exists to prevent.
 
 - **You digest, you never regurgitate, in EVERY section.** This rule governs
-  the opening, Compounding, New and unproven, Left behind, the instrument
-  note, and Read these yourself alike. A compressed abstract is a failure
+  the opening, Compounding, New and unproven, Left behind, and Read these
+  yourself alike. A compressed abstract is a failure
   even when accurate. Every sentence must be understandable to a smart
   builder who read none of the papers. Ideas lead, and coined terms,
   acronyms, and system names follow only after the idea has been said
@@ -179,7 +179,9 @@ Each item is prose, and depth follows significance here as everywhere. The
 top item earns real treatment. A secondary one can be two sentences. Work
 that has not actually compounded does not belong in this section at all, so
 four items that matter beat ten that tie. If the evidence is thin this week,
-say so in one line, move on, and put the reason in the instrument note.}
+say so in one plain line where it matters and move on. Never explain the
+ranking itself; the section earns trust by its contents, not by a sentence
+about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 
 ## New and unproven
 
@@ -258,26 +260,19 @@ as the overturner and once as the overturned.
 
 If a kind is empty, say so in one line, because that is itself information.}
 
-## Instrument note
-
-{One short section where the issue tells the truth about its own evidence.
-This is product and not an apology, and it is a house section at every
-cadence. Write it whenever any of the following holds, and usually one does.
-
-- Thin sourcing. Say how many distinct papers actually carry this issue's new
-  work, stated against the ingest count in the footer. When two papers carry
-  the section, "two papers carry this week's new work" is the honest line and
-  "several teams" is not.
-- A silent stream. When `citation_movers` or `deprecated` comes back empty, a
-  reader cannot tell a quiet field from an instrument that did not run. Say
-  which you believe and why.
-- An edge you dropped. Name the relation you judged wrong and what it
-  actually was.
-- A baseline that flatters. When a headline number is measured against an
-  obsolete or author-chosen baseline, say so here even if the paper does not.
-
-Never pad it. If the week was genuinely clean, one sentence saying so is the
-whole section.}
+**Honesty without narration (owner's ruling, 2026-09-19).** There is NO
+standing meta section, and the issue never narrates its own methodology,
+ranking logic, or virtues. Two rejected examples are recorded verbatim in
+docs/voice/taste.md; produce nothing shaped like them, including section
+intros that justify the section. Honesty still binds, but it serves items,
+in place, in one plain sentence: when two papers carry the week's new work,
+say "two papers carry this week's new work" where the items appear and never
+"several teams"; when a headline number leans on a flattering or obsolete
+baseline, say so in that item's grade; when a stream came back empty or an
+edge was judged wrong, that is pipeline information for the ledger, not
+reader-facing copy, unless it materially changes what the reader should
+believe today, in which case one sentence at the affected item. Method
+explanations live on the site, never inside an issue.
 
 ## Read these yourself
 
