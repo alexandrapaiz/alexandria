@@ -1744,3 +1744,51 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the market seat's, on its own file. This seat does not
   write in docs/market/.
 - Status: proposed
+
+### 2026-09-19 — The traction section counts a paper supporting itself (writer seat, run 5)
+- Trigger: run 5 pulled the claims behind today's issue to rewrite two
+  items and checked where their support came from. The on-policy
+  distillation item that leads the traction slot has five of its six
+  `supports` edges drawn from its own paper, `arxiv:2609.04172`
+  supporting `arxiv:2609.04172`.
+- The measurement, run today against the live database: 68 of 98
+  `supports` edges join two claims from the SAME paper. Under the
+  current query, 24 claims clear the `having count(*) >= 2` bar. If the
+  bar were two distinct supporting PAPERS, 4 would.
+- Why it matters more than a normal data bug: traction is the owner's
+  standing law, the traction slot leads every issue, and
+  prompts/digest.md instructs the writer to translate the count into
+  "three separate papers built on it this week" or "three independent
+  groups now report the same effect". For most of today's traction
+  items that sentence is false, and the prompt cannot detect it, because
+  the payload carries the supported claim and its count and never the
+  supporting papers' ids.
+- Proposal, `pipeline/weekly.py:172`, the `supported` query: join the
+  source claim to its paper and add `and sc.paper_id <> c.paper_id`,
+  then count distinct source papers rather than edges. Carry the
+  distinct-paper count into the payload so the issue says a true thing.
+  Four honest traction items beat 24 that rest on a paper agreeing with
+  itself, and canon law 11 already says a thin day is honestly short.
+- Whose call: the engineer's. This seat does not touch pipeline code,
+  and a prompt rule cannot fix it (charter, structure watch).
+- Status: proposed
+
+### 2026-09-19 — `institutions` is empty on 99.2% of papers (writer seat, run 5)
+- Trigger: run 5 went to attribute two reconstructed items by institution
+  and found nothing to attribute with. `arxiv:2609.20784` and
+  `arxiv:2609.04172` both carry an empty `institutions` array.
+- The measurement, run today: 38 of 4,756 rows in `papers` have a
+  non-empty `institutions`. That is 0.8%.
+- Why it matters: canon law 9 and the owner's fine-tuning both put
+  institution-first attribution in the prompt because readers know labs
+  and not author names. In practice the generator falls back to "a team
+  led by <first author>" on essentially every item, which is the weaker
+  line AND a repeated construction, so it reads as template furniture by
+  the third use. The prompt now tells the writer to vary the fallback,
+  which treats the symptom.
+- Proposal: populate `institutions` at ingest or distill time. arXiv
+  listings carry affiliations in the paper's own front matter and the
+  Semantic Scholar record often carries them too, and the field already
+  exists in the schema, so this is a fill rather than a migration.
+- Whose call: the engineer's. This seat does not touch pipeline code.
+- Status: proposed

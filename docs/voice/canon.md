@@ -92,6 +92,26 @@ Study decisions, never copy sentences.
     Printing "Gaining traction" or "Trailblazing" as a heading is a
     violation the owner has now flagged twice (incident 20).
 
+## How an issue is graded
+
+The daily review runs four passes, in this order, and the first one
+is not optional (law 12a, the owner's ruling of 2026-09-19).
+
+1. **The outsider read.** Read the issue once, start to finish, at
+   reading speed, as a builder from another team who has read none
+   of the papers. Grade nothing yet. Record three things: where a
+   sentence had to be read twice, where following it needed
+   knowledge nobody handed over, and whether a person would have
+   finished it. This is a first-class axis and it can fail an issue
+   on its own, because an issue that is right line by line and
+   cannot be read through has failed at its only job.
+2. **The taste gate.** docs/voice/taste.md, ruling by ruling,
+   against the issue and against the generator (incident 20:
+   recording a ruling is not enforcing it).
+3. **The laws**, one verdict each, every verdict carrying a quoted
+   line.
+4. **The ban list**, including new tells to append.
+
 ## Maintenance
 
 The writer seat proposes canon changes in the ledger. The laws

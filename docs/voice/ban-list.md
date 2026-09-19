@@ -104,3 +104,19 @@ the owner's word.
     "We're thinking", Import AI on "Why this matters", Morning Brew on a
     writer's initials. End on the judgment, then the source. Added
     2026-09-19 from the prose benchmark.
+26. The club sentence. A term of art used as though the reader is already
+    inside the field: "on-policy distillation", "KV cache", "preference
+    alignment", "credit assignment", "rollout", or any acronym, standing
+    bare on its first appearance. The owner read a whole issue of these and
+    said she felt like "an outsider to something privy". The tell is not the
+    term, it is the missing clause beside it, and a definition that shows up
+    on the second mention is the same failure with a delay. Either the first
+    sentence hands the reader the word or the sentence uses plain words
+    instead. Added 2026-09-19 from canon law 12a.
+27. The wall. An item body written as one block of stacked clauses, four
+    findings and three numbers and a caveat inside a single paragraph, so the
+    reader unpacks it instead of reading it. Every clause can be true, precise
+    and well made, and the paragraph still fails. Compression is fewer words
+    per idea, never more ideas per line, so the fix is air: two or three
+    sentences to a paragraph, one idea to a sentence, and one fewer item on
+    the day when that will not fit. Added 2026-09-19 from her density ruling.
