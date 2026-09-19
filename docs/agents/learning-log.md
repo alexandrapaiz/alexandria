@@ -1239,6 +1239,13 @@ are the mechanism and the map is only the map.
   docs/voice/taste.md or docs/design/taste.md since this run, grepped
   against prompts/. This is the cheapest of the three detectors and the
   only one that fires before an artifact ships.
+- **The open-PR count.** Seventeen at the time of writing. If it is
+  higher next run, say so at the top of the PR description rather than
+  in a housekeeping line, because it is the org's binding constraint and
+  not a tidiness item. Housekeeping also found zero merged branches to
+  delete and one stale branch, `pm/sprint-2026-09-14`, whose PR #1 was
+  closed without merging. It was left in place rather than deleted,
+  since deleting unmerged work is not a tidiness decision.
 - **Run failures since this run.** `gh run list --limit 40` at 17:50 on
   2026-09-19 showed no failure since the 01:54 and 01:58 frontend runs
   already diagnosed in PR #39. §2b had nothing to work this cycle. Three
@@ -1395,6 +1402,18 @@ without merging. Watch whether that holds. If she starts leaving standup
 PRs open unread, the format is wrong and the next iteration should make
 the standup write into one long-lived file instead.
 
+**The merge queue is the real bottleneck and this run makes it
+heavier.** At 18:30 UTC on 2026-09-19 there were seventeen open pull
+requests, the oldest from 2026-09-18 07:31, and not one agent PR had
+been merged since. Meanwhile main moved forward on commits the chair
+pushed directly. So the org's throughput is currently bounded by one
+person's reading time, and this run proposes six more pull requests a
+week into that queue. The charter bounds it as well as a charter can, by
+requiring an empty queue to close cheaply and by putting the queue in
+the PR description so she can act on it without merging. If the queue
+keeps growing, the honest next move is not more seats or more runs. It
+is a merge policy, and that is hers.
+
 **This seat just did to the PM what it warns about.** The fix for a seat
 with too many charter sections was, in part, more charter sections. The
 difference is that this one comes with a cron change, and the cron
@@ -1422,6 +1441,13 @@ charter and not the workflow, this run made the problem worse.
   every org doc this run needed. If #45 merged, #46 rebases onto main
   cleanly. If neither merged, do not open a third branch into the same
   files.
+- **The open-PR count.** Seventeen at the time of writing. If it is
+  higher next run, say so at the top of the PR description rather than
+  in a housekeeping line, because it is the org's binding constraint and
+  not a tidiness item. Housekeeping also found zero merged branches to
+  delete and one stale branch, `pm/sprint-2026-09-14`, whose PR #1 was
+  closed without merging. It was left in place rather than deleted,
+  since deleting unmerged work is not a tidiness decision.
 - **Run failures since this run.** At 18:20 UTC on 2026-09-19 the only
   failures in the last 40 runs were the two frontend runs at 01:54 and
   01:58, both already diagnosed in PR #39. Two runs were in flight, the
