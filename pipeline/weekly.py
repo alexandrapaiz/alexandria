@@ -282,11 +282,16 @@ def gather(conn) -> dict:
 # weekly with the wrong date on it.
 DAILY_CLAIM_LIMIT = 10
 
-# The window. The daily crons run 11:00 (ingest), 11:30 (distill), 12:00
-# (triage) and 14:00 (interpret) UTC, and this function runs at 15:00, so a
-# 24-hour lookback from here covers exactly one complete pipeline day and
+# The window, in hours. The daily crons run 11:00 (ingest), 11:30 (distill),
+# 12:00 (triage) and 14:00 (interpret) UTC, and this function runs at 15:00, so
+# a 24-hour lookback from here covers exactly one complete pipeline day and
 # nothing twice.
-DAILY_WINDOW = "24 hours"
+#
+# It goes through make_interval() rather than straight into the SQL, because
+# Postgres reads INTERVAL as a type name expecting a literal after it and will
+# not accept a placeholder there. check_citations() above solves the same
+# problem the same way.
+DAILY_WINDOW_HOURS = 24
 
 
 def gather_daily(conn) -> dict:
@@ -300,11 +305,11 @@ def gather_daily(conn) -> dict:
     stats = conn.execute(
         """
         select
-          (select count(*) from papers where fetched_at > now() - interval %s),
-          (select count(*) from claims where created_at > now() - interval %s),
-          (select count(*) from claim_links where created_at > now() - interval %s)
+          (select count(*) from papers where fetched_at > now() - make_interval(hours => %s)),
+          (select count(*) from claims where created_at > now() - make_interval(hours => %s)),
+          (select count(*) from claim_links where created_at > now() - make_interval(hours => %s))
         """,
-        (DAILY_WINDOW, DAILY_WINDOW, DAILY_WINDOW),
+        (DAILY_WINDOW_HOURS, DAILY_WINDOW_HOURS, DAILY_WINDOW_HOURS),
     ).fetchone()
 
     new_claims = conn.execute(
@@ -318,14 +323,14 @@ def gather_daily(conn) -> dict:
         join papers p on p.id = c.paper_id
         left join triage_log t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
-        where c.created_at > now() - interval %s
+        where c.created_at > now() - make_interval(hours => %s)
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
                  c.evidence, c.procedure, p.authors, p.institutions
         order by case t.decision when 'deep_read' then 0 else 1 end,
                  t.score desc nulls last
         limit %s
         """,
-        (DAILY_WINDOW, DAILY_CLAIM_LIMIT),
+        (DAILY_WINDOW_HOURS, DAILY_CLAIM_LIMIT),
     ).fetchall()
 
     superseded = conn.execute(
@@ -339,12 +344,12 @@ def gather_daily(conn) -> dict:
         join papers pn on pn.id = new.paper_id
         where l.relation = 'refines'
           and coalesce(l.confidence, 0) >= 0.75
-          and l.created_at > now() - interval %s
+          and l.created_at > now() - make_interval(hours => %s)
           and old.paper_id != new.paper_id  -- a paper refining itself is not a supersession
         order by l.confidence desc
         limit 5
         """,
-        (DAILY_WINDOW,),
+        (DAILY_WINDOW_HOURS,),
     ).fetchall()
 
     deprecated = conn.execute(
@@ -356,10 +361,10 @@ def gather_daily(conn) -> dict:
         join papers p on p.id = old.paper_id
         where l.relation = 'contradicts'
           and coalesce(l.confidence, 0) >= 0.7
-          and l.created_at > now() - interval %s
+          and l.created_at > now() - make_interval(hours => %s)
         limit 5
         """,
-        (DAILY_WINDOW,),
+        (DAILY_WINDOW_HOURS,),
     ).fetchall()
 
     deep_reads = conn.execute(
@@ -368,10 +373,10 @@ def gather_daily(conn) -> dict:
         from triage_log t
         join papers p on p.id = t.paper_id
         where t.decision = 'deep_read'
-          and t.created_at > now() - interval %s
+          and t.created_at > now() - make_interval(hours => %s)
         limit 5
         """,
-        (DAILY_WINDOW,),
+        (DAILY_WINDOW_HOURS,),
     ).fetchall()
 
     return {
@@ -618,6 +623,10 @@ def digest(kind: str = "") -> str:
 
     today = date.today()
     kind = kind or kind_for(today)
+    if kind not in MASTHEAD:
+        # a typo in a manual --kind would otherwise fall through to the daily
+        # branch and quietly write the wrong issue under the wrong key
+        raise ValueError(f"kind must be 'weekly' or 'daily', got {kind!r}")
     if kind == "weekly":
         key, dates = weekly_key(today)
         prompt_path = "/root/prompts/digest.md"

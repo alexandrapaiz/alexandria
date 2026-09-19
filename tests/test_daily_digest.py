@@ -130,3 +130,117 @@ def test_the_empty_issue_still_gets_its_masthead():
 
 def test_the_daily_cannot_ask_for_weekly_length():
     assert MAX_TOKENS["daily"] < MAX_TOKENS["weekly"]
+
+
+def test_the_two_kinds_are_the_only_two_kinds():
+    """digest() validates its --kind against MASTHEAD's keys, so the two must
+    stay in step with MAX_TOKENS and with the digests table's check."""
+    assert set(MASTHEAD) == set(MAX_TOKENS) == {"weekly", "daily"}
+
+
+# ---------------- gather_daily's row mapping ----------------
+
+class FakeResult:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def fetchone(self):
+        return self._rows[0]
+
+    def fetchall(self):
+        return self._rows
+
+
+class FakeConn:
+    """Hands back canned rows in the order gather_daily asks for them.
+
+    There is no Postgres here, so this proves nothing about the SQL. What it
+    does prove is the part that sits between the SQL and the model: that every
+    positional index in the row-to-dict mapping lines up with the column it
+    means. That mapping has thirteen positions in the claims query alone, and a
+    mistake in it surfaces at 15:00 UTC and nowhere else.
+    """
+
+    def __init__(self, results):
+        self.results = list(results)
+        self.queries = []
+
+    def execute(self, sql, params=None):
+        self.queries.append((sql, params))
+        return FakeResult(self.results.pop(0))
+
+
+CLAIM_ROW = (
+    7, "Dense rewards stabilise long-horizon agents", ["rl", "agents"],
+    "A paper title", "https://arxiv.org/abs/2609.00001", "a",
+    "deep_read", 0.91, ["supports -> claim 3"],
+    "evidence text", "1. do this\n2. then this", ["Ada L."], ["Tsinghua"],
+)
+
+
+def gather_results(claims=(CLAIM_ROW,), superseded=(), deprecated=(), deep_reads=()):
+    return [
+        [(12, 4, 9)],           # stats (fetchone)
+        list(claims),
+        list(superseded),
+        list(deprecated),
+        list(deep_reads),
+    ]
+
+
+def test_gather_daily_maps_every_column_to_its_name():
+    from pipeline.weekly import DAILY_WINDOW_HOURS, gather_daily
+
+    conn = FakeConn(gather_results())
+    payload = gather_daily(conn)
+
+    assert payload["stats"] == {
+        "papers_ingested": 12, "claims_distilled": 4, "edges_drawn": 9
+    }
+    claim = payload["new_claims"][0]
+    assert claim["claim_id"] == 7
+    assert claim["claim"].startswith("Dense rewards")
+    assert claim["paper"] == "A paper title"
+    assert claim["url"].startswith("https://arxiv.org/")
+    assert claim["tier"] == "a"
+    assert claim["triage"] == "deep_read"
+    assert claim["score"] == 0.91
+    assert claim["topics"] == ["rl", "agents"]
+    assert claim["institutions"] == ["Tsinghua"]
+    assert claim["authors"] == ["Ada L."]
+    assert claim["procedure"].startswith("1. do this")
+    assert claim["evidence"] == "evidence text"
+
+    # every windowed query is bounded by the same 24-hour lookback
+    windowed = [p for _, p in conn.queries if p]
+    assert all(DAILY_WINDOW_HOURS in p for p in windowed)
+
+
+def test_gather_daily_produces_a_payload_the_empty_check_understands():
+    from pipeline.weekly import gather_daily
+
+    empty = gather_daily(FakeConn(gather_results(claims=())))
+    assert daily_is_empty(empty) is True
+
+    one_claim = gather_daily(FakeConn(gather_results()))
+    assert daily_is_empty(one_claim) is False
+
+
+def test_gather_daily_asks_for_no_traction_streams():
+    """The daily is dispatch, not synthesis. Citation movers and accumulated
+    supports belong to Monday, and the citation loop only refreshes then."""
+    from pipeline.weekly import gather_daily
+
+    conn = FakeConn(gather_results())
+    payload = gather_daily(conn)
+    assert "traction" not in payload
+    assert not any("citation_log" in sql for sql, _ in conn.queries)
+
+
+def test_the_daily_payload_survives_shrink():
+    from pipeline.weekly import gather_daily, shrink
+
+    payload = gather_daily(FakeConn(gather_results()))
+    payload["dates"] = "September 19, 2026"
+    body = shrink(payload)
+    assert "Dense rewards" in body
