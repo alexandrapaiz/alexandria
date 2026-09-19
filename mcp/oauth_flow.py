@@ -25,6 +25,7 @@ gap, since whoever crafts the link also holds the matching `code_verifier`.
 import base64
 import hashlib
 import hmac
+import html
 import json
 import time
 from urllib.parse import urlsplit
@@ -263,7 +264,8 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
         if not registered(q.get("client_id", ""), q.get("redirect_uri", "")):
             return HTMLResponse(BAD_REDIRECT, status_code=400)
         hidden = "".join(
-            f'<input type="hidden" name="{p}" value="{q.get(p, "")}">' for p in AUTH_PARAMS
+            f'<input type="hidden" name="{p}" value="{html.escape(q.get(p, ""), quote=True)}">'
+            for p in AUTH_PARAMS
         )
         return HTMLResponse(LOGIN_FORM.format(msg="Enter the passphrase to connect.", hidden=hidden))
 
@@ -280,7 +282,7 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
             return HTMLResponse(BAD_REDIRECT, status_code=400)
         if not hmac.compare_digest(passphrase_field, passphrase):
             hidden = "".join(
-                f'<input type="hidden" name="{p}" value="{v}">'
+                f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
                 for p, v in [("response_type", response_type), ("client_id", client_id),
                              ("redirect_uri", redirect_uri), ("state", state),
                              ("code_challenge", code_challenge),
