@@ -335,3 +335,16 @@ billing risk), per-seat fine-grained PATs (simplest, all minted off
 the owner), and actual Entra with OIDC federation (enterprise-grade,
 Microsoft dependency, overkill today). ExO's Sunday run should turn
 this into a one-page recommendation with the migration cost of each.
+
+## Daily digest cadence (owner order, 2026-09-19) + graph visualization
+
+The owner: "lets produce a newsletter daily so we can see and improve
+the product very easily." Cadence becomes daily; the engineer
+implements (dispatched 2026-09-19); site and llms.txt copy that says
+"weekly" follows once the cadence actually ships, not before. Related
+card: evaluate a Neo4j AuraDB Free READ-ONLY MIRROR of the claims
+graph for visualization (Bloom explorer) — Neon Postgres stays the
+source of truth, nothing migrates; the mirror is a nightly export so
+the owner can finally SEE the graph while the product graph page
+stays hidden until industry standard. Proposal first, per the ledger
+contract.
