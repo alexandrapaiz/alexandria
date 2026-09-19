@@ -1,24 +1,45 @@
 # Workflow changes the agents cannot apply themselves
 
-The ExO's charter (§5) puts `.github/workflows/agent-*.yml` in its lane.
-The runner's token cannot actually write those files. GitHub refuses any
-push from `GITHUB_TOKEN` that touches a workflow file, with
+## The one structural blocker, for the owner
+
+**No agent seat can fix the machinery that runs it.** Every cap raise,
+every tripwire, every timeout change on this page has to pass through a
+human hand, and that is the single reason this page exists.
+
+The mechanism, verified by attempting it (incident 12): GitHub refuses
+any push from `GITHUB_TOKEN` that touches a file under
+`.github/workflows/`, with
 
 ```
 refusing to allow a GitHub App to create or update workflow
 `.github/workflows/agent-engineer.yml` without `workflows` permission
 ```
 
-and there is no `workflows:` key in a workflow's `permissions:` block to
-grant, because `GITHUB_TOKEN` cannot hold that scope at all. Only a
-personal access token with the `workflow` scope can push these files.
+This is not a misconfiguration. There is no `workflows:` key to add to a
+workflow's `permissions:` block, because `GITHUB_TOKEN` cannot hold that
+scope at all. Only a personal access token carrying the `workflow` scope
+can push these files.
 
-So workflow edits queue here instead, written out in full and ready to
-apply, and the owner applies them. When she would rather not hand-apply
-them, the durable fix is in incident 11 of [incidents.md](incidents.md):
-mint a PAT with the `workflow` scope, store it as a repository secret,
-and have `actions/checkout` use it in the agent workflows. That is an
-owner-only step, since secrets never pass through the system.
+**What it costs, concretely.** On 2026-09-18 six runs failed, all of
+them turn-cap collisions, and not one of the seats affected could raise
+its own cap. The chair applied every fix by hand. Three caps are still
+short of what the measured rule requires (item 2 below), and they will
+stay short until someone applies them.
+
+**The decision that is yours, and only yours.** Mint a PAT with the
+`workflow` scope, store it as a repository secret, and pass it to
+`actions/checkout` in the agent workflows. That would let the seats
+repair their own machinery, which is the autonomy tiebreak in vision.md
+§0 pointing one way. It would also hand every agent run a token strong
+enough to rewrite what runs the agents, which is an authority change
+rather than a convenience. Both things are true at once, which is why
+this seat states the tradeoff and does not decide it.
+
+**Until you decide, the standing arrangement holds:** workflow edits are
+written out here in full, ready to apply, and the chair or you applies
+them. Nothing here is blocked on analysis. It is blocked on a hand.
+
+---
 
 Applied items get deleted from this file by the next ExO run, which
 verifies against the workflow files themselves rather than trusting this
@@ -85,30 +106,36 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
-### 2. Turn caps, re-derived from run logs
+### 2. Nothing. The caps are done.
 
-**Why.** The owner escalated turn-cap starvation as incident 10 and
-asked this seat to right-size every cap against real workload. Incident
-10's postmortem holds the evidence table, read from `num_turns` in the
-run logs rather than from intention. The rule it lands on: **a cap is at
-least twice the seat's highest observed turn count, never below 100.**
+Item 2 of this page (frontend 400 to 600, pm 250 to 300, security 200 to
+250) was applied by the chair and verified against the workflow files in
+the 2026-09-19 ExO run. Every cap in the org now clears the measured
+rule. See the re-measured table in [turn-caps.md](turn-caps.md), which
+also gives first real measurements for research, finance and writer.
 
-**How.** One number per file, in the `claude_args` line. Nothing else on
-the line moves.
+---
 
-| File | From | To | Highest observed | Why |
-|---|---|---|---|---|
-| `agent-security.yml` | 100 | 200 | 108 | overshot its cap and failed a run that had already shipped (incident 11) |
-| `agent-exo.yml` | 100 | 200 | 36 | that 36 was an observation-only first run. §5b added the whole GitHub home on 2026-09-18, and the first run carrying it ran well past 100 |
-| `agent-engineer.yml` | 120 | 150 | 67 | daily seat, and the scope grows with the launch runway |
-| `agent-skill.yml` | 100 | 150 | 61 | both samples predate a working database, so real runs will be longer |
-| `agent-sales.yml` | 80 | 120 | 59 | 80 is only 1.35x its own observed high |
-| `agent-finance.yml` | 80 | 120 | never run | matched to sales, its nearest twin |
+## Not queued here, because it needs a key rather than a hand
 
-Unchanged and already correct under the rule: `agent-frontend.yml` at
-250 against 151 observed, `agent-pm.yml` at 140 against 42, and
-`agent-market.yml`, `agent-okr.yml` and `agent-research.yml` at 100
-against 23, 33, and nothing.
+The GitHub App token-mint step (ADR-27) is the change that makes this
+whole page unnecessary. It is written out in
+[app-identity-handover.md](app-identity-handover.md) rather than here,
+because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
+applying an edit. `APP_ID` is already set.
 
-**Cost.** None standing. Turns are only spent if a run needs them, so a
-cap is a ceiling rather than a budget.
+## Applied and deleted
+
+- **Turn caps, re-derived from run logs** (queued 2026-09-18, applied by
+  the chair in c6bc2c4, verified against the workflow files on
+  2026-09-18). The chair went further than the queued numbers on several
+  seats.
+- **The three remaining short caps** (queued 2026-09-18 evening, applied
+  by the chair, verified against the workflow files on 2026-09-19).
+  frontend is at 600, pm at 300, security at 250.
+- **Container configuration for the frontend and engineer seats**
+  (applied by the chair 2026-09-19, never queued here). `container:`,
+  `credentials:` and `options: --user 1001:1001` against
+  `ghcr.io/alexandrapaiz/alexandria-agent:latest`. Recorded as applied
+  so the next run does not mistake it for drift. Incidents 17 and 18 are
+  the two failures it took to get right.
