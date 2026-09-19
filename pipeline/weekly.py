@@ -30,9 +30,10 @@ and only skips the email.
 
 The budget check is not optional ceremony. Incident 22: an editorial merge
 grew the generator prompt past the model's per-request token ceiling, Groq
-answered 413, and no issue was written. CI runs the same check on every pull
-request that touches a generator prompt or this pipeline, and the run below
-refuses to call Groq when the sums do not work.
+answered 413, and no issue was written. The same check runs in CI on every
+change to a generator prompt or this pipeline (once someone moves
+.github/workflows-pending/checks.yml into place; agent tokens cannot write
+workflows), and the run below refuses to call Groq when the sums do not work.
 """
 
 import hashlib
@@ -356,11 +357,14 @@ def write_digest(payload: dict, prompt: str) -> str:
                 "model": MODEL,
                 "temperature": 0.3,
                 "max_completion_tokens": MAX_COMPLETION_TOKENS,
-                "compound_custom": COMPOUND_CUSTOM,
                 "messages": [
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": user},
                 ],
+                # compound-only parameter: rolling MODEL back to a plain model
+                # must not fail for a second, unrelated reason
+                **({"compound_custom": COMPOUND_CUSTOM}
+                   if MODEL.startswith("groq/compound") else {}),
             },
             timeout=300,
         )
@@ -385,7 +389,16 @@ def write_digest(payload: dict, prompt: str) -> str:
             print(f"WARNING: {MODEL} executed built-in tools ({names}) despite "
                   "compound_custom disabling them. Treat this issue as "
                   "unverified and check it against the payload before sending.")
-        return message["content"].strip()
+        content = message.get("content")
+        if not content:
+            # an agentic model can answer with tool calls and no prose; there is
+            # no issue in that, and the empty string must not reach the database
+            raise RuntimeError(
+                f"{MODEL} returned no content (finish_reason "
+                f"{resp.json()['choices'][0].get('finish_reason')!r}); no issue "
+                "was written"
+            )
+        return content.strip()
     raise RuntimeError("groq: exhausted retries")
 
 
