@@ -2343,3 +2343,33 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Cost: $0, one row and one count.
 - Whose call: the PM's.
 - Status: proposed
+### 2026-09-19 — ExO cross-seat flags (four surfaces, none of them this seat's)
+- Trigger: the ExO run's §5b housekeeping pass over the GitHub home.
+  Filed rather than edited, because each belongs to another seat.
+- What, in order of how wrong each is today:
+  - **`docs/agents/org-chart.md` is missing the writer seat and calls
+    finance dormant.** ADR-28 created the writer seat and it has run
+    twice (35417517511, 35419120149). The finance seat ran once on
+    dispatch (35410872874) and opened PR #32. The file is the PM's by
+    charter §1b, so the PM updates it, not this seat.
+  - **The ExO seat should be the next one containerized.** Its §5b duty
+    is to render any mermaid it changes before shipping it, which needs
+    a browser. On the uncontainerized runner that costs a download and
+    then fails anyway on the Chromium sandbox until `--no-sandbox` is
+    passed by hand, which this run had to do. The image already bakes
+    Chromium at a fixed path. One workflow edit, and the seat can do its
+    own job. Whose call: the owner, since no seat can push a workflow.
+  - **`pm/sprint-2026-09-14` is a stale remote branch** carrying PR #1,
+    which was closed without merging. Not deleted by this run, because
+    deleting an unmerged branch destroys work and the call is the PM's.
+  - **There is no ADR for Stage 1 containerization.** The Dockerfile's
+    own header says "ADR pending". Decisions of this size belong in
+    docs/decisions.md, and recording an owner decision is the chair's
+    job rather than this seat's.
+- Cost: $0 for all four.
+- Status: proposed
+- **Merge order, per the ledger-collision rule.** Five other open PRs
+  append to this file: #28 (market), #29 (engineer), #31 (security), #35
+  (engineer), #36 (writer). Every one of them appends at the end, so
+  whichever merges second onward conflicts textually. This note is the
+  cheapest of the six to re-apply by hand, so merge it last.
