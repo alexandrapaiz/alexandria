@@ -69,6 +69,15 @@ Study decisions, never copy sentences.
    synthesis and must argue, not list.
 10. "You read to decide. Your agents load to act." The dual audience
     appears in every issue's close.
+11. Length follows the news. No fixed issue length at any cadence: a
+    heavy day runs long, a thin day is honestly short. The amount of
+    real news decides, never a template (owner's ruling, 2026-09-19).
+12. Framework names never print. The structural slots (the
+    traction-led lead, the new-and-unproven, what fell behind) are
+    the generator's internal skeleton; every PRINTED heading is
+    written fresh from that day's actual news, the way the title is.
+    Printing "Gaining traction" or "Trailblazing" as a heading is a
+    violation the owner has now flagged twice (incident 20).
 
 ## Maintenance
 
