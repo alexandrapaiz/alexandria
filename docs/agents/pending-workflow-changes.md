@@ -109,13 +109,112 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
-### 2. Nothing. The caps are done.
+### 2. The PM goes daily, so the org has a seat that is present
 
-Item 2 of this page (frontend 400 to 600, pm 250 to 300, security 200 to
-250) was applied by the chair and verified against the workflow files in
-the 2026-09-19 ExO run. Every cap in the org now clears the measured
-rule. See the re-measured table in [turn-caps.md](turn-caps.md), which
-also gives first real measurements for research, finance and writer.
+**Queued 2026-09-19 by the ExO agent, on the owner's order.**
+
+**Why.** Her words: "right now i feel like im doing the PMs job, i want
+the pm to be proactive." The evidence is one day. On 2026-09-19 the org
+started twenty-five agent runs and opened fifteen pull requests, and the
+PM seat ran zero times, because `35 10 * * 1` fires once every
+168 hours. A seat that is awake for one hour a week in a company that
+changes state every forty minutes cannot be proactive no matter what its
+charter says, so the charter half of this fix (prompts/pm-agent.md
+sections 0, 4 and 5) is worth nothing until this cron changes. The
+diagnosis in full is in docs/agents/learning-log.md under the presence
+gradient.
+
+**How.** Three edits to `.github/workflows/agent-pm.yml`, plus the
+prompt rewrite. The cron change is one character.
+
+```diff
+ on:
+   schedule:
+-    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
++    # Daily at 6:35 AM ET. Monday is the ceremony run (retro, grooming,
++    # sprint plan, and the day's dispatch queue); every other day is the
++    # standup alone. prompts/pm-agent.md section 0 branches on the day,
++    # so one workflow covers both modes and there is no second file to
++    # keep in sync.
++    - cron: "35 10 * * *" # 6:35 AM ET daily
+   workflow_dispatch:
+```
+
+```diff
+   run:
+     runs-on: ubuntu-latest
+-    timeout-minutes: 60
++    timeout-minutes: 75
+```
+
+```diff
+-          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model sonnet"
++          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model sonnet"
+```
+
+And the prompt block, replaced in full:
+
+```yaml
+          prompt: |
+            You are alexandria's project manager agent (ADR-15 in
+            docs/decisions.md), running in GitHub Actions with this repository
+            already checked out. Read prompts/pm-agent.md; it is your full
+            charter. Section 0 tells you which of two runs this is. On Monday,
+            or when the owner instructions below say so, execute the ceremony
+            run: retrospective on the ending sprint, grooming of
+            docs/ideas.md, the new sprint file in docs/sprints/ in the format
+            docs/sprints/README.md defines, and then the dispatch queue of
+            section 4. On every other day, execute the standup run of section
+            4 alone and nothing else: read fleet state, open PRs, pending, the
+            board and the newest rulings, then write
+            docs/sprints/dispatch-queue.md with at most three proposed
+            dispatches, each one a copy-pasteable `gh workflow run` command
+            with its owner_instructions drafted in full. You propose
+            dispatches; you never fire them, because section 5 is dormant
+            until the owner activates it. Commit on a branch named
+            pm/sprint-YYYY-MM-DD for a ceremony run or pm/standup-YYYY-MM-DD
+            for a standup run, push it, and open exactly one pull request with
+            `gh pr create`, carrying the dispatch queue in the PR description
+            in full. You write only docs/sprints/ and grooming notes in
+            docs/ideas.md. Never write code, never edit charters, never merge
+            your own PR, never push to main, never touch secrets or digests/.
+            If the charter file is missing, stop and fail loudly instead of
+            improvising.
+            Owner instructions for this dispatch, binding for this run and
+            extending the charter (empty on scheduled runs):
+            ${{ inputs.owner_instructions }}
+```
+
+**On the cap and the timeout, per the methodology.** The standup run is
+a new run shape with no measurement, so rule 2 of
+[turn-caps.md](turn-caps.md) applies and it inherits rather than guesses.
+It shares the seat's cap, which is correct, because a cap is a tripwire
+and not a budget and an unspent cap costs the org nothing. The raise from
+300 to 400 is not for the standup. It is because Monday's ceremony run
+just gained a whole section, which is duty growth, and the pm row is the
+only censored measurement in the table (a run that died at 140, so real
+demand is known only to be at least 141). The timeout goes to 75 to match
+the rest of the fleet, which at roughly nine turns a minute clears 400
+with room.
+
+**On cost.** Seven runs a week instead of one, on sonnet, on the owner's
+existing subscription. No new service and no new secret, so the cash cost
+stays $0. The real cost is six more short sonnet runs a week and six more
+small pull requests, and the charter caps that by requiring an empty
+queue to be reported and closed cheaply.
+
+**How to tell it worked.** One test, and it is the owner's to judge: a
+week goes by in which she dispatches seats without composing a single
+instruction herself, because the queue had already drafted them.
+
+### 3. Nothing else. The caps are done.
+
+The earlier item 2 of this page (frontend 400 to 600, pm 250 to 300,
+security 200 to 250) was applied by the chair and verified against the
+workflow files in the 2026-09-19 ExO run. Every cap in the org clears the
+measured rule, and the pm raise proposed in item 2 above is duty growth
+rather than a shortfall. See the re-measured table in
+[turn-caps.md](turn-caps.md).
 
 ---
 
