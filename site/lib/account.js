@@ -21,10 +21,10 @@ function db() {
 // subscribers agree with what is actually in the column.
 export async function upsertUserFromClerk(user) {
   const row = userRowFromClerk(user);
-  if (!row) return { ok: false, reason: "no id or email on the event" };
+  if (!row) return { ok: false, retryable: false, reason: "no id or email on the event" };
 
   const sql = db();
-  if (!sql) return { ok: false, reason: "DATABASE_URL is not set" };
+  if (!sql) return { ok: false, retryable: true, reason: "DATABASE_URL is not set" };
 
   await sql`
     insert into users (clerk_id, email, name)
@@ -43,10 +43,10 @@ export async function upsertUserFromClerk(user) {
 // different requests and the digest list stays independent (ADR-30).
 export async function deleteUserByClerkId(id) {
   const key = typeof id === "string" ? id.trim() : null;
-  if (!key) return { ok: false, reason: "no id on the event" };
+  if (!key) return { ok: false, retryable: false, reason: "no id on the event" };
 
   const sql = db();
-  if (!sql) return { ok: false, reason: "DATABASE_URL is not set" };
+  if (!sql) return { ok: false, retryable: true, reason: "DATABASE_URL is not set" };
 
   const rows = await sql`delete from users where clerk_id = ${key} returning clerk_id`;
   return { ok: true, deleted: rows.length };
