@@ -106,45 +106,36 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
-### 2. Three turn caps are still below what the rule requires
+### 2. Nothing. The caps are done.
 
-**Why.** The chair right-sized every cap on 2026-09-18 (commit c6bc2c4)
-and raised the pm and frontend job timeouts to match (57135da). That
-cleared the queue's previous cap item, which is deleted here as applied.
-Re-measuring afterwards against the standing rule in
-[turn-caps.md](turn-caps.md), twice the highest observed turn count
-rounded up to the next 50, three seats still come up short, because
-those raises were also read from the day's failures rather than from the
-ratio. Evidence and full table in turn-caps.md and in incident 15.
-
-**How.** One number per file, in the `claude_args` line. Nothing else on
-the line moves.
-
-| File | From | To | Peak observed | Why this number |
-|---|---|---|---|---|
-| `agent-frontend.yml` | 400 | 600 | 286 (run 35306459296) | twice the org's highest demand; 600 turns lands near 65 minutes at the measured rate, inside the 90-minute timeout already in force |
-| `agent-pm.yml` | 250 | 300 | 141, censored (run 35311930240) | that run died at its cap, so 141 is a lower bound and 300 is the floor the rule gives, not a settled number |
-| `agent-security.yml` | 200 | 250 | 108 (run 35299288455) | one sample only, and it is the run that overshot |
-
-Correct under the rule and not to be touched: `agent-exo.yml` at 200
-against 93, `agent-sales.yml` at 160 against 76, `agent-engineer.yml` at
-200 against 73, `agent-skill.yml` at 180 against 67, `agent-market.yml`
-at 160 against 47, `agent-okr.yml` at 160 against 33. Provisional and
-unmeasured because the seat has never run: `agent-research.yml` at 180,
-`agent-finance.yml` at 120.
-
-**Timeouts.** No change needed. Every seat's current `timeout-minutes`
-clears its required cap at the measured rate of roughly nine turns per
-minute.
-
-**Cost.** None standing. Turns are only spent if a run needs them, so a
-cap is a ceiling rather than a budget.
+Item 2 of this page (frontend 400 to 600, pm 250 to 300, security 200 to
+250) was applied by the chair and verified against the workflow files in
+the 2026-09-19 ExO run. Every cap in the org now clears the measured
+rule. See the re-measured table in [turn-caps.md](turn-caps.md), which
+also gives first real measurements for research, finance and writer.
 
 ---
+
+## Not queued here, because it needs a key rather than a hand
+
+The GitHub App token-mint step (ADR-27) is the change that makes this
+whole page unnecessary. It is written out in
+[app-identity-handover.md](app-identity-handover.md) rather than here,
+because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
+applying an edit. `APP_ID` is already set.
 
 ## Applied and deleted
 
 - **Turn caps, re-derived from run logs** (queued 2026-09-18, applied by
-  the chair in c6bc2c4, verified against the workflow files this run).
-  The chair went further than the queued numbers on several seats. Item
-  2 above is the remainder, measured fresh rather than carried over.
+  the chair in c6bc2c4, verified against the workflow files on
+  2026-09-18). The chair went further than the queued numbers on several
+  seats.
+- **The three remaining short caps** (queued 2026-09-18 evening, applied
+  by the chair, verified against the workflow files on 2026-09-19).
+  frontend is at 600, pm at 300, security at 250.
+- **Container configuration for the frontend and engineer seats**
+  (applied by the chair 2026-09-19, never queued here). `container:`,
+  `credentials:` and `options: --user 1001:1001` against
+  `ghcr.io/alexandrapaiz/alexandria-agent:latest`. Recorded as applied
+  so the next run does not mistake it for drift. Incidents 17 and 18 are
+  the two failures it took to get right.
