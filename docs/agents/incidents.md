@@ -380,3 +380,19 @@ actionability-for-agents axis must count this query as its baseline
 failure case. The zero-gap mandate's detection worked only because
 the owner relayed it; the census and steering must learn to catch
 this class before a user does.
+
+## Incident 22 — The editorial rebuild outgrew the model's letterbox (2026-09-19)
+
+First off-cycle autonomous run of the rebuilt generator (owner's
+"why must i wait until monday", chair-triggered via modal run):
+Groq returned 413 Payload Too Large and no issue was written.
+Cause: the day's editorial work grew prompts/digest.md from 223 to
+509 lines, and prompt plus the week's payload now exceed the free
+model's request-size limit. New failure class: quality law versus
+runtime budget; the seat that writes the rules (writer) and the
+seat that runs them (engineer) share the constraint but neither
+owned it. Fix dispatched to the engineer same hour; the standing
+rule to come out of it: the generator prompt plus a worst-case
+payload must fit the pipeline model's request limit with margin,
+measured in CI or at deploy, so an editorial merge can never break
+the press again.
