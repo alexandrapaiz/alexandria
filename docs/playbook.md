@@ -54,7 +54,7 @@ remembering must live in a file.
 | Seat | Cadence here | Function |
 |---|---|---|
 | engineer | daily | builds; OODA cycle against the sprint |
-| pm (COO scope) | weekly Mon | operations: sprint, backlog, board, org chart, this playbook |
+| pm (COO scope) | daily standup, Mon ceremony | operations: the dispatch queue every day, then sprint, backlog, board, org chart, this playbook |
 | okr | monthly | purpose guard: benchmark, KR grading, drift audit |
 | market | weekly Fri | outside view: landscape, positioning, demand |
 | exo | weekly Sun | improves the agents themselves; owns postmortems |
@@ -73,6 +73,10 @@ remembering must live in a file.
 - **Scrum, minimal**: one-week sprints, a sprint is a GOAL plus a set
   of seat-assigned tasks, Monday planning + retro in one PM run, the
   engineer's daily PR is the standup. No ceremony without function.
+- **The dispatch queue**: the PM's daily output, at most three proposed
+  runs with their instructions already written, so the owner approves
+  work instead of authoring it. See the presence section below, which is
+  the one piece of this playbook learned the most expensively.
 - **The board**: GitHub Projects mirrors the committed files; the repo
   is the source of truth. Anyone (any agent) adds and self-assigns
   backlog cards; the PM alone sets priorities. Card standard: readable,
@@ -106,6 +110,65 @@ discarded with reasons on record: SAFe, EOS, holacracy, DACI; Shape Up
 is studied as Scrum's rival, not adopted. Portable rule for any new
 project: start with the adopted list above and an empty register, not
 with framework shopping.
+
+## Presence: the lesson that cost the most to learn
+
+Written 2026-09-19 after the owner said "right now i feel like im doing
+the PMs job." Read this before designing any seat, because it is the
+failure mode that survives good charters.
+
+**Duties accrete to whoever is present.** In an org of scheduled agents,
+authority does not settle where the org chart puts it. It settles on
+whoever happens to be awake when the thing happens. Every agent seat is
+a pulse: it exists for forty minutes and is absent for the rest of the
+week. The human owner is the only continuous process in the building. So
+every duty that arises between pulses lands on her by default, and it
+lands there regardless of which charter names it, because a charter
+cannot be read by a seat that is not running.
+
+That is how a well-run agent company arrives at an owner doing the PM's
+job while the PM's charter grows longer every week. The charter was not
+wrong and the seat was not lazy. On the day we noticed, the PM's charter
+had gained four new duties in forty-eight hours and the seat had run
+once, on its Monday cron, in a week during which the org started
+twenty-five runs and opened fifteen pull requests in a single day.
+
+**What presence means for an agent, operationally.** Not continuous
+execution, which nobody is paying for. A seat is present when its
+cadence is shorter than the rate at which its duties are triggered. That
+gives a test you can apply to a charter before you ship it:
+
+> Put the duty's trigger rate and the seat's cron side by side. If the
+> cron is slower, the duty is not owned, no matter what the charter
+> says. It is being done by whoever is present, which is you.
+
+Three rules follow, and they are portable to any project.
+
+1. **Never assign a duty to a seat whose cadence is slower than the
+   duty's trigger rate.** Either change the cron or change the owner.
+   Adding the sentence to the charter anyway is worse than leaving the
+   gap open, because the gap then reads as closed in every audit.
+2. **The operations seat is the one that has to be present**, so it runs
+   daily even when its ceremonies are weekly. Split it into two modes in
+   one charter and one workflow: a short daily standup, and the full
+   ceremony on its planning day. Two modes, one file, one cron.
+3. **A seat that notices needs an actuator.** Noticing without the
+   ability to act produces a seat that writes excellent reports nobody
+   asked for. On GitHub Actions the constraint is concrete: the runner's
+   `GITHUB_TOKEN` cannot trigger another workflow, so no seat can start
+   another seat's run. Until you hand the org an identity that can (a
+   GitHub App installation token), the best available design is the
+   dispatch queue: the operations seat drafts the exact command and the
+   exact instructions, and the human's job shrinks from authoring to
+   approving. Design for that day from the start, with the guardrails
+   written while the capability is still dormant, because policy drafted
+   under a constraint is more honest than policy drafted the day the
+   constraint lifts.
+
+The measure that tells you whether any of this worked is one number:
+what fraction of dispatched runs had their instructions written by the
+human. It should fall. If it does not, the seat is documenting the
+problem rather than holding it.
 
 ## Operating modes
 
@@ -165,8 +228,12 @@ smoke-run each one supervised before trusting its schedule:
 2. **The OKR seat first.** It turns the mission into objectives and a
    benchmark, so every later seat has something to serve and a score
    to be judged by.
-3. **The PM/COO second.** Backlog, sprints, board, pending tracker.
-   From here on, every directive you speak becomes a card.
+3. **The PM/COO second, and make it daily on the first day.** Backlog,
+   sprints, board, pending tracker, and the daily dispatch queue. From
+   here on, every directive you speak becomes a card, and every morning
+   starts with a list of proposed runs you approve rather than compose.
+   Do not start it weekly and promote it later. We did, and the section
+   below is what it cost.
 4. **The ExO third, the moment two seats exist.** Failures then
    compound into fixes from week one: the incident register and the
    ship-first rule exist before the builders arrive.
