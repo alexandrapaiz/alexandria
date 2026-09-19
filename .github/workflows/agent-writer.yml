@@ -1,0 +1,46 @@
+name: writer-agent
+
+on:
+  schedule:
+    - cron: "0 16 * * *" # daily, after the digest publishes
+  workflow_dispatch:
+    inputs:
+      owner_instructions:
+        description: "Owner instructions for this run (bind for this run)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are alexandria's writer agent, the editor-in-chief (ADR-28),
+            running in GitHub Actions with this repository checked out. Read
+            prompts/writer-agent.md; it is your full charter. Execute one
+            editorial run exactly as it specifies: read the newest issue cold,
+            grade it against docs/voice/canon.md and ban-list.md and taste.md,
+            patch prompts/digest.md so tomorrow's issue is born better, and
+            open exactly one pull request on a branch named writer/YYYY-MM-DD.
+            Never edit taste.md, charters, site copy, pipeline code, sprints,
+            or skills. Never merge your own PR, never push to main. If the
+            charter file is missing, stop and fail loudly.
+            Owner instructions for this dispatch, binding for this run
+            (empty on scheduled runs):
+            ${{ inputs.owner_instructions }}
+          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model opus"

@@ -537,3 +537,24 @@ secrets. PROJECTS_TOKEN stays as-is for the board. Machine users and
 per-seat PATs were considered and rejected; real Entra with OIDC
 federation was noted as the enterprise-grade version worth watching,
 not adopting.
+
+## ADR-28: The writer seat, editor-in-chief
+
+Owner's decision (2026-09-19): a twelfth seat owns the words as a
+craft, because she was frequently dissatisfied with the newsletter's
+writing and structure and the root cause was ownership: the engineer
+owned the pipeline, research owned the content, frontend owned the
+pixels, and nobody owned the prose. The seat is an EDITOR, not a
+scribe: it never hand-writes issues, which would break the autonomy
+tiebreak; it owns the writing system instead. Three files mirror the
+design system's proven pattern: docs/voice/canon.md (the register,
+references from Morning Brew, Matt Levine, The Economist, and
+Stratechery, and ten laws), docs/voice/ban-list.md (the enumerated
+prose tells, appended as slop drifts), and docs/voice/taste.md (her
+editorial rulings, permanent). The daily loop: read the newest issue
+cold, grade it against the laws with quoted evidence, and patch
+prompts/digest.md, the prompt that actually writes every issue, so
+the generator itself improves. Runs daily on Opus after the digest
+publishes, one PR, owner merge. Charter prompts/writer-agent.md,
+workflow agent-writer.yml. The pre-send gate idea is deferred until
+the daily cadence exists in the pipeline; carded for the engineer.
