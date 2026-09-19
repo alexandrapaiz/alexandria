@@ -43,7 +43,7 @@ flowchart TB
 
     subgraph PIPE["The pipeline it builds: ingest to digest to skills"]
         direction TB
-        SRC["Sources, sources.yaml<br/>6 arXiv categories<br/>HF daily papers<br/>22 lab feeds"]
+        SRC["Sources, sources.yaml<br/>6 arXiv categories<br/>HF daily papers<br/>26 lab and ecosystem feeds"]
         ING["Ingest<br/>daily 11:00 UTC"]
         BR[("Bronze<br/>raw papers")]
         TRI["Triage<br/>12:00 UTC<br/>routes four ways"]
