@@ -21,17 +21,45 @@ would probably do it if asked. "None" is the finding. A duty split across
 three seats with no named owner is also a finding, because shared
 custody of awareness is how incident 19 happened.
 
-| Duty | Owner | Evidence | State |
-|---|---|---|---|
-| The org knows what the world knows | market (§5, named 2026-09-19) | this run | assigned |
-| Ecosystem events steer what we ingest | research (signal read) | charter, 2026-09-19 | consuming |
-| Upstream compromise is in the threat model | security (incident 19 item 2) | PR #41 | in flight |
-| Legal and compliance posture | **none** | see below | owner decision |
-| Free-tier and quota headroom | finance, dormant | see below | owner decision |
-| The corpus survives losing its database | **none** | see below | owner decision |
-| The repo describes the system it is | exo (§5b) | charter | assigned |
-| Runs that fail get diagnosed | exo (§2b) | charter, 2026-09-19 | assigned |
-| Runs that fail get reported to the owner | pm (§1f) | charter, 2026-09-19 | assigned |
+### The second test, added 2026-09-19: cadence
+
+Naming an owner is necessary and it is not sufficient, and this register
+had that bug for its first day of life. A duty is only owned when the
+naming seat is **awake often enough to perform it**, which means the
+seat's cadence has to be shorter than the rate at which the duty's
+trigger arrives. A weekly seat cannot own a daily duty. Writing the duty
+into its charter anyway produces the worst available outcome, which is a
+duty that is documented as owned, audited as owned, and in practice
+performed by whoever happens to be present. Here that was always the
+owner.
+
+The evidence is on this page. "Runs that fail get reported to the owner"
+was assigned to the PM on 2026-09-19 and marked assigned the same day.
+Runs fail on the day they fail, and the PM's cron fired once a week, so
+the row was false within hours of being written. The owner discovered
+two failed frontend runs herself, which is precisely the outcome that
+row exists to prevent. The fix is in prompts/pm-agent.md sections 0 and
+4 and in item 2 of pending-workflow-changes.md, and until that cron
+changes the row below stays honest about being unenforceable.
+
+So every row now carries two more columns. **Trigger rate** is how often
+the duty's occasion actually arrives, measured rather than assumed.
+**Cadence** is how often the owning seat runs. When cadence is slower
+than trigger rate, the state is `cadence gap`, and a cadence gap is a
+finding of the same weight as an unowned row.
+
+| Duty | Owner | Trigger rate | Cadence | State |
+|---|---|---|---|---|
+| The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | assigned |
+| Ecosystem events steer what we ingest | research (signal read) | weekly | weekly Mon | consuming |
+| Upstream compromise is in the threat model | security (incident 19 item 2) | continuous, acted on in sweeps | biweekly | assigned, accepted lag |
+| Legal and compliance posture | **none** | once, before launch | n/a | owner decision |
+| Free-tier and quota headroom | finance, dormant | monthly | dormant | owner decision |
+| The corpus survives losing its database | **none** | continuous | n/a | owner decision |
+| The repo describes the system it is | exo (§5b) | weekly | weekly Sun | assigned |
+| Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
+| Runs that fail get reported to the owner | pm (§1f) | daily | weekly Mon, daily once queued | **cadence gap, fix queued** |
+| The org decides what to do next between Mondays | **none, and the owner did it** | hourly | n/a | **fix queued, see below** |
 
 ## The three open gaps, with the check each one needs
 
@@ -97,3 +125,42 @@ to spend on it.
 A duty only leaves this page by being written into a charter in words a
 run can act on. Moving a row to "assigned" because it feels covered is
 the exact mistake that made incident 19 possible.
+
+
+### 4. The org decides what to do next between Mondays
+
+Found 2026-09-19 by the owner, in her own words: "right now i feel like
+im doing the PMs job, i want the pm to be proactive." This is the fourth
+row, it is the largest one on the page, and unlike the three above it is
+not an owner decision, so it is being fixed rather than proposed.
+
+The duty is deciding what the org does next, hour by hour, between
+planning ceremonies. Every charter in `prompts/` was grepped for the
+vocabulary this duty would have to use, and the result is stark. No
+charter contains `gh workflow run`, `workflow_dispatch`, or any
+instruction to start another seat's run. The PM charter contains the
+word dispatch twice, and both times it refers to a dispatch that
+happened TO the seat. Twelve charters describe what each seat produces
+when it is woken, and not one of them describes who decides that a seat
+should be woken.
+
+So that duty went to the only always-present actor, which was the owner.
+That is not a delegation failure, it is the absence of any seat capable
+of receiving the delegation, for two separate reasons stacked on top of
+each other. The PM's cadence was weekly, so it could not notice. And no
+seat holds dispatch authority at all, because `GITHUB_TOKEN` cannot
+trigger a workflow, so even a seat that noticed had no actuator.
+
+The fix ships in two versions, both in this run. Version 1 is inside the
+current constraints: the PM runs daily and publishes a proposed dispatch
+queue with the `owner_instructions` already drafted, which moves her job
+from authoring dispatches to approving them. Version 2 is written and
+dormant, waiting on `APP_PRIVATE_KEY`, and it lets the PM fire the queue
+itself inside ceilings she controls. Both are in prompts/pm-agent.md
+sections 4 and 5, and the cron they depend on is item 2 of
+pending-workflow-changes.md.
+
+The general lesson, which is the reason this section is longer than the
+row deserves: **duties accrete to whoever is present.** The full
+argument is in docs/agents/learning-log.md under the presence gradient,
+and its operational form is the cadence test above.
