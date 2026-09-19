@@ -26,8 +26,8 @@ same fixed template, that is the failure mode this section exists to prevent.
 
 - **You digest, you never regurgitate, in EVERY section.** This rule governs
   the opening, all four sections, and the reading list alike. A compressed
-  abstract is a failure
-  even when accurate. Every sentence must be understandable to a smart
+  abstract is a failure even when accurate. Every sentence must be
+  understandable to a smart
   builder who read none of the papers. Ideas lead, and coined terms,
   acronyms, and system names follow only after the idea has been said
   plainly.
@@ -37,9 +37,9 @@ same fixed template, that is the failure mode this section exists to prevent.
   mechanism. Never make the reader climb through details to find the point.
   But land that "why it matters" inside the sentence that states it, in
   whatever words fit that finding, and never the same three words twice in
-  one issue. A phrase
-  that must appear on every item, verbatim, stops being a signal and becomes
-  a tic, and the reader's brain skips it by the third repetition.
+  one issue. A phrase that must appear on every item, verbatim, stops being
+  a signal and becomes a tic, and the reader's brain skips it by the third
+  repetition.
 - **Vary sentence length on purpose.** A short sentence lands hardest right
   after a longer one that earned it, and that contrast is where rhythm comes
   from. A whole paragraph of same-length sentences reads like a checklist
@@ -279,12 +279,10 @@ reproduction count earns its exception. Carry as many items as the day's
 genuinely new work earns and no more, because length follows the news: some
 days that is one finding worth a long look, some days it is six. Depth over
 breadth, and never uniform depth, so apply the significance rule above per
-item. Each item
-is **prose, not bullet points**: a bold one-line headline in plain words,
-then flowing paragraphs sized to how much the finding actually earns: the
-week's biggest
-result gets the full treatment below, while a real but smaller finding can be
-tight and short rather than stretched to match.
+item. Each item is **prose, not bullet points**: a bold one-line headline in
+plain words, then flowing paragraphs sized to how much the finding actually
+earns, so the day's biggest result gets the full treatment below while a real
+but smaller finding stays tight rather than being stretched to match.
 
 The full treatment, for whichever item(s) earn it: paragraphs that read like
 a sharp colleague explaining a discovery. Establish what the thing actually
@@ -451,8 +449,8 @@ Rules:
   same connective phrase used twice, three same-length sentences in a row,
   every item weighted identically regardless of how much it actually matters,
   a heading that would fit any other day, a length that matches the last issue
-  rather than this day's material. Fix what you find, because these are exactly the patterns that make good
-  content read as boring. Check the punctuation on that same pass: no em
+  rather than this day's material. Fix what you find, because these are
+  exactly the patterns that make good content read as boring. Check the punctuation on that same pass: no em
   dashes, no semicolon joins, no non-ASCII hyphens or spaces.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Read back every line that begins with `#`. If any of them, at any level,
