@@ -83,3 +83,16 @@ the chair and the PM record her rulings.
   for that day's content is craft. The framework names in the
   instruction are for the generator's internal reference, not for
   printing verbatim.
+- 2026-09-19 — Length follows the news. Issues are never fixed
+  length: a heavy day runs long, a thin day is honestly short, and
+  the amount of news decides, not a template. Padding a thin day and
+  truncating a heavy one are the same failure.
+- 2026-09-19 — SECOND OCCURRENCE, her word "AGAIN": section headings
+  must never print the framework names. "Gaining traction" and
+  "Trailblazing" are internal slots for the generator; the PRINTED
+  heading is written from that day's news ("Context beats
+  architecture this week", not "Gaining traction"). The first
+  recording of this ruling did not prevent the recurrence, so it is
+  now incident 20: recording a taste ruling is not enforcing it, and
+  every sample or issue must be checked against taste.md before it
+  reaches her.

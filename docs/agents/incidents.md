@@ -330,3 +330,20 @@ arXiv, Groq, Neon, GitHub) as compromisable, with the question "what
 do we pull from it and how would we know it was tampered" answered
 in writing per upstream. Numbered 19 to avoid colliding with 17-18
 in open PR #39; ExO reconciles numbering at merge.
+
+
+## Incident 20 — A taste ruling recorded but not enforced (2026-09-19)
+
+The owner ruled that section headings must be content-derived craft,
+never framework labels. The ruling was recorded in
+docs/voice/taste.md the same hour, and the chair's very next sample
+still printed "Gaining traction" and "Trailblazing" as headings,
+forcing her to repeat the ruling with "AGAIN". Root cause: recording
+and enforcing are different acts, and nothing checked the artifact
+against the register before it reached her. Standing fix: anything
+reader-shaped that reaches the owner (samples, issues, templates) is
+checked against docs/voice/taste.md line by line first, by whoever
+produced it, and the writer seat's grading includes a
+taste-compliance pass as its first gate. Canon laws 11 and 12 encode
+the two rulings themselves (length follows the news; framework names
+never print).
