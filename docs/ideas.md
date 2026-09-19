@@ -2276,3 +2276,70 @@ owning seat rather than assumed. Arguments in docs/sales/.
   research seat can audit and diff. Today's finding is the case in point: the
   blind spot was real, and it was findable, and it was fixable in one file,
   because the corpus is ours rather than a query's leftovers.
+### 2026-09-19 — Signal feeds are routed by a triage prompt that has never heard of them (ExO finding)
+
+- Trigger: the coherence audit of the four ecosystem patches merged on
+  2026-09-19, ordered by the owner after incident 19.
+- The contradiction, stated plainly. Three places now say that signal
+  sources never become claims: the research charter ("news, RSS feeds,
+  and releases are ATTENTION SIGNALS ... never become claims"), the
+  design agreed in docs/backlog.md ("signal sources are never distilled
+  into claims"), and the new comment in sources.yaml itself ("never
+  laundered into claims"). The pipeline does not implement any of it.
+  The four new feeds, `hf-blog`, `openai-blog`, `deepmind-blog` and
+  `hn-frontpage`, were added to the same `feeds:` list as everything
+  else with `tier: d`, so `ingest.py` writes them into `papers` and
+  `triage.py` hands them to `prompts/triage.md`, which has exactly one
+  special rule and it is for `gh-*` release feeds. A Hacker News
+  front-page item is therefore judged as if it were a paper, and
+  nothing stops it being routed to `distill` or `deep_read`.
+- Second, smaller inconsistency in the same commit: the sources.yaml
+  comment says triage "routes technical substance to index and news-only
+  items to discard," which is a behavior nobody implemented, in a file
+  that cannot cause behavior. A comment describing a routing rule
+  belongs in the triage prompt, which is where routing happens.
+- Third: `hnrss.org/frontpage` entries carry a comments-link blob as
+  their summary rather than an abstract, so `ingest.py` line 65 will
+  store that blob as the abstract and triage will judge the item on it.
+  Worth one look before the next ingest run.
+- What: the `role:` field the backlog already designed, wired for real.
+  `role: signal` on the four new feeds plus the 19 existing blog and
+  release feeds, `role: evidence` on arXiv and HF daily papers, a
+  `roles` default of evidence so nothing breaks on the way in, and one
+  paragraph in `prompts/triage.md` saying that a signal-role item is
+  `index` at most unless it contains a technique or a measurement, in
+  which case it is `distill` on the same evidence bar as a paper. That
+  last clause matters and should not be dropped: the research charter's
+  coherence fix of 2026-09-19 turns on the difference between the report
+  of an event, which is never evidence, and an artifact with method,
+  which is admissible whatever feed carried it. The published Hugging
+  Face postmortems are the case that proves it.
+- Cost: $0. One field in a yaml file, one filter in ingest or triage,
+  one paragraph in a prompt.
+- Whose call: the engineer's, since sources.yaml, `pipeline/` and
+  `prompts/triage.md` are all outside this seat's writable surface.
+  Filed rather than fixed for that reason.
+- Status: proposed
+
+### 2026-09-19 — The org chart is missing a seat (ExO finding, for the PM)
+
+- Trigger: §5b upkeep during the 2026-09-19 ExO run.
+- What: `docs/agents/org-chart.md` lists nine active seats and two
+  dormant ones. The writer seat is neither. It has a charter at
+  `prompts/writer-agent.md`, a workflow at `.github/workflows/agent-writer.yml`
+  running daily at 16:00 UTC after the digest publishes, an ADR at
+  ADR-28, two successful runs on 2026-09-19, and an open PR at #36. The
+  org's own chart of itself has been missing a working seat since that
+  seat was created. README is already fixed in open PR #39, which takes
+  the count to twelve and adds the writer row, so the chart is the last
+  stale copy.
+- Why it is filed here rather than fixed: the chart's header says the PM
+  maintains it under charter §1b, and quietly editing another seat's
+  living document is how two seats start disagreeing about the truth.
+- The smaller point worth carrying into that edit: this is the same
+  shape as incident 19 in miniature. Nobody was wrong, and the org's
+  self-description drifted from the org anyway, because keeping it true
+  is a duty whose failure is silent.
+- Cost: $0, one row and one count.
+- Whose call: the PM's.
+- Status: proposed
