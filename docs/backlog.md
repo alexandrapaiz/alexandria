@@ -359,3 +359,17 @@ research seat's meta-review: audit prompts and triage scoring for
 recency bias, and propose the change that makes citation velocity and
 evidence of uptake outrank newness in what gets ingested, distilled,
 and featured. Ledger proposal with the diff, owner merges.
+
+## Signal/evidence source roles (owner direction, 2026-09-19)
+
+The owner: our news-awareness exists so curation knows what to look
+for in research; maybe RSS feeds to know what's actually gaining
+traction. Design agreed: tag sources.yaml entries by role, evidence
+(arXiv, HF papers, distilled into claims) versus signal (the 19
+existing blog/release feeds plus a small news tier, e.g. Hacker News
+front-page RSS), where signal sources are never distilled into
+claims and instead feed the research seat's weekly signal read
+(spikes cross-referenced against corpus coverage, ending in
+ingestion steering). Engineer wires the role field and the signal
+extraction; research consumes it in the brief. Ledger proposal with
+the diff, owner merges.
