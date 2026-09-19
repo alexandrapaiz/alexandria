@@ -96,3 +96,20 @@ the chair and the PM record her rulings.
   now incident 20: recording a taste ruling is not enforcing it, and
   every sample or issue must be checked against taste.md before it
   reaches her.
+- 2026-09-19 — THE OUTSIDER TEST, from her read of the first
+  new-generator issue: "much better on prose" AND "it was hard to
+  read in its entirety and actually understand what's going on. i
+  feel like an outsider to something privy while reading. thats an
+  issue." Ruling: the issue must read whole, start to finish, by a
+  smart builder who is NOT inside the research world. Every term of
+  art gets its plain-words clause the FIRST time it appears, no
+  exceptions and no assumed vocabulary ("on-policy distillation",
+  "KV cache", "preference alignment" are club words until the issue
+  issues membership in the same sentence). A sentence that requires
+  the reader to already hold the field's map gets rewritten.
+- 2026-09-19 — DENSITY is the twin ruling: "avoiding density is
+  important." Compression means fewer words per idea, never more
+  ideas per line. Short paragraphs with air between them; one idea
+  per sentence as the default; an item body that reads as a wall of
+  clauses is the failure even when every clause is good. Fewer items
+  told at a readable pace beat coverage.

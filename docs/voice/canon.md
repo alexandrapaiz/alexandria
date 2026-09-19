@@ -76,6 +76,15 @@ Study decisions, never copy sentences.
 11. Length follows the news. No fixed issue length at any cadence: a
     heavy day runs long, a thin day is honestly short. The amount of
     real news decides, never a template (owner's ruling, 2026-09-19).
+12a. The outsider test and the density rule (owner, 2026-09-19).
+    The whole issue reads by a smart builder outside the research
+    world: every term of art defined in a plain clause at first use,
+    no assumed vocabulary, and any sentence that needs the field's
+    map already in the reader's head gets rewritten. Density is the
+    twin: compression is fewer words per idea, never more ideas per
+    line; short paragraphs, air between them, one idea per sentence
+    by default. The grading pass reads each issue once AS the
+    outsider before grading anything else.
 12. Framework names never print. The structural slots (the
     traction-led lead, the new-and-unproven, what fell behind) are
     the generator's internal skeleton; every PRINTED heading is
