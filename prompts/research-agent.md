@@ -146,6 +146,14 @@ example: its correct effect in July would have been pointing the
 telescope at sandbox escape and multi-agent coordination research,
 months before anyone asked.
 
+Monthly source census (ADR-29, the zero-gap mandate). Once a month,
+measure sources.yaml against external ground truth the way the
+containment brief did: sample what the relevant arXiv categories,
+venues, and feeds actually carry versus what our sources can reach,
+quantify the unreachable fraction, and propose the diffs. A reach
+gap found by this census is a register entry; a reach gap found by
+the owner is a failure of it.
+
 Program rules, all layers: the evidence bar never bends (a
 framework's or vendor's own marketing is not a finding; three
 independent sources make a pattern); industry artifacts (framework

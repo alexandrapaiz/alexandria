@@ -558,3 +558,42 @@ the generator itself improves. Runs daily on Opus after the digest
 publishes, one PR, owner merge. Charter prompts/writer-agent.md,
 workflow agent-writer.yml. The pre-send gate idea is deferred until
 the daily cadence exists in the pipeline; carded for the engineer.
+
+## ADR-29: The zero-gap mandate
+
+Owner's decision (2026-09-19): "Hugging Face was just one example of
+a gap. I want 0 gaps going forward." The mandate, made operational:
+a gap is anything the org is UNAWARE of, cannot REACH, has not
+PROCESSED, or does not ENFORCE, in territory it claims. Consciously
+declining coverage is not a gap; not knowing there was something to
+decline is. Since no system can promise a gap never opens, the
+enforceable promise is that no gap survives a detection cycle, and
+every class has a named hunter:
+
+1. **Awareness gaps** (the world knows, we don't — the HF incident).
+   Hunters: the signal feeds (ingested), the market seat's weekly
+   competitor coverage-gap check, the research seat's weekly signal
+   read. Detection cycle: one week.
+2. **Reach gaps** (relevant work our sources structurally cannot
+   see — cs.CR's 45% non-cross-listed agent-security papers).
+   Hunter: the research seat, MONTHLY source census measuring
+   sources.yaml against external ground truth exactly the way the
+   containment brief did (live-API sampling of what a category
+   carries versus what we can reach). Detection cycle: one month.
+3. **Processing gaps** (owned but never looked at — the 2,445-paper
+   untriaged firehose, 64% of the corpus). Hunters: the engineer's
+   pipeline-health observation and a standing metric the PM carries:
+   percent of ingested corpus triaged, reported every Monday until
+   100 and watched thereafter. Detection cycle: one week.
+4. **Enforcement gaps** (ruled but not checked at the artifact —
+   incident 20). Hunter: the ExO, whose recorded-is-not-enforced
+   audit generalizes the check to every register. Detection cycle:
+   every ExO run.
+
+Every detected gap is an incident-register entry with its class
+named, however small, per the owner's standing repeated-issue rule
+and the diagnosis-over-a-minute rule. The OKR seat's October run
+must carry a coverage key result derived from these metrics, so the
+mandate is scored, not remembered. The benchmark's "speed to the
+frontier" axis now explicitly includes "was anything major missed,"
+judged against competitors and the month's news in retrospect.
