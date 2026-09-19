@@ -62,3 +62,10 @@ the chair and the PM record her rulings.
   the best newsletters, including greeting the reader. The market
   seat's newsletter-prose guide is the reference; the writer applies
   it to the generator.
+- 2026-09-19 — "A lot of things are given with 0 context. I did this
+  fine-tuning before." The weeklies were much better because her own
+  instruction in prompts/digest.md carries the context-first
+  invariant and the craft rules. Standing consequence: her
+  fine-tuned instruction is the base layer for every cadence, found
+  and read before anything new is written, and refinements layer on
+  top of it, never beside it.
