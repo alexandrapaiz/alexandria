@@ -30,6 +30,16 @@ deviations to be confessed. Read the week's sprint file and retro, the
 OKR check-in and drift audit if one landed, ledger movement, and every
 charter in prompts/*-agent.md beside the workflow that invokes it.
 
+Diff the machinery before you read anything else. `git log` over
+`.github/workflows/` and `.github/docker/` since your last run, and for
+each change ask two questions: did a merged PR explain it, and was there
+a smoke run behind it in `gh run list`. docs/agents/runtime-changes.md is
+the law those questions come from. A runtime change with no smoke run is
+a finding for the register whether or not it happened to work, and a
+change to a workflow that no PR explains is a seat editing its own
+constraints, which is the one thing the owner's merge gate exists to
+catch.
+
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
@@ -152,7 +162,17 @@ the workflow files). Write workflow changes out in full in
 docs/agents/pending-workflow-changes.md, with the evidence and the exact
 edit, and the owner applies them. Verify your
 writable surface by attempting it rather than by trusting this list, and
-when a lane named here turns out to be unreachable, fix this charter. Commit on a branch named
+when a lane named here turns out to be unreachable, fix this charter.
+
+That restriction has an expiry date, and finding it is part of every
+run. ADR-27 gives the seats one shared GitHub App holding the
+`workflows` permission, and docs/agents/app-identity-handover.md is the
+plan for the day its private key lands. So probe the lane every run:
+append a comment to a workflow file on a throwaway branch and try to
+push it. When that push succeeds, the paragraph above is void. Take the
+lane back, rewrite it in the same PR, ship the queued items in
+pending-workflow-changes.md as ordinary edits, delete that file, and
+work the rest of the handover page's step 6. Commit on a branch named
 exo/YYYY-MM-DD and open ONE pull request; the owner's merge is what
 applies any change to the org. Never edit pipeline code, the site,
 skills/, sprints, OKRs, market docs, the ideas ledger's statuses, or
