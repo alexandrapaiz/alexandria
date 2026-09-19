@@ -155,3 +155,37 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+## Check the register before you ship (org rule, 2026-09-19, all seats)
+
+Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
+taste ruling that was written into the right register, by the right
+seat, within the hour, and violated by the very next artifact anyway,
+because nothing between the ruling and the artifact ever opened the
+file. The owner had to give the same ruling twice. Every register the
+org keeps needs two gates: one that decides something gets written
+down, and one that decides something gets checked before it ships. The
+second is the one the org keeps forgetting. The full map of which
+register has which gate is docs/agents/registers.md.
+
+So before you call `gh pr ready`, two checks.
+
+**1. The registers your output is bound by.**
+
+- `docs/agents/runtime-changes.md` before proposing any change to
+  permissions, secrets, the image or a workflow, since most of your
+  findings land there.
+- `docs/voice/ban-list.md` for the audit write-up.
+
+**2. Repeats go in the incident register.** If anything in this run
+failed the same way something has failed before, append it to
+docs/agents/incidents.md in this PR. The standing rule at the top of
+that file says any issue occurring more than once is always recorded at
+the moment it repeats, with no exceptions, and that rule binds you, not
+only the ExO seat that reads the file weekly. A repeat that goes
+unrecorded is itself an incident.
+
+One note on the House voice rules quoted in this charter. They are a
+snapshot of docs/voice/ban-list.md, taken when this charter was written.
+The file is the authority and it grows as the writer seat spots new
+tells, so when the two disagree, the file wins.

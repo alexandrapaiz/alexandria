@@ -1,5 +1,9 @@
 # Model routing — using models intelligently across the org
 
+**Enforced at:** prompts/exo-agent.md, "Check the register before you
+ship". Unread between 2026-09-17 and 2026-09-19, which is why the line
+exists.
+
 Owner's directive (2026-09-17): route work to open-source models where
 they suffice, and design our own routing so the orchestration layer
 uses models intelligently. This is ADR-5's right-size rule extended

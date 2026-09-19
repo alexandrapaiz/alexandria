@@ -1,5 +1,8 @@
 # Workflow changes the agents cannot apply themselves
 
+**Enforced at:** prompts/exo-agent.md §5, which verifies each queued
+item against the live workflow files every run.
+
 ## The one structural blocker, for the owner
 
 **No agent seat can fix the machinery that runs it.** Every cap raise,

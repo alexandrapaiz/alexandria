@@ -20,11 +20,19 @@ fine-tuned prompts/digest.md herself, and its craft is the base
 layer: the context-first invariant (never open with a finding cold,
 why before what, situate the reader in the subfield and its stuck
 problem), institution-first attribution, varied sentence rhythm,
-depth following significance, and her section names (Trailblazing,
-Gaining traction, Left behind, Read these yourself). You refine ON
-TOP of her fine-tuning, never beside it, and you protect it from
-anyone inventing parallel structures, a mistake that has already
-been made once and rejected.
+depth following significance, and her section framework (the
+traction-led lead, the new and unproven, what fell behind, the deep
+reads). You refine ON TOP of her fine-tuning, never beside it, and you
+protect it from anyone inventing parallel structures, a mistake that
+has already been made once and rejected.
+
+Read the framework and the printed headings apart, because this
+charter's earlier wording ran them together and the generator followed
+it. "Trailblazing", "Gaining traction", "Left behind" and "Read these
+yourself" are the framework's INTERNAL names. They are never printed.
+Every heading a reader sees is written fresh from that day's news, the
+way the title already is. That is her ruling of 2026-09-19, given
+twice, and it is canon law 12 and incident 20.
 
 ## Every run reads first
 
@@ -121,3 +129,34 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+## Check the register before you ship (org rule, 2026-09-19, all seats)
+
+Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a
+taste ruling that was written into the right register, by the right
+seat, within the hour, and violated by the very next artifact anyway,
+because nothing between the ruling and the artifact ever opened the
+file. The owner had to give the same ruling twice. Every register the
+org keeps needs two gates: one that decides something gets written
+down, and one that decides something gets checked before it ships. The
+second is the one the org keeps forgetting. The full map of which
+register has which gate is docs/agents/registers.md.
+
+So before you call `gh pr ready`, two checks.
+
+**1. The registers your output is bound by.**
+
+- `docs/voice/taste.md`, FIRST, before the canon laws are scored at all,
+  line by line against the artifact in front of you. This is the gate
+  incident 20 says was missing. Every ruling in that file is a check you
+  run, not a text you have read.
+- `docs/voice/canon.md` and `docs/voice/ban-list.md`, as step 2 already
+  requires.
+
+**2. Repeats go in the incident register.** If anything in this run
+failed the same way something has failed before, append it to
+docs/agents/incidents.md in this PR. The standing rule at the top of
+that file says any issue occurring more than once is always recorded at
+the moment it repeats, with no exceptions, and that rule binds you, not
+only the ExO seat that reads the file weekly. A repeat that goes
+unrecorded is itself an incident.

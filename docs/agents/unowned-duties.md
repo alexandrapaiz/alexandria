@@ -1,5 +1,8 @@
 # Unowned duties
 
+**Enforced at:** prompts/exo-agent.md §3b, the unowned-duty audit, every
+run.
+
 Maintained by the ExO agent (charter §3b). Created 2026-09-19 after
 incident 19, the Hugging Face incident that no seat captured.
 
