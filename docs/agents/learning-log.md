@@ -500,12 +500,12 @@ halves, because the class has two shapes.
 1. *Vocabulary absence.* Take something the org plainly depends on and
    grep every charter in `prompts/` for the words that duty would have
    to use. The absence of the vocabulary is the finding. This run found
-   three real gaps in a single grep: no charter anywhere contains legal,
+   three real gaps in a single grep. No charter anywhere contains legal,
    privacy, GDPR, CAN-SPAM, copyright or robots.txt, while the site
    already stores email addresses and the pricing page already promises
-   an unsubscribe link that does not exist yet; no charter contains
+   an unsubscribe link that does not exist yet. No charter contains
    backup, restore or pg_dump, while one free-tier Postgres holds the
-   entire corpus; and quota and free-tier headroom live only in the
+   entire corpus. Quota and free-tier headroom live only in the
    finance charter, which is dormant. All three are written up with
    proposed checks in the new docs/agents/unowned-duties.md.
 2. *Split custody.* A duty that three seats contribute to and none owns
