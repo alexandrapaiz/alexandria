@@ -712,3 +712,52 @@ produced it, and the writer seat's grading includes a
 taste-compliance pass as its first gate. Canon laws 11 and 12 encode
 the two rulings themselves (length follows the news; framework names
 never print).
+
+### Incident 20, the blameless postmortem (ExO, 2026-09-19, owner-ordered)
+
+**What happened, without blame.** The chair recorded the ruling
+correctly and fast. The register did its job. The next artifact broke
+the rule anyway, so the owner gave the same ruling a second time, in
+capitals. Nobody skipped a step. There was no step.
+
+**Why, mechanically.** The path from a ruling to an artifact has two
+halves, and the org had built only the first. The archive-side half asks
+who writes the rule down, when, and where. The artifact-side half asks
+who opens that file and compares the thing about to ship against it. A
+register with a perfect archive-side gate and no artifact-side gate is
+documentation, and documentation does not stop anything. In this case
+docs/voice/taste.md was read by exactly one charter, the writer's, and
+that charter's grading step scored artifacts against the canon laws and
+the ban list, never against the rulings file itself.
+
+**The sharper half, found while generalizing.** The writer's charter
+did not merely fail to check taste.md. It contradicted it. The custody
+section told the seat to protect the owner's fine-tuning including "her
+section names (Trailblazing, Gaining traction, Left behind, Read these
+yourself)", written before the ruling that those names are internal and
+never print. So an agent doing exactly what its charter said would
+preserve the violation. A ruling recorded in one file and contradicted
+in another is worse than a ruling recorded nowhere, because the second
+file is the one the agent actually reads at work.
+
+**The class, named.** Recording is not enforcing. Generalized across all
+twelve seats in docs/agents/registers.md, which maps every register the
+org keeps to the place its enforcement gate actually sits. The audit
+found the same shape in seven more places, the worst of them being this
+file. Eleven of twelve charters cited docs/agents/incidents.md only
+inside the ship-first boilerplate, as the evidence for a different rule,
+and no seat was told to open it or to append to it. The standing rule at
+the top of this register binds every seat and lived in no charter.
+
+**The fix, shipped.** Every charter now ends with "Check the register
+before you ship", naming that seat's binding registers and putting the
+standing rule inside the charter. Every register under docs/agents/
+carries an `Enforced at:` line. The ExO charter gained §3d, a weekly
+sweep with a grep that finds unenforced registers without waiting for
+the owner to repeat herself.
+
+**What the org grows from it.** A register is now understood as half a
+mechanism. The other half is a line in whoever's charter produces the
+artifact, and the two ship together or the register is decoration. The
+detector of last resort, the owner saying a thing twice, stays in place
+and is now explicitly the worst case rather than the design.
