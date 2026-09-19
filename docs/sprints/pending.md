@@ -265,8 +265,11 @@ directly). Two PRs remain open:
     above, blocking every seat's ability to land a workflow-file fix
     (including the second skill-extraction cron this run proposes in
     docs/ideas.md) without going through you by hand each time.
-14. **The domain** (decision 11, 2026-09-18) — you purchase; three
-    candidate names proposed below in "Domain." No agent can buy it.
+14. ~~The domain~~ — **DONE, 2026-09-18: the owner purchased
+    libraryofalexandria.dev on GoDaddy.** Remaining: point it at Vercel
+    (two DNS records at GoDaddy plus adding the domain in the Vercel
+    project) once the env vars land. Decision 11's "real domain"
+    non-negotiable is satisfied.
 
 ## Resolved since last noted (no longer pending)
 
