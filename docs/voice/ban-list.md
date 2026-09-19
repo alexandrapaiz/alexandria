@@ -49,3 +49,19 @@ the owner's word.
 16. One paper wearing several hats. Splitting a single paper across
     two or three items, or calling two papers "several teams", makes a
     thin week look broad. State plainly when findings share a source.
+17. The greeting that carries no information. "Welcome to another edition
+    of...", "Happy Monday", "Hope you had a great week." A newsletter
+    should say hello, and the owner asked for it back, but a hello that
+    would fit any issue of any newsletter on any day is a form being
+    filled in. The greeting earns its line by being true about this
+    particular day. Added 2026-09-19 with the greeting rule.
+18. The section that defends itself. An intro explaining why a section is
+    worth reading ("why tracking this matters: acting on stale results is
+    how systems get built on sand") is the ranking-narration tell wearing
+    a different hat. Frame the contents, never the container. Added
+    2026-09-19 from the owner's no-meta-commentary ruling.
+19. Headings that name a category instead of speaking. "Compounding", "New
+    and unproven", "Key takeaways", "What this means". A heading that
+    sorts rows reads as machine output no matter how good the prose under
+    it is. The four section names are the owner's and are fixed. Added
+    2026-09-19 from her heading ruling.

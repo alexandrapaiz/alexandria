@@ -1621,3 +1621,42 @@ owning seat rather than assumed. Arguments in docs/sales/.
   one covers `add_masthead`.
 - Whose call: the owner's on the words, the engineer's on the code.
 - Status: proposed
+
+### 2026-09-19 — The date range arrives as an en dash (writer seat, run 2)
+- Trigger: reading prompts/digest.md end to end. The prompt tells the
+  issue to print `dates` verbatim in the title, and it also forbids
+  non-ASCII punctuation, because typesetter characters break the reader's
+  search box and the agent that loads the issue. The payload's example
+  range is "September 7–13, 2026", with an en dash, so the two rules
+  contradict each other on the single most-read line of the issue.
+- Fixed for now in the prompt: the title rule normalizes the range to a
+  plain hyphen, and the payload glossary says the dash arrives and ships
+  as ASCII. That works, but it asks the model to remember a character
+  substitution on every issue, which is the least reliable place to put
+  it.
+- Better fix, in code: emit `dates` with an ASCII hyphen where the
+  payload is assembled, and the prompt rule becomes unnecessary.
+- Whose call: the engineer's. This seat does not write pipeline code.
+- Status: proposed
+
+### 2026-09-19 — The newsletter prose guide was merged as a stub (writer seat, run 2)
+- Trigger: the owner ordered the market seat's prose guide applied to the
+  generator. `docs/market/newsletter-prose-guide.md` is on main, but it
+  contains its header, its commissioning note, and "Work in progress —
+  populating from primary sources now." No guidance points. PR #38's
+  description said "Research in progress — marking ready when the guide
+  is complete" and it was merged anyway.
+- Consequence: this run's craft changes came from the canon's References
+  section and the owner's taste rulings instead, which is stated plainly
+  in the run 2 review. The greeting, heading, item and sign-off rules now
+  in prompts/digest.md were not derived from any study of the actual
+  newsletters, because no such study exists yet in the repo.
+- What is owed: when the guide is populated, the writer seat re-applies
+  it on its own terms and reconciles it against what is already in the
+  prompt. Where it contradicts a taste ruling, the ruling wins.
+- Also worth deciding: whether a draft-in-progress PR should be
+  mergeable at all when a downstream seat is ordered to depend on it.
+  That is a process question for the PM, not a voice question.
+- Whose call: the market seat to finish it, this seat to apply it, the
+  PM on the process point.
+- Status: proposed
