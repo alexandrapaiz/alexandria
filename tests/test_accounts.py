@@ -228,3 +228,27 @@ def test_account_core_logic():
         text=True,
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+# ------------------------------------------------------- the real parser
+
+def test_schema_parses_as_postgresql():
+    """Every assertion above reads schema.sql as text, which cannot tell a
+    valid statement from a typo. pglast is libpg_query, the server's own
+    parser, so this is the one check that says the file would actually
+    apply. It covers the whole file, not just this run's additions."""
+    pglast = pytest.importorskip("pglast", reason="pip install -r requirements-dev.txt")
+    statements = pglast.parse_sql(SCHEMA)
+    assert len(statements) > 20
+
+    created = {
+        s.stmt.relation.relname
+        for s in statements
+        if type(s.stmt).__name__ == "CreateStmt"
+    }
+    assert {"users", "subscribers"} <= created
+
+    # The DO block's body is plpgsql, which the SQL parser accepts as an
+    # opaque string. What runs is the plpgsql, so parse that too.
+    block = re.search(r"do \$\$.*?\$\$;", SCHEMA, re.S | re.I)
+    pglast.parse_plpgsql(block.group(0))
