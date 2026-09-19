@@ -1744,3 +1744,31 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the market seat's, on its own file. This seat does not
   write in docs/market/.
 - Status: proposed
+
+### 2026-09-19 — The traction section counts a paper supporting itself (writer seat, run 5)
+- Trigger: run 5 pulled the claims behind today's issue to rewrite two
+  items and checked where their support came from. The on-policy
+  distillation item that leads the traction slot has five of its six
+  `supports` edges drawn from its own paper, `arxiv:2609.04172`
+  supporting `arxiv:2609.04172`.
+- The measurement, run today against the live database: 68 of 98
+  `supports` edges join two claims from the SAME paper. Under the
+  current query, 24 claims clear the `having count(*) >= 2` bar. If the
+  bar were two distinct supporting PAPERS, 4 would.
+- Why it matters more than a normal data bug: traction is the owner's
+  standing law, the traction slot leads every issue, and
+  prompts/digest.md instructs the writer to translate the count into
+  "three separate papers built on it this week" or "three independent
+  groups now report the same effect". For most of today's traction
+  items that sentence is false, and the prompt cannot detect it, because
+  the payload carries the supported claim and its count and never the
+  supporting papers' ids.
+- Proposal, `pipeline/weekly.py:172`, the `supported` query: join the
+  source claim to its paper and add `and sc.paper_id <> c.paper_id`,
+  then count distinct source papers rather than edges. Carry the
+  distinct-paper count into the payload so the issue says a true thing.
+  Four honest traction items beat 24 that rest on a paper agreeing with
+  itself, and canon law 11 already says a thin day is honestly short.
+- Whose call: the engineer's. This seat does not touch pipeline code,
+  and a prompt rule cannot fix it (charter, structure watch).
+- Status: proposed
