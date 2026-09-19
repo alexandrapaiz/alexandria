@@ -38,3 +38,11 @@ the chair and the PM record her rulings.
 - 2026-09-19 — Daily cadence adopted so the product can be seen and
   improved easily; the weekly stays the synthesis and must argue,
   not list.
+- 2026-09-19 — NO meta-commentary inside the newsletter. Her example,
+  rejected verbatim: "Ranked by traction in the claim graph, not by
+  release date. A claim rises here when independent papers keep
+  supporting it." The issue never narrates its own methodology,
+  ranking logic, or virtues. The ranking must simply be right; the
+  reader feels it working without being told. Method explanations
+  live on the site (mission, about), never inside an issue. In-line
+  evidence grades on items stay; standing process narration goes.

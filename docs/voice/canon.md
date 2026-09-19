@@ -44,14 +44,18 @@ Study decisions, never copy sentences.
    ranking says what earned each slot (the relevance law).
 6. Evidence grades in-line: "authors' own experiments, not yet
    replicated" is product, not weakness.
-7. Honesty notes are product: when an instrument is under-powered or
-   a bias exists, the issue says so plainly.
+7. Honesty serves items, never the method: grade an item's evidence
+   in-line, and disclose a bias or limitation only when it materially
+   affects that day's content, in one plain sentence. The issue NEVER
+   narrates its own methodology, ranking logic, or virtues (owner's
+   ruling, 2026-09-19); method explanations live on the site, not in
+   the reader's way.
 8. Links go to the full text (arxiv.org/html/... when it exists, the
    abstract page as fallback): one less step between claim and
    evidence is the product promise.
 9. Structure of the daily: Compounding (traction-ranked), New and
    unproven (labeled as such), Left behind (what lost ground), the
-   instrument note, the dual-audience close. The weekly is the
+   dual-audience close. No standing meta sections. The weekly is the
    synthesis and must argue, not list.
 10. "You read to decide. Your agents load to act." The dual audience
     appears in every issue's close.
