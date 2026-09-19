@@ -76,24 +76,26 @@ same fixed template, that is the failure mode this section exists to prevent.
   agent that loads the issue, and both of those are the audience.
 - **The four section names are the owner's, and they are fixed.** Gaining
   traction, Trailblazing, Left behind, Read these yourself. Never rename them,
-  never add a fifth, never invent a taxonomy label beside them. "Compounding"
-  and "New and unproven" were invented once and rejected, because a heading
-  that names a category reads like a machine sorting rows, and the ordering
-  those labels described is already carried by her names. Heading craft in
-  this issue lives in the item headlines underneath the four: a headline
-  states that item's finding in plain words, carries no colon explaining
-  itself, and never settles for naming the topic.
-- **Every item has the same spine, at whatever length it earns.** Context
-  first, meaning who was stuck on what, in plain words. Then what changed,
-  with its number and the institution behind it. Then how good that evidence
-  is, graded in the same breath rather than in a footnote. Then what a builder
-  does differently now. Then the source line, *title*, [full text](url). A
-  short item compresses the whole spine into two sentences and the week's
-  biggest gives each part its own paragraph, but the order never inverts,
-  because an item that opens on its number has made the reader climb to find
-  the point. This is a spine and not a template, so no part announces itself
-  with a label, and no two items in an issue move through it in the same
-  sentence shapes.
+  never add a fifth top-level section, never invent a taxonomy label beside
+  them. The lead-ins inside Left behind are not sections and are unaffected.
+  "Compounding" and "New and unproven" were invented once and rejected, because
+  a heading that names a category reads like a machine sorting rows, and the
+  ordering those labels described is already carried by her names. Heading
+  craft in this issue lives in the item headlines underneath the four: a
+  headline states that item's finding in plain words, carries no colon
+  explaining itself, and never settles for naming the topic.
+- **Every item has the same spine, at whatever length it earns.** This governs
+  items in Gaining traction, Trailblazing and Left behind. Read these yourself
+  is a reading list and keeps its own format, given in its section. Context
+  first, meaning who was stuck on what, in plain words. Then what changed, with
+  its number and the institution behind it. Then how good that evidence is,
+  graded in the same breath rather than in a footnote. Then what a builder does
+  differently now. Then the source line, *title*, [full text](url). A short
+  item compresses the whole spine into two sentences and the week's biggest
+  gives each part its own paragraph, but the order never inverts, because an
+  item that opens on its number has made the reader climb to find the point.
+  This is a spine and not a template, so no part announces itself with a label,
+  and no two items in an issue move through it in the same sentence shapes.
 - Write like a sharp colleague explaining over coffee, not a paper abstract
   and not a marketer. Sell what alexandria found, never how the digest gets
   written. The reader wants this week's result, not a peek at the recipe.
@@ -128,7 +130,8 @@ Write the digest as **markdown** with exactly this structure:
 {The title states a FINDING, never a topic, a direction, or a greeting. This
 is the hardest line in the issue to get right and the most valuable, because
 it also ships as the email subject, so it is the only sentence most readers
-will ever see. A category label wastes it.
+will ever see. A category label wastes it, and so does a hello: the greeting
+is house law, but it belongs in the opening line underneath, never here.
 
 The test: a builder who reads this line and nothing else knows whether to
 open the issue. "Richer feedback boosts long-horizon agents" names a
@@ -162,16 +165,15 @@ two, and let the warmth come from knowing the reader's week rather than from
 pleasantries.
 
 One invariant governs all three jobs and everything below them: never open
-with a finding cold. Situate
-the reader first. Name which subfield of AI this week's action is in, named in
-plain words ("training agents with reinforcement learning", "serving models
-cheaply", "post-training"), what problem that field has been stuck on, and
-why that problem matters to someone building AI systems, before naming what
-moved. Why comes before what.
+with a finding cold. Situate the reader first. Name which subfield of AI
+this week's action is in, named in plain words ("training agents with
+reinforcement learning", "serving models cheaply", "post-training"), what
+problem that field has been stuck on, and why that problem matters to someone
+building AI systems, before naming what moved. Why comes before what.
 
 Past that invariant, the shape is yours to vary week to week, on purpose,
-because a fixed recipe repeated every Monday is precisely the mechanical feeling
-this rewrite exists to fix. Some weeks the orientation is two plain
+because a fixed recipe repeated every Monday is precisely the mechanical
+feeling this rewrite exists to fix. Some weeks the orientation is two plain
 sentences about the problem the field has been stuck on, and then the
 week's sharpest number lands hard in the third ("Best-of-three sampling
 just beat sequential self-correction by up to 9.7 points, using less
@@ -184,19 +186,18 @@ the rhetorical kind that answers itself. Pick whichever shape actually fits
 this week's material, and never default to the same shape twice running
 without noticing that you are defaulting.
 
-Whatever the shape, cover both jobs before the section ends: 2-3 standout
-findings, attributed by INSTITUTION first ("researchers at Tsinghua and
-Moonshot AI", from the `institutions` field, because readers know labs and
-not author names, falling back to "a team led by <first author>" only when
-institutions are genuinely missing), each showing what they did in plain
-words and what it
-changes, and a synthesis of what current connects them and where the field
-is heading, grounded in an item that appears below, using transition words
-to move between findings rather than restating "next," and bolding only the
-phrases a skimmer must not miss (not a fixed count, so judge it, but if
-nothing is left unbolded the bolding has stopped meaning anything). At most
-one <u>underlined</u> phrase across the whole opening, only if one truly
-carries the week's single sharpest turn.
+Whatever the shape, cover the orienting and the interpreting before the section
+ends: 2-3 standout findings, attributed by INSTITUTION first ("researchers at
+Tsinghua and Moonshot AI", from the `institutions` field, because readers know
+labs and not author names, falling back to "a team led by <first author>" only
+when institutions are genuinely missing), each showing what they did in plain
+words and what it changes, and a synthesis of what current connects them and
+where the field is heading, grounded in an item that appears below, using
+transition words to move between findings rather than restating "next," and
+bolding only the phrases a skimmer must not miss (not a fixed count, so judge
+it, but if nothing is left unbolded the bolding has stopped meaning anything).
+At most one <u>underlined</u> phrase across the whole opening, only if one
+truly carries the week's single sharpest turn.
 
 The tests: a reader with no AI background past building software understands
 the opening completely, a skimmer reading only the bolds gets the week's
@@ -225,8 +226,8 @@ top item earns real treatment. A secondary one can be two sentences. Work
 that has not actually compounded does not belong in this section at all, so
 four items that matter beat ten that tie. If the evidence is thin this week,
 say so in one plain line where it matters and move on. Never explain the
-ranking itself, because the section earns trust by its contents, not by a sentence
-about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
+ranking itself, because the section earns trust by its contents and not by a
+sentence about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 
 ## Trailblazing
 
@@ -235,9 +236,9 @@ traction yet is listed as such and never dressed up as importance. An item
 may claim more than that only by arguing its evidence on the spot, the way a
 reproduction count earns its exception. 3-5 items, depth over breadth, but
 not uniform depth, so apply the significance rule above per item. Each item
-is **prose, not
-bullet points**: a bold one-line headline in plain words, then flowing
-paragraphs sized to how much the finding actually earns: the week's biggest
+is **prose, not bullet points**: a bold one-line headline in plain words,
+then flowing paragraphs sized to how much the finding actually earns: the
+week's biggest
 result gets the full treatment below, while a real but smaller finding can be
 tight and short rather than stretched to match.
 
@@ -273,11 +274,12 @@ label exists to prevent.}
 
 ## Left behind
 
-{Research that has aged out. Open the section with 1-2 sentences of framing
-prose that tell the reader what they are looking at: findings from recent
-research that newer evidence has now overturned or superseded, and why
-tracking this matters (acting on stale results is how systems get built on
-sand). Write the framing fresh each week so it connects to the items below.
+{Research that has aged out. Open with 1-2 sentences of framing prose about
+this week's overturned findings specifically, written fresh so it leads into
+the items below: what belief the week dislodged, and who dislodged it. Frame
+the content, never the section. "Acting on stale results is how systems get
+built on sand" explains why the section exists, which is the narration the
+owner ruled out, and the reader does not need the section defended to them.
 
 Then two kinds, each introduced, not just labeled:
 
@@ -300,24 +302,10 @@ Judge every edge before you print it. A `contradicts` edge that is really a
 scope limit ("the same system scores lower on memory-heavy tasks") is not a
 contradiction, and a `refines` edge that only tunes a detail is not a
 replacement. Drop what does not survive your reading, and note that the drop
-is ledger information, not reader-facing copy. Never let one result appear twice, once
-as the overturner and once as the overturned.
+is ledger information and not reader-facing copy. Never let one result appear
+twice, once as the overturner and once as the overturned.
 
 If a kind is empty, say so in one line, because that is itself information.}
-
-**Honesty without narration (owner's ruling, 2026-09-19).** There is NO
-standing meta section, and the issue never narrates its own methodology,
-ranking logic, or virtues. Two rejected examples are recorded verbatim in
-docs/voice/taste.md, so produce nothing shaped like them, including section
-intros that justify the section. Honesty still binds, but it serves items,
-in place, in one plain sentence: when two papers carry the week's new work,
-say "two papers carry this week's new work" where the items appear and never
-"several teams". When a headline number leans on a flattering or obsolete
-baseline, say so in that item's grade. When a stream came back empty or an
-edge was judged wrong, that is pipeline information for the ledger, not
-reader-facing copy, unless it materially changes what the reader should
-believe today, in which case one sentence at the affected item. Method
-explanations live on the site, never inside an issue.
 
 ## Read these yourself
 
@@ -380,6 +368,20 @@ Rules:
   payload supports. The grade is product, not hedging. It is the difference
   between this and a press release, and a reader deciding what to build has to
   know how much weight a number carries.
+- **Honesty without narration (owner's ruling, 2026-09-19).** Nothing stands
+  between Left behind and Read these yourself, because there is no standing
+  meta section and the issue never narrates its own methodology, ranking
+  logic, or virtues. Two rejected examples are recorded verbatim in
+  docs/voice/taste.md, so produce nothing shaped like them, including section
+  intros that justify the section. Honesty still binds, but it serves items,
+  in place, in one plain sentence. When two papers carry the week's new work,
+  say "two papers carry this week's new work" where the items appear and
+  never "several teams". When a headline number leans on a flattering or
+  obsolete baseline, say so in that item's grade. When a stream came back
+  empty or an edge was judged wrong, that is pipeline information for the
+  ledger and not reader-facing copy, unless it materially changes what the
+  reader should believe today, in which case one sentence at the affected
+  item. Method explanations live on the site, never inside an issue.
 - Judgment over coverage: fewer, sharper items beat completeness. It is fine
   for a section to hold 2 items.
 - **The weekly argues, it does not list.** Name one case in the opening, in a
