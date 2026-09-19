@@ -13,6 +13,16 @@ arxiv:
   - {category: cs.IR, tier: a}
   - {category: cs.LG, tier: a-low}
   - {category: cs.DC, tier: a-low}   # systems/distributed papers; ML-systems work often lands here
+  # Agent containment's actual arXiv home (research brief 2026-09-19). Measured
+  # 2026-09-19 against the live arXiv API: 45 of the 100 most recent cs.CR papers
+  # matching abs:"agent" carry no cross-list into any category above, so ~7
+  # agent-security papers a day were structurally unreachable — including
+  # "Authorization Architectures for Tool-Using AI Agents" (2609.15906), "Trust
+  # propagation and structural containment in Multi-agent LLM pipelines"
+  # (2609.17648), and "SkillSecurer" (2609.14079), which is about prompt-injection
+  # in agent skills, the artifact this project sells. a-low, not a: cs.CR runs ~34
+  # papers/day and most of it is blockchain, network and crypto work, not agents.
+  - {category: cs.CR, tier: a-low}
 
 hf_daily_papers:
   url: https://huggingface.co/api/daily_papers
