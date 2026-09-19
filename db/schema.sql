@@ -104,18 +104,28 @@ create table if not exists citation_log (
 
 create index if not exists citation_log_paper_idx on citation_log (paper_id, checked_at desc);
 
--- ============ digests: the weekly product ============
--- One row per ISO week. This row is the database of record. The digest is
--- never published to the repo (email-only, gitignored digests/) and survives
--- even if the email send fails.
+-- ============ digests: the newsletter ============
+-- One row per issue. This row is the database of record. The digest is never
+-- published to the repo (email-only, gitignored digests/) and survives even if
+-- the email send fails.
+--
+-- Two kinds share the table, and `week` is the issue key for both:
+--   kind 'weekly' keys on the ISO week that just ended ('2026-W37')
+--   kind 'daily'  keys on the calendar date it covers ('2026-09-19')
+-- The two formats cannot collide, so one unique key still identifies an issue.
 create table if not exists digests (
     id         bigserial primary key,
-    week       text not null unique,        -- e.g. '2026-W37'
+    week       text not null unique,        -- e.g. '2026-W37' or '2026-09-19'
     body       text not null,               -- the digest markdown
     model      text,
     prompt_sha text,
     created_at timestamptz not null default now()
 );
+
+-- Added 2026-09-19 when the newsletter went daily. Defaulting to 'weekly'
+-- backfills every issue sent before that date correctly, since all of them
+-- were weekly.
+alter table digests add column if not exists kind text not null default 'weekly';
 
 -- ============ subscribers: the newsletter list ============
 -- Source of truth for who receives the digest. Friends-and-family phase sends

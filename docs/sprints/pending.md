@@ -273,6 +273,38 @@ directly). Two PRs remain open:
     (two DNS records at GoDaddy plus adding the domain in the Vercel
     project) once the env vars land. Decision 11's "real domain"
     non-negotiable is satisfied.
+15. **Two Modal commands to make the newsletter actually daily** —
+    added 2026-09-19 by the engineer seat, at your own instruction in
+    that day's dispatch, because merging the pull request is not
+    sufficient. PR #35 changes the cron from Monday-only to daily and
+    adds a `kind` column to `digests`, but Modal deploys from a local
+    checkout and this repository has no CI deploy job, so nothing in
+    that PR reaches production until you run these, **in this order,
+    from the repository root after the PR merges**:
+
+    ```
+    modal run pipeline/db_setup.py::apply_schema
+    modal deploy pipeline/weekly.py
+    ```
+
+    Order matters. The schema command adds `digests.kind`, and the first
+    daily run fails to write its issue if that column does not exist
+    yet. Both are safe to re-run: the schema file is idempotent (`add
+    column if not exists`), and a second deploy replaces the first.
+
+    Then one check, worth the thirty seconds: open the
+    `alexandria-weekly` app in the Modal dashboard and confirm it lists
+    exactly one scheduled function, `digest`, on `0 15 * * *`. The app
+    name is deliberately unchanged so this deploy updates the existing
+    app rather than creating a second one, but the function was renamed
+    from `weekly` to `digest` in the same change. A redeploy should
+    retire the old function and its Monday schedule with it. If the
+    dashboard still shows a `weekly` function alongside `digest`, stop
+    and say so, because that would mean two issues go out on Mondays.
+
+    Nothing breaks while this waits. The currently deployed Monday cron
+    keeps sending the weekly digest exactly as it does today; the daily
+    issues simply do not start until you run the commands.
 
 ## Resolved since last noted (no longer pending)
 
