@@ -237,8 +237,8 @@ Then two kinds, each introduced, not just labeled:
 **Contradicted** (lead-in like "First, the claims newer evidence says are
 wrong:") carries each item as a short prose unit with the same context-first
 pyramid as everything else. What was believed and where that belief came
-from, in plain words, then who overturned it and with what evidence
-(attribute by institution); then the practical consequence for a builder.
+from, in plain words, then who overturned it and with what evidence,
+attributed by institution, and then the practical consequence for a builder.
 Never open an item mid-argument with "The claim that...". Set the scene
 first ("An early benchmark result suggested coding agents had hit a hard
 ceiling...").
