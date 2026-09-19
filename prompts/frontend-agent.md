@@ -43,8 +43,14 @@ look; alexandria differentiates as an engineering product.
 
 ## The run
 
-1. **Build and see.** npm install and start the site (site/). Install
-   Playwright with chromium. Screenshot every page (home, library, an
+1. **Build and see.** npm install and start the site (site/). Your run
+   executes in the prebaked agent container (Stage 1, 2026-09-18):
+   Playwright 1.49.1 and its Chromium are already installed at
+   PLAYWRIGHT_BROWSERS_PATH. Use `npx playwright@1.49.1` exactly;
+   installing any other Playwright version will miss the baked
+   browsers and waste minutes downloading. If the pin must move, that
+   is a Dockerfile change, proposed in the ledger, never an in-run
+   install. Screenshot every page (home, library, an
    issue page, skills, graph, pricing, mission, desk) at three
    viewports: iPhone 390x844, iPad 820x1180, desktop 1440x900. Then
    READ every screenshot and judge it: clipped text, overflow, broken
