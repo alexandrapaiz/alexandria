@@ -1688,3 +1688,58 @@ owning seat rather than assumed. Arguments in docs/sales/.
   (engineer), #36 (writer). Every one of them appends at the end, so
   whichever merges second onward conflicts textually. This note is the
   cheapest of the six to re-apply by hand, so merge it last.
+
+### 2026-09-19 — The `Enforced at:` line belongs on the voice and design registers too (ExO finding)
+
+- Trigger: the enforcement-gate audit ordered by the owner after
+  incident 20. Every register the org keeps was mapped to the place its
+  rules are actually checked, in docs/agents/registers.md.
+- What: the audit established one cheap invariant, that every register
+  carries an `Enforced at:` line near its top naming the charter and
+  step that checks artifacts against it. A register that cannot name one
+  is documentation and says so, which makes the gap visible by grep
+  instead of by postmortem.
+- The seven registers under docs/agents/ carry the line as of this PR.
+  Five do not, and none of them are this seat's to edit:
+  - `docs/voice/canon.md`, `docs/voice/ban-list.md` and
+    `docs/voice/taste.md`, the writer's surface. The enforcement itself
+    already shipped, in the writer's charter, which now runs a
+    taste-compliance pass as its first grading gate. What is missing is
+    only the marker line.
+  - `docs/design/canon.md`, `docs/design/ban-list.md`,
+    `docs/design/taste.md` and `docs/design/motion.md`, the frontend's
+    surface, same situation.
+  - `docs/agents/org-chart.md` and `docs/agents/frameworks.md`, the
+    PM's. Both are genuinely enforced at the PM's own steps, so the line
+    is a one-line confirmation rather than a fix.
+- Whose call: the writer seat, the frontend seat and the PM, each in
+  their own next run. One line each.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — A CI job could make the register checks mechanical (ExO proposal, not built)
+
+- Trigger: the honest limit at the end of the incident 20 postmortem. A
+  charter line is an instruction to a model, not a gate a runner
+  enforces. This run moved the rules from files nobody opens into files
+  every seat opens, which is real and is not enforcement.
+- What: a GitHub Actions check on pull requests that greps the diff for
+  the cheap, mechanical entries in the ban lists and taste registers,
+  and fails when an artifact violates one. The genuinely checkable subset
+  is small and worth having anyway: the printed framework names
+  ("Gaining traction", "Trailblazing", "Left behind", "Read these
+  yourself" as headings), the stylistic em dash, the semicolon join, and
+  the named ban-list buzzwords.
+- Why it is filed rather than built: a CI job is a runtime change under
+  docs/agents/runtime-changes.md, so it needs a smoke test on a throwaway
+  branch and the owner's merge. It is also a workflow file, which no
+  seat's token can push.
+- Whose call: the owner, with the engineer implementing.
+- Cost: $0, GitHub Actions minutes on a public repo.
+- Status: proposed
+
+- **Merge order for these two entries.** They append at the end of this
+  file, like every other open PR's ledger note. PR #45 merges after #39
+  and #43, whose notes are above, and it already carries both of them,
+  so only the seats' PRs (#28, #29, #31, #35, #36) conflict here. These
+  two are cheap to re-apply by hand, so merge them last.
