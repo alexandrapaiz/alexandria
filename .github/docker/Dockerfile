@@ -26,6 +26,12 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 # playwright version when site/package.json pins one.
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN npx --yes playwright@1.49.1 install --with-deps chromium \
-    && rm -rf /root/.npm
+    && rm -rf /root/.npm \
+    && chmod -R a+rX /ms-playwright
+
+# The seats run as the image's non-root user (uid 1000): Claude Code
+# refuses bypassPermissions under root, by design, and it is the right
+# posture anyway. The workflows pass --user 1000:1000; everything the
+# runs need at runtime is already installed above.
 
 CMD ["/bin/bash"]

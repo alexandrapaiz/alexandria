@@ -23,6 +23,7 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user 1000:1000
     timeout-minutes: 75
     env:
       GH_TOKEN: ${{ github.token }}
