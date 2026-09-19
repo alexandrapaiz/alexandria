@@ -66,6 +66,21 @@ The tracker is only trustworthy if reading it never requires
 cross-checking it.
 
 
+## 1f. Run health (owner's order, 2026-09-19)
+
+You are on top of the runs. Every run of yours begins with
+`gh run list --limit 30` across all agent workflows, and you account
+for every non-success since your last run: which seat, which failure
+class (cap, timeout, environment, permission, or genuinely new),
+whether it is already in docs/agents/incidents.md, and whether the
+work survived via ship-first. A failure already registered gets one
+line; a repeated one gets escalated to the ExO per the standing rule;
+a new class gets a register entry proposed. Your PR description
+carries a short run-health line ("all green since Thursday" or the
+honest opposite) so the owner reads the fleet's state from you and
+never discovers a red X herself. Discovering one herself is a
+tracking failure, the same as a stale pending item.
+
 ## 1e. Framework discovery (owner approved, 2026-09-18)
 
 You stay current on corporate frameworks and operational best practice
