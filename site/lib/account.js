@@ -1,6 +1,12 @@
 import { neon } from "@neondatabase/serverless";
 import { currentUser } from "@clerk/nextjs/server";
-import { userRowFromClerk, primaryEmail, displayName, clerkId } from "./clerk-user";
+import {
+  userRowFromClerk,
+  primaryEmail,
+  displayName,
+  clerkId,
+  isEntitled,
+} from "./account-core";
 
 // The account layer (ADR-30). Neon holds the durable row; Clerk holds the
 // session. Everything that needs to know who someone is reads through here,
@@ -107,15 +113,4 @@ export async function currentAccount() {
     // opens when the database is unreachable is not a check.
     return base;
   }
-}
-
-// Two ways to hold the paid spine today, and they are both legacy-shaped
-// because payments are not open yet (ADR-30 keeps the door closed). A
-// comped or 'full' subscribers row is how the owner's friends have it now.
-// subscription_status is how Polar will write it when it opens. Until then
-// nothing sets the second one, so in practice this reads the first.
-export function isEntitled(row) {
-  if (!row) return false;
-  if (row.subscription_status === "active") return true;
-  return row.digest_status === "active" && (row.digest_tier === "full" || row.digest_comp === true);
 }

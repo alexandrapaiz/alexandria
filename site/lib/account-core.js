@@ -1,7 +1,14 @@
-// Pure translation between a Clerk user payload and an alexandria `users`
-// row. No imports, no network, no database: everything here is a function
-// of its argument, which is what makes the webhook's behaviour testable
-// without a Clerk instance, a signing secret, or a Postgres.
+// Every decision the accounts layer makes, as pure functions: which email
+// is a user's, what their name is, and whether they are entitled to a paid
+// surface. No imports, no network, no database. Everything here is a
+// function of its argument, which is what makes the webhook's behaviour and
+// the gate's behaviour testable without a Clerk instance, a signing secret,
+// or a Postgres. site/lib/account.js is the other half, and it does the I/O.
+//
+// Keep this file import-free. tests/accounts.test.mjs loads it by reading
+// the source and evaluating it, which works precisely because it has no
+// imports to resolve, and that is cheaper than making the whole site a
+// module package just to test four functions.
 //
 // Two shapes arrive at these functions and they are not the same shape.
 // A webhook event carries raw API JSON (snake_case: `email_addresses`,
@@ -63,4 +70,23 @@ export function userRowFromClerk(user) {
   const email = primaryEmail(user);
   if (!id || !email) return null;
   return { clerkId: id, email: email.toLowerCase(), name: displayName(user) };
+}
+
+// Whether this account may open a paid surface. Two ways to hold the spine
+// today, and both are legacy-shaped because payments are not open yet
+// (ADR-30 keeps the door closed). A comped or 'full' subscribers row is how
+// the owner's friends have it now. subscription_status is how Polar will
+// write it when payments open. Until then nothing sets the second one, so
+// in practice this reads the first.
+//
+// Takes a row from the user_accounts view, so the column names are the
+// database's, not the helper's. Anything falsy is not entitled: a caller
+// that could not load a row must not get an open door out of it.
+export function isEntitled(row) {
+  if (!row) return false;
+  if (row.subscription_status === "active") return true;
+  return (
+    row.digest_status === "active" &&
+    (row.digest_tier === "full" || row.digest_comp === true)
+  );
 }

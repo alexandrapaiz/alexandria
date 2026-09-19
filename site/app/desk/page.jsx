@@ -1,6 +1,12 @@
 import { marked } from "marked";
+import { currentAccount } from "../../lib/account";
 
-export const revalidate = 60;
+// The desk reads the signed-in account, and reading a session means reading
+// request headers, which a statically revalidated route cannot do. So the
+// page renders per request. The GitHub calls below keep their own
+// `next: { revalidate: 60 }`, so this costs no extra API calls: the data is
+// still cached for a minute, the shell around it is just rendered fresh.
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Desk — library of alexandr.ia" };
 
 const REPO = "alexandrapaiz/alexandria";
@@ -84,11 +90,18 @@ const ago = (iso) => {
 };
 
 export default async function Desk() {
-  const [open, closed, ideasMd, sprint] = await Promise.all([
+  const [open, closed, ideasMd, sprint, account] = await Promise.all([
     gh("pulls?state=open&per_page=50"),
     gh("pulls?state=closed&per_page=15"),
     raw("docs/ideas.md"),
     newestFile("docs/sprints", "sprint-"),
+    // The first surface that reads the accounts layer (ADR-30). It gates
+    // nothing yet, since the door is closed and the desk is the owner's
+    // own page. What it is here for is to show her, on a page she already
+    // opens daily, whether the Clerk webhook is actually landing rows in
+    // Neon. A signed-in account with no row is the one failure mode that
+    // is otherwise completely silent.
+    currentAccount(),
   ]);
 
   const openPRs = Array.isArray(open) ? open : [];
@@ -110,6 +123,17 @@ export default async function Desk() {
         {offline && (
           <p className="desk-empty">
             GitHub could not be reached just now. Reload in a minute.
+          </p>
+        )}
+
+        {account && (
+          <p className="desk-empty">
+            Signed in as {account.name || account.email || account.clerkId}.{" "}
+            {account.linked
+              ? `Neon row linked, subscription ${account.subscriptionStatus}${
+                  account.subscriber ? `, on the digest list` : ", not on the digest list"
+                }.`
+              : "No Neon row yet. The Clerk webhook has not landed this account."}
           </p>
         )}
 

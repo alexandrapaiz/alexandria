@@ -1,5 +1,5 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
-import { isHandledEvent } from "../../../lib/clerk-user";
+import { isHandledEvent } from "../../../lib/account-core";
 import { upsertUserFromClerk, deleteUserByClerkId } from "../../../lib/account";
 
 // Clerk's user events, written into Neon (ADR-30). Clerk is the surface
