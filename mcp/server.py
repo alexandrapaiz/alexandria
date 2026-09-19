@@ -378,21 +378,33 @@ def serve():
         }
 
     @mcp.tool
-    def get_digest(week: str | None = None) -> dict:
-        """Fetch the weekly digest — the latest one, or a specific ISO week
-        like '2026-W37'."""
+    def get_digest(week: str | None = None, kind: str = "weekly") -> dict:
+        """Fetch an issue of the digest. Pass an issue key for a specific one:
+        an ISO week like '2026-W37' for a weekly, or a date like '2026-09-19'
+        for a daily. With no key, returns the latest issue of `kind`, which is
+        'weekly' (the Monday synthesis) unless you ask for 'daily'."""
+        if kind not in ("weekly", "daily"):
+            return {"error": "kind must be 'weekly' or 'daily'"}
         with db() as conn:
             if week:
                 row = conn.execute(
-                    "select week, body, created_at from digests where week = %s", (week,)
+                    "select week, kind, body, created_at from digests where week = %s",
+                    (week,),
                 ).fetchone()
             else:
+                # explicitly filtered by kind: before the newsletter went daily
+                # (2026-09-19) the latest row was always the weekly, and an
+                # unfiltered "latest" now silently means "yesterday's daily"
                 row = conn.execute(
-                    "select week, body, created_at from digests order by created_at desc limit 1"
+                    """
+                    select week, kind, body, created_at from digests
+                    where kind = %s order by created_at desc limit 1
+                    """,
+                    (kind,),
                 ).fetchone()
         if not row:
             return {"error": "no digest found"}
-        return {"week": row[0], "body": row[1], "created_at": str(row[2])}
+        return {"week": row[0], "kind": row[1], "body": row[2], "created_at": str(row[3])}
 
     @mcp.tool
     def propose_skill(slug: str, title: str, content: str,

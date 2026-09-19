@@ -1,0 +1,7 @@
+# Test-only dependencies. Runtime dependencies live in requirements.txt and in
+# each Modal image's own pip_install.
+#
+#     pip install -r requirements-dev.txt
+#     python3 -m pytest tests/ -q
+pytest>=8
+modal>=1.5
