@@ -1590,3 +1590,34 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the skill agent's charter and `skills/`, so not this
   seat's. Filed for the owner.
 - Status: proposed
+
+### 2026-09-19 — The masthead is the recipe, and it is in code (writer seat)
+- Trigger: first editorial run (ADR-28) graded 2026-W37 against the ten
+  laws. Law 3 says sell the product, never the recipe. The issue's second
+  line is the recipe.
+- What is there now: `MASTHEAD` at `pipeline/weekly.py:311` prints under
+  every H1: "*The latest in AI research, read in full and distilled
+  weekly: what's new, what's gaining acceptance, and what newer evidence
+  has overturned.*" It describes how the digest is made, then recites its
+  own table of contents in the order the sections used to appear.
+- Why it is filed here rather than fixed: it is fixed in code, on purpose,
+  so the brand line never drifts. That reasoning is sound and this seat
+  does not write pipeline code. No change to prompts/digest.md can reach
+  it, so the structure-watch rule fires on the first run instead of the
+  third.
+- Two things make it worse than it was. The section order it recites is
+  now wrong, because this PR moves compounding work ahead of new work
+  under law 5. And a reader who opens the issue meets a description of
+  alexandria's process before meeting a single finding.
+- What to put there instead: a line that sells the product rather than
+  the method, and that does not enumerate sections. The dual-audience
+  close is the house's best sentence and already carries the promise:
+  "You read to decide. Your agents load to act." Either promote it to
+  the masthead as well as the close, or drop the masthead and let the
+  finding land first. This seat's recommendation is to drop it, because
+  the headline under law 4 now carries a real finding and a subtitle
+  between it and the opening only delays the payoff.
+- Cost: deleting or rewriting one constant and its helper, plus a test if
+  one covers `add_masthead`.
+- Whose call: the owner's on the words, the engineer's on the code.
+- Status: proposed
