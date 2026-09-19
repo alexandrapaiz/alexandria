@@ -216,7 +216,10 @@ directly). Two PRs remain open:
    `digests/2026-W37.md` are readable by anyone who clones the public
    repo. Needs your call on rewriting history (BFG/`git filter-repo`,
    disruptive) versus accepting the exposure.
-5. **Grant the GitHub App `workflows` permission, or don't**
+5. **DECIDED (ADR-27): one shared GitHub App.** Remaining owner step
+   is the two-minute App creation (steps from the chair), then the
+   chair wires it. Was: Grant the GitHub App `workflows` permission,
+   or don't**
    (security, urgent, 2026-09-18) — no seat's token can currently push a
    workflow-file fix (including ExO's, whose charter names this as
    writable). The pinning fix for `actions/checkout` and

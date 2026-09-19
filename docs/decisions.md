@@ -515,3 +515,25 @@ running alongside, in her hands: the Stripe account (an email
 conflict is being resolved), then the domain purchase. The finance
 seat activates at the first real expenditure and books it, CapEx and
 all four questions, from receipts she reports, never from access.
+
+## ADR-27: Seats get one shared GitHub App identity
+
+Owner's decision (2026-09-18), choosing option 1 of the agent-identity
+analysis (Entra Agent ID's idea, translated to where the seats live):
+the eleven seats will act through ONE shared GitHub App instead of the
+owner's personal tokens. The App is a first-class principal: commits
+attribute to the App's bot name rather than to her, tokens are minted
+short-lived per run, permissions are fine-grained (contents, pull
+requests, workflows), and revocation is one click that touches nothing
+personal. Holding the `workflows` permission, the App also closes the
+long-open workflow-scope PAT question: seats gain the ability to fix
+their own machinery through ordinary PRs, and the owner's merge gate
+remains the authority boundary exactly as before. Per-seat Apps (full
+least-privilege, one badge per seat) are the anticipated second step,
+deliberately deferred until the shared App proves out. Implementation
+waits on the owner's two-minute App creation; the chair wires token
+minting into the workflows once APP_ID and APP_PRIVATE_KEY exist as
+secrets. PROJECTS_TOKEN stays as-is for the board. Machine users and
+per-seat PATs were considered and rejected; real Entra with OIDC
+federation was noted as the enterprise-grade version worth watching,
+not adopting.
