@@ -1,5 +1,7 @@
 # Org chart
 
+**Enforced at:** prompts/pm-agent.md §1b, which updates this page whenever seats or initiatives change and flags any initiative with no seat.
+
 Maintained by the PM agent (charter §1b). Owner is Product Owner and
 merges everything; the ExO reviews the workers; every seat is one PR
 per run. Seeded 2026-09-18 by the chair; the PM keeps it current.

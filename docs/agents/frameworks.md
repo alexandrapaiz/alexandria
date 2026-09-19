@@ -1,5 +1,7 @@
 # The frameworks register
 
+**Enforced at:** prompts/pm-agent.md §1e, which triages every framework into this register and kills adopted ones by default at their review date.
+
 Maintained by the PM (charter §1e). The law, the owner's own words in
 spirit: a framework must never consume more than the work it
 organizes. Entries name the problem they solve; one trial at a time;
