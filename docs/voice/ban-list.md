@@ -120,3 +120,40 @@ the owner's word.
     per idea, never more ideas per line, so the fix is air: two or three
     sentences to a paragraph, one idea to a sentence, and one fewer item on
     the day when that will not fit. Added 2026-09-19 from her density ruling.
+26. The label that moved down a level. "**Contradicted**" and
+    "**Replaced**" in bold at the head of a group inside a section do
+    the same job as "Gaining traction" at the head of a section: they
+    sort rows, they fit every issue, and they hand the reader the
+    blueprint. A category word is a category word whether it carries a
+    `##` or a pair of asterisks. Added 2026-09-19 from 2026-W37, where
+    the generator's own example lead-in printed verbatim.
+27. The advice sentence in the same clothes every time. "Builders
+    should replace binary success/failure signals", "Practitioners
+    should adopt these token-level continuity tricks", "Builders of
+    long-horizon agents should embed such feedback": three items, three
+    identical constructions, and by the third the reader has stopped
+    reading the sentence and started recognizing it. Naming the
+    consequence is house law, so vary what it attaches to, not only its
+    verb. Added 2026-09-19 from 2026-W37, three items out of three.
+28. The forecast nothing can check. "This shift suggests that future
+    pipelines will embed verification and observation cues as core
+    components rather than add-on tricks." It cannot be wrong, so it
+    cannot be information, and 2026-W37 spent its one underline on it.
+    A bet with a number or a date attached is worth printing. A
+    direction-of-travel sentence is the place AI prose goes when it has
+    run out of findings. Added 2026-09-19 from 2026-W37's opening.
+29. The invented shared byline. "Finally, researchers at the same
+    group released a 122B Mixture-of-Experts terminal agent" tied two
+    unrelated papers to one team that the payload never said existed.
+    Attribution is a claim about people and carries the same
+    never-invent rule as a number. Added 2026-09-19 from 2026-W37.
+32. The nickname before the introduction. Not jargon, an ordinary word
+    quietly carrying a technical job: "how much of a teacher a student
+    really needs", "drop its teacher mid-training", printed before
+    anyone said that teacher and student are what the field calls a big
+    model training a small one. Rejected verbatim by the owner. It is
+    the club sentence (26) wearing plain English, and it is worse than
+    jargon in one way: nothing on the page looks like a term, so the
+    first-use pass has nothing to list and the writer never notices.
+    Every borrowed word gets the same clause a coined one would.
+    Added 2026-09-19 from the two intro specimens in taste.md.

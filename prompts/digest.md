@@ -93,11 +93,17 @@ same fixed template, that is the failure mode this section exists to prevent.
   appears, in the same sentence, or it does not appear at all. There is no
   assumed vocabulary and no exception for terms that feel basic.
   "On-policy distillation", "KV cache", "preference alignment", "credit
-  assignment", "rollout", "verifier" and every acronym are club words until
-  the sentence itself issues membership: "on-policy distillation, where the
-  smaller model learns from corrections to its own attempts instead of from
-  a fixed transcript", "the KV cache, the stored attention state that makes
-  each next token cheap to produce". A term first defined on its second
+  assignment", "rollout", "verifier", "gradients" and every acronym are club
+  words until the sentence itself issues membership: "on-policy distillation,
+  where the smaller model learns from corrections to its own attempts instead
+  of from a fixed transcript", "the KV cache, the stored attention state that
+  makes each next token cheap to produce". The hardest cases are the words
+  that do not look like jargon. "Teacher" and "student" are two models, and
+  "gradients" is the calculus that training runs on, and both went out bare in
+  the issue she read: "preference alignment can work without gradients at all"
+  should have been "you can steer a model toward the answers people prefer
+  without the usual calculus of training, just from this-one-is-better
+  comparisons". A term first defined on its second
   mention has already lost the reader once, so the clause goes on the first.
   And where the definition costs more than the term is worth, drop the term
   and write the plain thing instead. That is usually the better sentence:
@@ -112,6 +118,17 @@ same fixed template, that is the failure mode this section exists to prevent.
   Simplify the language, never the claim.
 - Confident and direct. No hedging padding ("it seems that", "arguably"), no
   hype ("groundbreaking", "game-changing"), no exclamation marks, no emoji.
+- **No sentence about the future that no result can check.** "This shift
+  suggests that future pipelines will embed verification as a core component"
+  costs a line and says nothing a reader can act on or a later issue can hold
+  it to. Forecasting is allowed only as a named bet with a number or a date
+  attached, tied to a finding in this issue ("if the 64% holds outside this one
+  benchmark family, per-assertion rewards become the default within a year").
+  Emphasis obeys the same rule: bold and the single underline go on a result
+  the issue proved, never on a prediction. A section or an opening that ends on
+  a forecast has ended on the weakest thing it had. Naming an open question
+  is not forecasting, so the sign-off's "what is still unsettled" stands:
+  the ban is on predicting the answer, never on pointing at the question.
 - Regular sentences, plainly punctuated. Never use an em dash as a stylistic
   break. That includes the parenthetical pair around a definition ("a dense
   reward—counting passed assertions—produces") and the dash in an item's
@@ -149,27 +166,40 @@ same fixed template, that is the failure mode this section exists to prevent.
   is a label wearing a sentence's clothes, so rewrite it. The same craft binds
   the item headlines underneath: a headline states that item's finding in plain
   words, carries no colon explaining itself, and never settles for naming the
-  topic. The lead-ins inside the left-behind section are not headings and keep
-  their own job.
+  topic. The two kinds inside the fell-behind section are introduced the same
+  way, in a written sentence and never in a bold category word: "Contradicted"
+  and "Replaced" sort rows exactly the way "Gaining traction" does, and a label
+  is a label whether it sits at heading level or in bold mid-section.
 - **Every item has the same spine, at whatever length it earns.** This governs
   the items in the first three sections. The reading list keeps its own format,
   given in its own section. Context
   first, and it is the reader's on-ramp: who was stuck on what, in words a
   builder from another team already knows. Name the problem before the
   machinery, in the plainest sentence that is still true ("models that learn
-  from their own attempts keep drifting away from the teacher that was
+  from their own attempts keep drifting away from the bigger model that was
   supposed to correct them"), and never open on a term the reader has not
-  been handed yet. An item whose first sentence assumes the field's
-  vocabulary has failed the outsider test in the one place the reader decides
-  whether to keep going. Then what changed, with
-  its number and the institution behind it. Then how good that evidence is,
-  graded in the same breath rather than in a footnote. Then what a builder does
-  differently now. Then the source line, *title*, [full text](url). A short
+  been handed yet. That binds ordinary words carrying a technical job as
+  hard as it binds jargon: "teacher" and "student" are the field's nicknames
+  for a big model training a small one, and printed before anyone says so
+  they read as gossip about strangers (owner's ruling, 2026-09-19). An item
+  whose first sentence assumes the field's vocabulary has failed the
+  outsider test in the one place the reader decides whether to keep going.
+  Then what changed, with its number and the institution behind it. Then how
+  good that evidence is, graded in the same breath rather than in a footnote.
+  Then what a builder does differently now. Then the source line, *title*,
+  [full text](url). A short
   item compresses the whole spine into two sentences and the week's biggest
   gives each part its own paragraph, but the order never inverts, because an
   item that opens on its number has made the reader climb to find the point.
   This is a spine and not a template, so no part announces itself with a label,
   and no two items in an issue move through it in the same sentence shapes.
+  The last part is where that slips most. "Builders should X" three items
+  running is the spine showing through the prose, and a reader feels the mould
+  even when each sentence is true. Vary what the consequence is attached to,
+  not just its wording: one item tells the reader what to change, one tells
+  them what to stop trusting, one tells them what is now worth testing, and one
+  makes the consequence the last clause of a sentence about the finding rather
+  than a sentence of its own.
   An item that runs past three paragraphs gets written turns inside it: short
   bolded lead-ins drawn from that item's own material, the way an editor breaks
   a long read ("**The ceiling that was not a ceiling**", "**Where it still
@@ -263,8 +293,9 @@ makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
 Vary the construction: "Today:" is one way in and becomes furniture the third
 time it runs, so some issues name the items in a plain sentence ("Three labs
-went at credit assignment this week, and one of them broke a ceiling the field
-had accepted"), some fold the contents into the greeting's own sentence, and
+spent the week on the same problem, working out which step in a long run
+deserves the blame, and one of them broke a ceiling the field had accepted"),
+some fold the contents into the greeting's own sentence, and
 no two issues running open this line the same way. Never name the sections
 here, only the findings. This is contents and not method, so it is not the
 narration the owner ruled out.
@@ -275,6 +306,13 @@ this week's action is in, named in plain words ("training agents with
 reinforcement learning", "serving models cheaply", "post-training"), what
 problem that field has been stuck on, and why that problem matters to someone
 building AI systems, before naming what moved. Why comes before what.
+
+The opening carries the strictest version of the first-use rule in the
+issue, because it is where an outsider decides whether this is written for
+them, and both of the rejected specimens on file came from one (owner's
+ruling, 2026-09-19). No term of art, and no ordinary word doing a technical
+job, reaches the reader here without its plain-words clause in the same
+sentence, or in plainer words instead.
 
 Past that invariant, the shape is yours to vary week to week, on purpose,
 because a fixed recipe repeated every Monday is precisely the mechanical
@@ -395,22 +433,29 @@ the content, never the section. "Acting on stale results is how systems get
 built on sand" explains why the section exists, which is the narration the
 owner ruled out, and the reader does not need the section defended to them.
 
-Then two kinds, each introduced, not just labeled:
+Then two kinds, in this order, each introduced by a written sentence built
+from that day's own items. Do NOT print "Contradicted" or "Replaced", and do
+not print any other bold word standing in for them. Those are this file's
+names for the two kinds, they sort rows rather than say anything, and canon
+law 12 governs them exactly as it governs the headings above. Write the turn
+instead, the way an editor moves a reader from one group to the next: "Start
+with the number that turned out to be wrong.", "The rest is not wrong so much
+as superseded." Those two show the move and neither is ever printed, because
+the last issue printed this file's example lead-in word for word. One sentence
+each, written from that day's items, and never the same two sentences twice.
 
-**Contradicted** (lead-in like "First, the claims newer evidence says are
-wrong:") carries each item as a short prose unit with the same context-first
-pyramid as everything else. What was believed and where that belief came
-from, in plain words, then who overturned it and with what evidence,
-attributed by institution, and then the practical consequence for a builder.
-Never open an item mid-argument with "The claim that...". Set the scene
-first ("An early benchmark result suggested coding agents had hit a hard
-ceiling...").
+First kind, claims newer evidence says are wrong. Each item is a short prose
+unit with the same context-first pyramid as everything else. What was believed
+and where that belief came from, in plain words, then who overturned it and
+with what evidence, attributed by institution, and then the practical
+consequence for a builder. Never open an item mid-argument with "The claim
+that...". Set the scene first ("An early benchmark result suggested coding
+agents had hit a hard ceiling...").
 
-**Replaced** (lead-in like "Second, the approaches being superseded:") takes
-items from `superseded` where the newer claim genuinely supplants the older
-approach (not a mere detail refinement, so judge this). Same pyramid: the old
-approach and why it was used, what replaces it and why the newer one wins,
-both papers linked.
+Second kind, approaches being superseded, taken from `superseded` where the
+newer claim genuinely supplants the older approach (not a mere detail
+refinement, so judge this). Same pyramid: the old approach and why it was
+used, what replaces it and why the newer one wins, both papers linked.
 
 Judge every edge before you print it. A `contradicts` edge that is really a
 scope limit ("the same system scores lower on memory-heavy tasks") is not a
@@ -437,7 +482,13 @@ section's only job, so if you cannot produce the URL, drop the paper.
 Format: *title*, [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler. "Worth the hour if you are choosing between one agent
-and a planner plus a separate verifier" is the line.}
+and a planner plus a separate verifier" is the line.
+
+Do not open those lines with a verb of presentation. "shows", "details",
+"presents", "introduces", "proposes", "describes" and "offers" all describe
+the paper's posture instead of the reader's decision, and a column of them
+turns the picks into a catalogue. Address the reader, name the choice, and let
+no two entries take the same shape.}
 
 ---
 {Sign off in two moves, because the last thing a reader sees is the thing
@@ -534,6 +585,13 @@ Rules:
   every item is furniture no matter how correct it is. Vary it: "a team led
   by Yan Yu", "Zixuan Fu and colleagues", "the authors of the one-example
   paper". Never print author names three times in the same shape.
+  the payload, never the default.
+  Attribution is a claim and carries the same never-invent rule as a number.
+  "researchers at the same group", "the same team", "the same lab" assert that
+  two papers share people, and you may write one only when the payload's
+  `institutions` or authors actually show the overlap. Where the payload does
+  not say, name each paper's own institution and let the reader see they are
+  different.
 - Thin evidence is stated plainly ("only one deprecation this week"), never
   padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells: the
@@ -541,16 +599,23 @@ Rules:
   every item weighted identically regardless of how much it actually matters,
   a heading that would fit any other day, a length that matches the last issue
   rather than this day's material, a bare number with no comparison beside it,
-  an item past three paragraphs with no written turn inside it. Fix what you
-  find, because these are
-  exactly the patterns that make good content read as boring. Check the
+  an item past three paragraphs with no written turn inside it, two items whose
+  closing consequence takes the same shape, a sentence predicting the future
+  that carries no number or date, a bold word standing in for a heading inside
+  a section, and any sentence that appears in this file as an example. Fix what
+  you find, because these are exactly the patterns that make good content read
+  as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
   non-ASCII hyphens or spaces.
 - **Then run the first-use pass. This is a hard gate, not advice.** Go back
   through the issue from the top and list every term of art it uses: method
-  names, training vocabulary, metric and benchmark names, coined names, and
-  every acronym. For each one, find the FIRST place it appears anywhere in
-  the issue, and that includes the title, the contents line, a heading, a
+  names, training vocabulary, metric and benchmark names, coined names,
+  every acronym, and every ordinary English word doing a technical job
+  ("teacher", "student", "gradients", "reward", "rollout", "alignment").
+  That last class is the one this pass exists to catch, because it does not
+  look like jargon on the page and so never gets listed. For each one, find
+  the FIRST place it appears anywhere in the issue, and that includes the
+  title, the contents line, a heading, a
   bold lead-in and an item headline, not just the body prose. That first
   sentence must carry the term's plain-words clause. Where it does not, you
   have two fixes and no third: write the clause into that sentence, or strike
@@ -570,10 +635,14 @@ Rules:
   them right there in plain words, or cut the sentence. Would they finish the
   issue? If it starts to feel like work by the third item, the issue has too
   many items, so cut the weakest one and keep the air around the rest.
-  Fix everything this read turns up before you check the headings. An issue
-  that is accurate line by line and cannot be read through by a builder
-  outside the research world has failed at the only job it has, and that is
-  the owner's ruling of 2026-09-19 and canon law 12a.
+  Fix everything this read turns up before you check the headings. Two of
+  those fixes reach backwards, so handle them here rather than hoping: a
+  term you hand over during this read goes in at its FIRST appearance and
+  not where you noticed it, and cutting an item can strand a definition the
+  rest of the issue was leaning on, so recheck any term the cut item
+  introduced. An issue that is accurate line by line and cannot be read
+  through by a builder outside the research world has failed at the only job
+  it has, and that is the owner's ruling of 2026-09-19 and canon law 12a.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Read back every line that begins with `#`. If any of them, at any level,
   equals or contains one of these strings, the issue is NOT finished: "Gaining
@@ -581,7 +650,10 @@ Rules:
   "Compounding", "New and unproven", "Key takeaways", "What this means". Those
   are this file's internal slot labels and generic taxonomy, printing one is
   the violation the owner has flagged twice, and the fix is to write that
-  heading again from the section's actual items. Check the title on the same
-  pass: it states a finding, and it carries no bracketed date range and no week
-  id. Only then output.
+  heading again from the section's actual items. On the same pass, read back
+  every bold run that sits alone at the start of a line inside a section: if it
+  is "Contradicted" or "Replaced", it is the same violation one level down, and
+  it is replaced by a written sentence. Check the title too: it states a
+  finding, and it carries no bracketed date range and no week id. Only then
+  output.
 - Output the markdown only. No JSON wrapper, no preamble.

@@ -2428,3 +2428,22 @@ owning seat rather than assumed. Arguments in docs/sales/.
   and #43, whose notes are above, and it already carries both of them,
   so only the seats' PRs (#28, #29, #31, #35, #36) conflict here. These
   two are cheap to re-apply by hand, so merge them last.
+### 2026-09-19 — ASCII normalization is a function, not a paragraph (writer seat, run 5)
+- Trigger: 2026-W37 shipped 87 non-breaking hyphens, 19 narrow no-break
+  spaces and a multiplication sign, so the prompt grew a punctuation
+  rule (ban list 13) and the reread gate grew a punctuation check. Both
+  are a 120B model policing its own keystrokes, which is the weakest
+  enforcement available for the one defect class that needs no judgment
+  at all.
+- Proposal: normalize in code between generation and the insert into
+  `digests`. U+2011 to `-`, U+202F and U+00A0 to a space or nothing
+  before `%`, U+00D7 to `x`, curly quotes to straight. Unlike the
+  heading gate filed under run 3, this one should fix silently rather
+  than fail the run: there is exactly one correct output for each
+  character, so failing would cost an issue to save a substitution.
+- Why it is worth the few lines: it is deterministic, it is untestable
+  by prose review, and every character it fixes is one the reader's
+  search box and the agent loading the issue currently miss.
+- Whose call: the engineer's. The prompt rule stays either way, because
+  the daily may not run through the same code path.
+- Status: proposed
