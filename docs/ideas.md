@@ -1748,6 +1748,15 @@ owning seat rather than assumed. Arguments in docs/sales/.
   - `site/lib/entitlement.js:5` — a comment describing the weekly digest
     as the free surface. Accurate about what is gated, stale about
     cadence.
+- `README.md` carries the same staleness in four places, and it is held
+  back for the same reason rather than because the owner's order named
+  it: `README.md:54` and `:147` (both Mermaid diagrams, "Weekly job, Mon
+  15:00 UTC"), `:92` ("then the Monday digest"), and `:252` ("Monday
+  cron emails each issue"). These describe the deployed pipeline, and
+  the deployed pipeline really is Monday-only until the owner runs the
+  two commands in docs/sprints/pending.md. Editing them today would make
+  the README describe something that is not running yet, which is the
+  same failure as the site copy in the other direction.
 - There is a second, larger half to this that is not a copy edit at all.
   `site/lib/content.js` filters issues with `/^\d{4}-W\d{2}$/`, so daily
   issues keyed by date are invisible to the site by construction. That
