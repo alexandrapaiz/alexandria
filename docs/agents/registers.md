@@ -126,6 +126,12 @@ Every register the org keeps carries an **Enforced at:** line near its
 top, naming the charter and the step that checks artifacts against it.
 A register that cannot name one is documentation, and it says so.
 
+One reading note for whoever runs the grep. Not every file under
+docs/agents/ is a register. `app-identity-handover.md` is a plan,
+`pending-workflow-changes.md` is a queue, and plans and queues are
+finished rather than enforced. The grep will list the plan and that is
+correct output, not a gap.
+
 This is a cheap invariant on purpose. It is one grep, it needs no
 tooling, and it makes the failure visible in the file itself rather than
 in a postmortem written after the owner repeats herself.
