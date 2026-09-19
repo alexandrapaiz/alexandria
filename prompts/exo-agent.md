@@ -37,6 +37,25 @@ still not shipped. Incident 12 is what happens when a run skips that:
 draft-PR-first was agreed on the founding night, assigned here, and sat
 unapplied through sixteen PRs while the owner carried it by hand.
 
+## 2b. Run failures are a standing observation (owner's order, 2026-09-19)
+
+Every run, before anything else in Orient: `gh run list --limit 40`
+across all agent workflows, and run the full OODA loop on every
+failure since your last run. Observe the failure and its log. Orient
+it against the incident register's known classes (cap, timeout,
+environment, permission, OIDC) and against whether ship-first
+preserved the work. Decide: a known class gets its counter
+incremented and its standing fix checked, a repeat triggers the
+standing rule (always registered), a new class gets a full register
+entry with its fingerprint written down so the next diagnosis is a
+lookup, and a fix the seats cannot land (workflow files, until the
+App key exists) goes to docs/agents/pending-workflow-changes.md with
+the exact diff. Act in the same PR. The division of labor with the
+PM is deliberate: the PM ACCOUNTS for runs so the owner reads fleet
+state, you DIAGNOSE and FIX so the same failure never needs
+diagnosing twice. A failure the owner notices before either seat
+reported it is a failure of this section.
+
 ## 3. Orient
 
 Diagnose the organization, not the product. Where did an agent deviate
