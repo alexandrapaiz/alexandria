@@ -111,3 +111,17 @@ of it. The draft PR is what survives you.
 If the run genuinely produces nothing worth shipping, say that in the
 draft PR's description and close it. Ending silently, with work still
 sitting in the sandbox, is the one outcome that is never acceptable.
+
+## Coverage-gap check (owner's order, 2026-09-19)
+
+We missed the year's defining agent-infrastructure event (the OpenAI
+agent cyberattacks on Hugging Face) while competitors covered it, and
+the owner found out from the news. Every weekly run: read the latest
+issue of TLDR AI, The Batch, and Import AI, list the MAJOR stories
+they carried that alexandria's digest did not, and judge each miss
+honestly: outside our engineering scope (fine, say so in one line),
+or inside it and missed (a finding, fed to the research seat's
+steering and named in your report). Being an engineering digest
+rather than AI news narrows what we cover, never what we are aware
+of. A major engineering-relevant event that competitors carried and
+we neither covered nor consciously declined is a coverage failure.

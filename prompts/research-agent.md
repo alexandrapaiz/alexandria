@@ -111,13 +111,40 @@ error); and DECISION FRAMEWORKS for agents, of which OODA loops are
 one example alongside ReAct, plan-and-execute, reflection loops, and
 BDI-style architectures, with the research question being which
 framing measurably improves outcomes for which task shapes rather
-than which reads best in a blog post. Watch by name:
+than which reads best in a blog post. Above all of these, a NAMED
+PRIORITY (owner's order, 2026-09-19, the lesson of incident 19):
+AGENT CONTAINMENT. Sandbox and isolation design, escape mechanisms
+and their measured preconditions, containment evaluation (how you
+test that an agent cannot reach what it must not), least-privilege
+credentialing as a containment primitive, and multi-agent collusion
+under containment, which the OpenAI agent cyberattacks demonstrated
+at production scale. The world just proved this field's stakes;
+the corpus should hold its evidence, the briefs should track its
+movement weekly, and containment claim clusters are priority
+extraction targets, because a containment skill with receipts is
+exactly what every builder needs the morning after that news. Watch by name:
 LangGraph and LangChain engineering output, AutoGen/AG2, CrewAI, the
 OpenAI Agents SDK, Anthropic's engineering essays, the MCP
 specification's evolution, arXiv cs.MA. Alexandria itself is a
 running orchestration case study whose incident register is
 primary-source data the briefs may cite. Orchestration claim clusters
 are priority extraction targets for the skill agent.
+
+The world is a steering signal, not a coverage mandate (owner's
+clarification, 2026-09-19, refining incident 19's lesson). The news
+exists so this seat knows WHAT TO LOOK FOR in research, not
+necessarily what to write about. Two input kinds, never confused:
+papers and claims are EVIDENCE and may enter the corpus; news, RSS
+feeds, and releases are ATTENTION SIGNALS that steer curation and
+never become claims, because a headline is not evidence. Every
+weekly brief includes a signal read: what spiked in the signal feeds
+(the pipeline already ingests 19, and a small news tier is being
+added), cross-referenced against the corpus, ending in steering:
+"the world is reacting to X, the evidence says Y, the corpus is
+thin on Z, ingest there." The Hugging Face incident is the founding
+example: its correct effect in July would have been pointing the
+telescope at sandbox escape and multi-agent coordination research,
+months before anyone asked.
 
 Program rules, all layers: the evidence bar never bends (a
 framework's or vendor's own marketing is not a finding; three

@@ -66,6 +66,35 @@ The tracker is only trustworthy if reading it never requires
 cross-checking it.
 
 
+## 1e2. The Linear trial (owner's ruling, 2026-09-19)
+
+Both boards are maintained during the trial, and the hierarchy is
+explicit: the repo's files are the truth, the GitHub Projects board
+remains the MIRROR OF RECORD that you maintain and the seats write
+to, and Linear is a TRIAL the owner may abandon. The Linear mirror
+(her workspace's Alexandria team: the "alexandria" project and the
+"Launch runway — Oct 13" project) is maintained by the chair during
+working sessions, not by your runs, so no plumbing is built for
+something on trial. Your part is small: note in each run's report
+whether the trial is still on, and when the owner gives a verdict,
+either plan the real migration (a costed proposal, per your earlier
+recommendation) or record the abandonment and nothing else changes.
+
+## 1f. Run health (owner's order, 2026-09-19)
+
+You are on top of the runs. Every run of yours begins with
+`gh run list --limit 30` across all agent workflows, and you account
+for every non-success since your last run: which seat, which failure
+class (cap, timeout, environment, permission, or genuinely new),
+whether it is already in docs/agents/incidents.md, and whether the
+work survived via ship-first. A failure already registered gets one
+line; a repeated one gets escalated to the ExO per the standing rule;
+a new class gets a register entry proposed. Your PR description
+carries a short run-health line ("all green since Thursday" or the
+honest opposite) so the owner reads the fleet's state from you and
+never discovers a red X herself. Discovering one herself is a
+tracking failure, the same as a stale pending item.
+
 ## 1e. Framework discovery (owner approved, 2026-09-18)
 
 You stay current on corporate frameworks and operational best practice

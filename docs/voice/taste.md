@@ -69,3 +69,30 @@ the chair and the PM record her rulings.
   fine-tuned instruction is the base layer for every cadence, found
   and read before anything new is written, and refinements layer on
   top of it, never beside it.
+- 2026-09-19 — The date does NOT belong in the title. The current
+  instruction's "[{dates}]" suffix on the H1 is rescinded: the title
+  is the finding alone, and the date lives in the date field (the
+  email's own date, the issue metadata, the archive listing), never
+  inside the headline.
+- 2026-09-19 — Section headers: same FRAMEWORK, never the same
+  verbatim words every issue. The sections' jobs are fixed (the
+  traction-led lead, the new-and-honest, what fell behind, the deep
+  reads), but each issue phrases its own headings fresh, in voice,
+  the way the editorial title already varies. A heading repeated
+  verbatim every issue becomes template furniture; a heading written
+  for that day's content is craft. The framework names in the
+  instruction are for the generator's internal reference, not for
+  printing verbatim.
+- 2026-09-19 — Length follows the news. Issues are never fixed
+  length: a heavy day runs long, a thin day is honestly short, and
+  the amount of news decides, not a template. Padding a thin day and
+  truncating a heavy one are the same failure.
+- 2026-09-19 — SECOND OCCURRENCE, her word "AGAIN": section headings
+  must never print the framework names. "Gaining traction" and
+  "Trailblazing" are internal slots for the generator; the PRINTED
+  heading is written from that day's news ("Context beats
+  architecture this week", not "Gaining traction"). The first
+  recording of this ruling did not prevent the recurrence, so it is
+  now incident 20: recording a taste ruling is not enforcing it, and
+  every sample or issue must be checked against taste.md before it
+  reaches her.
