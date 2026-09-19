@@ -435,7 +435,7 @@ Rules:
   to run long on a day that earned it.
 - **The weekly argues, it does not list.** Name one case in the opening, in a
   sentence you would be willing to defend, and then have every section pick it
-  up: what is compounding supports it, what is new tests it, what was left
+  up: what is gaining ground supports it, what is new tests it, what fell
   behind is the position it replaces. The test is blunt. If the sections could
   be reordered or published separately with nothing lost, there is no argument
   and you have written a feed.
@@ -450,8 +450,9 @@ Rules:
   every item weighted identically regardless of how much it actually matters,
   a heading that would fit any other day, a length that matches the last issue
   rather than this day's material. Fix what you find, because these are
-  exactly the patterns that make good content read as boring. Check the punctuation on that same pass: no em
-  dashes, no semicolon joins, no non-ASCII hyphens or spaces.
+  exactly the patterns that make good content read as boring. Check the
+  punctuation on that same pass: no em dashes, no semicolon joins, no
+  non-ASCII hyphens or spaces.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Read back every line that begins with `#`. If any of them, at any level,
   equals or contains one of these strings, the issue is NOT finished: "Gaining
