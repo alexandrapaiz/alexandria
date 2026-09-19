@@ -1590,3 +1590,111 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the skill agent's charter and `skills/`, so not this
   seat's. Filed for the owner.
 - Status: proposed
+
+## Engineer agent findings (2026-09-19, sprint 2026-09-21 item 3)
+
+### 2026-09-19 — Keep every digest body, not one row per week (engineer agent)
+- Trigger: the accuracy audit
+  (docs/evals/2026-09-19-digest-accuracy-audit.md) tried to answer the
+  owner's question of how many issues have gone out and could not. Git
+  history holds nine materially different bodies for 2026-W37, generated
+  2026-09-08 and 2026-09-11, ranging from 4,897 to 10,237 bytes. Every one
+  overwrote the last, because `pipeline/weekly.py` upserts with
+  `on conflict (week) do update set body = excluded.body`. The Monday
+  2026-09-14 cron overwrote it again, since `weekly()` labels a run with
+  yesterday's ISO week and Sunday 2026-09-13 is still week 37. The
+  `digests` table calls itself the database of record and holds one row,
+  the last write. Nothing in the system knows which text a subscriber
+  actually received.
+- What: make `digests` append-only. Drop the unique constraint on `week`,
+  add `sent_at` and `recipient_count` written by `send_newsletter` after
+  the SMTP loop returns, and read the archive off the most recent row per
+  week that has a `sent_at`. The row that went to readers is then a
+  different and knowable thing from the row a rerun produced. This is the
+  precondition for every future audit: without it, item 3 is unanswerable
+  by construction, not by accident.
+- First step: the migration in `db/schema.sql` plus the two new columns
+  written at the end of `send_newsletter`. The read path can keep using
+  the newest row until the site is pointed at the sent one.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — Bind every digest claim to a link, including the graph sections (engineer agent)
+- Trigger: the same audit. Ten "Gaining traction" lines and three "Left
+  behind" lines in 2026-W37 shipped with no link, no title and no
+  identifier, thirteen claims a reader cannot check. Three were traced to
+  their papers by hand this run and all three were accurate, so the
+  content is not the problem. The presentation is: the issue asks for
+  trust on the sections where it offers the least evidence, which is
+  exactly backwards, and it is the part of O1 KR3's evidence floor the
+  digest currently skips.
+- What: carry the paper link through into the two graph-derived sections
+  the way the Trailblazing items already do. The claim graph knows the
+  supporting papers for every edge it emits, so this is a change to what
+  `gather()` puts in the payload and to what `prompts/digest.md` requires
+  of each line, not new data. Pair it with
+  `tools/check_issue_citations.py` as a pre-send gate so an issue with an
+  unresolvable or misnamed link never leaves the pipeline.
+- First step: add the supporting paper's title and url to the
+  `gaining_traction` and `deprecated` rows in `gather()`, then make the
+  prompt require them per line.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — Ask Semantic Scholar for the field it already gives us free (engineer agent)
+- Trigger: today's craft scan, below. `check_citations` in
+  `pipeline/weekly.py` requests `fields=citationCount` from the S2 batch
+  endpoint. The same request, same quota, same latency, also returns
+  `influentialCitationCount`, which is S2's own judgment of which citing
+  papers build on a work rather than mention it in passing.
+- What: add the field to the existing request and log it alongside
+  `citations` in `citation_log`. A paper going from 40 to 60 citations
+  with zero influential ones is noise. A paper going from 4 to 9 with
+  five influential ones is the "gaining traction" signal the digest
+  claims to report and currently approximates with our own support-edge
+  count. One field name in one existing call, and a column.
+- First step: `fields=citationCount,influentialCitationCount` in
+  `check_citations`, plus the column in `citation_log`.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — URGENT: an uncited claim about a named product is live on the site (engineer agent)
+- Trigger: the audit. The archived 2026-W37 issue states that "Claude
+  Opus 5 under Claude Code solves only 23.9 % of simulations", with no
+  link, no paper title and no identifier. Targeted arXiv searches this
+  session did not locate the source. It is almost certainly a real edge
+  from our own corpus, since the corpus is where it came from, but the
+  claim graph was unreachable this session and nothing on the public page
+  lets a reader or a lawyer check it. The neighbouring bullet in the same
+  section contradicts a claim the issue never made, which suggests that
+  whole block rendered from edges the writer did not fully resolve.
+- What: identify the paper and add the citation, or cut the line from the
+  archive. This needs one `sql_query` against the claim graph, which is
+  thirty seconds of work for any seat that has `NEON_RO_URL`, and it is
+  not a judgement call this seat should make unilaterally on live copy
+  about a named commercial product.
+- First step: query the claim graph for the 23.9 % edge and its papers.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-19 — Craft scan: Semantic Scholar's Graph API (semanticscholar.org)
+- Scanned: the free Graph API's `paper/batch` endpoint, live, against a
+  paper this run had just audited. Chosen because the day's work was
+  citation provenance, and S2 is both the closest thing to a public claim
+  graph and already a dependency in `pipeline/weekly.py`.
+- Worth stealing: they publish a judgment, not just a count.
+  `influentialCitationCount` separates citations that build on a paper
+  from citations that name it, and they give it away in the same call we
+  already make for `citationCount`. Filed as its own ledger entry above.
+  The wider lesson is the one alexandria keeps rediscovering: the
+  valuable layer is the opinion on top of the data, and S2 charges
+  nothing for theirs because their product is the graph.
+- Better here: their summarisation is unattended and it shows. The
+  `tldr` returned for the T1 paper this run ends "rewarded by executing
+  each task's own verifier by executing each task's own verifier", a
+  duplicated clause shipped straight to callers. More to the point, S2
+  will tell you a paper is influential and never tell you what it says
+  that you should do differently on Monday. The distill step's claims
+  with their procedures are a different artifact, and the audit above
+  confirms they are accurate where they copy the paper. The gap is not
+  our synthesis, it is our provenance.
