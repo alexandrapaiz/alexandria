@@ -1,24 +1,45 @@
 # Workflow changes the agents cannot apply themselves
 
-The ExO's charter (§5) puts `.github/workflows/agent-*.yml` in its lane.
-The runner's token cannot actually write those files. GitHub refuses any
-push from `GITHUB_TOKEN` that touches a workflow file, with
+## The one structural blocker, for the owner
+
+**No agent seat can fix the machinery that runs it.** Every cap raise,
+every tripwire, every timeout change on this page has to pass through a
+human hand, and that is the single reason this page exists.
+
+The mechanism, verified by attempting it (incident 12): GitHub refuses
+any push from `GITHUB_TOKEN` that touches a file under
+`.github/workflows/`, with
 
 ```
 refusing to allow a GitHub App to create or update workflow
 `.github/workflows/agent-engineer.yml` without `workflows` permission
 ```
 
-and there is no `workflows:` key in a workflow's `permissions:` block to
-grant, because `GITHUB_TOKEN` cannot hold that scope at all. Only a
-personal access token with the `workflow` scope can push these files.
+This is not a misconfiguration. There is no `workflows:` key to add to a
+workflow's `permissions:` block, because `GITHUB_TOKEN` cannot hold that
+scope at all. Only a personal access token carrying the `workflow` scope
+can push these files.
 
-So workflow edits queue here instead, written out in full and ready to
-apply, and the owner applies them. When she would rather not hand-apply
-them, the durable fix is in incident 11 of [incidents.md](incidents.md):
-mint a PAT with the `workflow` scope, store it as a repository secret,
-and have `actions/checkout` use it in the agent workflows. That is an
-owner-only step, since secrets never pass through the system.
+**What it costs, concretely.** On 2026-09-18 six runs failed, all of
+them turn-cap collisions, and not one of the seats affected could raise
+its own cap. The chair applied every fix by hand. Three caps are still
+short of what the measured rule requires (item 2 below), and they will
+stay short until someone applies them.
+
+**The decision that is yours, and only yours.** Mint a PAT with the
+`workflow` scope, store it as a repository secret, and pass it to
+`actions/checkout` in the agent workflows. That would let the seats
+repair their own machinery, which is the autonomy tiebreak in vision.md
+§0 pointing one way. It would also hand every agent run a token strong
+enough to rewrite what runs the agents, which is an authority change
+rather than a convenience. Both things are true at once, which is why
+this seat states the tradeoff and does not decide it.
+
+**Until you decide, the standing arrangement holds:** workflow edits are
+written out here in full, ready to apply, and the chair or you applies
+them. Nothing here is blocked on analysis. It is blocked on a hand.
+
+---
 
 Applied items get deleted from this file by the next ExO run, which
 verifies against the workflow files themselves rather than trusting this
@@ -85,30 +106,45 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
-### 2. Turn caps, re-derived from run logs
+### 2. Three turn caps are still below what the rule requires
 
-**Why.** The owner escalated turn-cap starvation as incident 10 and
-asked this seat to right-size every cap against real workload. Incident
-10's postmortem holds the evidence table, read from `num_turns` in the
-run logs rather than from intention. The rule it lands on: **a cap is at
-least twice the seat's highest observed turn count, never below 100.**
+**Why.** The chair right-sized every cap on 2026-09-18 (commit c6bc2c4)
+and raised the pm and frontend job timeouts to match (57135da). That
+cleared the queue's previous cap item, which is deleted here as applied.
+Re-measuring afterwards against the standing rule in
+[turn-caps.md](turn-caps.md), twice the highest observed turn count
+rounded up to the next 50, three seats still come up short, because
+those raises were also read from the day's failures rather than from the
+ratio. Evidence and full table in turn-caps.md and in incident 15.
 
 **How.** One number per file, in the `claude_args` line. Nothing else on
 the line moves.
 
-| File | From | To | Highest observed | Why |
+| File | From | To | Peak observed | Why this number |
 |---|---|---|---|---|
-| `agent-security.yml` | 100 | 200 | 108 | overshot its cap and failed a run that had already shipped (incident 11) |
-| `agent-exo.yml` | 100 | 200 | 36 | that 36 was an observation-only first run. §5b added the whole GitHub home on 2026-09-18, and the first run carrying it ran well past 100 |
-| `agent-engineer.yml` | 120 | 150 | 67 | daily seat, and the scope grows with the launch runway |
-| `agent-skill.yml` | 100 | 150 | 61 | both samples predate a working database, so real runs will be longer |
-| `agent-sales.yml` | 80 | 120 | 59 | 80 is only 1.35x its own observed high |
-| `agent-finance.yml` | 80 | 120 | never run | matched to sales, its nearest twin |
+| `agent-frontend.yml` | 400 | 600 | 286 (run 35306459296) | twice the org's highest demand; 600 turns lands near 65 minutes at the measured rate, inside the 90-minute timeout already in force |
+| `agent-pm.yml` | 250 | 300 | 141, censored (run 35311930240) | that run died at its cap, so 141 is a lower bound and 300 is the floor the rule gives, not a settled number |
+| `agent-security.yml` | 200 | 250 | 108 (run 35299288455) | one sample only, and it is the run that overshot |
 
-Unchanged and already correct under the rule: `agent-frontend.yml` at
-250 against 151 observed, `agent-pm.yml` at 140 against 42, and
-`agent-market.yml`, `agent-okr.yml` and `agent-research.yml` at 100
-against 23, 33, and nothing.
+Correct under the rule and not to be touched: `agent-exo.yml` at 200
+against 93, `agent-sales.yml` at 160 against 76, `agent-engineer.yml` at
+200 against 73, `agent-skill.yml` at 180 against 67, `agent-market.yml`
+at 160 against 47, `agent-okr.yml` at 160 against 33. Provisional and
+unmeasured because the seat has never run: `agent-research.yml` at 180,
+`agent-finance.yml` at 120.
+
+**Timeouts.** No change needed. Every seat's current `timeout-minutes`
+clears its required cap at the measured rate of roughly nine turns per
+minute.
 
 **Cost.** None standing. Turns are only spent if a run needs them, so a
 cap is a ceiling rather than a budget.
+
+---
+
+## Applied and deleted
+
+- **Turn caps, re-derived from run logs** (queued 2026-09-18, applied by
+  the chair in c6bc2c4, verified against the workflow files this run).
+  The chair went further than the queued numbers on several seats. Item
+  2 above is the remainder, measured fresh rather than carried over.

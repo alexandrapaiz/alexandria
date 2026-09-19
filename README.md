@@ -128,8 +128,9 @@ The org keeps its own memory in [docs/agents/](docs/agents/), because every run
 starts with a fresh context and remembers nothing: the
 [learning log](docs/agents/learning-log.md) for what each ExO cycle found, the
 [incident register](docs/agents/incidents.md) for runs that failed or shipped
-nothing, and [model routing](docs/agents/model-routing.md) for which seat gets
-which model.
+nothing, [model routing](docs/agents/model-routing.md) for which seat gets which
+model, and [turn caps](docs/agents/turn-caps.md) for how much room each seat is
+given to work, measured from run logs rather than guessed.
 
 ## Deployment view
 
@@ -217,7 +218,7 @@ skills/                   the gold layer: promoted skills and pattern notes
 docs/vision.md            the mission and the declared end state
 docs/decisions.md         architecture decision records, ADR-1 through ADR-25
 docs/diagrams.md          the diagram atlas: pipeline status, blackboard, org, agent loop
-docs/agents/              the org's memory: org chart, learning log, incidents, model routing
+docs/agents/              the org's memory: org chart, learning log, incidents, model routing, turn caps
 docs/okrs/                quarterly objectives and key results
 docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
@@ -268,7 +269,7 @@ The org, built after it (ADR-14 through ADR-25, all in one week of September 202
       each a GitHub Actions workflow running its charter
 - [x] Charters versioned in prompts/, one file per seat, owner-merged like any code
 - [x] ExO loop live (ADR-19): the org reviews and improves the org, weekly
-- [x] Org memory in docs/agents/: org chart, learning log, incident register, model routing
+- [x] Org memory in docs/agents/: org chart, learning log, incident register, model routing, turn caps
 - [x] Planning hierarchy live: mission, Q4 OKRs, weekly sprints, daily runs
 - [ ] First curation brief from the research seat (ADR-25), due with its first
       scheduled run

@@ -33,9 +33,10 @@ charter in prompts/*-agent.md beside the workflow that invokes it.
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
-still not shipped. Incident 12 is what happens when a run skips that:
-draft-PR-first was agreed on the founding night, assigned here, and sat
-unapplied through sixteen PRs while the owner carried it by hand.
+still not shipped. Incident 13, the draft-PR-first fix that sat
+unapplied, is what happens when a run skips that: it was agreed on the
+founding night, assigned here, and sat unapplied through sixteen PRs
+while the owner carried it by hand.
 
 ## 2b. Run failures are a standing observation (owner's order, 2026-09-19)
 
@@ -82,9 +83,10 @@ through the same channel as everything else.
 
 Agent workflows are your design surface but not your writable one. The
 runner's token cannot push `.github/workflows/` at all, and no
-`permissions:` setting changes that (incident 11). Write workflow
-changes out in full in docs/agents/pending-workflow-changes.md, with the
-evidence and the exact edit, and the owner applies them. Verify your
+`permissions:` setting changes that (incident 12, the agent token and
+the workflow files). Write workflow changes out in full in
+docs/agents/pending-workflow-changes.md, with the evidence and the exact
+edit, and the owner applies them. Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter. Commit on a branch named
 exo/YYYY-MM-DD and open ONE pull request; the owner's merge is what
@@ -121,6 +123,17 @@ happened, why it happened technically, the fix, and what the org grew
 from it. Patterns across incidents become your charter and workflow
 edits in step 5. A failure recorded once and prevented forever is the
 org compounding; a failure rediscovered is your lane failing.
+
+Turn caps are measured, never guessed (owner's directive, 2026-09-18,
+after a day of six cap failures). docs/agents/turn-caps.md holds the
+rule, the measurement commands and the current table, and it is yours.
+Re-derive it in your first run of each month, and immediately in any run
+where a cap was hit or a charter edit grew a seat's duties. A cap hit is
+evidence about the cap, not about the agent. Read the two flavors apart
+before you diagnose anything: `error_max_turns` at exactly the cap plus
+one is a run killed mid-work, while a `success` subtype with an
+`exceeding the configured maximum` error is a run that finished and was
+failed afterwards, with its work already shipped.
 
 Maintain docs/agents/learning-log.md, append-only, dated: what this run
 observed, what it changed and why, what the next run must check first.
