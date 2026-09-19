@@ -43,56 +43,62 @@ new sources or researchers proposed for the watchlist, and what looked
 hot but is noise. The PM reads this brief when planning Monday's
 sprint; the skill agent reads it before choosing a cluster.
 
-Owner-named coverage (2026-09-18): the owner wants the research scope
-to include multi-agent systems, agentic design, and multi-modal
-systems. Treat these as standing coverage areas: the brief looks for
-what is rising in them every week, and source or watchlist proposals
-that strengthen them are welcome. The evidence bar does not bend for
-them; they are named because they matter, not exempted.
+## The AI-stack research program (owner's order, 2026-09-19)
 
-Added the same day, for the NEWSLETTER as well as the brief: agent
-infrastructure is coverage. Two named threads to track and to feed
-the digest when the evidence supports an item: (1) agent identity and
-governance, where Microsoft's Entra Agent ID gives agents first-class
-directory identities like employees, and the open question is what
-the equivalents are outside the Microsoft world (GitHub Apps, SPIFFE
-workload identity, OAuth client credentials per agent); (2) agent
-orchestration, which the owner ordered researched FOR REAL
-(2026-09-18), not merely named. Treat it as a standing research
-program with actual questions: where the workflow-versus-agent
-boundary sits and what evidence moves it; durability and
-checkpointing (what a resumable agent run buys and costs); handoff
-and topology patterns in multi-agent systems and their measured
-failure modes; how orchestration quality is evaluated at all; and
-identity and governance of agents as principals. Watch, by name:
-LangGraph and LangChain's engineering output, AutoGen/AG2, CrewAI,
-the OpenAI Agents SDK, Anthropic's engineering essays, the MCP
-specification's evolution, durable-execution systems like Temporal,
-and arXiv's cs.MA alongside the main feeds. Two standing angles keep
-this honest: orchestration claims must carry evidence like any other
-claim (a framework's own marketing is not a finding), and alexandria
-itself is a running orchestration case study whose incident register
-is primary-source data the briefs may cite. Industry artifacts
-(framework releases, identity standards) qualify alongside papers
-when they carry real technical substance; the digest's
-differentiation is exactly this territory, directly applicable
-systems and orchestration, so these items belong in issues, not only
-in internal briefs, and orchestration claim clusters are priority
-extraction targets for the skill agent.
+The owner's ruling: the whole AI stack is ONE standing research
+program with four named layers, researched for real, not name-checked.
+Every weekly brief reads the field through these layers, every layer
+feeds both the internal briefs and the NEWSLETTER (the digest's
+differentiation is exactly this territory: technical, systems,
+directly applicable), and each layer maps to skill-library shelves so
+findings become sellable product. The owner's earlier coverage orders
+(multi-agent systems, agentic design, multi-modal systems, agent
+identity, orchestration for real, RLHF and RLAIF) all live inside
+these layers now.
 
-Third thread, owner-added 2026-09-19: post-training alignment,
-researched properly. RLHF and RLAIF by name, and the live successor
-landscape around them: direct preference methods (DPO and its
-variants), constitutional and AI-feedback approaches, reward-model
-design and reward hacking, verifiable-reward training (RLVR), and
-where human feedback still beats AI feedback on the evidence. The
-standing questions: what each method measurably buys over the last,
-where preference data quality dominates algorithm choice, and what a
-builder fine-tuning or aligning a model should actually do this
-month. This thread compounds directly into the training-loops shelf,
-where self-improving-post-training-loops already stands as a gold
-skill; RLHF/RLAIF claim clusters are priority extraction targets to
-grow that shelf. Same evidence bar, no exemptions.
+**Layer 1 — Infra.** Compute and serving: GPUs and their economics,
+inference optimization (decoding, caching, batching, test-time
+compute), containerized agent runtimes, durable execution (Temporal
+and kin). Standing question: what actually moves cost-per-token and
+latency this month, with numbers.
+
+**Layer 2 — Data and cloud.** What models and agents eat and where it
+lives: data curation and quality for training, retrieval
+infrastructure and vector stores, synthetic data, context and memory
+systems, the cloud platforms agents run on. Standing question: where
+does data quality dominate algorithm choice, on the evidence.
+
+**Layer 3 — Models.** Architectures, training, and post-training.
+RLHF and RLAIF by name and their live successor landscape: direct
+preference methods (DPO and variants), constitutional and AI-feedback
+approaches, reward-model design and reward hacking, verifiable-reward
+training (RLVR), and where human feedback still beats AI feedback.
+Multi-modal systems live here. Standing question: what each method
+measurably buys over the last, and what a builder aligning a model
+should actually do this month. Compounds into the training-loops
+shelf, where self-improving-post-training-loops already stands gold.
+
+**Layer 4 — Orchestration.** Agents and the systems that run them,
+researched FOR REAL per the owner: the workflow-versus-agent boundary
+and what evidence moves it; durability and checkpointing; handoff and
+topology patterns with their measured failure modes; how
+orchestration quality is evaluated at all; agent identity and
+governance as principals (Entra Agent ID and its non-Microsoft
+equivalents: GitHub Apps, SPIFFE, per-agent OAuth). Watch by name:
+LangGraph and LangChain engineering output, AutoGen/AG2, CrewAI, the
+OpenAI Agents SDK, Anthropic's engineering essays, the MCP
+specification's evolution, arXiv cs.MA. Alexandria itself is a
+running orchestration case study whose incident register is
+primary-source data the briefs may cite. Orchestration claim clusters
+are priority extraction targets for the skill agent.
+
+Program rules, all layers: the evidence bar never bends (a
+framework's or vendor's own marketing is not a finding; three
+independent sources make a pattern); industry artifacts (framework
+releases, identity standards, infra pricing changes) qualify
+alongside papers when they carry real technical substance; and each
+brief says plainly which layers moved this week and which were quiet,
+so silence is information rather than absence.
 
 ## Step 3 — Propose skill targets (0-2 per week)
 
