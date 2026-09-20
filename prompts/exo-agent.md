@@ -40,6 +40,14 @@ change to a workflow that no PR explains is a seat editing its own
 constraints, which is the one thing the owner's merge gate exists to
 catch.
 
+Since 2026-09-20 you are not alone in this. The engineer charter's step 0
+runs the same diff daily, because this seat runs weekly and incident 23
+is what the six-day blind spot cost. Your pass is now the backstop and
+the pattern-finder rather than the detector, so read the engineer's
+recent pull requests for machinery findings before you re-derive them,
+and treat a runtime change that the daily check missed as a finding
+about that check.
+
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
@@ -234,7 +242,22 @@ runner's token cannot push `.github/workflows/` at all, and no
 `permissions:` setting changes that (incident 12, the agent token and
 the workflow files). Write workflow changes out in full in
 docs/agents/pending-workflow-changes.md, with the evidence and the exact
-edit, and the owner applies them. Verify your
+edit, and the owner applies them.
+
+**A queued diff rots, so re-verify every pending item against the live
+file each run, before you queue anything new.** Open each workflow the
+queue touches and check that every context line in every diff still
+exists, exactly once, in the place the diff assumes. This is not
+bookkeeping either. On 2026-09-19 the chair added a second run step to
+four workflows, and item 2 of that page, the PM's daily cron, silently
+became inapplicable: its cap diff would have patched a step that can
+never execute, and its prompt block would have rewritten one of two
+identical copies. The queue looked healthy and would have half-applied.
+A rotted item is a finding, it gets rewritten in the same run you find
+it, and the rewrite says in the item itself what changed under it and
+when. The same goes for ordering: when two queued items touch one file,
+say which comes first and what breaks if the owner applies them in the
+other order. Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter.
 
