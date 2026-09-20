@@ -1,9 +1,10 @@
 # Test and local-check dependencies, not shipped to Modal.
-# The runtime image pins its own versions in mcp/server.py.
+# The runtime image pins its own versions in mcp/server.py and pipeline/*.py.
 #     pip install -r requirements-dev.txt && python3 -m pytest tests/ -q
 fastapi>=0.115
 httpx
 python-multipart
 pyjwt>=2.9
 pytest>=8
+modal>=1.5
 pglast>=7   # libpg_query: parses db/schema.sql the way the server does
