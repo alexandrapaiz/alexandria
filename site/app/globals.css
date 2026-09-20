@@ -239,7 +239,16 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* The house spring. The curve is the one the owner approved when she asked
+     for Elicit's bouncy hover; only the clock changed, on this run's
+     benchmark. Measured on the live sites: Elicit's primary CTA finishes in
+     167ms, Linear runs every button at 160ms on one curve, Consensus at
+     100ms. Ours took 220ms just to reach the top of its overshoot and 400ms
+     to settle, which is slower than all three and outside both the canon's
+     micro window (120 to 200ms) and Kowalski's under-300ms rule. At 190ms
+     the overshoot is intact and lands while the cursor is still arriving.
+     Refinement 1 of two, 2026-09-20. */
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
@@ -743,8 +752,10 @@ a {
    pointer on the same spring the pills use. The contents move and the rule
    under the row does not, which keeps the left edge of the divider straight
    while the row travels. Touch has no hover, so it gets the press instead. */
+/* Same house spring, same clock: an archive row and a pill must not settle
+   at different speeds, or the page has two springs instead of one. */
 .issue > * {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (hover: hover) {

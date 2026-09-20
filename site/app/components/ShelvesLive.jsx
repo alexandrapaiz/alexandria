@@ -189,7 +189,14 @@ export default function ShelvesLive(props) {
       gliding = true;
       const fromY = window.scrollY;
       const t0 = performance.now();
-      const ms = Math.max(320, Math.min(950, Math.abs(toY - fromY) * 1.2));
+      // Refinement 2 of two, 2026-09-20. Scene one now fills the first view
+      // (the owner's reveal ruling), which roughly doubled the distance this
+      // flight covers, and at 1.2ms per pixel it pinned itself to the old
+      // 950ms ceiling at every viewport: measured at 801ms before, against a
+      // canon that puts page-level moments at 300 to 500ms and a benchmark
+      // where nothing on Linear or Elicit runs past 170ms. The curve and the
+      // choreography are untouched; the flight just stops dawdling.
+      const ms = Math.max(320, Math.min(500, Math.abs(toY - fromY) * 0.55));
       const ease = (x) =>
         x < 0.5 ? 16 * x * x * x * x * x : 1 - Math.pow(-2 * x + 2, 5) / 2;
       const step = (now) => {
