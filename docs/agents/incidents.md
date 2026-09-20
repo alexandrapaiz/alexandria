@@ -1042,3 +1042,142 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — The first open-routed run died at turn one (2026-09-20)
+
+Found by the ExO seat's scheduled run, 2026-09-20 17:15 UTC, in the
+standing run-failure sweep of charter §2b. Nobody had reported it in the
+eleven hours since it happened.
+
+### What happened
+
+The PM seat was dispatched at 2026-09-20 06:16 UTC (run 35493791740) and
+failed. The result block is the whole story.
+
+```
+"type": "result", "subtype": "success", "is_error": true,
+"duration_ms": 190501, "num_turns": 1, "total_cost_usd": 0,
+"permission_denials_count": 0, "modelUsage": {}
+```
+
+The seat initialized, spent three minutes on its first model call, and
+came back with an error, zero turns of work, zero cost, and an empty
+`modelUsage` map. It made no commit, pushed no branch, and opened no
+pull request. The seat's charter and the org's ship-first rule were both
+irrelevant, because the run never reached a second turn.
+
+The step that failed was `Seat run (open-routed)`, and the SDK options
+it logged name the cause: `"model": "kimi-k2.7-code"`, with
+`ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` pointed at the
+`OPENROUTE` endpoint. This was the first execution anywhere in the org
+of the open routing the chair merged in PR #49 (commit 609d7cc,
+2026-09-19 18:49 UTC), which put pm, market, okr and finance behind a
+third-party endpoint whenever `OPENROUTE_API_KEY` is set.
+
+The exact upstream error is not in the log. The action runs with full
+output hidden for security, so what the endpoint actually returned,
+whether an auth rejection, an unknown model id, or a timeout, is not
+recoverable from run 35493791740. That is a second finding and it is
+recorded below.
+
+### Why it happened
+
+Two causes, and the second is the one that generalizes.
+
+1. **The open-routed path has never worked, for any seat.** The routing
+   commit landed at 18:49 UTC on 2026-09-19. The last run of every other
+   routed seat predates it: market 2026-09-19 03:34, finance
+   2026-09-19 00:53, okr 2026-09-18 02:23. So the PM dispatch was the
+   first time the new machinery ran at all, and it ran on real work
+   rather than on a smoke task.
+
+2. **This was a runtime change with no smoke run behind it.**
+   docs/agents/runtime-changes.md names `claude_args`, the model flag,
+   and any new secret a run reads as runtime changes, all three of which
+   this commit touched. The law's ladder is explicit: smoke one seat on
+   a throwaway branch with the narrowest possible task, then one real
+   dispatch, then let a cron fire. None of that happened. A merged PR
+   explained the change, which answers half of the ExO's §2 test, and
+   `gh run list` answers the other half with no smoke run at all.
+
+The law binds the chair as well as the seats, so this is not a seat
+deviating from its charter. It is the law's detection lagging the
+change. The ExO's §2 machinery diff is the only step in the org that
+asks whether a runtime change was smoked, it runs once a week on
+Sundays, and this change landed 35 minutes after the previous ExO run
+started. The failure reached a real seat fourteen hours before the audit
+that would have caught it. That gap is now a row in
+docs/agents/unowned-duties.md and its fix is in the engineer charter,
+because the engineer seat runs daily and this audit needs to.
+
+### The fingerprint, so the next diagnosis is a lookup
+
+An open-routed seat that fails this way prints a result block with
+`num_turns` at 1 or 0, `total_cost_usd` exactly 0, `modelUsage` empty,
+and `is_error` true, after a duration long enough to be a network
+timeout rather than a refusal. Read it apart from the two cap flavors
+already in this register. `error_max_turns` at the cap plus one is a run
+killed mid-work with its turns spent. A `success` subtype carrying an
+`exceeding the configured maximum` error is a finished run failed
+afterwards. This third flavor is a run that never started, and the
+giveaway is that `modelUsage` is empty: no model ever answered.
+
+The diagnostic command, for whoever meets this next:
+
+```bash
+gh run view <id> --log | grep -E '"model"|num_turns|modelUsage|is_error'
+```
+
+If the model name is not a Claude model and `modelUsage` is `{}`, the
+seat's problem is its endpoint and not its charter. Do not re-read the
+charter, and do not raise the cap.
+
+### The fix
+
+Three parts, one of them owner-applied.
+
+**Queued, because no seat can push a workflow file.** Item 1 of
+pending-workflow-changes.md makes the open-routed step non-fatal and
+falls back to the Claude step when it fails, so a routing experiment
+costs the org a retry instead of a whole run. The probe in this run
+confirms the lane is still closed: a push touching
+`.github/workflows/agent-exo.yml` was refused with "refusing to allow a
+GitHub App to create or update workflow ... without `workflows`
+permission", which is incident 12 unchanged.
+
+**Shipped here.** docs/agents/model-routing.md now describes the routing
+that actually exists rather than the one it recommended, and it carries
+the evidence this experiment needs before the four seats stay open.
+
+**Shipped here.** The engineer charter gains the daily machinery diff,
+so the next runtime change is checked for its smoke run within a day
+rather than within a week.
+
+### The diagnostic gap, recorded separately
+
+A failed open-routed run currently yields no upstream error. Turning on
+`show_full_output` would fix that and would also print secrets into a
+public run log, which is not a trade this seat will propose. The cheap
+move belongs to the owner and costs one dispatch: re-run the PM seat by
+hand once with the action in debug mode, capture what the endpoint
+returns, and add that line to this entry. Until somebody does, the org
+knows the open-routed path fails and does not know why.
+
+### What the org grows from it
+
+The pattern already has a name in the learning log, and this is its
+sharpest instance yet. **Ship-first cannot save a run that dies before
+turn two.** Every no-ship protection the org has built, the draft PR, the
+early commit, the queued tripwire, assumes the seat gets to act. A
+runtime change breaks that assumption, which is exactly why runtime
+changes get smoked separately instead of being trusted to the seat's own
+discipline. A charter cannot defend a seat against its own environment.
+
+### Numbering note, added 2026-09-20
+
+This register's numbers have collided. Two entries are numbered 19 and
+two are numbered 22, and the dated sections reuse 11, 12 and 13 as list
+items. Renumbering now would break every charter that cites an incident
+by number, so the rule from here is: **cite an incident by number and
+title together**, and take the next free number from the bottom of this
+file rather than by counting. The next free number is 24.
