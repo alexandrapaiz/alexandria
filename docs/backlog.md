@@ -422,3 +422,18 @@ links on the pricing page. Frontend: the pricing page's three offers
 under the design canon, copy from the writer seat. Finance: model the
 lifetime tier's breakeven against $20/month (ten months to parity)
 and flag the cannibalization risk in the launch-month forecast.
+
+## Email plumbing (owner's to-do mirrored to seats, 2026-09-20)
+
+Owner-side cards live in Linear's Launch runway (ALE2-13 through 16).
+Seat-side counterparts, engineer unless noted:
+- Resend send path: switch pipeline/weekly.py (and the daily path)
+  from Gmail SMTP to Resend once RESEND_API_KEY exists, from
+  digest@libraryofalexandria.dev, reply-to help@. Include the
+  List-Unsubscribe and List-Unsubscribe-Post headers on every send.
+- Unsubscribe endpoint: /unsubscribe?token= flips subscribers.status
+  to unsubscribed; the email template's slot points at it; frontend
+  styles the confirmation page.
+- Polar wiring, after POLAR_* secrets land: three products' checkout
+  links on the pricing page (ADR-31), webhook writing paid state into
+  Clerk metadata with trial expiry semantics, hasSpine reads Clerk.
