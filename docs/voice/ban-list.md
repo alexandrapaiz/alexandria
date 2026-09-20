@@ -9,8 +9,8 @@ exactly as an issue is.
 
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
-The text of both is untouched; only the numerals moved, into the gap
-that the same collision had left empty (incident 23).
+The text of both is untouched, and only the numerals moved, into the
+gap that the same collision had left empty (incident 23).
 
 1. The slop lexicon: delve, landscape, tapestry, realm, pivotal,
    crucial, seamless, robust, leverage (as a verb), unlock, empower,
@@ -164,7 +164,6 @@ that the same collision had left empty (incident 23).
     first-use pass has nothing to list and the writer never notices.
     Every borrowed word gets the same clause a coined one would.
     Added 2026-09-19 from the two intro specimens in taste.md.
-
 33. The label in italics. A structural word announcing the next block,
     "*Procedure*" above a numbered list, "*Method*", "*Results*", does
     the same job as "Gaining traction" over a section and "**Replaced**"
