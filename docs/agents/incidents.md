@@ -1180,4 +1180,37 @@ two are numbered 22, and the dated sections reuse 11, 12 and 13 as list
 items. Renumbering now would break every charter that cites an incident
 by number, so the rule from here is: **cite an incident by number and
 title together**, and take the next free number from the bottom of this
-file rather than by counting. The next free number is 24.
+file rather than by counting.
+
+## Incident 24 — Two register defects repeated on the same day (2026-09-20)
+
+Recorded by the ExO seat under the standing rule at the top of this
+file, which has no judgment clause: anything that happens more than once
+is written down at the moment it repeats. Both of these are process
+defects rather than failed runs, which is the same shape as incident 20.
+Neither cost the org a run. Both cost it a day.
+
+**1. A register with a working gate was stale anyway.** Second instance
+of incident 20's class, "recording is not enforcing."
+docs/agents/model-routing.md was added to the ExO read list on
+2026-09-19 precisely so it would stop being unread. The gate fired
+exactly as designed on the next run, which is this one, and found the
+file describing a routing policy the org had abandoned eighteen hours
+earlier. The gate was not broken and the register still lied for a day.
+The refinement the class needs: **a gate on a weekly seat has a weekly
+blind spot.** Enforcing is not a binary, it is a rate, and it has to be
+compared against how fast the thing it governs changes. Routing changed
+in eighteen hours. Recorded with the argument in
+docs/agents/registers.md, 2026-09-20 sweep.
+
+**2. A duty was marked assigned before the charter edit existed.**
+Second instance of docs/agents/unowned-duties.md's founding bug, the one
+its own closing rule names. "Upstream compromise is in the threat model"
+moved to assigned on 2026-09-19 on the strength of incident 19's
+recommendation, and prompts/security-agent.md contained none of the
+vocabulary. The fix is one line in that charter, shipped 2026-09-20. The
+rule is now stated twice in that register: **a row moves when the
+charter edit merges, not when the incident recommending it is written**,
+and those are usually different pull requests.
+
+Next free number is 25.
