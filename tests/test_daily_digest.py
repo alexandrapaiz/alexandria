@@ -100,7 +100,10 @@ def test_pipeline_counts_alone_do_not_make_a_day_non_empty():
 
 def test_the_empty_issue_is_one_line_and_names_its_date():
     body = empty_issue("September 19, 2026")
-    assert body.startswith("# Nothing worth your time today [September 19, 2026]")
+    # the date is in the prose, not the headline: ban list 22, caught by the
+    # pre-send gate the first time it read this function's output
+    assert body.startswith("# Nothing worth your time today\n")
+    assert "September 19, 2026" in body
     prose = body.split("\n\n", 1)[1]
     assert len(prose.split()) < 40
     assert "Monday" in prose  # points the reader at the weekly

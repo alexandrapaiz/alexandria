@@ -475,11 +475,17 @@ def daily_is_empty(payload: dict) -> bool:
 def empty_issue(dates: str) -> str:
     """The honest one-line issue. Same wording the prompt uses for a routine
     day, so a reader cannot tell which path produced it, because the message is
-    the same either way: we looked, and there was nothing worth your time."""
+    the same either way: we looked, and there was nothing worth your time.
+
+    The date used to sit in the headline. The pre-send gate blocked it on its
+    first run against this function (ban list 22: the subject line is the only
+    sentence most readers ever see, and the email header already carries the
+    date), so the headline is the finding alone and `dates` opens the prose.
+    """
     return (
-        f"# Nothing worth your time today [{dates}]\n\n"
-        "Today's papers were routine, so there is no issue. The next one comes "
-        "tomorrow, and Monday's weekly synthesis covers the whole week."
+        "# Nothing worth your time today\n\n"
+        f"{dates}: today's papers were routine, so there is no issue. The next "
+        "one comes tomorrow, and Monday's weekly synthesis covers the whole week."
     )
 
 

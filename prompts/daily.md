@@ -116,9 +116,9 @@ If nothing in the payload changes what a builder would do today, output exactly
 this and nothing else, with `dates` substituted:
 
 ```
-# Nothing worth your time today [{dates}]
+# Nothing worth your time today
 
-Today's papers were routine, so there is no issue. The next one comes
+{dates}: today's papers were routine, so there is no issue. The next one comes
 tomorrow, and Monday's weekly synthesis covers the whole week.
 ```
 
