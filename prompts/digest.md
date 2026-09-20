@@ -668,9 +668,11 @@ Rules:
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic
-  text sitting alone on its own line. Then put ONE question to each of them,
-  and it is the question that decides, never a list. Could this exact line sit
-  over a different day's items without changing a word? If it could, it is a
+  text sitting alone on its own line. The standing close is the one
+  exception, because it is required to be identical in every issue and is
+  never rewritten by this gate or any other. Then put ONE question to the
+  rest of them, and it is the question that decides, never a list. Could
+  this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
   Ask it of every such line, because this failure has now arrived four times
@@ -682,8 +684,8 @@ Rules:
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
   already look like steps.
-  Those four are what has been caught so far, and they are examples rather
-  than the test: "Gaining traction", "Trailblazing", "Left behind", "Read
+  These are the labels caught so far, and they are examples rather than the
+  test: "Gaining traction", "Trailblazing", "Left behind", "Read
   these yourself", "Compounding", "New and unproven", "Key takeaways", "What
   this means", "Contradicted", "Replaced", "Procedure", "Method", "Results".
   Printing any of them is the violation the owner has flagged twice. Check the
