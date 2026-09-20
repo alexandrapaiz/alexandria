@@ -30,7 +30,7 @@ the owner's subscription.
 | Embeddings | Qwen3-0.6B self-hosted | married, never rented |
 | Reviewer panel (provenance, adversary, validator) | gpt-oss-120b (Groq, $0) | small verifiable steps, fresh contexts |
 | engineer, security, exo, skill, weekly, frontend seats | Opus (set explicitly; the action DEFAULTS to Sonnet when unset, incident learned 2026-09-18) | agentic coding, gold drafting, audits, visual judgment: errors cost most here |
-| pm, market, okr, finance seats | Claude Sonnet | strategy and writing over a repo, Sonnet-shaped |
+| pm, market, okr, finance seats | open-routed to `kimi-k2.7-code`, Sonnet as the written-but-unreachable fallback (chair, 2026-09-19, HQ ADR-015) | the seats judged Sonnet-shaped were the ones sent open first. Status: FAILING, see the 2026-09-20 addendum |
 | sales seat | Opus (moved up 2026-09-18, incident 11: creative breadth under open briefs is premium-tier work) | campaigns and creative strategy |
 | Mechanical subtasks inside any seat's run | Haiku via `.claude/agents/sweeper` | log parsing, link checks, inventory sweeps |
 
@@ -78,3 +78,92 @@ The writer agent (ADR-28, editor-in-chief) runs on **Opus**, explicit
 prose quality is exactly where the premium tier earns its cost. Cap
 150 turns, timeout 75 minutes, daily after the digest publishes.
 Verify from run logs' modelUsage as with every seat.
+
+## Addendum 2026-09-20: open routing is live, and it has never worked
+
+This is the first ExO run to open this file since it was written, which
+was the point of putting it in the charter's read list on 2026-09-19.
+It was stale on arrival, and the thing it had missed is large.
+
+### What changed under the register
+
+On 2026-09-19 at 18:49 UTC the chair merged PR #49, commit 609d7cc, and
+four workflows gained a second, preferred run step. Whenever
+`OPENROUTE_API_KEY` is set, `agent-pm.yml`, `agent-market.yml`,
+`agent-okr.yml` and `agent-finance.yml` point `ANTHROPIC_BASE_URL` and
+`ANTHROPIC_AUTH_TOKEN` at a third-party endpoint and pass
+`--model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}`. The Sonnet
+step is still in each file, guarded by `if: env.OPENROUTE == ''`, so it
+runs only when the secret is absent. The secret is present. Four of the
+org's twelve seats are therefore open-routed today, and the Sonnet
+fallback is unreachable while the key exists.
+
+That is lever 2 of this page, adopted in one commit. The owner's
+directive of 2026-09-17 is exactly this, so the direction is hers and
+this seat's lane is the evidence rather than the decision.
+
+### What happened on the first run
+
+It failed. Incident 23 in [incidents.md](incidents.md) has the full
+diagnosis. The PM dispatch of 2026-09-20 06:16 UTC, run 35493791740, was
+the first execution of the open-routed path by any seat, and it returned
+`is_error: true` at `num_turns: 1` after 190 seconds, with
+`total_cost_usd: 0` and an empty `modelUsage`. No model answered. The
+seat shipped nothing, and ship-first could not help it, because the run
+never reached a second turn.
+
+Read that number carefully before drawing a conclusion about open
+models. Nothing here is evidence that `kimi-k2.7-code` writes a bad
+sprint plan. It is evidence that the endpoint did not serve the request
+at all, which is a plumbing result and not a quality result. The
+distinction matters because the wrong lesson is cheap to learn here.
+
+### The clause this page already had, and what it now requires
+
+This register's own rule for lever 2 reads: "a seat migrates only after
+its run shape is stable and a golden-set comparison passes, the same
+bake-off discipline that chose the distill model." Four seats migrated
+without either. So the rule was not wrong and it was not enforced, which
+is the pattern docs/agents/registers.md exists to kill. It is recorded
+there as a gap against this file, and the honest reading is that a
+register owned by a seat that runs weekly cannot gate a change that
+lands on a Friday evening.
+
+From here, three things decide whether the four seats stay open, and
+all three are cheap.
+
+1. **The path serves a request at all.** One hand dispatch of one routed
+   seat, with the action in debug mode so the endpoint's actual error is
+   visible. Until this passes, quality is not a question yet.
+2. **The seat completes its real work.** One full run that ships a
+   branch and a pull request, judged by its artifacts as incident 8
+   requires, never by its conclusion.
+3. **The output holds up beside the Claude run it replaced.** For the PM
+   that is a sprint file and a retro, and the comparison set already
+   exists in `docs/sprints/`. This is the golden-set clause, applied to
+   a seat rather than to a pipeline step, and it is the one that decides.
+
+Verify the model from run logs and never from this table. The command is
+in incident 9's lesson and it is one line:
+
+```bash
+gh run view <id> --log | grep -E '"model"|modelUsage'
+```
+
+### The risk this page named in advance
+
+"Risk: open-model tool-calling reliability on long agentic runs." That
+sentence was written on 2026-09-17 and it named the right hazard, so the
+next routing decision should weight it. The four routed seats include
+the PM, which is the seat the org most needs present, and the okr and
+finance seats, which run monthly and dormant respectively. If the owner
+wants the experiment to continue while the risk is unmeasured, the
+cheapest shape is to route the seats whose failure costs least first,
+which is the reverse of what landed. The PM is the worst seat to
+experiment on this week, because its Monday ceremony is the one run the
+whole sprint depends on.
+
+That is a recommendation and not a decision. Routing is the owner's
+call and the fallback queued in
+[pending-workflow-changes.md](pending-workflow-changes.md) makes the
+experiment survivable either way.
