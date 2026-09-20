@@ -52,7 +52,7 @@ finding of the same weight as an unowned row.
 |---|---|---|---|---|
 | The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | assigned |
 | Ecosystem events steer what we ingest | research (signal read) | weekly | weekly Mon | consuming |
-| Upstream compromise is in the threat model | security (incident 19 item 2) | continuous, acted on in sweeps | biweekly | assigned, accepted lag |
+| Upstream compromise is in the threat model | security (§2, words added 2026-09-20) | continuous, acted on in sweeps | biweekly | assigned, accepted lag. **Was false from 2026-09-19 to 2026-09-20**, see below |
 | Legal and compliance posture | **none** | once, before launch | n/a | owner decision |
 | Free-tier and quota headroom | finance, dormant | monthly | dormant | owner decision |
 | The corpus survives losing its database | **none** | continuous | n/a | owner decision |
@@ -60,6 +60,7 @@ finding of the same weight as an unowned row.
 | Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
 | Runs that fail get reported to the owner | pm (§1f) | daily | weekly Mon, daily once queued | **cadence gap, fix queued** |
 | The org decides what to do next between Mondays | **none, and the owner did it** | hourly | n/a | **fix queued, see below** |
+| A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, was a cadence gap |
 
 ## The three open gaps, with the check each one needs
 
@@ -164,3 +165,84 @@ The general lesson, which is the reason this section is longer than the
 row deserves: **duties accrete to whoever is present.** The full
 argument is in docs/agents/learning-log.md under the presence gradient,
 and its operational form is the cadence test above.
+
+
+## The 2026-09-20 audit
+
+Three results, and the first one is about this register rather than
+about the org.
+
+### 5. A row that said assigned and was not
+
+The re-verification in charter §3b exists because a row can go false
+after it is written. It went false on the day it was written, again.
+
+"Upstream compromise is in the threat model" was moved to **assigned**
+on 2026-09-19 on the strength of incident 19's second recommendation.
+The audit of 2026-09-20 grepped `prompts/security-agent.md` for the
+vocabulary that duty would have to use, which is the same method that
+found the first three rows, and found nothing. Not `upstream`, not
+`supply chain`, not `Hugging Face`, not `dependency`, not `third
+party`. The charter's only mention of incident 19 sits inside the "Seen
+and not mine" boilerplate, which is the exact reading error
+docs/agents/registers.md warns about: a file named in boilerplate as
+evidence for some other rule looks like coverage to a grep and is not
+coverage.
+
+So for one day the register asserted that the org's supply-chain
+exposure was somebody's job, and the security seat would have run its
+next sweep on the 1st with no instruction to look. The words are in the
+charter now, naming the artifacts the org actually consumes and asking
+for the blast radius in writing.
+
+**The lesson, and it is this page's second self-inflicted one.** Moving
+a row to assigned on the strength of a *recommendation* is the same
+mistake as moving it on the strength of a feeling. A row moves when the
+charter edit is merged, not when the incident that proposes it is
+written, and the two happen in different pull requests more often than
+not. The rule at the bottom of this page said this already. It now has
+a second instance to point at.
+
+### 6. The new row: runtime changes and the six-day blind spot
+
+Found by grepping the charters for who checks that a change to the
+machinery was tested before a seat met it. The answer was one seat, this
+one, in §2, on Sundays.
+
+The trigger rate is not weekly. In the week of 2026-09-14 the machinery
+changed twice, once for containerization and once for open routing, and
+the second landed at 18:49 UTC on a Friday, 35 minutes after the
+previous ExO run began. A seat met it at 06:16 on Saturday and failed
+completely. The audit that would have caught it was 35 hours away, and
+had the change landed on a Monday it would have been six days away.
+
+That is a cadence gap of the purest kind, and unlike the PM's it did not
+need a cron change to close, because the org already has a seat that
+runs every day. The engineer charter's new step 0 runs the machinery
+diff daily and reports what it finds to the incident register and to the
+owner. This seat keeps the weekly pass as the backstop and as the
+pattern-finder, which is what a weekly cadence is actually good for.
+
+**Check next run:** whether the engineer seat's PRs carry a machinery
+line. A duty assigned to a charter is not a duty performed, which is the
+whole thesis of this page.
+
+### 7. What the cadence table still says, honestly
+
+Two rows remain in cadence gap, and one of them is worse than it was.
+
+"Runs that fail get reported to the owner" is still owned by a seat
+whose cron fires weekly, because item 2 of pending-workflow-changes.md
+is still unapplied. The 2026-09-20 evidence: the PM run failed at 06:16
+UTC and nothing in the org mentioned it for eleven hours, until the
+ExO's scheduled Sunday run opened `gh run list`. That the gap was
+eleven hours rather than six days is an accident of which day it was.
+
+"Runs that fail get diagnosed" is still this seat's, still weekly, and
+this run does not propose a fix for it. The machinery half moved to the
+engineer above, which is the part that was mechanically checkable. The
+diagnosing half needs judgment against the incident register, and
+splitting it further would produce shared custody, which is the defect
+this page was created to name. The honest options are a second ExO run
+midweek or nothing, and that is the owner's call rather than this
+seat's, because it spends her tokens.
