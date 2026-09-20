@@ -93,3 +93,22 @@ on any of the three runs longer than 170ms. Ours ran at 400ms.
   off rather than re-timing it.
 - `docs/agents/runtime-changes.md`. Nothing in the container changed. The
   Playwright pin stayed at 1.49.1 and its baked browsers were used.
+
+## Arrived mid-run
+
+Main moved under this run. PRs 52, 53, 54 and 57 merged while it was in
+flight, so `origin/main` was merged into the branch and the whole sweep was
+repeated against it. Two pages are new, `/privacy` and `/terms`, and both were
+screenshotted and read at all three viewports; both are clean and both are
+kept here at 390 and 1440. The footer gained its first links in the same
+merge, and it holds at 390px.
+
+Three taste rulings also landed mid-run, all dated 2026-09-19 and all for this
+seat: the iPhone review (the hero morph plays only after a scroll, so a phone
+visitor never sees the one choreographed moment, and the phone layout reads
+cluttered), the graph returning as a paywalled page, and the graph UI itself
+brought to standard. None of them is in this run's dispatch and none is
+attempted here. The morph's trigger is a change to the home page's protected
+moment and deserves its own run with its own before and after, not a hurried
+third motion change at the end of this one. Nothing shipped here touches
+MarkLive.jsx or the hero's geometry.
