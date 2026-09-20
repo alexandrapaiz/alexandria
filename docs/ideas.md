@@ -2763,3 +2763,10 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   the duplicate logic.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-20 — The digest on WhatsApp (owner's idea)
+- Trigger: the owner, 2026-09-20: "an option for the newsletter to be also sent through WhatsApp." The chair's read of why it is bigger than a delivery option: open rates on WhatsApp run far above email (industry figures cluster around 90%+ versus 20-40% for newsletters), it is the default channel across Latin America, India, and much of Europe where email newsletters underperform, and a WhatsApp channel is natively forwardable, which is distribution built into the product (the Thiel doctrine in docs/sales/distribution-plan.md). No AI research digest in the landscape does it.
+- What: a WhatsApp delivery channel alongside email, opt-in at sign-up (the consent screen gains a phone field and a second checkbox). Two viable mechanisms, to be decided on evidence: (a) a WhatsApp Channel (broadcast, one-to-many, followers subscribe by link, no per-message cost, no phone numbers collected, limited formatting) for the free digest; (b) the WhatsApp Business Cloud API via a provider (Twilio or 360dialog) for one-to-one delivery with the reader's number, template-message approval required, per-conversation pricing after the free tier, which fits the paid spine and lets a subscriber reply. The writer seat owns a WhatsApp rendering of the issue (short, the first-screen promise as the whole message, links to the full issue on the site; the outsider test applies harder on a phone), the frontend seat owns the opt-in moment, the engineer owns the send path and the number.
+- First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
+- Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
+- Status: proposed
