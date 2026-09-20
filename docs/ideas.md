@@ -2684,3 +2684,82 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   frontend seat already owns the template (PR #37).
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-19 — Competitive scan: Consensus meters the expensive step, not the catalog
+- Trigger: today's accounts build needed an entitlement gate, so the
+  question "what exactly does a free account not get" became concrete.
+  Consensus was the scan target. Its free tier does not withhold the
+  corpus. Search is unlimited and free; what is metered is the expensive
+  synthesis, reported as roughly 10 analyses a month free, more on Pro,
+  and a separate higher tier for heavy use. Prices still disagree across
+  aggregators, so treat the numbers as medium confidence, but the shape
+  is consistent everywhere: a per-month allowance of the costly
+  operation, refreshing, rather than a wall around the content. This
+  also updates what docs/market/landscape.md records for Consensus,
+  which has it as one Pro price rather than a three-plan ladder. The
+  market seat owns that file, so this note is the handoff.
+- What alexandria does better: the gate Consensus is defending is a
+  search index, which every competitor also has. alexandria's costly
+  operation produces something none of them keep, which is a claim
+  graph with contradiction edges. A metered allowance on a commodity
+  search is a tax on the reader. A metered allowance on "judge this
+  against everything the field has said since" is a fair price for work
+  that actually costs money to do.
+- What is worth stealing: the free tier should be generous about
+  reading and strict about computing. Today's `isEntitled` is a
+  boolean, so the only paywall it can express is a wall. It cannot say
+  "your tenth deep answer this month".
+- First step: a `usage_log` table (clerk_id, operation, created_at) and
+  a count-this-month function next to `isEntitled`, so the gate can
+  return an allowance instead of a yes or no. The MCP tools are the
+  first callers, since `rag_answer` is the expensive operation.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — The Clerk webhook has no dead letter, and its log ages out
+- Trigger: writing site/app/api/clerk-webhook/route.js today. The route
+  separates retryable failures from permanent ones, which is right: a
+  missing DATABASE_URL answers 503 so Svix brings the event back, and an
+  event with no id or email is acknowledged, because retrying it can
+  never succeed. But "acknowledged" currently means a console.error and
+  nothing else. On a serverless host that line is a log entry that ages
+  out, so an account that silently failed to sync is unrecoverable and,
+  worse, invisible. Nobody would ever know to look.
+- What: one table, `webhook_events`, keyed by the `svix-id` header,
+  holding the event type, the outcome, and the reason when it was
+  skipped. It pays for itself twice. It is the dead-letter queue, so a
+  permanently-failed event survives as a row the owner can query
+  instead of a log line she will never read. And because svix-id is
+  unique per event, inserting it first makes the endpoint idempotent at
+  the transport layer rather than relying on `on conflict (clerk_id)`
+  to absorb duplicates, which is a weaker guarantee: it dedupes retries
+  of the same event, but it cannot tell a retry from a genuine second
+  update.
+- First step: the table, plus an insert at the top of the route after
+  verification and a status update before each return.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — Two entitlement gates now exist and they disagree
+- Trigger: today's build added `isEntitled` in site/lib/account-core.js,
+  reading the `user_accounts` view by clerk_id. site/lib/entitlement.js
+  already had `hasSpine`, reading `subscribers` by email. They are not
+  the same check. `hasSpine` requires `tier = 'full'` and does not
+  honour `comp`, so the owner's comped friends fail it; `isEntitled`
+  honours comp and also reads `subscription_status`, which is where
+  Polar will write once payments open. Two functions that answer "may
+  this person through" and answer differently is the kind of thing that
+  is fine for a week and then decides a refund argument.
+- What: collapse them into one. `account-core.isEntitled` is the one to
+  keep, because it is pure, it is tested, and it reads the view that
+  already joins both sides. `entitlement.js` becomes a thin wrapper
+  during the transition and then goes away. Its `currentEmail()` stub,
+  which returns null and has a comment saying Clerk is not wired yet,
+  is now false: Clerk is wired, and `currentAccount()` is the answer it
+  was waiting for.
+- First step: hold until PR #31 merges, since the security run is
+  editing entitlement.js right now and this would collide. Then one
+  commit that reroutes `hasSpine` through `currentAccount` and deletes
+  the duplicate logic.
+- Cost: $0.
+- Status: proposed
