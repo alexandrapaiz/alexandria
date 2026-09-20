@@ -398,3 +398,17 @@ Next frontend dispatch after the current run: full iPhone pass. The
 hero morph is not visible on phone because it triggers on scroll,
 and the phone layout is cluttered. See docs/design/taste.md's newest
 entry for the ruling and constraints.
+
+## Frontend queue, two more (owner, 2026-09-19)
+
+1. **The graph page, paywalled.** Restore a /graph route from the shelved
+   site/app/_graph code, gated on hasSpine() exactly like skills and
+   routines: unpaid visitors see nothing of substance. Not in the nav
+   until item 2 lands.
+2. **Fix the knowledge graph UI.** Bring the graph explorer to industry
+   standard: benchmark two or three real graph explorers (Neo4j Bloom,
+   Obsidian's graph view, Linkurious-class tools) for interaction craft,
+   translate into the house black and white under canon and motion
+   rules, verify at the real claim-graph volume (hundreds of nodes),
+   screenshots at all three viewports. Any new dependency is a ledger
+   proposal before it enters the repo.

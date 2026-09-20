@@ -71,3 +71,15 @@ never edit them.
   allowed a choreographed moment; honor prefers-reduced-motion), and
   decongests the phone layout per the density canon. Hero geometry
   stays untouchable; only its trigger and the surrounding air change.
+- 2026-09-19 — The knowledge graph returns as a PAYWALLED page. Her
+  earlier ruling hid it completely; this supersedes it in one
+  respect: a /graph route exists, behind the $20 spine gate
+  (hasSpine), and a signed-out or unpaid visitor sees essentially
+  nothing there, no preview, no teaser rendering. The graph remains
+  unlisted in the nav until its UI is fixed.
+- 2026-09-19 — Fix the knowledge graph UI itself. The current graph
+  rendering is the one she called a toy; the frontend seat brings it
+  to industry standard under the design canon (black and white,
+  Apple measurement system, motion rules), benchmarked against real
+  graph explorers, with a proposal first for anything that needs a
+  new dependency.
