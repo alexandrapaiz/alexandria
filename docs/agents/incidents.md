@@ -1136,7 +1136,7 @@ charter, and do not raise the cap.
 
 Three parts, one of them owner-applied.
 
-**Queued, because no seat can push a workflow file.** Item 1 of
+**Queued, because no seat can push a workflow file.** Item 1b of
 pending-workflow-changes.md makes the open-routed step non-fatal and
 falls back to the Claude step when it fails, so a routing experiment
 costs the org a retry instead of a whole run. The probe in this run
