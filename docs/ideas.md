@@ -2807,3 +2807,46 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Whose call: the owner's on the words, the engineer's on the code. This
   seat does not write pipeline code.
 - Status: proposed
+
+### 2026-09-20 — The heading gate should compare against the last issue, not against a list (writer seat, structure watch)
+- Trigger: the second editorial run of 2026-09-20, charter step 4. The
+  rule says that when the same structural fix fails twice through prompt
+  changes alone, the pipeline change gets proposed here instead of
+  tinkered a third time. This one has failed four times: ban list 19
+  (the category heading), 20 (the slot label printed, her second
+  flag, incident 20), 30 (the same word in bold one level down), 33
+  (the same word in italics over a list). Each fix added the newly seen
+  string to a list, and the next occurrence wore a disguise the list did
+  not hold. Incident 25.
+- What is wrong with the gate we have: `skeleton-heading` in
+  `tools/check_digest_quality.py` (PR #60) blocks when a heading matches
+  one of the known slot labels. That is the right rule and the wrong
+  shape. It can only ever catch a label that has already shipped once,
+  and docs/standards/digest-quality.md states the real test on its own
+  page, "a heading, an opening or an item that would fit tomorrow's
+  issue unchanged is furniture", then files it under what only a person
+  can check, after publication.
+- What: a machine can check a strong proxy for that test without any
+  judgment, because "would fit tomorrow's issue" has an observable
+  shadow, "fitted yesterday's". Add a rule that reads the headings of
+  the last N issues out of the `digests` table and blocks when today's
+  issue repeats one of them. No list of forbidden words, no new
+  vocabulary to maintain, and it catches labels nobody has invented yet,
+  which is the entire class the four ban list entries above are
+  instances of. It also catches the softer failure the string list
+  cannot see at all: a heading that is freshly written, passes every
+  blacklist, and is the third issue running to say a version of the same
+  thing.
+- What it does not catch, stated honestly: the first appearance of a new
+  label. A label ships once and is caught on its repeat. That is a real
+  limit and still strictly better than a list that catches it on the
+  second, third and fourth appearance only after a person files an entry.
+  The two rules are complements, so keep `skeleton-heading` as it is.
+- First step: the engineer, on top of PR #60, since the gate and its
+  tests are that PR's. One query for the previous issues' `##` lines,
+  one set comparison, one blocking finding, and a fixture issue that
+  reuses last week's heading. The writer seat owns the rule's wording
+  and has put the class test into prompts/digest.md this run; the code
+  is the engineer's.
+- Cost: $0, one query per send.
+- Status: proposed

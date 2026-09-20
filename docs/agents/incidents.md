@@ -1094,3 +1094,81 @@ to land, that means rereading the tail before writing it.
 This is the cheap half of incident 6's lesson. Incident 6 was two
 appends at one anchor colliding in git. This is two appends colliding in
 the content, which git merges cleanly and therefore never reports.
+
+## Incident 25 — A gate written as a list catches only what already shipped (2026-09-20, writer seat)
+
+Recorded under the standing rule at the top of this file. The class has
+now produced four artifacts and four separate ban list entries, which is
+three repeats past the threshold at which it should have been written
+down.
+
+**The number.** The ExO's incident 24 closed with "Next free number is
+25", so this entry takes 25. Note for whoever renumbers: **23 is claimed
+three times** as of today, by three seats on three unmerged branches, for
+three unrelated events (the writer's ban list collision, the engineer's
+arXiv 406, the ExO's open-routed run). That is incident 23's own defect,
+parallel runs colliding on a register's next number, repeating inside the
+incident register itself on the day it was first recorded about the ban
+list. It is left here as a note rather than fixed, because this register
+is not the writer seat's to renumber.
+
+### What happened
+
+Four times, the same failure reached a reader or a sample, and four times
+it was fixed by adding the string that had just been seen to a list of
+forbidden strings.
+
+1. A section heading printed a category word, "Compounding" (ban list 19).
+2. A section heading printed the generator's own internal slot label,
+   "Gaining traction". The owner flagged this one for the second time, in
+   the word "AGAIN", and it became incident 20 (ban list 20).
+3. The same category word moved down one level and printed in bold over a
+   group inside a section, "**Replaced**" (ban list 30).
+4. The same category word moved again and printed in italics over a
+   numbered list, "*Procedure*" (ban list 33). Five rounds of grading had
+   read past it, because every gate written in rounds one through four
+   read `#` lines and bold runs, and none of them read italics.
+
+### Why it kept happening
+
+Each fix was written from the artifact in front of the writer, so each
+one described a position and a typeface rather than the thing being done
+wrong. The rule the org actually holds is a question that can be put to
+any line: could this sit over a different day's items without changing a
+word? Nothing in the pipeline or the prompt ever asked it. Both asked a
+narrower question, does this line match one of these strings, and that
+question has a different answer every time the category word moves, which
+it did four times.
+
+This is a second axis on incident 20. Incident 20 says that recording a
+rule is not enforcing it. This one says that enforcing it is not enough
+either, because a gate can be written, wired, and running, and still be
+shaped so that it can only recognise the last failure. A check written
+from the previous incident is a memorial.
+
+The general form, for the ExO's pattern reading: **when a fix enumerates,
+ask what it is an instance of.** If the enumeration can be replaced by a
+question the machine or the model can put to any candidate, the question
+is the fix and the enumeration is evidence.
+
+### The fix, in this pull request
+
+- `prompts/digest.md`: the pre-output heading gate no longer decides by
+  list. It collects every line that announces a block rather than saying
+  something, at any level and in any typeface, and puts the class
+  question to each one. The known labels stay in the file, demoted to
+  examples, with the reason they are not the test written beside them.
+- `docs/voice/ban-list.md` gains entry 36, the gate that lists instead of
+  testing, so the register carries the class and not only its four
+  instances.
+- `docs/ideas.md`: the machine half is proposed to the engineer, on top
+  of PR #60, as a comparison against the previous issues' headings rather
+  than against a word list. That is the deterministic shadow of the class
+  question, and it needs no judgment to run.
+
+### What is still open
+
+The prompt fix cannot be observed. No issue has been generated since
+2026-09-14, so every patch made to the generator across seven editorial
+runs is untested against a real payload. The first issue that proves or
+disproves this one is Monday's pilot.

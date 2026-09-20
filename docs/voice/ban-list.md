@@ -182,3 +182,28 @@ gap that the same collision had left empty (incident 23).
     its throat. An absence is worth printing only as a fact about the
     field, in the reader's words, and only where it changes what they
     should believe. Added 2026-09-20 from 2026-W37.
+35. The section kept for the shape. Entry 34 is about how an absence is
+    worded; this one is about whether the section should have been on the
+    page at all. A heading written fresh and well, followed by one honest
+    sentence saying nothing landed in that slot today, is still a heading
+    the reader scrolled past to learn that nothing happened. The generator
+    had no clause letting a section be dropped, only clauses telling it how
+    to word the emptiness, so a thin day printed the same four-part
+    furniture a heavy one did. That is entry 21's fixed-length issue
+    measured in sections instead of words, and the daily cadence will meet
+    it constantly, because most days overturn nothing. A slot the day gave
+    nothing to prints nothing, heading included. Added 2026-09-20 from the
+    generator audit, not from an issue, because no issue has been generated
+    since the daily was adopted.
+36. The gate that lists instead of testing. Not a tell in the prose, a tell
+    in the machinery that checks the prose, and it is on this list because
+    it is what let four of the entries above ship. "If the heading equals
+    one of these eight strings, fail" catches the eight labels already
+    known and every future one walks through, which is exactly what
+    happened when the category word moved from a heading to bold (30) and
+    from bold to italics (33). A check written from the last failure is a
+    memorial, not a gate. Every rule on this list that can be stated as a
+    question about any line ("could this sit over a different day's items
+    unchanged?") is enforced as that question, and the enumerated examples
+    are evidence that the question is worth asking, never the test itself.
+    Added 2026-09-20, incident 25.
