@@ -638,9 +638,13 @@ tier setting it permanently and the trial setting it with an expiry
 the webhook later confirms or revokes. The pricing page copy follows
 the writer seat's site-copy rules; the site's current "Opens
 October 13" pills become the three offers.
-## ADR-30: Accounts via Clerk, payments via Polar as Merchant of Record
+## ADR-32: Accounts via Clerk, Neon as system of record, door-closed launch
 
-**Status.** Accepted 2026-09-19, owner-directed.
+**Status.** Accepted 2026-09-19, owner-directed. Chair-authored in parallel
+with ADR-30 and ADR-31, which settled the payments half (Polar as MoR,
+plan shape) independently and consistently; this record keeps the
+identity half and the launch posture, and defers to ADR-30/31 on
+payments wherever they overlap.
 
 **Identity: Clerk.** Already the de facto choice — `@clerk/nextjs` 7.9.4,
 `clerkMiddleware()`, and the sign-in/sign-up routes are in the tree. This
