@@ -16,6 +16,24 @@ and a reader who finishes smarter, not just informed. The reader is a
 builder deciding what to do this week, and their agents load the same
 findings, so precision is not optional.
 
+## Scope: the issues and the site both
+
+Her ruling of 2026-09-19, recorded in docs/voice/taste.md: this canon
+governs SITE COPY as well as the newsletter. She rejected the library
+page's prose and ordered the mission page rewritten under these laws,
+with the outsider test binding hardest of all, because a page is where
+a stranger decides what alexandria is before a single issue is read.
+
+The division of work is the same one the design canon uses in reverse.
+The writer seat drafts the words and the frontend seat sets them, so a
+copy change arrives as a draft in docs/voice/ and lands in the site
+through the frontend seat's own pull request. Three laws bite hardest
+on a page: law 3, sell the product and never the recipe, because a
+visitor meeting a description of the machinery has been handed the
+blueprint instead of the building; law 12a, the outsider test; and the
+design register's own rule that a heading never carries an explanatory
+subtitle.
+
 ## References, and what to take from each
 
 Study decisions, never copy sentences.

@@ -3,7 +3,14 @@
 Companion to docs/design/ban-list.md, for words. The writer seat
 checks every issue against this list, APPENDS new tells as the
 generated-prose aesthetic drifts, and never deletes an entry without
-the owner's word.
+the owner's word. Since her ruling of 2026-09-19 it governs site copy
+as well as issues, so a page of the site is read against these tells
+exactly as an issue is.
+
+Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
+parallel writer runs were found to have appended at the same numbers.
+The text of both is untouched; only the numerals moved, into the gap
+that the same collision had left empty (incident 23).
 
 1. The slop lexicon: delve, landscape, tapestry, realm, pivotal,
    crucial, seamless, robust, leverage (as a verb), unlock, empower,
@@ -120,21 +127,6 @@ the owner's word.
     per idea, never more ideas per line, so the fix is air: two or three
     sentences to a paragraph, one idea to a sentence, and one fewer item on
     the day when that will not fit. Added 2026-09-19 from her density ruling.
-26. The label that moved down a level. "**Contradicted**" and
-    "**Replaced**" in bold at the head of a group inside a section do
-    the same job as "Gaining traction" at the head of a section: they
-    sort rows, they fit every issue, and they hand the reader the
-    blueprint. A category word is a category word whether it carries a
-    `##` or a pair of asterisks. Added 2026-09-19 from 2026-W37, where
-    the generator's own example lead-in printed verbatim.
-27. The advice sentence in the same clothes every time. "Builders
-    should replace binary success/failure signals", "Practitioners
-    should adopt these token-level continuity tricks", "Builders of
-    long-horizon agents should embed such feedback": three items, three
-    identical constructions, and by the third the reader has stopped
-    reading the sentence and started recognizing it. Naming the
-    consequence is house law, so vary what it attaches to, not only its
-    verb. Added 2026-09-19 from 2026-W37, three items out of three.
 28. The forecast nothing can check. "This shift suggests that future
     pipelines will embed verification and observation cues as core
     components rather than add-on tricks." It cannot be wrong, so it
@@ -147,6 +139,21 @@ the owner's word.
     unrelated papers to one team that the payload never said existed.
     Attribution is a claim about people and carries the same
     never-invent rule as a number. Added 2026-09-19 from 2026-W37.
+30. The label that moved down a level. "**Contradicted**" and
+    "**Replaced**" in bold at the head of a group inside a section do
+    the same job as "Gaining traction" at the head of a section: they
+    sort rows, they fit every issue, and they hand the reader the
+    blueprint. A category word is a category word whether it carries a
+    `##` or a pair of asterisks. Added 2026-09-19 from 2026-W37, where
+    the generator's own example lead-in printed verbatim.
+31. The advice sentence in the same clothes every time. "Builders
+    should replace binary success/failure signals", "Practitioners
+    should adopt these token-level continuity tricks", "Builders of
+    long-horizon agents should embed such feedback": three items, three
+    identical constructions, and by the third the reader has stopped
+    reading the sentence and started recognizing it. Naming the
+    consequence is house law, so vary what it attaches to, not only its
+    verb. Added 2026-09-19 from 2026-W37, three items out of three.
 32. The nickname before the introduction. Not jargon, an ordinary word
     quietly carrying a technical job: "how much of a teacher a student
     really needs", "drop its teacher mid-training", printed before
@@ -157,3 +164,22 @@ the owner's word.
     first-use pass has nothing to list and the writer never notices.
     Every borrowed word gets the same clause a coined one would.
     Added 2026-09-19 from the two intro specimens in taste.md.
+
+33. The label in italics. A structural word announcing the next block,
+    "*Procedure*" above a numbered list, "*Method*", "*Results*", does
+    the same job as "Gaining traction" over a section and "**Replaced**"
+    over a group, and it fails for the same reason: it sorts the page
+    into parts instead of saying anything, and it would sit over any
+    item in any issue. The steps under it already look like steps. The
+    tell survived two heading gates because both of them read bold runs
+    and `#` lines and neither read italics, which is the general lesson:
+    a label is a label in any typeface. Added 2026-09-20 from 2026-W37,
+    which printed it twice.
+34. The empty stream reported as news. "No citation movers were recorded
+    this week" tells the reader that one of alexandria's tables returned
+    no rows, in the table's own vocabulary, in the middle of a section
+    about research. It is entry 14's internal vocabulary crossed with the
+    ranking narration of entry 18, and it reads as the machine clearing
+    its throat. An absence is worth printing only as a fact about the
+    field, in the reader's words, and only where it changes what they
+    should believe. Added 2026-09-20 from 2026-W37.

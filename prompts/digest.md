@@ -365,7 +365,12 @@ Never print internal vocabulary at the reader. "(3 supports)" is a fact about
 alexandria's claim graph and means nothing to a subscriber. Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
-its numbers (X -> Y citations) and say what a jump that size signals.
+its numbers (X -> Y citations) and say what a jump that size signals. An
+empty stream is never news. "No citation movers were recorded this week"
+names one of alexandria's own tables at a reader who has never heard of it,
+so either say nothing or say the absence as a fact about the field in the
+reader's words ("nothing older moved enough to be worth reporting today").
+That holds anywhere a query comes back empty.
 
 Each item is prose, and depth follows significance here as everywhere. The
 top item earns real treatment. A secondary one can be two sentences. Work
@@ -464,7 +469,10 @@ replacement. Drop what does not survive your reading, and note that the drop
 is ledger information and not reader-facing copy. Never let one result appear
 twice, once as the overturner and once as the overturned.
 
-If a kind is empty, say so in one line, because that is itself information.}
+If a kind is empty, say so in one line, because that is itself information.
+Say it about the field and never about the stream: "nothing the field held
+last month lost ground today" is information a reader can use, and naming an
+internal source that returned no rows is the pipeline talking.}
 
 ## {The heading for the reading list, written fresh and never the words "Read
 these yourself". It can name what the day's picks have in common or simply hand
@@ -602,7 +610,9 @@ Rules:
   an item past three paragraphs with no written turn inside it, two items whose
   closing consequence takes the same shape, a sentence predicting the future
   that carries no number or date, a bold word standing in for a heading inside
-  a section, and any sentence that appears in this file as an example. Fix what
+  a section, a source line whose link reads "[link]" instead of naming what is
+  on the other side of it, and any sentence that appears in this file as an
+  example. Fix what
   you find, because these are exactly the patterns that make good content read
   as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
@@ -651,9 +661,13 @@ Rules:
   are this file's internal slot labels and generic taxonomy, printing one is
   the violation the owner has flagged twice, and the fix is to write that
   heading again from the section's actual items. On the same pass, read back
-  every bold run that sits alone at the start of a line inside a section: if it
-  is "Contradicted" or "Replaced", it is the same violation one level down, and
-  it is replaced by a written sentence. Check the title too: it states a
+  every run of bold or italic text sitting alone on its own line inside a
+  section. If it is "Contradicted" or "Replaced", it is the same violation one
+  level down, and it is replaced by a written sentence. So is any structural
+  word announcing what comes next, and "*Procedure*" over a numbered list is
+  the one the last issue printed twice. A label is a label in any typeface,
+  the steps already look like steps, and the sentence before them does the
+  introducing. Check the title too: it states a
   finding, and it carries no bracketed date range and no week id. Only then
   output.
 - Output the markdown only. No JSON wrapper, no preamble.
