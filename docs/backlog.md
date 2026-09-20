@@ -373,3 +373,67 @@ claims and instead feed the research seat's weekly signal read
 ingestion steering). Engineer wires the role field and the signal
 extraction; research consumes it in the brief. Ledger proposal with
 the diff, owner merges.
+
+## Sign-up → newsletter consent flow, and pricing via Clerk (owner, 2026-09-19)
+
+Owner order for the queue: a login/signup flow with Clerk so that
+after sign-up a person can consent to the newsletter (the waitlist
+today writes a local file; after this, a signed-up user's consent
+writes their email to subscribers with an explicit opt-in). Engineer
+builds it on the Clerk foundation already wired (Core 3 Show API,
+middleware live). Design the consent moment with the frontend seat:
+one screen after sign-up, one checkbox, honest copy, no dark pattern.
+The owner also asked how pricing links to the account: see the chair's
+answer in the session record; the decision space is Clerk Billing
+(subscription state on the Clerk user, Stripe underneath) versus a
+Merchant of Record (Polar or Lemon Squeezy, required if Stripe is
+unsupported in her country) with entitlement synced to Clerk metadata.
+Engineer to write the ledger proposal with both wired end to end on
+paper, since site/lib/entitlement.js (hasSpine) is the one seam either
+option fills.
+
+## Frontend queue: iPhone review (owner, 2026-09-19)
+
+Next frontend dispatch after the current run: full iPhone pass. The
+hero morph is not visible on phone because it triggers on scroll,
+and the phone layout is cluttered. See docs/design/taste.md's newest
+entry for the ruling and constraints.
+
+## Frontend queue, two more (owner, 2026-09-19)
+
+1. **The graph page, paywalled.** Restore a /graph route from the shelved
+   site/app/_graph code, gated on hasSpine() exactly like skills and
+   routines: unpaid visitors see nothing of substance. Not in the nav
+   until item 2 lands.
+2. **Fix the knowledge graph UI.** Bring the graph explorer to industry
+   standard: benchmark two or three real graph explorers (Neo4j Bloom,
+   Obsidian's graph view, Linkurious-class tools) for interaction craft,
+   translate into the house black and white under canon and motion
+   rules, verify at the real claim-graph volume (hundreds of nodes),
+   screenshots at all three viewports. Any new dependency is a ledger
+   proposal before it enters the repo.
+
+## Pricing structure (ADR-31, owner 2026-09-19) — engineer + frontend + finance
+
+Engineer: three MoR products (trial-on-monthly, monthly with the
+recurring/non-recurring choice honored at the MoR level, lifetime),
+one webhook writing one Clerk flag with expiry semantics, checkout
+links on the pricing page. Frontend: the pricing page's three offers
+under the design canon, copy from the writer seat. Finance: model the
+lifetime tier's breakeven against $20/month (ten months to parity)
+and flag the cannibalization risk in the launch-month forecast.
+
+## Email plumbing (owner's to-do mirrored to seats, 2026-09-20)
+
+Owner-side cards live in Linear's Launch runway (ALE2-13 through 16).
+Seat-side counterparts, engineer unless noted:
+- Resend send path: switch pipeline/weekly.py (and the daily path)
+  from Gmail SMTP to Resend once RESEND_API_KEY exists, from
+  digest@libraryofalexandria.dev, reply-to help@. Include the
+  List-Unsubscribe and List-Unsubscribe-Post headers on every send.
+- Unsubscribe endpoint: /unsubscribe?token= flips subscribers.status
+  to unsubscribed; the email template's slot points at it; frontend
+  styles the confirmation page.
+- Polar wiring, after POLAR_* secrets land: three products' checkout
+  links on the pricing page (ADR-31), webhook writing paid state into
+  Clerk metadata with trial expiry semantics, hasSpine reads Clerk.
