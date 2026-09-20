@@ -121,7 +121,12 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 Every seat runs the same shape. A GitHub Actions cron checks out this repo,
 runs Claude Code headlessly against the seat's charter file, and the run ends
 with one branch and one pull request. No agent merges its own work, no agent
-pushes to main, and no agent touches secrets. Two modes govern when they run:
+pushes to main, and no agent touches secrets. The harness is the same for every
+seat and the model behind it is not: eight seats run on Claude, and since
+2026-09-19 the pm, market, okr and finance seats are routed to an open model
+through a third-party endpoint, which is
+[model routing](docs/agents/model-routing.md) lever 2 under trial rather than
+settled policy. Two modes govern when they run:
 **asynchronous**, where the schedules are the heartbeat, and **synchronous**,
 where the owner is present and seats are dispatched into her session.
 
