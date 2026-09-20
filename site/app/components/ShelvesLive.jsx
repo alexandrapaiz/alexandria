@@ -24,6 +24,15 @@ const ROWS = [
   [["v", 14], ["lean", 16], ["gap", 10], ["fallen", 220], ["v", 29]],
 ];
 const HEIGHT = ROWS.length * (BOOK + ROWGAP) - ROWGAP;
+// The viewBox was 1240 wide against rows that lay ink out to 1250, so the
+// last spine of row 5 rendered as a half-width sliver and row 1's was
+// shaved: an SVG clips whatever falls outside its viewBox. Caught in the
+// screenshots at all three viewports, then confirmed by walking the row
+// table and measuring the rightmost stroke edge (row 1: 1241.3, row 5:
+// 1250.0). The shapes are untouched; the frame around them now holds them,
+// with the same 6 units of air on each side.
+const VBX = -6;
+const VBW = 1262;
 
 // p = 0 shelf at rest, p = 1 the rack (upright, flat, lit)
 function shapes(p) {
@@ -320,7 +329,7 @@ export default function ShelvesLive(props) {
   return (
     <svg
       ref={ref}
-      viewBox={`0 0 1240 ${HEIGHT}`}
+      viewBox={`${VBX} 0 ${VBW} ${HEIGHT}`}
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"

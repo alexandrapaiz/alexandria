@@ -630,13 +630,23 @@ a {
 
 /* ---------- library ---------- */
 
-/* scene one: the shelf large, with the archive's kicker and title
-   visible right beneath it in the first view. The glide carries that
-   same header to the top of the page; the intro and the list stay
-   white until it lands */
+/* Scene one is the whole first view: the shelf, and nothing else.
+   Owner's ruling 2026-09-19, from her screenshot — the archive's intro
+   was sliced in half at the bottom edge of the viewport, and she wants
+   it hidden until she scrolls, the way the home page's second scene
+   already resolves it.
+
+   The resolution is the home page's, and it is layout, not opacity.
+   .hero-follow already gives scene two its own full-viewport box, so
+   the only thing keeping scene two in the first view was this rule
+   overriding .hero's height down to its content. Restored to .hero's
+   own height, scene one ends exactly at the fold and scene two begins
+   one pixel below it, at every viewport, with nothing staged at
+   opacity 0 and nothing waiting on a script (ban list 23, canon
+   rule 6). The glide still carries the header to the top from there. */
 .lib-hero {
-  min-height: 0;
-  padding: 16px 24px 44px;
+  min-height: calc(100svh - 96px);
+  padding: 16px 24px 48px;
 }
 
 /* the shelf fades away as the landing approaches, so nothing smears
@@ -684,6 +694,18 @@ a {
 
 .lib-scene2 .issue-list {
   margin-top: 48px;
+}
+
+/* The archive's empty state stands where the archive stands. It arrived
+   here borrowing the desk's .desk-empty, which put it 10px under the intro
+   in #888, so it read as a fourth line of the paragraph rather than as the
+   state of the shelf. It now takes the list's own top margin and the house
+   grey, so an empty archive is answered in the place a reader is already
+   looking. The words are the writer's and are untouched. */
+.lib-scene2 .desk-empty {
+  margin-top: 48px;
+  color: var(--gray);
+  font-size: 14px;
 }
 
 .issue-list {
@@ -1465,6 +1487,16 @@ a {
   margin: 0 auto;
 }
 .desk .page-kicker, .desk .page-title, .desk .page-intro { text-align: left; margin-left: 0; }
+/* .hero-follow's rise animation comes with the class and was landing on the
+   desk's lists too. Its view() range never opens for a block taller than the
+   viewport that starts near the fold, so at 390px the first list sat at
+   opacity 0 with all seven rows in it: a header reading "AWAITING YOUR MERGE
+   7" over empty white, at rest, with no way to scroll it into view because
+   the page had nothing else to scroll. Caught in the pixels, then confirmed
+   by reading the computed opacity back out (0 at 390, 1 at 820 and 1440).
+   The desk is the owner's daily surface, so it gets no entrance
+   choreography at all (motion.md, high-frequency surfaces). */
+.desk > * { animation: none; }
 .desk-h {
   margin: 56px 0 6px;
   font-size: 13px;
