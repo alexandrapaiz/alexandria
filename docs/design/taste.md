@@ -61,3 +61,13 @@ never edit them.
   The writer seat owns the rewrite under the voice canon; the
   frontend seat sets it. Site copy across pages now falls under the
   voice canon and the outsider test, not only the digest.
+- 2026-09-19 — iPhone review ordered. Two findings from her own
+  phone: the hero mark's morph animation is effectively invisible on
+  iPhone because it only plays after a scroll, so a phone visitor
+  never sees the one choreographed moment; and the phone layout reads
+  cluttered. The frontend seat reviews the whole site on a real iPhone
+  viewport, fixes the animation trigger so the morph plays on load
+  (motion.md rules: the home page is the one low-frequency surface
+  allowed a choreographed moment; honor prefers-reduced-motion), and
+  decongests the phone layout per the density canon. Hero geometry
+  stays untouchable; only its trigger and the surrounding air change.

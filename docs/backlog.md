@@ -391,3 +391,10 @@ unsupported in her country) with entitlement synced to Clerk metadata.
 Engineer to write the ledger proposal with both wired end to end on
 paper, since site/lib/entitlement.js (hasSpine) is the one seam either
 option fills.
+
+## Frontend queue: iPhone review (owner, 2026-09-19)
+
+Next frontend dispatch after the current run: full iPhone pass. The
+hero morph is not visible on phone because it triggers on scroll,
+and the phone layout is cluttered. See docs/design/taste.md's newest
+entry for the ruling and constraints.
