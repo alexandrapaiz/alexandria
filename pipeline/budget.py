@@ -375,15 +375,23 @@ def _weekly_source() -> str:
 
 
 def sql_limits(source: str) -> dict[str, int]:
-    """The `limit N` on each evidence stream's query in weekly.py."""
-    out = {}
+    """The `limit N` on each evidence stream's query in weekly.py.
+
+    The largest one per stream, not the last one. Since the daily cadence
+    landed there are two gather functions in that file selecting streams of
+    the same names, and the daily's limits are smaller. Reading the last match
+    made the guard measure the daily's payload and report the weekly's real
+    caps as drift, which is a guard failing on correct code. The worst case is
+    what this guard exists to measure, so the worst case is what it takes.
+    """
+    out: dict[str, int] = {}
     pattern = re.compile(r"^\s{4}(\w+) = conn\.execute\(\s*\n\s*\"\"\"(.*?)\"\"\"",
                          re.S | re.M)
     for match in pattern.finditer(source):
         name, body = match.group(1), match.group(2)
         found = re.findall(r"\blimit\s+(\d+)\b", body, re.I)
         if found:
-            out[name] = int(found[-1])
+            out[name] = max(int(found[-1]), out.get(name, 0))
     return out
 
 

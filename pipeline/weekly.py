@@ -96,6 +96,9 @@ image = (
     # the budget guard runs in the container too, so a request that cannot fit
     # is refused here with the arithmetic rather than 413'd by Groq
     .add_local_file("pipeline/budget.py", "/root/budget.py")
+    # and the quality gate, so the checklist is opened by the run that sends
+    # rather than by a person who remembers to (docs/agents/registers.md)
+    .add_local_file("tools/check_digest_quality.py", "/root/check_digest_quality.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -326,6 +329,23 @@ def budget():
     return module
 
 
+def quality():
+    """tools/check_digest_quality.py, wherever this is running from.
+
+    Same trick as budget() above: Modal drops it at /root, a local run finds
+    it in tools/ beside this file.
+    """
+    import sys
+
+    here = pathlib.Path(__file__).resolve().parent
+    for path in ("/root", str(here.parent / "tools")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import check_digest_quality as module
+
+    return module
+
+
 # ---------------- daily issue ----------------
 
 # How many claims the daily issue may see. The weekly takes 22 because it is
@@ -525,10 +545,19 @@ def log_limits(resp) -> None:
 # room. The daily is 150-400 words by design, and a generous cap on a short
 # issue is an invitation to pad; 1200 is comfortably above a 400-word issue and
 # well below a weekly one.
-MAX_TOKENS = {"weekly": MAX_COMPLETION_TOKENS, "daily": 1200}
+# Literal numbers on purpose: pipeline/budget.py reads this dict out of this
+# file's source with ast.literal_eval, so a name here (even the right name)
+# makes the guard raise instead of check. The weekly entry must stay equal to
+# MAX_COMPLETION_TOKENS above, and the assert below is what says so.
+MAX_TOKENS = {"weekly": 6000, "daily": 1200}
+assert MAX_TOKENS["weekly"] == MAX_COMPLETION_TOKENS
 
 
-def write_digest(payload: dict, prompt: str, kind: str = "weekly") -> str:
+def write_digest(payload: dict, prompt: str, kind: str = "weekly",
+                 corrections: str = "") -> str:
+    """One request to the generator. `corrections` is the gate's second try:
+    the blocking findings from the first draft, appended to the system prompt
+    as instructions."""
     import os
 
     import httpx
@@ -539,7 +568,9 @@ def write_digest(payload: dict, prompt: str, kind: str = "weekly") -> str:
     # number rather than against the weekly's 6,000
     limit = MAX_TOKENS[kind]
     user = shrink(payload, prompt, limit)
-    report = guard.check_request(prompt, user, limit, MODEL)
+    # the corrections ride in the system prompt, so they count against the
+    # same per-request ceiling and the budget guard must see them
+    report = guard.check_request(prompt + corrections, user, limit, MODEL)
     print(f"payload: {len(user)} chars, {len(payload['new_claims'])} new claims kept")
     print(f"budget: {report.summary()}")
     if not report.fits:
@@ -556,7 +587,7 @@ def write_digest(payload: dict, prompt: str, kind: str = "weekly") -> str:
                 "temperature": 0.3,
                 "max_completion_tokens": limit,
                 "messages": [
-                    {"role": "system", "content": prompt},
+                    {"role": "system", "content": prompt + corrections},
                     {"role": "user", "content": user},
                 ],
                 # compound-only parameter: rolling MODEL back to a plain model
@@ -721,6 +752,61 @@ def kind_for(today: date) -> str:
 
 # ---------------- the scheduled run ----------------
 
+def hold_for_quality(body: str, payload: dict, prompt: str, kind: str,
+                     model: str | None) -> tuple[str, bool]:
+    """Read the issue against the quality tier before anyone else reads it.
+
+    Returns the body to store and whether the send may go ahead. The order is
+    deliberate:
+
+    1. Check the finished body, masthead and all, because the masthead ships
+       with the issue and is part of what the reader gets.
+    2. On blocking findings, give the generator exactly one more try with the
+       findings as instructions. A model told what it broke usually fixes it,
+       and one extra call is cheap next to an issue that should not send.
+    3. Check again. If the rewrite is clean it goes out. If it is not, or if
+       the rewrite failed outright, the better of the two bodies is stored and
+       the send is held.
+
+    The empty issue and any body the model did not write skip the retry: there
+    is nothing to regenerate from.
+
+    A gate failure must never cost the issue. Every exception here is caught,
+    because an unwritten newsletter is worse than an unchecked one, and the
+    database keeps the body either way.
+    """
+    try:
+        gate = quality()
+    except Exception as exc:
+        print(f"quality gate unavailable ({exc}); sending unchecked")
+        return body, True
+
+    try:
+        findings = gate.check(body, kind)
+        print(gate.report(findings, f"{kind} issue"))
+        if not any(f.level == gate.BLOCK for f in findings):
+            return body, True
+
+        instructions = gate.corrections(findings)
+        if model is None or not instructions:
+            return body, False
+
+        print("regenerating once with the gate's findings as instructions")
+        second = add_masthead(
+            write_digest(payload, prompt, kind, corrections="\n\n" + instructions), kind)
+        again = gate.check(second, kind)
+        print(gate.report(again, f"{kind} issue, second draft"))
+        if not any(f.level == gate.BLOCK for f in again):
+            return second, True
+        # both drafts are blocked; keep the one with fewer blocking findings
+        worse = sum(1 for f in findings if f.level == gate.BLOCK)
+        better = sum(1 for f in again if f.level == gate.BLOCK)
+        return (second, False) if better <= worse else (body, False)
+    except Exception as exc:
+        print(f"quality gate failed to run ({exc}); sending unchecked")
+        return body, True
+
+
 @app.function(
     # Every day at 15:00 UTC, after the four daily crons (ingest 11:00,
     # distill 11:30, triage 12:00, interpret 14:00) have finished the day's
@@ -775,6 +861,7 @@ def digest(kind: str = "") -> str:
             body = write_digest(payload, prompt, kind)
             model = MODEL
         body = add_masthead(body, kind)
+        body, cleared = hold_for_quality(body, payload, prompt, kind, model)
 
         conn.execute(
             """
@@ -788,6 +875,12 @@ def digest(kind: str = "") -> str:
             (key, kind, body, model, sha),
         )
         conn.commit()
+        if not cleared:
+            # the issue is in the database, where the owner and the writer seat
+            # can read it, and it is not in anyone's inbox
+            print(f"{kind} {key} held: the pre-send gate has blocking findings "
+                  "and the email was not sent. The body is in the digests table.")
+            return body
         try:
             print(send_newsletter(conn, key, body))
         except Exception as exc:

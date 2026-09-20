@@ -251,3 +251,43 @@ def test_the_daily_payload_survives_shrink():
     payload["dates"] = "September 19, 2026"
     body = shrink(payload, "the daily prompt", MAX_TOKENS["daily"])
     assert "Dense rewards" in body
+
+
+def test_the_budget_guard_can_still_read_the_reservation_table():
+    """pipeline/budget.py parses MAX_TOKENS out of weekly.py's source with
+    ast.literal_eval. Writing MAX_COMPLETION_TOKENS into that dict instead of
+    the number made the guard raise, which this run did once and CI would
+    have caught only at the next prompt change."""
+    from pipeline.budget import presses
+
+    from pipeline.weekly import MAX_TOKENS
+
+    reservations = {press.name: press.max_completion for press in presses()}
+    assert reservations["weekly digest"] == MAX_TOKENS["weekly"]
+    assert reservations["daily issue"] == MAX_TOKENS["daily"]
+
+
+def test_the_drift_check_measures_the_weekly_not_the_daily():
+    """Two gather functions now select streams of the same names. The guard
+    reads the larger limit of the two, because the worst case is the thing it
+    exists to measure; reading the last match reported the weekly's real caps
+    as drift."""
+    from pipeline.budget import sql_limits
+
+    source = '''
+def gather(conn):
+    deprecated = conn.execute(
+        """
+        select 1 limit 8
+        """,
+    ).fetchall()
+
+
+def gather_daily(conn):
+    deprecated = conn.execute(
+        """
+        select 1 limit 5
+        """,
+    ).fetchall()
+'''
+    assert sql_limits(source)["deprecated"] == 8

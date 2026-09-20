@@ -207,3 +207,75 @@ def test_the_report_groups_by_rule_rather_than_printing_every_hit():
     text = gate.report(gate.check(body), "2026-W37")
     assert "typesetter-punctuation (49x" in text
     assert text.count("non-breaking hyphen") <= gate.EXAMPLES_PER_RULE
+
+
+# ---------------- the gate inside the send path ----------------
+
+def test_a_clean_issue_goes_out_without_a_second_call(monkeypatch):
+    from pipeline import weekly
+
+    monkeypatch.setattr(weekly, "write_digest", _never_called)
+    body, cleared = weekly.hold_for_quality(GOOD, {}, "prompt", "weekly", weekly.MODEL)
+    assert cleared is True
+    assert body == GOOD
+
+
+def test_a_blocked_issue_is_regenerated_once_and_then_sent(monkeypatch):
+    from pipeline import weekly
+
+    calls = []
+
+    def fake_write(payload, prompt, kind="weekly", corrections=""):
+        calls.append(corrections)
+        return GOOD
+
+    monkeypatch.setattr(weekly, "write_digest", fake_write)
+    monkeypatch.setattr(weekly, "add_masthead", lambda body, kind="weekly": body)
+    blocked = GOOD.replace("## Counting partial credit turns out to be the whole trick",
+                           "## Trailblazing")
+    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "weekly", weekly.MODEL)
+    assert len(calls) == 1
+    assert "skeleton-heading" in calls[0]
+    assert cleared is True
+    assert body == GOOD
+
+
+def test_an_issue_that_fails_twice_is_held_and_still_stored(monkeypatch):
+    from pipeline import weekly
+
+    blocked = GOOD.replace("## Counting partial credit turns out to be the whole trick",
+                           "## Trailblazing")
+    monkeypatch.setattr(weekly, "write_digest",
+                        lambda *a, **k: blocked.replace("## Last week's", "## Left behind\n\n## Last week's"))
+    monkeypatch.setattr(weekly, "add_masthead", lambda body, kind="weekly": body)
+    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "weekly", weekly.MODEL)
+    assert cleared is False
+    assert body == blocked   # the second draft was worse, so the first is kept
+
+
+def test_the_empty_issue_is_never_regenerated(monkeypatch):
+    """model is None on the empty-day path: there is no generation to redo."""
+    from pipeline import weekly
+
+    monkeypatch.setattr(weekly, "write_digest", _never_called)
+    blocked = "# Trailblazing\n\nnot an issue\n"
+    body, cleared = weekly.hold_for_quality(blocked, {}, "prompt", "daily", None)
+    assert cleared is False
+    assert body == blocked
+
+
+def test_a_broken_gate_never_costs_the_issue(monkeypatch):
+    """An unwritten newsletter is worse than an unchecked one."""
+    from pipeline import weekly
+
+    def explode():
+        raise RuntimeError("no module named check_digest_quality")
+
+    monkeypatch.setattr(weekly, "quality", explode)
+    body, cleared = weekly.hold_for_quality("# anything\n", {}, "prompt", "weekly", weekly.MODEL)
+    assert cleared is True
+    assert body == "# anything\n"
+
+
+def _never_called(*args, **kwargs):
+    raise AssertionError("the generator was called when it should not have been")
