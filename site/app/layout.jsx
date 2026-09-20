@@ -59,6 +59,11 @@ export default function RootLayout({ children }) {
           {children}
           <footer className="footer">
           <span>library of alexandr.ia</span>
+          <span>
+            <Link href="/privacy">Privacy</Link>
+            {" · "}
+            <Link href="/terms">Terms</Link>
+          </span>
           <span>© 2026</span>
           </footer>
         </ClerkProvider>
