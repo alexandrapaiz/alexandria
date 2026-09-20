@@ -127,3 +127,12 @@ the chair and the PM record her rulings.
   comparisons." The rule these specimens pin down: the INTRO has the
   strictest on-ramp duty of all, because it is where the outsider
   decides whether this issue is for them.
+- 2026-09-19 — Scope widens: the voice canon governs SITE COPY too.
+  She rejected the library page's prose ("Every issue, in full..."),
+  and ordered the mission page rewritten under the same prose rules,
+  guided by the mission "Accelerate every builder to frontier speed."
+  and the OKR seat's purpose framing. The writer drafts, the frontend
+  seat sets, both under the outsider test.
+- 2026-09-19 — The pilot issue: the current archived issue (2026-W37)
+  is to be removed from the site and Monday's issue becomes the pilot,
+  the first the public reads.

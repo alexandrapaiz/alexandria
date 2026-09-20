@@ -50,3 +50,14 @@ never edit them.
 - 2026-09-18 — What she least wants is the vibe-coded look. The
   ban list exists because of this ruling; alexandria must read as an
   engineering product.
+- 2026-09-19 — Library page, from her screenshot: the intro text
+  under the shelves scene gets cut in half at the viewport edge.
+  Her preference: the text stays hidden until she scrolls, the way
+  the home page's second scene already resolved this in an earlier
+  refinement. Fix the scene-two reveal on the library page to match.
+- 2026-09-19 — The library page's prose is rejected for a redo:
+  "Every issue, in full. / The weekly digest is free to read and
+  nothing in it is held back. Start with the most recent issue."
+  The writer seat owns the rewrite under the voice canon; the
+  frontend seat sets it. Site copy across pages now falls under the
+  voice canon and the outsider test, not only the digest.
