@@ -373,3 +373,21 @@ claims and instead feed the research seat's weekly signal read
 ingestion steering). Engineer wires the role field and the signal
 extraction; research consumes it in the brief. Ledger proposal with
 the diff, owner merges.
+
+## Sign-up → newsletter consent flow, and pricing via Clerk (owner, 2026-09-19)
+
+Owner order for the queue: a login/signup flow with Clerk so that
+after sign-up a person can consent to the newsletter (the waitlist
+today writes a local file; after this, a signed-up user's consent
+writes their email to subscribers with an explicit opt-in). Engineer
+builds it on the Clerk foundation already wired (Core 3 Show API,
+middleware live). Design the consent moment with the frontend seat:
+one screen after sign-up, one checkbox, honest copy, no dark pattern.
+The owner also asked how pricing links to the account: see the chair's
+answer in the session record; the decision space is Clerk Billing
+(subscription state on the Clerk user, Stripe underneath) versus a
+Merchant of Record (Polar or Lemon Squeezy, required if Stripe is
+unsupported in her country) with entitlement synced to Clerk metadata.
+Engineer to write the ledger proposal with both wired end to end on
+paper, since site/lib/entitlement.js (hasSpine) is the one seam either
+option fills.
