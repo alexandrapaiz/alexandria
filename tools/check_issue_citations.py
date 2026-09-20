@@ -20,6 +20,8 @@ import difflib
 import gzip
 import re
 import sys
+import time
+import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 
@@ -39,6 +41,38 @@ def normalise(text: str) -> str:
     return " ".join(text.lower().split())
 
 
+# arxiv answers 406 intermittently, to requests it answers 200 to seconds
+# later, and with no pattern in the headers or the query: on 2026-09-20 the
+# same two-id request failed, then succeeded, then the single-id request that
+# had just succeeded failed. Treat 406 as the rate limiter it behaves like.
+# Without this the checker exits 1 on a healthy issue, which is the worst
+# failure a gate can have, because the next person to see it trusts it less.
+RETRY_ON = (406, 429, 500, 502, 503, 504)
+# The observed 406 windows lasted minutes, not seconds: a run at 11:14 failed
+# every request for two minutes, including ones that had just succeeded, and
+# then answered 200 to all of them. This check runs once a day, so waiting
+# three and a half minutes to be sure is cheap.
+BACKOFF = (15, 45, 120)
+
+
+def _get(request) -> bytes:
+    last = None
+    for wait in BACKOFF + (None,):
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                raw = response.read()
+                if response.headers.get("Content-Encoding") == "gzip":
+                    raw = gzip.decompress(raw)
+                return raw
+        except urllib.error.HTTPError as exc:
+            last = exc
+            if exc.code not in RETRY_ON or wait is None:
+                raise
+            print(f"arxiv answered {exc.code}; retrying in {wait}s", file=sys.stderr)
+            time.sleep(wait)
+    raise last
+
+
 def fetch(ids: list[str]) -> dict[str, str]:
     # the commas in id_list must stay literal; arxiv answers 406 to %2C
     query = f"id_list={','.join(ids)}&max_results={len(ids)}"
@@ -52,10 +86,7 @@ def fetch(ids: list[str]) -> dict[str, str]:
             "Accept-Encoding": "gzip",
         },
     )
-    with urllib.request.urlopen(request, timeout=60) as response:
-        raw = response.read()
-        if response.headers.get("Content-Encoding") == "gzip":
-            raw = gzip.decompress(raw)
+    raw = _get(request)
     feed = ET.fromstring(raw)
     titles = {}
     for entry in feed.findall("a:entry", ATOM):
