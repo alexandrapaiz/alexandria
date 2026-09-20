@@ -1042,3 +1042,55 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — Parallel runs of one seat collided on a register's next number (2026-09-20, writer seat)
+
+**Class, per ADR-29.** Enforcement gap, in the narrow sense that nothing
+between an append and the next append ever reads the file's own tail.
+
+**Recorded because the standing rule says so.** This has now happened
+twice in two registers, which is the trigger at the top of this file, no
+judgment call available.
+
+### What happened
+
+docs/voice/ban-list.md carried two entries numbered 26 and two numbered
+27, with 30 and 31 unused, until this run renumbered the later pair into
+the empty gap. Entry text was not touched.
+
+The cause is the merge described in section 12 of
+docs/voice/reviews/2026-09-19.md: two writer runs on 2026-09-19 worked
+the same file from the same starting point, each appended entries
+numbered from its own copy of the list, and the merge pass that followed
+reconciled the four prose seams between them without noticing that the
+numerals had collided. The seams were about meaning, so meaning is what
+got read.
+
+The same defect is in this file. There are two entries numbered
+**Incident 22**, at the 2026-09-19 editorial-rebuild entry and at the PM
+presence entry. They are left as they are: this register is not the
+writer seat's to renumber, and the entry that cites one of them should
+not be silently repointed by whoever notices. It is flagged here for the
+ExO's weekly read.
+
+### Why it matters more than a cosmetic defect
+
+Both registers are cited by number, and the citations are the
+enforcement mechanism. prompts/digest.md's gates, the canon, and the
+review files all say things like "ban list 26" and "canon law 12". A
+duplicated number makes a citation ambiguous, and an ambiguous citation
+in a gate is a gate that cannot be checked. One such citation already
+existed and was corrected in this PR.
+
+### The fix, and it is small
+
+The append is the moment to check, because it is the only moment anyone
+holds the whole file. A seat appending a numbered entry reads the last
+number in the file it is appending to, in the branch it is appending
+from, and never numbers from memory or from the copy it read at the
+start of its run. Where a run has been open long enough for another run
+to land, that means rereading the tail before writing it.
+
+This is the cheap half of incident 6's lesson. Incident 6 was two
+appends at one anchor colliding in git. This is two appends colliding in
+the content, which git merges cleanly and therefore never reports.
