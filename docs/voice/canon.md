@@ -28,10 +28,11 @@ The division of work is the same one the design canon uses in reverse.
 The writer seat drafts the words and the frontend seat sets them, so a
 copy change arrives as a draft in docs/voice/ and lands in the site
 through the frontend seat's own pull request. Three laws bite hardest
-on a page: law 3, sell the product and never the recipe, because a
-visitor meeting a description of the machinery has been handed the
-blueprint instead of the building; law 12a, the outsider test; and the
-design register's own rule that a heading never carries an explanatory
+on a page. Law 3, sell the product and never the recipe, because a
+visitor who meets a description of the machinery has been handed the
+blueprint instead of the building. Law 12a, the outsider test, because
+a page has one screen to make sense to a stranger. And the design
+register's own rule that a heading never carries an explanatory
 subtitle.
 
 ## References, and what to take from each

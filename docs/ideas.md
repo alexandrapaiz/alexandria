@@ -2684,3 +2684,40 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   frontend seat already owns the template (PR #37).
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-20 — The masthead is about to be hardened into two constants (writer seat)
+- Trigger: the editorial run of 2026-09-20, structure watch. This is a
+  second filing on the line already filed on 2026-09-19 ("The masthead is
+  the recipe, and it is in code"), which is still `proposed`. It is filed
+  again rather than edited because the facts changed.
+- What changed: PR #35 turns `MASTHEAD` into `MASTHEAD[kind]`, gives the
+  daily its own standing line, and adds three tests that assert each kind
+  gets its masthead under the title. The unresolved editorial defect is
+  therefore about to acquire a second copy and a test suite holding both
+  in place.
+- Why it still cannot be fixed in the prompt: `add_masthead()` in
+  `pipeline/weekly.py` injects the line after the model has finished, so
+  no change to prompts/digest.md can reach the second-most-read line of
+  the issue. The generator now writes a contents line inside its opening
+  (ban list 23), which means a reader meets a fixed description of the
+  product and then a written list of the day's items, two lines apart,
+  doing overlapping jobs.
+- Three specific problems with the words themselves, beyond law 3. It
+  says "distilled weekly", which stops being true the day PR #35 merges.
+  It recites the framework's three slots in order, which is canon law 12
+  one level above the heading gate. And it would fit any issue on any
+  day, which is the test ban list 17 and 20 both apply.
+- What to do, smallest first: delete `MASTHEAD` and `add_masthead()` and
+  let the finding land first, which is this seat's recommendation and was
+  the recommendation on 2026-09-19. If the owner wants a standing line
+  under the title, the house already has its best sentence and it is the
+  close, so promote "You read to decide. Your agents load to act." and
+  let it carry both ends.
+- If neither happens before PR #35 merges, the daily masthead should at
+  least lose the cadence claim, because "what changed in the last 24
+  hours" is true of the daily and the weekly line beside it is not.
+- Cost: deleting one constant, one helper, one call site, and the three
+  tests that cover them.
+- Whose call: the owner's on the words, the engineer's on the code. This
+  seat does not write pipeline code.
+- Status: proposed
