@@ -1508,7 +1508,7 @@ detector running too slowly.
 before turn two.** Every no-ship protection this org has built (the
 draft pull request, the early commit, the queued tripwire) assumes the
 seat gets to act. A broken environment breaks that assumption. Incident
-3 taught the org to ship early; incident 23 teaches that shipping early
+3 taught the org to ship early. Incident 23 teaches that shipping early
 is not a defense against your own runtime. It is the reason runtime
 changes get smoked separately instead of being trusted to a seat's
 discipline.
