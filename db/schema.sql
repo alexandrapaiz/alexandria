@@ -191,3 +191,72 @@ create index if not exists claims_topics_idx on claims using gin (topics);
 -- institutions: the labs/universities behind a paper, extracted from full text
 -- at distill time — attribution in the digest ("researchers at X") needs them
 alter table papers add column if not exists institutions text[];
+
+-- ============ users: accounts (ADR-30) ============
+-- Neon is the system of record for who has an account; Clerk is a surface
+-- that can be swapped without losing a user or their history. The row is
+-- keyed by clerk_id because that is what a session carries, and it is the
+-- only Clerk-shaped thing in here. Migrating off Clerk means re-issuing
+-- credentials by email re-auth against these rows, never re-creating them.
+--
+-- This table is the account. It is NOT the newsletter list: `subscribers`
+-- below stays independent, because someone may read the digest forever
+-- without ever making an account, and an account may exist with no
+-- subscription. The two are joined on lower(email), never merged.
+create table if not exists users (
+    clerk_id            text primary key,
+    email               text not null,
+    name                text,
+    -- The tier this account pays for. 'free' until payments open; ADR-30
+    -- keeps the door closed this release, so nothing writes anything else
+    -- yet. Polar is the processor when it does (merchant of record).
+    subscription_status text not null default 'free'
+                        check (subscription_status in ('free', 'active', 'past_due', 'canceled')),
+    polar_customer_id   text,                 -- unused until payments open
+    created_at          timestamptz not null default now(),
+    updated_at          timestamptz not null default now()
+);
+
+-- Email uniqueness is enforced case-insensitively, not by a plain unique
+-- constraint, because the join to subscribers is on lower(email). A plain
+-- unique(email) would let Ada@x.com and ada@x.com both exist as accounts,
+-- and then "the user for this subscriber" would have two honest answers.
+-- This index is what makes that join single-valued, and it is also the
+-- index the join reads.
+create unique index if not exists users_email_lower_idx on users (lower(email));
+
+-- The other half of the same join. subscribers predates this table and has
+-- a plain unique(email), which does not rule out case variants, so the
+-- unique version of this index can fail on legacy rows. Attempt it, and
+-- fall back to a non-unique index plus a loud warning rather than aborting
+-- the rest of the schema: an un-deduped digest list is a data problem for
+-- the owner to fix, not a reason for `psql -f db/schema.sql` to stop.
+do $$
+begin
+    if exists (
+        select 1 from subscribers group by lower(email) having count(*) > 1
+    ) then
+        raise warning 'subscribers holds case-variant duplicate emails; creating a NON-unique index. Dedupe with: select lower(email), count(*) from subscribers group by 1 having count(*) > 1;';
+        create index if not exists subscribers_email_lower_idx on subscribers (lower(email));
+    else
+        create unique index if not exists subscribers_email_lower_idx on subscribers (lower(email));
+    end if;
+end $$;
+
+-- The linkage, as a view, so no caller has to remember which side is which
+-- or that the comparison is case-folded. LEFT join on purpose: an account
+-- with no digest subscription is an ordinary account, not a missing row.
+-- Read it by clerk_id.
+create or replace view user_accounts as
+    select u.clerk_id,
+           u.email,
+           u.name,
+           u.subscription_status,
+           u.polar_customer_id,
+           u.created_at,
+           s.id      as subscriber_id,
+           s.tier    as digest_tier,
+           s.status  as digest_status,
+           s.comp    as digest_comp
+    from users u
+    left join subscribers s on lower(s.email) = lower(u.email);

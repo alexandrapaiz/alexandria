@@ -2685,6 +2685,92 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Cost: $0.
 - Status: proposed
 
+### 2026-09-19 — Competitive scan: Consensus meters the expensive step, not the catalog
+- Trigger: today's accounts build needed an entitlement gate, so the
+  question "what exactly does a free account not get" became concrete.
+  Consensus was the scan target. Its free tier does not withhold the
+  corpus. Search is unlimited and free; what is metered is the expensive
+  synthesis, reported as roughly 10 analyses a month free, more on Pro,
+  and a separate higher tier for heavy use. Prices still disagree across
+  aggregators, so treat the numbers as medium confidence, but the shape
+  is consistent everywhere: a per-month allowance of the costly
+  operation, refreshing, rather than a wall around the content. This
+  also updates what docs/market/landscape.md records for Consensus,
+  which has it as one Pro price rather than a three-plan ladder. The
+  market seat owns that file, so this note is the handoff.
+- What alexandria does better: the gate Consensus is defending is a
+  search index, which every competitor also has. alexandria's costly
+  operation produces something none of them keep, which is a claim
+  graph with contradiction edges. A metered allowance on a commodity
+  search is a tax on the reader. A metered allowance on "judge this
+  against everything the field has said since" is a fair price for work
+  that actually costs money to do.
+- What is worth stealing: the free tier should be generous about
+  reading and strict about computing. Today's `isEntitled` is a
+  boolean, so the only paywall it can express is a wall. It cannot say
+  "your tenth deep answer this month".
+- First step: a `usage_log` table (clerk_id, operation, created_at) and
+  a count-this-month function next to `isEntitled`, so the gate can
+  return an allowance instead of a yes or no. The MCP tools are the
+  first callers, since `rag_answer` is the expensive operation.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — The Clerk webhook has no dead letter, and its log ages out
+- Trigger: writing site/app/api/clerk-webhook/route.js today. The route
+  separates retryable failures from permanent ones, which is right: a
+  missing DATABASE_URL answers 503 so Svix brings the event back, and an
+  event with no id or email is acknowledged, because retrying it can
+  never succeed. But "acknowledged" currently means a console.error and
+  nothing else. On a serverless host that line is a log entry that ages
+  out, so an account that silently failed to sync is unrecoverable and,
+  worse, invisible. Nobody would ever know to look.
+- What: one table, `webhook_events`, keyed by the `svix-id` header,
+  holding the event type, the outcome, and the reason when it was
+  skipped. It pays for itself twice. It is the dead-letter queue, so a
+  permanently-failed event survives as a row the owner can query
+  instead of a log line she will never read. And because svix-id is
+  unique per event, inserting it first makes the endpoint idempotent at
+  the transport layer rather than relying on `on conflict (clerk_id)`
+  to absorb duplicates, which is a weaker guarantee: it dedupes retries
+  of the same event, but it cannot tell a retry from a genuine second
+  update.
+- First step: the table, plus an insert at the top of the route after
+  verification and a status update before each return.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-19 — Two entitlement gates now exist and they disagree
+- Trigger: today's build added `isEntitled` in site/lib/account-core.js,
+  reading the `user_accounts` view by clerk_id. site/lib/entitlement.js
+  already had `hasSpine`, reading `subscribers` by email. They are not
+  the same check. `hasSpine` requires `tier = 'full'` and does not
+  honour `comp`, so the owner's comped friends fail it; `isEntitled`
+  honours comp and also reads `subscription_status`, which is where
+  Polar will write once payments open. Two functions that answer "may
+  this person through" and answer differently is the kind of thing that
+  is fine for a week and then decides a refund argument.
+- What: collapse them into one. `account-core.isEntitled` is the one to
+  keep, because it is pure, it is tested, and it reads the view that
+  already joins both sides. `entitlement.js` becomes a thin wrapper
+  during the transition and then goes away. Its `currentEmail()` stub,
+  which returns null and has a comment saying Clerk is not wired yet,
+  is now false: Clerk is wired, and `currentAccount()` is the answer it
+  was waiting for.
+- First step: hold until PR #31 merges, since the security run is
+  editing entitlement.js right now and this would collide. Then one
+  commit that reroutes `hasSpine` through `currentAccount` and deletes
+  the duplicate logic.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-20 — The digest on WhatsApp (owner's idea)
+- Trigger: the owner, 2026-09-20: "an option for the newsletter to be also sent through WhatsApp." The chair's read of why it is bigger than a delivery option: open rates on WhatsApp run far above email (industry figures cluster around 90%+ versus 20-40% for newsletters), it is the default channel across Latin America, India, and much of Europe where email newsletters underperform, and a WhatsApp channel is natively forwardable, which is distribution built into the product (the Thiel doctrine in docs/sales/distribution-plan.md). No AI research digest in the landscape does it.
+- What: a WhatsApp delivery channel alongside email, opt-in at sign-up (the consent screen gains a phone field and a second checkbox). Two viable mechanisms, to be decided on evidence: (a) a WhatsApp Channel (broadcast, one-to-many, followers subscribe by link, no per-message cost, no phone numbers collected, limited formatting) for the free digest; (b) the WhatsApp Business Cloud API via a provider (Twilio or 360dialog) for one-to-one delivery with the reader's number, template-message approval required, per-conversation pricing after the free tier, which fits the paid spine and lets a subscriber reply. The writer seat owns a WhatsApp rendering of the issue (short, the first-screen promise as the whole message, links to the full issue on the site; the outsider test applies harder on a phone), the frontend seat owns the opt-in moment, the engineer owns the send path and the number.
+- First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
+- Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
+- Status: proposed
+
 ### 2026-09-20 — The masthead is about to be hardened into two constants (writer seat)
 - Trigger: the editorial run of 2026-09-20, structure watch. This is a
   second filing on the line already filed on 2026-09-19 ("The masthead is
