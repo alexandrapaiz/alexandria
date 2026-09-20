@@ -616,3 +616,25 @@ the long-term move once volume justifies Stripe's lower margin; that
 is a parent-level decision, not a launch blocker. The runway's
 "Stripe account by Sep 26" deliverable is replaced by "MoR account and
 webhook by Sep 26".
+
+## ADR-31: The paid plan's shape — trial, monthly, lifetime
+
+Owner's decision (2026-09-19), refining ADR-30's Merchant of Record
+setup. The paid spine ("Full access") sells three ways:
+1. **A 3-day free trial** on the monthly plan, card up front through
+   the MoR, converting automatically unless cancelled.
+2. **$20 a month**, with the owner's earlier billing principle kept:
+   the subscriber chooses recurring, or a non-recurring month that
+   simply lapses until they choose to renew ("we would rather earn
+   the renewal than collect it", already on the pricing page).
+3. **$200 lifetime access**, one payment, permanent entitlement.
+The chair's flag, recorded for the finance seat: a lifetime tier
+sells ten months of revenue for a lifetime of service, so it is a
+launch-liquidity instrument, not a steady-state price; finance
+models its breakeven and the OKR seat's benchmark watches whether it
+cannibalizes monthly. Entitlement stays one flag on the Clerk user
+(hasSpine), set by the MoR webhook for all three, with the lifetime
+tier setting it permanently and the trial setting it with an expiry
+the webhook later confirms or revokes. The pricing page copy follows
+the writer seat's site-copy rules; the site's current "Opens
+October 13" pills become the three offers.

@@ -412,3 +412,13 @@ entry for the ruling and constraints.
    rules, verify at the real claim-graph volume (hundreds of nodes),
    screenshots at all three viewports. Any new dependency is a ledger
    proposal before it enters the repo.
+
+## Pricing structure (ADR-31, owner 2026-09-19) — engineer + frontend + finance
+
+Engineer: three MoR products (trial-on-monthly, monthly with the
+recurring/non-recurring choice honored at the MoR level, lifetime),
+one webhook writing one Clerk flag with expiry semantics, checkout
+links on the pricing page. Frontend: the pricing page's three offers
+under the design canon, copy from the writer seat. Finance: model the
+lifetime tier's breakeven against $20/month (ten months to parity)
+and flag the cannibalization risk in the launch-month forecast.
