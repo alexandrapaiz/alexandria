@@ -70,9 +70,10 @@ same fixed template, that is the failure mode this section exists to prevent.
   whole section. The four jobs keep their order, and that order binds the
   sections an issue actually prints rather than demanding all four every day.
   Expect this on the daily, because most days do not overturn anything.
-  Padding a thin day and truncating a heavy one are the same failure (owner's ruling,
-  2026-09-19). This is the issue-level rule, and the item-level rule above
-  holds inside it, so each item's length still follows its own weight.
+  Padding a thin day and truncating a heavy one are the same failure
+  (owner's ruling, 2026-09-19). This is the issue-level rule, and the
+  item-level rule above holds inside it, so each item's length still
+  follows its own weight.
 - **Density is the other way to lose the reader, so compress words and never
   ideas (owner's ruling, 2026-09-19, canon law 12a).** Compression means
   fewer words per idea. It never means more ideas per line, and the moment
