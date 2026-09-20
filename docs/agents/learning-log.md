@@ -1453,3 +1453,8 @@ charter and not the workflow, this run made the problem worse.
   01:58, both already diagnosed in PR #39. Two runs were in flight, the
   writer's scheduled 18:15 and this one, so their outcomes are the first
   thing to read in `gh run list`.
+
+## 2026-09-20 — ExO run (in progress)
+
+Branch opened at the start of the run, per ship-first. This entry is
+completed at the end of the run.
