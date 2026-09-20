@@ -202,8 +202,11 @@ directly). Two PRs remain open:
 1. **Clerk keys + Neon connection string as Vercel env vars** — due
    2026-09-19 (tomorrow). Not yet confirmed. Blocks the site deploy step
    of the launch runway.
-2. **Stripe account and keys** — due 2026-09-26. Blocks payments wiring
-   to the $20 spine.
+2. ~~Stripe account and keys~~ — **REPLACED by ADR-30 (2026-09-19):
+   Merchant of Record.** Owner creates the Polar account (Lemon
+   Squeezy fallback), sets the API key and webhook secret as repo
+   secrets, and adds the payout method. Due 2026-09-26. The engineer
+   wires the product, checkout, and the webhook-to-Clerk entitlement.
 3. ~~MCP OAuth redirect_uri validation gap~~ — **no longer waiting on
    you.** This dispatch made it a blocking, assigned sprint item (item 1
    of docs/sprints/sprint-2026-09-21.md revision 3), due before Stripe

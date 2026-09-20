@@ -597,3 +597,22 @@ must carry a coverage key result derived from these metrics, so the
 mandate is scored, not remembered. The benchmark's "speed to the
 frontier" axis now explicitly includes "was anything major missed,"
 judged against competitors and the month's news in retrospect.
+
+## ADR-30: Payments through a Merchant of Record, not Stripe direct
+
+Owner's decision (2026-09-19). She is not a US resident and Stripe
+does not support Guatemala; a US mailing address does not change the
+legal entity Stripe verifies, and building on a mismatched entity
+risks a frozen account with funds inside. The paid spine therefore
+sells through a Merchant of Record: the MoR is the legal seller,
+handles checkout, tax, and payouts, and pays her out. Candidate order:
+Polar first (developer-native, Clerk and Next.js integrations, lowest
+fee tier), Lemon Squeezy as fallback. Entitlement architecture: the
+MoR's webhook writes the paid state into the Clerk user's metadata,
+and site/lib/entitlement.js (hasSpine) reads Clerk, so the site never
+talks to the payment provider at request time. A US entity (Stripe
+Atlas or a Delaware LLC for the parent company) stays on the table as
+the long-term move once volume justifies Stripe's lower margin; that
+is a parent-level decision, not a launch blocker. The runway's
+"Stripe account by Sep 26" deliverable is replaced by "MoR account and
+webhook by Sep 26".
