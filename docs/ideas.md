@@ -3058,3 +3058,112 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   an action, and nothing in this PR creates an account or touches a
   secret.
 - Status: proposed
+
+## Engineer agent findings (2026-09-20, pre-send quality gate run)
+
+### 2026-09-20 — Craft scan: AlphaSignal (alphasignal.ai)
+
+- Scanned: the live front page, signed out, 2026-09-20. Chosen because
+  today's build is a quality gate on generated prose and AlphaSignal
+  publishes the most machine-shaped daily in the category, so its
+  headline discipline is the thing most worth reading closely.
+- Worth stealing, filed as its own entry below: **every headline carries
+  the number.** "Cuts speech translation lag to 2.3 seconds", "humbles
+  every frontier agent below 20 points", "10x cheaper than V4 Pro". The
+  finding and its magnitude are both in the line a reader scans, so no
+  item needs to be opened to be ranked. alexandria's titles state the
+  finding and leave the figure inside the body.
+- Second thing worth noting, not yet an entry: every item is tagged with
+  its actor and its topic ("Qwen - Audio - 1 day ago", "Vals AI -
+  Benchmarks"), so a scanning reader sees who did it and in what domain
+  before reading a word of prose. `gather()` already pulls institutions
+  and topics for every claim and the issue prints neither.
+- Where alexandria is better, and it is structural: AlphaSignal ranks by
+  upvotes. The front page reads 1,199, 3,005, 5,324 beside the items, so
+  the ordering is attention. Nothing in that product can say a result was
+  overturned, because a popular item stays popular after it is wrong.
+  alexandria ranks by claim-graph edges and has a slot whose whole job is
+  to report what newer evidence retired, backed by `contradicts` edges
+  rather than by an editor remembering. Their most-upvoted item today is
+  a $2B business announcement, which is also the item with the least
+  research content on the page.
+
+### 2026-09-20 — Monday's send is not gated until the owner deploys (engineer agent)
+- Trigger: sprint item 4 asks for the checklist to be applied to the
+  issue Monday's cron actually sends. The gate is built, tested and
+  merged into the pipeline, and none of that reaches the cron. Modal
+  deploys from a local checkout and this repository has no CI deploy job,
+  so a merged `pipeline/weekly.py` is text until someone runs the
+  command. The Monday 2026-09-21 issue sends at 15:00 UTC.
+- What: two commands, from the repo root, in this order, before 15:00 UTC
+  on Monday. `modal run pipeline/db_setup.py::apply_schema` adds the
+  `digests.kind` column, then `modal deploy pipeline/weekly.py` installs
+  the daily schedule and ships the gate into the image. Then one manual
+  smoke run, `modal run pipeline/weekly.py --kind daily`, which is what
+  docs/agents/runtime-changes.md requires: the next cron is never the
+  first execution of new machinery. The manual run prints the gate's
+  report and writes a real daily issue, so it proves the environment and
+  the seat's work in one.
+- First step: the commands above. If they do not happen before Monday
+  15:00 UTC, the issue sends ungated and the checklist applies to it
+  retroactively, by hand, with `python3 tools/check_digest_quality.py`.
+- Cost: $0. No new service, no new secret.
+- Status: urgent
+
+### 2026-09-20 — The headline carries the number (engineer agent)
+- Trigger: today's craft scan, above. AlphaSignal's headlines state the
+  finding and its magnitude in the same line. alexandria's new title rule
+  (one finding, one line, no date) fixed the furniture problem but says
+  nothing about the number, and the pre-send gate's `bare-number` rule
+  currently polices figures inside the body while the title goes
+  unchecked.
+- What: a gate rule, `headline-without-the-number`. When the issue's lead
+  item reports a quantitative finding and the H1 states that finding
+  without its figure, warn. The check is decidable: the lead item is the
+  first item in the first section, a quantitative finding is a percentage
+  or a labelled magnitude in its first two lines, and the test is whether
+  any of those figures appears in the title. It stays a warning, because
+  a day whose lead finding is qualitative must still be allowed a
+  headline.
+- First step: one rule in `tools/check_digest_quality.py` and one test
+  case in `tests/test_digest_quality.py`, against 2026-W37, whose title
+  was "alexandria digest" and whose lead item was a 64 percent result.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-20 — Store the gate's verdict beside the issue it judged (engineer agent)
+- Trigger: running the new gate against 2026-W37 produced 76 blocking
+  findings and 25 warnings, and nothing anywhere records that number. The
+  next issue's count is the only evidence that the writer seat's prompt
+  work is landing, and it will be printed once into a Modal log and lost.
+  The OKR benchmark is scored by hand on five axes; this is the one axis
+  with a machine reading already available.
+- What: a `quality` jsonb column on `digests`, written by the send path
+  with the gate's rule-by-rule counts, the tool's own version, and
+  whether the issue was held. Then the trend is a query rather than an
+  archaeology exercise, and the site can eventually render a validation
+  receipt per issue the way sprint 2026-09-28 wants for skill pages.
+- First step: the column in `db/schema.sql`, the write in
+  `hold_for_quality()`'s caller, and one test that a held issue records
+  its findings rather than silently storing nothing.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-20 — The checks nobody runs: tools/ has no CI (engineer agent)
+- Trigger: today added the second tool to `tools/` whose value depends on
+  someone remembering to run it. `check_issue_citations.py` had been
+  broken since some point before this morning and nothing noticed,
+  because nothing runs it. The pre-send gate avoids that fate only
+  because it was wired into the pipeline, which is the point
+  docs/agents/registers.md makes about artifact-side gates.
+- What: `.github/workflows-pending/checks.yml` already exists and already
+  runs the budget guard and the test suite. It needs two more steps, the
+  quality gate against the newest issue in `site/content/issues/` and the
+  citation checker against the same file, and then it needs to be moved
+  into `.github/workflows/`. Agent tokens cannot write workflow files, so
+  the move is the owner's and only the owner's.
+- First step: the owner moves the file. The engineer can write the two
+  steps into the pending copy in the same PR that proposes it, which is
+  what this entry asks for permission to do.
+- Cost: $0. GitHub Actions minutes on a public repository.
+- Status: proposed
