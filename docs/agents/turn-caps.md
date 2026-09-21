@@ -198,6 +198,49 @@ Notes on the rows that need them.
   turns per minute. Every seat's `timeout-minutes` clears its required
   cap, so no timeout change is needed.
 
+## Duty-growth re-check, 2026-09-21
+
+Rule 3 fired again. This run edited four charters, so the seats were
+re-measured before waiting for a failure. Two of them needed the
+measurement and two did not, and saying which is which is part of the
+method.
+
+Measured, because their work genuinely grew:
+
+| Seat | Duty added | Peak turns, 8 newest runs | Cap in force | Required | Verdict |
+|---|---|---|---|---|---|
+| writer | site copy drafting, the value statement, preference capture | **80** (run 35459141039, 2026-09-19) | 150 | **200** | **UNDER-CAPPED, raise queued as item 4** |
+| exo | §3d polarity test, §3e owner-as-seat audit | 93 all-time (run 35307859161, at a cap of 100), 79 in the last seven | 200 | 200 | ok, and no headroom at all |
+
+Not measured, with the reason:
+
+- **frontend** gained a restriction rather than a duty. "You set the
+  words, you do not write them" removes work from the run. Its peak is
+  286 against a cap of 600, so there are 314 turns of headroom even if
+  the reasoning is wrong.
+- **pm** gained two checks inside a step it already runs. Its cap is
+  already censored and a raise to 400 is already queued as item 2, which
+  covers this.
+
+### The writer finding, stated plainly
+
+The writer's cap was set from two runs on 2026-09-19, when its peak was
+53. It has run eight times since and peaked at 80, which the rule turns
+into a required cap of 200. **So the cap was already too low before this
+run added a duty to it**, and nobody had re-measured because the seat
+never failed.
+
+That is worth a note about the method rather than about the seat. Rule 3
+triggers re-measurement on duty growth, and monthly review triggers it on
+the calendar, and a seat whose peak simply drifts upward between those two
+triggers is measured by neither. The writer went from 53 to 80 in a day
+because it started running daily. **A seat's first measurement is its
+least reliable one, and the seats that run most often outgrow theirs
+fastest.** The cheap correction: whenever this page is opened for any
+reason, re-measure any seat whose row was built from fewer than five runs.
+Writer, research and finance were all first-measurement rows on
+2026-09-19. Writer has now moved.
+
 ## Who applies a cap change
 
 Not the seats, for now. No agent run can push `.github/workflows/`,

@@ -293,6 +293,99 @@ someone applies the diff above. Apply these two at the same time:
 week goes by in which she dispatches seats without composing a single
 instruction herself, because the queue had already drafted them.
 
+### 4a. The writer's dispatch prompt forbids the duty this PR assigns it
+
+**Queued 2026-09-21 by the ExO agent. This is the item that makes the
+rest of this pull request work, and without it the charter edits are
+inert.**
+
+**Why.** `.github/workflows/agent-writer.yml` line 40 carries this
+sentence in the inline prompt the seat reads before anything else:
+
+```
+            Never edit taste.md, charters, site copy, pipeline code, sprints,
+            or skills. Never merge your own PR, never push to main.
+```
+
+The owner's ruling of 2026-09-19 gave site copy drafting to this seat.
+This PR corrects the charter to match. The workflow prompt still forbids
+it, and the workflow prompt is the instruction that arrives last and
+closest, so a seat holding both will most likely obey the prohibition.
+
+This is worth stating as a general finding, because it changes what a
+charter edit means. **Every seat's real charter is two files.** There is
+`prompts/<seat>-agent.md`, which this seat can edit, and there is the
+inline prompt inside `.github/workflows/agent-<seat>.yml`, which it
+cannot. When the two disagree, the org has no way to know which one the
+run obeyed. Incident 25's fix is the first time the disagreement has been
+load-bearing, and it will not be the last: the prompts were written on
+2026-09-18 and have been copied between seats since.
+
+**How.** One edit to `.github/workflows/agent-writer.yml`. Remove the two
+words that contradict the ruling and say what the seat may do, since
+"never set it on the site" is still correct and still worth keeping.
+
+```diff
+-            Never edit taste.md, charters, site copy, pipeline code, sprints,
+-            or skills. Never merge your own PR, never push to main. If the
+-            charter file is missing, stop and fail loudly.
++            Never edit taste.md, charters, pipeline code, sprints, or skills.
++            You DRAFT reader-facing site copy into docs/voice/ when the run
++            calls for it, and you never SET it in site/, which is the
++            frontend seat's surface (docs/agents/copy-pipeline.md). Never
++            merge your own PR, never push to main. If the charter file is
++            missing, stop and fail loudly.
+```
+
+**Ordering against item 4.** Same file, and they do not overlap: 4a edits
+the `prompt:` block and 4 edits the `claude_args:` line one line below it.
+Apply either first. Do read both before committing, because they are two
+hunks in a nine-line window.
+
+**Cost.** $0.
+
+**The wider sweep this implies, and it is not queued.** Every
+`agent-*.yml` carries a prompt written by hand, and no seat has ever
+diffed its inline prompt against its charter. That check belongs in this
+seat's §2 and the charter edit is in this PR. The audit itself is the next
+run's work, because finding a second contradiction is a run's worth of
+reading and this run has one confirmed case to fix.
+
+### 4. The writer's cap goes to 200
+
+**Queued 2026-09-21 by the ExO agent.** Measured, not guessed. See the
+2026-09-21 duty-growth re-check in [turn-caps.md](turn-caps.md).
+
+**Why.** The writer's cap of 150 was derived on 2026-09-19 from two runs
+whose peak was 53. The seat runs daily now and has run eight more times,
+peaking at **80 turns** in run 35459141039. The standing rule is twice the
+peak rounded up to the next 50, which is 200. So the cap is below the rule
+already, and this run also gave the seat three new duties: drafting site
+copy, drafting the value statement, and recording preference data. No
+writer run has hit the cap, which is exactly why nobody noticed.
+
+**How.** One edit to `.github/workflows/agent-writer.yml`. The file has a
+single run step, verified 2026-09-21.
+
+```diff
+-          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+The writer seat runs on `claude-opus-5`, not on Sonnet. This diff was
+first written here with the Sonnet flag, from memory rather than from the
+file, and the incident 26 rule caught it in the same run that wrote the
+rule down. Recorded because it is the cheapest possible demonstration that
+the rule is worth running: grep the live file for every `-` line, every
+time, including the ones you just typed.
+
+**Ordering.** Independent. No other item on this page touches
+`agent-writer.yml`, so it can be applied in any order with respect to
+items 1b and 2.
+
+**Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
+budget.
+
 ### 3. Nothing else. The caps are done.
 
 The earlier item 2 of this page (frontend 400 to 600, pm 250 to 300,

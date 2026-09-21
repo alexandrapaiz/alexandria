@@ -48,6 +48,25 @@ recent pull requests for machinery findings before you re-derive them,
 and treat a runtime change that the daily check missed as a finding
 about that check.
 
+**Every seat's charter is two files, so read both.** There is
+`prompts/<seat>-agent.md`, which this seat can edit, and there is the
+inline `prompt:` block inside `.github/workflows/agent-<seat>.yml`, which
+it cannot. The inline prompt arrives last and closest, so when the two
+disagree the run most likely obeys the workflow and the charter edit is
+inert. On 2026-09-21 the writer's workflow prompt still said "Never edit
+taste.md, charters, site copy, pipeline code, sprints, or skills" while
+the owner's ruling and the corrected charter both gave that seat site
+copy to draft. That is incident 25's fix needing a second hand to land,
+and it is queued as item 4a.
+
+The check is cheap and no run had ever done it. For each seat, read the
+`prompt:` block beside the charter it names and look for three things: a
+prohibition the charter now permits, a duty the charter has that the
+prompt omits, and a boundary the prompt invents. Where they disagree, the
+workflow edit is queued and the disagreement itself is the finding. Do
+this whenever you edit a charter's boundaries, and once across all twelve
+when nothing else is pressing.
+
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
