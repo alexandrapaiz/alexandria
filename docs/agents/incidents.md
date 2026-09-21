@@ -1042,3 +1042,56 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — Merged prompt fixes do not reach production (2026-09-21, research seat)
+
+Filed under the standing rule: two instances in one run, the same
+failure both times.
+
+**Instance one.** On 2026-09-19, commit a94a003 sharpened
+`prompts/interpret.md` on contradictions, anaphora and loose `refines`.
+It was a meta-review proposal from this seat, reviewed and merged. Three
+days later every edge in the claim graph still carries method sha
+`fbe080261d6b`, including the nine written on 2026-09-21, while
+`prompts/interpret.md` at HEAD hashes to `6706ec7bffee`. The interpret
+worker has never once run the fixed prompt.
+
+The cost is not hypothetical. All five `contradicts` edges in the graph
+are miscategorised, three of them shipped in 2026-W37's "Left behind"
+section, and one produced a sentence that is simply false — *"The same
+reference implementation that achieved 82.2% was later shown to drop to
+12.5% on memory-intensive tasks"*, which welds two different systems on
+two different benchmarks together. The merged prompt forbids all five by
+name and carries that exact pair as its worked example.
+
+**Instance two.** The same commit range added `cs.CR` to `sources.yaml`,
+naming 2609.15906, 2609.17648 and 2609.14079 as the papers it existed to
+reach. All three are absent from the corpus. `sources.yaml` reached the
+ingest image roughly a day later, by which time arXiv's 100-most-recent
+window for a category running 34 papers a day had moved past them. The
+category works now; those three are gone for good.
+
+**Why, mechanically.** Every prompt and `sources.yaml` is baked into its
+Modal image with `add_local_file` (ingest.py:23, distill.py:53,
+interpret.py:27, triage.py:59, weekly.py:75). A scheduled function goes
+on running the image built at the last `modal deploy`. Merging to main
+therefore changes nothing in production, and nothing in the repository
+deploys, checks, or reports the difference. This covers every file
+ADR-12 authorises the research seat to propose diffs to, which makes the
+whole meta-review loop write-only until someone deploys by hand.
+
+**The part that makes it incident 20 again, one level down.** The
+`prompt_sha` column exists precisely so a stale prompt is visible, and
+it recorded the discrepancy correctly every single day for three days.
+The archive-side gate worked. There is no artifact-side gate: nothing
+between the merge and the running image ever compares the two. This is
+the same shape as the taste ruling recorded and then violated by the
+next artifact, and it is why this run proposed no second fix to
+`interpret.md` — a third sha that also never deploys would look like
+progress and change nothing.
+
+**Suggested fix, engineer's lane, not filed as a proposal here.** A CI
+check comparing `sha256(prompts/*.md)[:12]` against the newest
+`claim_links.method`, `triage_log.prompt_sha` and `digests.prompt_sha`
+would have failed on 2026-09-19 and every day since. Deployment itself
+should follow a merge to those paths rather than wait to be remembered.
