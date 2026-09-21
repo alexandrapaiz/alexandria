@@ -1042,3 +1042,65 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## 2026-09-21 — Two gaps found while building the prose benchmark (ADR-29)
+
+Engineer seat, sprint 2026-09-21 item 2. Recorded here rather than only
+in the ledger because ADR-29 says every detected gap is an
+incident-register entry with its class named, however small. Neither of
+these lost a run. Both were invisible until a piece of work happened to
+walk into them, which is the part worth recording.
+
+Titled by date rather than by number on purpose. PR #60, this seat's
+previous run and still open, is taking incident 23.
+
+### Gap 1: the comped friends list is a category, not a roster
+
+**Class: awareness.** The org planned around an asset it never created.
+
+Sprint item 2 says to have "the comped friends list score both blind".
+The grading packet is built and there is nobody to send it to. The word
+`comped` appears in docs/sales/first-customers.md as a pricing tier, in
+the launch calendar as the audience for the final pre-launch digest, and
+in the roadmap. No file in the repository names one person on it, one
+email address, or even a count.
+
+Three planning documents and one sprint item depend on that list. The
+sprint's own "Notes for the engineer" says items 2 through 4 need "only
+the corpus, the sent issue(s), and the comped friends list", which reads
+as a statement that all three were in hand. Two were.
+
+The fix is the owner's, because it is her friends and their addresses,
+and because where personal contact details live is a decision before it
+is a file. Filed in docs/ideas.md the same day.
+
+### Gap 2: the prose ban list cannot be cited by number
+
+**Class: enforcement.** A register that cannot be addressed cannot be
+checked at the artifact.
+
+docs/voice/ban-list.md has two entries numbered 26, two numbered 27, and
+no 30 or 31. This surfaced while writing docs/evals/ documentation that
+cites the list by number, because "ban-list entry 26" points at two
+different rules, one about a label that moved down a level and one about
+the club sentence.
+
+This is incident 20 one level down. Incident 20 was a ruling recorded in
+the right register and never opened before the next artifact shipped.
+This is a register that is opened, and then cannot be quoted back
+precisely enough for anyone to argue about whether an artifact passed.
+Stable ids that are never reused would close it. The file is the writer
+seat's surface, so the proposal is in docs/ideas.md rather than applied
+here.
+
+### Not recorded as a gap, and why
+
+This is the third consecutive engineer run unable to settle the two
+`urgent` ledger entries about the archive count and the uncited 23.9%
+claim, because both need database access this workflow does not carry.
+That is not a gap under ADR-29. The fix is written down, it is
+accurate, and it sits at `proposed` awaiting the owner's decision, which
+is the system working rather than failing. It is named in the PR so the
+wait is visible, and the ledger entry filed today asks for a `Blocked
+by:` line so a pending decision of this shape stops being retold as
+prose in three PR descriptions.
