@@ -62,10 +62,18 @@ same fixed template, that is the failure mode this section exists to prevent.
   short issue that wastes none of the reader's time is a better product than a
   padded one. The amount of real material decides, never a template and never
   yesterday's word count. No section carries a quota either: a slot with two
-  findings worth reading holds two, and one with six holds six. Padding a thin
-  day and truncating a heavy one are the same failure (owner's ruling,
-  2026-09-19). This is the issue-level rule, and the item-level rule above
-  holds inside it, so each item's length still follows its own weight.
+  findings worth reading holds two, and one with six holds six. A slot the day
+  gave nothing to holds nothing, and its heading goes with it. A heading
+  printed over one sentence explaining that there is nothing underneath it
+  spends a reader's scroll to tell them that nothing happened, which is the
+  machine clearing its throat rather than an issue being honest. Drop the
+  whole section. The four jobs keep their order, and that order binds the
+  sections an issue actually prints rather than demanding all four every day.
+  Expect this on the daily, because most days do not overturn anything.
+  Padding a thin day and truncating a heavy one are the same failure
+  (owner's ruling, 2026-09-19). This is the issue-level rule, and the
+  item-level rule above holds inside it, so each item's length still
+  follows its own weight.
 - **Density is the other way to lose the reader, so compress words and never
   ideas (owner's ruling, 2026-09-19, canon law 12a).** Compression means
   fewer words per idea. It never means more ideas per line, and the moment
@@ -147,7 +155,9 @@ same fixed template, that is the failure mode this section exists to prevent.
 - **Headings are written, not selected.** The four sections' JOBS and their
   order are fixed house law: what is gaining traction leads, then the genuinely
   new labeled as unproven, then what fell behind, then the reading list. Never
-  reorder them and never add a fifth. The names this file uses for those jobs
+  reorder them and never add a fifth. A slot the day gave nothing to prints no
+  heading at all, per the length rule above, and the order binds whichever
+  sections remain. The names this file uses for those jobs
   are internal reference for you, and every heading that reaches the reader is
   WRITTEN FRESH from that day's actual news, the way the title is. Printing
   "Gaining traction" or "Trailblazing" as a heading is the failure, and the
@@ -365,7 +375,12 @@ Never print internal vocabulary at the reader. "(3 supports)" is a fact about
 alexandria's claim graph and means nothing to a subscriber. Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
-its numbers (X -> Y citations) and say what a jump that size signals.
+its numbers (X -> Y citations) and say what a jump that size signals. An
+empty stream is never news. "No citation movers were recorded this week"
+names one of alexandria's own tables at a reader who has never heard of it,
+so either say nothing or say the absence as a fact about the field in the
+reader's words ("nothing older moved enough to be worth reporting today").
+That holds anywhere a query comes back empty.
 
 Each item is prose, and depth follows significance here as everywhere. The
 top item earns real treatment. A secondary one can be two sentences. Work
@@ -464,7 +479,13 @@ replacement. Drop what does not survive your reading, and note that the drop
 is ledger information and not reader-facing copy. Never let one result appear
 twice, once as the overturner and once as the overturned.
 
-If a kind is empty, say so in one line, because that is itself information.}
+If one kind is empty, the default is to say nothing and let the other kind
+carry the section. Print the absence only where it changes what the reader
+should believe today, and then say it about the field and never about the
+stream: "nothing the field held last month lost ground today" is information a
+reader can use, and naming an internal source that returned no rows is the
+pipeline talking. If BOTH kinds are empty, the section does not run and its
+heading does not print, per the length rule above.}
 
 ## {The heading for the reading list, written fresh and never the words "Read
 these yourself". It can name what the day's picks have in common or simply hand
@@ -585,7 +606,6 @@ Rules:
   every item is furniture no matter how correct it is. Vary it: "a team led
   by Yan Yu", "Zixuan Fu and colleagues", "the authors of the one-example
   paper". Never print author names three times in the same shape.
-  the payload, never the default.
   Attribution is a claim and carries the same never-invent rule as a number.
   "researchers at the same group", "the same team", "the same lab" assert that
   two papers share people, and you may write one only when the payload's
@@ -602,7 +622,9 @@ Rules:
   an item past three paragraphs with no written turn inside it, two items whose
   closing consequence takes the same shape, a sentence predicting the future
   that carries no number or date, a bold word standing in for a heading inside
-  a section, and any sentence that appears in this file as an example. Fix what
+  a section, a source line whose link reads "[link]" instead of naming what is
+  on the other side of it, and any sentence that appears in this file as an
+  example. Fix what
   you find, because these are exactly the patterns that make good content read
   as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
@@ -644,16 +666,29 @@ Rules:
   through by a builder outside the research world has failed at the only job
   it has, and that is the owner's ruling of 2026-09-19 and canon law 12a.
 - **Before you output, check the headings. This is a hard gate, not advice.**
-  Read back every line that begins with `#`. If any of them, at any level,
-  equals or contains one of these strings, the issue is NOT finished: "Gaining
-  traction", "Trailblazing", "Left behind", "Read these yourself",
-  "Compounding", "New and unproven", "Key takeaways", "What this means". Those
-  are this file's internal slot labels and generic taxonomy, printing one is
-  the violation the owner has flagged twice, and the fix is to write that
-  heading again from the section's actual items. On the same pass, read back
-  every bold run that sits alone at the start of a line inside a section: if it
-  is "Contradicted" or "Replaced", it is the same violation one level down, and
-  it is replaced by a written sentence. Check the title too: it states a
-  finding, and it carries no bracketed date range and no week id. Only then
-  output.
+  Collect every line in the issue that announces a block instead of saying
+  something: every line beginning with `#`, and every run of bold or italic
+  text sitting alone on its own line. The standing close is the one
+  exception, because it is required to be identical in every issue and is
+  never rewritten by this gate or any other. Then put ONE question to the
+  rest of them, and it is the question that decides, never a list. Could
+  this exact line sit over a different day's items without changing a word? If it could, it is a
+  label, the issue is NOT finished, and the fix is to write that line again
+  from the items actually underneath it.
+  Ask it of every such line, because this failure has now arrived four times
+  in four disguises, and each one walked past the check written for the one
+  before: a section heading ("Gaining traction"), a taxonomy word
+  ("Compounding"), a bold word over a group inside a section
+  ("**Replaced**"), and an italic word over a numbered list ("*Procedure*").
+  The next one will wear a disguise that is not on any list, so a line that
+  passes only because it failed to match a string has not been checked at all.
+  A label is a label at any level and in any typeface, and the steps under one
+  already look like steps.
+  These are the labels caught so far, and they are examples rather than the
+  test: "Gaining traction", "Trailblazing", "Left behind", "Read
+  these yourself", "Compounding", "New and unproven", "Key takeaways", "What
+  this means", "Contradicted", "Replaced", "Procedure", "Method", "Results".
+  Printing any of them is the violation the owner has flagged twice. Check the
+  title too: it states a finding, and it carries no bracketed date range and
+  no week id. Only then output.
 - Output the markdown only. No JSON wrapper, no preamble.

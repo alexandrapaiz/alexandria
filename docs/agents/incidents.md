@@ -1042,3 +1042,133 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — Parallel runs of one seat collided on a register's next number (2026-09-20, writer seat)
+
+**Class, per ADR-29.** Enforcement gap, in the narrow sense that nothing
+between an append and the next append ever reads the file's own tail.
+
+**Recorded because the standing rule says so.** This has now happened
+twice in two registers, which is the trigger at the top of this file, no
+judgment call available.
+
+### What happened
+
+docs/voice/ban-list.md carried two entries numbered 26 and two numbered
+27, with 30 and 31 unused, until this run renumbered the later pair into
+the empty gap. Entry text was not touched.
+
+The cause is the merge described in section 12 of
+docs/voice/reviews/2026-09-19.md: two writer runs on 2026-09-19 worked
+the same file from the same starting point, each appended entries
+numbered from its own copy of the list, and the merge pass that followed
+reconciled the four prose seams between them without noticing that the
+numerals had collided. The seams were about meaning, so meaning is what
+got read.
+
+The same defect is in this file. There are two entries numbered
+**Incident 22**, at the 2026-09-19 editorial-rebuild entry and at the PM
+presence entry. They are left as they are: this register is not the
+writer seat's to renumber, and the entry that cites one of them should
+not be silently repointed by whoever notices. It is flagged here for the
+ExO's weekly read.
+
+### Why it matters more than a cosmetic defect
+
+Both registers are cited by number, and the citations are the
+enforcement mechanism. prompts/digest.md's gates, the canon, and the
+review files all say things like "ban list 26" and "canon law 12". A
+duplicated number makes a citation ambiguous, and an ambiguous citation
+in a gate is a gate that cannot be checked. One such citation already
+existed and was corrected in this PR.
+
+### The fix, and it is small
+
+The append is the moment to check, because it is the only moment anyone
+holds the whole file. A seat appending a numbered entry reads the last
+number in the file it is appending to, in the branch it is appending
+from, and never numbers from memory or from the copy it read at the
+start of its run. Where a run has been open long enough for another run
+to land, that means rereading the tail before writing it.
+
+This is the cheap half of incident 6's lesson. Incident 6 was two
+appends at one anchor colliding in git. This is two appends colliding in
+the content, which git merges cleanly and therefore never reports.
+
+## Incident 25 — A gate written as a list catches only what already shipped (2026-09-20, writer seat)
+
+Recorded under the standing rule at the top of this file. The class has
+now produced four artifacts and four separate ban list entries, which is
+three repeats past the threshold at which it should have been written
+down.
+
+**The number.** The ExO's incident 24 closed with "Next free number is
+25", so this entry takes 25. Note for whoever renumbers: **23 is claimed
+three times** as of today, by three seats on three unmerged branches, for
+three unrelated events (the writer's ban list collision, the engineer's
+arXiv 406, the ExO's open-routed run). That is incident 23's own defect,
+parallel runs colliding on a register's next number, repeating inside the
+incident register itself on the day it was first recorded about the ban
+list. It is left here as a note rather than fixed, because this register
+is not the writer seat's to renumber.
+
+### What happened
+
+Four times, the same failure reached a reader or a sample, and four times
+it was fixed by adding the string that had just been seen to a list of
+forbidden strings.
+
+1. A section heading printed a category word, "Compounding" (ban list 19).
+2. A section heading printed the generator's own internal slot label,
+   "Gaining traction". The owner flagged this one for the second time, in
+   the word "AGAIN", and it became incident 20 (ban list 20).
+3. The same category word moved down one level and printed in bold over a
+   group inside a section, "**Replaced**" (ban list 30).
+4. The same category word moved again and printed in italics over a
+   numbered list, "*Procedure*" (ban list 33). Five rounds of grading had
+   read past it, because every gate written in rounds one through four
+   read `#` lines and bold runs, and none of them read italics.
+
+### Why it kept happening
+
+Each fix was written from the artifact in front of the writer, so each
+one described a position and a typeface rather than the thing being done
+wrong. The rule the org actually holds is a question that can be put to
+any line: could this sit over a different day's items without changing a
+word? Nothing in the pipeline or the prompt ever asked it. Both asked a
+narrower question, does this line match one of these strings, and that
+question has a different answer every time the category word moves, which
+it did four times.
+
+This is a second axis on incident 20. Incident 20 says that recording a
+rule is not enforcing it. This one says that enforcing it is not enough
+either, because a gate can be written, wired, and running, and still be
+shaped so that it can only recognise the last failure. A check written
+from the previous incident is a memorial.
+
+The general form, for the ExO's pattern reading: **when a fix enumerates,
+ask what it is an instance of.** If the enumeration can be replaced by a
+question the machine or the model can put to any candidate, the question
+is the fix and the enumeration is evidence.
+
+### The fix, in this pull request
+
+- `prompts/digest.md`: the pre-output heading gate no longer decides by
+  list. It collects every line that announces a block rather than saying
+  something, at any level and in any typeface, and puts the class
+  question to each one. The known labels stay in the file, demoted to
+  examples, with the reason they are not the test written beside them.
+- `docs/voice/ban-list.md` gains entry 36, the gate that lists instead of
+  testing, so the register carries the class and not only its four
+  instances.
+- `docs/ideas.md`: the machine half is proposed to the engineer, on top
+  of PR #60, as a comparison against the previous issues' headings rather
+  than against a word list. That is the deterministic shadow of the class
+  question, and it needs no judgment to run.
+
+### What is still open
+
+The prompt fix cannot be observed. No issue has been generated since
+2026-09-14, so every patch made to the generator across seven editorial
+runs is untested against a real payload. The first issue that proves or
+disproves this one is Monday's pilot.
