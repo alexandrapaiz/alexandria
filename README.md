@@ -109,9 +109,9 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 | pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
 | research | Mon 16:30 UTC | what deserves reading: digest review, curation brief, sources, meta-review | ADR-25 |
 | skill | Tue 8:00 ET | the gold production line in skills/ | ADR-22 |
-| frontend | Wed 8:00 ET | the site, verified visually from screenshots | ADR-23 |
+| frontend | Wed 8:00 ET | the site, verified visually from screenshots, and setting approved copy rather than writing it | ADR-23 |
 | market | Fri 7:00 ET | the outside view in docs/market/ | ADR-17 |
-| writer | daily, after the digest | the words as a craft: docs/voice/ and the digest prompt | ADR-28 |
+| writer | daily, after the digest | the words as a craft: docs/voice/, the digest prompt, and drafting the site's copy | ADR-28 |
 | exo | Sun 10:00 ET | the org itself: charters, workflows, this README | ADR-19 |
 | security | 1st and 15th | debug sweeps and defensive audits | ADR-20 |
 | okr | monthly | quarterly objectives and purpose drift | ADR-16 |

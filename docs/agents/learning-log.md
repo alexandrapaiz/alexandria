@@ -1635,3 +1635,192 @@ until it changes.
   blind spot, and model-routing.md is the proof: the gate fired exactly
   as designed and the register still spent a day lying.
 
+
+## 2026-09-21 — ExO run 6, owner-dispatched: corrections
+
+Written for a successor who knows nothing. This run was ordered, not
+scheduled. The owner's words: "exo for corrections please." The failure
+to learn from was one day old.
+
+### What happened on 2026-09-20, in one paragraph
+
+The chair drafted site copy live with the owner for eight rounds. Every
+round was rejected. Twenty-two candidates, four short approved lines, and
+a register that moved from explanatory to selling to quiet to friendly to
+flat documentation to a deliberate plain-engineer voice without ever
+converging. The verbatim record is
+docs/voice/preferences/site-copy-2026-09-20.md. Her diagnosis of the last
+round: "its describing the mechanism not what it delivers. or the value to
+a builder", and "no mention of a growing self mantaining corpus, nothing.
+thats my point."
+
+### The diagnosis, and it is three defects rather than bad prose
+
+Read these apart, because fixing any one of them alone leaves the failure
+available.
+
+**1. The duty was assigned to a seat forbidden from performing it.** Her
+ruling of 2026-09-19 in docs/voice/taste.md says "The writer drafts, the
+frontend seat sets." On 2026-09-20 prompts/writer-agent.md line 78 still
+said "Never site copy (frontend's lane)", and the frontend charter's five
+run steps are entirely visual with no step that writes a word. So the duty
+read as owned from both directions and was performed by neither. It fell
+to whoever was present, which was the owner. Incident 25.
+
+**2. There was no positive specification.** taste.md held roughly forty
+rulings and nearly all of them are rejections. Nothing in the repository
+said what alexandria is worth to a builder. **A register of rejections
+cannot converge, and that is arithmetic rather than taste.** Each "no"
+removes one candidate from an unbounded space, so the prose improved every
+round and the distance to shipping did not close.
+
+**3. The drafting happened in chat.** No file existed until the session
+was over, so each round started from a verdict held in conversation rather
+than from something a later round could read. Round seven repeated round
+two in a new costume, and two of the eight rounds have no recoverable
+candidate text at all.
+
+### The generalization worth carrying, and it is the same one as incident 22
+
+On 2026-09-19 she said "right now i feel like im doing the PMs job", and
+the PM was asleep. On 2026-09-20 the writer was forbidden. In both cases
+every seat obeyed its charter and no audit failed, because **every audit
+the org runs measures a seat against its charter, so none of them can see
+work the owner did herself.** The detector is now prompts/exo-agent.md
+§3e, the owner-as-seat audit, and the number it carries is how many rounds
+of one artifact reached her before it converged. One is a healthy probe.
+Two is a pattern. Eight is a missing seat.
+
+### What this run changed
+
+1. **The process.** docs/agents/copy-pipeline.md is the handoff: the
+   writer drafts into a file, the owner rules in chat, the chair records
+   the verdicts as data, the frontend sets the approved lines. The
+   stopping rule is the enforcement, and it is deliberately low: **after
+   ONE rejected round on the same surface, the chair hands the round to
+   the writer seat.** The chair is the only seat with no cron and no cap,
+   so it is always the cheapest actor to reach for, and it is the only one
+   whose limit has to be written down instead of enforced by a workflow.
+2. **The positive artifact.** docs/voice/value.md, specified in
+   copy-pipeline.md and not drafted here, because writing it is the
+   writer's craft and ruling on it is hers. One page: what a builder ends
+   up holding, which is the growing self-maintaining corpus, and what
+   having it does for them. The writer charter now refuses to draft copy
+   until that file exists and carries her approval.
+3. **The data.** docs/agents/preference-data.md audits the first
+   preference file against its stated purpose and finds nine defects, then
+   gives the schema. The verdict: good human record, not machine
+   consumable. The worst defect is unfixable by any schema, which is that
+   rounds four and five were recorded as summaries so the sentences she
+   rejected are simply gone. The lesson is the format's whole rationale:
+   **append one line per candidate while the session is live**, because a
+   session recorded afterwards loses the candidates.
+4. **The registers.** Incident 25 and incident 26 registered. Three rows
+   in unowned-duties.md. registers.md gained the cadence column that the
+   2026-09-20 run left as a debt, plus the polarity test.
+
+### The finding that outranks all four, and it needs her hand
+
+**The charter edits in this PR are inert until item 4a is applied.**
+`.github/workflows/agent-writer.yml` line 40 tells the seat "Never edit
+taste.md, charters, site copy, pipeline code, sprints, or skills" in the
+inline prompt, which arrives last and closest. A seat holding both that
+and the corrected charter will most likely obey the prohibition.
+
+So: **every seat's charter is two files.** There is the one in `prompts/`,
+which this seat can edit, and the inline `prompt:` block in the workflow,
+which it cannot. No run had ever diffed them. The check is now in §2 and
+the full twelve-seat sweep is the next run's work, because this run has one
+confirmed contradiction and fixing it is worth more than finding a second.
+
+### The standing observations
+
+- **Run failures (§2b).** One since the last run, and it predates it: the
+  PM's dispatch at 06:16 on 2026-09-20, already incident 23. Nothing new
+  failed. The Monday ceremony cron had not yet fired when this run
+  started at 01:19 UTC.
+- **Dispatch count (§2c).** Eight since the last ExO run, and the number
+  still cannot fall. Actor and triggering actor on all eight:
+  `alexandrapaiz`. docs/sprints/dispatch-queue.md still does not exist,
+  because no standup has run, because the cron is still `35 10 * * 1`.
+  Unchanged since 2026-09-19 and blocked on one character in one file.
+- **The machinery diff (§2).** Commit 440163a, 2026-09-20 12:34, the chair,
+  twelve workflows: the no-ship tripwire and a Slack run-report step. A
+  merged PR explains it (#63). **No smoke run preceded it**, which
+  runtime-changes.md requires, and three scheduled runs after it passed,
+  so it worked. The law binds the chair too. Queue item 1 is now applied
+  and deleted, and the tripwire's design is sound, with the webhook guard
+  correctly inside the script rather than in the step's `if:`.
+- **A new failure fingerprint, for the next §2b.** The tripwire exits 1
+  when a run committed without pushing, so **a red run can now mean the
+  run shipped nothing rather than that it crashed.** Read the step name
+  before diagnosing the model.
+- **The queue (§5).** Item 1 applied and deleted. Items 1b and 2
+  re-verified line by line, and item 2 had **rotted a second time**:
+  440163a raised the PM timeout from 60 to 120 and renamed its model flag
+  from `sonnet` to `claude-sonnet-5`, five hours before the run that
+  rewrote the item and missed both. Applying the timeout diff's intent
+  would have lowered a live timeout by 45 minutes. That is incident 26,
+  and the rule is now mechanical: grep the live file for every `-` line
+  verbatim, every line, not the one that broke last time.
+- **The rule caught its own author.** Item 4's diff was first written here
+  with `--model claude-sonnet-5`. The writer seat runs on
+  `claude-opus-5`. Caught in the same run that wrote the rule down.
+- **Turn caps (§6).** Rule 3 fired on four charter edits. The writer is
+  **under-capped at 150 against a measured peak of 80**, so it needed 200
+  before this run gave it three new duties, and no writer run has ever hit
+  the cap, which is why nobody noticed. Raise queued as item 4. exo sits
+  at 200 against a peak of 93 with no headroom. frontend and pm did not
+  need measuring and the reasons are in turn-caps.md. The method's gap:
+  **a seat's first measurement is its least reliable one**, and a seat
+  whose peak drifts upward between the monthly review and a duty-growth
+  trigger is measured by neither. Writer went from 53 to 80 in a day
+  because it started running daily.
+- **The register sweep (§3d).** Every file under docs/agents/ carries its
+  `Enforced at:` line, including the two written this run. The cadence
+  column paid for itself on its first run by finding one gap:
+  **docs/design/taste.md** has the same archive rate as the voice register
+  and a weekly gate instead of a daily one, because the frontend runs
+  Wednesdays. Recorded as accepted rather than fixed.
+- **The workflow lane (§5).** Probed on a throwaway branch and refused
+  with the incident 12 message, so `APP_PRIVATE_KEY` had not landed at
+  01:30 UTC on 2026-09-21. Everything stays queued.
+- **"Seen and not mine".** Still untested. No outward-looking seat has run
+  since it merged. Research runs Monday 16:30 UTC and is the first real
+  test, which is later today.
+- **Housekeeping (§5b).** No merged branch needed deleting, which is a
+  first. The README's seat table now says the writer drafts site copy and
+  the frontend sets it. Stale open PRs to flag rather than touch: **#35**
+  is superseded by #60 by its own title, **#31** has been open since
+  2026-09-18, and **#61** is this seat's own last run, merged into this
+  branch and supersedable.
+
+### What the next run must check first
+
+- **Did the writer's first copy round open value.md.** This is the whole
+  test of this run. If the writer drafted copy without the value statement,
+  or if it drafted no copy because item 4a was never applied, say which,
+  because the two failures have opposite fixes. A charter edit is not a
+  duty performed.
+- **Whether item 4a was applied**, and if not, whether the writer seat
+  obeyed its workflow prompt or its charter. That answer is worth more
+  than the edit, because it tells the org which of a seat's two charters
+  actually governs.
+- **Whether the next preference file uses the schema.** If the next copy
+  session is recorded as narrative again, docs/agents/preference-data.md
+  failed and more words are not the fix. The `author` field is the one to
+  read: a session where every candidate's author is `chair` is incident 25
+  repeating.
+- **Monday 2026-09-21 10:35 UTC, the PM ceremony.** It fires on the
+  open-routed path, nine hours after this run started. If items 1b and the
+  secret removal were both skipped, it failed exactly like run
+  35493791740, and that is a repeat the standing rule requires you to
+  register the moment you see it.
+- **The twelve-seat prompt-versus-charter sweep**, per §2. One
+  contradiction is confirmed. Nobody has looked for the others.
+- **Item 1b, item 2, item 4a and item 4** against the live files. Delete
+  what was applied. Item 2's timeout edit is already cancelled in the
+  queue and does not need reinstating.
+- **The registers.md marker lines** under docs/voice/ and docs/design/.
+  Two days as an open ledger request now. Still cosmetic, still not this
+  seat's to edit.
