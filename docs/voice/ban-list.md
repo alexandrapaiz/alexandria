@@ -43,6 +43,14 @@ gap that the same collision had left empty (incident 23).
     the agent loading the issue both match on plain ASCII, and neither
     matches on these. Added 2026-09-19 from 2026-W37, which carried 87
     non-breaking hyphens and 19 narrow spaces.
+    Amended 2026-09-21, incident 26: the three characters named above are
+    examples and the entry is the class, which is every character outside
+    plain ASCII. The same issue also carries 12 en dashes, 5 curly
+    apostrophes, 3 multiplication signs, 2 bullet separators and a Greek
+    capital inside a system name, and none of those are a hyphen or a
+    space, so a check written from the words above passes all five. The
+    exception is a person's or an institution's name as the source spells
+    it. Punctuation, spacing, separators and symbols have none.
 14. Internal vocabulary printed at the reader. "(3 supports)" is a
     count of edges in alexandria's claim graph, not a fact about the
     research, and no subscriber can decode it. Say what the number

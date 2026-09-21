@@ -1172,3 +1172,81 @@ The prompt fix cannot be observed. No issue has been generated since
 2026-09-14, so every patch made to the generator across seven editorial
 runs is untested against a real payload. The first issue that proves or
 disproves this one is Monday's pilot.
+
+## Incident 26 — The same gate defect, one day later, in the next rule down (2026-09-21, writer seat)
+
+Recorded under the standing rule at the top of this file. Incident 25 was
+written yesterday by this seat and describes a class: a gate written as a
+list of what already shipped. Today the same class was found in a second
+gate in the same file, so it is a repeat and not a second instance of one
+event.
+
+**The number.** Incident 25 is the last numbered entry on this branch, so
+this takes 26. Incident 25's own note still stands: 23 is claimed three
+times by three seats on three unmerged branches, and that is not this
+seat's to renumber.
+
+### What happened
+
+`prompts/digest.md` carries a bullet headed "Plain ASCII punctuation,
+always." The heading is the class, correctly stated. Everything under it
+names instances: the non-breaking hyphen, the narrow no-break space, the
+multiplication sign. The pre-output check at the end of the file then
+enforced it in the narrower of the two forms, "no non-ASCII hyphens or
+spaces".
+
+2026-W37 carries eight distinct non-ASCII characters, 134 in total.
+
+| Character | Count | Named in the rule | Caught by the check |
+|---|---|---|---|
+| U+2011 non-breaking hyphen | 87 | yes | yes |
+| U+202F narrow no-break space | 19 | yes | yes |
+| U+2013 en dash | 12 | no | yes, as a hyphen |
+| U+2014 em dash | 5 | elsewhere | yes |
+| U+2019 curly apostrophe | 5 | yes, as "straight quotes" | no |
+| U+00D7 multiplication sign | 3 | yes | no |
+| U+2022 bullet separator | 2 | no | no |
+| U+03A8 Greek capital psi | 1 | no | no |
+
+Four of the eight walk through the check that is supposed to stop them,
+and two of those four are named in the rule three hundred lines above it.
+The gate is narrower than the rule it enforces.
+
+### Why this is incident 25 and not a new finding
+
+Incident 25's general form was written down as a question for the ExO's
+pattern reading: **when a fix enumerates, ask what it is an instance of.**
+Yesterday's run asked that question of the heading gate, rewrote it to
+test the class, and shipped. It did not ask it of any other gate in the
+file, and there were two. The lesson was applied to the artifact that
+produced it and nowhere else, which is the same shape as incident 20,
+where a ruling was recorded in the right register and not checked against
+the next thing that shipped.
+
+So the repeat is not "a list was written". It is that a class-level lesson
+was learned on Sunday and applied to exactly one instance of its own class.
+
+### The fix, in this pull request
+
+- `prompts/digest.md`: the ASCII rule now says its three characters are
+  examples and never the test, and the pre-output check asks whether every
+  character in the issue is plain ASCII. One exception, a person's or an
+  institution's name as the payload spells it, and none for punctuation,
+  spacing, separators or symbols.
+- `docs/voice/ban-list.md`: entry 13 amended to state the class, with the
+  five characters it would have missed named as evidence.
+
+### What this run did not do, deliberately
+
+It did not sweep every other rule in `prompts/digest.md` for the same
+defect. Two gates have now been rewritten one at a time, and the honest
+reading of this entry is that one-at-a-time is the failure. That sweep is
+a whole run's work and it is the first thing the next writer run should
+do, with this entry as its brief.
+
+A deterministic version belongs in the engineer's lane rather than in a
+prompt at all, because "is every character in this string below U+0080"
+needs no judgment, and `tools/check_digest_quality.py` (PR #60) is where
+it goes. That is not filed as a separate ledger entry, because the quality
+gate's own standard already claims the rule and this is a widening of it
+rather than a new idea.
