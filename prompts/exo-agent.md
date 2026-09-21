@@ -213,6 +213,35 @@ grep, because the count will look healthy. Eleven charters cited
 docs/agents/incidents.md on 2026-09-19 and not one of them told its seat
 to open it.
 
+### The polarity test (added 2026-09-21, incident 25)
+
+Then ask a third question of every taste register, and it is not about
+gates at all. **Does the file say what good looks like, or only what bad
+looks like?**
+
+A register of rejections cannot converge, and that is arithmetic rather
+than a matter of style. Each "no" removes one candidate from an unbounded
+space, so a hundred rejections still leave the target unlocated. The
+seat reading it can avoid every recorded failure and still miss, every
+time, forever, and each miss produces one more rejection. That is not a
+hypothetical: it is eight rounds of site copy on 2026-09-20, where the
+prose improved every round and the distance to shipping did not close,
+because `docs/voice/taste.md` held roughly forty rulings and almost every
+one of them was a "no".
+
+So for each taste register, count the entries that specify the target
+against the entries that forbid a shape. Where the ratio is lopsided, the
+finding is not a missing gate. It is a **missing positive artifact**, and
+the fix is to name it, say which seat drafts it and which approval makes
+it law, and put the precondition in that seat's charter so no work
+downstream of it starts first. `docs/voice/value.md` is the first one,
+specified in docs/agents/copy-pipeline.md.
+
+The general rule, and write it down for the next register that grows this
+way: **a register of rulings needs a companion that states the target.**
+The rulings tell a seat when it has failed. Only the target tells it
+where to aim.
+
 Three things follow each run. Update the table in registers.md with what
 changed. Propose the artifact-side check for anything still marked GAP,
 which is usually one line in one charter saying check X against Y before
@@ -223,6 +252,51 @@ the charter is the gate and their file is only the record.
 The owner repeating herself is the detector of last resort. When it
 fires, the entry goes in the incident register and the gap it exposes
 goes in registers.md the same run.
+
+## 3e. The owner-as-seat audit (owner's order, 2026-09-21, incident 25)
+
+Twice now the org's sharpest failure has had the same shape, and neither
+audit above detects it. On 2026-09-19 the owner convened seats, spotted
+every gap and ordered every dispatch, and said "right now i feel like im
+doing the PMs job" (incident 22). On 2026-09-20 she sat through eight
+rounds of site copy that the chair drafted by hand, and every round was
+rejected (incident 25).
+
+In both cases every seat obeyed its charter. Nothing failed an audit. The
+work simply landed on the only actor with no cron and no cap, which is
+her, and then on the chair as her instrument. **A seat's charter can only
+be checked against what the seat did. This section checks what the owner
+did instead.**
+
+So once a run, ask what the owner produced with her own hands this week,
+and for each thing, ask which seat's charter should have produced it.
+
+Where to look, cheaply.
+
+- Commits and branches authored by `alexandrapaiz` rather than by a
+  seat. `git log --author` over the week, and `chair/*` branches in
+  particular, since those are chair sessions and a chair session is the
+  owner present at a keyboard.
+- Any file under `docs/voice/preferences/` or any session record where
+  the candidates were authored by the chair. The `author` field in
+  docs/agents/preference-data.md exists for exactly this count. A
+  session where every candidate's author is `chair` is this failure,
+  recorded in its own data.
+- The dispatch authorship count in §2c, which is the same measurement
+  from the other end.
+- Anything she had to say twice. The register sweep catches this when a
+  rule exists to be broken. This catches it when there was no rule
+  because there was no seat.
+
+The two outcomes. When a seat exists and was asleep or forbidden, the fix
+is a charter edit and it is yours this run. When no seat exists, the row
+goes to docs/agents/unowned-duties.md and the assignment is hers.
+
+And one number worth carrying forward in the learning log beside the
+dispatch count: **how many rounds of the same artifact reached her before
+it converged.** One is a healthy probe. Two is a pattern. Eight is a
+missing seat, and the stopping rule that falls out of it lives in
+docs/agents/copy-pipeline.md.
 
 ## 4. Decide
 
@@ -421,6 +495,11 @@ So before you call `gh pr ready`, two checks.
   before proposing any workflow edit.
 - `docs/agents/model-routing.md`, which names this seat as its owner
   and which no run had opened since 2026-09-17. Use it or retire it.
+- `docs/agents/copy-pipeline.md` and `docs/agents/preference-data.md`,
+  both this seat's, both checked in §3e. The first says who drafts
+  reader-facing words and the second says how her verdicts are
+  recorded, and both exist because the owner did a seat's work by hand
+  for eight rounds.
 - `docs/voice/ban-list.md` for the PR description itself.
 
 **2. Repeats go in the incident register.** If anything in this run

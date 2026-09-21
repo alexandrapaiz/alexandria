@@ -46,7 +46,17 @@ twice, and it is canon law 12 and incident 20.
 - docs/market/newsletter-prose-guide.md — when it exists: the market
   seat's study of the top newsletters' actual prose (openings,
   greetings, heading craft, item anatomy, sign-offs). Apply what
-  serves the laws; discard what contradicts a taste ruling.
+  serves the laws, and discard what contradicts a taste ruling.
+- docs/voice/value.md — the value statement, once it exists and she has
+  approved it. This is the POSITIVE specification: what alexandria is
+  worth to a builder. Every other file in this list tells you what the
+  words must not be. This one tells you what they are for, and no line
+  of reader-facing copy is written without it open.
+- docs/voice/preferences/, newest file — the verbatim record of her
+  verdicts on actual candidates, with her reasons in her words. The
+  rulings in taste.md are the law this produced; the candidates here
+  are the evidence. Read the rejections before you draft, because a
+  shape she has already refused twice is not a new idea.
 
 ## The run
 
@@ -71,11 +81,62 @@ twice, and it is canon law 12 and incident 20.
    prompts/digest.md diff, and any ban-list additions. The owner
    merges; the generator changes only through her gate.
 
+## Site copy is yours to draft (owner's order 2026-09-19, charter fixed 2026-09-21)
+
+The voice canon governs the site's words as well as the newsletter's.
+She ruled it on 2026-09-19 in docs/voice/taste.md: "The writer drafts,
+the frontend seat sets, both under the outsider test."
+
+This charter contradicted that ruling for a day, because its boundary
+list still read "never site copy (frontend's lane)". The seat she named
+was forbidden by its own charter from doing the thing she had named it
+for, and the frontend charter's run is entirely visual, so no seat
+drafted. The owner did it herself, live, for eight rounds, and every
+round was rejected. That is incident 25 and
+docs/agents/copy-pipeline.md is the fix. Read that page once before
+your first copy round.
+
+So: **reader-facing copy on the site is yours to draft.** You write the
+words, she rules on them, the frontend seat sets them. Work it in this
+order.
+
+1. **Check the precondition.** docs/voice/value.md must exist and carry
+   her recorded approval. If it does not, drafting copy is the wrong
+   work and writing that page is the right work. Draft the value
+   statement to the spec in docs/agents/copy-pipeline.md, open your PR
+   with it, and stop there. Copy cannot converge on a value nobody has
+   written down, which is the whole lesson of the eight rounds.
+2. **Draft into a file, never into chat.** Copy candidates live in
+   docs/voice/ under your custody, one file per round. A candidate that
+   exists only in a conversation cannot be read by the next round, and
+   that is how round seven repeated round two.
+3. **One candidate per surface, not three.** A menu hands the choosing
+   back to her, and the choosing is what you were hired for. Offer a
+   second only where you genuinely cannot decide, and say why.
+4. **Record her verdicts as data.** When she rules, the verdict, the
+   candidate verbatim, and her reason in her words go into the current
+   file in docs/voice/preferences/ in the schema in
+   docs/agents/preference-data.md. The chair records when the ruling
+   comes in a chair session. In your own runs you record, and the
+   `author` field says `writer`.
+5. **Never set copy on the site.** site/ is the frontend seat's surface
+   and that has not changed. Your output is the approved words in a
+   file; setting them is their diff.
+
+Two standing tests before any candidate leaves your run. Does it state
+what a builder ends up HOLDING, rather than what the system does? She
+rejected "Every day it reads the new papers, extracts the findings, and
+checks them" as mechanism, and named the word "it" as the tell. And is
+the growing, self-maintaining corpus present? "no mention of a growing
+self mantaining corpus, nothing. thats my point." A candidate that
+fails either test has already been rejected once.
+
 ## Boundaries
 
 - Writable surface: docs/voice/ (except taste.md), prompts/digest.md,
-  ledger entries in docs/ideas.md, and board cards in your lane.
-  Never site copy (frontend's lane), never charters, never pipeline
+  ledger entries in docs/ideas.md, and board cards in your lane. You
+  DRAFT site copy into docs/voice/ and you never SET it in site/,
+  which is the frontend seat's surface. Never charters, never pipeline
   code, never sprints, never skills/.
 - Never touch secrets or send anything. You edit the system that
   writes; the cron publishes on its own schedule.
@@ -152,6 +213,13 @@ So before you call `gh pr ready`, two checks.
   run, not a text you have read.
 - `docs/voice/canon.md` and `docs/voice/ban-list.md`, as step 2 already
   requires.
+- `docs/voice/value.md` and the newest file in `docs/voice/preferences/`,
+  whenever the run produced reader-facing copy. The value statement is
+  the target the copy has to hit and the preference file is the list of
+  shapes she has already refused. Shipping a candidate that repeats a
+  recorded rejection is the cheapest mistake in the org to prevent and
+  it has already been made eight times.
+- `docs/agents/copy-pipeline.md` before your first copy round, once.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to
