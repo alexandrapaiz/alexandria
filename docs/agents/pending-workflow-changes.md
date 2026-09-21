@@ -53,63 +53,6 @@ page.
 
 ## Pending, queued 2026-09-18 by the ExO agent
 
-### 1. The no-ship tripwire, for all eleven agent workflows
-
-**Why.** Incident 3: runs that worked for dozens of turns, reported
-success, and lost every line at teardown because nothing was pushed. The
-run's own conclusion hid it. The charter half of this fix shipped in the
-same PR as this file, as the "Ship first, then work" rule now in all
-eleven charters. This is the other half, which is the check that does not
-depend on an agent remembering to obey.
-
-**How.** Append to the `steps:` list of every
-`.github/workflows/agent-*.yml`, after the `anthropics/claude-code-action`
-step. Indentation is six spaces for the `- name:` line.
-
-```yaml
-      # Incident 3 (docs/agents/incidents.md): runs that worked for dozens of
-      # turns, reported success, and lost everything at teardown because
-      # nothing was pushed. A green conclusion is not evidence of shipping.
-      - name: No-ship tripwire
-        if: always()
-        run: |
-          git fetch origin --quiet 2>/dev/null || true
-          branch=$(git rev-parse --abbrev-ref HEAD)
-          dirty=$(git status --porcelain)
-          pushed=$(git branch -r --contains HEAD 2>/dev/null | tr -d ' ')
-          pr=$(gh pr list --head "$branch" --state all --json number --jq '.[0].number' 2>/dev/null || true)
-          {
-            echo "### Did this run ship anything?"
-            echo ""
-            echo "- branch: \`$branch\`"
-            echo "- pushed to a remote branch: ${pushed:-NO}"
-            echo "- pull request: ${pr:-none}"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ -n "$dirty" ]; then
-            echo "::warning::Uncommitted changes were left in the sandbox and are lost at teardown."
-            printf '%s\n' "$dirty" | head -20
-          fi
-          if [ -z "$pushed" ]; then
-            echo "::error::This run made commits that were never pushed, so the work dies with the sandbox. See incident 3 in docs/agents/incidents.md and the 'Ship first, then work' rule in this seat's charter."
-            exit 1
-          fi
-          if [ -z "$pr" ]; then
-            echo "::warning::No pull request exists for branch $branch. A run with nothing to ship must say so in a draft PR and close it, rather than ending silently."
-          fi
-```
-
-**What each outcome means.** `git branch -r --contains HEAD` is empty
-only when the run made commits that reached no remote branch, which is
-lost work with no ambiguity, so that case fails the run. A dirty tree and
-a missing pull request are warnings rather than failures, because both
-have innocent explanations, and both are written to the run summary so a
-reviewer sees what shipped without reading logs. Every step of this was
-run by hand against this repository before it was written down, and the
-one case it cannot see is a run that does nothing at all and leaves the
-checkout pristine. That case is the missing-PR warning's job.
-
-**Cost.** One shell step per run, no network beyond a fetch, $0.
-
 ### 1b. The open-routed step must fall back instead of failing the run
 
 **Queued 2026-09-20 by the ExO agent. Incident 23. This is the most
@@ -167,15 +110,18 @@ case belongs to the three tests in
 [model-routing.md](model-routing.md) and to the owner's reading of the
 output.
 
-**One caveat worth applying with it.** The fallback makes the run green
-whenever Claude rescues it, so the failure becomes invisible in
-`gh run list`. Keep it visible by reading the step outcome rather than
-the job conclusion, which is incident 8's lesson again. If item 1's
-tripwire is applied in the same hand, add this line to its summary
-block:
+**One caveat, and it is now a live edit rather than a conditional one.**
+The fallback makes the run green whenever Claude rescues it, so the
+failure becomes invisible in `gh run list`. Keep it visible by reading the
+step outcome rather than the job conclusion, which is incident 8's lesson
+again. Item 1's tripwire was applied on 2026-09-20, so this is simply a
+third edit to the same four files. In the `No-ship tripwire` step, inside
+the summary block, after the `pull request:` line:
 
-```bash
-            echo "- open-routed attempt: ${{ steps.openrouted.outcome || 'not attempted' }}"
+```diff
+             echo "- pull request: ${pr:-none}"
++            echo "- open-routed attempt: ${{ steps.openrouted.outcome || 'not attempted' }}"
+           } >> "$GITHUB_STEP_SUMMARY"
 ```
 
 **Cost.** Two lines per file, $0. It spends a Claude run only on the
@@ -215,6 +161,15 @@ below are checked against the file as it stands today. Whoever applies
 them should still diff before committing, because this page is only as
 fresh as the last ExO run.
 
+**REWRITTEN AGAIN 2026-09-21, because two of the diffs had rotted a
+second time.** Commit 440163a raised the timeout from 60 to 120 and
+renamed the model flag from `sonnet` to `claude-sonnet-5`, five hours
+before the 2026-09-20 run that re-verified this item. That run checked
+the step structure, which is what had broken the first time, and did not
+re-check the values inside the steps. This is incident 26, and the rule
+it produces is below in item 3's note: **re-verify every line of a queued
+diff against the live file, not the part that broke last time.**
+
 **How.** Four edits to `.github/workflows/agent-pm.yml`, plus the prompt
 rewrite in both run steps. The cron change is one character.
 
@@ -231,14 +186,14 @@ rewrite in both run steps. The cron change is one character.
    workflow_dispatch:
 ```
 
-```diff
-   run:
-     runs-on: ubuntu-latest
--    timeout-minutes: 60
-+    timeout-minutes: 75
-```
+**The timeout edit is CANCELLED.** It read
+`-timeout-minutes: 60 / +timeout-minutes: 75` when it was queued. Commit
+440163a raised the PM's timeout to 120 on 2026-09-20, so the anchor no
+longer exists and applying the diff's intent would **lower** the timeout
+by 45 minutes. Nothing to do here. 120 is more than the 75 this item
+wanted.
 
-Both caps move, because either step can be the one that runs. The
+Both turn caps move, because either step can be the one that runs. The
 open-routed step is the one that fires today, so leaving it at 300 would
 make the raise a no-op.
 
@@ -248,9 +203,15 @@ make the raise a no-op.
 ```
 
 ```diff
--          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model sonnet"
-+          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model sonnet"
+-          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
++          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model claude-sonnet-5"
 ```
+
+**The second one's model flag was corrected on 2026-09-21.** It read
+`--model sonnet` through two ExO runs. Commit 440163a renamed it to
+`--model claude-sonnet-5` on 2026-09-20 at 12:34, which was five hours
+before the run that rewrote this item against the live file and did not
+catch it. See incident 26.
 
 And the prompt block, replaced in full **in both steps**. The file
 carries two identical copies, one per run step, and a PM that behaves
@@ -360,6 +321,24 @@ applying an edit. `APP_ID` is already set.
 - **The three remaining short caps** (queued 2026-09-18 evening, applied
   by the chair, verified against the workflow files on 2026-09-19).
   frontend is at 600, pm at 300, security at 250.
+- **The no-ship tripwire, all twelve agent workflows** (queued
+  2026-09-18 as item 1, applied by the chair in commit 440163a on
+  2026-09-20 at 12:34, verified against all twelve workflow files on
+  2026-09-21). Present in every `agent-*.yml`, in a better form than the
+  queued diff: the chair's version came from the company template and
+  ships a `Post run report` step beside it, which posts the run's result
+  to Slack when `SLACK_WEBHOOK_URL` exists and exits quietly when it does
+  not. Three things are worth the next run's attention. The webhook guard
+  is inside the script rather than in the step's `if:`, with a comment
+  explaining that a step cannot read its own `env:` block from `if:`, and
+  that reasoning is correct. The tripwire's `exit 1` means a run can now
+  be **red because it shipped nothing rather than because it crashed**,
+  which is a new failure fingerprint for §2b to diagnose and it is
+  recorded in the learning log. And the change reached twelve live
+  workflows with no smoke run on a throwaway branch, which
+  [runtime-changes.md](runtime-changes.md) requires, though three
+  scheduled runs after it (engineer 14:40, exo 17:15, writer 18:20) all
+  passed, so it worked. The law still binds the chair.
 - **Container configuration for the frontend and engineer seats**
   (applied by the chair 2026-09-19, never queued here). `container:`,
   `credentials:` and `options: --user 1001:1001` against

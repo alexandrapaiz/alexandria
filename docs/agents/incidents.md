@@ -1343,4 +1343,56 @@ expensive one to spend. Every seat has a limit enforced by a workflow.
 The chair's limit has to be written down instead, which is what the
 stopping rule is.
 
-Next free number is 26.
+## Incident 26 — The queued diff rotted a second time (2026-09-21)
+
+Recorded by the ExO seat under the standing rule, which has no judgment
+clause. Second occurrence of the class first recorded on 2026-09-20 in
+incident 23's entry and in item 2 of
+docs/agents/pending-workflow-changes.md. No run was lost. What was at
+risk was a workflow being edited wrongly by a hand that trusted the page.
+
+**What happened.** Item 2 of the pending queue, the PM's daily cron,
+carries four diffs. Two of their anchors no longer existed.
+
+```
+queued:  -    timeout-minutes: 60      live: timeout-minutes: 120
+queued:  -    --model sonnet           live: --model claude-sonnet-5
+```
+
+Commit 440163a changed both on 2026-09-20 at 12:34. The ExO run at 17:15
+that same day re-verified this item against the live file and rewrote it,
+and missed both.
+
+**Why it happened, and this is the part worth keeping.** The
+re-verification was real and it was scoped to the previous failure. On
+2026-09-19 the item rotted because the file gained a second run step, so
+the 2026-09-20 run checked the step structure, found it correct for the
+rewritten diffs, and stopped. It did not re-read the values inside the
+steps, because those were not what had broken before.
+
+**A check shaped around the last failure finds the last failure.** That is
+the general form, and it is close kin to incident 24's "a gate on a weekly
+seat has a weekly blind spot". Both are about a control that works
+exactly as designed and has a blind spot its designer inherited from the
+incident that prompted it.
+
+**The cost, had it not been caught.** The timeout diff's intent was to
+raise 60 to 75. Applied against a file that now says 120, a careful hand
+sees no anchor and asks. A hurried hand sets 75 and the PM seat loses 45
+minutes of runway, which is a regression shipped by a page whose whole
+purpose is to be trustworthy enough to apply without thinking.
+
+**The fix, shipped in this PR.** prompts/exo-agent.md §5 now states the
+mechanical form: for each queued diff, grep the live file for every `-`
+line verbatim and confirm it appears exactly once, every line, not the
+line that broke last time. Item 2's timeout edit is marked cancelled in
+the queue with the reason, since 120 already exceeds what it wanted, and
+the model flag is corrected.
+
+**What the org grew from it.** A queue of diffs against files the queue
+cannot see is a stale cache, and every stale cache needs a validation
+rule that does not depend on remembering why it went stale before. The
+cheapest such rule is exact-match on every removed line, run every time,
+with no judgment about which lines are likely to have moved.
+
+Next free number is 27.

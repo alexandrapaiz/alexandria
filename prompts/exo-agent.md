@@ -335,7 +335,21 @@ never execute, and its prompt block would have rewritten one of two
 identical copies. The queue looked healthy and would have half-applied.
 A rotted item is a finding, it gets rewritten in the same run you find
 it, and the rewrite says in the item itself what changed under it and
-when. The same goes for ordering: when two queued items touch one file,
+when.
+
+**Check every line, not the line that broke last time.** The 2026-09-20
+run rewrote that same item against the live file and still shipped it
+rotted, because it re-verified the step structure, which was what had
+broken on 2026-09-19, and did not re-read the values inside the steps.
+Commit 440163a had already raised the PM's timeout from 60 to 120 and
+renamed its model flag from `sonnet` to `claude-sonnet-5`, five hours
+earlier. So the queued timeout edit would have LOWERED a live timeout by
+45 minutes if a hand had applied its intent. That is incident 26, and the
+mechanical form of the rule is cheap: for each diff, grep the live file
+for every `-` line verbatim and confirm it appears exactly once. An
+anchor that does not match is a rot, whether or not the change it
+describes still makes sense, and a diff whose intent has been overtaken
+is cancelled in the item rather than left to a reader's judgment. The same goes for ordering: when two queued items touch one file,
 say which comes first and what breaks if the owner applies them in the
 other order. Verify your
 writable surface by attempting it rather than by trusting this list, and
