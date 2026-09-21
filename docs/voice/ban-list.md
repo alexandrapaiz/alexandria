@@ -207,3 +207,33 @@ gap that the same collision had left empty (incident 23).
     unchanged?") is enforced as that question, and the enumerated examples
     are evidence that the question is worth asking, never the test itself.
     Added 2026-09-20, incident 25.
+37. The comma that should have been a full stop. "Your agents get the same
+    findings, as files they can load" carries one comma and the owner struck
+    it, in the word "unneeded", with the positive instruction beside it: "i
+    prefer plain short sentences." The tell is not comma density, so counting
+    them misses it. It is a comma doing work a full stop was there to do,
+    and the test is removal rather than a threshold. Take each comma out and
+    read the sentence again. If it wanted to stop, let it stop. Two shapes
+    carry this most often, the three-item list folded into a sentence that
+    was already finished, and the trailing participle that adds a second
+    finding after the first has landed ("..., allowing agents to scale up
+    without the instability that previously limited long-horizon training",
+    2026-W37's opening). A long sentence is still right where one dependent
+    clause earns it, because entry 3 is still on this list and a paragraph
+    of flat short sentences fails that one. Length comes from a clause, never
+    from punctuation. Added 2026-09-21 from her site-copy verdicts of
+    2026-09-20.
+38. The register that is pleased with itself. Her verdict, verbatim, on one
+    rejected paragraph: "sounds millenial/condescending/unserious/vibecoded".
+    Three tells inside it. The cute aside that tells the reader how easy
+    this will be for them, "in words you do not need a PhD to follow". The
+    diminutive that makes the product smaller so it will seem friendlier,
+    "small files". The colon that pauses to gloss a term the sentence has
+    just used, "become skills: small files your agents load". The reason
+    this belongs on a list about issues and not only about the site is the
+    direction the pressure runs. Entry 26 and canon law 12a push every issue
+    hard toward explaining, and explaining is one step from performing the
+    explanation, so the seat enforcing the outsider test is the one most
+    likely to produce this. Hand the reader the word. Never remark on the
+    handing over. Added 2026-09-21 from her site-copy verdicts of
+    2026-09-20.

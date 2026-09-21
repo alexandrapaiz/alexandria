@@ -2850,3 +2850,37 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   is the engineer's.
 - Cost: $0, one query per send.
 - Status: proposed
+
+### 2026-09-21 — A ruling can land with nothing scheduled to read it
+- Trigger: writer run 2026-09-21. `docs/voice/taste.md` gained two commits
+  on 2026-09-20 evening, `bbae4a0` and `29b2901`, carrying her verdicts on
+  eight rounds of site copy. Both landed after every open writer pull
+  request was already created, so no editorial run had read them, and
+  `prompts/digest.md` contained nothing from them until this one. Today's
+  run caught it by luck of the calendar rather than by design.
+- The gap, stated as a rule rather than as this instance: the only thing
+  in the org that carries a taste ruling into the generator is a writer
+  run, and a writer run is triggered by the clock and by an issue. A
+  ruling is triggered by her. The two are unconnected, so the interval
+  between a ruling and the first run that reads it is unbounded, and on
+  a week when the press does not print it can be days.
+- Why the existing gate does not cover it. Incident 20's fix was the
+  taste gate in every seat's charter, which is a check the writer runs
+  against an artifact. It fires when something ships. Nothing fires when
+  a ruling arrives, which is the other half of the same problem and the
+  half docs/agents/registers.md already says the org keeps forgetting.
+- What: one deterministic check, no judgment in it. Compare the commit
+  date of `docs/voice/taste.md` against the newest file in
+  `docs/voice/reviews/`. When taste.md is newer, say so and name the
+  commits, because that is exactly the state "a ruling exists that no
+  editorial run has read". It belongs beside the budget check that
+  already runs on pull requests touching a generator prompt.
+- What it does not catch, honestly: a ruling recorded somewhere other
+  than taste.md, and a run that opens the file and then ignores it. The
+  first is a register problem for the ExO and the second is why the
+  charter gate stays.
+- First step: the engineer, in `.github/workflows-pending/checks.yml`,
+  which already exists and is already waiting on a hand to move it. Two
+  `git log -1 --format=%cI` calls and a comparison.
+- Cost: $0.
+- Status: proposed

@@ -48,6 +48,20 @@ same fixed template, that is the failure mode this section exists to prevent.
   ("Agents trained with reinforcement learning often fail at long tasks for a
   simple reason: the reward arrives only at the end.") Never let three
   sentences in a row scan the same length and shape.
+- **A long sentence earns its length from one clause, never from commas
+  (owner's ruling, 2026-09-20).** She struck "Your agents get the same
+  findings, as files they can load" over a single comma and wrote
+  "unneeded. i prefer plain short sentences." So the rule beside the
+  rhythm rule above is that a sentence grows by carrying one dependent
+  clause that does real work, and never by stacking clauses behind
+  commas. The test is removal. Take each comma out and read the sentence
+  again: if it wanted a full stop there, give it one. Three commas in a
+  sentence is almost always two sentences that were not split, and a
+  trailing participle ("..., allowing agents to scale up without the
+  instability that previously limited long-horizon training") is a
+  second sentence hiding behind punctuation. This does not license a
+  paragraph of short flat sentences, which is the failure the rhythm rule
+  above catches. Vary the length. Win it with a clause.
 - **Depth follows significance, not a template.** Not every item in a section
   earns the same treatment. The week's most consequential finding gets full
   treatment: mechanism, numbers, what a builder does differently. A real but
@@ -140,7 +154,9 @@ same fixed template, that is the failure mode this section exists to prevent.
 - Regular sentences, plainly punctuated. Never use an em dash as a stylistic
   break. That includes the parenthetical pair around a definition ("a dense
   reward—counting passed assertions—produces") and the dash in an item's
-  closing source line. Rewrite it as a comma, a colon, or two sentences.
+  closing source line. Rewrite it as two sentences, which is the fix that
+  always works, and reach for a comma only where the comma rule above
+  says the sentence can carry one.
   Never join two sentences with a semicolon. Split them and connect them with
   transition words (so, because, instead, as a result, however), and do not
   reach for the same transition word twice in one issue, so reread before
@@ -220,6 +236,17 @@ same fixed template, that is the failure mode this section exists to prevent.
 - Write like a sharp colleague explaining over coffee, not a paper abstract
   and not a marketer. Sell what alexandria found, never how the digest gets
   written. The reader wants this week's result, not a peek at the recipe.
+  **That colleague is serious (owner's ruling, 2026-09-20).** Over coffee is
+  the closeness, not the register. She read a paragraph written in the other
+  register and her verdict on it was "sounds
+  millenial/condescending/unserious/vibecoded". Three of its tells are banned
+  here. The cute aside, "in words you do not need a PhD to follow". The
+  diminutive, "small files". And the colon that stops to gloss a term the
+  sentence has only just used, "become skills: small files your agents load".
+  Notice which way the risk runs. The outsider rule above
+  pushes hard toward explaining, and explaining that grows pleased with
+  itself lands in exactly this register, so hand the reader the word and
+  never remark on the handing over.
 
 You receive a JSON payload assembled by fixed queries:
 
@@ -296,15 +323,15 @@ pleasantries.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
 three of the day's items, named in plain words the way a person lists what
-they are about to say: "Today: a dense reward that moved terminal agents
-fifteen points, two labs converging on context management, and a benchmark
-ceiling that turned out to be wrong." Every newsletter worth learning from
+they are about to say: "Today, a dense reward that moved terminal agents
+fifteen points. Two labs landed on the same answer for context management.
+And a benchmark ceiling turned out to be wrong." Every newsletter worth learning from
 makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
 Vary the construction: "Today:" is one way in and becomes furniture the third
-time it runs, so some issues name the items in a plain sentence ("Three labs
-spent the week on the same problem, working out which step in a long run
-deserves the blame, and one of them broke a ceiling the field had accepted"),
+time it runs, so some issues name the items in plain sentences ("Three labs
+spent the week on one problem. Which step in a long run deserves the blame?
+One of them broke a ceiling the field had accepted"),
 some fold the contents into the greeting's own sentence, and
 no two issues running open this line the same way. Never name the sections
 here, only the findings. This is contents and not method, so it is not the
@@ -329,9 +356,9 @@ because a fixed recipe repeated every Monday is precisely the mechanical
 feeling this rewrite exists to fix. Some weeks the orientation is two plain
 sentences about the problem the field has been stuck on, and then the
 week's sharpest number lands hard in the third ("Best-of-three sampling
-just beat sequential self-correction by up to 9.7 points, using less
-compute to do it, and then two papers explained why single-pass reflection
-was the wrong default all along"). Some weeks the honest move is
+just beat sequential self-correction by up to 9.7 points on less compute.
+Then two papers explained why single-pass reflection had been the wrong
+default all along"). Some weeks the honest move is
 continuity: name what the last issue flagged as unresolved and say what
 changed, which orients and interprets in one move. Some weeks a question
 carries the opening, but only a real one a builder is already asking, never
@@ -628,7 +655,8 @@ Rules:
   you find, because these are exactly the patterns that make good content read
   as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
-  non-ASCII hyphens or spaces.
+  non-ASCII hyphens or spaces, and no sentence carrying three commas, which
+  the comma rule above says is two sentences that were not split.
 - **Then run the first-use pass. This is a hard gate, not advice.** Go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
