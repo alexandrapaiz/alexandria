@@ -2770,3 +2770,400 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
 - Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
 - Status: proposed
+
+## Engineer agent findings (2026-09-19, daily cadence run)
+
+### 2026-09-19 — Craft scan: TLDR AI (tldr.tech/ai)
+
+- Scanned: the live 2026-09-18 issue, fetched as a signed-out visitor.
+  Chosen because today's build made alexandria daily, and TLDR AI is the
+  daily newsletter at scale in this category (~1.1M subscribers on the AI
+  edition, docs/market/landscape.md). Sprint item 2 also benchmarks our
+  prose against it, so a structural read of the same product is worth
+  having on the record first.
+- Worth stealing, filed as its own entry below: **the subject line is the
+  table of contents, not a theme.** That issue's subject was "Claude
+  Projects v2, Google family agent, ..." — the day's two or three actual
+  items, named. A reader decides in the inbox whether today is worth four
+  seconds. Ours is one editorial title, which is right for a weekly
+  synthesis and weak for a daily competing against thirty other emails a
+  month.
+- Also cheap and real: **every item carries its cost to the reader**, a
+  "(12 minute read)" annotation on all 26 links in that issue, from "(1
+  minute read)" to "(125 minute read)". The reader knows what a click
+  costs before spending it. Our deep-read flags say a paper is worth
+  reading and never say how long it takes.
+- Where alexandria is better, and it is not close on this axis: TLDR
+  reports what companies announced, and once an item appears it is never
+  revisited. There is no mechanism in the product for a claim to be
+  withdrawn, and nothing in that issue's five sections could carry one.
+  Alexandria's "Left behind" section exists precisely to say that
+  something reported earlier is now wrong, backed by `contradicts` edges
+  and the `deprecated_claims` view rather than an editor remembering.
+  A daily product that can retract is a different product from a daily
+  product that accumulates.
+
+### 2026-09-19 — Name the day's items in the subject line, not the theme
+
+- Trigger: today's craft scan of TLDR AI (above), plus reading
+  `send_newsletter()` in `pipeline/weekly.py` while making it daily. The
+  subject line is the issue's own H1, which the digest prompt requires to
+  be "3-7 plain words" naming the dominant current. At one issue a week
+  that title is an asset. At six issues a week it is six near-identical
+  abstractions arriving in the same inbox, and the reader learns to
+  ignore the sender rather than the issue.
+- What: for daily issues only, build the subject from the items the issue
+  actually contains rather than from its title. The daily prompt already
+  produces bold one-line headlines per item, so the mechanical version is
+  to take the first two, trim each to a few words, and join them:
+  "alexandria: smaller models catch long code edits, RLHF reward hacking
+  measured". Keep the H1 as the in-body title. Keep the weekly's subject
+  exactly as it is, because a synthesis genuinely has one theme.
+- First step: one session. Add a `subject_for(body, kind)` helper next to
+  `add_masthead()` in `pipeline/weekly.py`, parse the item headlines out
+  of the markdown, and cover it in `tests/test_daily_digest.py` against a
+  fixture issue. No model call, no schema change, no deploy beyond the
+  one the daily cadence already needs.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — A read-time estimate on every paper the digest links
+
+- Trigger: the same scan. TLDR labels all 26 links in an issue with a
+  read time; alexandria's "Read these yourself" section tells you a paper
+  earned a full read and never tells you what that costs. A reader
+  deciding at 7am between a 4-minute paper and a 72-minute one is making
+  a real decision we currently hide.
+- What: estimate reading time per paper and render it in the source line.
+  We already store enough to do it without a new fetch: `papers` carries
+  the abstract, and the distill step has had the full text in hand. An
+  honest first version is a word-count-based estimate over the stored
+  text at 200 words per minute, rounded to five minutes, shown only where
+  we actually have the text and omitted silently where we do not. Never
+  guess a number we cannot support; a missing label is better than a
+  wrong one.
+- First step: check what fraction of `papers` rows have enough stored
+  text for an estimate. If it is most of them, add the column and render
+  it. If it is not, this entry is answered and closed rather than built.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — Nothing records whether an issue actually reached anyone
+
+- Trigger: building the daily cadence. `send_newsletter()` swallows every
+  failure by design, and correctly so, because the `digests` table is the
+  record of record and a Gmail hiccup must never fail the run. But the
+  result of the send exists only as a line in a Modal log: "sent
+  2026-09-19 to 11 subscribers via Gmail", or a caught exception. The
+  `digests` row looks identical whether the issue reached eleven people
+  or nobody. On a Monday-only cadence a silent failure costs one issue
+  and the owner notices within a week. On a daily cadence it can run for
+  days, and the product's whole premise is that it arrives.
+- What: three columns on `digests` — `sent_at timestamptz`,
+  `recipients int`, `send_error text` — written by the same code path
+  that already computes all three. Then the failure is queryable
+  (`select week from digests where sent_at is null`) instead of buried,
+  and it is one `sql_query` call away from any MCP client, including the
+  owner's.
+- Why it is not in today's PR: today's change already adds a column and
+  needs a schema run from the owner before the first daily fires. Two
+  migrations in one dispatch is how the ordering gets fumbled. This is
+  the next session's first ten minutes.
+- First step: one session. `alter table digests add column if not
+  exists ...` in `db/schema.sql` following the file's existing migration
+  convention, return the counts from `send_newsletter()` rather than a
+  string, and write them in the same transaction as the body.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — "Reply to unsubscribe" does not survive six issues a week
+
+- Trigger: reading `send_newsletter()`'s footer while changing the
+  cadence: "You're receiving this as a friend of alexandria. Reply to
+  this email to unsubscribe." That is a fair deal at four issues a month
+  from a friend. At roughly thirty, an unsubscribe that requires a human
+  to read a reply and hand-edit a `subscribers` row is a promise we
+  cannot keep at the speed the reader expects, and the reader's
+  alternative is to mark it spam. Gmail sender reputation is the entire
+  deliverability strategy at this stage (the function's own docstring
+  says so), and spam complaints are what destroys it.
+- What: two parts, and the second is the one that matters. First, a
+  real unsubscribe the reader can complete alone, which needs a URL and
+  therefore waits on the domain pointing at Vercel. Second, and
+  available immediately: a frequency choice. `subscribers` already has a
+  `tier` column and the pattern for adding one more; a `cadence` column
+  of 'daily' or 'weekly' lets a reader keep the Monday synthesis and
+  drop the dailies instead of leaving entirely. Filter the send by it.
+  Everyone existing defaults to 'daily' so nothing changes for them
+  without their asking.
+- Note this is also the honest answer to a question the daily cadence
+  raises on its own: some readers want the week, not the day, and the
+  product should be able to say yes to that rather than treating
+  unsubscribe as the only exit.
+- First step: the `cadence` column and the send filter, one session.
+  The unsubscribe endpoint is a second, separate session once the domain
+  resolves.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — The site and llms.txt still say "weekly" everywhere (follow-up, owner-directed)
+
+- Trigger: the owner's dispatch of 2026-09-19 ordered the daily cadence
+  built and ordered this copy change held back deliberately, so that copy
+  follows reality rather than announcing it. Filed here as the card that
+  makes sure it does not get forgotten once reality catches up.
+- The full inventory, checked this run, so the next session does not have
+  to re-find it:
+  - `site/app/library/page.jsx:21` — "The weekly digest is free to read
+    and nothing in it is held back."
+  - `site/app/library/page.jsx:26` — "The first issue is on its way.
+    Check back on Monday."
+  - `site/app/library/[week]/page.jsx:39` — "each Monday."
+  - `site/app/pricing/page.jsx:11` — "The weekly digest stays free and
+    arrives in full."
+  - `site/app/pricing/page.jsx:19` — "every Monday"
+  - `site/app/pricing/page.jsx:21` — "The weekly digest, by email"
+  - `site/app/llms.txt/route.js:21` — "/library: every weekly issue, free
+    and in full."
+  - `site/lib/entitlement.js:5` — a comment describing the weekly digest
+    as the free surface. Accurate about what is gated, stale about
+    cadence.
+- `README.md` carries the same staleness in four places, and it is held
+  back for the same reason rather than because the owner's order named
+  it: `README.md:54` and `:147` (both Mermaid diagrams, "Weekly job, Mon
+  15:00 UTC"), `:92` ("then the Monday digest"), and `:252` ("Monday
+  cron emails each issue"). These describe the deployed pipeline, and
+  the deployed pipeline really is Monday-only until the owner runs the
+  two commands in docs/sprints/pending.md. Editing them today would make
+  the README describe something that is not running yet, which is the
+  same failure as the site copy in the other direction.
+- There is a second, larger half to this that is not a copy edit at all.
+  `site/lib/content.js` filters issues with `/^\d{4}-W\d{2}$/`, so daily
+  issues keyed by date are invisible to the site by construction. That
+  is deliberate and safe today, and it is exactly why this PR could
+  change the pipeline without touching the site. But "the archive shows
+  every issue" stops being true the moment dailies exist, and the
+  archive's shape is a design question (a dated list under each week? a
+  separate daily feed?), not a find-and-replace. That belongs to the
+  frontend seat, not to a copy sweep.
+- First step: the copy edits are one session and should wait until the
+  owner has run the two Modal commands in docs/sprints/pending.md and
+  seen a daily issue actually arrive. The archive question is a separate
+  frontend card.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-19 — Proposal: a read-only Neo4j mirror of the claims graph, so the graph can be seen (owner-directed)
+
+- Trigger: the owner's dispatch of 2026-09-19, which asked for this as a
+  proposal and explicitly not as a build, and the backlog card of
+  2026-09-18 (docs/backlog.md) that named it. The underlying want is
+  plain: the claim graph is the product's actual asset and nobody has
+  ever looked at it. It exists as rows in `claim_links` and as recursive
+  CTEs. You cannot see a shape that way.
+- **What this is, and what it is emphatically not.** Neon Postgres
+  remains the single source of truth for every claim, every edge, and
+  every confidence score. Nothing migrates. Nothing is ever written in
+  Neo4j and read back. The mirror is a derived, disposable picture of the
+  graph, on the same footing as a chart: if it were deleted tomorrow the
+  system would lose nothing but a view. This is consistent with ADR-10,
+  which chose relational storage because the graph is small and derived
+  and rebuildable from silver at any time. That same reasoning is what
+  makes a mirror safe: rebuilding it is the normal operation, not the
+  recovery path.
+- **The export sketch.** A full replace, nightly, never incremental:
+
+  ```
+  # 1. read from Neon (the four queries are already the shape we want)
+  claims       -> id, claim, topics, paper_id, created_at
+  papers       -> id, title, url, tier, published_at, institutions
+  claim_links  -> from_claim, to_claim, relation, confidence, created_at
+  #    plus one marker row: the export's own timestamp
+
+  # 2. wipe and reload, in one session, via the neo4j Python driver
+  MATCH (n) DETACH DELETE n
+  UNWIND $papers AS p MERGE (:Paper {id: p.id}) SET ...
+  UNWIND $claims AS c MERGE (:Claim {id: c.id}) SET ...
+  UNWIND $claims AS c
+      MATCH (c2:Claim {id: c.id}), (p:Paper {id: c.paper_id})
+      MERGE (c2)-[:FROM]->(p)
+  UNWIND $links AS l
+      MATCH (a:Claim {id: l.from_claim}), (b:Claim {id: l.to_claim})
+      CALL apoc.merge.relationship(a, toUpper(l.relation), {}, {confidence: l.confidence}, b)
+  #    relation is one of supports / refines / contradicts, so three
+  #    plain MERGE statements work too and avoid depending on APOC
+
+  # 3. one node nobody can miss
+  MERGE (m:Mirror {id: 'meta'})
+      SET m.generated_at = $now, m.source = 'neon', m.claims = $n_claims
+  ```
+
+  At today's corpus size this is seconds, and a wipe-and-reload means the
+  mirror can never accumulate divergence: it is either last night's exact
+  graph or it is obviously broken.
+- **The cost of drift, which is the real cost here.** The money is $0 and
+  the risk is not financial.
+  1. *Staleness is structural.* The mirror is up to 24 hours behind by
+     design. Anyone reading it is reading yesterday. That is fine for
+     seeing shape and wrong for answering "how many contradicts edges do
+     we have", which is a question with a different answer in the two
+     systems on any given afternoon.
+  2. *A failed export is invisible.* If the nightly job fails, the mirror
+     does not go blank, it silently keeps showing an older graph, and it
+     looks exactly as trustworthy as a fresh one. This is why the
+     `Mirror.generated_at` node above is not a nicety: the picture must
+     carry its own age, and anyone reading it should be in the habit of
+     looking. A wipe-and-reload makes every failure a total failure
+     rather than a partial one, which is the safer failure to have.
+  3. *Two answers to one question is the actual danger.* The moment a
+     decision gets made from the picture rather than from `sql_query`,
+     there are two sources of truth regardless of what any document says.
+     The mitigation is discipline plus the credential: the export writes
+     with one account, every human and agent reads with a read-only one,
+     so nobody can annotate the mirror into something Neon does not know
+     about.
+  4. *Schema drift is the quiet one.* Add a column to `claims` or a
+     fourth `relation` value and the export keeps running and keeps
+     omitting it. Whatever ships should fail loudly on an unrecognised
+     relation rather than skipping the edge.
+- **What it would cost to run.** AuraDB Free is $0 and needs no card,
+  which is why it is the right tier to evaluate; it is still a new
+  external account and a new credential, so it is the owner's decision
+  and not an action any seat takes. Three things to verify before
+  committing rather than assume: the free tier's node and relationship
+  ceilings (documented around 200k nodes / 400k relationships, far above
+  our corpus, but confirm current numbers); that free instances pause
+  after a few days idle, which a nightly export should itself prevent but
+  which should be tested rather than hoped for; and which visualization
+  actually comes with the free tier now that Bloom has been folded into
+  Aura's Explore, since "the owner can open it and see the graph" is the
+  entire point and a tier without a visualizer delivers none of it.
+- **One constraint that shapes the first step.** There is no sixth Modal
+  cron slot. The free plan caps scheduled functions at five and all five
+  are taken (ingest, distill, triage, interpret, and the digest loop this
+  PR just made daily). So the export cannot have its own schedule. It
+  rides inside the digest function, after the issue is written and sent,
+  wrapped so that an export failure can never affect the newsletter. That
+  ordering is not a workaround, it is the correct priority: the issue is
+  the product and the mirror is a convenience.
+- First step, if accepted: the owner creates the AuraDB Free instance and
+  adds one Modal secret holding the connection URI and a read-only
+  password. Then one session writes the export as a plain function in
+  `pipeline/weekly.py`, called last in `digest()` inside its own
+  try/except, plus a test that the export payload builder fails on an
+  unknown relation value. The visualization is then the owner opening
+  Aura and looking, which needs no code at all.
+- Cost: $0 in money. A new external account and one new secret, which is
+  the owner's call. Charter boundary respected: this is a proposal, not
+  an action, and nothing in this PR creates an account or touches a
+  secret.
+- Status: proposed
+
+## Engineer agent findings (2026-09-20, pre-send quality gate run)
+
+### 2026-09-20 — Craft scan: AlphaSignal (alphasignal.ai)
+
+- Scanned: the live front page, signed out, 2026-09-20. Chosen because
+  today's build is a quality gate on generated prose and AlphaSignal
+  publishes the most machine-shaped daily in the category, so its
+  headline discipline is the thing most worth reading closely.
+- Worth stealing, filed as its own entry below: **every headline carries
+  the number.** "Cuts speech translation lag to 2.3 seconds", "humbles
+  every frontier agent below 20 points", "10x cheaper than V4 Pro". The
+  finding and its magnitude are both in the line a reader scans, so no
+  item needs to be opened to be ranked. alexandria's titles state the
+  finding and leave the figure inside the body.
+- Second thing worth noting, not yet an entry: every item is tagged with
+  its actor and its topic ("Qwen - Audio - 1 day ago", "Vals AI -
+  Benchmarks"), so a scanning reader sees who did it and in what domain
+  before reading a word of prose. `gather()` already pulls institutions
+  and topics for every claim and the issue prints neither.
+- Where alexandria is better, and it is structural: AlphaSignal ranks by
+  upvotes. The front page reads 1,199, 3,005, 5,324 beside the items, so
+  the ordering is attention. Nothing in that product can say a result was
+  overturned, because a popular item stays popular after it is wrong.
+  alexandria ranks by claim-graph edges and has a slot whose whole job is
+  to report what newer evidence retired, backed by `contradicts` edges
+  rather than by an editor remembering. Their most-upvoted item today is
+  a $2B business announcement, which is also the item with the least
+  research content on the page.
+
+### 2026-09-20 — Monday's send is not gated until the owner deploys (engineer agent)
+- Trigger: sprint item 4 asks for the checklist to be applied to the
+  issue Monday's cron actually sends. The gate is built, tested and
+  merged into the pipeline, and none of that reaches the cron. Modal
+  deploys from a local checkout and this repository has no CI deploy job,
+  so a merged `pipeline/weekly.py` is text until someone runs the
+  command. The Monday 2026-09-21 issue sends at 15:00 UTC.
+- What: two commands, from the repo root, in this order, before 15:00 UTC
+  on Monday. `modal run pipeline/db_setup.py::apply_schema` adds the
+  `digests.kind` column, then `modal deploy pipeline/weekly.py` installs
+  the daily schedule and ships the gate into the image. Then one manual
+  smoke run, `modal run pipeline/weekly.py --kind daily`, which is what
+  docs/agents/runtime-changes.md requires: the next cron is never the
+  first execution of new machinery. The manual run prints the gate's
+  report and writes a real daily issue, so it proves the environment and
+  the seat's work in one.
+- First step: the commands above. If they do not happen before Monday
+  15:00 UTC, the issue sends ungated and the checklist applies to it
+  retroactively, by hand, with `python3 tools/check_digest_quality.py`.
+- Cost: $0. No new service, no new secret.
+- Status: urgent
+
+### 2026-09-20 — The headline carries the number (engineer agent)
+- Trigger: today's craft scan, above. AlphaSignal's headlines state the
+  finding and its magnitude in the same line. alexandria's new title rule
+  (one finding, one line, no date) fixed the furniture problem but says
+  nothing about the number, and the pre-send gate's `bare-number` rule
+  currently polices figures inside the body while the title goes
+  unchecked.
+- What: a gate rule, `headline-without-the-number`. When the issue's lead
+  item reports a quantitative finding and the H1 states that finding
+  without its figure, warn. The check is decidable: the lead item is the
+  first item in the first section, a quantitative finding is a percentage
+  or a labelled magnitude in its first two lines, and the test is whether
+  any of those figures appears in the title. It stays a warning, because
+  a day whose lead finding is qualitative must still be allowed a
+  headline.
+- First step: one rule in `tools/check_digest_quality.py` and one test
+  case in `tests/test_digest_quality.py`, against 2026-W37, whose title
+  was "alexandria digest" and whose lead item was a 64 percent result.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-20 — Store the gate's verdict beside the issue it judged (engineer agent)
+- Trigger: running the new gate against 2026-W37 produced 76 blocking
+  findings and 25 warnings, and nothing anywhere records that number. The
+  next issue's count is the only evidence that the writer seat's prompt
+  work is landing, and it will be printed once into a Modal log and lost.
+  The OKR benchmark is scored by hand on five axes; this is the one axis
+  with a machine reading already available.
+- What: a `quality` jsonb column on `digests`, written by the send path
+  with the gate's rule-by-rule counts, the tool's own version, and
+  whether the issue was held. Then the trend is a query rather than an
+  archaeology exercise, and the site can eventually render a validation
+  receipt per issue the way sprint 2026-09-28 wants for skill pages.
+- First step: the column in `db/schema.sql`, the write in
+  `hold_for_quality()`'s caller, and one test that a held issue records
+  its findings rather than silently storing nothing.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-20 — The checks nobody runs: tools/ has no CI (engineer agent)
+- Trigger: today added the second tool to `tools/` whose value depends on
+  someone remembering to run it. `check_issue_citations.py` had been
+  broken since some point before this morning and nothing noticed,
+  because nothing runs it. The pre-send gate avoids that fate only
+  because it was wired into the pipeline, which is the point
+  docs/agents/registers.md makes about artifact-side gates.
+- What: `.github/workflows-pending/checks.yml` already exists and already
+  runs the budget guard and the test suite. It needs two more steps, the
+  quality gate against the newest issue in `site/content/issues/` and the
+  citation checker against the same file, and then it needs to be moved
+  into `.github/workflows/`. Agent tokens cannot write workflow files, so
+  the move is the owner's and only the owner's.
+- First step: the owner moves the file. The engineer can write the two
+  steps into the pending copy in the same PR that proposes it, which is
+  what this entry asks for permission to do.
+- Cost: $0. GitHub Actions minutes on a public repository.
+- Status: proposed

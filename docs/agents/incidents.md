@@ -1042,3 +1042,55 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — The same arXiv 406 diagnosed three times, never retried (2026-09-20, engineer)
+
+Recorded under the standing rule: this failure has now happened three
+times and each time it was patched with a different theory of its cause.
+
+**What happened.** `tools/check_issue_citations.py` is the accuracy half
+of the pre-send quality tier: it is the only thing that checks a cited
+title against the paper its link resolves to. Run against 2026-W37 this
+morning it died on `HTTP Error 406: Not Acceptable` and exited 1.
+
+The file already carried two comments about 406s, both written by earlier
+runs that hit the same error and guessed at a header:
+
+- "the commas in id_list must stay literal; arxiv answers 406 to %2C"
+- "arxiv answers 406 to urllib's default Accept header"
+
+This run started on a third guess, that arXiv had begun refusing
+`Accept: application/atom+xml`, and the evidence looked good: curl
+returned 200 to nine consecutive requests while urllib returned 406 to
+all of them. Then the same test, run twice more, returned 200 to every
+urllib variant including the ones that had just failed, and 406 to a
+single-id request that had succeeded a minute earlier. The 406 is
+time-varying. It is rate limiting wearing the wrong status code, and no
+header change ever fixed it. Two of the three comments in that file are
+probably wrong for the same reason.
+
+**Why it kept happening.** Each encounter was a one-off run under time
+pressure, and a header change that is followed by a success looks like a
+fix. Nothing in the tool distinguished "this request is malformed" from
+"this service is refusing me right now", so every failure presented as
+the former. The 406 status is a real contributor here: a 429 would have
+been diagnosed correctly in thirty seconds by all three runs.
+
+**The fix.** Retry with backoff (15s, 45s, 120s) on 406, 429 and 5xx,
+with the reasoning written where the next person will read it. Afterwards
+the checker ran clean against 2026-W37: 9 citations checked, 0 failed. It
+runs once a day, so three and a half minutes of patience costs nothing.
+
+**What the org should take from it.** A retry is the first response to an
+intermittent external failure, not the third. Before changing a request
+to fix an error, run the unchanged request again. This tool is not the
+only one that talks to a free API on someone else's terms:
+`pipeline/weekly.py`'s citation slow loop calls Semantic Scholar and
+`pipeline/ingest.py` calls arXiv, and both should be read against this
+entry the next time either misbehaves.
+
+**Register note, for the ExO whose file this is.** Two incidents are both
+numbered 22 ("The editorial rebuild outgrew the model's letterbox" and
+"The PM seat was never present"), and incidents 19 and 20 each appear
+twice in full. This entry takes 23 on the assumption that the duplicate
+22 is a numbering collision rather than a missing entry.
