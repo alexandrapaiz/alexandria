@@ -48,11 +48,11 @@ any seat to check an artifact against the file before 2026-09-19.
 | `docs/design/ban-list.md` | frontend | frontend appends new tells | frontend, check every change before shipping | enforced, and the model for the rest |
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | was GAP, closed |
-| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer, frontend, security, ExO | was GAP at the seats that make runtime changes |
+| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily, plus frontend, security and ExO before their own edits | closed 2026-09-20, the daily gate is incident 23's fix |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | enforced |
-| `docs/agents/model-routing.md` | ExO | nobody since 2026-09-17 | named by no charter, including the ExO's | was GAP, now in the ExO read list |
-| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, verified every run | enforced |
+| `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | closed, and see the 2026-09-20 sweep |
+| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, every queued diff re-verified against the live file each run (strengthened 2026-09-20) | enforced |
 | `docs/agents/registers.md` | ExO | this file | ExO §3d, the register-gate sweep | enforced |
 | `docs/agents/org-chart.md` | PM | PM maintains | PM §1b | enforced |
 | `docs/agents/frameworks.md` | PM | PM §1e | PM §1e | enforced |
@@ -136,3 +136,61 @@ correct output, not a gap.
 This is a cheap invariant on purpose. It is one grep, it needs no
 tooling, and it makes the failure visible in the file itself rather than
 in a postmortem written after the owner repeats herself.
+
+
+## The 2026-09-20 sweep
+
+Both detection commands were run. Every file under `docs/agents/` now
+carries an `Enforced at:` line. The eight files without one are all
+under `docs/voice/` and `docs/design/`, which is the state this page
+recorded on 2026-09-19 and explained then: those are the writer's and
+the frontend's surfaces, the enforcement lives in their charters where
+enforcement belongs, and the marker line is a ledger request rather than
+an edit this seat may make. That request is still open after a day. It
+is cosmetic and it stays a request.
+
+The charter-count command produced one finding this run and it is the
+kind this page warned would look healthy.
+
+### `docs/agents/model-routing.md`, one charter, and one day too late
+
+The count said 1, which is this seat's own charter, and 1 was the
+correct and intended number. The file still failed. It was added to the
+ExO read list on 2026-09-19 with the note that the next run would
+"either use it or retire it", and the next run, this one, opened it and
+found it describing a routing policy the org had already abandoned.
+Four seats had been moved to a third-party endpoint eighteen hours
+earlier and the register that owns routing said they ran on Sonnet.
+
+So the artifact-side gate existed, it fired on schedule, and it still
+let a day pass with the register lying. **A gate on a weekly seat has a
+weekly blind spot**, which is the same sentence as the cadence test on
+docs/agents/unowned-duties.md, arriving here from the other direction.
+Recording is not enforcing, and enforcing weekly is not enforcing daily.
+This page should carry a cadence column eventually. It does not yet,
+because the honest fix for most rows is not a faster ExO but a different
+owner, and picking those owners is a run's worth of work on its own.
+
+**For the next run:** add a cadence column to the map above, comparing
+each register's artifact-side gate against how fast the thing it governs
+actually changes. Routing changed in 18 hours. The voice canon changes
+when the owner rules, which is also fast. The turn-caps table changes
+monthly, and a weekly gate is ample. The column will separate them.
+
+### `docs/voice/prose-benchmark-2026-09-19.md`, named by zero charters
+
+New since the last sweep, from the writer seat's PR #36, and it has no
+`Enforced at:` line and no charter names it. Before filing it as a gap,
+apply this page's own reading note: not every file under a register
+directory is a register. A benchmark is a measurement taken on a date,
+which makes it evidence rather than a rule, and evidence is finished in
+the same way a plan is finished. **Classified as an artifact, not a
+gap.**
+
+One question goes to the writer seat as a ledger note rather than a
+charter edit, because it is that seat's call to make. If the intent is
+to re-score the digest against that benchmark periodically, then the
+benchmark becomes a standard and needs a line in the writer charter
+naming when it is re-run. If it was a one-time read of the competition,
+it is done and correctly unnamed. Nobody outside that seat can tell
+which from the file.

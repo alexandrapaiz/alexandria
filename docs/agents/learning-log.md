@@ -1453,3 +1453,184 @@ charter and not the workflow, this run made the problem worse.
   01:58, both already diagnosed in PR #39. Two runs were in flight, the
   writer's scheduled 18:15 and this one, so their outcomes are the first
   thing to read in `gh run list`.
+
+## 2026-09-20 — ExO run, the first one the cron started
+
+Branch `exo/2026-09-20`, pull request #61. Read this before you do
+anything else, successor, because three of its findings are about the
+audits you are about to run rather than about the org.
+
+### What was different about this run
+
+It began at 17:15 UTC on a Sunday because the cron fired, not because
+the owner dispatched it. That is the first time this seat has woken on
+its own. Every previous ExO run in the log was a `workflow_dispatch`
+with instructions the owner typed. Note it, because it is the cheapest
+available evidence that the machinery works unattended.
+
+### What was observed
+
+The week's fleet: 40 runs in the window, one failure since the last ExO
+run. Open pull requests are down from seventeen to six, which is the
+single biggest change in the org's state and it happened because the
+owner merged rather than because the seats slowed. The binding
+constraint the last entry named has loosened.
+
+The failure was the PM seat, run 35493791740, dispatched 2026-09-20 at
+06:16 UTC. It is now **incident 23** and it is the spine of this run.
+
+### The finding: a routing change with no smoke run, and the seat that met it
+
+On 2026-09-19 at 18:49 UTC, 35 minutes after the previous ExO run
+started, the chair merged PR #49 and put four seats behind a third-party
+model endpoint. Whenever `OPENROUTE_API_KEY` is set, the pm, market, okr
+and finance workflows run `--model kimi-k2.7-code` against
+`OPENROUTE_BASE_URL` instead of Sonnet.
+
+Eleven hours later the PM seat became the first thing in the org to
+execute that path, on real work, and returned `is_error: true` at
+`num_turns: 1` with `total_cost_usd: 0` and an empty `modelUsage`. No
+model ever answered. The seat made no commit, pushed no branch, opened
+no pull request.
+
+Three things follow, and the second is the one to carry forward.
+
+**One. The model flag is a runtime change and the law was not followed.**
+docs/agents/runtime-changes.md names `claude_args`, the model flag, and
+any new secret a run reads. This commit touched all three. The ladder
+says smoke one seat on a throwaway branch with the narrowest possible
+task before a real dispatch. `gh run list` shows no smoke run of any
+routed seat between the commit and the failure. The law binds the chair
+as well as the seats, so this is not a seat deviating. It is the law's
+detector running too slowly.
+
+**Two, and this is the lesson. Ship-first cannot save a run that dies
+before turn two.** Every no-ship protection this org has built (the
+draft pull request, the early commit, the queued tripwire) assumes the
+seat gets to act. A broken environment breaks that assumption. Incident
+3 taught the org to ship early. Incident 23 teaches that shipping early
+is not a defense against your own runtime. It is the reason runtime
+changes get smoked separately instead of being trusted to a seat's
+discipline.
+
+**Three. The fingerprint, so the next diagnosis is a lookup.**
+`num_turns` at 0 or 1, `total_cost_usd` exactly 0, `modelUsage` empty,
+`is_error` true, after a duration long enough to be a timeout. That is
+an endpoint failure, not an agent failure. Do not re-read the charter,
+do not raise the cap. The register now holds all three known flavors of
+result-block failure side by side.
+
+### The second finding: a queued diff rots
+
+Charter §5 says this seat verifies each queued item against the live
+workflow files every run. This is the first run in which that check paid
+for itself.
+
+Item 2 of pending-workflow-changes.md, the PM's daily cron, was written
+on 2026-09-19 against a workflow with one run step. Commit 609d7cc gave
+that file a second step four hours later. The queued diffs then pointed
+at lines that exist twice or not at all: the cap raise would have
+patched the Sonnet step that can never execute while the secret is set,
+and the prompt replacement would have rewritten one of two identical
+copies. The queue looked healthy. It would have half-applied, silently,
+by a hand that trusted it.
+
+The item is rewritten against the live file and says so in its own text.
+The charter now spells out the check, including the ordering rule: when
+two queued items touch one file, say which comes first and what breaks
+in the other order. Here it matters. Applying the daily cron without the
+fallback would turn one failed PM run a week into seven.
+
+### The third finding: a row that said assigned and was not
+
+The §3b re-verification is supposed to catch a row that has gone false.
+It caught one that was born false, one day old.
+
+"Upstream compromise is in the threat model" was moved to assigned on
+2026-09-19 on the strength of incident 19's recommendation. The security
+charter was then grepped for `upstream`, `supply chain`, `Hugging Face`,
+`dependency` and `third party`, and contains none of them. Its only
+mention of incident 19 sits inside the "Seen and not mine" boilerplate,
+which is exactly the false-positive reading registers.md warns about.
+
+**The rule, restated because this page now has two instances of it:** a
+row moves to assigned when the charter edit merges, never when the
+incident that recommends it is written. Those are usually different pull
+requests. The words are in prompts/security-agent.md §2 now.
+
+### What changed, and the three improvements
+
+1. **Incident 23 registered, routing described honestly, failure made
+   survivable.** docs/agents/model-routing.md had gone stale on the day
+   it entered the read list, and now describes the routing that exists
+   plus the three cheap tests that decide whether it stays. Item 1b of
+   pending-workflow-changes.md gives the open-routed step
+   `continue-on-error` and gates the Claude step on its outcome, so a
+   routing experiment costs a retry instead of a run.
+2. **The rotted queue item rewritten**, and charter §5 strengthened so
+   the next run re-verifies before it queues.
+3. **The detection gap closed with an existing daily seat.** The
+   engineer charter gains step 0, the machinery diff, run daily. This
+   seat keeps the weekly pass as backstop and pattern-finder. A cadence
+   gap does not always need a new cron. Sometimes it needs a different
+   owner, and the org already had one awake every morning.
+
+Also: security's upstream duty written into words, the register map
+swept, turn caps re-checked for the two seats whose duties grew (both
+clear, engineer at 82 peak against a cap of 200 and no headroom left),
+the README corrected where it claimed every seat runs Claude, and two
+merged branches deleted.
+
+### The number this seat tracks, §2c
+
+Seven dispatches since the last ExO run, at 19:34, 19:43, 19:45 and
+20:19 on 2026-09-19 and 06:10, 06:10 and 06:16 on 2026-09-20. Actor and
+triggering actor on every one: `alexandrapaiz`. Instructions authored by
+her, every time.
+
+**Seven of seven, and the number cannot fall yet.**
+docs/sprints/dispatch-queue.md does not exist, because no PM standup has
+run, because the cron is still `35 10 * * 1`. The presence gradient is
+unchanged since 2026-09-19 and it is blocked on one character in one
+file that no seat may edit. Say this plainly to the owner every run
+until it changes.
+
+### What the next run must check first
+
+- **Did Monday 2026-09-21 10:35 UTC happen, and how.** The PM's ceremony
+  cron fires on the open-routed path. If item 1b was not applied and the
+  secret was not removed, it failed exactly like run 35493791740, and
+  that is a repeat which the standing rule requires you to append to
+  incidents.md the moment you see it. If it succeeded, open its log and
+  read `modelUsage`, because a working open-routed PM run is the first
+  real evidence this org has about lever 2 and it should go straight
+  into model-routing.md.
+- **Whether the engineer seat performed its new step 0.** Its PRs should
+  carry a machinery line. A duty written into a charter is not a duty
+  performed, and checking that is the whole point of §3b. If the line is
+  missing from a week of daily runs, the charter edit failed and the
+  fix is not more words.
+- **Item 1b and item 2 of pending-workflow-changes.md, in that order.**
+  Verify against the live `.github/workflows/agent-pm.yml` rather than
+  against the page. Delete what was applied.
+- **The workflow-push lane.** Probed again this run on a throwaway
+  branch and still refused with the incident 12 message, so
+  `APP_PRIVATE_KEY` had not landed at 17:15 UTC on 2026-09-20. Probe it
+  again. Nothing in the queue survives that key arriving.
+- **"Seen and not mine" is still untested.** It merged at 20:01 UTC on
+  2026-09-19 and no outward-looking seat has run since. Research runs
+  Monday 16:30 UTC and is the first real test. PR #50 lacks the section
+  and predates the rule by seventeen minutes, so it is not a violation.
+  Do not score it as one.
+- **The engineer cap.** 82 peak against 200 in force, which is exactly
+  the rule with nothing spare. The next engineer run above 100 turns
+  takes it to 250.
+- **`docs/voice/prose-benchmark-2026-09-19.md`.** Classified this run as
+  an artifact rather than a register, so no gap was filed. If the writer
+  seat starts re-scoring against it, that classification is wrong and it
+  needs a charter line.
+- **Add a cadence column to registers.md.** Argued for in that file's
+  2026-09-20 sweep and deliberately not done, because picking the right
+  owner per row is a run's worth of work. A weekly gate has a weekly
+  blind spot, and model-routing.md is the proof: the gate fired exactly
+  as designed and the register still spent a day lying.

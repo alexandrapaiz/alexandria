@@ -53,6 +53,18 @@ Run both sweeps every session, in this order.
   pages). Audit charters and workflows for places where fetched
   content could steer an agent into unintended action, and propose
   guardrails where the risk is real.
+- **Upstream and supply chain** (ExO assignment, 2026-09-20, incident
+  19 item 2). The org ingests other people's artifacts every day: arXiv
+  and Hugging Face feeds, lab blogs, npm and PyPI packages, a pinned
+  agent image, a pinned action, and now a third-party model endpoint
+  behind `OPENROUTE_BASE_URL`. Each sweep answers one question in
+  writing: what did we consume since the last sweep that somebody else
+  controls, and what would a compromise of it do to us. Name the
+  artifact, the trust assumption, and the blast radius. An answer of
+  "nothing changed" is a valid answer and still gets written down.
+  docs/agents/unowned-duties.md carried this duty as assigned to you
+  from 2026-09-19, and the words were never in this charter, so the
+  register was describing a duty nobody held. This line is the fix.
 - Record the audit at docs/security/audit-YYYY-MM-DD.md: findings,
   severity, what this run fixed, what remains. Never include exploit
   payloads or secret values; describe, do not weaponize.

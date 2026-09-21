@@ -25,9 +25,10 @@ can push these files.
 
 **What it costs, concretely.** On 2026-09-18 six runs failed, all of
 them turn-cap collisions, and not one of the seats affected could raise
-its own cap. The chair applied every fix by hand. Three caps are still
-short of what the measured rule requires (item 2 below), and they will
-stay short until someone applies them.
+its own cap. The chair applied every fix by hand. The caps are current
+now (item 3 below), and the cost has moved to a sharper place: on
+2026-09-20 the PM seat lost a whole run to a two-line workflow condition
+that no seat could change (item 1b, incident 23).
 
 **The decision that is yours, and only yours.** Mint a PAT with the
 `workflow` scope, store it as a repository secret, and pass it to
@@ -109,6 +110,85 @@ checkout pristine. That case is the missing-PR warning's job.
 
 **Cost.** One shell step per run, no network beyond a fetch, $0.
 
+### 1b. The open-routed step must fall back instead of failing the run
+
+**Queued 2026-09-20 by the ExO agent. Incident 23. This is the most
+urgent item on the page, and it is urgent on a date: the PM's ceremony
+cron fires Monday 2026-09-21 at 10:35 UTC and will fail the same way
+unless this is applied or the `OPENROUTE_API_KEY` secret is removed.**
+
+**Why.** Commit 609d7cc gave four workflows two run steps, chosen by a
+condition rather than by an outcome:
+
+```yaml
+      - name: Seat run (open-routed)
+        if: env.OPENROUTE != ''
+      - name: Seat run (Claude)
+        if: env.OPENROUTE == ''
+```
+
+That is an either/or, not a fallback. The Sonnet step is written into
+the file and can never execute while the secret exists, so a routing
+experiment that fails costs the org the entire run rather than a retry.
+Run 35493791740 is the proof: the PM seat produced nothing at all on
+2026-09-20 because its first model call errored, and the perfectly good
+Claude path sitting twelve lines below it was unreachable by
+construction.
+
+**How.** Two edits per file, in `agent-pm.yml`, `agent-market.yml`,
+`agent-okr.yml` and `agent-finance.yml`. Give the open-routed step an
+id and let it fail without failing the job, then gate the Claude step on
+its outcome instead of on the secret.
+
+```diff
+       - name: Seat run (open-routed)
++        id: openrouted
+         if: env.OPENROUTE != ''
++        continue-on-error: true
+         uses: anthropics/claude-code-action@v1
+```
+
+```diff
+       - name: Seat run (Claude)
+-        if: env.OPENROUTE == ''
++        # Runs when open routing is off, and also when it was on and
++        # failed. Incident 23: an either/or between two run steps turns
++        # a routing experiment into a lost run. This makes the open
++        # model preferred rather than mandatory.
++        if: env.OPENROUTE == '' || steps.openrouted.outcome == 'failure'
+         uses: anthropics/claude-code-action@v1
+```
+
+**What it does and does not do.** A failed open-routed attempt now costs
+three minutes and a warning, and the seat still does its job. It does
+not detect the worse case, which is an open-routed run that succeeds and
+does the work badly, because no condition in YAML can judge that. That
+case belongs to the three tests in
+[model-routing.md](model-routing.md) and to the owner's reading of the
+output.
+
+**One caveat worth applying with it.** The fallback makes the run green
+whenever Claude rescues it, so the failure becomes invisible in
+`gh run list`. Keep it visible by reading the step outcome rather than
+the job conclusion, which is incident 8's lesson again. If item 1's
+tripwire is applied in the same hand, add this line to its summary
+block:
+
+```bash
+            echo "- open-routed attempt: ${{ steps.openrouted.outcome || 'not attempted' }}"
+```
+
+**Cost.** Two lines per file, $0. It spends a Claude run only on the
+days the open model fails, which is the days the org was losing a run
+entirely.
+
+**The alternative, which is the owner's and takes ten seconds.** Delete
+or rename the `OPENROUTE_API_KEY` secret. The four seats fall back to
+Sonnet immediately with no file edit at all, because the existing
+conditions already do that when the secret is absent. That is the right
+move if the experiment is not worth a failed Monday, and it is
+reversible.
+
 ### 2. The PM goes daily, so the org has a seat that is present
 
 **Queued 2026-09-19 by the ExO agent, on the owner's order.**
@@ -124,8 +204,19 @@ sections 0, 4 and 5) is worth nothing until this cron changes. The
 diagnosis in full is in docs/agents/learning-log.md under the presence
 gradient.
 
-**How.** Three edits to `.github/workflows/agent-pm.yml`, plus the
-prompt rewrite. The cron change is one character.
+**REWRITTEN 2026-09-20 by the ExO agent, because the diffs below had
+rotted.** When this item was queued on 2026-09-19, `agent-pm.yml` had
+one run step. Commit 609d7cc added a second one four hours later (open
+routing, PR #49), and the queued diffs targeted lines that now exist
+twice or not at all. Applying the old version would have raised the cap
+on the Sonnet step that never runs, rewritten one of two identical
+prompt blocks, and left the live open-routed step untouched. The diffs
+below are checked against the file as it stands today. Whoever applies
+them should still diff before committing, because this page is only as
+fresh as the last ExO run.
+
+**How.** Four edits to `.github/workflows/agent-pm.yml`, plus the prompt
+rewrite in both run steps. The cron change is one character.
 
 ```diff
  on:
@@ -147,12 +238,24 @@ prompt rewrite. The cron change is one character.
 +    timeout-minutes: 75
 ```
 
+Both caps move, because either step can be the one that runs. The
+open-routed step is the one that fires today, so leaving it at 300 would
+make the raise a no-op.
+
+```diff
+-          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
++          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
+```
+
 ```diff
 -          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model sonnet"
 +          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model sonnet"
 ```
 
-And the prompt block, replaced in full:
+And the prompt block, replaced in full **in both steps**. The file
+carries two identical copies, one per run step, and a PM that behaves
+differently depending on which model served it is a bug waiting for the
+day the fallback fires:
 
 ```yaml
           prompt: |
@@ -184,6 +287,12 @@ And the prompt block, replaced in full:
             extending the charter (empty on scheduled runs):
             ${{ inputs.owner_instructions }}
 ```
+
+**Apply item 1b first, or this item makes things worse.** A daily cron on
+a seat whose only reachable model is the failing open-routed one turns
+one failure a week into seven. The two items are ordered, not
+independent.
+
 
 **On the cap and the timeout, per the methodology.** The standup run is
 a new run shape with no measurement, so rule 2 of

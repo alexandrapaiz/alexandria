@@ -108,8 +108,8 @@ twice that, rounded up to the next 50, floor 100.
 | frontend | 8 | 286 | 600 | 600 | ok |
 | pm (ceremony) | 8 | 141 (censored) | 300 | 400 queued | censored, and duties grew 2026-09-19 |
 | pm (standup) | 0 | unmeasured | shares the pm cap | n/a | provisional, measure after the first run |
-| security | 2 | 108 | 250 | 250 | ok |
-| engineer | 7 | 75 | 200 | 150 | ok |
+| security | 3 | 108 | 250 | 250 | ok, re-checked 2026-09-20 after duty growth |
+| engineer | 8 | 82 | 200 | 200 | ok, re-checked 2026-09-20 after duty growth |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
 | skill | 3 | 67 | 180 | 150 | ok |
 | research | 1 | 54 | 180 | 120 | ok, first measurement |
@@ -118,6 +118,32 @@ twice that, rounded up to the next 50, floor 100.
 | market | 3 | 47 | 160 | 100 | ok |
 | okr | 1 | 33 | 160 | 100 | ok |
 | finance | 1 | 29 | 120 | 100 | ok, first measurement |
+
+## Duty-growth re-check, 2026-09-20
+
+Rule 3 fired. This ExO run added a duty to two charters, so both seats
+were re-measured in the same run rather than waiting for a failure,
+which is what rule 3 is for.
+
+| Seat | Duty added | Peak turns, 8 newest runs | Cap | Required | Verdict |
+|---|---|---|---|---|---|
+| engineer | §0, the daily machinery diff | 82 (run 35517189213, 2026-09-20) | 200 | 200 | ok, no change |
+| security | §2, upstream and supply chain | 108 (run 35393327494) | 250 | 250 | ok, no change |
+
+Neither duty is turn-hungry. The engineer's is one `git log` and a
+conditional register append, and the security seat's is a written answer
+inside a sweep it already runs. The engineer's peak moved from 75 to 82
+on its own, which is drift in the seat's normal work rather than
+anything this run caused, and 82 doubled and rounded is exactly the 200
+in force. That row now has no headroom, so the next engineer run that
+peaks above 100 turns takes the cap to 250. Flag for the next ExO run.
+
+One measurement note for whoever repeats this. The open-routed seats
+cannot be measured right now. A run that dies at turn one reports
+`num_turns: 1`, and feeding that into the rule would silently propose a
+cap of 100 for the PM seat. Incident 23's fingerprint is how you tell
+that flavor apart, and the standing clause is rule 1: a run that failed
+for a reason other than its own work is not a measurement of its work.
 
 **Every cap in the org now clears the rule.** The three that were short
 on 2026-09-18 (frontend 400, pm 250, security 200) were applied by the

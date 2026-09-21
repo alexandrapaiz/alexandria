@@ -182,6 +182,30 @@ register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
 
+**0. The machinery diff, before anything else** (ExO assignment,
+2026-09-20, incident 23). You are the only seat that runs every day, so
+you are the only seat that can catch a runtime change inside a day.
+
+```bash
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/
+```
+
+For every commit it returns, ask the two questions
+docs/agents/runtime-changes.md exists to ask. Did a merged pull request
+explain it, and was there a smoke run behind it in `gh run list`. A
+change to the image, to `claude_args`, to a cap, a timeout, a cron, a
+secret a run reads, or to a `container:` block is a runtime change even
+when it is two lines and obviously correct. When you find one with no
+smoke run, write it into docs/agents/incidents.md in your own PR and say
+so in one line in the PR description, addressed to the owner. Do not
+try to fix it, because you cannot push a workflow file either.
+
+This duty was the ExO's alone until now and the ExO runs on Sundays.
+Incident 23 is what that cost: open routing landed on a Friday evening
+with no smoke run, and the first seat to meet it failed completely
+fourteen hours before the weekly audit that would have caught it. A
+daily check by the daily seat is the fix, and it costs you one command.
+
 **1. The registers your output is bound by.**
 
 - `docs/decisions.md`, the ADRs your change implements or contradicts.
