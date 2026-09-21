@@ -136,3 +136,29 @@ the chair and the PM record her rulings.
 - 2026-09-19 — The pilot issue: the current archived issue (2026-W37)
   is to be removed from the site and Monday's issue becomes the pilot,
   the first the public reads.
+- 2026-09-20 — Site copy, round one verdicts (line by line, hers):
+  APPROVED: "What changed in AI research today, written for people
+  who build things." / "A new issue every day." / "Your agents can
+  read this catalogue on their own, at /llms.txt."
+  REJECTED with reasons that are now rules for all site copy:
+  (1) "avoid sentence structures with lots of commas"; she prefers
+  PLAIN SHORT SENTENCES. Rejected specimen: "Your agents get the same
+  findings, as files they can load." (also "unneeded").
+  (2) "sounds millenial/condescending/unserious/vibecoded", rejected
+  specimen: "An issue takes a few minutes. It says what is new and
+  what turned out to be wrong, in words you do not need a PhD to
+  follow. The same findings become skills: small files your agents
+  load to do the work, each one corrected when the research is."
+  Cute asides ("do not need a PhD"), diminutives ("small files"),
+  and colon-led constructions read as unserious. The site register
+  is SERIOUS.
+  (3) "no more technical. we want to sell." The skills intro that
+  explained what a skill is was rejected; site copy sells the
+  outcome, it does not explain the mechanism.
+  (4) "One library, two readers." is now REJECTED as the skills
+  heading (reverses the 2026-09-19 approval).
+  (5) The writer's mission page draft was rejected whole, including
+  the standing close "You read to decide. Your agents load to act."
+  on that page: too long, essayistic, explanatory. Shorter, plainer,
+  selling.
+  Every line reaches her in chat before anything is set on the site.
