@@ -162,3 +162,13 @@ the chair and the PM record her rulings.
   on that page: too long, essayistic, explanatory. Shorter, plainer,
   selling.
   Every line reaches her in chat before anything is set on the site.
+- 2026-09-20 — Site copy rounds two to eight, all rejected. The
+  full verbatim record with her reasons is
+  docs/voice/preferences/site-copy-2026-09-20.md (preference data for
+  Ursa's taste loop). The rulings that fall out: copy describes
+  VALUE TO A BUILDER, never mechanism; "it" as the subject of
+  mechanism sentences is rejected; the GROWING, SELF-MAINTAINING
+  CORPUS is the value and must be present; no marketing tone, no ad
+  rhythm, no cute, no defensive; plain short sentences, serious. The
+  chair stops drafting copy live; the writer seat drafts, ExO
+  corrects the process, Ursa learns the taste.
