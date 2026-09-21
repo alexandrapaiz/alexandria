@@ -61,6 +61,64 @@ finding of the same weight as an unowned row.
 | Runs that fail get reported to the owner | pm (§1f) | daily | weekly Mon, daily once queued | **cadence gap, fix queued** |
 | The org decides what to do next between Mondays | **none, and the owner did it** | hourly | n/a | **fix queued, see below** |
 | A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, was a cadence gap |
+| Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
+| Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
+| The owner's rulings become reusable preference data | chair records (pm-agent.md ship check, added 2026-09-21) | whenever she rules in chat | present whenever she is | assigned 2026-09-21, and the chair is the correct owner here, see below |
+
+## The 2026-09-21 rows, and the state that is worse than unowned
+
+Three rows arrived this run out of incident 25, and the first one
+demonstrates a state this register did not previously have a name for.
+
+### Assigned to a seat that was forbidden
+
+"Reader-facing site copy gets drafted" was not unowned on 2026-09-20. It
+was worse. The owner's ruling of 2026-09-19 named the writer seat, and
+that seat's own charter said "never site copy (frontend's lane)", while
+the frontend charter's run steps are entirely visual and never write a
+word. So the duty read as owned from both directions, would have passed
+any grep for the vocabulary, and was performed by neither seat.
+
+The state deserves its own name because it defeats this register's own
+method. Grepping the charters for "site copy" on 2026-09-20 returned a
+hit, in the writer charter, in a sentence that forbade it. **A grep finds
+vocabulary, not polarity.** So the method gains one step: when the grep
+hits, read the sentence and check whether it assigns the duty or refuses
+it. Absence of the vocabulary is a finding, and so is its presence in the
+negative.
+
+The cadence test passes comfortably once the row is real. The writer runs
+daily at 16:00 UTC and copy rounds arrive when the owner asks for them,
+so the owning seat is awake more often than the trigger.
+
+### The lag that is accepted rather than fixed
+
+"Approved copy reaches the live site" sits with the frontend seat, which
+runs weekly on Wednesdays, and approvals can arrive any day. That is a
+gap by this register's own test and it is recorded as accepted rather
+than fixed, for two reasons. The chair can set an approved line in the
+session it was approved in, so the seat's cron is a floor and not a
+ceiling. And the honest fix is not a faster frontend cron, because
+nothing else in that seat's week wants to run seven times. Revisit it if
+a copy change is ever blocked waiting for a Wednesday, and revisit it
+before the Oct 13 launch regardless.
+
+### The one duty the chair should own
+
+"The owner's rulings become reusable preference data" is assigned to the
+chair, and that is not the compromise it looks like. Every other row on
+this page prefers a seat with a cron over the chair, because a cron is
+what makes a duty independent of the owner's presence. This duty is the
+exception, because its trigger is her presence. A ruling only exists when
+she gives one, in chat, to whoever is in the room, and the seat in the
+room is the chair. A cron cannot capture a conversation it was not in.
+
+What follows from that, and it is the part worth checking next run: a
+duty owned by the chair has no workflow enforcing it, so it needs a
+written rule instead. The rule is in prompts/pm-agent.md's shipping check
+and the schema is docs/agents/preference-data.md. The ExO seat audits
+that the record exists, in §3e, which is the same arrangement as every
+other row where the actor cannot audit the act.
 
 ## The three open gaps, with the check each one needs
 

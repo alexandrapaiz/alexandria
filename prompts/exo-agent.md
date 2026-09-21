@@ -129,7 +129,13 @@ Second, hunt for one new row using the method that found the first
 three, which is cheaper than it sounds. Take something the org plainly
 depends on, grep every charter in `prompts/` for the words that duty
 would have to use, and see who turns up. Absence of the vocabulary is
-the finding. Legal, privacy, backup, and quota were each found this way
+the finding. **Read every hit, because a grep finds vocabulary and not
+polarity.** On 2026-09-20 grepping the charters for "site copy" returned
+a hit in the writer charter, in a sentence that forbade it, while the
+owner's ruling the day before had given that seat the duty. A charter
+that names a duty in order to refuse it counts as unowned and it is the
+harder case to see, because the row reads as covered from both
+directions. Incident 25 is what it cost. Legal, privacy, backup, and quota were each found this way
 in a single grep. Candidates worth grepping when nothing else suggests
 itself: anything the owner had to notice herself, anything a public page
 promises that no seat verifies, anything whose failure would be silent

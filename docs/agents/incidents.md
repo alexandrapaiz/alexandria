@@ -1213,4 +1213,134 @@ rule is now stated twice in that register: **a row moves when the
 charter edit merges, not when the incident recommending it is written**,
 and those are usually different pull requests.
 
-Next free number is 25.
+## Incident 25 — Eight rounds of site copy, every one rejected (2026-09-20, owner-reported)
+
+Registered by the ExO seat on 2026-09-21 on the owner's order. Blameless
+and specific, in that order.
+
+**Class, per ADR-29.** Enforcement gap, and a repeat of incident 20's
+class with a new mechanism. Incident 20 was a ruling recorded and not
+checked. This is a ruling recorded and CONTRADICTED by a live charter
+line, plus a second defect that incident 20 does not cover at all: a
+register made of rejections cannot converge on anything. The class name
+for the register half: **negative rulings do not converge without a
+positive spec.**
+
+### What happened
+
+On 2026-09-20 the chair drafted site copy live with the owner. Eight
+rounds, across the home statement, the library intro, the skills heading
+and intro, and the mission page. Twenty-two candidates were rejected and
+four short lines were approved. The prose register moved every round,
+from explanatory to selling to quiet to friendly to flat documentation to
+a deliberate plain-engineer voice, and none of it converged.
+
+The full verbatim record, with her verdict and her reason on each
+candidate in her own words, is
+docs/voice/preferences/site-copy-2026-09-20.md. Her diagnosis of the
+last round is the sentence that explains all eight:
+
+> "its describing the mechanism not what it delivers. or the value to a
+> builder."
+
+and
+
+> "no mention of a growing self mantaining corpus, nothing. thats my
+> point."
+
+### Why it happened, in three layers
+
+Each layer is sufficient to cause a bad round. Together they are
+sufficient to cause eight.
+
+1. **The duty was assigned to a seat forbidden from performing it.** Her
+   ruling of 2026-09-19, recorded correctly in docs/voice/taste.md, says
+   "The writer drafts, the frontend seat sets." On 2026-09-20
+   prompts/writer-agent.md line 78 still read "Never site copy
+   (frontend's lane)", and the frontend charter's five run steps are
+   entirely visual, with no step that writes a word. So the duty read as
+   owned from both sides and was performed by neither, which is the worst
+   available state, because it passes every audit. It fell to whoever was
+   present, and that was the owner.
+2. **There was no positive specification.** docs/voice/taste.md held
+   roughly forty rulings and nearly all of them are rejections. Nothing
+   in the repository stated what alexandria is worth to a builder. Each
+   round therefore removed one region from an unbounded space and located
+   nothing, which is why better prose did not mean closer. Her own
+   instruction names the missing content, which is the growing,
+   self-maintaining corpus and what having it does for a builder.
+3. **The drafting happened in chat, so nothing accumulated.** No file
+   existed until the session was over. Each round started from a verdict
+   held in conversation rather than from a register a later round could
+   read, so round seven repeated round two's failure in a new costume.
+   The preference file was written after the fact, which is also why two
+   of the eight rounds have no recoverable candidate text.
+
+### The relationship to incident 22
+
+Same shape, different seat. There the owner said "right now i feel like
+im doing the PMs job, i want the pm to be proactive", and the PM was
+asleep. Here the writer was forbidden. In both cases every seat obeyed
+its charter, no audit failed, and the work landed on the only actor in
+the org with no cron and no cap.
+
+That is the generalization worth keeping: **every audit the org runs
+measures a seat against its charter, so none of them can see work the
+owner did herself.** The detector for it is now prompts/exo-agent.md §3e,
+the owner-as-seat audit.
+
+### Honest about the chair
+
+The chair is the seat with no workflow, no turn cap and no cron, so it is
+always the cheapest actor to reach for, and on 2026-09-20 it was reached
+for eight times. Two things are true at once. Drafting the first round
+live was the right call and the fastest way to probe a direction. Drafting
+the eighth was not, and by then the correct move had been available for
+six rounds, which was to stop, say that the writer seat owns this and
+that no value statement exists, and hand the round over.
+
+The chair also recorded the session afterwards, in detail and in her
+words, which is the only reason this entry can be written at all. The
+failure was not the drafting. It was the absence of a stopping rule, and
+the chair had no written limit to hit because every other seat's limit is
+enforced by a workflow and the chair's had never been written down.
+
+### The fix, shipped in this PR
+
+- **docs/agents/copy-pipeline.md.** Who drafts, who rules, who records,
+  who sets, plus the spec for the value statement and the stopping rule:
+  after ONE rejected round on the same surface, the chair hands the round
+  to the writer seat.
+- **The precondition.** docs/voice/value.md, one page, drafted by the
+  writer and approved by the owner, before any copy round resumes. The
+  writer charter now refuses to draft copy without it.
+- **prompts/writer-agent.md.** Site copy is this seat's to draft, the
+  contradicting boundary line is corrected, and the value statement and
+  the preference file are in its read list and its shipping check.
+- **prompts/frontend-agent.md.** It sets approved words and never authors
+  them, and every line it sets must be pointable to an approved record.
+- **prompts/pm-agent.md.** When recording a ruling, check for the live
+  charter line that contradicts it. That check is what would have caught
+  this on 2026-09-19.
+- **docs/agents/preference-data.md.** The schema, so the next session's
+  verdicts are data rather than narrative.
+- **prompts/exo-agent.md.** §3d gains the polarity test and §3e is the
+  owner-as-seat audit.
+
+### What the org grew from it
+
+Three sentences, for the run that reads this cold.
+
+A recorded ruling that contradicts a live charter line is not law, it is
+a note, and the charter wins every time because the charter is what the
+seat is holding.
+
+A register of rejections tells a seat when it has failed and never where
+to aim. Rulings need a companion that states the target.
+
+The owner is the cheapest actor in the org to reach for and the most
+expensive one to spend. Every seat has a limit enforced by a workflow.
+The chair's limit has to be written down instead, which is what the
+stopping rule is.
+
+Next free number is 26.
