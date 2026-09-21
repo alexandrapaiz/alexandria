@@ -1,0 +1,10 @@
+## Deep Dives & Analysis
+
+The Inference Gap
+The gap between what a model can do and what an ordinary user can reliably make it do is widening. That gap could be unrecoverable if the industry is not mindful. The model is only half the system. Inference determines how much of the frontier you get to see.
+
+Can internal model transparency tame the AI race?
+Internal model transparency is one of the ideas proposed for taming the AI race. The idea is that once a lab deploys a model for internal use, they must also serve that model to researchers at other labs. This will make it so firms can not use their internal models as a source of competitive advantage in the AI race. It reduces the competitive incentive to automate AI R&D, with all of the risk that it entails.
+
+Pretraining data, not verifiability, is why LLMs are especially good at math (and coding)
+Large language models are good at judging math arguments because they are still mostly powered by imitative learning rather than reinforcement learning. LLMs are especially good at math because almost everything in the math literature is correct. They only need a bit of curated mid-training data and/or RL to hone their metacognitive strategies. In many other fields, the research literature is a bit of a dumpster fire, with some true and valuable information mixed into a sea of falsehoods and confused ideas. This causes LLMs to spit out tons of confused nonsense with occasional insights.
