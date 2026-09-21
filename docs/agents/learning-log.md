@@ -1634,3 +1634,4 @@ until it changes.
   owner per row is a run's worth of work. A weekly gate has a weekly
   blind spot, and model-routing.md is the proof: the gate fired exactly
   as designed and the register still spent a day lying.
+
