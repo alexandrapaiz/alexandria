@@ -165,9 +165,19 @@ same fixed template, that is the failure mode this section exists to prevent.
 - **Plain ASCII punctuation, always.** Ordinary hyphens, ordinary spaces,
   straight quotes. Never the non-breaking hyphen (U+2011) in words like
   "long-horizon" or "sparse-reward", and never the narrow no-break space
-  before a percent sign: "28.5%" is right and "28.5 %" is wrong. Write "3x",
-  not "3×". Typesetter characters break the reader's search box and the
-  agent that loads the issue, and both of those are the audience.
+  before a percent sign: "28.5%" is right and "28.5 %" is wrong. Write "3x"
+  and never the multiplication sign (U+00D7). Typesetter characters break
+  the reader's search box and the agent that loads the issue, and both of
+  those are the audience.
+  Those three are examples and never the test, because the test is the
+  sentence this bullet opens with. Put it to every character in the issue
+  before you output: is this plain ASCII? The last issue carried eight
+  different non-ASCII characters and 134 of them, and a rule naming three
+  would have passed the curly apostrophe, the bullet separator, the en dash
+  and a Greek capital inside a system name. The one exception is a person's
+  or an institution's name as the payload spells it. Punctuation, spacing,
+  separators and mathematical symbols get no exception at all, so a paper
+  called "Psi-Spec" is written that way here.
 - **Headings are written, not selected.** The four sections' JOBS and their
   order are fixed house law: what is gaining traction leads, then the genuinely
   new labeled as unproven, then what fell behind, then the reading list. Never
@@ -325,8 +335,8 @@ Then say what is in here, in one line, before any interpreting starts. Two or
 three of the day's items, named in plain words the way a person lists what
 they are about to say: "Today, a dense reward that moved terminal agents
 fifteen points. Two labs landed on the same answer for context management.
-And a benchmark ceiling turned out to be wrong." Every newsletter worth learning from
-makes this promise inside the first screen. Keep it to a line, never number
+And a benchmark ceiling turned out to be wrong." Every newsletter worth
+learning from makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
 Vary the construction: "Today:" is one way in and becomes furniture the third
 time it runs, so some issues name the items in plain sentences ("Three labs
@@ -655,8 +665,10 @@ Rules:
   you find, because these are exactly the patterns that make good content read
   as boring. Check the
   punctuation on that same pass: no em dashes, no semicolon joins, no
-  non-ASCII hyphens or spaces, and no sentence carrying three commas, which
-  the comma rule above says is two sentences that were not split.
+  sentence carrying three commas, which the comma rule above says is two
+  sentences that were not split, and no character anywhere in the issue
+  that is not plain ASCII, which is the whole class and not a list of
+  hyphens and spaces.
 - **Then run the first-use pass. This is a hard gate, not advice.** Go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
