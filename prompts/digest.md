@@ -138,8 +138,13 @@ same fixed template, that is the failure mode this section exists to prevent.
   are in the final checks at the end of this file.
 - Keep the numbers, names, and links, because precision is the product.
   Simplify the language, never the claim.
-- Confident and direct. No hedging padding ("it seems that", "arguably"), no
-  hype ("groundbreaking", "game-changing"), no exclamation marks, no emoji.
+- Confident and direct. Put one question to any word that rates a finding
+  rather than states it: does this add information, or does it tell the reader
+  how to feel about information they already have? The second kind goes,
+  whichever way it leans. The hedge that shrinks a claim the evidence has
+  already graded ("it seems that", "arguably") and the intensifier that
+  inflates one ("groundbreaking", "remarkably") are the same substitution of
+  your confidence for the number's. No exclamation marks, no emoji.
 - **No sentence about the future that no result can check.** "This shift
   suggests that future pipelines will embed verification as a core component"
   costs a line and says nothing a reader can act on or a later issue can hold
@@ -151,13 +156,15 @@ same fixed template, that is the failure mode this section exists to prevent.
   a forecast has ended on the weakest thing it had. Naming an open question
   is not forecasting, so the sign-off's "what is still unsettled" stands:
   the ban is on predicting the answer, never on pointing at the question.
-- Regular sentences, plainly punctuated. Never use an em dash as a stylistic
-  break. That includes the parenthetical pair around a definition ("a dense
-  reward—counting passed assertions—produces") and the dash in an item's
-  closing source line. Rewrite it as two sentences, which is the fix that
-  always works, and reach for a comma only where the comma rule above
-  says the sentence can carry one.
-  Never join two sentences with a semicolon. Split them and connect them with
+- Regular sentences, plainly punctuated, and the rule is about the job and not
+  about the mark. Any punctuation holding two finished sentences together is a
+  full stop that went untyped, so split them. The em dash does it as a
+  stylistic break and as the parenthetical pair around a definition ("a dense
+  reward—counting passed assertions—produces"). The semicolon does it plainly.
+  The colon does it while pretending to gloss a term the sentence has just
+  used. The comma does it under the rule above. Four marks and one failure, and
+  the fifth will be a mark this bullet does not name, so read the punctuation
+  with the question rather than with the four. Split, then connect with
   transition words (so, because, instead, as a result, however), and do not
   reach for the same transition word twice in one issue, so reread before
   sending and swap the repeats. No run-on sentences. No flourish that does
@@ -408,8 +415,12 @@ Rank by how much the accumulated evidence should change what a builder does
 this week, NOT by the raw support count, and say what earned each item its
 slot. A ranking whose ordering key is invisible reads as an arbitrary list.
 
-Never print internal vocabulary at the reader. "(3 supports)" is a fact about
-alexandria's claim graph and means nothing to a subscriber. Translate it:
+Never print internal vocabulary at the reader, and the test is a question
+about the word rather than a roll of known words: could a subscriber who has
+never seen alexandria's codebase say what this one refers to? "(3 supports)"
+counts edges in a claim graph and fails it. So do triage scores, source tiers,
+claim ids, the ISO week code, and "ingested" for papers the pipeline read.
+Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
 its numbers (X -> Y citations) and say what a jump that size signals. An
@@ -542,10 +553,11 @@ paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler. "Worth the hour if you are choosing between one agent
 and a planner plus a separate verifier" is the line.
 
-Do not open those lines with a verb of presentation. "shows", "details",
-"presents", "introduces", "proposes", "describes" and "offers" all describe
-the paper's posture instead of the reader's decision, and a column of them
-turns the picks into a catalogue. Address the reader, name the choice, and let
+Do not open those lines with a verb of presentation, and ask it of the verb
+rather than of a list: does this word belong to the paper or to the reader?
+"Shows", "details", "presents", "provides", "introduces" and every synonym any
+of them has describe the paper's posture instead of the reader's decision, and
+a column of them turns the picks into a catalogue. Address the reader, name the choice, and let
 no two entries take the same shape.}
 
 ---
@@ -562,10 +574,10 @@ every issue.
 
 If a number of scale belongs here, say it in words a subscriber can decode.
 "3,558 papers read to get to these five" is a fact about the product and
-earns its place. "Claims distilled" and "edges drawn" are alexandria's
-internal vocabulary, mean nothing outside the codebase, and are never
-printed at the reader, and neither are raw pipeline counts or the ISO week
-id. This line states scale, never method: it says how much was read, never
+earns its place. "Claims distilled" and "edges drawn" fail the
+decoding question in the first section above, as do raw pipeline counts and
+the ISO week id, so none of them reach the reader. This line states scale,
+never method: it says how much was read, never
 how the reading was done.
 
 Then the standing close, on its own line, exactly as written below. It is
@@ -574,7 +586,10 @@ always last and never reworded.}
 **You read to decide. Your agents load to act.**
 ```
 
-Rules:
+Rules. Every one of them names examples, and an example is evidence that the
+rule is worth checking, never the test the rule is. A line that passes a rule
+only because it failed to match a string inside it has not been checked. Put
+the rule's question to the thing in front of you.
 
 - Every item cites its paper with a markdown link. Never invent papers, claims,
   numbers, or links. Only what is in the payload.
@@ -651,24 +666,22 @@ Rules:
   different.
 - Thin evidence is stated plainly ("only one deprecation this week"), never
   padded or dramatized.
-- Before finishing, reread the whole issue once for mechanical tells: the
-  same connective phrase used twice, three same-length sentences in a row,
-  every item weighted identically regardless of how much it actually matters,
-  a heading that would fit any other day, a length that matches the last issue
-  rather than this day's material, a bare number with no comparison beside it,
-  an item past three paragraphs with no written turn inside it, two items whose
-  closing consequence takes the same shape, a sentence predicting the future
-  that carries no number or date, a bold word standing in for a heading inside
-  a section, a source line whose link reads "[link]" instead of naming what is
-  on the other side of it, and any sentence that appears in this file as an
-  example. Fix what
-  you find, because these are exactly the patterns that make good content read
-  as boring. Check the
-  punctuation on that same pass: no em dashes, no semicolon joins, no
-  sentence carrying three commas, which the comma rule above says is two
-  sentences that were not split, and no character anywhere in the issue
-  that is not plain ASCII, which is the whole class and not a list of
-  hyphens and spaces.
+- Before finishing, reread the whole issue once for mechanical tells, and read
+  it with two questions rather than with the tells. First, did a shape repeat
+  where the material did not? That is the same connective used twice, three
+  same-length sentences running, two items closing in the same construction,
+  every item weighted alike however much each actually matters, and a heading
+  or a length that would have fitted yesterday. Second, is anything asserted
+  without the thing that makes it checkable? That is a number with no
+  comparison beside it, a forecast carrying no figure or date, a source line
+  whose link reads "[link]" instead of naming what is on the other side of it,
+  an item past three paragraphs with no written turn inside it, a bold word
+  standing in for a heading, and any sentence that appears in this file as an
+  example. Fix what you find, because these are exactly the patterns that make
+  good content read as boring. Two questions on the same pass for the
+  characters. Is any mark doing the job of a full stop, per the punctuation
+  rule above? Is every character in the issue plain ASCII, which is the whole
+  class and not a list of hyphens and spaces?
 - **Then run the first-use pass. This is a hard gate, not advice.** Go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
@@ -723,12 +736,8 @@ Rules:
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
-  already look like steps.
-  These are the labels caught so far, and they are examples rather than the
-  test: "Gaining traction", "Trailblazing", "Left behind", "Read
-  these yourself", "Compounding", "New and unproven", "Key takeaways", "What
-  this means", "Contradicted", "Replaced", "Procedure", "Method", "Results".
-  Printing any of them is the violation the owner has flagged twice. Check the
+  already look like steps. Printing one is the violation the owner has flagged
+  twice. Check the
   title too: it states a finding, and it carries no bracketed date range and
   no week id. Only then output.
 - Output the markdown only. No JSON wrapper, no preamble.
