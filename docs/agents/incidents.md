@@ -1250,3 +1250,93 @@ needs no judgment, and `tools/check_digest_quality.py` (PR #60) is where
 it goes. That is not filed as a separate ledger entry, because the quality
 gate's own standard already claims the rule and this is a widening of it
 rather than a new idea.
+
+## Incident 27 — A ruling recorded, and three days later nothing had acted on it (2026-09-22, writer seat)
+
+Recorded under the standing rule at the top of this file. Incident 20 is the
+class: a taste ruling written into the right register, by the right seat,
+within the hour, and violated by the very next artifact because nothing
+between the ruling and the artifact ever opened the file. This is the third
+occurrence of that class and the first where the artifact is the live site
+rather than an issue.
+
+**The number.** Incident 26 is the last numbered entry on this branch, so
+this takes 27. Incident 25's note still stands: 23 is claimed three times by
+three seats on three unmerged branches, and renumbering those is not this
+seat's call.
+
+### What happened
+
+On 2026-09-19 the owner gave two rulings about the site, both recorded in
+`docs/voice/taste.md` the same day.
+
+1. "The pilot issue: the current archived issue (2026-W37) is to be removed
+   from the site and Monday's issue becomes the pilot, the first the public
+   reads."
+2. The library page's prose was rejected, quoting its own line back:
+   "Every issue, in full..."
+
+On 2026-09-22, three days later:
+
+- `site/content/issues/2026-W37.md` is present on main and on sixteen of the
+  seventeen other remote branches, the exception being `pm/sprint-2026-09-14`,
+  which predates the file. That includes `fe/2026-09-20-library-reveal-and-w37`,
+  whose
+  pull request title says W37 is retired behind config. There is no such
+  config. No flag in `site/lib` or `site/app` hides an issue, and
+  `listIssues()` returns every file in the directory.
+- `site/app/library/page.jsx:19` still reads `<h1 className="page-title">Every
+  issue, in full.</h1>`.
+
+### Why the two failures are not the same failure
+
+The second is blocked and the first is not, and that distinction is the
+finding.
+
+Rounds two to eight of her site copy were all rejected
+(`docs/voice/preferences/site-copy-2026-09-20.md`), so no approved line
+exists to replace the library H1 with. A seat that changed it today would be
+setting copy she has not seen, which the same register forbids. Blocked is
+the correct state for that one.
+
+The removal is blocked by nothing. It is one `git rm` and a merge, it needs
+no copy, no design and no owner round trip, and it did not happen.
+
+Both look identical from outside: a ruling in the register, an artifact that
+disobeys it, three days elapsed. Nothing in the org distinguishes a ruling
+waiting on her from a ruling waiting on nobody, so the second hides inside
+the first.
+
+### Why the existing gates did not catch it
+
+Incident 20's fix was the taste gate in every seat's charter, and it fires
+when a seat ships. It caught this one, in the sense that the writer run of
+2026-09-22 found both failures by running that gate. Three days late, and
+only because a writer run happened to be dispatched.
+
+The writer seat's own ledger entry of 2026-09-21, "A ruling can land with
+nothing scheduled to read it", proposed the deterministic half: compare the
+commit date of `taste.md` against the newest file in `docs/voice/reviews/`
+and say so when the ruling is newer. That entry is still `Status: proposed`.
+This incident is its second piece of evidence, and the first where the
+unread ruling was about something already live rather than about a generator
+that has not run.
+
+### The fix, in this pull request
+
+The writer seat owns neither `site/content/` nor `site/app/`, so this entry
+and the ledger entry beside it are the fix this seat can ship. Named for the
+two seats that can act:
+
+- Frontend: `git rm site/content/issues/2026-W37.md`. Her ruling, unblocked,
+  three days old.
+- Whoever runs the ledger check: the 2026-09-21 proposal now has two
+  instances behind it.
+
+### The general form, for the ExO's pattern reading
+
+Incident 25 asked, when a fix enumerates, what is it an instance of. This
+one asks a different question of a register: **for every open ruling, who is
+it waiting on?** A register that records rulings but not their blocker
+cannot tell a seat which ones it could close today, so all of them look
+equally stuck and none of them move.

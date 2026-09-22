@@ -2884,3 +2884,75 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   `git log -1 --format=%cI` calls and a comparison.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-22 — The archive serves a text the press never wrote (writer seat, structure watch)
+- Trigger: writer run 2026-09-22, the cold read. The newest row in
+  `digests` and the file the site publishes for the same issue are two
+  different texts. The row is `2026-W37`, model `openai/gpt-oss-120b`,
+  prompt `83a0aa3be13c`, written 2026-09-14 15:00 UTC, 8,602 characters,
+  titled "Richer feedback boosts long-horizon agents [September 7-13,
+  2026]". The file `site/content/issues/2026-W37.md` was committed
+  2026-09-18 in `ac9698f` and titled "alexandria digest — 2026-W37". They
+  disagree on 170 lines, including the title, the whole opening, several
+  item bodies, and the pipeline counts at the foot, where one says 3,558
+  papers and the other 3,431.
+- Why it is this seat's to file rather than to fix: the words are the
+  writer's custody and the two files are not. `site/content/` is the
+  frontend's and the press is the engineer's.
+- What is wrong: `site/lib/content.js` reads markdown fixtures from
+  `site/content/issues/` and its own comment says "in production this
+  module swaps to a Neon lookup with the same interface". No such swap
+  exists. The word Neon appears in that file once, in that comment, on
+  every one of the eighteen remote branches. `site/app/library/[week]/page.jsx`
+  calls `generateStaticParams()` over the same directory, so the archive is
+  built from whatever markdown happens to be committed.
+- The editorial consequence, which is the reason this is filed at all:
+  nine editorial runs have graded the database row. No reader can reach
+  it. Every finding this seat has produced since 2026-09-14, and every
+  patch to `prompts/digest.md` that came out of one, was derived from a
+  text the product does not publish. An instrument pointed at the wrong
+  artifact is worse than no instrument, because it reports confidently.
+- A second consequence for accuracy: the accuracy audit of 2026-09-19
+  (`docs/evals/2026-09-19-digest-accuracy-audit.md`) corrected three
+  factual errors, and `c30d4fa` applied them to the file. The database row
+  still says GPT-3.5-Turbo where the paper says GPT-5.4. Whichever text a
+  future reader path reaches, one of the two is uncorrected.
+- What: make the archive read the press. One module, the interface
+  `listIssues()`/`getIssue()` already fixed, reading `week`, `body` and
+  `created_at` from `digests`. The markdown fixtures stay as local
+  development data and stop being the published artifact. The engineer's
+  sanitizer in PR #69 sits on the same path and should land first or
+  together, because a database body rendered by `marked` is the exact
+  surface that pull request is closing.
+- What it does not solve: the row is one per week and the upsert
+  overwrites, which the engineer's entry of 2026-09-19 already filed
+  ("Keep every digest body, not one row per week"). That entry becomes a
+  prerequisite rather than a nice-to-have once the site reads the table.
+- First step: the engineer, on top of PR #69. One query, one interface,
+  one fixture test that fails when the archive and the table disagree.
+- Cost: $0, one query per build.
+- Status: proposed
+
+### 2026-09-22 — Every open ruling should name who it is waiting on (writer seat)
+- Trigger: incident 27, this run. Two rulings of 2026-09-19 were still
+  unexecuted on 2026-09-22. One is blocked, because no approved copy
+  exists to replace the rejected library headline and rounds two to eight
+  were all rejected. One is blocked by nothing, because removing
+  `site/content/issues/2026-W37.md` from the archive is one `git rm` and
+  needs no copy, no design and no round trip with the owner.
+- The gap: `docs/voice/taste.md` records rulings and never records what a
+  ruling is waiting on. From outside, a ruling waiting on her and a ruling
+  waiting on nobody look the same, so a seat reading the register cannot
+  tell which entries it could close this morning. The unblocked one hides
+  behind the blocked one.
+- Why this is not the 2026-09-21 entry: that one detects a ruling no run
+  has read. This one is about a ruling that has been read, by several runs,
+  and is still open because nothing says whose move it is.
+- What: one line per open ruling, in whichever register the chair and the
+  PM keep it, naming the seat that can act and the thing it is waiting on.
+  "Waiting on her, copy round nine" and "waiting on frontend, unblocked"
+  are different states and should not be written the same way. Where that
+  line belongs is the chair's and the PM's call, not this seat's, because
+  `taste.md` is hers and the writer seat never edits it.
+- Cost: $0, one line per ruling.
+- Status: proposed

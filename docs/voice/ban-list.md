@@ -56,6 +56,13 @@ gap that the same collision had left empty (incident 23).
     research, and no subscriber can decode it. Say what the number
     means in plain words. The same goes for triage scores, tiers,
     claim ids, and the ISO week code.
+    Amended 2026-09-22: those five are evidence and the entry is the
+    question, which is whether a subscriber who has never seen the
+    codebase could say what the word refers to. 2026-W37 closes on
+    "3558 papers ingested", and "ingested" is the pipeline's word for
+    read. It is not a score, a tier, an id or a week code, so a check
+    written from the list above passes it, and the reader still meets a
+    word from a codebase they have no access to.
 15. The complete dump in place of a judged selection. A section that
     prints every row the query returned has outsourced the editing to
     the database. Nine "read these yourself" entries is a list; five
@@ -181,7 +188,9 @@ gap that the same collision had left empty (incident 23).
     tell survived two heading gates because both of them read bold runs
     and `#` lines and neither read italics, which is the general lesson:
     a label is a label in any typeface. Added 2026-09-20 from 2026-W37,
-    which printed it twice.
+    which printed it twice. Amended 2026-09-22: the same issue prints
+    "*paper*" above every source line, which is a fourth instance and was
+    not caught by an entry naming three.
 34. The empty stream reported as news. "No citation movers were recorded
     this week" tells the reader that one of alexandria's tables returned
     no rows, in the table's own vocabulary, in the middle of a section
@@ -245,3 +254,26 @@ gap that the same collision had left empty (incident 23).
     likely to produce this. Hand the reader the word. Never remark on the
     handing over. Added 2026-09-21 from her site-copy verdicts of
     2026-09-20.
+
+39. The verb of presentation. A reading-list line that opens on what the
+    paper does rather than on what the reader decides: "Shows a multi-agent
+    system that writes TPU kernels", "Details large-scale search agents",
+    "Provides a full framework". Eight of 2026-W37's nine picks open this
+    way, and a column of them turns a recommendation into a catalogue. The
+    test is a question about the verb and not a roll of verbs, because
+    "provides" sat outside the seven the generator banned and shipped
+    anyway: does this word belong to the paper or to the reader? A pick
+    earns its line by naming the decision it would inform. Added
+    2026-09-22 from 2026-W37's reading list.
+40. The mark doing a full stop's job. Entry 37 is the comma, and the
+    generator has banned the stylistic em dash and the semicolon join
+    since the voice overhaul, so three separate rules now describe one
+    defect: a punctuation mark holding two finished sentences together
+    instead of a full stop. Stating it three times as three marks left the
+    fourth unbanned, and the fourth is the colon that pauses to gloss a
+    term the sentence has just used ("become skills: small files your
+    agents load", struck by the owner on 2026-09-20 and currently caught
+    only as a register tell in entry 38). The fifth will be a mark nobody
+    has written a rule for. Read the punctuation with the question, which
+    is whether the mark is standing in for a stop, and split the sentence
+    when it is. Added 2026-09-22 from the generator sweep of incident 26.
