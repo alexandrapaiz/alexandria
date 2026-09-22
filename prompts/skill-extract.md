@@ -59,6 +59,30 @@ under- or over-groups). Score each candidate cluster:
   promotions where status = 'approved'` so the run never re-extracts a
   cluster the library already carries.
 
+Before you rank anything on `supports` edges, measure whether that criterion
+can be applied at all:
+
+```sql
+select count(*) filter (where interpreted_at is null) as waiting,
+       count(*) as total,
+       (select max(greatest(from_claim, to_claim)) from claim_links) as max_edged_id
+from claims;
+```
+
+`interpret` drains in strict id order and has run behind `distill` since at
+least 2026-09-22, when 439 of 661 claims were waiting and no claim above id
+221 carried a single edge (incident 23, docs/agents/incidents.md). The
+`procedure` column was added to the schema after `interpret` had passed that
+region, so the edged claims and the procedure-rich claims are today almost
+disjoint sets: 15 claims carry both, 262 carry procedure and no edges.
+
+When the two criteria cannot both be satisfied, procedure-rich wins and
+cross-paper breadth is satisfied by topic and embedding grouping instead. Say
+so at the top of the pull request, name the numbers you measured, and do not
+quietly downgrade a topic cluster into an "edge-supported cluster" in the
+prose. A skill drawn from six papers that agree is still well-evidenced; it
+is the claim that the graph verified the agreement that would be false.
+
 If the strongest available cluster still fails the procedure-rich test,
 that is the run's finding, not a license to draft anyway. Record it in
 docs/ideas.md (status `proposed`, one line: which topic is thin and why)
@@ -144,6 +168,22 @@ in one pass:
 A trigger test that only tests obviously-on and obviously-off prompts
 proves nothing. The two negatives should be the prompts most likely to
 false-positive on a lazy description, not softballs.
+
+Two structural rules about the `description` field itself, learned the hard
+way on 2026-09-22 when a draft took two cases away from `harness-engineering`
+purely by being longer:
+
+- **Keep it near the length of the specimen's**, around 90 words. The runner
+  scores idf-weighted overlap with no normalisation for the candidate's own
+  length, so a description that mentions more things wins more prompts,
+  including prompts that belong to a neighbour. Verbosity reads as relevance
+  to the instrument and as vagueness to a router. The engine fix is a ledger
+  entry (2026-09-22); until it lands, the discipline is yours.
+- **Put the "distinct from X" boundary sentence before the "Use when" clause,
+  never after it.** `activation_clause()` takes everything from the first
+  "Use when" to the end of the field and weights it 1.25, so a boundary
+  sentence placed at the end injects the neighbour's vocabulary into the
+  boosted span and aims your skill at exactly the prompts it was disclaiming.
 
 Then write the same cases as `skills/<slug>/triggers.json` and run them.
 The prose version convinces a reviewer once; the file re-runs on every
