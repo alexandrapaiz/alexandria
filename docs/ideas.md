@@ -2770,3 +2770,130 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
 - Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
 - Status: proposed
+
+### 2026-09-22 — URGENT: the emailed issue has the same HTML hole the archive had (engineer agent)
+- Trigger: today's break-fix closed the web surfaces and then checked the
+  other one. `send_newsletter` in `pipeline/weekly.py:459` builds the HTML
+  part of the email with Python's `markdown` library, which passes raw HTML
+  through exactly the way `marked` does. Verified this run against the pinned
+  `markdown==3.7`, not assumed: a `<script>` block survives intact, an
+  `onerror` attribute survives as a live attribute, and
+  `[click](javascript:alert(1))` becomes a working `href`. The body is written
+  by gpt-oss-120b from arXiv text, so the chain from a crafted passage in a
+  paper to every subscriber's inbox has no human in it. The archive is now
+  the safe surface and the newsletter is not, which is the wrong way round,
+  because the newsletter is the product.
+- What: escape raw HTML on the way into the email the same way the site now
+  does. The site's answer was zero new dependencies, and the same shape is
+  available here: escape the HTML the body carries before `md.markdown` sees
+  it, and refuse any href whose scheme is not http, https or mailto. A
+  sanitizer dependency such as `bleach` or `nh3` would also work and is a
+  bigger decision, because it adds a package to the Modal image and image
+  changes are governed by docs/agents/runtime-changes.md.
+- First step: a failing test. `tests/` has no coverage of `send_newsletter`
+  at all, so write the case that emails a body carrying the three payloads
+  above and asserts none of them survives, then fix it. The test needs no
+  Modal and no SMTP if `send_newsletter`'s HTML construction is lifted into
+  a pure function, which is the same split `site/lib/markdown-core.js` uses.
+- Why this run did not do it: `pipeline/weekly.py` is already being edited by
+  this seat's open PR #60, and a second PR editing the same file would put a
+  conflict in front of the owner instead of a fix. Whichever merges first,
+  the other rebases.
+- Cost: $0 for the escaping route. A sanitizer package is $0 in money and a
+  runtime-changes decision in process.
+- Status: urgent
+
+### 2026-09-22 — URGENT: sprint item 5 is assigned to a seat that is forbidden to do it (engineer agent)
+- Trigger: working the sprint queue in order this run. Sprint 2026-09-21 item
+  5 asks the engineer to extend the skill validation system to a passing
+  result on both gold skills. That system is entirely inside
+  `skills/_validation/`: the harness is `trigger_test.py`, the null model is
+  `decoys.json`, the recorded results are `results/`, and each skill's cases
+  live in `skills/<slug>/triggers.json`. The engineer charter forbids this
+  seat from writing into `skills/` at all, and this run's dispatch repeated
+  the prohibition verbatim. So the item cannot be executed as written by the
+  seat it is assigned to, and no amount of care in the run changes that.
+  Worth adding: the one case standing between the current result and "both
+  skills passing" is `he-pos-2`, which fails by a margin of 0.010, and the
+  sprint itself rules that its fix belongs to the skill seat's own
+  `SKILL.md`. So the item's remaining work is on the skill seat's surface
+  twice over.
+- What: the owner or the PM decides which of three this is. Reassign item 5
+  to the skill seat, which owns the surface. Or amend the engineer charter to
+  carve out `skills/_validation/` as machinery rather than knowledge, which
+  is arguable, since ADR-13 reserves knowledge promotion and a test harness
+  is not knowledge. Or restate the item as work outside `skills/`, which is
+  the worst of the three, because item 5 also says not to redesign what PR
+  #21 built and a second harness living in `tools/` would be exactly that.
+- First step: the PM's Monday retrospective picks one. Until then every
+  engineer run reaching item 5 in the queue stops at the same wall, which is
+  an enforcement gap under ADR-29: the boundary is written in both the
+  charter and the dispatch, and the plan was built without checking it.
+- Cost: $0. It is a planning decision, not a build.
+- Status: urgent
+
+### 2026-09-22 — Cite the sentence, not the item
+- Trigger: today's craft scan of Elicit (below). It supports "all AI-generated
+  claims with sentence-level citations from the underlying sources". The
+  digest cites once per item, at the end, as a URL. The accuracy audit
+  (docs/evals/2026-09-19-digest-accuracy-audit.md) shows what that costs: of
+  34 checkable claims in 2026-W37, 3 were wrong and 4 were overstated or
+  unsourced, and finding that took a full audit precisely because a reader
+  cannot tell which of an item's four sentences the one link is standing
+  behind. One citation for a paragraph is a citation for none of it.
+- What: carry the claim id through to the rendered sentence. The distill step
+  already produces claims with procedures attached, and the weekly step
+  already knows which claim each bullet came from, so the edge exists and is
+  thrown away at render time. Render it as a link on the sentence it
+  supports. This also turns ban-list entry 14 the right way up: the reader
+  never sees a claim id, they see a sentence whose source is one click away.
+- First step: one issue, by hand, to see whether sentence-level citation
+  reads well or reads like a footnote thicket. The writer seat judges that,
+  not this one. If it reads well, the generator prompt changes to emit the
+  claim id per sentence and the renderer links it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — Publish the digest's own accuracy number
+- Trigger: the same scan. Elicit puts "99.4% Data extraction accuracy" on its
+  front page and calls itself "the most accurate AI product for scientific
+  research". alexandria has something better and does not print it: a
+  retroactive audit of everything it has ever sent, naming every claim
+  checked, with the three wrong ones fixed in the archive and a correction
+  note on the issue. Elicit's number is vendor-reported and it measures
+  extraction, which is whether a value was copied correctly, not whether the
+  synthesis on top of it is right. Ours measures the thing a reader cares
+  about, and it is the only number of the two with a receipt behind it.
+- What: a standing accuracy figure on the site, derived from the audit
+  method, recomputed per issue rather than claimed once. The honest form is
+  the fraction and the correction history together, because a number with no
+  corrections beside it reads as marketing, and the corrections are the part
+  competitors cannot copy without doing the work.
+- First step: decide whether the number is a release-gate metric or a public
+  claim, because the two want different denominators. Then the pre-send
+  checklist (sprint item 4, PR #60) emits it as a by-product of the check it
+  already runs, so publishing costs nothing extra per issue.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — Craft scan: Elicit (elicit.com)
+- Scanned: elicit.com live this run. Chosen because the day's work was
+  rendering model-generated text about papers into a page, and Elicit does
+  more of that than anyone in the comparison set.
+- Worth stealing: citation granularity. They cite per sentence, we cite per
+  item, and the gap is not cosmetic. Their claim is that every generated
+  statement traces to a source sentence, which makes an unsupported sentence
+  visible to the reader instead of visible only to an auditor. Filed as its
+  own ledger entry above, along with the second thing worth taking, which is
+  that they publish an accuracy number at all.
+- Better here: their accuracy claim is a number without a receipt. "99.4%
+  data extraction accuracy" is vendor-reported, it is about copying values
+  rather than about judgment, and nothing on the page lets a visitor check a
+  single instance of it. alexandria audited its own sent output after the
+  fact, published which claims were wrong, and corrected the live archive.
+  The narrower and more useful difference is the one today's work turns on:
+  Elicit's surface renders text about papers, and ours renders text the
+  papers themselves can influence, because our bodies are generated from
+  full text we ingested rather than from a user's own query. That makes the
+  corpus an untrusted input in a way a search product's index is not, and it
+  is why the render path needed hardening rather than tidying.

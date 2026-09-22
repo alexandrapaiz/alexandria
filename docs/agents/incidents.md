@@ -1042,3 +1042,82 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## 2026-09-22 — A sprint item the assigned seat is not allowed to do (engineer seat, second occurrence)
+
+Titled by date rather than by number because PR #60 is taking incident 23
+and racing for an integer across two open PRs is how the numbering breaks.
+
+**Recorded because it is a repeat, per the standing rule at the top of this
+file.** The first occurrence was yesterday, 2026-09-21, in this same seat.
+
+### The two occurrences
+
+**First, sprint item 2.** The engineer run of 2026-09-21 (PR #66) built the
+blind prose benchmark and could not score it, because the comped friends
+list the item depends on does not exist anywhere in the repository. The
+sprint's own notes had said items 2 through 4 need "only the corpus, the
+sent issue(s), and the comped friends list", which reads as a statement
+that all three were in hand. Two were.
+
+**Second, sprint item 5, today.** The item asks the engineer to extend the
+skill validation system to a passing result on both gold skills. That
+system lives entirely inside `skills/_validation/`, and the engineer
+charter forbids this seat from writing into `skills/`. The run's own
+dispatch repeated the prohibition word for word. The item is not hard for
+this seat, it is closed to it.
+
+### Why they are one failure and not two
+
+Both items were planned as ready, both were assigned to a seat, and in both
+cases the thing that made them undoable was knowable at planning time from
+a file already in the repository. Item 2's blocker was an absent input,
+findable by grepping for the list. Item 5's blocker is a written boundary,
+findable by reading the assignee's own charter, which is two directories
+away from the sprint file. Neither needed the work to start before the wall
+appeared, and in both cases the wall appeared anyway, a day of queue apart,
+after a seat had spent a run reaching it.
+
+The cost is not the lost run. Today's run had somewhere useful to go, the
+urgent ledger entry it fell back to. The cost is that the sprint's order is
+no longer a queue. Two of five items cannot be pulled by the seat they are
+assigned to, so a run that follows the sprint faithfully has to discover
+that item by item, and the PM does not hear about it until the next
+retrospective.
+
+### What would have caught it
+
+A feasibility gate on the sprint, at plan time, not at build time. An item
+is plannable when three things hold, and all three are checkable by reading
+files the PM already has open:
+
+1. **Surface.** Every path the item must write is permitted to the seat it
+   is assigned to. The seat charters' Boundaries sections are the source,
+   and `docs/agents/registers.md` already maps which register holds what.
+2. **Inputs.** Every artifact the acceptance criteria name exists, or the
+   item names who is producing it and when. "The comped friends list" was
+   neither.
+3. **Ceiling.** The item's remaining work is not itself assigned elsewhere.
+   Item 5 fails this twice, since the one case standing between today's
+   result and both skills passing is `he-pos-2`, whose fix the sprint
+   explicitly rules belongs to the skill seat.
+
+This is the same shape as the recorded-is-not-enforced pattern, one level
+earlier. Incident 20 was a ruling that no artifact ever checked against.
+This is a plan that never checked against the charters it assigns work to.
+Writing the boundary in two places, the charter and the dispatch, did not
+help, because nothing between the boundary and the plan opened either file.
+
+### Class, under ADR-29
+
+An **enforcement gap**. The boundary was written, agreed, and repeated in
+the dispatch, and the artifact that had to respect it was produced without
+checking it. The hunter for enforcement gaps is the ExO's
+recorded-is-not-enforced audit, and the detection cycle is every ExO run.
+The proposal above would move the detection to plan time instead, which is
+one week earlier than the retrospective that would otherwise find it.
+
+**Not this seat's call to fix.** Planning surfaces belong to the PM and the
+owner, and the engineer charter forbids editing `docs/sprints/` and the
+charters both. Recorded here, and in `docs/ideas.md` with status `urgent`,
+so the Monday retrospective and tomorrow's run both see it.
