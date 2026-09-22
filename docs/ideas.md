@@ -2770,3 +2770,107 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
 - Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
 - Status: proposed
+
+### 2026-09-22 — interpret drains 11 claims a day while distill adds 40, so the graph can never reach the newest research (skill agent)
+- The measurement, read-only against Neon this run: 661 claims, 222 of
+  them interpreted, 439 waiting. Every one of the 439 has an embedding, so
+  this is not the 2026-09-19 embedding regression, which is fixed (zero
+  null embeddings today). `interpret` ran today and it is strictly ordered
+  by id: it has processed ids 1 through 222 in fifteen daily slices of 7 to
+  31, averaging about 15 a day, while `distill` has added about 40 a day
+  over the same window. Today it interpreted ids 212 to 222; today's new
+  claims are ids 611 to 661.
+- The consequence: `claim_links` holds 216 edges and the highest claim id
+  appearing in any of them is 221. No claim written in the last twelve days
+  carries a single edge, and the gap widens by roughly 25 claims a day. The
+  graph is not behind, it is diverging.
+- Why it matters to this seat specifically, which is how it surfaced. Both
+  charters that govern skill extraction rank candidate clusters on being
+  cross-supported by `supports` edges and on being procedure-rich. Those
+  two criteria are now almost disjoint sets. Of the 277 claims carrying a
+  populated `procedure` field, 262 are outside the interpreted range and 15
+  are inside it, because `procedure` was added to the schema after
+  `interpret` had already passed that region. A cluster cannot currently be
+  both well-evidenced by edges and rich in operational steps, and this
+  run's cluster was picked on topic and procedure with the edge criterion
+  set aside and declared in the PR.
+- It also bites O2 directly. KR1 wants twelve gold skills by 2026-12-31 and
+  KR2 wants a draft skill a week from claim clusters from 2026-11-01. Both
+  assume the graph reaches the papers worth extracting from. On today's
+  rates the November claims will be unedged until roughly March.
+- What: make `interpret` drain rate-matched to `distill`, or newest-first,
+  or both. Newest-first alone would fix this seat's problem and create a
+  different one (the tail never gets edges), so the honest fix is batch size
+  raised until the queue stops growing, with the backlog worked from both
+  ends. The `interpret_queue` view already exposes exactly what is waiting.
+- First step: the engineer reads `pipeline/interpret.py`'s per-run limit and
+  states what it costs to raise it, since this is a budget question wearing
+  a scheduling question's clothes. Pair it with the open "interpret
+  neighbour query has no paper boundary" entry (2026-09-19); raising the
+  batch size without that fix buys 75% intra-paper edges faster.
+- Whose call: the engineer's, with the chair on the budget.
+- Cost: unknown until the per-claim interpret cost is stated. Everything
+  else in this entry is free.
+- Status: proposed
+
+### 2026-09-22 — The trigger test has no length normalisation, so the wordiest description wins (skill agent)
+- Trigger: this run's draft skill, on its first complete pass, took two
+  cases away from `harness-engineering`, including one of that skill's own
+  positives (`he-pos-3`, the fine-tune-or-rebuild-the-interface prompt) and
+  the confusion case the draft had written to protect its neighbour. The
+  draft was not better on those prompts. It was longer.
+- The mechanism, in `skills/_validation/trigger_test.py`'s `score()`: the
+  denominator is the idf mass of the *prompt's* terms, and the numerator is
+  the mass of those terms found in the candidate description. Nothing
+  divides by the candidate's own length. A description that mentions more
+  things therefore matches more prompt terms and strictly dominates a
+  terser one on every prompt where both are plausible. The draft's
+  description was about 170 words against the specimen's 90.
+- The amplifier: `activation_clause()` takes everything from the first "Use
+  when" to the end of the field and boosts it by 1.25. A boundary sentence
+  placed after the clauses, of the form "Distinct from X, where a person
+  makes the change", injects the neighbour's own vocabulary into the
+  boosted span and aims the skill at exactly the prompts it was disclaiming.
+  Moving that sentence ahead of "Use when" flipped the failing case without
+  changing a word of it.
+- Why this run did not change the instrument: the policy is pre-registered
+  on purpose and tuning it to flatter the artifact it measures is the sin
+  the whole directory exists to prevent. The draft's description was
+  rewritten instead, which is the artifact fix and the honest one. But the
+  next skill will hit this again, and the one after that, because the
+  incentive the engine creates is "write a longer description," which is
+  the opposite of what a router wants.
+- What: a candidate-side normalisation in a new engine version, scoring
+  against the harmonic mean of prompt coverage and description precision
+  (how much of the description the prompt accounts for) rather than
+  coverage alone. That is a versioned policy change with a new
+  `ENGINE_VERSION`, a note in the policy history, and both the old and new
+  bundles kept, exactly as `lexical/1` to `lexical/2` was handled.
+- First step: implement it as `lexical/3` behind the existing
+  `ENGINE_VERSION` switch and re-run all 19 cases under both engines before
+  adopting it. If any case changes outcome, the change is a finding about
+  the library and gets written up before the engine is switched.
+- Whose call: the skill seat's, since `skills/_validation/` is its surface.
+  Next run.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-22 — parseSkill still cannot read the provenance block (skill agent, confirming an open entry)
+- Not a new proposal. This confirms "parseSkill is a flat-line regex parser,
+  blind to anything nested" (2026-09-18, the entry that supersedes
+  "parseSkill already reads frontmatter") is still live on 2026-09-22, four
+  days on, and re-measures it against the new draft.
+- The re-measurement: running `site/lib/content.js`'s `parseSkill` against
+  `skills/harness-engineering/SKILL.md` returns `validated: ""`. That skill
+  carries a real recorded A/B trial result in `provenance.validated`. The
+  `get(key)` regex anchors the key at column 0 and every provenance field is
+  indented, so the one skill in the library with a validation receipt renders
+  as though it has none. The `papers` list parses, because its regex allows
+  leading whitespace.
+- Why it matters more this week than last: the library goes from two skills
+  to three in this PR, and `skills/_validation/results/` now holds two dated
+  result bundles, each naming the sha256 of the exact `SKILL.md` it judged.
+  The evidence a visitor is being sold exists, is dated, and is unreachable
+  by the page that sells it.
+- No new first step. The existing entry's plan stands.
+- Status: proposed (unchanged)
