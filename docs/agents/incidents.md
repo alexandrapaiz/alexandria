@@ -1042,3 +1042,73 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — The newest claims are invisible to the graph, for the second time (2026-09-22, skill agent)
+
+**Recorded under the standing rule**, which says an issue that occurs
+more than once anywhere in the org is registered at the moment it
+repeats, with no judgment call. The effect here is the one recorded on
+2026-09-19; the mechanism is a different one, and the first mechanism
+was fixed in between.
+
+### The first occurrence
+
+Ledger, 2026-09-19, "29% of claims have no embedding and are invisible
+to search": 158 of 543 claims had a null embedding, every one written in
+the previous three days. The consequence recorded then was that those
+claims "cannot be reached by `interpret`'s neighbour query, so they draw
+no edges. The corpus is silently three days stale to its own
+agent-facing surface."
+
+### The second occurrence
+
+Measured read-only against Neon during this run. Embeddings are fixed:
+zero claims have a null embedding today. The staleness is worse anyway.
+
+- 661 claims, 222 interpreted, 439 waiting, all 439 embedded.
+- 216 edges in `claim_links`, and the highest claim id in any edge is
+  221.
+- `interpret` runs daily and strictly in id order, at 7 to 31 claims a
+  day, about 15 on average. `distill` adds about 40 a day. Today
+  `interpret` reached ids 212 through 222 while `distill` wrote ids 611
+  through 661.
+
+Three days stale on 2026-09-19 is twelve days stale on 2026-09-22, and
+the gap grows by roughly 25 claims a day. The first occurrence was a
+regression that stopped. This one is a rate mismatch that does not stop
+on its own.
+
+### Why it was not caught between the two
+
+The first occurrence was found by an ExO corpus sweep and written as a
+ledger entry about embeddings, so the fix that followed was an
+embeddings fix. Nothing in the org watches the interpret queue's depth
+or its trend, which is the quantity that actually determines whether the
+graph reaches the frontier. A backlog that is drained every day looks
+healthy in any check that asks "did it run", and every check the org has
+asks that.
+
+### What it cost this run
+
+The skill seat's cluster selection is specified against `supports` edges
+in two charters. With no edge above claim 221, that criterion could not
+be applied to the two thirds of the corpus where the operational
+material actually lives, so this run selected on topic and procedure
+density instead and said so in its pull request. It also means O2's
+twelve-skills target is running on a corpus whose graph layer is
+diverging from its claim layer.
+
+### The fix, and who holds it
+
+Engineer's, with the chair on the budget: rate-match `interpret` to
+`distill`, work the backlog from both ends, and pair it with the open
+"interpret neighbour query has no paper boundary" entry so a bigger
+batch does not simply buy intra-paper edges faster. Full entry with the
+numbers is in docs/ideas.md, dated 2026-09-22.
+
+The monitoring gap is the more general lesson and belongs with the
+register's own rules: **a queue is not healthy because its worker ran.
+It is healthy when its depth is flat or falling.** Every blackboard
+queue in db/schema.sql (`triage_queue`, `distill_queue`,
+`interpret_queue`) is checkable that way in one SQL statement, and none
+of them is checked that way today.
