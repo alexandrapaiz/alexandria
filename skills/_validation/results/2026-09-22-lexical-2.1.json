@@ -17,7 +17,7 @@
     },
     "recursive-harness-self-improvement": {
       "path": "skills/recursive-harness-self-improvement/SKILL.md",
-      "sha256": "1ad88a62b5023b93"
+      "sha256": "1a272e58028c654c"
     },
     "self-improving-post-training-loops": {
       "path": "skills/self-improving-post-training-loops/SKILL.md",
@@ -153,18 +153,18 @@
           "passed": true,
           "winner": "decoy-product-copy",
           "winner_is_decoy": true,
-          "library_score": 0.1505,
+          "library_score": 0.1445,
           "closest_decoy": "decoy-product-copy",
-          "null_margin": -0.1,
+          "null_margin": -0.1142,
           "narrow": false,
           "scores": {
-            "harness-engineering": 0.1354,
-            "recursive-harness-self-improvement": 0.1505,
+            "harness-engineering": 0.1445,
+            "recursive-harness-self-improvement": 0.0746,
             "self-improving-post-training-loops": 0.0,
             "decoy-frontend-layout": 0.0,
             "decoy-postgres-tuning": 0.0,
             "decoy-cluster-capacity": 0.0,
-            "decoy-product-copy": 0.2505,
+            "decoy-product-copy": 0.2587,
             "decoy-data-pipeline-ops": 0.0,
             "decoy-api-integration": 0.0,
             "decoy-dependency-management": 0.0,
@@ -216,7 +216,7 @@
     {
       "skill": "recursive-harness-self-improvement",
       "source": "skills/recursive-harness-self-improvement/triggers.json",
-      "skill_sha256": "1ad88a62b5023b93",
+      "skill_sha256": "1a272e58028c654c",
       "suite_version": 1,
       "cases": [
         {
@@ -228,13 +228,13 @@
           "passed": true,
           "winner": "recursive-harness-self-improvement",
           "winner_is_decoy": false,
-          "library_score": 0.5049,
+          "library_score": 0.4961,
           "closest_decoy": "decoy-data-pipeline-ops",
-          "null_margin": 0.3866,
+          "null_margin": 0.3778,
           "narrow": false,
           "scores": {
             "harness-engineering": 0.0902,
-            "recursive-harness-self-improvement": 0.5049,
+            "recursive-harness-self-improvement": 0.4961,
             "self-improving-post-training-loops": 0.0636,
             "decoy-frontend-layout": 0.0,
             "decoy-postgres-tuning": 0.0,
@@ -256,13 +256,13 @@
           "passed": true,
           "winner": "recursive-harness-self-improvement",
           "winner_is_decoy": false,
-          "library_score": 0.455,
+          "library_score": 0.4368,
           "closest_decoy": "decoy-incident-response",
-          "null_margin": 0.2731,
+          "null_margin": 0.2549,
           "narrow": false,
           "scores": {
             "harness-engineering": 0.1231,
-            "recursive-harness-self-improvement": 0.455,
+            "recursive-harness-self-improvement": 0.4368,
             "self-improving-post-training-loops": 0.1367,
             "decoy-frontend-layout": 0.0,
             "decoy-postgres-tuning": 0.0,

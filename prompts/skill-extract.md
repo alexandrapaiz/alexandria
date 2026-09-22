@@ -173,11 +173,14 @@ Two structural rules about the `description` field itself, learned the hard
 way on 2026-09-22 when a draft took two cases away from `harness-engineering`
 purely by being longer:
 
-- **Keep it near the length of the specimen's**, around 90 words. The runner
-  scores idf-weighted overlap with no normalisation for the candidate's own
-  length, so a description that mentions more things wins more prompts,
-  including prompts that belong to a neighbour. Verbosity reads as relevance
-  to the instrument and as vagueness to a router. The engine fix is a ledger
+- **Keep it short, and treat anything past 150 words as a defect.** The
+  existing library sits at 102 and 120 words; the 2026-09-22 draft reached
+  170 before it was cut back to 141. The runner scores idf-weighted overlap
+  with no normalisation for the candidate's own length, so a description that
+  mentions more things wins more prompts, including prompts that belong to a
+  neighbour. Verbosity reads as relevance to the instrument and as vagueness
+  to a router. One clause per section of the body is the working test: if two
+  clauses point at the same section, delete one. The engine fix is a ledger
   entry (2026-09-22); until it lands, the discipline is yours.
 - **Put the "distinct from X" boundary sentence before the "Use when" clause,
   never after it.** `activation_clause()` takes everything from the first
