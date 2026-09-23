@@ -4,6 +4,24 @@
   --gray: #86868b;
   --line: #e8e8e8;
   --radius: 10px;
+
+  /* The micro-interaction system, from this run's benchmark. Read off the
+     live sites rather than remembered: Linear runs its ENTIRE surface on one
+     curve, cubic-bezier(0.25, 0.46, 0.45, 0.94), with two clocks — 100ms for
+     a text link's colour and 160ms for a button that also moves. Consensus
+     runs one clock, 100ms. Ours had grown to four curves and seven clocks,
+     which is the opposite of that discipline and reads as drift rather than
+     as a system. One curve, two clocks:
+
+       --fast  colour and opacity only, on high-frequency targets
+       --slow  anything that also moves
+
+     The owner's approved bounce, cubic-bezier(0.34, 1.56, 0.64, 1) at 190ms
+     on .pill and .issue, is NOT part of this and is not touched. Neither is
+     the 90ms press or .lib-art's 500ms page-level fade. */
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fast: 0.1s;
+  --slow: 0.16s;
 }
 
 * {
@@ -112,7 +130,7 @@ a {
 .nav-links a {
   color: var(--ink);
   opacity: 0.85;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--fast) var(--ease);
 }
 
 .nav-links a:hover {
@@ -154,7 +172,7 @@ a {
   width: 20px;
   height: 1.5px;
   background: var(--ink);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform var(--slow) var(--ease), opacity var(--slow) var(--ease);
 }
 
 .mobile-nav-toggle span.open:first-child {
@@ -457,7 +475,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 13px 20px;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--fast) var(--ease);
 }
 
 .waitlist-field::placeholder {
@@ -779,7 +797,14 @@ a {
 
 .digest {
   margin-top: 56px;
-  font-size: 16.5px;
+  /* The canon's body size is 17, and the digest is the site's primary
+     reading surface. 16.5 was off the type scale entirely. The measure
+     holds at 73 characters on the lead paragraph, inside the 75 ceiling,
+     so the column does not need to move with it. Line height stays at
+     1.65 rather than dropping to Apple's 1.47: her density ruling says
+     add air when in doubt, and this is running text people read for
+     minutes. */
+  font-size: 17px;
   line-height: 1.65;
 }
 
@@ -918,7 +943,7 @@ a {
   text-decoration: none;
   border-bottom: 1px solid var(--line);
   padding-bottom: 1px;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
 }
 
 .agent-note a:hover,
@@ -950,7 +975,7 @@ a {
   border-radius: var(--radius);
   padding: 11px 14px;
   outline: none;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
   -webkit-appearance: none;
   appearance: none;
 }
@@ -1094,7 +1119,7 @@ a {
   cursor: pointer;
   list-style: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: background-color var(--fast) var(--ease);
 }
 
 /* Refinement, from this run's benchmark. Read off the live pages rather than
@@ -1145,13 +1170,13 @@ a {
   width: 11px;
   height: 1px;
   background: var(--gray);
-  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--fast) var(--ease);
 }
 
 .skill-line::after {
   transform: rotate(90deg);
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--slow) var(--ease),
+    background-color var(--fast) var(--ease);
 }
 
 .skill-row[open] > .skill-line::after {
@@ -1532,8 +1557,13 @@ a {
 }
 .desk-row.done { color: #888; }
 .desk-lane {
-  flex: 0 0 76px;
-  font-size: 11px;
+  /* 96px is the next step up the spacing scale from the old off-grid 76,
+     and it is the first one that holds the longest seat label (RESEARCH)
+     without min-width: auto pushing the lane wider than its own basis. */
+  flex: 0 0 96px;
+  /* 12px, not 11: the canon's type scale stops at 12 for small print and
+     says never 11. At 76px the longest seat label (RESEARCH) still fits. */
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   border: 1px solid currentColor;
@@ -1553,8 +1583,8 @@ a {
   white-space: nowrap;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity var(--slow) var(--ease),
+    transform var(--slow) var(--ease);
 }
 .desk-row:hover .desk-go { opacity: 1; transform: none; }
 @media (hover: none) {
@@ -1571,8 +1601,26 @@ a {
 .desk-foot { margin-top: 64px; font-size: 12px; color: #888; }
 .desk-foot a { color: #000; }
 @media (max-width: 560px) {
-  .desk-row { flex-wrap: wrap; }
-  .desk-lane { flex-basis: 64px; }
+  /* The 64px basis that used to live here was narrower than the longest
+     seat labels, and a flex item's min-width: auto floors it at its own
+     content, so ENGINEER and RESEARCH pushed their lanes out to 70px while
+     FE and SKILL stayed at 64. Every title then began at a different x and
+     the list read ragged down its left edge, at 390px only.
+     Holding one lane width instead fixed the alignment but left the title
+     164px wide, wrapping four deep on a phone, which is the clutter her
+     iPhone review named. So on a phone the lane keeps the first line to
+     itself with the row's action, and the title takes the full measure
+     underneath: no lane column to align, half the wraps, more air. */
+  .desk-row {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .desk-lane { flex: 0 0 auto; }
+  .desk-go { margin-left: auto; }
+  .desk-main {
+    order: 1;
+    flex: 1 0 100%;
+  }
 }
 
 /* ---------- reduced motion ----------
@@ -1584,7 +1632,12 @@ a {
   .pill,
   .desk-go,
   .waitlist-field,
-  .lib-art {
+  .lib-art,
+  /* Both of these were missing. The toggle's bars actually rotate, which is
+     the kind of motion this query exists to stop, and the nav link's fade
+     belongs with the other colour transitions the house already mutes. */
+  .nav-links a,
+  .mobile-nav-toggle span {
     transition: none;
   }
 
