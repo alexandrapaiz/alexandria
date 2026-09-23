@@ -185,6 +185,16 @@ same fixed template, that is the failure mode this section exists to prevent.
   or an institution's name as the payload spells it. Punctuation, spacing,
   separators and mathematical symbols get no exception at all, so a paper
   called "Psi-Spec" is written that way here.
+  Where these characters come from decides where you catch them, and they
+  are not typed by you. They arrive in the payload, whose claim text is
+  machine-extracted from PDFs: today's carries 286 non-ASCII characters
+  across 42 of its 48 claim strings, and 188 of those are the non-breaking
+  hyphen sitting inside ordinary words like "on-policy" and "inference-time",
+  where nothing looks wrong on the page. So the rule binds every string you
+  lift as you lift it, from `claim`, `evidence`, `procedure`, a paper title
+  or a triage note, and quoting the payload is not an exception to it. The
+  `dates` normalization described below is one instance of this rule and not
+  a special case.
 - **Headings are written, not selected.** The four sections' JOBS and their
   order are fixed house law: what is gaining traction leads, then the genuinely
   new labeled as unproven, then what fell behind, then the reading list. Never
@@ -423,12 +433,23 @@ claim ids, the ISO week code, and "ingested" for papers the pipeline read.
 Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
-its numbers (X -> Y citations) and say what a jump that size signals. An
+its numbers (X -> Y citations) and say what a jump that size signals.
+Then ask whether it signals anything. A paper going from zero citations to
+one, or from one to two, is a single reader rather than the field moving, and
+today all five movers are that size. This is the impact section, so movement
+earns a slot only where a builder could act on it. Say plainly that nothing
+older moved much today, or say nothing at all, and never dress a count of one
+as traction. An
 empty stream is never news. "No citation movers were recorded this week"
 names one of alexandria's own tables at a reader who has never heard of it,
 so either say nothing or say the absence as a fact about the field in the
 reader's words ("nothing older moved enough to be worth reporting today").
 That holds anywhere a query comes back empty.
+
+`supported_claims` returns claims and never papers, so two rows can be one
+paper: today's twelve rows are ten papers, with two of them doubled. Count
+distinct papers before you count items, and give one paper a second slot here
+only when the prose says outright that both findings come from the same work.
 
 Each item is prose, and depth follows significance here as everywhere. The
 top item earns real treatment. A secondary one can be two sentences. Work
@@ -483,7 +504,13 @@ One paper, one slot. Two items may not rest on the same paper unless the
 second is a genuinely separate finding, and then the prose says outright that
 both come from the same work. Silently splitting one paper across two slots
 makes a thin week look broad, which is the dishonesty this whole section's
-label exists to prevent.}
+label exists to prevent.
+Check it by counting, because the payload makes this easy to fall into rather
+than hard. `new_claims` returns up to 22 rows, and they are distilled claims
+rather than papers, so a few papers can fill the entire list: today's 22 rows
+are 5 papers, four of which contribute 5 claims each. Group the rows by paper
+before you choose anything, and let the count of distinct papers decide how
+long this section runs.}
 
 ## {The heading for the fell-behind slot, written from what actually lost
 ground today and never the words "Left behind". Name the belief that fell if
@@ -544,6 +571,11 @@ spend an hour on, which on a rich day is a handful and on a thin day is one or
 two. Rarely more than five, and never five because five was the number.
 Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
+A paper this issue has already covered at length is not a pick. The reader
+just read it here, so the line would send them to what they were handed.
+`deep_reads` overlaps the other sections by design, and today two of its three
+papers are already in `new_claims`. Drop the overlap and print what remains,
+even when what remains is one paper or none.
 
 Every entry carries a link to the full text. An entry without one fails the
 section's only job, so if you cannot produce the URL, drop the paper.
@@ -557,7 +589,11 @@ Do not open those lines with a verb of presentation, and ask it of the verb
 rather than of a list: does this word belong to the paper or to the reader?
 "Shows", "details", "presents", "provides", "introduces" and every synonym any
 of them has describe the paper's posture instead of the reader's decision, and
-a column of them turns the picks into a catalogue. Address the reader, name the choice, and let
+a column of them turns the picks into a catalogue.
+Expect the payload to hand you one ready-made, because `deep_reads` carries
+triage notes written in exactly this register, and one of today's opens
+"Provides a comprehensive framework for continual learning". That note is a
+retrieval artifact and never a draft of your line. Address the reader, name the choice, and let
 no two entries take the same shape.}
 
 ---
