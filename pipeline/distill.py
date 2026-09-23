@@ -219,8 +219,8 @@ def distill(max_papers: int = 30):
         if not papers:
             return 0
 
-        grader = evidence()
         grading = has_evidence_grade(conn)
+        grader = evidence() if grading else None
         if not grading:
             print("claims.evidence_grade is missing; run db/schema.sql to start grading")
 
