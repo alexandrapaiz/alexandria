@@ -2956,3 +2956,53 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   `taste.md` is hers and the writer seat never edits it.
 - Cost: $0, one line per ruling.
 - Status: proposed
+
+### 2026-09-23 — Normalize the payload's typography once, in gather() (writer seat)
+- Trigger: the first read of a live payload by this seat. It carries 286
+  non-ASCII characters across 42 of its 48 claim strings, 188 of them the
+  non-breaking hyphen inside ordinary words ("on-policy", "inference-time").
+- The gap: ban list entry 13 has been written twice as a prohibition on the
+  writer, on 2026-09-19 and again on 2026-09-21 as incident 26. The writer
+  never typed those characters. The claim text is machine-extracted from
+  PDFs and arrives that way, so both recordings fixed the wrong end.
+- What: a transliteration pass over the string fields in `gather()`, before
+  the payload is serialized. Straight quotes, ordinary hyphens, ordinary
+  spaces, "x" for the multiplication sign, ">=" for the relation, with the
+  exception the ban list already names for a person's or institution's name.
+  The tests in `tests/` already assert this property for the blind
+  benchmark's specimens (PR #66), so the assertion exists and is unused here.
+- Why code and not prompt: this run patched the prompt, which is the correct
+  first move and is charter step 3. It is also asking a 120B model to
+  remember a character class across an 11,000-token instruction on every
+  string it copies. A deterministic replace costs nothing and cannot forget.
+  Charter step 4 says that if the prompt patch fails once more, it stops
+  being a prose problem, and this entry is that finding filed in advance.
+- Blocked by: nothing. `gather()` is `pipeline/weekly.py` and the writer
+  seat never touches pipeline code.
+- Cost: $0, no new service, no model call.
+- Status: proposed
+
+### 2026-09-23 — The queries return claims and the issue prints items (writer seat)
+- Trigger: the same payload read. `new_claims` returns 22 rows that are 5
+  distinct papers, four of them contributing 5 claims each. The traction
+  query returns 12 rows that are 10 papers. `deep_reads` returns 3 papers of
+  which 2 are already in `new_claims`.
+- The gap: nothing in the pipeline or the prompt converts between the two
+  units. The `limit 22` in the new-claims query is a limit on claims, and the
+  section it feeds is measured in items. A writer that takes one row as one
+  item prints 22 items about 5 papers, which is ban list 16, 21 and 29 at
+  once, without inventing a word. 2026-W37's "several teams" over two papers
+  was read for nine runs as the model's dishonesty. It is the query's shape.
+- What: group by paper in SQL and return papers with their claims nested,
+  or add a per-paper cap and select distinct papers up to the limit. Either
+  makes the unit the section is written in the unit the query returns. The
+  `deep_reads` overlap wants the same treatment: exclude papers already
+  returned by the other streams, because the reading list is the one section
+  whose whole value is that it points somewhere the issue did not go.
+- Why it is filed rather than patched: this run patched the prompt to count
+  distinct papers before counting items, which is the smallest change that
+  could have prevented it. The durable fix is a query shape, and queries are
+  the engineer's.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed

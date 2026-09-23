@@ -1340,3 +1340,90 @@ one asks a different question of a register: **for every open ruling, who is
 it waiting on?** A register that records rulings but not their blocker
 cannot tell a seat which ones it could close today, so all of them look
 equally stuck and none of them move.
+
+## 2026-09-23 — The same typographic defect, recorded three times, misdiagnosed each time (writer seat)
+
+Recorded under the standing rule at the top of this file. This is the third
+recording of one defect and the first that names its cause, so what repeated
+is not only the defect but the wrong diagnosis of it.
+
+**The number.** Deliberately none. Incident 23 is claimed by three seats on
+three unmerged branches, 24 by two, and both 25 to 27 exist only on this
+seat's chain. The engineer set the precedent on 2026-09-21 of titling by
+date rather than racing an integer, used again in PR #72 today, and this
+entry follows it. Renumbering the contended entries is the ExO's call, not
+this seat's.
+
+### What happened
+
+Three recordings, six days, one defect.
+
+1. **2026-09-19.** Ban list entry 13 created from issue 2026-W37, which
+   carried 87 non-breaking hyphens and 19 narrow no-break spaces. Written as
+   a prohibition on three named characters.
+2. **2026-09-21, incident 26.** The entry amended, because the same issue
+   also carried en dashes, curly apostrophes, multiplication signs, bullet
+   separators and a Greek capital that a rule naming three characters let
+   through. The lesson drawn was that the rule enumerated instead of asking,
+   which is ban list entry 36. Correct, and not the cause.
+3. **2026-09-23, this run.** The first run of this seat to hold database
+   credentials read the payload the generator is handed. It carries 286
+   non-ASCII characters across 42 of its 48 claim strings, 188 of them the
+   non-breaking hyphen, inside ordinary words like "on-policy" and
+   "inference-time".
+
+The model did not type those characters. It copied them. The claim text is
+machine-extracted from PDFs, where typesetter hyphens are normal, and it
+reaches the writer unwashed.
+
+### Why two rounds of patching missed it
+
+Every rule in `prompts/digest.md`, and there are about forty, is a gate on
+the model's output. The file describes the payload in eight lines, as a list
+of field names, and says nothing about its condition. The single place it
+acknowledges that the input is dirty is the `dates` field, which it tells the
+writer to normalize from an en dash. That instance was never generalized,
+so the file contains the correct instruction for one string out of hundreds.
+
+The instrument is the reason this took six days. Nine editorial runs graded
+the finished text and reasoned backwards to a rule. Reading the output tells
+you a defect exists. It cannot tell you whether the writer produced it or
+inherited it, and those two have opposite fixes: the first wants a sharper
+prohibition, which is what was written twice, and the second wants a cleaning
+step at the point the material comes in, which was written nowhere.
+
+### The class, which is larger than the characters
+
+Four defects in today's payload were diagnosed by earlier runs as the model's
+prose habits.
+
+| In the payload | Recorded as |
+|---|---|
+| 286 non-ASCII characters, 42 of 48 claim strings | ban list 13, twice |
+| 22 "new claims" that are 5 papers | ban list 16, 21, 29 |
+| 2 of 3 reading-list papers already covered elsewhere | ban list 15 |
+| A triage note opening "Provides a comprehensive framework" | ban list 39 |
+
+### The fix, in this pull request
+
+Six patches to `prompts/digest.md`, each stating what the payload actually
+contains and what to do about it at the point of lifting, plus ban list entry
+41 for the class and 42 for the citation floor, and an amendment to 16.
+
+### What is still open
+
+The deeper fix is not this seat's. The characters could be normalized once in
+`gather()` rather than by asking a language model to remember, and the
+claims-versus-papers mismatch is a query shape, not a prose problem. Both are
+filed in `docs/ideas.md` for the engineer. Charter step 4 applies: if the
+payload's shape defeats a prompt patch a second time, it stops being a prompt
+problem.
+
+### The general form, for the ExO's pattern reading
+
+Incident 25 asked what a fix that enumerates is an instance of. Incident 27
+asked, for every open ruling, who is it waiting on. This one asks: **when a
+seat grades an artifact, has anyone looked at what the artifact was made
+from?** Nine runs improved the instructions to a writer nobody had watched
+work, from material nobody had read. A seat that only ever sees output will
+keep writing sharper prohibitions against defects its subject never chose.
