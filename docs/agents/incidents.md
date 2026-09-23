@@ -1042,3 +1042,45 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — Content invisible at rest, a second time (2026-09-20, frontend run)
+
+**The repeat.** Ban list entry 23 was appended on 2026-09-18 after the
+whole issue archive was found staged at opacity 0 waiting for a scroll
+script. On 2026-09-20 the same failure was found again, on the desk
+page: at 390px the first list rendered seven rows at computed opacity 0
+under a header reading "AWAITING YOUR MERGE 7", on a page with nothing
+else to scroll. Same symptom, same surface family, different mechanism.
+Recorded here under the standing rule, at the moment it repeated.
+
+**Why the existing guard did not catch it.** Entry 23 names the
+mechanism, a scroll script, rather than the symptom. The second
+occurrence had no script. It was `.hero-follow`'s CSS rise animation,
+`animation-timeline: view()` with `animation-range: entry 65% entry
+98%`, inherited by the desk because the desk reuses that class for its
+layout. A view-timeline range never opens for a block taller than the
+viewport that begins near the fold, so the animation holds at its first
+keyframe forever. Every property of entry 23 that a reviewer would
+check was absent: no script, no observer, no JavaScript dependency, and
+the rule reads as ordinary progressive enhancement. The check was
+looking for the cause it had seen before instead of the effect it cares
+about.
+
+**It also hid at two viewports out of three.** Computed opacity was 0 at
+390 and 1 at 820 and 1440. A review that looks at desktop, or at desktop
+and tablet, sees nothing wrong.
+
+**The fix, and the general one.** The desk now switches the inherited
+animation off (`.desk > * { animation: none }`), which is also what
+motion.md asks for on a high-frequency surface. The general fix is ban
+list entry 24, appended in the same pull request: the test is no longer
+"is a script involved" but "read the computed opacity at rest, at every
+viewport you ship". That is a two-line probe and it is now the way this
+seat checks, not a thing to remember.
+
+**The wider lesson, for any register.** An entry written as a cause
+only catches that cause. Incident 20 was a ruling that was recorded and
+never checked; this is its sibling, a rule that was recorded, checked,
+and worded too narrowly to fire. When a tell is appended to a register,
+the entry should name what is observably wrong, and the mechanism
+should be an example rather than the definition.

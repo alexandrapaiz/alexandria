@@ -10,21 +10,33 @@ const ISSUE_DIR = path.join(process.cwd(), "content", "issues");
 const SKILLS_DIR = path.join(process.cwd(), "..", "skills");
 const WEEK = /^\d{4}-W\d{2}$/;
 
+// Weeks the public site does not publish. This hides an issue from the
+// listing and from its own route; it deletes nothing. The markdown file
+// stays on disk and the row stays in the database, so removing a week from
+// this list is all it takes to publish it again.
+//
+// 2026-W37 is retired here on the owner's order (2026-09-19) so that
+// Monday's issue is the pilot the public reads first.
+export const HIDDEN_WEEKS = new Set(["2026-W37"]);
+
 export function listIssues() {
   if (!fs.existsSync(ISSUE_DIR)) return [];
   return fs
     .readdirSync(ISSUE_DIR)
     .filter((f) => f.endsWith(".md") && WEEK.test(f.replace(/\.md$/, "")))
-    .map((f) => {
-      const week = f.replace(/\.md$/, "");
-      return parseIssue(week, fs.readFileSync(path.join(ISSUE_DIR, f), "utf8"));
-    })
+    .map((f) => f.replace(/\.md$/, ""))
+    .filter((week) => !HIDDEN_WEEKS.has(week))
+    .map((week) =>
+      parseIssue(week, fs.readFileSync(path.join(ISSUE_DIR, `${week}.md`), "utf8"))
+    )
     .sort((a, b) => (a.week < b.week ? 1 : -1));
 }
 
 export function getIssue(week) {
   const file = path.join(ISSUE_DIR, `${week}.md`);
-  if (!WEEK.test(week) || !fs.existsSync(file)) return null;
+  if (!WEEK.test(week) || HIDDEN_WEEKS.has(week) || !fs.existsSync(file)) {
+    return null;
+  }
   return parseIssue(week, fs.readFileSync(file, "utf8"));
 }
 
