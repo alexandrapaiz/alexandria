@@ -71,6 +71,15 @@ gap that the same collision had left empty (incident 23).
 16. One paper wearing several hats. Splitting a single paper across
     two or three items, or calling two papers "several teams", makes a
     thin week look broad. State plainly when findings share a source.
+    Amended 2026-09-23, from the first read of a live payload: this is
+    not mainly a temptation the writer invents, it is the shape of the
+    input. The queries return distilled CLAIMS and the issue prints
+    ITEMS, and nothing converts between the two. The 2026-09-23 payload
+    offers 22 new claims that are 5 papers, four of them contributing 5
+    claims each, and 12 traction claims that are 10 papers. A writer who
+    takes one row as one item produces the fixed-length issue of entry
+    21 and the several-teams dishonesty of entry 29 without inventing
+    anything. Group by paper before counting items.
 17. The greeting that carries no information. "Welcome to another edition
     of...", "Happy Monday", "Hope you had a great week." A newsletter
     should say hello, and the owner asked for it back, but a hello that
@@ -277,3 +286,31 @@ gap that the same collision had left empty (incident 23).
     has written a rule for. Read the punctuation with the question, which
     is whether the mark is standing in for a stop, and split the sentence
     when it is. Added 2026-09-22 from the generator sweep of incident 26.
+41. The gate that reads the output and never the input. Entry 36 is a gate
+    that enumerates instead of asking. This one asks the right question of
+    the wrong artifact. Every rule in the generator, and there are now about
+    forty, checks the text the model produced. Nothing checks the material it
+    was handed, and the material is not clean. The payload assembled on
+    2026-09-23 carries 286 non-ASCII characters across 42 of its 48 claim
+    strings, 188 of them the non-breaking hyphen inside ordinary words. It
+    returns 22 "new claims" that are 5 papers. Two of its three reading-list
+    papers are already covered in another section. Its one-line triage note
+    opens "Provides a comprehensive framework", which is entry 39 arriving
+    pre-written. Four defects that nine editorial runs diagnosed as the
+    model's prose habits are sitting in the model's input, and a rule that
+    tells the writer not to produce what its source already contains is
+    asking it to notice rather than to clean. State where the material comes
+    in, or the gate certifies an inherited failure. Added 2026-09-23 from the
+    first read of a live payload.
+42. The movement that is one reader. Entry 24 is the number with no
+    comparison beside it. This is the number that carries its comparison,
+    states it honestly, and still says nothing: "0 -> 1 citations" and
+    "1 -> 2 citations", printed in the section whose whole claim is that
+    relevance is impact. All five citation movers in the 2026-09-23 payload
+    are that size. The arithmetic is not wrong and the sentence is not a lie,
+    which is what makes it hard to see: a doubling from one to two is a
+    doubling. One person read a paper. In a section that exists because the
+    owner ruled that traction and not release date decides relevance,
+    printing it is the release-date feed wearing the evidence's clothes. A
+    number earns the impact section when a builder could act on it. Added
+    2026-09-23 from the live payload.
