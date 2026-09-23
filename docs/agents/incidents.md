@@ -1084,3 +1084,54 @@ never checked; this is its sibling, a rule that was recorded, checked,
 and worded too narrowly to fire. When a tell is appended to a register,
 the entry should name what is observably wrong, and the mechanism
 should be an example rather than the definition.
+
+## Incident 24 — A phantom production bug, twice in one run (2026-09-23, frontend run)
+
+**What happened.** The frontend run screenshotted `/desk` at 390x844 and
+got a white page carrying one line of text: "Application error: a
+client-side exception has occurred". It reproduced on retry, then stopped
+reproducing, then came back. Roughly a dozen turns went into chasing it:
+rendering the page in isolation (fine), reading the console (nothing but
+two aborted third-party requests), dumping `innerText`, and finally
+diffing the CSS hash the server was serving against the one on disk.
+
+**The cause was the run's own hands.** `next build` had been run while a
+`next start` server from the previous build was still listening on 3000.
+The HTML the running server emitted referenced chunk and stylesheet
+hashes that the rebuild had replaced, so the browser fetched assets that
+no longer existed and React failed to hydrate. The page was never broken.
+Nothing in the repository was ever broken.
+
+**Why it repeated inside one run.** The first occurrence was mistaken for
+flakiness and worked around with a retry loop in the screenshot harness,
+which made the symptom intermittent instead of removing it. It came back
+an hour later, after the next rebuild, and the retry loop then hid the
+cause a second time. The proximate reason the old server survived every
+restart is that `pkill -f next-server` matches the agent's own shell
+command string and kills the shell instead, and `kill` by port silently
+did nothing when the port lookup returned empty.
+
+**Why this matters beyond one run.** The failure presents as a
+production-grade bug on the owner's own daily surface. A seat that
+believed it would have filed it, or worse, "fixed" it. The whole point of
+a visual charter is that the pixels are the evidence, and this is the
+case where the pixels lie: they are a true photograph of a false server.
+
+**The fix, and the general one.** Never rebuild under a running server.
+The sequence is kill, verify the port is actually free, build, start, and
+then verify the served stylesheet hash matches the one on disk before
+screenshotting anything. That last check is one line and it is the only
+one that actually proves it:
+
+```bash
+curl -s localhost:3000/ | grep -o '/_next/static/css/[^"]*' | head -1
+ls .next/static/css/
+```
+
+The general lesson is the same one incident 23 ends on, arriving from the
+other direction. There, a register entry named a cause and missed the
+same effect from a different cause. Here, a symptom was treated as noise
+and worked around instead of explained. A retry loop that makes a failure
+intermittent has not fixed anything; it has deleted the evidence. When a
+run starts working around something it cannot explain, that is the moment
+to stop and explain it.
