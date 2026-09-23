@@ -41,6 +41,17 @@ feeds:
   # ai.meta.com has no RSS (verified 2026-09-07); engineering.fb.com carries
   # Meta's systems/infra writing, which is the half we most want anyway
   - {name: meta-engineering, url: "https://engineering.fb.com/feed/", tier: c}
+  # ---- engineering practice: what people ran in production, and what broke.
+  # First of the five engineering blogs the corpus-expansion spike asks for
+  # (docs/ideas.md, accepted 2026-09-18); the others follow once this one has
+  # a week of triage decisions to judge it by. Cloudflare first because its
+  # writing is mechanism-first with real numbers, and because agent
+  # infrastructure (sandboxes, per-agent access, preview environments) is now
+  # a standing subject there rather than an occasional one. Verified 200 with
+  # 20 items and per-item summaries on 2026-09-23. It is a high-volume general
+  # engineering feed, so most of it is DNS, cache and security work that triage
+  # should discard; prompts/triage.md now knows what a practice report is.
+  - {name: cloudflare-engineering, url: "https://blog.cloudflare.com/rss/", tier: d}
   - {name: stanford-sail, url: "https://ai.stanford.edu/blog/feed.xml", tier: d}
   - {name: mit-news-ai, url: "https://news.mit.edu/rss/topic/artificial-intelligence2", tier: d}
   - {name: mit-csail, url: "https://www.csail.mit.edu/rss.xml", tier: d}

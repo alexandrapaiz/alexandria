@@ -15,6 +15,7 @@ processes yesterday's triage output.
 """
 
 import json
+import pathlib
 import time
 
 import modal
@@ -51,11 +52,47 @@ image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "sentence-transformers")
     .add_local_file("prompts/distill.md", "/root/prompts/distill.md")
+    .add_local_file("pipeline/evidence.py", "/root/evidence.py")
 )
 
 app = modal.App("alexandria-distill", image=image)
 
 hf_cache = modal.Volume.from_name("hf-cache", create_if_missing=True)
+
+
+def evidence():
+    """pipeline/evidence.py, wherever this is running from.
+
+    Modal drops it at /root/evidence.py; a local `python3 pipeline/distill.py`
+    import finds it beside this file. Same trick weekly.py uses for the token
+    budget, for the same reason: the rules the tests check are the rules the
+    run applies.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import evidence as module
+
+    return module
+
+
+def has_evidence_grade(conn) -> bool:
+    """Whether db/schema.sql has been applied since evidence_grade landed.
+
+    The column ships in the same PR as the code that writes it, and the schema
+    is applied by hand (`modal run pipeline/db_setup.py`). Asking the database
+    rather than assuming means a deploy that lands before the schema run
+    distills normally instead of failing every insert.
+    """
+    return conn.execute(
+        """
+        select 1 from information_schema.columns
+        where table_name = 'claims' and column_name = 'evidence_grade'
+        """
+    ).fetchone() is not None
 
 
 def fetch_fulltext(paper_id: str) -> str | None:
@@ -170,7 +207,7 @@ def distill(max_papers: int = 30):
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         papers = conn.execute(
             """
-            select id, title, abstract, triage_decision
+            select id, title, abstract, triage_decision, source
             from distill_queue
             order by case triage_decision when 'deep_read' then 0 else 1 end,
                      published_at desc nulls last
@@ -182,9 +219,15 @@ def distill(max_papers: int = 30):
         if not papers:
             return 0
 
+        grader = evidence()
+        grading = has_evidence_grade(conn)
+        if not grading:
+            print("claims.evidence_grade is missing; run db/schema.sql to start grading")
+
         wrote_any = False
         fulltexts_used = 0
-        for pid, title, abstract, decision in papers:
+        graded: dict[str, int] = {}
+        for pid, title, abstract, decision, source in papers:
             body = None
             if fulltexts_used < FULLTEXT_MAX_PER_RUN:
                 body = fetch_fulltext(pid)
@@ -216,18 +259,35 @@ def distill(max_papers: int = 30):
                 text = (c.get("claim") or "").strip()
                 if not text:
                     continue
-                conn.execute(
-                    """
-                    insert into claims (paper_id, claim, evidence, topics, procedure)
-                    values (%s, %s, %s, %s, %s)
-                    """,
-                    (pid, text, c.get("evidence"), c.get("topics") or [], c.get("procedure")),
-                )
+                row = (pid, text, c.get("evidence"), c.get("topics") or [], c.get("procedure"))
+                if grading:
+                    row_grade = grader.grade(pid, c.get("evidence"), c.get("measured"), source)
+                    graded[row_grade] = graded.get(row_grade, 0) + 1
+                    conn.execute(
+                        """
+                        insert into claims
+                            (paper_id, claim, evidence, topics, procedure, evidence_grade)
+                        values (%s, %s, %s, %s, %s, %s)
+                        """,
+                        row + (row_grade,),
+                    )
+                else:
+                    conn.execute(
+                        """
+                        insert into claims (paper_id, claim, evidence, topics, procedure)
+                        values (%s, %s, %s, %s, %s)
+                        """,
+                        row,
+                    )
                 wrote_any = True
             conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
             conn.commit()
             print(f"  {len(claims)} claims <- {title[:60]}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
+
+        if graded:
+            tally = ", ".join(f"{g} {n}" for g, n in sorted(graded.items()))
+            print(f"evidence grades this run: {tally}")
 
         # Embedding is blackboard work: sweep every unembedded claim and paper,
         # not just this run's, so any crash or missed backfill heals next run.
