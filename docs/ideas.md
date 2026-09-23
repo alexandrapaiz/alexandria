@@ -2777,10 +2777,12 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   `arxiv:`, with the comment "blog posts: the feed summary already is the
   content". That is not true of the feeds we carry. Cloudflare's RSS item for
   "We just shipped support for the ugliest part of HTTP: Vary", read directly
-  from the feed today, has a 40-word `description` and a 12,000-character
-  `content:encoded` body, and `fetch_feeds` stores the first one truncated to
-  4,000 characters. The measurement in that post, an analysis of 120 million
-  responses across 50,000 sites, appears only in the body. So the pipeline
+  from the feed today, carries a 238-character `description` and a
+  15,331-character `content:encoded` body, and `fetch_feeds` stores the first
+  one. Across that feed's 20 current items, all 20 carry `content:encoded`,
+  averaging 13,249 characters of body text against 222 characters of
+  description. The measurement in that post, an analysis of 120 million
+  responses across nearly 50,000 sites, appears only in the body. So the pipeline
   distills practice reports from a blurb, and the `field_measured` grade that
   shipped today will almost never be earned, not because the numbers are
   absent but because nothing fetches the page they are on.
