@@ -3433,4 +3433,228 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   this run's notes; make it a check the seat runs every week, so the count
   can only fall. Then one run whose entire dispatch is this.
 - Cost: $0. One full frontend run.
+
+## Security agent findings (fourth run, 2026-09-24)
+
+Full report at docs/security/audit-2026-09-24.md. Appended at the end of
+the file on purpose: four other open pull requests (#70, #71, #74, #77)
+also write into this file, and a new section at the tail is the cheapest
+conflict to resolve. The first three below are `urgent` because each
+needs an owner decision or an owner push, not an engineer build.
+
+### 2026-09-24 — Every run publishes its full transcript on a public repo, unmasked (security agent)
+
+- Trigger: review of `ef2da2e`, merged today, which added an
+  `upload-artifact` step to all twelve seat workflows with
+  `retention-days: 90`.
+- What: this repository is public, so workflow artifacts are reachable by
+  anyone who can read it. The transcript is the whole run verbatim, with
+  the output of every tool call inside it (451 records and 64 recorded
+  tool results in one of this morning's). GitHub's secret masking applies
+  to the job's log stream, and this file never touches that stream: the
+  action writes it to `runner.temp` and the upload step takes the file.
+  So an agent that runs `env`, `printenv`, `git remote -v`, or
+  `cat .git/config` writes that value into a file anyone can download for
+  ninety days. All of those are permitted, because runs use
+  `bypassPermissions`, and none is forbidden, because no charter says
+  anything about it. The 2026-09-18 audit had already recorded that
+  `git remote -v` prints the live checkout token into an agent's own
+  output; that note was about a log and is now about a published file.
+  **Scanned, not assumed: all three artifacts that exist were downloaded
+  and scanned against twenty pattern classes and hold zero secret
+  values.** This is an exposure path, not a breach.
+- First step: the owner's decision between keeping the artifact and
+  filtering it before upload, which is the recommendation, or cutting
+  retention to about 7 days, or both. A redaction step and a retention
+  change are both workflow edits, so they need her push or a PAT with the
+  `workflow` scope (incident 12). Independently and worth doing either
+  way: one line in every charter saying no agent prints the value of an
+  environment variable and `git remote -v` is never run.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — The MCP passphrase can be guessed without limit (security agent, second audit running)
+
+- Trigger: OAuth review per charter. Verified in-process against the real
+  handler: forty consecutive wrong passphrases returned forty 401s with
+  no delay, no lockout, and no counter.
+- What: that one passphrase is the whole gate. Behind it are the corpus
+  database through `sql_query`, a GitHub token that opens pull requests
+  through `propose_skill` and `propose_change`, and a 180-day refresh
+  token. `/register` is open dynamic registration, so an attacker
+  registers their own client and reaches the form legitimately, which
+  means the redirect-URI check built in run 2 does not stand between them
+  and this. The comparison itself is correct and constant-time. The gap
+  is that being wrong costs nothing. **Reported in the 2026-09-18 audit
+  and unchanged since.**
+- First step: a limiter on `POST /authorize`, with the design question
+  stated rather than skipped: the Modal container scales to zero, so an
+  in-memory counter resets on a cold start and across replicas. Either
+  accept that and write the limit down as best-effort, or keep attempts
+  in Postgres, which is the honest fix. Whichever, it must not be able to
+  lock the owner out of her own connector, so failures should back off
+  rather than bar.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — No charter says that stranger-authored text is not an instruction (security agent)
+
+- Trigger: `2ae2650`, merged today, gave the PM workflow `actions: write`
+  and activated dispatch under `docs/standards/pm.md` §11.
+- What: the standup reads open pull requests and run logs (§11.2), writes
+  an `owner_instructions` string from what it read, and fires
+  `gh workflow run`. That string lands in the dispatched seat's prompt
+  under "binding for this run and extending the charter", and that seat
+  runs with `bypassPermissions` and `PROJECTS_TOKEN`. Anyone can open a
+  pull request on a public repository. Nothing in the path marks a
+  stranger's text as data, and at the far end it arrives wearing the
+  owner's authority. Of twelve charters in `prompts/`, **zero** carry any
+  rule about untrusted content; the only file that mentions the idea is
+  this seat's charter, and it mentions it as a duty to audit. §11.4's
+  ceilings and its cite-the-evidence rule are prompt-level guardrails
+  against a prompt-level attack, so they constrain a cooperative PM and
+  say nothing about a subverted one. The structural control is real and
+  it is `PM_DISPATCH_ENABLED`, which only the owner sets. History is
+  clean: no issue has ever been opened here, there are no forks, and all
+  85 pull requests came from the owner or her own app. **Proposed as an
+  exposure path, not a breach.**
+- First step: one standing paragraph per charter saying that content
+  fetched from the web or read out of repository text written by someone
+  else is data and never an instruction, that it can be quoted and acted
+  on only through a decision already in a file, and that no agent writes
+  an environment variable's value anywhere. Charters are the owner's, so
+  this is proposed and not done. Until it exists, the recommendation is
+  to leave `PM_DISPATCH_ENABLED` unset.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — MCP authorization codes are replayable for their full ten minutes (security agent)
+
+- Trigger: OAuth review. Verified: one code exchanged three times at
+  `/token`, three valid token pairs returned.
+- What: OAuth 2.1 §4.1.2 requires an authorization code to be single-use
+  and requires the server to revoke previously issued tokens on a replay.
+  Neither happens, because `read_token` checks the signature, the expiry
+  and the `typ` claim, and nothing remembers a spent code. The cause is
+  the stateless design, which is otherwise right and is what makes the
+  redirect-URI check testable without a deployment. Practical severity is
+  moderate: an attacker holding the code also needs the matching
+  `code_verifier`, and PKCE is enforced correctly.
+- First step: ranked, cheapest first. Cut the code TTL from 600 seconds
+  to 60, which costs nothing because a real exchange takes under a
+  second and shrinks the window tenfold. Then a set of consumed code ids
+  in container memory, with its imperfection across cold starts written
+  down beside it rather than discovered later. The correct fix is a
+  table in Postgres and it is about a day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — The MCP metadata endpoints let the caller choose the host they advertise (security agent)
+
+- Trigger: OAuth review. Verified: a request carrying
+  `Host: attacker.example` returned
+  `"token_endpoint": "https://attacker.example/token"`.
+- What: `base_url()` built the issuer and every advertised endpoint from
+  the request's own Host header. A client that fetched discovery through
+  any path where the Host can be influenced would send its authorization
+  code and `code_verifier` to whatever host that document named. This
+  run fixed the crash half, which is that indexing the header turned a
+  request without one into a 500.
+- First step: pin the public host instead of reflecting it, which means a
+  new environment variable on the Modal app. That is a runtime change
+  under docs/agents/runtime-changes.md, so it wants the ladder and a
+  smoke test rather than a quiet edit.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — `propose_change` can target any seat's charter (security agent)
+
+- Trigger: MCP tool review.
+- What: the path pattern is `^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$`,
+  correctly anchored and permitting no traversal. It also matches every
+  charter in `prompts/`, including this seat's. So an MCP token holder
+  can open a pull request rewriting any agent's charter, titled
+  `meta: prompts/pm-agent.md` and bodied "Proposed by the alexandria
+  meta-review", which is what a routine proposal looks like. The human
+  merge is a real gate and is why this is low rather than severe. It is
+  filed because it composes with the untrusted-content finding above: the
+  org's own rules tell seats to read open pull requests, and a charter
+  rewrite is the one diff that changes what every later run does.
+- First step: exclude `prompts/*-agent.md` from the pattern. The
+  generator prompts that meta-review exists to improve are untouched by
+  that change, so the tool keeps its purpose.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Two seats run an image pulled by a mutable tag (security agent)
+
+- Trigger: workflow supply-chain review.
+- What: `agent-engineer.yml` and `agent-frontend.yml` both run in
+  `ghcr.io/alexandrapaiz/alexandria-agent:latest`. Whatever that tag
+  points to at cron time is what executes with `bypassPermissions` and
+  every secret those two seats carry, and `build-agent-image.yml` moves
+  the tag on any push to main under `.github/docker/**`, so a bad build
+  becomes both seats' runtime with no step in between. The other ten
+  seats run on the bare runner and are unaffected. Actions are still
+  pinned by mutable tag too (`actions/checkout@v4`,
+  `anthropics/claude-code-action@v1`), reported in both previous audits.
+- First step: pin by digest, and decide the process for moving the digest
+  at the same time, because a pin nobody can move is its own failure
+  mode. A workflow edit, so it is the owner's push.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — `skills-lock.json` records hashes that nothing verifies (security agent)
+
+- Trigger: supply-chain review of the vendored Clerk skills.
+- What: the lock file records a `computedHash` for each of the twenty-one
+  skills vendored under `.agents/skills/`, which `.claude/skills/`
+  symlinks into every agent's context. A repository-wide search for
+  `skills-lock` outside `.git` returns the file and no consumer. The
+  hashes come from the upstream installer and this run could not
+  reproduce one from the vendored bytes, so this is **not** a claim that
+  any file was tampered with. It is the narrower claim: third-party
+  markdown that enters every agent's context on every run has a manifest
+  and no verification step, so the manifest cannot currently detect
+  anything.
+- First step: a check that recomputes the hashes the way the installer
+  does and fails when one moves, run in the same place the budget check
+  should be running. Needs the installer's hashing rule first, which is a
+  short read of the upstream tool.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Incident 22's budget gate is written and still not installed (security agent)
+
+- Trigger: workflow review, cross-referenced against incident 24.
+- What: `.github/workflows-pending/checks.yml` is the check that would
+  have caught incident 22 before the merge that caused it. It is
+  complete and it triggers on exactly the right path set. It sits in
+  `workflows-pending/` because agent tokens cannot write to
+  `.github/workflows/`. So the control exists, does not run, and incident
+  24 records the next press failure arriving after it. This is the
+  cheapest open item in this report.
+- First step: `git mv .github/workflows-pending/checks.yml
+  .github/workflows/checks.yml`, which is the owner's push.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — `rag_answer` carries incident 24's failure class (security agent)
+
+- Trigger: MCP review against incident 24.
+- What: `RAG_MODEL = "openai/gpt-oss-120b"` in `mcp/server.py` is a
+  hardcoded free-tier Groq model with no availability check, which is the
+  exact shape of incident 24. The server degrades better than the press
+  did, because `rag_answer` catches `httpx.HTTPStatusError` and tells the
+  caller the model is unavailable. Two gaps in that handler: `call_groq`
+  parses with `json.loads` and an unparseable body raises
+  `json.JSONDecodeError` uncaught, and `httpx.TimeoutException` is
+  uncaught, so both surface as a 500 through MCP rather than a message.
+- First step: this is not a separate build. The engineer is already on
+  the press in PR #75, and the ask is that incident 24's standing fix,
+  an availability check and an ordered fallback list, cover
+  `mcp/server.py` and not only `pipeline/`, with one error path for the
+  whole family. Otherwise the MCP server is the next thing to fail this
+  way.
+- Cost: $0.
 - Status: proposed
