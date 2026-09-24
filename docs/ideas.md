@@ -2770,3 +2770,122 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - First step: market seat evaluates (a) versus (b) with real pricing and the compliance rules (opt-in proof, template approval, the 24-hour window), and tests whether a Channel can carry the daily without formatting loss; engineer costs the send path. Both in one brief, before anything is built.
 - Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
 - Status: proposed
+
+### 2026-09-24 — The sectioned press: one request per section, not one per issue
+- Trigger: `python3 pipeline/budget.py` on this branch, against Groq's
+  free-tier limits re-read from the live docs today. Every free text
+  model is capped at 8,000 tokens per minute, which incident 22 proved
+  is also a per-request ceiling, and `prompts/digest.md` is 9,865
+  tokens on its own. The prompt plus the output reservation is 15,865
+  tokens against 6,800 usable, before one row of payload. The press
+  cannot print the weekly issue in one request on any free model, and
+  the three-model fallback list this run added does not change that: all
+  three fail identically, because all three sit at the same ceiling.
+- What: stop sending one request for a whole issue. The digest has a
+  fixed section skeleton, so send one request per section, each carrying
+  a shared editorial core (voice, the house rules, the masthead
+  contract) plus only that section's own instructions and only that
+  section's slice of the payload. Stitch the returned sections in a
+  fixed order in code, the way `add_masthead` already writes the brand
+  line in code rather than asking the model for it. Three effects, all
+  of them wanted independently of the budget. Each request is small
+  enough to fit a ceiling far below today's. A section whose payload is
+  empty is skipped rather than hallucinated, which is the defect the
+  writer seat's PR #62 found ("the section printed over nothing"). And a
+  single section failing costs one section, not the issue, which is the
+  first time this press would degrade instead of stopping.
+- First step: split the generator prompt's reading, not the file. Parse
+  `prompts/digest.md` into its shared preamble and its per-section
+  blocks by heading, and have `budget.py` prove that preamble + the
+  largest section block + that section's worst-case payload + a 1,500
+  token reservation fits 6,800. That is one afternoon and it either
+  works on paper or it does not, before any editorial file is touched.
+  If the arithmetic holds, the second day builds the loop.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Every external dependency gets an existence check, not just the press
+- Trigger: incident 24's root cause, stated precisely. The budget guard
+  was correct, thorough, tested, and ran three times per send. It
+  checked that the request would fit and never checked that the thing it
+  was fitting still existed, so a withdrawn model passed every gate the
+  repo had. The press now checks. Nothing else does: `ingest.py` assumes
+  arXiv's feed shape, `distill.py` assumes an embedding model id,
+  `check_citations` assumes Semantic Scholar's batch endpoint, and
+  `send_newsletter` assumes Gmail will accept an app password that
+  Google can revoke without telling us.
+- What: one small module the whole pipeline shares, with one function
+  per external dependency that answers "is this still there, and is it
+  still the shape we think", plus the alarm path the press just got. Run
+  it at the start of every cron, cheap enough to be unconditional: a
+  `GET /models` for Groq, a one-paper batch call for Semantic Scholar, a
+  feed fetch with a shape assertion for arXiv, an SMTP login with no
+  message for Gmail. Each failure names the dependency, the assumption
+  that broke, and the file that holds it, and each failure emails rather
+  than printing into a log nobody reads until the owner asks.
+- What this is really about: the org has repeatedly discovered a broken
+  dependency by noticing the absence of an output. That is the slowest
+  possible detector and it has now cost three days once. A dependency
+  check is not defensive programming, it is the difference between a
+  failure the org responds to and a failure the owner reports.
+- First step: `pipeline/health.py` with the Groq and Semantic Scholar
+  probes lifted out of this PR's `check_availability`, plus one
+  `@app.function` per app calling it. One cron adopts it first, ingest,
+  because its dependency is the one with no key and therefore no
+  excuses.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Proposal, not an action: a paid floor under the press
+- Trigger: the arithmetic above. Groq's free tier moved from 70,000 TPM
+  to 8,000 TPM under this project inside five days, without notice, and
+  took the weekly issue with it. The press is the acquisition engine
+  (docs/vision.md §0) and it is currently the least reliable thing the
+  company owns, because it is the only reader-facing surface whose
+  supplier can change the terms on a Tuesday.
+- What: put the press, and only the press, on a paid floor. Groq's
+  Developer plan raises the same three models from 8,000 to 250,000 TPM,
+  which makes both incident 22 and this one arithmetically impossible
+  and costs a low monthly fee. Two alternatives worth costing beside
+  it: a second free-tier account in a separate Groq organization, which
+  is free but is a terms question and gives one bucket rather than a
+  larger one; and a second provider behind the same interface, which
+  buys real vendor independence and is the only option that survives
+  Groq itself changing.
+- Why it belongs to the owner and no agent: it costs money, so the
+  standing rule makes it a proposal. Recorded here rather than acted on,
+  and written into docs/sprints/pending.md as her decision alongside the
+  two $0 paths, so it is a choice and not a surprise.
+- First step: the finance seat costs all three against the sectioned
+  press above, since the sectioned press may make the paid floor
+  unnecessary rather than merely cheaper.
+- Cost: not $0. The Developer plan's monthly fee for option one.
+- Status: proposed
+
+### 2026-09-24 — Craft scan: The Batch (deeplearning.ai, Andrew Ng)
+- Trigger: the engineer seat's daily craft scan, next unscanned entry in
+  the newsletter half of docs/market/landscape.md. Chosen today over the
+  academic tools because the day's failure was a publishing failure, and
+  The Batch is the comp in that column that has printed weekly for years.
+- Worth stealing: **the issue's shape is fixed before the week's news
+  exists.** Every issue opens with Ng's signed letter and then runs the
+  same named sections, business, research, culture, hardware, career, in
+  the same order. The skeleton is editorial furniture, not a response to
+  what happened that week. Two things fall out of that, and the second
+  is the one this project needs. A reader learns where to look once and
+  never relearns it. And the issue can be assembled section by section,
+  because each section's brief is independent of the others, which is
+  precisely the property the sectioned-press idea above depends on.
+  alexandria's press currently asks one model, in one request, for a
+  whole issue at once, and it therefore fails as a whole issue at once.
+  A fixed skeleton is what makes partial success possible.
+- What alexandria does better: every item is checkable rather than
+  authoritative. The Batch is trustworthy because Andrew Ng signs it, and
+  that trust does not transfer, decompose, or survive him. An alexandria
+  item carries the claim, the claim-graph edge that supports it, the
+  paper, and a citation trajectory showing whether the field has come
+  around, so a reader who does not know or trust us can verify a single
+  line without taking anything on faith. That is also why the digest can
+  be read by an agent, which no signed letter can be.
+- Where it goes: the stealable thing is already the ledger entry above,
+  which is the point of naming it here rather than filing a second copy.

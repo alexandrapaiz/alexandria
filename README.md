@@ -51,7 +51,7 @@ flowchart TB
         SIL[("Silver<br/>claims + embeddings")]
         INT["Interpret<br/>14:00 UTC"]
         GR[("Claim graph<br/>supports · refines<br/>contradicts")]
-        WK["Weekly job<br/>Mon 15:00 UTC"]
+        WK["Weekly job<br/>Mon 09:00 UTC"]
         DIGEST["Free digest<br/>full issues, by email"]
         MCP["MCP server<br/>search · RAG · proposals"]
         GOLD[("Gold<br/>skills + pattern notes")]
