@@ -1135,3 +1135,64 @@ check comparing `sha256(prompts/*.md)[:12]` against the newest
 `claim_links.method`, `triage_log.prompt_sha` and `digests.prompt_sha`
 would have failed on 2026-09-19 and every day since. Deployment itself
 should follow a merge to those paths rather than wait to be remembered.
+
+## Incident 26 — The deploy freeze is not about prompts, and it has cost the top research priority its whole corpus (2026-09-24, research seat)
+
+Filed under the standing rule. Incident 25 recorded that a merged
+`prompts/interpret.md` fix never reached production. Three days later it
+still has not, and the same failure has now been found in a second file
+class, which makes it a repeat and widens what the register knows.
+
+**The repeat.** Every edge in `claim_links`, up to and including the
+nine written on 2026-09-23, still carries method sha `fbe080261d6b`.
+That is `prompts/interpret.md` as it stood on 2026-09-07. HEAD hashes to
+`6706ec7bffee` and has since 2026-09-19. Five days, no deploy. All five
+`contradicts` edges in the graph remain miscategorised and two of them
+were written *after* the corrected prompt merged, by the prompt it was
+written to replace.
+
+**The widening.** Incident 25 framed this as a prompt problem. It is not.
+`pipeline/triage.py` gained interleaved per-tier draining on 2026-09-19
+(commits 74e0c99 and 73da628), written to end a tier starvation that a
+previous research brief had found by hand in the database — the code
+comment at triage.py:15 says so. Production has judged tier `b` and
+nothing else on 09-20, 09-21, 09-22 and 09-23. Merged application code is
+frozen exactly as merged prompts are, because both ride the same Modal
+image, and nothing in the repository deploys, checks, or reports the gap.
+
+`prompts/triage.md` at HEAD matches the sha production recorded, which
+dates the last deploy to roughly 2026-09-12. Everything merged in the
+twelve days since is sitting in main, unread by anything that runs.
+
+**What it cost, stated as a number.** 7,991 papers are ingested and 151
+produced all 693 claims, every one of them through `hf-daily`. Tier `a`
+(the seven arXiv categories) has 2,329 papers waiting and has never had
+one paper judged; tier `a-low`, which is where cs.CR lives, has 936 and
+zero triage rows of any kind. The consequence lands directly on the
+owner's own order: agent containment was made the top research priority
+on 2026-09-19, and the corpus holds **zero** claims mentioning a
+sandbox, an escape, isolation, least privilege or prompt injection. The
+fix for that was merged on the same day the priority was set. It has
+never run.
+
+**Why it is incident 20's shape again, one level further down.**
+Incident 25 already identified the missing artifact-side gate. This
+entry adds that the finding, the fix, and the merge can all be correct
+and the system still changes nothing, because the last gate — something
+that puts merged code in front of the running process — belongs to no
+seat. The research seat proposes, the engineer merges, and no charter
+owns the deploy.
+
+**Correction to incident 25, instance two.** That entry attributed the
+three missing cs.CR papers to arXiv's 100-most-recent window moving past
+them before `sources.yaml` reached the ingest image. The ingestion half
+is right; none of the three is in `papers`. The remedy stated there — "the
+category works now" — is wrong. No `a-low` paper has ever been triaged,
+so a cs.CR paper that did arrive would sit in the queue indefinitely.
+Fixing ingest reach would not have produced a single cs.CR claim.
+
+**Not filed as a proposal here; engineer's lane.** Incident 25's
+suggested CI sha check stands and should extend to `pipeline/*.py`, not
+only `prompts/*.md`. The research seat's own charter is amended in this
+PR instead, to stop this seat spending its one weekly proposal on files
+that cannot take effect (`prompts/research-agent.md`, Step 4).
