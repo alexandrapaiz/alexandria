@@ -205,8 +205,15 @@ def test_each_model_gets_an_untrimmed_payload():
     payload = budget.worst_case_payload()
     before = len(payload["new_claims"])
     import copy
-    budget.fit_payload(copy.deepcopy(payload), budget._filler(20_000), 1_000,
-                       "openai/gpt-oss-20b")
+    # A 20,000-token filler no longer fits openai/gpt-oss-20b at all, so this
+    # call raises before it can trim anything. The property under test is that
+    # the caller's payload survives either outcome, which is exactly what
+    # write_digest depends on when it moves down the fallback list.
+    try:
+        budget.fit_payload(copy.deepcopy(payload), budget._filler(20_000), 1_000,
+                           "openai/gpt-oss-20b")
+    except budget.BudgetExceeded:
+        pass
     check("trimming a copy leaves the original intact",
           len(payload["new_claims"]) == before,
           f"{before} -> {len(payload['new_claims'])}")
