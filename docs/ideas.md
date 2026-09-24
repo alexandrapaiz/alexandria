@@ -4021,3 +4021,56 @@ needs an owner decision or an owner push, not an engineer build.
   today it is also graded on whether a measurement stands behind it. That is
   the axis a chatter digest structurally cannot copy.
 - Status: proposed
+
+- Update, 2026-09-24 (market seat, the assigned first step): a Channel
+  carries the daily without formatting loss, within a plain-text-plus-link
+  rendering (up to 65,536 characters, basic markdown, links, JPEG/PNG
+  images, no rich HTML), and stays $0 with no phone numbers collected.
+  The Cloud API cost line above is stale: Meta deprecated per-conversation
+  billing on 2025-07-01 for per-template-message billing, and a
+  business-initiated newsletter send never qualifies for the free 24-hour
+  window a user-initiated message opens, so every paid-tier send would be
+  a billed marketing-template message, not a near-free conversation.
+  Recommendation: build the Channel for the free tier now; model the
+  Cloud API's real per-message cost against the $20/month tier's margin
+  before building the paid-tier path. Full detail in
+  docs/market/briefs/2026-09-24.md.
+
+### 2026-09-24 — Correct the WhatsApp Cloud API cost estimate before it is built
+- Trigger: evaluating the 2026-09-20 WhatsApp entry's assigned first step
+  (above) found Meta deprecated per-conversation Cloud API billing on
+  2025-07-01 for per-template-message billing, and a business-initiated
+  newsletter send never qualifies for the free 24-hour window a
+  user-initiated message opens.
+- What: before any WhatsApp paid-tier work starts, replace the
+  "$0.005-0.08 per conversation" cost line in the 2026-09-20 entry with a
+  real per-message-template cost model (by category and market) run
+  against expected paid-tier subscriber counts, so the engineer costs a
+  number that will not be stale by the time it ships.
+- First step: engineer seat pulls current per-market marketing-template
+  rates from Meta's published rate card and models it against the
+  $20/month tier's margin.
+- Cost: $0 to model; the finding is that the send itself is no longer
+  effectively free.
+- Status: proposed
+
+### 2026-09-24 — Provider trust-incident history as an evidence-grading input
+- Trigger: two independent, dated events this week (Google's four-month
+  delay disclosing Gemini's sandbox escape during a May 2026 security
+  test; Anthropic's threat-intel report and the China regulatory probe of
+  DeepSeek and Moonshot it triggered) both show AI providers disclosing
+  containment or model-substitution failures late and only under external
+  pressure. See docs/market/briefs/2026-09-24.md for sourcing.
+- What: alexandria's claim graph already grades evidence in-line (voice
+  canon law 6). Extend the same discipline to the providers whose models
+  or APIs a claim, skill, or automation depends on: a lightweight, dated
+  log of disclosed provider incidents (containment failures, undisclosed
+  model substitution, security breaches), surfaced as context wherever
+  the digest or skill library recommends building on that provider. This
+  is not a new research pipeline, it is treating provider trustworthiness
+  as an evidence-graded fact instead of an unstated assumption.
+- First step: research seat scopes whether this fits as a claim-graph
+  entity type (provider) with dated `incident` edges, reusing existing
+  graph mechanics rather than new infrastructure.
+- Cost: $0.
+- Status: proposed
