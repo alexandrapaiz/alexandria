@@ -2052,4 +2052,129 @@ mid-run failure.
    probe succeeds, take the lane back and work step 6 of the handover
    page.
 
-<!-- exo 2026-09-24-b: run in progress -->
+## 2026-09-24, second cycle — a provider is a runtime, and the law that knew better did not fire
+
+Dispatched by the owner hours after the first cycle of the same day,
+after the press failed four times in one evening on its new provider.
+This run builds on PR #77 and supersedes it, so everything in the
+2026-09-24 entry above still stands. Read that one first.
+
+### What happened, in one paragraph for a successor who knows nothing
+
+ADR-32 moved the press's single writing call from Groq to Moonshot's
+Kimi. The change was deployed straight to the real Monday path. It then
+failed four times: the model returned no content because it spent a
+6000-token reservation on hidden reasoning, the HTTP client timed out at
+300s while the model was still reasoning, Neon killed a read transaction
+the press had left open across the multi-minute call so an issue that
+had been written could not be saved, and an alarm subject read
+`[alexandria] 2026-W39`, which the owner rejected on taste. The chair
+fixed each in minutes. The owner found each one from her inbox.
+
+### The learning, and it is not "test your provider"
+
+All four are integration properties of a new provider. Reasoning models
+think before they write. Long calls need long timeouts. Long calls must
+not hold database transactions. A provider swap rewrites owner-facing
+prose. None of them is in any documentation, and all of them are in one
+real call.
+
+The org already had the law that would have caught this.
+`docs/agents/runtime-changes.md`, smoke-test-first, written after
+incidents 17 and 18, binding every seat and the chair. It did not fire,
+and the two reasons it did not fire are the finding.
+
+**First, the law's scope was narrower than its subject.** It was written
+the week the org containerized, so its "what counts as a runtime change"
+list is a list of container and workflow machinery. A model id is not on
+it. The press is a Modal cron rather than a seat, and the law said "the
+environment a seat runs in". A reader applying it honestly concludes it
+does not apply. It applies now: a provider or model change is a runtime
+change, and the press, the daily crons, the site deploy and the MCP
+server are runtimes.
+
+**Second, and this is the one that will recur, the audit was pointed at
+the wrong directory.** My own charter's step 2 diffs `.github/workflows/`
+and `.github/docker/`. The engineer's daily §0 check runs the same
+command. A provider change lands in `pipeline/` and touches nothing
+under `.github/`, so the largest runtime change the org makes was
+invisible to both gates that enforce the runtime law. Both now read
+`pipeline/` too.
+
+Generalize that before the next run meets it in a different register.
+**A gate can fire on schedule, pass its own audit, and miss, because its
+scope is narrower than its subject.** `runtime-changes.md` was marked
+closed in the register map on 2026-09-20 and every cell in its row was
+accurate. The cadence column catches gates that are too slow. Nothing
+caught this one, which was pointed the wrong way. The check that would
+have, now written into registers.md: for each row, name one change that
+would break what the register governs, then ask whether the
+artifact-side gate would have *seen* it, not whether it would have
+fired.
+
+### Recording is not enforcing, the fourth occurrence
+
+The law existed. The chair knew it. It still did not fire. Writing a
+better law this week does not fix that, and the org should stop
+pretending it does.
+
+The honest enforcement answer is small: **the gate goes in the command,
+not in the charter.** The press already has one mechanical gate and it
+has never failed. It is the `&&` chain the chair runs before a deploy,
+which asks whether the request fits and whether the model exists, and
+which stops the deploy at the `&&` when either answer is no. No charter
+text is involved and there is no way to forget it. The third question,
+does one real call work, was never added as a link. Adding it is one
+more `&&`.
+
+That is the sentence I would keep if the rest of this entry were cut. A
+rule enforced by a sentence in a charter is enforced at the reliability
+of a model reading a file. A rule enforced by a link in a command is
+enforced at the reliability of a shell. Nine rows in the register map
+are the first kind and one is the second, and the one that is the second
+is the one that has never broken.
+
+### What worked, four times out of four
+
+The alarm path. Every one of these failures reached the owner by email,
+sent by the press about itself, within seconds. That machinery is
+incident 24's standing fix, shipped in PR #75 for the Groq 404, and this
+is the first evidence of it working on a provider it was not written
+against. Incident 24 was discovered by an empty inbox three days later.
+These four were discovered by four emails the same evening, which is why
+this entry describes four fixed bugs rather than a second missing issue.
+
+The complaint about the fourth alarm's subject line is a complaint about
+an email that arrived. That is the shape of progress and it is worth
+saying plainly, because a learning log that only records failures
+teaches the next run that nothing the org builds ever works.
+
+The delivery-health finding from this morning's cycle also proved itself
+within hours, and it is worth recording as evidence rather than as a
+prediction. Every GitHub Actions run on 2026-09-24 is green. The press
+failed four times the same evening. `gh run list` was accurate and
+useless, exactly as `docs/agents/delivery-health.md` said it would be.
+
+### What the next run must check first
+
+The six items from this morning's entry still stand, unchanged. Add
+these four, and read them first because they are this run's unpaid debt.
+
+1. **Did the fourth print land?** One was in flight as this run started.
+   Check the newest row in `digests` and its `model` column. If 2026-W39
+   is there and written by `kimi-k2.6`, the press is printing again for
+   the first time since 2026-W37, and that is the top line of your PR.
+2. **Does `rehearse` exist?** `grep -n "def rehearse" pipeline/weekly.py`.
+   `docs/agents/press-rehearsal.md` is a specification addressed to the
+   engineer and nothing more until that grep hits. Until then the
+   runtime law's provider ladder has two working links and a paragraph,
+   and the paragraph is the part that failed.
+3. **Is the receipt in the deploy command?** `grep -n "rehearse"
+   pipeline/weekly.py` again, in the module docstring's `&&` chain.
+   Shipping the function without the link would be the exact failure
+   this entry is about, one layer up.
+4. **Count the provider changes since this run.** `git log --since=...
+   -- pipeline/` for commits touching a model id, a provider, a
+   reservation or a timeout, and for each one ask whether a rehearsal
+   ran. This is the new half of step 2 and the first run to use it is
+   the one that finds out whether the clause is written usefully.
