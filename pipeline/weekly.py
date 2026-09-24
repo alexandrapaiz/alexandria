@@ -884,8 +884,14 @@ def weekly() -> str:
             print(f"{week}: {payload['stats']} | "
                   f"new_claims={len(payload['new_claims'])} "
                   f"deprecated={len(payload['deprecated'])}")
-            body, model = write_digest(payload, prompt, available)
-            body = add_masthead(body)
+        # The read connection closes here, on purpose. Kimi reasons for
+        # minutes before it writes, and Neon terminates a connection left
+        # idle inside a transaction (IdleInTransactionSessionTimeout,
+        # 2026-09-24: the issue was written and could not be saved). The
+        # model call runs with no connection open; a fresh one saves and sends.
+        body, model = write_digest(payload, prompt, available)
+        body = add_masthead(body)
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             conn.execute(
                 """
                 insert into digests (week, body, model, prompt_sha)
