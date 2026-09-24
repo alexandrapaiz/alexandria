@@ -1,3 +1,72 @@
+## Updated 2026-09-24 (ceremony-lite sync, third pass this session)
+
+Owner directive: ceremony-lite update (not the full Monday ceremony,
+not a standup), synchronous, owner present. Builds on PR #85's two
+commits (04:13 UTC snapshot below); this pass re-checked `gh pr list`
+and `gh run list` and found only two changes since then: PR #87
+opened (exo, second run today) and this run's own PR #88. No new
+merge, no new run failure. Fires no dispatches, same reasoning as
+below (owner present, multiple `workflow_dispatch` calls inside the
+last two hours).
+
+**New this pass, not caught by the 04:13Z snapshot:**
+
+1. **`docs/decisions.md` has two headers both titled "## ADR-32"** —
+   "Accounts via Clerk, Neon as system of record, door-closed launch"
+   (2026-09-19) and "The press writes on Kimi K2; sovereign hosting is
+   the destination" (2026-09-24). This is the exact failure PR #57
+   fixed once already (a duplicate ADR-30, renumbered to ADR-32).
+   Per the standing rule this file's own incident register already
+   set for duplicate numbers (docs/agents/incidents.md, "On the
+   numbering"), the fix is not to renumber silently: renumbering
+   breaks every existing cross-reference, and this file alone cites
+   "ADR-32" for the Kimi K2 decision four times above (Modal secret
+   section, press recovery section). This needs your one-line call:
+   which one keeps 32 and which one becomes 33, and whoever applies it
+   should grep-fix every citing file in the same PR, since a lone
+   renumber that misses a citation is worse than the duplicate. This
+   is a `docs/decisions.md` edit, so it is Tier B and outside this
+   seat's writable surface regardless.
+2. **Org chart gap closed in this PR**: the writer seat (ADR-28,
+   running daily since 2026-09-19, seven merged PRs) was missing
+   entirely from `docs/agents/org-chart.md`'s active-seats table.
+   Fixed in place. Also corrected initiative 3's stale "weekly leads"
+   line (ADR-25 renamed that seat to research in 2026-09-19; ADR-28
+   then gave the digest's voice to writer).
+3. **Board, labels, milestone mirrored this run** (`PROJECTS_TOKEN`
+   available and working via `gh api graphql`, though the `gh project`
+   porcelain commands 403 on this token's scopes — use raw GraphQL
+   against `user(login: "alexandrapaiz").projectV2(number: 4)`, id
+   `PVT_kwHOBqunQs4Bj3sN`, same as PR #85's own note): moved the three
+   Sprint 09-21 board items that PR #26 and market's positioning
+   update actually shipped (email capture, live hero metric,
+   positioning.md) from Sprint Ready to Done, evidence-checked against
+   the merged PR and the file's live pricing text, not assumed.
+   Created the standard label set from company standard §2b
+   (`seat:<name>` for all 11 seats including writer, `horizon:now|
+   next|later`, `blocked`, `owner-action`) and applied `seat:*` to all
+   28 open PRs. Opened milestone `sprint-2026-09-21`, due 2026-09-27,
+   the first milestone this repo has had. Not done this pass: the
+   board's own "Sprint 09-21 · 1-6" items are numbered against an
+   older sprint revision and no longer match this file's current
+   five items (the MCP fix, prose benchmark, factual audit, quality
+   checklist, skill validation) — a fuller remap is Monday's job, not
+   a mid-week mirror's.
+4. **Checked, not stale**: a prior pass in this file (2026-09-18
+   snapshot, "what each seat owes") flagged `org-chart.md` as possibly
+   wrong to list sales as dormant. Checked against ADR-24's own text
+   this pass: dormant means no cron, and neither finance nor sales has
+   one despite both being hand-dispatched this week. The table was
+   already correct; noted in org-chart.md itself so the next run does
+   not re-flag it.
+
+**Top three for you, this pass** (see "What I need from you, top
+three" in this PR's description for the full version):
+1. The ADR-32 duplicate numbering call, above.
+2. The merge order across 28 open PRs (unchanged from PR #85's
+   breakdown below — still current, re-checked, nothing merged since).
+3. The finance dormant-vs-activated question (unchanged from below).
+
 # Pending tracker
 
 Maintained by the PM agent every run (charter §1d): what every seat owes,
