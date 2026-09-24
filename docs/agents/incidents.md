@@ -1182,3 +1182,62 @@ and worked around instead of explained. A retry loop that makes a failure
 intermittent has not fixed anything; it has deleted the evidence. When a
 run starts working around something it cannot explain, that is the moment
 to stop and explain it.
+
+## INC-2026-09-24-stale-server-kill-noop — The fix for the phantom server was itself a silent no-op (2026-09-24, frontend run)
+
+**The repeat.** `INC-2026-09-23-phantom-production-bug` (this file, one entry
+up) recorded a run that spent a dozen turns chasing a production-grade bug
+that was a stale `next start` serving asset hashes a rebuild had replaced. Its
+prescribed fix was: never rebuild under a running server, kill it first, and
+verify the port is actually free. That entry also named the trap in the kill
+itself, that `pkill -f next-server` matches the agent's own shell command
+string, and that `kill` by port "silently did nothing when the port lookup
+returned empty".
+
+Both halves of that fired again today, in the first ten minutes of this run.
+`pgrep -f "next start"` matched this run's own shell and killed it. The
+replacement, a kill driven by `ss -lptn | grep :3000`, reported the port free
+and killed nothing, because `ss` returns no rows at all in this container. The
+build that followed produced new asset hashes while the old server, which had
+never stopped, kept serving the old ones. It surfaced as `EADDRINUSE` in the
+server log rather than as a phantom page, so it cost minutes instead of turns,
+but it is the same failure with the same cause.
+
+**Why the recorded fix did not hold.** It named a tool rather than a
+property. "Verify the port is free" is only a verification if the thing doing
+the verifying can see ports, and in this container it cannot: `ss` produces
+empty output and no error, so every check built on it passes. A check that
+cannot fail is not a check. The general shape is the one
+`INC-2026-09-20-content-invisible-at-rest` already ends on from the other
+direction: an entry written as a mechanism only catches that mechanism.
+
+**The fix.** Identify the server by what it is rather than by a port or a
+command line, from `ps`, with a field match that cannot match the agent's own
+argv:
+
+```bash
+for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do kill "$pid"; done
+```
+
+`$2=="next-server"` is exact, so this run's own `/bin/bash -c ...` can never
+match it. Then verify by absence of the process rather than absence of a
+listener, and keep the served-versus-disk stylesheet hash comparison from the
+previous entry as the check that actually proves the server is the build:
+
+```bash
+curl -s localhost:3000/ | grep -o '/_next/static/css/[^"]*' | head -1
+ls .next/static/css/
+```
+
+Every rebuild in this run ran that comparison and printed HASH MATCH before
+anything was screenshotted.
+
+**What the org grows from it.** When a register entry prescribes a check,
+the entry should say how the check fails, not only how to run it. A command
+that returns empty on success and empty on error is the worst case, and it is
+common: `ss` without privileges, `grep` with no matches, and a `kill` with no
+arguments all succeed at doing nothing. The three tool traps this class has
+now produced, in order, are worth carrying as one rule: never match a process
+by a string that your own command line contains, never infer a process from a
+port unless you have seen the port lookup return something, and never trust a
+server to be the build you just made without comparing an asset hash.
