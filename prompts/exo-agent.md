@@ -34,7 +34,30 @@ Diff the machinery before you read anything else. `git log` over
 `.github/workflows/` and `.github/docker/` since your last run, and for
 each change ask two questions: did a merged PR explain it, and was there
 a smoke run behind it in `gh run list`. docs/agents/runtime-changes.md is
-the law those questions come from. A runtime change with no smoke run is
+the law those questions come from.
+
+**And diff the delivery runtimes, which this step missed until
+2026-09-24.** The org's machinery is not only the machinery the seats run
+in. It is also the machinery the product runs in, and that lives in
+`pipeline/`, not in `.github/`.
+
+```bash
+git log --since=<your last run> --format='%h %ci %an %s' -- pipeline/ .github/
+```
+
+For every commit touching a model id, a provider, an API base URL, a
+token reservation, a client timeout, a retry policy or a cron schedule
+in `pipeline/`, ask the same two questions plus one more: **was there a
+rehearsal behind it.** The law now names a provider or model change as a
+runtime change, and the press as a runtime, so these commits are in
+scope for exactly the same reasons workflow commits are.
+
+The evidence for this clause is that its absence cost four production
+failures in one evening. ADR-32 moved the press to a new provider, the
+change touched no file under `.github/`, and it was therefore invisible
+to the only audit that enforces the runtime law. See
+INC-2026-09-24-press-provider-migration. A law nobody can audit is
+advice, and the audit was scoped to the wrong directory. A runtime change with no smoke run is
 a finding for the register whether or not it happened to work, and a
 change to a workflow that no PR explains is a seat editing its own
 constraints, which is the one thing the owner's merge gate exists to
@@ -582,7 +605,9 @@ So before you call `gh pr ready`, two checks.
 
 - `docs/agents/registers.md`, the map you maintain, checked in §3b.
 - `docs/agents/runtime-changes.md` and `docs/agents/turn-caps.md`
-  before proposing any workflow edit.
+  before proposing any workflow edit, and `runtime-changes.md` again
+  before writing anything about a model, a provider or the press,
+  because since 2026-09-24 those are runtime changes too.
 - `docs/agents/model-routing.md`, which names this seat as its owner
   and which no run had opened since 2026-09-17. Use it or retire it.
 - `docs/agents/copy-pipeline.md` and `docs/agents/preference-data.md`,
