@@ -499,3 +499,108 @@ While the logs are open, `modal app logs alexandria-triage` also answers the
 open throughput question: the 429's body names which Groq limit binds, and
 `docs/product/triage-capacity.md` §"What would actually raise throughput" says
 what to do with each possible answer.
+
+## Press recovery: your checks and your two decisions (engineer, 2026-09-24)
+
+Added by the engineer seat under your urgent dispatch of 2026-09-24,
+which directed this seat to write the one-click check into this file.
+Second use of the same narrow exception as the triage-fix note above:
+append-only, a handover note, not planning. The PM should treat it as
+such.
+
+### 1. The one-click check only you can run
+
+**Did Monday's 15:00 UTC schedule fire at all?** The repo cannot answer
+this and neither can the Modal CLI. `modal app logs alexandria-weekly`
+shows no output for 2026-09-21, and no-output is the same value for "the
+container never started" and "the container started and died before its
+first print". Schedule history lives only in the dashboard.
+
+One click:
+
+> **https://modal.com/apps/alexandria-weekly** → the **weekly** function
+> → the **Schedule** or **Runs** tab → look for an entry dated
+> **Monday 2026-09-21, 15:00 UTC**.
+
+Three possible answers, and what each one means:
+
+- **A run is listed and it failed.** Then the 404 is the whole story,
+  this PR fixes the class, and nothing further is owed.
+- **No run is listed.** Then there is a second, independent failure:
+  Modal did not fire a cron it was deployed with, and the deployed
+  version (v31) is not doing what the code says. That is a new incident,
+  and it is the more serious of the two. Tell the chair and it gets its
+  own register entry.
+- **A run is listed and it succeeded.** Then something wrote nothing and
+  reported success, which is incident 8's pattern again and the worst of
+  the three answers.
+
+Please note which one it is. It is the difference between one bug and
+two, and this PR only fixes one of them.
+
+### 2. Decision: the press cannot print until the prompt gets shorter or the request gets split
+
+Not a request for a service. A statement of arithmetic, printed by
+`python3 pipeline/budget.py` on this branch: Groq's free tier now caps
+every text model at 8,000 tokens per minute, which is also the
+per-request ceiling, and the digest's generator prompt is 9,865 tokens
+before any payload or any room to write. Full detail in the incident 24
+continuation in docs/agents/incidents.md.
+
+Three ways out. The first two are $0 and are ours to build; the third is
+yours alone.
+
+- **Shorten `prompts/digest.md`** from 9,865 tokens to under about
+  4,500. Fastest path to a printed issue, and it is the writer seat's
+  surface, not the engineer's. A 55% cut of an editorial document is a
+  real editorial decision and should be made as one.
+- **Split the issue across several requests**, one per section, each
+  carrying only the part of the brief its section needs. Durable, $0,
+  and it survives the next ceiling change too. Proposed as the
+  engineer's next slice in docs/ideas.md. Roughly a day.
+- **Groq's Developer plan.** Raises the same three models from 8K to
+  250K TPM, which makes the whole problem disappear. It costs money, so
+  it is a proposal and never an action: see the ledger entry. No agent
+  will act on this.
+
+We recommend the second, with the first as an independent improvement
+whenever the writer seat next opens that file.
+
+### 3. Correction to the dispatch: a dedicated Groq key would not help
+
+Your dispatch offered "either the press gets its own key, or the press
+runs when the crons are idle". The first option does not work, and the
+reason is one sentence on Groq's rate-limit page: "Rate limits apply at
+the organization level, not individual users." A second key on the same
+account draws on the same 8,000 TPM as the five crons already do. Only a
+separate Groq organization or the paid plan changes the number.
+
+So this run took the second option. The press moves from Monday 15:00
+UTC to **Monday 09:00 UTC**, two clear hours ahead of the earliest daily
+cron and well outside the contested 11:00 to 15:00 band. It is also the
+better editorial slot: 09:00 UTC is 5am in New York, so the issue is in
+a reader's inbox before the working day, and the week it covers ended
+the previous night, so nothing is half-ingested.
+
+**No action owed from you on this one**, beyond knowing the send time
+moved.
+
+### 4. What the chair runs after this PR merges
+
+Merging deploys nothing; Modal runs the last deployed version. In order,
+stopping at the first failure:
+
+    python3 pipeline/budget.py \
+      && modal run pipeline/weekly.py::preflight \
+      && modal deploy pipeline/weekly.py
+
+The first command will FAIL today, by design, and its output is the
+arithmetic in decision 2 above. Until that decision is taken, the honest
+state is a press that cannot print and now says so loudly. Deploying
+the new code anyway is still worth doing the moment the budget clears,
+because it is what turns the next failure into an email instead of three
+days of silence.
+
+One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
+Unset, press alarms go to the Gmail address the `Gmail` secret already
+holds, which is yours. Set it if you would rather they went elsewhere.
