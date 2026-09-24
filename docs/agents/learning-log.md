@@ -1824,3 +1824,230 @@ confirmed contradiction and fixing it is worth more than finding a second.
 - **The registers.md marker lines** under docs/voice/ and docs/design/.
   Two days as an open ledger request now. Still cosmetic, still not this
   seat's to edit.
+
+## 2026-09-24 — ExO run, the week the org found out it has two legislatures
+
+Branch `exo/2026-09-24`, pull request #77. Dispatched by the owner, not
+by the cron, with an instruction that named its own agenda: postmortem
+two incidents, produce a rule for how HQ decisions reach a company that
+has its own laws, name the press-reliability guardrails, and answer her
+question about Temporal.
+
+**Read this first, successor.** This run built on PR #65, which builds
+on #61, so #77 supersedes both and the owner can close two PRs by
+merging one. If #77 is still open when you run, build on it the same
+way. Do not branch from main and write into these files, because every
+file this seat owns is in all three.
+
+### The finding that outranks the rest: alexandria is not sovereign
+
+Incident 23 looks like a model failure and it is not. HQ's ADR-015
+routed four seats here to `kimi-k2.7-code`, the PM failed both of its
+runs, and the chair pulled the secrets. That is the visible layer. The
+layer underneath is that **a parent-level decision overrode a local
+safety law, and nobody in this repository was assigned to notice.**
+alexandria's routing register requires a golden-set comparison before
+any seat changes model. The comparison was not skipped by anyone's
+choice. It was not seen, because the decision was made where the law
+was not visible, and the only record of it inside alexandria was a
+commit subject.
+
+This is a whole class and it had no name here. Everything in this org's
+audit machinery measures a seat against a charter, or a charter set
+against a duty. Nothing measured this repository against a body with
+authority over it. The rule that came out of it is
+docs/agents/cross-repo-law.md, and its shape is deliberately modest,
+because the tempting fix is the wrong one. **It is not a veto.** Parent
+decisions govern, and inventing an approval step here would be a
+subsidiary claiming authority it does not have and does not want. What
+the subsidiary is owed is notice, and notice has a definition: one entry
+in docs/decisions.md, one line in the local law being overridden written
+in that law's own file, and the affected seats told somewhere their
+charters already read.
+
+The clause worth remembering if you have to rebuild this from scratch is
+the third one. **A local law's preconditions survive an override unless
+the override names them.** HQ decided the direction, which is open
+routing, and the direction is the owner's own from 2026-09-17. HQ did
+not decide that the golden-set gate should be skipped, and nothing
+suggests it meant to. A safety clause that can be dropped by not being
+mentioned is not a clause.
+
+Enforcement is §3f of this charter, and the relay upward is
+docs/agents/hq-relay.md, an outbox the chair carries because no seat can
+write to the parent repository. The first entry is written and
+undelivered. **Check the delivery column.** An entry still undelivered
+after two of your runs is a finding about the channel, not about the
+chair.
+
+### The second finding: the org watched twelve workflows and zero products
+
+Incident 24 is the press failing three times in five days, 413 then 429
+then 404. Each was diagnosed correctly, each was fixed by moving to a
+different model, and each fix held until the free tier moved again. The
+engineer seat's PR #75 established the harder fact underneath all three:
+no model on the provider's free tier can print the weekly issue at the
+current prompt size, because prompt plus output reservation alone is
+15,865 tokens against 6,800 usable. The press is instrumented, not
+fixed.
+
+The organizational finding is not about models. It is that **the owner
+found out from her own inbox, three days late, and every health report
+the org produced that week was accurate.** Every run-health duty in
+every charter reads `gh run list`. That covers twelve agent workflows
+and none of the things this org ships. The press is a Modal cron, the
+site is a static deploy, the MCP server is a long-running process, so
+all three were outside every health check the org has ever written.
+
+Nothing failed an audit. The duty was owned, performed, and performed
+correctly against a definition of health that excluded the product.
+That is incident 19's shape again, and it means the §3b hunt has a blind
+spot worth writing into your method: **grep the charters for the
+vocabulary of the thing the org sells, not only for the vocabulary of
+the duty.** "Run health" found an owner immediately. "Digest," "issue,"
+and "reader" in a monitoring sense found nobody.
+
+The fix is docs/agents/delivery-health.md, four standing guardrails, and
+the fourth is the one that was missing everywhere. Availability checks,
+fallback lists and failure alarms all tell you when a run failed. None
+of them tells you when a run never happened, and incident 24's second
+and more serious failure is exactly that: the Modal app left no log at
+all for 2026-09-21, and a job that never starts cannot notify anybody.
+Only an outside observer catches a missing run, the observer is the PM's
+daily standup, and the evidence is the artifact rather than the
+scheduler. **Where a scheduler and an artifact disagree, the artifact
+wins.** A scheduler reports its own intentions.
+
+One thing the delivery-health table says out loud and you should not let
+soften: the weekly press is now instrumented and the daily pipeline is
+not. The daily pipeline runs on the same free tier, the same account and
+the same provider, and it feeds everything the weekly issue is made of.
+It has a budget guard and nothing else. That row is in unowned-duties.md
+marked unowned, deliberately, because the fix is engineer work and the
+sizing is the PM's.
+
+### The third finding, which this run tripped over rather than hunted
+
+The merge that opened this run conflicted, and the conflict was not a
+text conflict. On 2026-09-21 this seat wrote incidents 23 through 26 on
+its branch. On 2026-09-23 the chair wrote incidents 23 and 24 on main
+for entirely different events. Both were correct when written, because
+both read the highest number visible where they could see it.
+
+Then the file turned out to already contain two entries numbered 19, two
+numbered 20, and two numbered 22, from three earlier merges. **It had
+happened three times before and nobody registered any of them**, which
+makes those three a silent violation of the register's own standing
+rule. Incident 29 records all four.
+
+The general lesson is worth more than the fix. **The org keeps two kinds
+of identifier and had been treating them the same.** An id read only by
+the run that wrote it can be sequential. An id that other artifacts cite
+has to be allocatable without coordination, because the seats cannot
+coordinate by construction: they never message each other and each one
+sees a different snapshot of the repository. A sequential counter in a
+file is not an allocator under those conditions, it is a collision
+generator, and it will fire again on every run where two seats register
+something between merges. New entries now use `INC-YYYY-MM-DD-slug`.
+Numbers 1 through 28 are permanent.
+
+**Where to look next, and the next run should actually look.** ADR
+numbers have the same shape. Alexandria's own ADRs stop at 32, HQ
+numbers its own ADR-015 and ADR-033, and both sets are cited in this
+repository as bare numbers. Nothing in a citation tells a reader which
+legislature it belongs to. That has not bitten yet. It will.
+
+### The numbers this seat carries forward
+
+**Dispatch authorship, per §2c.** Two dispatches since the last run, the
+engineer's break-fix and this one. Both authored by the owner. The count
+has never had a non-owner entry. The PM's §5 dispatch authority went
+ACTIVE on 2026-09-23 under ADR-033 and `docs/sprints/dispatch-queue.md`
+does not exist yet, which is correct rather than a violation: the PM has
+not completed a run since 2026-09-19, so no standup has ever executed.
+**Your first §2c check is whether that file now exists and whether its
+contents match the dispatch list. If the PM's first standup runs and the
+queue is still missing, that is an incident.**
+
+**Rounds to convergence, per §3e.** No copy sessions this week, so the
+eight-round number from 2026-09-20 stands unimproved and untested.
+
+**The open-PR queue, and this is the number that worries me most.**
+Eighteen pull requests open, the oldest six days old. Since 2026-09-21
+exactly one PR has merged, #76, and it was the chair's. Every chair PR
+in the log merged within hours. Every seat PR since 09-21 is still open.
+The seats are producing work about five times faster than it is being
+absorbed, so the binding constraint on this org is no longer agent
+capability, it is one human's reading time. I am recording that as an
+observation and not as a proposal, because the merge gate is the owner's
+by design and loosening it is her call and nobody else's. But the
+compounding cost is real and it is already visible in this file: the
+incident-numbering collision happened because four seats wrote into one
+register across six days of unmerged branches. **Queue depth is not a
+tidiness problem. It is what turns independent work into conflicting
+work.**
+
+**Run failures, per §2b.** One since the last run: pm-agent 35626266985,
+already diagnosed in incident 23, and it is the second of that
+incident's two. No new class. No cap was hit anywhere this week.
+
+### What I corrected in my own predecessor's work
+
+The 2026-09-21 run queued a PM cap raise from 300 to 400 on the grounds
+that the seat's duties had grown. Today's measurement gives 300 as the
+rule's answer, from a peak of 141, and the peak has not moved because
+the seat has not completed a run since. So the raise was set from a
+feeling that the seat had more to do, which is the exact thing
+turn-caps.md forbids, and the feeling was this seat's own. The queue now
+marks it optional headroom.
+
+The writer's raise to 200 went the other way and got stronger. Its peak
+moved from 80 to 83, and 150 has still never been hit, which is why
+nobody has noticed it is low.
+
+One clause added to turn-caps.md that the rule was missing. Clause 1
+covers a run censored high by hitting the cap. Nothing covered a run
+censored low by failing for another reason, and the PM's two failures at
+turn 1 and turn 30 would have proposed cutting its cap to 100. **A run
+that failed for any reason other than the cap contributes nothing to
+that table, in either direction.**
+
+### The owner asked about Temporal, and the answer is in its own file
+
+docs/agents/durable-execution.md. The short version: it would have fixed
+the visibility half and none of the rest. Of the week's five failures it
+helps with exactly one, the Modal run that left no log, and it helps
+with that one genuinely. It does not help with a 404, because retrying a
+withdrawn model faithfully is slower failure rather than no failure, and
+it does not help with a saturated key, because the org-level ceiling is
+the constraint. Recommendation is post-launch, beside the router
+evaluation, with a concrete revisit trigger rather than a date: the
+first time the org loses more than an hour of completed work to a
+mid-run failure.
+
+### What the next run must check first
+
+1. **The relay's delivery column.** docs/agents/hq-relay.md. One entry,
+   undelivered as of this writing. Undelivered after two runs is a
+   finding about the channel.
+2. **Whether the PM ever ran.** Its first daily standup was due
+   2026-09-24 at 11:05 UTC, hours after this run. If it completed, read
+   `docs/sprints/dispatch-queue.md` against the dispatch list per §2c,
+   and read its run-health line for whether it wrote the delivery half.
+   If it failed again on Sonnet, that is a new incident and not incident
+   23, because incident 23 is about the routed path.
+3. **Whether the press printed.** The newest row in `digests`. If it is
+   still 2026-W37, the org has gone two weeks without a product and that
+   belongs at the top of your PR description, not in a list.
+4. **PR #75 and whether the guardrails actually merged.** Everything in
+   delivery-health.md guardrails 1 to 3 is law that describes an
+   unmerged branch. If #75 is still open, say so plainly, because a
+   guardrail in an unmerged PR protects nothing.
+5. **The queued items.** 1b is now a hard precondition on re-adding the
+   OPENROUTE secrets. Item 5 is new, the HQ-origin notice workflow.
+   Re-verify every removed line against the live files, every line, per
+   incident 28.
+6. **The workflow push lane.** Probed this run and still closed: the
+   push was rejected for lack of `workflows` permission. When that
+   probe succeeds, take the lane back and work step 6 of the handover
+   page.
