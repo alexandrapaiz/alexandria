@@ -169,13 +169,15 @@ same fixed template, that is the failure mode this section exists to prevent.
   - **The number that matters gets its own line**, once or twice in an
     issue and never on every item. Write it as one sentence standing alone
     between two paragraphs, with the number bolded inside the sentence and
-    the sentence never bolded whole: "It finishes **44.3% of tasks** with
-    the scaffolding gone, up from 23.3%." Pick the number a builder would
-    repeat to a colleague, which is rarely the biggest one on the page.
+    the sentence never bolded whole. The shape, in a subject no payload will
+    ever hand you, so that copying it is obviously wrong: "The night shift
+    closes **83% of tickets** before morning, up from 41%." Pick the number a
+    builder would repeat to a colleague, which is rarely the biggest one on
+    the page.
   - **A line of plain meaning after every result.** The sentence that says
     what the number makes true for a builder, in words with no number in
-    them at all. "Teaching the structure in beat leaving it attached, which
-    is the part nobody expected." A result printed with no such line has
+    them at all. Following the line above: "The queue empties overnight now,
+    so nobody starts the day behind." A result printed with no such line has
     been reported at the reader rather than explained to them.
   - **Numbers only where they change a decision.** Every number on the page
     earns its place by moving what the reader would do. A second number in
@@ -392,6 +394,14 @@ Write the digest as **markdown** with exactly this structure. Everything in
 writing, never printed. That binds the title, all four headings, and every
 block of guidance inside the sections alike, and no sentence quoted from this
 file as an example survives into the issue.
+That invariant has been stated here since the file was written and it was
+broken three times in one issue on 2026-09-24, so it is now backed rather than
+repeated. Every example in this file is drawn from a subject the payload
+cannot contain, and the four slot names are held only in the heading gate at
+the end. An example written from the same research the generator is about to
+be handed is not an illustration of the answer, it is the answer, which is how
+a worked rewrite of an issue became that issue's prose the next time it ran.
+Whoever edits this file next keeps examples out of the week they are grading.
 
 ```
 # {Editorial title}
@@ -541,8 +551,9 @@ issue's opening would not mistake this one for the same fill-in-the-blanks
 shape.}
 
 ## {The heading for the traction slot, written from the items you are about to
-put under it and never the words "Gaining traction". See "Headings are written,
-not selected" above.}
+put under it. See "Headings are written, not selected" above. The slot's
+internal name is not repeated here and is not a candidate; the heading gate at
+the end of this file holds the four names.}
 
 {Traction leads, because relevance is impact and not release date. This is
 section one of every issue at every cadence. Items come from `traction`.
@@ -588,10 +599,11 @@ say so in one plain line where it matters and move on. Never explain the
 ranking itself, because the section earns trust by its contents and not by a
 sentence about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 
-## {The heading for the new-work slot, written from this day's new work and
-never the words "Trailblazing". It carries the honesty the slot exists for, so
-the reader learns from the heading itself that this work is fresh and unproven,
-in that day's words rather than in a label.}
+## {The heading for the new-work slot, written from this day's new work. It
+carries the honesty the slot exists for, so the reader learns from the heading
+itself that this work is fresh and unproven, in that day's words rather than in
+a label. The slot's internal name is not repeated here and is not a candidate;
+the heading gate at the end of this file holds the four names.}
 
 {The genuinely new, labeled honestly as unproven, because fresh work with no
 traction yet is listed as such and never dressed up as importance. An item
@@ -647,8 +659,9 @@ before you choose anything, and let the count of distinct papers decide how
 long this section runs.}
 
 ## {The heading for the fell-behind slot, written from what actually lost
-ground today and never the words "Left behind". Name the belief that fell if
-one belief carries the section.}
+ground today. Name the belief that fell if one belief carries the section. The
+slot's internal name is not repeated here and is not a candidate; the heading
+gate at the end of this file holds the four names.}
 
 {Research that has aged out. Open with 1-2 sentences of framing prose about
 this week's overturned findings specifically, written fresh so it leads into
@@ -734,9 +747,13 @@ reader can use, and naming an internal source that returned no rows is the
 pipeline talking. If BOTH kinds are empty, the section does not run and its
 heading does not print, per the length rule above.}
 
-## {The heading for the reading list, written fresh and never the words "Read
-these yourself". It can name what the day's picks have in common or simply hand
-the reader the hour, but it is a written line like every other heading.}
+## {The heading for the reading list, written from the picks that are actually
+underneath it. It can name what the day's picks have in common or simply hand
+the reader the hour, but it is a written line like every other heading. The
+slot's internal name is not a candidate and is not repeated here, because a
+forbidden phrase quoted inside the slot the model writes into is not a
+prohibition, it is the nearest available draft. The heading gate at the end of
+this file holds the four names.}
 
 {Chosen, never listed. Print the papers you would actually tell a builder to
 spend an hour on, which on a rich day is a handful and on a thin day is one or
@@ -832,6 +849,14 @@ the rule's question to the thing in front of you.
   family"). Naming the missing measurement is the difference between a grade
   and a compliment. Draw that half from what the payload's `evidence` and
   `procedure` actually cover, and never invent an omission.
+  Then count them, the way the links are counted one rule above. Count the
+  items carrying a number. Count the grades. They match, or the issue is not
+  finished. The count is the rule, not a reminder of it: on 2026-09-24 these
+  two rules sat next to each other in this file, one of them counted and the
+  other only described, and the issue shipped with five links out of five and
+  zero grades out of four. The grade is a clause, every compression pass
+  reaches for clauses first, and the only thing that survives a compression
+  pass is what something counts afterwards.
 - **A number without its comparison is not finished, in any section.** "64% of
   tasks resolved" means nothing until "up from 49.4% before training" sits
   beside it, and this binds the traction section and the fell-behind section
@@ -981,6 +1006,13 @@ the rule's question to the thing in front of you.
   the repair itself: a sentence that says what the field believed is the
   product, and a sentence that says what this newsletter printed is the
   violation, whichever way it is worded.
+  "Never deletion" binds the slot as well as the sentence. The struck line of
+  2026-09-24 was a greeting, and the reprint repaired it by having no greeting
+  at all, which cleared this gate and lost an element that is house law. So
+  after the repair, check the opening still does its four jobs in order, and
+  the first of them is that the issue says hello to the reader in a line true
+  about this particular day. A slot does not stop being required because the
+  sentence that filled it was wrong.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic
@@ -1000,7 +1032,19 @@ the rule's question to the thing in front of you.
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
   already look like steps. Printing one is the violation the owner has flagged
-  twice. Check the
+  twice.
+  Then one tripwire, run AFTER that question and never in place of it, because
+  it is the one string set that has now shipped: none of your four headings is
+  "Trailblazing", "Gaining traction", "Left behind" or "Read these yourself".
+  Those are this file's internal names for the slots and they are held here,
+  at the end, where you are reading finished output. They are deliberately
+  absent from the four heading slots themselves, because the fourth of them
+  printed verbatim on 2026-09-24 out of the slot that forbade it, and a phrase
+  quoted at the position where a line gets written is a draft no matter what
+  the sentence around it says. If one of the four is in your output, you
+  copied it from here, and the fix is to write that heading again from the
+  items underneath it.
+  Check the
   title too: it states a finding, and it carries no bracketed date range and
   no week id. Only then output.
 - Output the markdown only. No JSON wrapper, no preamble.
