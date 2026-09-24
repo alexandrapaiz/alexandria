@@ -2928,3 +2928,48 @@ is the system working rather than failing. It is named in the PR so the
 wait is visible, and the ledger entry filed today asks for a `Blocked
 by:` line so a pending decision of this shape stops being retold as
 prose in three PR descriptions.
+
+## 2026-09-23 — The same urgent question has been unanswerable for four runs (engineer seat)
+
+Unnumbered on purpose. Open PRs at this moment carry entries up to 26 and
+numbering them from a branch is how the file ended up with two incident
+20s and two incident 22s. The ExO can give this one its number on the
+next read.
+
+**The repeat.** The ledger entry "Verify the archive: the press may have
+printed once, not four times" (docs/ideas.md, 2026-09-19) is marked
+`urgent` and asks for one query: `select week, created_at, model,
+prompt_sha from digests order by week`. It decides whether the newsletter
+has a fixed bug or an eleven-day outage with subscribers on the other end
+of it. Four engineer runs have now recorded that they could not run it.
+
+- 2026-09-19 filed it urgent, with the reason: the engineer workflow has
+  no database credentials.
+- PR #60 (2026-09-20) reports the same blocker for the Modal half.
+- PR #69 (2026-09-22) reports it again, naming `NEON_RO_URL` directly.
+- This run confirmed it at the source rather than by assumption.
+  `.github/workflows/agent-engineer.yml` passes exactly two values into
+  the container, `GH_TOKEN` and `PROJECTS_TOKEN`, and `modal` is not
+  installed in the agent image. `NEON_RO_URL` is wired into the research
+  and skill workflows only.
+
+**Why it is an incident and not a ledger entry.** It already is a ledger
+entry, twice, and the ledger is the wrong instrument for it. A proposal
+waits for a verdict. This is a seat that cannot perform a duty its own
+charter's Observe step assigns it, so every run rediscovers the same wall
+and writes the same paragraph. The standing rule at the top of this file
+covers exactly that: an issue that occurs more than once is recorded here
+at the moment it repeats.
+
+**What would close it.** One line in `agent-engineer.yml` adding
+`NEON_RO_URL` to the job's env from the existing secret, which is the
+same secret the research and skill workflows already read. That edit is a
+runtime change (docs/agents/runtime-changes.md), so it is not this seat's
+to make. It is filed for the owner or the chair, and until it lands, the
+engineer's charter step 3 ("pipeline health") and every ledger item that
+needs the database of record are unperformable by design rather than by
+accident.
+
+**The cost so far.** Five days on the archive question, which is a
+question about whether people who subscribed have been receiving
+anything.

@@ -3923,4 +3923,101 @@ needs an owner decision or an owner push, not an engineer build.
   edit and therefore the owner's merge, not this seat's. The ban-list
   renumbering is the writer seat's own surface.
 - Cost: $0.
+
+### 2026-09-23 — A practice report's numbers are in the body the pipeline never reads (engineer agent)
+- Trigger: building the evidence grade today. `fetch_fulltext` in
+  `pipeline/distill.py` returns None for any id that does not start with
+  `arxiv:`, with the comment "blog posts: the feed summary already is the
+  content". That is not true of the feeds we carry. Cloudflare's RSS item for
+  "We just shipped support for the ugliest part of HTTP: Vary", read directly
+  from the feed today, carries a 238-character `description` and a
+  15,331-character `content:encoded` body, and `fetch_feeds` stores the first
+  one. Across that feed's 20 current items, all 20 carry `content:encoded`,
+  averaging 13,249 characters of body text against 222 characters of
+  description. The measurement in that post, an analysis of 120 million
+  responses across nearly 50,000 sites, appears only in the body. So the pipeline
+  distills practice reports from a blurb, and the `field_measured` grade that
+  shipped today will almost never be earned, not because the numbers are
+  absent but because nothing fetches the page they are on.
+- What: give blog rows the same full-text path arXiv rows have. Two ways, and
+  the cheaper one is probably enough: read `content:encoded` at ingest when the
+  feed provides it, which costs one field in `fetch_feeds` and no extra
+  request, or fetch the item's own URL at distill and strip it the way
+  `fetch_fulltext` already strips arXiv HTML. The first covers feeds that
+  publish full content, the second covers feeds that publish a teaser and a
+  link. The abstract column is text, so neither needs a migration, though the
+  4,000-character truncation in `fetch_feeds` would need raising for the first.
+- First step: measure which of the feeds in sources.yaml actually ship
+  `content:encoded` and how long it is. That number decides which of the two
+  paths is worth building, and it is one script over the feed list.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — The arXiv firehose has a cap and the feeds do not (engineer agent)
+- Trigger: choosing today's practice feed. `ARXIV_MAX_PER_CAT = 100` bounds
+  every arXiv category, but `fetch_feeds` ingests every entry a feed hands
+  back, however many that is. Measured today while picking a candidate:
+  Shopify's engineering atom feed returns 431 entries in one fetch, which is
+  its whole archive rather than its recent posts. Adding a feed like that
+  would put several hundred rows into the triage queue in a single run. Triage
+  is already the starved stage, and the tier-starvation bug fixed on 2026-09-19
+  was exactly this shape, a queue whose arrivals outran its budget and whose
+  depth nothing printed.
+- What: a per-feed entry cap in `fetch_feeds`, defaulting to something near
+  the size of a normal feed page, with an optional per-feed override in
+  sources.yaml for a feed that genuinely posts more. Entries are already
+  deduplicated by link hash on insert, so a cap costs nothing on steady-state
+  runs and only bites on the first fetch of an archive-shaped feed.
+- First step: the constant and the slice in `fetch_feeds`, plus the same
+  one-line depth print the triage fix added, so a capped fetch says how many
+  entries it dropped instead of dropping them quietly.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — The digest still cannot tell a measurement from an assertion (engineer agent)
+- Trigger: the evidence grade shipped today writes `claims.evidence_grade` at
+  distill, and nothing reads it. The read belongs in `gather()` in
+  `pipeline/weekly.py`, which PR #60 is currently rewriting for the daily
+  issue. Editing the same function in a parallel branch today would have cost
+  the owner a merge conflict and bought nothing, since no claim carries a
+  grade until the schema is applied and distill next runs.
+- What: add `c.evidence_grade` to the `new_claims` query and its payload
+  entry, then teach `prompts/digest.md` what the four values mean and how to
+  say them. Two rules the section needs. Ban-list item 14 forbids printing
+  internal vocabulary at the reader, so `field_measured` never appears in an
+  issue, only its plain-English reading. And an item resting on an `anecdote`
+  claim has to say so in the sentence that makes the claim, not in a footnote.
+  The payload grows by about one short string per claim, which the token
+  budget in `pipeline/budget.py` absorbs without a change.
+- First step: after #60 merges, the query line and the payload field. The
+  prompt half is the same session's second commit, and it is the half that
+  decides whether the grade reaches the reader as judgment or as jargon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — Craft scan: AINews (news.smol.ai, the daily that merged into Latent Space)
+- What it is: a weekday roundup of what AI Discords, subreddits and X
+  accounts said, summarized by a model, folded into Latent Space under one
+  subscription in January. Read directly today, not from search snippets.
+- Worth stealing: every issue carries a row of tags above its summary, and
+  they are not topics in the newsletter sense. They name models
+  (`deepseek-v4.1-flash`, `gpt-5.6`), subjects (`inference-efficiency`,
+  `model-quantization`) and people (`sebastian_raschka`, `yoshua_bengio`), and
+  the archive puts a title filter over the last thirty days on top of them.
+  The effect is that a reader who cares about one model can walk the archive
+  by it. alexandria has the raw material for this and shows none of it: every
+  claim carries `topics`, the column has a gin index, `papers` carries
+  `institutions` and `authors`, and the library page renders none of the three.
+  The cheap version is a tag row on each issue in the archive that links to
+  the other issues carrying that tag.
+- Worth noting on the other side: the second issue on their front page today
+  is headlined "not much happened today", which is the same honest-empty-day
+  move the daily digest's `daily_is_empty` check makes in PR #60. Two products
+  arriving at it independently is a good sign for the rule.
+- What alexandria does better: AINews summarizes conversation. Its tags hang
+  off names and model releases, and nothing in it can tell a reader which of
+  its statements was measured, because the sources it reads mostly did not
+  measure anything. alexandria's unit is a claim bound to a paper, and as of
+  today it is also graded on whether a measurement stands behind it. That is
+  the axis a chatter digest structurally cannot copy.
 - Status: proposed

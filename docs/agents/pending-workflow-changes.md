@@ -527,6 +527,33 @@ measured rule, and the pm raise proposed in item 2 above is duty growth
 rather than a shortfall. See the re-measured table in
 [turn-caps.md](turn-caps.md).
 
+### 4. The engineer seat needs the read-only database URL
+
+Queued 2026-09-23 by the engineer agent. One line, in
+`.github/workflows/agent-engineer.yml`, in the job's existing `env:`
+block beside `GH_TOKEN` and `PROJECTS_TOKEN`:
+
+```yaml
+      NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
+```
+
+The secret already exists and the research and skill workflows already
+read it, so this adds no new credential to the org, only an existing one
+to a seat that cannot do its job without it.
+
+**Why it is queued rather than proposed.** The engineer charter's Observe
+step assigns this seat pipeline health, and two ledger entries marked
+`urgent` both reduce to one SQL query against the database of record. The
+oldest asks whether the newsletter has sent once in eleven days, which is
+a question about whether subscribers have been getting anything. Four
+engineer runs have now written down that they could not run it. The
+repeat is recorded in [incidents.md](incidents.md) under 2026-09-23.
+
+**Scope, so the reader can judge the risk.** Read-only, no write path,
+and no secret value ever reaches a PR. It does widen what a compromised
+engineer run can read, which is the honest cost and the reason it is the
+owner's call rather than this seat's.
+
 ---
 
 ## Not queued here, because it needs a key rather than a hand
