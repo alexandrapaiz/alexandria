@@ -544,7 +544,7 @@ def call_model(model: str, prompt: str, user: str) -> str:
             url,
             headers={"Authorization": f"Bearer {key}"},
             json=body,
-            timeout=300,
+            timeout=1500,  # kimi-k2.6 reasons for minutes before writing; 300s timed out on 2026-09-24
         )
         log_limits(resp, model)
 
