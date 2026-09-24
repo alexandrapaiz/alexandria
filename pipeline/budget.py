@@ -152,13 +152,14 @@ def available_models(api_key: str, timeout: float = 30.0) -> set[str]:
     a network blip as "every model is gone" would walk the whole fallback list
     for nothing.
     """
-    import httpx
-
+    # the cheap check first: no key is a configuration fact, not a network one
     if not api_key:
         raise AvailabilityError(
             "no Groq API key, so model availability cannot be checked. Set the "
             "GROQ_API_KEY the `groq` Modal secret provides."
         )
+
+    import httpx
     try:
         resp = httpx.get(
             MODELS_URL,
