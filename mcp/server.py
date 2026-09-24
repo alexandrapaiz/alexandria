@@ -19,6 +19,12 @@ token carrying the client's redirect URIs, so `/authorize` can reject a
 redirect URI the client never registered without a store to look it up in. See
 mcp/oauth_flow.py, which holds that check outside this container so it is testable.
 
+The passphrase is throttled, because it is the whole gate and behind it sit the
+corpus, a GitHub token that opens pull requests, and a 180-day refresh token.
+Consecutive wrong answers on POST /authorize buy a growing wait, counted in the
+`auth_attempts` table so a cold start does not forget them. The wait is capped
+at a minute and never becomes a lockout: the owner has no other way in.
+
 Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `JWT`
 (AUTH_JWT_SECRET — long random signing string), `MCP` (MCP_PASSPHRASE — the
 login passphrase typed on the authorize page).
@@ -477,9 +483,21 @@ def serve():
     mcp_app = mcp.http_app(path="/mcp")
     api = FastAPI(lifespan=mcp_app.lifespan)
 
+    # The throttle's counter lives in Postgres because this container scales to
+    # zero: an in-process count is forgotten by every cold start, which is the
+    # same as no count at all. If Neon cannot be reached the throttle degrades
+    # to an in-process count rather than either barring the owner from her own
+    # connector or dropping the limit, and it says so in the logs.
+    authorize_throttle = oauth_clients.Throttle(
+        oauth_clients.PostgresAttemptStore(db),
+        on_error=lambda exc: print(f"[throttle] auth_attempts unreachable, "
+                                   f"counting in memory this container only: {exc!r}"),
+    )
+
     read_access_token = oauth_clients.install_oauth(
         api, jwt_secret=JWT_SECRET, passphrase=PASSPHRASE,
         access_ttl=ACCESS_TTL, refresh_ttl=REFRESH_TTL,
+        throttle=authorize_throttle,
     )
 
     # ---------------- bearer guard on /mcp, then mount ----------------

@@ -279,3 +279,18 @@ create or replace view user_accounts as
            s.comp    as digest_comp
     from users u
     left join subscribers s on lower(s.email) = lower(u.email);
+
+-- ============ auth_attempts: the passphrase throttle (mcp/oauth_flow.py) ============
+-- One row, keyed 'mcp-authorize', counting consecutive wrong passphrases on
+-- POST /authorize. It lives in Postgres rather than in the server's memory for
+-- one reason: the MCP container scales to zero, so an in-process counter is
+-- reset by every cold start and kept separately by every replica, which is the
+-- same as no counter at all to anyone patient enough to notice.
+--
+-- The right passphrase deletes the row. A row whose last_fail is older than the
+-- decay window is treated as a finished run of failures, not a continuing one.
+create table if not exists auth_attempts (
+    scope      text primary key,
+    fails      integer not null default 0,
+    last_fail  timestamptz not null default now()
+);

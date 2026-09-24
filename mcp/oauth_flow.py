@@ -20,6 +20,15 @@ stored them nowhere, and `/authorize` minted a code against whatever
 `redirect_uri` the request carried. A crafted link on the real domain plus the
 real passphrase handed an attacker a working token pair. PKCE does not close that
 gap, since whoever crafts the link also holds the matching `code_verifier`.
+
+The second half of this module is the attempt throttle on `POST /authorize`. The
+redirect-URI check above decides *where* a token may be sent. The throttle
+decides *how often* someone may guess the one passphrase that decides whether a
+token is minted at all. Registration is open by design, so an attacker registers
+their own client, reaches the form legitimately, and meets the passphrase with
+the redirect-URI check already satisfied. Before the throttle, being wrong cost
+nothing: forty consecutive wrong passphrases returned forty 401s with no delay,
+no counter, and no ceiling.
 """
 
 import base64
@@ -153,6 +162,169 @@ def check_redirect_uri(client_id: str, redirect_uri: str, secret: str) -> bool:
     return any(redirect_uri_matches(uri, redirect_uri) for uri in registered)
 
 
+# ---------------- the attempt throttle on the passphrase ----------------
+
+#: Wrong passphrases that cost nothing. The owner mistypes, and three free
+#: attempts mean she never meets this machinery at all in normal use.
+FREE_ATTEMPTS = 3
+
+#: The ceiling on the required wait, in seconds. It is deliberately low. The
+#: brief this was built from says the limiter must back off rather than bar,
+#: because the passphrase behind it is the owner's only way into her own
+#: connector. A minute is the longest an attacker can make her wait, and it
+#: still cuts a guesser from unbounded to sixty attempts an hour.
+MAX_BACKOFF = 60
+
+#: A run of failures this old is not the same run of failures. Without a decay
+#: the counter only ever climbs, and an owner who mistyped six times last March
+#: would pay the ceiling forever.
+ATTEMPT_DECAY = 3600
+
+#: One passphrase, one user, one gate, so one counter. Per-IP scoping was
+#: considered and dropped: behind Modal's proxy the client address comes from a
+#: forwarded header, and both ways of getting that wrong are bad. Trust the
+#: header and an attacker rotates it for free. Do not trust it and every caller
+#: collapses to the proxy's own address, which turns a per-IP limit into a
+#: second global limit that an attacker can hold down on the owner. A global
+#: counter cannot be escaped by rotating addresses and cannot be aimed at one
+#: victim, because there is only one account to aim at.
+GLOBAL_SCOPE = "mcp-authorize"
+
+
+def backoff_seconds(fails: int) -> int:
+    """Seconds that must pass after the `fails`-th wrong passphrase.
+
+    Zero while the count is inside the free allowance, then doubling, then
+    flat at MAX_BACKOFF.
+    """
+    if fails <= FREE_ATTEMPTS:
+        return 0
+    return min(2 ** (fails - FREE_ATTEMPTS - 1), MAX_BACKOFF)
+
+
+class MemoryAttemptStore:
+    """Attempt counts in process memory. Correct, and forgetful.
+
+    This is what the throttle falls back to when the database cannot be
+    reached, and what the tests use. On Modal it is not enough on its own: the
+    container scales to zero, so the count dies with it, and a second replica
+    keeps its own. That is the reason the real store below is in Postgres.
+    """
+
+    def __init__(self):
+        self._rows: dict[str, tuple[int, float]] = {}
+
+    def read(self, scope: str) -> tuple[int, float] | None:
+        row = self._rows.get(scope)
+        if row is None:
+            return None
+        fails, last = row
+        return fails, time.time() - last
+
+    def record_failure(self, scope: str, decay: int) -> int:
+        fails, last = self._rows.get(scope, (0, 0.0))
+        fails = 1 if time.time() - last > decay else fails + 1
+        self._rows[scope] = (fails, time.time())
+        return fails
+
+    def reset(self, scope: str) -> None:
+        self._rows.pop(scope, None)
+
+
+class PostgresAttemptStore:
+    """Attempt counts in the `auth_attempts` table, so they survive a cold start.
+
+    Takes a zero-argument `connect` callable rather than a connection, because
+    the MCP server opens a connection per call and the throttle should not hold
+    one open between requests. Every statement is a single round trip.
+    """
+
+    READ = "select fails, extract(epoch from (now() - last_fail)) from auth_attempts where scope = %s"
+    RECORD = """
+        insert into auth_attempts (scope, fails, last_fail) values (%s, 1, now())
+        on conflict (scope) do update
+           set fails = case when auth_attempts.last_fail < now() - make_interval(secs => %s)
+                            then 1 else auth_attempts.fails + 1 end,
+               last_fail = now()
+        returning fails
+    """
+    RESET = "delete from auth_attempts where scope = %s"
+
+    def __init__(self, connect):
+        self._connect = connect
+
+    def read(self, scope: str) -> tuple[int, float] | None:
+        with self._connect() as conn:
+            row = conn.execute(self.READ, (scope,)).fetchone()
+        return (int(row[0]), float(row[1])) if row else None
+
+    def record_failure(self, scope: str, decay: int) -> int:
+        with self._connect() as conn:
+            row = conn.execute(self.RECORD, (scope, decay)).fetchone()
+            conn.commit()
+        return int(row[0])
+
+    def reset(self, scope: str) -> None:
+        with self._connect() as conn:
+            conn.execute(self.RESET, (scope,))
+            conn.commit()
+
+
+class Throttle:
+    """How long the next passphrase attempt has to wait, and why.
+
+    The store is pluggable and the degraded path is deliberate. If Postgres
+    cannot be reached, this falls back to an in-process counter rather than
+    either barring the owner or dropping the limit entirely. A database outage
+    should cost the throttle its memory, not cost the owner her connector, and
+    an attacker who wants the weaker limit has to take Neon down to get it.
+    """
+
+    def __init__(self, store=None, *, fallback=None, on_error=None,
+                 free=FREE_ATTEMPTS, cap=MAX_BACKOFF, decay=ATTEMPT_DECAY):
+        self.store = store if store is not None else MemoryAttemptStore()
+        self.fallback = fallback if fallback is not None else MemoryAttemptStore()
+        self.on_error = on_error
+        self.free, self.cap, self.decay = free, cap, decay
+
+    def _wait(self, fails: int) -> int:
+        if fails <= self.free:
+            return 0
+        return min(2 ** (fails - self.free - 1), self.cap)
+
+    def _with_store(self, call):
+        """Run `call(store)` against Postgres, and against memory if that fails."""
+        try:
+            return call(self.store)
+        except Exception as exc:  # noqa: BLE001 - any driver error degrades the same way
+            if self.on_error is not None:
+                self.on_error(exc)
+            return call(self.fallback)
+
+    def retry_after(self, scope: str = GLOBAL_SCOPE) -> int:
+        """Seconds the caller must still wait, or 0 if the attempt may proceed.
+
+        Read-only on purpose. A blocked attempt does not count as a failure,
+        so hammering the endpoint while blocked cannot push the wait out
+        further. The wait is always measured from the last *counted* failure.
+        """
+        row = self._with_store(lambda store: store.read(scope))
+        if row is None:
+            return 0
+        fails, since = row
+        if since > self.decay:
+            return 0
+        return max(0, self._wait(fails) - int(since))
+
+    def record_failure(self, scope: str = GLOBAL_SCOPE) -> int:
+        """Count one wrong passphrase. Returns the new failure count."""
+        return self._with_store(lambda store: store.record_failure(scope, self.decay))
+
+    def record_success(self, scope: str = GLOBAL_SCOPE) -> None:
+        """The right passphrase clears the slate."""
+        self._with_store(lambda store: store.reset(scope))
+
+
 # ---------------- the endpoints themselves ----------------
 #
 # They live here rather than inside serve() so that a test can mount the real
@@ -179,18 +351,38 @@ BAD_REDIRECT = """<!doctype html><title>alexandria</title>
 Nothing was authorized. If you followed a link from an email or a message, close
 this page.</p></body>"""
 
+TOO_MANY = """<!doctype html><title>alexandria</title>
+<body style="font-family:system-ui;max-width:26rem;margin:15vh auto">
+<h2>alexandria</h2>
+<p>Too many wrong passphrases. Wait {wait} seconds and try again. Nothing is
+locked. If this was not you, someone is guessing, and the wait is what is
+stopping them.</p>
+<form method="post" action="/authorize">
+{hidden}
+<input type="password" name="passphrase" placeholder="passphrase"
+       style="width:100%;padding:.5rem;font-size:1rem">
+<button style="margin-top:.75rem;padding:.5rem 1.25rem;font-size:1rem">Authorize</button>
+</form></body>"""
+
 AUTH_PARAMS = ["response_type", "client_id", "redirect_uri", "state",
                "code_challenge", "code_challenge_method"]
 
 
 def install_oauth(api, *, jwt_secret: str, passphrase: str,
-                  access_ttl: int = ACCESS_TTL, refresh_ttl: int = REFRESH_TTL):
+                  access_ttl: int = ACCESS_TTL, refresh_ttl: int = REFRESH_TTL,
+                  throttle=None):
     """Mount the OAuth 2.1 endpoints on `api`, and return `read_access_token`.
 
     FastAPI and PyJWT are imported here rather than at module scope so the
     registration helpers above stay importable with nothing but the standard
     library.
+
+    `throttle` defaults to an in-process one. The deployed server passes a
+    Postgres-backed one, because a Modal container that scales to zero forgets
+    an in-process count the moment it stops.
     """
+    if throttle is None:
+        throttle = Throttle()
     import jwt
     from fastapi import Form, Request
     from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -284,16 +476,25 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
         # artifact and its hidden fields are the attacker's to rewrite.
         if not registered(client_id, redirect_uri):
             return HTMLResponse(BAD_REDIRECT, status_code=400)
+        hidden = "".join(
+            f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
+            for p, v in [("response_type", response_type), ("client_id", client_id),
+                         ("redirect_uri", redirect_uri), ("state", state),
+                         ("code_challenge", code_challenge),
+                         ("code_challenge_method", code_challenge_method)]
+        )
+        # Asked after the registration check, so junk that never had a client_id
+        # cannot run the counter up, and before the comparison, so a blocked
+        # attempt learns nothing at all about the passphrase.
+        wait = throttle.retry_after()
+        if wait > 0:
+            return HTMLResponse(TOO_MANY.format(wait=wait, hidden=hidden),
+                                status_code=429, headers={"Retry-After": str(wait)})
         if not hmac.compare_digest(passphrase_field, passphrase):
-            hidden = "".join(
-                f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
-                for p, v in [("response_type", response_type), ("client_id", client_id),
-                             ("redirect_uri", redirect_uri), ("state", state),
-                             ("code_challenge", code_challenge),
-                             ("code_challenge_method", code_challenge_method)]
-            )
-            return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase — try again.", hidden=hidden),
+            throttle.record_failure()
+            return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase, try again.", hidden=hidden),
                                 status_code=401)
+        throttle.record_success()
         code = mint({"typ": "code", "cid": client_id, "ru": redirect_uri,
                      "cc": code_challenge}, ttl=600)
         # `state` is the client's opaque round-trip value and it arrives from a
