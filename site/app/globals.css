@@ -4,6 +4,24 @@
   --gray: #86868b;
   --line: #e8e8e8;
   --radius: 10px;
+
+  /* The micro-interaction system, from this run's benchmark. Read off the
+     live sites rather than remembered: Linear runs its ENTIRE surface on one
+     curve, cubic-bezier(0.25, 0.46, 0.45, 0.94), with two clocks — 100ms for
+     a text link's colour and 160ms for a button that also moves. Consensus
+     runs one clock, 100ms. Ours had grown to four curves and seven clocks,
+     which is the opposite of that discipline and reads as drift rather than
+     as a system. One curve, two clocks:
+
+       --fast  colour and opacity only, on high-frequency targets
+       --slow  anything that also moves
+
+     The owner's approved bounce, cubic-bezier(0.34, 1.56, 0.64, 1) at 190ms
+     on .pill and .issue, is NOT part of this and is not touched. Neither is
+     the 90ms press or .lib-art's 500ms page-level fade. */
+  --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --fast: 0.1s;
+  --slow: 0.16s;
 }
 
 * {
@@ -112,7 +130,7 @@ a {
 .nav-links a {
   color: var(--ink);
   opacity: 0.85;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--fast) var(--ease);
 }
 
 .nav-links a:hover {
@@ -138,6 +156,7 @@ a {
 .mobile-nav-toggle {
   width: 32px;
   height: 32px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -149,12 +168,24 @@ a {
   cursor: pointer;
 }
 
+/* The drawn control is 32px, which is what the bar wants optically, but the
+   canon's touch law is 44 and this is the only way into the site's navigation
+   on a phone. The hit area is extended past the glyph instead of the glyph
+   being grown, so nothing moves on the page: 32 + 6 on every side is 44.
+   Freiberg's Fitts note is the argument, and .skill-line already does the
+   same thing with a negative margin. */
+.mobile-nav-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+
 .mobile-nav-toggle span {
   display: block;
   width: 20px;
   height: 1.5px;
   background: var(--ink);
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform var(--slow) var(--ease), opacity var(--slow) var(--ease);
 }
 
 .mobile-nav-toggle span.open:first-child {
@@ -239,7 +270,16 @@ a {
   padding: 10px 22px;
   font-size: 14px;
   font-weight: 500;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* The house spring. The curve is the one the owner approved when she asked
+     for Elicit's bouncy hover; only the clock changed, on this run's
+     benchmark. Measured on the live sites: Elicit's primary CTA finishes in
+     167ms, Linear runs every button at 160ms on one curve, Consensus at
+     100ms. Ours took 220ms just to reach the top of its overshoot and 400ms
+     to settle, which is slower than all three and outside both the canon's
+     micro window (120 to 200ms) and Kowalski's under-300ms rule. At 190ms
+     the overshoot is intact and lands while the cursor is still arriving.
+     Refinement 1 of two, 2026-09-20. */
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pill:hover {
@@ -255,6 +295,31 @@ a {
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
+}
+
+/* ---------- focus, house-wide ---------- */
+/* Keyboard focus was the one state nobody had systematised. Three elements
+   carried a designed ring (the pill's double ring, the waitlist field, a
+   skill row) and everything else fell back to the browser's own 1px auto
+   outline: the wordmark, all three nav links, the footer links, /llms.txt
+   and every row in the archive. Tabbing the site put the UA's cramped
+   rectangle next to the house's own ring on the very next stop. Ban list
+   entry 25 was written about motion, and this is that defect one layer over.
+   The ring is the house hairline. The one thing that varies is its offset,
+   with the size of what it wraps: 2px on a field, 3px on inline text, 4px on
+   a full-width row band. That is a scale rather than drift, and the
+   per-component rules below it still win on purpose.
+   It fades in rather than snapping, which is Consensus's measured practice
+   (it moves outline-color on the same 100ms clock as its other states) and
+   the reason the ring needs a transparent value at rest to move from. */
+:where(a, button, summary, input, select, textarea, [tabindex]) {
+  outline: 1px solid transparent;
+  outline-offset: 3px;
+  transition: outline-color var(--fast) var(--ease);
+}
+
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: var(--ink);
 }
 
 /* the pill's own color (black bg or white bg) matches the browser's
@@ -448,7 +513,7 @@ a {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 13px 20px;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--fast) var(--ease);
 }
 
 .waitlist-field::placeholder {
@@ -630,13 +695,23 @@ a {
 
 /* ---------- library ---------- */
 
-/* scene one: the shelf large, with the archive's kicker and title
-   visible right beneath it in the first view. The glide carries that
-   same header to the top of the page; the intro and the list stay
-   white until it lands */
+/* Scene one is the whole first view: the shelf, and nothing else.
+   Owner's ruling 2026-09-19, from her screenshot — the archive's intro
+   was sliced in half at the bottom edge of the viewport, and she wants
+   it hidden until she scrolls, the way the home page's second scene
+   already resolves it.
+
+   The resolution is the home page's, and it is layout, not opacity.
+   .hero-follow already gives scene two its own full-viewport box, so
+   the only thing keeping scene two in the first view was this rule
+   overriding .hero's height down to its content. Restored to .hero's
+   own height, scene one ends exactly at the fold and scene two begins
+   one pixel below it, at every viewport, with nothing staged at
+   opacity 0 and nothing waiting on a script (ban list 23, canon
+   rule 6). The glide still carries the header to the top from there. */
 .lib-hero {
-  min-height: 0;
-  padding: 16px 24px 44px;
+  min-height: calc(100svh - 96px);
+  padding: 16px 24px 48px;
 }
 
 /* the shelf fades away as the landing approaches, so nothing smears
@@ -686,6 +761,18 @@ a {
   margin-top: 48px;
 }
 
+/* The archive's empty state stands where the archive stands. It arrived
+   here borrowing the desk's .desk-empty, which put it 10px under the intro
+   in #888, so it read as a fourth line of the paragraph rather than as the
+   state of the shelf. It now takes the list's own top margin and the house
+   grey, so an empty archive is answered in the place a reader is already
+   looking. The words are the writer's and are untouched. */
+.lib-scene2 .desk-empty {
+  margin-top: 48px;
+  color: var(--gray);
+  font-size: 14px;
+}
+
 .issue-list {
   margin-top: 64px;
   border-top: 1px solid var(--line);
@@ -721,8 +808,10 @@ a {
    pointer on the same spring the pills use. The contents move and the rule
    under the row does not, which keeps the left edge of the divider straight
    while the row travels. Touch has no hover, so it gets the press instead. */
+/* Same house spring, same clock: an archive row and a pill must not settle
+   at different speeds, or the page has two springs instead of one. */
 .issue > * {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.19s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (hover: hover) {
@@ -746,7 +835,14 @@ a {
 
 .digest {
   margin-top: 56px;
-  font-size: 16.5px;
+  /* The canon's body size is 17, and the digest is the site's primary
+     reading surface. 16.5 was off the type scale entirely. The measure
+     holds at 73 characters on the lead paragraph, inside the 75 ceiling,
+     so the column does not need to move with it. Line height stays at
+     1.65 rather than dropping to Apple's 1.47: her density ruling says
+     add air when in doubt, and this is running text people read for
+     minutes. */
+  font-size: 17px;
   line-height: 1.65;
 }
 
@@ -799,6 +895,75 @@ a {
   border: none;
   border-top: 1px solid var(--line);
   margin: 36px 0;
+}
+
+/* ---------- tables in rendered markdown ---------- */
+/* Nothing styled these until now, so the browser's defaults collapsed every
+   column against its neighbour. The desk's own sprint table read
+   "1Remove the digest teaser gate" and "engineernot started" at 1440, on the
+   owner's daily surface, and any issue the press writes with a table would
+   have printed the same way. The canon names Stripe for tables treated as a
+   first-class design object; the house version is the hairline, the 8-point
+   gutter, and the same uppercase meta register the rest of the site already
+   uses for column labels. No zebra striping and no cell borders: the rule
+   under the head and the row hairlines carry the structure on their own. */
+.digest table,
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+  text-align: left;
+}
+
+.digest th,
+.prose th {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  padding: 0 24px 8px 0;
+  border-bottom: 1px solid var(--ink);
+  vertical-align: bottom;
+}
+
+.digest td,
+.prose td {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  padding: 12px 24px 12px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.digest th:last-child,
+.digest td:last-child,
+.prose th:last-child,
+.prose td:last-child {
+  padding-right: 0;
+}
+
+/* At 390px the cells wrap hard rather than the type shrinking, because a
+   smaller size here would be a value the canon's scale does not contain. The
+   trade is a tall table over a clipped one, and nothing is hidden: verified
+   at 390 with the desk's own seven-row sprint table, page scrollWidth equal
+   to clientWidth. overflow-x is the safety net under that, for a row that
+   genuinely cannot shrink any further, such as one carrying a long URL. */
+@media (max-width: 560px) {
+  .digest table,
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .digest th,
+  .prose th,
+  .digest td,
+  .prose td {
+    padding-right: 16px;
+  }
 }
 
 /* The lock on a spine route. It used to fade out of a truncated digest
@@ -885,7 +1050,7 @@ a {
   text-decoration: none;
   border-bottom: 1px solid var(--line);
   padding-bottom: 1px;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
 }
 
 .agent-note a:hover,
@@ -917,7 +1082,7 @@ a {
   border-radius: var(--radius);
   padding: 11px 14px;
   outline: none;
-  transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color var(--fast) var(--ease);
   -webkit-appearance: none;
   appearance: none;
 }
@@ -933,6 +1098,16 @@ a {
 .lib-filter input:focus {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* The field sets outline: none at a specificity the house rule cannot reach,
+   so it was the one control left with no ring at all: a keyboard user got a
+   border that darkens and nothing else. That is the case the waitlist field
+   already argues against in its own comment, and this is the same field in a
+   different place, so it gets the same field offset. */
+.lib-filter input:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* Chromium draws its own clear button inside a search field and draws it in
@@ -1061,7 +1236,7 @@ a {
   cursor: pointer;
   list-style: none;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: background-color var(--fast) var(--ease);
 }
 
 /* Refinement, from this run's benchmark. Read off the live pages rather than
@@ -1108,17 +1283,25 @@ a {
   content: "";
   position: absolute;
   right: 14px;
-  top: 50%;
+  /* Anchored to the first line, not to the middle of the row. top: 50% is the
+     same thing only while the name fits on one line; the moment it wraps, the
+     metadata stays on the first baseline and the marker slides down to the
+     row's centre, so the right-hand cluster comes apart. Measured at 390px:
+     meta at 26px from the row's top, marker at 38px on a two-line row. Most
+     kebab-case skill names wrap on a phone, so at the fifty rows this library
+     is built for it was the common case rather than the edge one.
+     12px is the row's own padding-top and 14px is half the first line box. */
+  top: 26px;
   width: 11px;
   height: 1px;
   background: var(--gray);
-  transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--fast) var(--ease);
 }
 
 .skill-line::after {
   transform: rotate(90deg);
-  transition: transform 0.18s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--slow) var(--ease),
+    background-color var(--fast) var(--ease);
 }
 
 .skill-row[open] > .skill-line::after {
@@ -1465,6 +1648,16 @@ a {
   margin: 0 auto;
 }
 .desk .page-kicker, .desk .page-title, .desk .page-intro { text-align: left; margin-left: 0; }
+/* .hero-follow's rise animation comes with the class and was landing on the
+   desk's lists too. Its view() range never opens for a block taller than the
+   viewport that starts near the fold, so at 390px the first list sat at
+   opacity 0 with all seven rows in it: a header reading "AWAITING YOUR MERGE
+   7" over empty white, at rest, with no way to scroll it into view because
+   the page had nothing else to scroll. Caught in the pixels, then confirmed
+   by reading the computed opacity back out (0 at 390, 1 at 820 and 1440).
+   The desk is the owner's daily surface, so it gets no entrance
+   choreography at all (motion.md, high-frequency surfaces). */
+.desk > * { animation: none; }
 .desk-h {
   margin: 56px 0 6px;
   font-size: 13px;
@@ -1489,8 +1682,13 @@ a {
 }
 .desk-row.done { color: #888; }
 .desk-lane {
-  flex: 0 0 76px;
-  font-size: 11px;
+  /* 96px is the next step up the spacing scale from the old off-grid 76,
+     and it is the first one that holds the longest seat label (RESEARCH)
+     without min-width: auto pushing the lane wider than its own basis. */
+  flex: 0 0 96px;
+  /* 12px, not 11: the canon's type scale stops at 12 for small print and
+     says never 11. At 76px the longest seat label (RESEARCH) still fits. */
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   border: 1px solid currentColor;
@@ -1510,8 +1708,8 @@ a {
   white-space: nowrap;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity var(--slow) var(--ease),
+    transform var(--slow) var(--ease);
 }
 .desk-row:hover .desk-go { opacity: 1; transform: none; }
 @media (hover: none) {
@@ -1528,8 +1726,26 @@ a {
 .desk-foot { margin-top: 64px; font-size: 12px; color: #888; }
 .desk-foot a { color: #000; }
 @media (max-width: 560px) {
-  .desk-row { flex-wrap: wrap; }
-  .desk-lane { flex-basis: 64px; }
+  /* The 64px basis that used to live here was narrower than the longest
+     seat labels, and a flex item's min-width: auto floors it at its own
+     content, so ENGINEER and RESEARCH pushed their lanes out to 70px while
+     FE and SKILL stayed at 64. Every title then began at a different x and
+     the list read ragged down its left edge, at 390px only.
+     Holding one lane width instead fixed the alignment but left the title
+     164px wide, wrapping four deep on a phone, which is the clutter her
+     iPhone review named. So on a phone the lane keeps the first line to
+     itself with the row's action, and the title takes the full measure
+     underneath: no lane column to align, half the wraps, more air. */
+  .desk-row {
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .desk-lane { flex: 0 0 auto; }
+  .desk-go { margin-left: auto; }
+  .desk-main {
+    order: 1;
+    flex: 1 0 100%;
+  }
 }
 
 /* ---------- reduced motion ----------
@@ -1541,7 +1757,18 @@ a {
   .pill,
   .desk-go,
   .waitlist-field,
-  .lib-art {
+  .lib-art,
+  /* Both of these were missing. The toggle's bars actually rotate, which is
+     the kind of motion this query exists to stop, and the nav link's fade
+     belongs with the other colour transitions the house already mutes. */
+  .nav-links a,
+  .mobile-nav-toggle span {
+    transition: none;
+  }
+
+  /* The focus ring fades on the colour clock, so it is muted with the other
+     colour transitions rather than left as the one thing still moving. */
+  :where(a, button, summary, input, select, textarea, [tabindex]) {
     transition: none;
   }
 

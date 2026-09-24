@@ -106,3 +106,15 @@ proposal, not an evidenced conclusion.
   a first same-price-tier internal comp inside the skills ecosystem
   itself, worth a dedicated section, so it is flagged here for a future
   pass to re-check rather than dropped silently.
+- 2026-09-24: re-checked $20/month against Anthropic's real Claude
+  Marketplace launch (2026-09-23), which is what the 2026-09-18 flagged
+  rumor turned out to be pointing at, distorted. The primary announcement
+  (see docs/market/landscape.md) has no pricing, no revenue share, and no
+  path for an individual creator to sell a skill — it is an enterprise
+  procurement catalog. This closes last week's open question in
+  alexandria's favor: the platform owner's own marketplace move, when it
+  finally landed, still does not compete with the $20/month individual
+  operational tier. No change to $20/month. The why-pay paragraph's claim
+  that "nobody sells this combination" gets stronger evidence, not weaker,
+  from the platform owner's biggest move of the quarter landing somewhere
+  else entirely.

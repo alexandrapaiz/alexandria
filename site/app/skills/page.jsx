@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { renderMarkdown } from "../../lib/markdown.js";
 import { listSkills } from "../../lib/content";
 import { shelveSkills } from "../../lib/skill-shelves";
 import { hasSpine } from "../../lib/entitlement";
@@ -17,7 +17,7 @@ export default async function Skills() {
     ...shelf,
     skills: shelf.skills.map(({ body, ...s }) => ({
       ...s,
-      html: entitled ? marked.parse(body) : null,
+      html: entitled ? renderMarkdown(body) : null,
     })),
   }));
 
