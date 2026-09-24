@@ -192,14 +192,14 @@ GLOBAL_SCOPE = "mcp-authorize"
 
 
 def backoff_seconds(fails: int) -> int:
-    """Seconds that must pass after the `fails`-th wrong passphrase.
+    """Seconds that must pass before the next attempt, given `fails` already recorded.
 
-    Zero while the count is inside the free allowance, then doubling, then
-    flat at MAX_BACKOFF.
+    Zero until the free allowance is spent, so FREE_ATTEMPTS wrong passphrases
+    in a row cost nothing at all. Then doubling, then flat at MAX_BACKOFF.
     """
-    if fails <= FREE_ATTEMPTS:
+    if fails < FREE_ATTEMPTS:
         return 0
-    return min(2 ** (fails - FREE_ATTEMPTS - 1), MAX_BACKOFF)
+    return min(2 ** (fails - FREE_ATTEMPTS), MAX_BACKOFF)
 
 
 class MemoryAttemptStore:
@@ -288,9 +288,9 @@ class Throttle:
         self.free, self.cap, self.decay = free, cap, decay
 
     def _wait(self, fails: int) -> int:
-        if fails <= self.free:
+        if fails < self.free:
             return 0
-        return min(2 ** (fails - self.free - 1), self.cap)
+        return min(2 ** (fails - self.free), self.cap)
 
     def _with_store(self, call):
         """Run `call(store)` against Postgres, and against memory if that fails."""
