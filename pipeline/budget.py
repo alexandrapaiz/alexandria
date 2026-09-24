@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -43,23 +44,57 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # ---------------- what the model will accept ----------------
 
-# Groq's published free-tier limits, read 2026-09-19 from
-# https://console.groq.com/docs/rate-limits. TPM is the number that bites: a
-# single request larger than it is rejected 413 before any generation starts,
-# and the window is rolling, so it is both a per-request and a per-minute cap.
+# Groq's free-tier limits, re-read from the live docs on 2026-09-24 (incident
+# 24) at https://console.groq.com/docs/rate-limits and cross-checked against
+# https://console.groq.com/docs/models. Both pages are quoted in the PR that
+# landed this change.
 #
-# Only four free-tier entries carry a TPM above 8K, and three of them are
-# classifiers or speech models. `groq/compound` is the one usable writer with
-# room, at 70K. Keep this table honest: every run of weekly.py logs Groq's own
+# TPM is the number that bites: incident 22 established empirically that a
+# single request larger than the TPM ceiling is rejected 413 before any
+# generation starts, so the rolling per-minute limit is also a per-request
+# limit. RPM, RPD and TPD are recorded because the press shares this key with
+# four daily crons and the retry loop needs to know which ceiling it is near.
+#
+# The free tier has exactly three general text writers, and all three sit at
+# 8,000 TPM. There is no longer a free-tier model with room above that: the
+# only free entries with a larger TPM are the two prompt-guard classifiers at
+# 15K, which cannot write prose. Read that number carefully before proposing a
+# press design; it is the constraint the whole press now lives inside.
+#
+# Keep this table honest: every run of weekly.py logs Groq's own
 # `x-ratelimit-limit-tokens` header, which is the authority. If a logged value
 # ever disagrees with a number here, the logged value wins and this table is
 # the thing to fix.
 MODELS = {
-    "openai/gpt-oss-120b": {"tpm": 8_000, "context": 131_072, "max_output": 65_536},
-    "openai/gpt-oss-20b": {"tpm": 8_000, "context": 131_072, "max_output": 65_536},
-    "qwen/qwen3.8-27b": {"tpm": 8_000, "context": 131_072, "max_output": 32_768},
-    "groq/compound": {"tpm": 70_000, "context": 131_072, "max_output": 8_192},
-    "groq/compound-mini": {"tpm": 70_000, "context": 131_072, "max_output": 8_192},
+    "openai/gpt-oss-120b": {
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+    },
+    "qwen/qwen3.8-27b": {
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 32_768, "status": "preview",
+    },
+    "openai/gpt-oss-20b": {
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+    },
+}
+
+# Models the press has pointed at and that Groq has since withdrawn. Kept so a
+# 404 is explained rather than raising a bare KeyError, and so nobody proposes
+# a return to one of them without reading why it went.
+#
+# This is the failure class incident 24 named: PROVIDER MODEL DEPRECATION. Both
+# entries were `groq/compound*`, an agentic *preview* system, and previews are
+# withdrawn without the deprecation notice production models get. The press
+# moved to compound on 2026-09-19 (PR #51) purely for its 70K TPM, which is now
+# the clearest evidence available that a capacity number is the wrong reason to
+# pick a model.
+DECOMMISSIONED = {
+    "groq/compound": "404 Not Found as of 2026-09-23; absent from Groq's "
+                     "model catalog and rate-limit table on 2026-09-24. Was "
+                     "70,000 TPM, which is why the press was moved to it.",
+    "groq/compound-mini": "withdrawn with groq/compound; same catalog absence.",
 }
 
 # Headroom held back from the published ceiling. Three things live in it: the
@@ -76,6 +111,11 @@ ENVELOPE_TOKENS = 32
 
 def limit_for(model: str) -> int:
     """Usable tokens per request for `model`, margin already deducted."""
+    if model in DECOMMISSIONED:
+        raise KeyError(
+            f"{model!r} was withdrawn by Groq: {DECOMMISSIONED[model]} A press "
+            "cannot be pointed at it. Pick from budget.MODELS."
+        )
     if model not in MODELS:
         raise KeyError(
             f"{model!r} has no published limits in budget.MODELS. Add it with "
@@ -83,6 +123,115 @@ def limit_for(model: str) -> int:
             "pointing a press at it."
         )
     return int(MODELS[model]["tpm"] * (1 - MARGIN))
+
+
+# ---------------- does the model still exist? ----------------
+
+# Incident 24: the budget guard checked that the request fits and nothing
+# checked that the model exists, so the press was pointed at a model Groq had
+# withdrawn and the failure surfaced three days later as the owner noticing an
+# empty inbox. `GET /models` is the cheapest possible answer to "can we print at
+# all", it costs no tokens against any ceiling, and it runs twice: once at
+# deploy and once at the start of every run.
+MODELS_URL = "https://api.groq.com/openai/v1/models"
+
+
+class AvailabilityError(RuntimeError):
+    """The provider could not be asked which models it has."""
+
+
+class NoUsableModel(RuntimeError):
+    """Every candidate is either missing from the provider or over budget."""
+
+
+def available_models(api_key: str, timeout: float = 30.0) -> set[str]:
+    """The set of model ids Groq reports as active for this key.
+
+    Raises rather than returning an empty set on any failure. An empty set and
+    a failed request are the same value and very different facts, and treating
+    a network blip as "every model is gone" would walk the whole fallback list
+    for nothing.
+    """
+    import httpx
+
+    if not api_key:
+        raise AvailabilityError(
+            "no Groq API key, so model availability cannot be checked. Set the "
+            "GROQ_API_KEY the `groq` Modal secret provides."
+        )
+    try:
+        resp = httpx.get(
+            MODELS_URL,
+            headers={"Authorization": f"Bearer {api_key.strip()}"},
+            timeout=timeout,
+        )
+    except Exception as exc:
+        raise AvailabilityError(f"GET {MODELS_URL} failed: {exc}") from exc
+    if resp.status_code >= 400:
+        raise AvailabilityError(
+            f"GET {MODELS_URL} answered {resp.status_code}: {resp.text[:500]}"
+        )
+    try:
+        data = resp.json()["data"]
+    except Exception as exc:
+        raise AvailabilityError(
+            f"GET {MODELS_URL} returned no usable model list: {resp.text[:500]}"
+        ) from exc
+    # `active` is Groq's own flag; a listed but inactive model still 404s
+    return {m["id"] for m in data if m.get("active", True)}
+
+
+@dataclass
+class Choice:
+    """Which model the press will use, and why every rejected one was rejected."""
+
+    model: str | None
+    report: Report | None
+    rejected: list[tuple[str, str]] = field(default_factory=list)
+
+    def summary(self) -> str:
+        lines = []
+        for name, why in self.rejected:
+            lines.append(f"  rejected {name}: {why}")
+        if self.model:
+            lines.append(f"  CHOSEN {self.model}: {self.report.summary()}")
+        else:
+            lines.append("  NO USABLE MODEL: the press cannot print.")
+        return "\n".join(lines)
+
+
+def choose_model(candidates: list[str], available: set[str] | None,
+                 prompt: str, payload_json: str, max_completion: int) -> Choice:
+    """First candidate that both exists at the provider and fits the budget.
+
+    Two gates, in this order, because they fail for different reasons and the
+    operator needs to know which one bit. `available=None` skips the existence
+    gate, for the offline CI run that has no key.
+    """
+    choice = Choice(model=None, report=None)
+    for name in candidates:
+        if name in DECOMMISSIONED:
+            choice.rejected.append((name, f"withdrawn by Groq. {DECOMMISSIONED[name]}"))
+            continue
+        if name not in MODELS:
+            choice.rejected.append(
+                (name, "no published limits in budget.MODELS, so no budget can "
+                       "be checked for it"))
+            continue
+        if available is not None and name not in available:
+            choice.rejected.append(
+                (name, f"not in the {len(available)} models Groq reports for "
+                       "this key; a request would 404"))
+            continue
+        report = check_request(prompt, payload_json, max_completion, name)
+        if not report.fits:
+            choice.rejected.append(
+                (name, f"over budget by {-report.headroom} tokens. "
+                       f"{report.summary()}"))
+            continue
+        choice.model, choice.report = name, report
+        return choice
+    return choice
 
 
 # ---------------- counting tokens ----------------
@@ -331,9 +480,32 @@ def fit_payload(payload: dict, prompt: str, max_completion: int,
 class Press:
     name: str
     prompt: str
-    model: str
+    models: list[str]
     max_completion: int
     optional: bool = False
+
+
+def fallback_models() -> list[str]:
+    """The press's ordered fallback list, read out of weekly.py.
+
+    Incident 24 added the list; this guard reads it from production rather than
+    keeping a copy, for the same reason it already reads the model name and the
+    output reservation from there. A guard with its own copy of the fallback
+    order is a guard that verifies a list nothing uses.
+    """
+    source = _weekly_source()
+    match = re.search(r"^FALLBACK_MODELS = (\[[^\]]*\])", source, re.M)
+    if match:
+        models = ast.literal_eval(match.group(1))
+        if not isinstance(models, list) or len(models) < 3:
+            raise LookupError(
+                "weekly.FALLBACK_MODELS must be a list of at least three "
+                f"models; found {models!r}. One model is a single point of "
+                "failure, and incident 24 is what that costs."
+            )
+        return models
+    # a press that predates the fallback list still has to be checkable
+    return [_literal(source, r'^MODEL = "([^"]+)"', "MODEL")]
 
 
 def presses() -> list[Press]:
@@ -343,7 +515,7 @@ def presses() -> list[Press]:
     reservation is a guard that passes while production fails.
     """
     source = _weekly_source()
-    model = _literal(source, r'^MODEL = "([^"]+)"', "MODEL")
+    models = fallback_models()
     # one reservation today; PR #35 replaces it with a MAX_TOKENS dict keyed by
     # kind, and this reads either shape
     table = re.search(r"^MAX_TOKENS = (\{[^}]*\})", source, re.M)
@@ -353,8 +525,8 @@ def presses() -> list[Press]:
         tokens = {"weekly": int(_literal(
             source, r"^MAX_COMPLETION_TOKENS = (\d+)", "MAX_COMPLETION_TOKENS"))}
     return [
-        Press("weekly digest", "prompts/digest.md", model, tokens["weekly"]),
-        Press("daily issue", "prompts/daily.md", model,
+        Press("weekly digest", "prompts/digest.md", models, tokens["weekly"]),
+        Press("daily issue", "prompts/daily.md", models,
               tokens.get("daily", tokens["weekly"]), optional=True),
     ]
 
@@ -475,6 +647,29 @@ def main() -> int:
         failures.append(problem)
         print(f"SELFTEST: {problem}\n")
 
+    # Availability, when a key happens to be present. CI has none, and that is
+    # fine: the deploy-time and run-time checks in weekly.py are the ones that
+    # gate a real send. Here it is a bonus, never a requirement, so the guard
+    # stays runnable offline.
+    available = None
+    key = os.environ.get("GROQ_API_KEY", "")
+    if key:
+        try:
+            available = available_models(key)
+            print(f"groq reports {len(available)} active models for this key")
+            for name in MODELS:
+                if name not in available:
+                    failures.append(
+                        f"{name} is in budget.MODELS but Groq does not list it; "
+                        "a press pointed at it would 404")
+                    print(f"  MISSING AT PROVIDER: {name}")
+            print()
+        except AvailabilityError as exc:
+            print(f"availability check skipped: {exc}\n")
+    else:
+        print("no GROQ_API_KEY here, so model existence is not checked. "
+              "weekly.py checks it at deploy and at run start.\n")
+
     for press in presses():
         path = ROOT / press.prompt
         if not path.exists():
@@ -485,20 +680,56 @@ def main() -> int:
             print(f"MISSING: {press.prompt}\n")
             continue
         prompt = path.read_text()
-        report = check_request(prompt, payload_json, press.max_completion, press.model)
-        print(f"{press.name} ({press.prompt}, {len(prompt)} chars)")
-        print(f"  {report.summary()}")
-        if not report.fits:
-            over = -report.headroom
+        print(f"{press.name} ({press.prompt}, {len(prompt)} chars, "
+              f"{count_tokens(prompt)} tokens)")
+        print(f"  output reservation: {press.max_completion} tokens")
+        print(f"  fallback list, in order, every entry checked:")
+
+        # Requirement from the 2026-09-24 dispatch: the guard verifies that
+        # EVERY fallback fits, not just the one in use. A fallback that has
+        # never been measured is a fallback that fails at 3am.
+        fits_any = False
+        for rank, model in enumerate(press.models, start=1):
+            if model in DECOMMISSIONED:
+                failures.append(
+                    f"{press.name} fallback {rank} is {model}, withdrawn by Groq")
+                print(f"  {rank}. {model}: WITHDRAWN. {DECOMMISSIONED[model]}")
+                continue
+            if model not in MODELS:
+                failures.append(
+                    f"{press.name} fallback {rank} ({model}) has no published "
+                    "limits in budget.MODELS")
+                print(f"  {rank}. {model}: no limits published here; cannot be "
+                      "checked")
+                continue
+            report = check_request(prompt, payload_json, press.max_completion,
+                                   model)
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {rank}. {report.summary()}{flag}")
+            if report.fits:
+                fits_any = True
+
+        if not fits_any:
+            best = min(
+                (check_request(prompt, payload_json, press.max_completion, m)
+                 for m in press.models if m in MODELS),
+                key=lambda r: -r.headroom, default=None)
+            over = -best.headroom if best else 0
             failures.append(
-                f"{press.name} is {over} tokens over budget on {press.model}"
-            )
-            print(f"  FAIL: {over} tokens over. Groq answers 413 and no issue "
-                  "is written.")
+                f"{press.name} does not fit ANY model in its fallback list; the "
+                f"closest is {over} tokens over")
+            print(f"  FAIL: no model in the fallback list can take this "
+                  f"request. Closest miss is {over} tokens.")
             print("  Fix one of: shorten the generator prompt, lower the output "
                   "reservation, tighten pipeline/budget.py PAYLOAD_CAPS (and the "
-                  "matching `limit` in gather()), or move the press to a model "
-                  "with a larger per-request budget.")
+                  "matching `limit` in gather()), split the issue across several "
+                  "requests, or add a model with a larger per-request budget to "
+                  "budget.MODELS.")
+            print(f"  Note the arithmetic: the prompt ({count_tokens(prompt)}) "
+                  f"plus the reservation ({press.max_completion}) alone is "
+                  f"{count_tokens(prompt) + press.max_completion} tokens, "
+                  "before a single row of payload.")
         print()
 
     if failures:
