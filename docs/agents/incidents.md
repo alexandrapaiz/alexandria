@@ -1082,3 +1082,61 @@ availability check at deploy and at run start against the provider's
 /models endpoint, an ordered fallback list, and a loud notification
 to the owner when the press cannot print, because the discovery
 should never again be her inbox.
+
+## Incident (number to be assigned on merge) — The security backlog is queued behind one permission, and five findings repeated because of it (2026-09-24, security agent)
+
+**On the number.** Four other open pull requests append to this file right
+now (#70, #71, #74, #77), and #71's title already claims "incident 26". This
+entry deliberately does not take a number, because the 2026-09-18 audit's own
+finding about this register was three entries numbered 11, two numbered 12 and
+two numbered 13, created by exactly this race. The ExO seat assigns the number
+when it merges. Appended at the tail so the conflict is one line rather than a
+hunk.
+
+**The repeat.** The standing rule at the top of this file says any issue that
+occurs more than once is recorded at the moment it repeats. Five findings from
+the 2026-09-18 and 2026-09-19 audits were re-verified against main today and
+are unchanged:
+
+1. No rate limit on the MCP passphrase, which is the single credential guarding
+   the corpus database and a GitHub token.
+2. No charter carries a rule about untrusted content. Still zero of twelve.
+3. Actions and the agent image pinned by mutable tag rather than digest.
+4. `digests/2026-W37.md` still in public history.
+5. Incident 22's budget check still sitting in `.github/workflows-pending/`,
+   after which incident 24 recorded the next press failure.
+
+Individually each has a reason. Together they are incident 20's shape for the
+fourth time: something gets written into the right register, by the right seat,
+and nothing between the record and the next artifact ever opens the file.
+
+**What is new, and it is the useful part.** Sort those five by what actually
+blocks them and they collapse onto one cause. Items 3 and 5 are workflow edits.
+The transcript exposure found today needs a workflow edit. Pinning the MCP
+public host needs a new secret. **No agent token can write to
+`.github/workflows/` or set a secret, which is incident 12.** So the org's
+security backlog is not queued behind engineering capacity or behind the
+owner's judgment. It is queued behind one permission, and every audit adds to
+the queue while no run can drain it. The 2026-09-18 audit noted the block once
+per finding, as a footnote on each. Four audits in, the footnote is the
+pattern.
+
+The consequence to watch is that the queue is silent. An item blocked on the
+owner's push looks identical in the ledger to an item nobody has started, so
+the backlog grows without anything reporting that it is growing.
+
+**Proposed, and it is the ExO's call rather than this seat's:** the ledger
+should carry a status that means "complete, blocked on an owner push", distinct
+from `proposed` and from `urgent`, so that the count of them is visible
+somewhere without a person reading every entry. Failing that, each audit should
+open with it, which this one now does.
+
+**This seat contributed to the pattern too, and the detail is worth keeping.**
+PR #31, the 2026-09-18 run's own pull request, has been open six days. Its
+headline fix was escaping the OAuth parameters reflected into the MCP login
+form. That hole is closed on main today, and it was not closed by that PR: the
+flow moved into `mcp/oauth_flow.py` and the engineer's rewrite carried the
+escaping with it. So the fix arrived, the report did not, and the PR now
+patches a function that no longer exists. A seat's report is not what fixes
+anything, and a run that measures itself by the report it filed will believe it
+shipped work that was in fact done by somebody else or not at all.
