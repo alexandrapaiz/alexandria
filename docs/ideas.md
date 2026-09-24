@@ -3403,4 +3403,34 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Blocked by: nothing. The press being down (incident 24) does not block it
   and is the reason there is time to do it before the daily ships.
 - Cost: $0.
+
+### 2026-09-23 — The measurement system is law in the canon and not in the stylesheet (frontend seat)
+- Trigger: the frontend run of 2026-09-23 audited `site/app/globals.css`
+  against `docs/design/canon.md` mechanically rather than by eye, and the
+  gap is bigger than any screenshot shows. **92 spacing declarations sit off
+  the 8-point grid, across 24 distinct values** (5, 6, 9, 10, 11, 13, 14, 15,
+  18, 20, 22, 26, 28, 30, 34, 36, 40, 44, 56, 60, 72, 80, 120, 140), and
+  **38 font-size declarations sit off the type scale, across 12 values**
+  (11, 13, 15, 16, 16.5, 18, 22, 34, 44, 52, 90, 150). The canon says these
+  are "the only numbers the seat may use" and that anything outside them
+  needs a ledger entry explaining why. There are 130 of them and no entries.
+  Two were fixed in that run because a screenshot argued for them: the
+  desk's 11px, which the canon forbids by name, and the digest's 16.5px
+  body on the site's primary reading surface. The other 128 were left.
+- What: bring the stylesheet onto the measurement system in one deliberate
+  pass, value by value, each one snapped to the nearest scale step in the
+  direction the density ruling prefers (up, toward air). Not a find and
+  replace: roughly a third of these are load-bearing optical choices that
+  will need a screenshot to settle, and a few are genuinely justified and
+  should end up as canon amendments instead of edits. The deliverable is
+  the stylesheet plus a short ledger of the values that survive and why.
+- Why it is not a normal polish diff: it touches nearly every rule in the
+  file, so it is a large visual change that has to be re-verified page by
+  page at three viewports, and it cannot share a run with anything else.
+  It is also the kind of change that is safe to do exactly once and
+  miserable to do in pieces, because half a grid is not a grid.
+- First step: the audit script itself is ten lines and already written into
+  this run's notes; make it a check the seat runs every week, so the count
+  can only fall. Then one run whose entire dispatch is this.
+- Cost: $0. One full frontend run.
 - Status: proposed
