@@ -1798,3 +1798,94 @@ in 2026, and Groq has run at least two. The press's guards were written
 against one vendor and are now written against a provider table, which
 is the honest shape: any provider will withdraw any model, and the only
 defence that keeps working is asking before the run, every run.
+
+## INC-2026-09-24-press-provider-migration — four failures in one evening, one root cause (2026-09-24, owner-reported four times)
+
+Registered by the ExO seat on the owner's dispatch. Numbered by the rule
+at the top of this file rather than sequentially, because this branch
+cannot see the highest number that exists.
+
+**What happened.** The press moved to Moonshot's Kimi under ADR-32 and
+was deployed straight to the real Monday path. It then failed four
+times in one evening. Each failure was found by the owner's alarm email,
+each was diagnosed and fixed by the chair in minutes, and each fix is a
+one-line or two-line commit on main.
+
+| # | Symptom | Cause | Fix | Commit |
+| --- | --- | --- | --- | --- |
+| 1 | No content returned, `finish_reason` was `length` | `MAX_COMPLETION_TOKENS` was 6000 and kimi-k2.6 spent all of it on hidden reasoning before writing a visible token | reservation raised to 24000, against a 32768 output ceiling and 180K of remaining context | `281d0af` |
+| 2 | `httpx.ReadTimeout` at 300s | the default read timeout, while the model was still reasoning | 1500s on the writing call, inside Modal's 1800s function timeout | `b8de845` |
+| 3 | `IdleInTransactionSessionTimeout`, issue written and lost | the read transaction from `gather()` stayed open across a multi-minute model call and Neon terminated it | the read connection closes after `gather()`, the model call runs with nothing open, a fresh connection saves and sends | `5736d71` |
+| 4 | Alarm subject read `[alexandria] 2026-W39` | subject lines were built from the ISO week id and a bracket tag | proper titles on every subject a human reads, plus a taste entry | `1ccea9c` |
+
+**Why it happened, technically, and the four are one.** Every row above
+is an integration property of a new provider, and not a bug in the code
+that was written.
+
+- A reasoning model spends output budget on thinking before it writes,
+  so a reservation sized for a non-reasoning model returns nothing.
+- A model that reasons for minutes needs a client timeout measured in
+  minutes, and the default is measured in seconds.
+- A call that takes minutes must not be made while a database
+  transaction is open, because managed Postgres kills idle transactions.
+- A provider swap touches the alarm path, and the alarm path is
+  owner-facing prose that taste governs.
+
+None of the four is knowable from the provider's documentation in
+advance, and all four are knowable from one real call. **A single
+rehearsal print against the real payload, before the deploy, would have
+surfaced every one of them.** Failures 1, 2 and 3 happen on the success
+path and would have thrown in the rehearsal. Failure 4 is on the alarm
+path, and a rehearsal that prints the subject lines it would have sent
+shows it to a reader without sending anything.
+
+**The root cause, which is not the model.** The org already had the law.
+`docs/agents/runtime-changes.md` says no change to the environment a
+seat runs in reaches a scheduled run until a deliberate smoke test has
+proved it, and it was written after incidents 17 and 18. The law did not
+fire here for two reasons, and both are the org's rather than anyone's.
+
+1. **The law's own definition excluded this change.** Its "what counts"
+   list is a list of container and workflow machinery, written the week
+   the org containerized. A model id and a provider base URL are neither,
+   so a reader applying the law honestly concludes it does not apply. The
+   press is a Modal cron and not a seat, and the law says "the
+   environment a seat runs in". Fixed in this PR: a provider or model
+   change is a runtime change, and the press is a runtime.
+2. **Recording is not enforcing, again.** This is the same class as
+   incident 20 and the fourth time the org has met it. The chair knew the
+   law. Nothing between the law and the deploy ever opened the file,
+   because the gate that runs is the chair's deploy command and that
+   command asks two questions (does the request fit, does the model
+   exist) and not the third (does one real call work end to end). The
+   `&&` chain in `pipeline/weekly.py`'s docstring is the org's only
+   mechanical gate on the press, and this class of failure walked past it
+   because it was never added as a link.
+
+**What the org grew from it.** Three things, all in this PR.
+
+- The runtime law now names provider and model changes, names the press
+  as a runtime, and carries a staged ladder for them with three gates:
+  the budget guard, the availability check, and a rehearsal print.
+- The rehearsal is specified in `docs/agents/press-rehearsal.md` for the
+  engineer to build: preflight plus one real model call against the real
+  payload, written to a scratch row and sent to nobody.
+- The enforcement answer is written down honestly. A charter line telling
+  a seat to read a law is not a gate. The gate is the deploy command
+  refusing to proceed without a rehearsal receipt, which costs one more
+  `&&` and is the only form of this rule that has ever worked.
+
+**What worked, and it is worth the same weight.** The alarm path fired
+four times out of four. The owner learned about every one of these
+within seconds of it happening, from an email the press sent about
+itself, rather than from an empty inbox three days later. That is
+incident 24's standing fix doing precisely what it was bought for, on a
+provider it was not written against, and it is the reason this entry
+describes four fixed failures instead of one missing issue. The
+complaint about the fourth alarm's subject line is a complaint about an
+email that arrived.
+
+**The thing still unfixed after this PR.** The rehearsal is a proposal,
+not code. Until the engineer ships it and the deploy command requires
+its receipt, the ladder is a document, and a document is what failed
+here.
