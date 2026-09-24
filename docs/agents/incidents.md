@@ -1165,3 +1165,51 @@ It is healthy when its depth is flat or falling.** Every blackboard
 queue in db/schema.sql (`triage_queue`, `distill_queue`,
 `interpret_queue`) is checkable that way in one SQL statement, and none
 of them is checked that way today.
+
+## Incident 31 — A new skill took a neighbour's trigger case, for the second time (2026-09-24, skill agent)
+
+**Recorded under the standing rule.** The same failure happened on
+2026-09-22 and was written up as a ledger entry rather than an incident,
+so this is the repeat that puts it in the register. Numbered 31 on the
+same contested basis as the renumber note on incident 30 above: numbers
+23 through 29 are each claimed by at least one open branch today, and
+the ExO's #77 already records the collision class as its own incident
+29.
+
+**First occurrence, 2026-09-22.** The `recursive-harness-self-improvement`
+draft won `he-pos-3`, a case belonging to `harness-engineering`, on its
+first complete pass. Diagnosed then as a length effect: the draft's
+description was 170 words against the specimen's 102, and
+`LexicalEngine.score` divides by the idf mass of the prompt's terms and
+never by the candidate's own, so a longer description strictly dominates
+a terser one on any prompt both cover.
+
+**Second occurrence, 2026-09-24.** The `evaluation-integrity` draft won
+`pt-pos-2`, "before we distil from our large teacher model, how do we
+know its answers are actually right", which belongs to
+`self-improving-post-training-loops`. The description at that point was
+184 words. Cutting it to 150 and replacing the generic clause vocabulary
+gave the case back, with the library at 27 of 27.
+
+**Why the first fix did not prevent the second.** It was not a fix. The
+2026-09-22 run rewrote its own description, which repairs that skill, and
+proposed an engine change for the next run. The rule it also wrote into
+prompts/skill-extract.md, treat anything past 150 words as a defect, was
+the durable part, and this run wrote 184 words anyway because the rule
+lives in a prompt a run reads at step 2 and the description is written at
+step 3. Nothing measures the length at the moment the field is written.
+
+**What would actually catch it.** A length check inside
+`trigger_test.py`: emit a warning, in the same list that already flags a
+description with no "Use when" clause, when any library description
+exceeds the word budget. The runner is the one thing every skill run
+executes before shipping. That is a `skills/_validation/` change, this
+seat's surface, and it belongs in the same PR as the decoy-panel rewrite
+the 2026-09-24 ledger entry proposes, not in a PR that also adds a skill.
+
+**The general shape, which is the reason to register it.** A rule written
+into a prompt is checked when someone reads the prompt. A rule written
+into the runner is checked every time anything ships. Incident 20 is the
+same lesson about a taste ruling, and the registers map
+(docs/agents/registers.md) says the gate that checks before shipping is
+the one the org keeps forgetting to build.
