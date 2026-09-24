@@ -171,6 +171,23 @@ for orchestration essentially," not AI news.
   materially different value prop (tooling, not more essays).
 - **Last observed:** 2026-09-18.
 
+### Ben's Bites (bensbites.com) — new find, added 2026-09-24
+- **What it is:** High-frequency, community-driven AI newsletter and
+  Discord/community product, casual tone, optimized for habit over
+  depth.
+- **Pricing:** Free digest. Community membership $80/year (~$6.67/mo).
+  Pro tier $150/year, discounted from $250/year (~$12.50-20.83/mo).
+  [catalog.bensbites.com](https://catalog.bensbites.com/topic/newsletters),
+  [stackviv.ai](https://stackviv.ai/ai-tools/bens-bites).
+- **Reach:** ~120,000 subscribers.
+  [aiforautomation.io](https://aiforautomation.io/news/2026-03-30-bens-bites-120k-ai-newsletter-founder-a16z)
+- **Weaknesses against alexandria:** community and content product, no
+  claim structure, no agent-loadable tooling.
+- **Why it matters for positioning:** its Pro tier is the closest
+  content-brand comp to $20/month found yet, closer than The Pragmatic
+  Engineer's $15/month. Folded into positioning.md's price ladder.
+- **Last observed:** 2026-09-24.
+
 ## Agent-knowledge ecosystems
 
 ### Anthropic Claude Marketplace — new find, added 2026-09-24
@@ -220,6 +237,14 @@ for orchestration essentially," not AI news.
     after launch; by June 2026, ~669,670 skills listed, top skill at
     2.0M installs.
     [Vercel changelog](https://vercel.com/changelog/introducing-skills-the-open-agent-skills-ecosystem)
+    Re-checked 2026-09-24: the registry's own "All Time" leaderboard
+    count now reads 1,540,973 skills, more than double the June figure
+    (flagged for this seat's refresh in PR #86's "Seen and not mine").
+    Growth rate, not just scale, is the signal: an open registry more
+    than doubling in three months is a low, falling cost bar for a free
+    alternative to alexandria's skills layer, unchanged in direction
+    from the 2026-09-18 reading but now with a number behind it.
+    [skills.sh](https://skills.sh)
   - Smithery.ai (MCP-server infra, hosts skill-registry products on top).
   - Other catalogs: localskills.sh, SkillsMP, ClawHub,
     claudemarketplaces.com, mcpmarket.com.
@@ -372,3 +397,9 @@ for orchestration essentially," not AI news.
   triggered as an orchestration-at-scale watchlist note. Re-checked Elicit
   and Consensus pricing (docs/market/briefs/2026-09-24.md); no change
   found at either.
+- 2026-09-24 (second run, the owner's ranking dispatch): added Ben's
+  Bites as a new digests-and-newsletters entry. Re-checked skills.sh's
+  listed-skill count directly (1,540,973, more than double the June
+  figure), flagged for refresh by PR #86's "Seen and not mine." See
+  docs/market/briefs/2026-09-24-b.md for the newsletter and product
+  ranking this run produced.

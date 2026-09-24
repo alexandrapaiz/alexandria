@@ -41,7 +41,11 @@ from an original $10/$100 at launch), Stratechery Plus ($15/mo or
 $150/yr), Interconnects (~$15/mo or ~$150/yr, medium confidence). Lenny's
 Newsletter sits higher at $20/month or $200/year, but that price is
 inflated by a bundled "Product Pass" of partner-SaaS perks, not pure
-content value — a bundling tactic, not a content-price signal.
+content value — a bundling tactic, not a content-price signal. Ben's
+Bites' Pro tier ($150/yr, ~$12.50/mo) sits between the $15/month cluster
+and $20/month, the closest a content-only newsletter brand has come to
+alexandria's price point without selling tooling (added 2026-09-24,
+docs/market/landscape.md).
 
 Actual research *tools*, as opposed to reading material, price meaningfully
 above the essay tier: Consensus Pro at roughly $20/month, Elicit Pro at
@@ -118,3 +122,14 @@ proposal, not an evidenced conclusion.
   that "nobody sells this combination" gets stronger evidence, not weaker,
   from the platform owner's biggest move of the quarter landing somewhere
   else entirely.
+- 2026-09-24 (second run, the owner's ranking dispatch): ranked
+  alexandria's product against the full paid competitive set for the
+  PM, per docs/market/briefs/2026-09-24-b.md. Added Ben's Bites' Pro
+  tier to the price ladder above, the closest content-brand comp to
+  $20/month found yet. No change to $20/month; the new data point
+  confirms rather than contradicts it. Checked the live pricing page
+  directly: the $20/month tier is real on paper but not yet purchasable
+  (both tiers read "Launches October 13"), and its copy does not
+  mention the claim graph that this doc's why-pay paragraph treats as
+  the core differentiator. Flagged as a decision for the PM and
+  engineer seats, not resolved here.

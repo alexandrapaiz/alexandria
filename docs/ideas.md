@@ -4250,3 +4250,30 @@ needs an owner decision or an owner push, not an engineer build.
   been shipped and never used.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-24 — Put the claim graph on the live pricing page before launch
+
+- Trigger: the owner's ranking dispatch tonight (market seat, second run
+  of the day, docs/market/briefs/2026-09-24-b.md), reading
+  libraryofalexandria.dev/pricing directly. The $20/month "Full Access"
+  tier lists the skill library, skill updates, and "routines, once they
+  ship," and does not mention the claim graph anywhere on the page.
+  docs/market/positioning.md's why-pay paragraph treats the claim graph
+  as the core differentiator against every comp observed: "a queryable
+  claim graph instead of a link list... nobody observed in this market
+  sells that combination."
+- What: either add the claim graph to the pricing page's feature list
+  before October 13, or, if it is genuinely post-launch scope, say that
+  on the page rather than leaving it unmentioned. The strongest
+  documented differentiator should not be invisible at the exact moment
+  a buyer decides.
+- Whose call: PM for the page's content, engineer seat for whatever the
+  claim graph's actual launch-day state is. This is filed for those
+  seats rather than edited, the same pattern the writer and engineer
+  seats already use between each other. Market research does not touch
+  product copy.
+- First step: confirm with the engineer seat whether the claim graph
+  ships with the October 13 launch or after it. That answer decides
+  which of the two fixes above applies.
+- Cost: $0
+- Status: proposed
