@@ -638,7 +638,7 @@ tier setting it permanently and the trial setting it with an expiry
 the webhook later confirms or revokes. The pricing page copy follows
 the writer seat's site-copy rules; the site's current "Opens
 October 13" pills become the three offers.
-## ADR-32: Accounts via Clerk, Neon as system of record, door-closed launch
+## ADR-34: Accounts via Clerk, Neon as system of record, door-closed launch
 
 **Status.** Accepted 2026-09-19, owner-directed. Chair-authored in parallel
 with ADR-30 and ADR-31, which settled the payments half (Polar as MoR,
@@ -706,3 +706,28 @@ the model served by alexandria itself (vLLM on Modal, an open-weight
 writer such as gpt-oss-120b or Qwen3), so no provider can withdraw
 the press's model again. Groq's role stays as it was: the corpus's
 brain, not the company's.
+
+## ADR-33: Seats may start runs with the runner's own token
+
+**Status.** Accepted 2026-09-24, owner-directed. Recorded here after the
+fact: PR #76 shipped it and prompts/pm-agent.md §5 cites it as
+"ADR-033", but no record existed in this file until 2026-09-24.
+
+**Decision.** A seat may dispatch another seat's workflow with the plain
+`GITHUB_TOKEN`, given `permissions: actions: write` on the calling
+workflow. `workflow_dispatch` and `repository_dispatch` are GitHub's two
+exceptions to the rule that runner-token events start no runs, and HQ's
+`dispatch-probe` proved it on 2026-09-24. No GitHub App key is needed
+for dispatch. The PM's dispatch authority (prompts/pm-agent.md §5) is
+active on this basis.
+
+**What it does not decide.** A seat's own token still cannot push to
+`.github/workflows/*`. That half of ADR-27 (the shared App) stays open,
+and `docs/agents/pending-workflow-changes.md` remains the channel.
+
+**Numbering note.** Two decisions were recorded as ADR-32 on 2026-09-19
+and 2026-09-24. The press decision keeps 32 because pipeline code,
+tests, README and the sprint files cite it. The accounts decision is
+now ADR-34, which nothing outside this file cited. Sequential ids have
+now collided twice (ADR-30 before, ADR-32 now); ExO's standing
+recommendation to move to dated ids stays on the chair's list.
