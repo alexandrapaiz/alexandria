@@ -265,6 +265,28 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
 3. **The laws**, one verdict each, every verdict carrying a quoted
    line.
 4. **The ban list**, including new tells to append.
+5. **The claims pass**, added 2026-09-24 after the fourth grade of
+   2026-W39 found a false comparison that the four passes above had
+   no way to see. Those four all ask how the issue is written. This
+   one asks whether what it says is so, and it runs last because it
+   needs the whole issue in view.
+   Take every comparison the issue makes and every belief it says
+   fell, and put one question to each: do the two things being
+   compared measure the same quantity, of the same kind of system, on
+   a task a reader would accept as the same task? A shared percent
+   sign is not a shared measure. 2026-W39 set a benchmark success
+   rate of 82.2% for building agents against a win rate of 87% for
+   simulated fighter aircraft and declared a ceiling broken, and the
+   issue said "the contexts differ" in the same sentence.
+   That is the second question, and it catches what the first one
+   misses. Did the issue write a concession and then proceed past it?
+   A qualifier that the claim has to survive before it can land is
+   the writer noticing the comparison fails and continuing, which is
+   ban list 50. The fix is to drop the claim, never to soften it.
+   This pass is procedure and not a law. It enforces laws 6 and 7,
+   which already require the evidence grade to be honest and to be
+   about the thing that is actually uncertain, and a grade aimed at
+   the wrong risk satisfies neither.
 
 ## Maintenance
 
