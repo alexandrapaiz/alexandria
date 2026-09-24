@@ -354,9 +354,8 @@ this page.</p></body>"""
 TOO_MANY = """<!doctype html><title>alexandria</title>
 <body style="font-family:system-ui;max-width:26rem;margin:15vh auto">
 <h2>alexandria</h2>
-<p>Too many wrong passphrases. Wait {wait} seconds and try again. Nothing is
-locked. If this was not you, someone is guessing, and the wait is what is
-stopping them.</p>
+<p>Too many wrong passphrases. Wait {wait} and try again. Nothing is locked.
+If this was not you, someone is guessing. The wait is what stops them.</p>
 <form method="post" action="/authorize">
 {hidden}
 <input type="password" name="passphrase" placeholder="passphrase"
@@ -381,11 +380,12 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
     Postgres-backed one, because a Modal container that scales to zero forgets
     an in-process count the moment it stops.
     """
-    if throttle is None:
-        throttle = Throttle()
     import jwt
     from fastapi import Form, Request
     from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+
+    if throttle is None:
+        throttle = Throttle()
 
     def base_url(request) -> str:
         # `.get`, not `[...]`: a request without a Host header is malformed
@@ -488,7 +488,8 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
         # attempt learns nothing at all about the passphrase.
         wait = throttle.retry_after()
         if wait > 0:
-            return HTMLResponse(TOO_MANY.format(wait=wait, hidden=hidden),
+            plural = "1 second" if wait == 1 else f"{wait} seconds"
+            return HTMLResponse(TOO_MANY.format(wait=plural, hidden=hidden),
                                 status_code=429, headers={"Retry-After": str(wait)})
         if not hmac.compare_digest(passphrase_field, passphrase):
             throttle.record_failure()

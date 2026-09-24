@@ -125,7 +125,8 @@ def test_the_refusal_tells_the_caller_how_long_to_wait(client, clock):
     blocked = attempt(client, client_id)
     assert blocked.status_code == 429
     assert blocked.headers["Retry-After"] == "1"
-    assert "Nothing is\nlocked" in blocked.text
+    assert "Wait 1 second and try again" in blocked.text
+    assert "Nothing is locked" in blocked.text
 
 
 # ---------------- and it must not become a lockout ----------------

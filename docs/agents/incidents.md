@@ -3100,7 +3100,6 @@ Every gate is tested against an artifact known to fail it before the
 gate is trusted. PR #60's tests assert that the checker finds the
 defects it was written to find. Nothing asserted that it finds them in a
 real issue, and the first real issue it met was one it passed.
-=======
 *Renumbering note (2026-09-24, frontend run). These two entries were written
 on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
 carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
