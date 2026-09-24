@@ -1,11 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { marked } from "marked";
+import { renderMarkdown } from "../../../lib/markdown.js";
 import { getIssue, listIssues } from "../../../lib/content";
 
 // The digest is free in full (docs/vision.md §0, amended 2026-09-17). There is
 // no teaser split and no entitlement check on this route: a signed-out visitor
 // reads the entire issue. Gating lives on the spine only, in site/lib/entitlement.js.
+
+// Only published weeks have a route here. Without this, an address that is
+// not in the list below goes through on-demand static generation first, and
+// the 404 it renders reads headers through the root layout's ClerkProvider,
+// which is a static-to-dynamic error and a 500 rather than a clean 404. That
+// stayed hidden while one week was always published; it surfaced the moment
+// retiring 2026-W37 left this list empty. With dynamicParams off, Next
+// answers 404 for anything not published without rendering the page at all.
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return listIssues().map((it) => ({ week: it.week }));
@@ -31,7 +40,7 @@ export default async function Issue({ params }) {
     <main className="page">
       <article
         className="digest"
-        dangerouslySetInnerHTML={{ __html: marked.parse(issue.body) }}
+        dangerouslySetInnerHTML={{ __html: renderMarkdown(issue.body) }}
       />
       <div className="issue-foot">
         <p>

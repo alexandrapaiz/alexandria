@@ -36,7 +36,7 @@ flowchart TB
     subgraph ORG["The org: twelve seats, GitHub Actions cron, one PR per run"]
         direction TB
         BUILD["<b>Build</b><br/>engineer · daily 7:06 ET<br/>skill · Tue<br/>frontend · Wed"]
-        STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
+        STEER["<b>Steer</b><br/>pm · daily, Mon is the ceremony<br/>okr · monthly<br/>exo · Sun"]
         WATCH["<b>Watch</b><br/>research · Mon<br/>market · Fri<br/>security · 1st + 15th"]
         DORM["<b>Dormant</b><br/>finance · sales<br/>owner activates"]
     end
@@ -51,7 +51,7 @@ flowchart TB
         SIL[("Silver<br/>claims + embeddings")]
         INT["Interpret<br/>14:00 UTC"]
         GR[("Claim graph<br/>supports · refines<br/>contradicts")]
-        WK["Weekly job<br/>Mon 15:00 UTC"]
+        WK["Weekly job<br/>Mon 09:00 UTC"]
         DIGEST["Free digest<br/>full issues, by email"]
         MCP["MCP server<br/>search · RAG · proposals"]
         GOLD[("Gold<br/>skills + pattern notes")]
@@ -106,12 +106,12 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 | Seat | Cadence | Lane | ADR |
 |---|---|---|---|
 | engineer | daily 7:06 ET | product code and the pipeline | ADR-14 |
-| pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
+| pm | daily 6:35 ET standup, Mon is the ceremony | sprints, backlog, board, org chart, and the daily run-health and delivery-health report | ADR-15 |
 | research | Mon 16:30 UTC | what deserves reading: digest review, curation brief, sources, meta-review | ADR-25 |
 | skill | Tue 8:00 ET | the gold production line in skills/ | ADR-22 |
-| frontend | Wed 8:00 ET | the site, verified visually from screenshots | ADR-23 |
+| frontend | Wed 8:00 ET | the site, verified visually from screenshots, and setting approved copy rather than writing it | ADR-23 |
 | market | Fri 7:00 ET | the outside view in docs/market/ | ADR-17 |
-| writer | daily, after the digest | the words as a craft: docs/voice/ and the digest prompt | ADR-28 |
+| writer | daily, after the digest | the words as a craft: docs/voice/, the digest prompt, and drafting the site's copy | ADR-28 |
 | exo | Sun 10:00 ET | the org itself: charters, workflows, this README | ADR-19 |
 | security | 1st and 15th | debug sweeps and defensive audits | ADR-20 |
 | okr | monthly | quarterly objectives and purpose drift | ADR-16 |
@@ -121,7 +121,15 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 Every seat runs the same shape. A GitHub Actions cron checks out this repo,
 runs Claude Code headlessly against the seat's charter file, and the run ends
 with one branch and one pull request. No agent merges its own work, no agent
-pushes to main, and no agent touches secrets. Two modes govern when they run:
+pushes to main, and no agent touches secrets. The harness is the same for every
+seat and the model behind it is not. All twelve run on Claude today. From
+2026-09-19 to 2026-09-23 the pm, market, okr and finance seats were routed to
+an open model through a third-party endpoint, which is
+[model routing](docs/agents/model-routing.md) lever 2. That trial is paused: it
+failed the PM seat twice and the routing secrets were removed, so the four
+seats fall back to Sonnet. The workflows still hold the routed step, and the
+conditions for turning it back on are in
+[the incident register](docs/agents/incidents.md) under incident 23. Two modes govern when they run:
 **asynchronous**, where the schedules are the heartbeat, and **synchronous**,
 where the owner is present and seats are dispatched into her session.
 
@@ -144,6 +152,7 @@ flowchart TB
     FEEDS["arXiv · HF daily papers · lab blog feeds"]
     NEON[("Neon: serverless Postgres + pgvector<br/>bronze · silver + claim graph · gold<br/>triage log · digests · subscribers")]
     GROQ["Groq free tier, gpt-oss-120b<br/>every judgment call: triage, distill,<br/>interpret, and rag_answer"]
+    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's one writing call<br/>256K context, about $0.05 an issue"]
 
     subgraph MODAL["Modal: scheduled jobs, scale to zero"]
         direction TB
@@ -161,6 +170,8 @@ flowchart TB
     WK2 <--> NEON
     MCP2 <--> NEON
     DAILY --> GROQ
+    WK2 --> KIMI
+    WK2 -.->|"last resort"| GROQ
     WK2 -->|"Gmail SMTP"| SUBS["Subscribers<br/>free digest, full issues"]
     MCP2 --> CLIENTS["Claude clients<br/>semantic_search · rag_answer · sql_query<br/>get_digest · discovery_report"]
     MCP2 -->|"propose_skill · propose_change"| GH
@@ -178,6 +189,7 @@ flowchart TB
 | Compute | [Modal](https://modal.com), scheduled functions, scale to zero | Per-second billing matches a system that works minutes per day, and free credits cover it entirely |
 | Database | [Neon](https://neon.tech), serverless Postgres + pgvector | Scale to zero, and one DB holds vectors *and* structured data, so hybrid queries are single statements |
 | Judgment models | `openai/gpt-oss-120b` via Groq free tier, for triage, distill, interpret, and RAG | Won the blind distill bake-off 4-1-3, open, $0, with 10x headroom over our volume |
+| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), for the weekly issue and nothing else (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
 | Embeddings | Qwen3-Embedding-0.6B, in-process on Modal | Top open family on MTEB, and batch jobs need no serving endpoint |
 | Interactive search | MCP tools over Postgres: `semantic_search`, `rag_answer`, `sql_query`, `get_digest`, `discovery_report`, `propose_skill`, `propose_change` | Agentic retrieval for humans and agents, hardwired retrieval for batch |
 | Agent org | GitHub Actions cron + `anthropics/claude-code-action`, on the owner's existing subscription token | Actions minutes are free on a public repo, so the org's heartbeat costs nothing and does not depend on a laptop being open (ADR-18) |
@@ -247,6 +259,9 @@ The pipeline, built bottom-up.
 - [x] First claims in silver, first edges in the claim graph
 - [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
       first edition 2026-W37, written to the `digests` table as the record
+- [x] The press writes on Kimi K2 (ADR-32), with the Groq free tier behind it as a
+      last resort, a model-availability check at deploy and at run start, and an
+      email to the owner on every path that ends without an issue (incident 24)
 - [x] Slow loop: citation tracking via Semantic Scholar, merged into the weekly cron (ADR-8)
 - [x] MCP server live (ADR-11): OAuth 2.1, semantic_search / rag_answer / sql_query /
       get_digest / discovery_report / propose_skill / propose_change, at
@@ -255,6 +270,13 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
+- [ ] **The press is currently silent.** The last issue written is 2026-W37
+      (2026-09-14). No model on the provider's free tier can print the weekly
+      issue at the current prompt size, so the fix is a shorter generator prompt
+      or an issue split across several requests. Availability checks, an ordered
+      fallback list and an alarm to the owner are in flight. Incident 24 has the
+      diagnosis and [delivery health](docs/agents/delivery-health.md) has the
+      standing guardrails
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations

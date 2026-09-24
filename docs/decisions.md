@@ -638,7 +638,7 @@ tier setting it permanently and the trial setting it with an expiry
 the webhook later confirms or revokes. The pricing page copy follows
 the writer seat's site-copy rules; the site's current "Opens
 October 13" pills become the three offers.
-## ADR-32: Accounts via Clerk, Neon as system of record, door-closed launch
+## ADR-34: Accounts via Clerk, Neon as system of record, door-closed launch
 
 **Status.** Accepted 2026-09-19, owner-directed. Chair-authored in parallel
 with ADR-30 and ADR-31, which settled the payments half (Polar as MoR,
@@ -686,3 +686,48 @@ email, and a gating helper are engineer work. Per-user MCP identity (the
 server is single-passphrase today, ADR-11) is the immediate follow-on:
 it is what makes the paid tier reachable from inside Claude. Third-party
 machine principals (Clerk M2M tokens) are a ledger idea, not launch work.
+
+## ADR-32: The press writes on Kimi K2; sovereign hosting is the destination
+
+Owner's decision (2026-09-24). Groq's free tier can no longer carry
+the press (incident 24: every remaining free model has an 8K
+per-request ceiling and the generator prompt alone is 9,865 tokens).
+The press's single writing call moves to Kimi K2 through the
+Moonshot API the owner funded on 2026-09-20: open weights, 256K
+context, no per-request wall on a prepaid account, roughly $0.05 an
+issue. The corpus crons (triage, distill, interpret) stay on Groq's
+free tier, where their small prompts fit. The PM's failures on Kimi
+(incident 23) do not bear on this: those were 30-turn agent loops
+under a harness, and the press is one prompt in, one issue out, no
+tools, graded by the writer seat the next morning. Finance books
+Moonshot usage as a direct alexandria cost. The destination, on the
+post-launch roadmap next to the router evaluation: SOVEREIGN HOSTING,
+the model served by alexandria itself (vLLM on Modal, an open-weight
+writer such as gpt-oss-120b or Qwen3), so no provider can withdraw
+the press's model again. Groq's role stays as it was: the corpus's
+brain, not the company's.
+
+## ADR-33: Seats may start runs with the runner's own token
+
+**Status.** Accepted 2026-09-24, owner-directed. Recorded here after the
+fact: PR #76 shipped it and prompts/pm-agent.md §5 cites it as
+"ADR-033", but no record existed in this file until 2026-09-24.
+
+**Decision.** A seat may dispatch another seat's workflow with the plain
+`GITHUB_TOKEN`, given `permissions: actions: write` on the calling
+workflow. `workflow_dispatch` and `repository_dispatch` are GitHub's two
+exceptions to the rule that runner-token events start no runs, and HQ's
+`dispatch-probe` proved it on 2026-09-24. No GitHub App key is needed
+for dispatch. The PM's dispatch authority (prompts/pm-agent.md §5) is
+active on this basis.
+
+**What it does not decide.** A seat's own token still cannot push to
+`.github/workflows/*`. That half of ADR-27 (the shared App) stays open,
+and `docs/agents/pending-workflow-changes.md` remains the channel.
+
+**Numbering note.** Two decisions were recorded as ADR-32 on 2026-09-19
+and 2026-09-24. The press decision keeps 32 because pipeline code,
+tests, README and the sprint files cite it. The accounts decision is
+now ADR-34, which nothing outside this file cited. Sequential ids have
+now collided twice (ADR-30 before, ADR-32 now); ExO's standing
+recommendation to move to dated ids stays on the chair's list.

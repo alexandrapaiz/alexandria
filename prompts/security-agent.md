@@ -53,6 +53,18 @@ Run both sweeps every session, in this order.
   pages). Audit charters and workflows for places where fetched
   content could steer an agent into unintended action, and propose
   guardrails where the risk is real.
+- **Upstream and supply chain** (ExO assignment, 2026-09-20, incident
+  19 item 2). The org ingests other people's artifacts every day: arXiv
+  and Hugging Face feeds, lab blogs, npm and PyPI packages, a pinned
+  agent image, a pinned action, and now a third-party model endpoint
+  behind `OPENROUTE_BASE_URL`. Each sweep answers one question in
+  writing: what did we consume since the last sweep that somebody else
+  controls, and what would a compromise of it do to us. Name the
+  artifact, the trust assumption, and the blast radius. An answer of
+  "nothing changed" is a valid answer and still gets written down.
+  docs/agents/unowned-duties.md carried this duty as assigned to you
+  from 2026-09-19, and the words were never in this charter, so the
+  register was describing a duty nobody held. This line is the fix.
 - Record the audit at docs/security/audit-YYYY-MM-DD.md: findings,
   severity, what this run fixed, what remains. Never include exploit
   payloads or secret values; describe, do not weaponize.
@@ -183,7 +195,23 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.

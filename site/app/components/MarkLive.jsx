@@ -335,15 +335,41 @@ export default function MarkLive(props) {
     };
 
     if (mobile) {
-      // the thumb drives the morph directly; scrolling stays native
-      const onScrollM = () => {
-        lastScrollY = window.scrollY;
-        p = Math.min(1, Math.max(0, lastScrollY / (window.innerHeight * 0.35)));
+      // Her iPhone review (taste.md, 2026-09-19): the morph only ever played
+      // after a scroll, so a phone visitor never saw the site's one
+      // choreographed moment. It now plays itself once on load, after a beat
+      // that lets the rack register AS a rack — a morph you did not see start
+      // teaches nothing (motion.md, Freiberg 1) — and the thumb still drives
+      // it from then on. The shapes, the per-page stagger and the easing
+      // inside compute() are untouched; only what moves `p` changed.
+      let played = 0;
+      let introRaf = null;
+      const INTRO_HOLD = 350; // the rack is legible before it starts moving
+      const INTRO_MS = 480; // a page-level moment: canon rule 3, 300 to 500ms
+      const scrollP = () =>
+        Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * 0.35)));
+      // the thumb can always carry the morph further, never drag it back
+      // under what the intro has already opened
+      const sync = () => {
+        p = Math.max(played, scrollP());
         wake();
       };
+      const onScrollM = () => {
+        lastScrollY = window.scrollY;
+        sync();
+      };
+      const t0 = performance.now() + INTRO_HOLD;
+      const step = (now) => {
+        const u = Math.min(Math.max((now - t0) / INTRO_MS, 0), 1);
+        played = u * u * (3 - 2 * u); // the same smoothstep the wheel spends
+        sync();
+        introRaf = u < 1 ? requestAnimationFrame(step) : null;
+      };
+      introRaf = requestAnimationFrame(step);
       window.addEventListener("scroll", onScrollM, { passive: true });
       onScrollM();
       return () => {
+        if (introRaf !== null) cancelAnimationFrame(introRaf);
         window.removeEventListener("scroll", onScrollM);
         if (raf !== null) cancelAnimationFrame(raf);
       };
