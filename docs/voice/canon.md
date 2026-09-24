@@ -135,6 +135,108 @@ Study decisions, never copy sentences.
     the corpus thread of law 5. Saying what the field used to believe
     is the product. Saying what alexandria printed about it is the
     violation.
+14. The issue is enjoyable to read, and formatting is how it gets
+    there (owner's rulings, 2026-09-24). Her verdict on 2026-W39,
+    after the stands-alone repair landed and the prose was right:
+    "so much better, but feels dense and like a hassle to read. not
+    really enjoyable." Correct is the floor, not the grade. An issue
+    a person has to work through has failed even when every sentence
+    in it is true, and **density is a failing grade on its own**,
+    scored as its own axis and not as a note under the outsider test.
+    Law 12a says compression is fewer words per idea. This law says
+    what the reader feels when that rule is broken, and it carries the
+    penalty.
+    Her proposal, the same night, is the other half and it is now
+    law: "some sections with bullets and playing with formatting
+    beyond dense paragraphs." Formatting is a TOOL of the issue. An
+    issue set as one column of grey paragraphs is a design failure
+    the writer owns, not a neutral default. Six rules fall out, and
+    they bind the generator in prompts/digest.md:
+    - Paragraphs run short. One result per paragraph, and the
+      paragraph ends when the result does.
+    - Parallel results go in a bulleted list, each bullet opening
+      with a short bold lead. Prose carries the argument. Lists carry
+      the inventory.
+    - The number that matters gets a line to itself, inside a
+      sentence, so the eye lands on it before the paragraph explains
+      it.
+    - White space between sections, and never two walls in a row.
+    - Numbers appear where they change the reader's decision, and
+      nowhere else. A second number in a sentence has to be the
+      comparison the first one needs.
+    - Every result is followed by a line of plain meaning. What the
+      number makes true for a builder, in words with no number in
+      them.
+    The negative example is the densest paragraph in 2026-W39, 191
+    words, seven sentences, seven numbers, no break, quoted whole
+    because the failure is the block and not any line in it:
+
+    > A claim from Peking University, Google, and HKUST now has three
+    > independent papers building on it: that you can teach a smaller
+    > model to behave like a larger model supervised by an elaborate
+    > harness, then run the smaller model with minimal scaffolding.
+    > The original finding was that evolving a harness with a weaker
+    > model substantially improves domain-specific enterprise
+    > performance. This week the same group showed *how* to extract
+    > that benefit permanently. Their Harness-Zero pipeline raises
+    > base model success from 23.3% to 44.3% on a macro-average
+    > across spreadsheet work, multi-app tool use, and scientific
+    > reasoning, beating even the 41.7% achieved when the specialized
+    > harness stays attached at runtime. The key was not imitation
+    > learning from a stronger model's trajectories, but
+    > harness-guided review: an agent-as-harness checks each proposed
+    > action against a private reference, passes or replaces it, and
+    > the corrected trajectory becomes training data. Ablations were
+    > brutal: harness-guided review hit 30% macro-average success,
+    > while alternatives, raw stronger-model trajectories,
+    > trajectories without review, review without the private
+    > reference, review using only the final answer, managed 3% to
+    > 15%. That is a 10x gap in supervision quality, measured on the
+    > authors' own experiments across three domains, not yet
+    > replicated.
+
+    Everything in it is true and most of it is well written, which is
+    why this is the example. The positive is the same material under
+    this law, same facts, same numbers, nothing dropped:
+
+    > Every reliable agent is wrapped in scaffolding, meaning the
+    > checklists and retry rules and approval steps a team builds
+    > around a model to keep it on track. It works. It also runs
+    > again on every single request, and it is the reason a good
+    > agent costs what it costs.
+    >
+    > A team from Peking University, Google and HKUST asked whether
+    > that structure could be taught to the model itself and then
+    > removed. Their pipeline is called Harness-Zero.
+    >
+    > **It finishes 44.3% of tasks with the scaffolding gone, up from
+    > 23.3%.**
+    >
+    > The same work scored 41.7% with the scaffolding still bolted
+    > on. Teaching the structure in beat leaving it attached, which
+    > is the part nobody expected.
+    >
+    > What did the teaching is the interesting half. Not copying a
+    > bigger model's transcripts. A second agent watched each move
+    > the learner proposed, checked it against a reference answer the
+    > learner never saw, and swapped in the right move when the
+    > learner was wrong. The corrected run became the lesson.
+    >
+    > That choice carries the whole result. Learning from corrected
+    > runs scored 30%. Every alternative the team tried scored
+    > between 3% and 15%.
+    >
+    > This is the authors' own work across three kinds of task,
+    > spreadsheets, multi-app tool use and scientific reasoning, and
+    > nobody outside the group has reproduced it yet. If it holds,
+    > the heavy scaffolding moves into training and your runtime gets
+    > cheaper.
+
+    Seven paragraphs instead of one, one result each, the number on
+    its own line, a plain-meaning sentence under every result, and
+    the reader is carried rather than made to unpack. The word count
+    went up. The work the reader does went down. That trade is the
+    law.
 
 ## How an issue is graded
 
@@ -143,12 +245,20 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
 
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
-   of the papers. Grade nothing yet. Record three things: where a
+   of the papers. Grade nothing yet. Record four things: where a
    sentence had to be read twice, where following it needed
-   knowledge nobody handed over, and whether a person would have
-   finished it. This is a first-class axis and it can fail an issue
+   knowledge nobody handed over, whether a person would have
+   finished it, and whether reading it was a pleasure or was work
+   (law 14). This is a first-class axis and it can fail an issue
    on its own, because an issue that is right line by line and
    cannot be read through has failed at its only job.
+   The fourth question carries a measurement beside the impression,
+   because "dense" is arguable and a word count is not. Count the
+   words in the longest paragraph, the paragraphs over 100 words,
+   the numbers in the heaviest one, and how many shapes the issue
+   puts on the page: paragraphs, bullets, a line standing alone, a
+   bold lead. One shape for a whole issue is itself the finding.
+   2026-W39 scored 191, five, ten, and one.
 2. **The taste gate.** docs/voice/taste.md, ruling by ruling,
    against the issue and against the generator (incident 20:
    recording a ruling is not enforcing it).
