@@ -1,3 +1,72 @@
+## Updated 2026-09-24 (ceremony-lite sync, third pass this session)
+
+Owner directive: ceremony-lite update (not the full Monday ceremony,
+not a standup), synchronous, owner present. Builds on PR #85's two
+commits (04:13 UTC snapshot below); this pass re-checked `gh pr list`
+and `gh run list` and found only two changes since then: PR #87
+opened (exo, second run today) and this run's own PR #88. No new
+merge, no new run failure. Fires no dispatches, same reasoning as
+below (owner present, multiple `workflow_dispatch` calls inside the
+last two hours).
+
+**New this pass, not caught by the 04:13Z snapshot:**
+
+1. **`docs/decisions.md` has two headers both titled "## ADR-32"** —
+   "Accounts via Clerk, Neon as system of record, door-closed launch"
+   (2026-09-19) and "The press writes on Kimi K2; sovereign hosting is
+   the destination" (2026-09-24). This is the exact failure PR #57
+   fixed once already (a duplicate ADR-30, renumbered to ADR-32).
+   Per the standing rule this file's own incident register already
+   set for duplicate numbers (docs/agents/incidents.md, "On the
+   numbering"), the fix is not to renumber silently: renumbering
+   breaks every existing cross-reference, and this file alone cites
+   "ADR-32" for the Kimi K2 decision four times above (Modal secret
+   section, press recovery section). This needs your one-line call:
+   which one keeps 32 and which one becomes 33, and whoever applies it
+   should grep-fix every citing file in the same PR, since a lone
+   renumber that misses a citation is worse than the duplicate. This
+   is a `docs/decisions.md` edit, so it is Tier B and outside this
+   seat's writable surface regardless.
+2. **Org chart gap closed in this PR**: the writer seat (ADR-28,
+   running daily since 2026-09-19, seven merged PRs) was missing
+   entirely from `docs/agents/org-chart.md`'s active-seats table.
+   Fixed in place. Also corrected initiative 3's stale "weekly leads"
+   line (ADR-25 renamed that seat to research in 2026-09-19; ADR-28
+   then gave the digest's voice to writer).
+3. **Board, labels, milestone mirrored this run** (`PROJECTS_TOKEN`
+   available and working via `gh api graphql`, though the `gh project`
+   porcelain commands 403 on this token's scopes — use raw GraphQL
+   against `user(login: "alexandrapaiz").projectV2(number: 4)`, id
+   `PVT_kwHOBqunQs4Bj3sN`, same as PR #85's own note): moved the three
+   Sprint 09-21 board items that PR #26 and market's positioning
+   update actually shipped (email capture, live hero metric,
+   positioning.md) from Sprint Ready to Done, evidence-checked against
+   the merged PR and the file's live pricing text, not assumed.
+   Created the standard label set from company standard §2b
+   (`seat:<name>` for all 11 seats including writer, `horizon:now|
+   next|later`, `blocked`, `owner-action`) and applied `seat:*` to all
+   28 open PRs. Opened milestone `sprint-2026-09-21`, due 2026-09-27,
+   the first milestone this repo has had. Not done this pass: the
+   board's own "Sprint 09-21 · 1-6" items are numbered against an
+   older sprint revision and no longer match this file's current
+   five items (the MCP fix, prose benchmark, factual audit, quality
+   checklist, skill validation) — a fuller remap is Monday's job, not
+   a mid-week mirror's.
+4. **Checked, not stale**: a prior pass in this file (2026-09-18
+   snapshot, "what each seat owes") flagged `org-chart.md` as possibly
+   wrong to list sales as dormant. Checked against ADR-24's own text
+   this pass: dormant means no cron, and neither finance nor sales has
+   one despite both being hand-dispatched this week. The table was
+   already correct; noted in org-chart.md itself so the next run does
+   not re-flag it.
+
+**Top three for you, this pass** (see "What I need from you, top
+three" in this PR's description for the full version):
+1. The ADR-32 duplicate numbering call, above.
+2. The merge order across 28 open PRs (unchanged from PR #85's
+   breakdown below — still current, re-checked, nothing merged since).
+3. The finance dormant-vs-activated question (unchanged from below).
+
 # Pending tracker
 
 Maintained by the PM agent every run (charter §1d): what every seat owes,
@@ -26,6 +95,188 @@ version repeats it unchanged. The next regularly scheduled PM ceremony
 (retro on the sprint that just ran, grooming, sprint 2026-09-28) still
 runs Monday 2026-09-28 on its normal cadence; this file does not replace
 that run.
+
+## Updated 2026-09-24 (Thursday standup, synchronous session)
+
+**Later the same session (04:13 UTC), same run's owner window.** One
+material change since the section below was written: **PR #75 merged**
+at 03:37:34Z, carrying ADR-32 (owner's decision, recorded today: the
+press moves off Groq to Kimi K2 via Moonshot). Two further commits
+landed directly on main right after the merge (24000-token output
+reservation, then a 25-minute read timeout on the writing call), so the
+fix is still being tuned post-merge rather than settled. What this
+changes below: item 2 in "independent, ready to merge now" is done, not
+pending, and the "not yet merged" framing in the Modal press cron bullet
+is stale. What it does not change: deployment to Modal is still
+unconfirmed by anyone with dashboard access, so "the fix is built but
+not deployed" from this run's PR description still holds. No new run
+started and no other PR merged in this window (`gh run list` and
+`gh pr list --state open` both unchanged from the snapshot below).
+`PM_DISPATCH_ENABLED` synchronous-mode gate still applies: the last
+`workflow_dispatch` (engineer, 03:17:07Z) is under two hours old, so
+this run queues rather than fires, same as the run below.
+
+**Why this file went six days stale.** No PM run wrote to this tracker
+between 2026-09-18 and today. Not neglect: incident 23 (docs/agents/
+incidents.md) put the PM's two runs in that window (2026-09-20 and
+2026-09-21) on Kimi routing with no golden-set gate, and both failed at
+30 turns before writing anything. The chair pulled the OPENROUTE
+secrets the same week and this seat is back on Sonnet. Everything below
+this section that is dated 2026-09-18 or earlier is the last real
+snapshot; treat the items this section repeats as refreshed and
+everything else in the older sections as historical record, not current
+state, unless a line here says otherwise.
+
+**Run mode.** Today is Thursday, the current sprint
+(sprint-2026-09-21.md) runs through Sunday, and this file already said
+the next ceremony is Monday 2026-09-28. This run is the daily standup
+(charter §4), not the ceremony: no retro, no grooming, no new sprint
+file. It is heavier than a normal standup only because of the six-day
+gap above.
+
+**Run health.**
+- *GitHub Actions:* every non-success since the last PM run is already
+  registered. The PM's own two failures are incident 23 (above). Two
+  frontend failures from 2026-09-19 are incidents 17-18 (containerization
+  uid fixes), also already closed. No new, unregistered failure class.
+  Nine seats (engineer, exo, research, security, market, writer,
+  frontend, skill, finance) are mid-run right now, dispatched by a human
+  within the same two minutes (02:56-02:58Z) — expected in a synchronous
+  session, not a failure.
+- *Modal press cron (incident 24), tracked here per today's owner
+  instruction:* the fix **merged** at 03:37:34Z as PR #75 (ADR-32, press
+  moves to Kimi K2 via Moonshot), with two tuning commits landing
+  directly on main right after. Deployment is still unconfirmed.
+  Deployment has historically been a manual
+  `modal deploy pipeline/<app>.py` step (see "Deploy action owed" below
+  in this file's 2026-09-19 section, the same pattern), so the merge
+  alone may not make Monday's issue print — someone needs to run the
+  deploy, or confirm CI already does it. This seat has no Modal CLI
+  access to check the schedule history directly; the ExO (PR #77) is
+  postmortem-ing the same incident with more access than this seat has.
+
+**Sprint 2026-09-21 progress** (evidence: merged PRs). Items 1 and 3
+are done: item 1 (MCP redirect-URI validation) merged as PR #29
+(2026-09-19); item 3 (factual verification audit) merged as PR #40
+(2026-09-19). Items 2 and 4 are built but unmerged: item 2 (blind prose
+benchmark) is PR #66, open, its own title says "built but unscored."
+Item 4 (pre-send quality checklist) is PR #60, open. Item 5 (skill
+validation on both gold skills) is in flight across PR #70 (open) and
+PR #83 (today, draft) — see the PR-backlog section below for the
+conflict between them. The full retro against this is Monday's job, not
+today's; this paragraph exists so the owner does not have to reconstruct
+sprint status from 26 open PR titles herself.
+
+**The open pull request backlog: 26 PRs, oldest ~126 hours old.**
+Nearly every one of them appends to `docs/ideas.md` and/or
+`docs/agents/incidents.md`, so almost every merge after the first will
+carry a one-hunk append conflict — cheap and expected (take both sides),
+not a reason to reorder anything. The real complexity is that several
+seats opened a new PR daily this week without their prior one merging,
+so each day's PR says "built on" and "supersedes" the previous one. Once
+the chains are collapsed, the 26 PRs are about 12 real merge decisions:
+
+*Live chains — wait for today's head to finish, merge only the head,
+close the rest of the chain unmerged (their content is already inside
+the head, per each PR's own "supersedes" claim):*
+- Writer: #55 → #62 → #67 → #71 → #74 → **#81** (today, draft). Merge
+  #81 alone when ready; close #55, #62, #67, #71, #74 unmerged.
+- Frontend: #56 → #73 → **#82** (today, draft). Merge #82 alone; close
+  #56, #73 unmerged.
+- ExO: #61 → #65 → **#77** (today). #77 itself says it must merge after
+  #75 (below). Merge #77 alone; close #61, #65 unmerged.
+- Research: #68 → **#78** (today, draft). Merge #78 alone; close #68
+  unmerged.
+- Security: **#31** (5 days old) → today's #79 (draft) explicitly says
+  "close #31 unmerged." Trust the newer run's own call; close #31
+  without merging once #79 lands.
+- Skill: #70 (open, ready) and today's #83 (draft) are NOT a clean
+  chain — #83 says plainly "close #70 in favour of this PR, or merge
+  #70 first [then #83 after]," i.e. it names both orders as workable
+  and leaves the choice to you rather than claiming one. Pick either;
+  it is not a case where merging the wrong one loses work.
+
+*Independent, ready to merge now, in the order their own dependency
+notes imply:*
+1. **#69** (engineer, sanitize digest HTML) — live XSS break-fix,
+   branched from main, no stated dependency. Merge first on urgency.
+2. **#75** (engineer, incident 24 press fix) — **merged 03:37:34Z**,
+   same session. #77 (exo) can now proceed; it said it must merge after
+   #75.
+3. **#66** (engineer, prose benchmark, sprint item 2) — branched from
+   main, ready.
+4. **#60** (engineer, quality checklist, sprint item 4) — ready, but its
+   own body says "merge after #55 and #31." Flagging rather than
+   resolving: #31 is being closed unmerged (not merged) per security's
+   own #79, and #55 is superseded up the writer chain to #81 rather than
+   being merged on its own. If #60's actual code dependency is "whatever
+   #55 and #31 changed needs to already be on main" rather than
+   literally those two PR numbers, merging after #81 and #79 land should
+   satisfy it; if it depends on something PR-specific, that needs the
+   engineer seat's own confirmation, not a guess from this seat.
+5. **#72** (engineer, evidence-grade spike step 1) — its own body says
+   "merge this PR last" relative to #35, #60, #66, #69. Sequence it
+   after the other four engineer PRs above.
+6. **#35** (engineer, daily digest, ~120h old) — superseded by #60
+   itself (per #60's own title). Close unmerged once #60 lands rather
+   than merging both.
+7. **#80** (market, today, draft) — no chain, no stated dependency.
+   Merge whenever it's ready.
+8. **#84** (finance, today, ready) — no chain. See the finance note
+   below.
+
+**A ruling this file cannot make for you.** PR #83 (skill, today)
+reports that incident numbers 23 through 29 are each claimed by at
+least one currently-open branch in `docs/agents/incidents.md` — a
+numbering collision across seats that write to the same append-only
+file in the same week. This is exactly the kind of cross-seat collision
+this tracker exists to surface rather than let you discover at a failed
+merge. Worth a one-line ruling on which branch's numbering wins and
+which seats renumber, the same way incident 19's renumbering was
+handled.
+
+**Finance ran today (PR #84), dormant-seat question.** `docs/agents/
+org-chart.md` still lists finance as dormant, owner-activates (ADR-24).
+Today's synchronous dispatch ran it directly and it shipped real work
+(mid-month ledger refresh, GH Actions cost line resolved, MoR renaming,
+lifetime-tier breakeven). Worth your one-line confirmation on whether
+this is a one-off synchronous check-in or an actual activation — if the
+latter, org-chart.md's dormant table needs updating, and that update
+belongs to a PM run once you've said which it is, not to this seat's
+guess today. Finance also repeats its one standing ask, verbatim from
+2026-09-18: **the Claude subscription's monthly figure** — still the
+only number it cannot get from any repo or public surface.
+
+**Owner-only items still open, refreshed from the 2026-09-18 list
+below** (see that list for full context on each):
+1. Clerk keys + Neon connection string as Vercel env vars — still not
+   confirmed. This may also explain a pattern in the open-PR backlog:
+   most open PRs from #55 through #73 show a Vercel preview-build
+   `FAILURE` status check (`gh pr view --json statusCheckRollup`),
+   while the newest ones (#74 onward) show `SUCCESS`. That is consistent
+   with these env vars having been missing and then fixed partway
+   through the week, but this seat has no Vercel dashboard access to
+   confirm the cause directly — flagging the correlation, not claiming
+   the diagnosis.
+4. Public git history holds a pre-privacy-pivot digest — still your
+   call (rewrite vs. accept exposure).
+5/13. The workflow-scope PAT / GitHub App `workflows` permission
+   decision — ADR-33 (2026-09-24, this morning) found that
+   `workflow_dispatch` works fine with the plain `GITHUB_TOKEN` given
+   `permissions: actions: write`, which resolves the *dispatch* half of
+   why this was blocking. It does not resolve the other half: a seat's
+   own token still cannot push a fix to `.github/workflows/*` itself.
+   Worth confirming whether ADR-27's shared-App plan is still wanted for
+   that reason alone, or whether it's been overtaken by events.
+11. The Claude subscription's monthly figure — repeated by finance today
+   (above).
+- Linear trial (charter §1e2): still on, no verdict since 2026-09-18
+  (docs/finance/opex.md still has it "under evaluation").
+
+Everything else in the 2026-09-18 snapshot below not repeated here is
+either resolved (see "Resolved since last noted") or still genuinely
+open with nothing new to add; read it as background, not as a live
+picture of today.
 
 ## Board reorg (owner dispatch, 2026-09-18, done)
 
@@ -499,3 +750,149 @@ While the logs are open, `modal app logs alexandria-triage` also answers the
 open throughput question: the 429's body names which Groq limit binds, and
 `docs/product/triage-capacity.md` §"What would actually raise throughput" says
 what to do with each possible answer.
+
+## Owner action, 2026-09-24: the Moonshot key as a Modal secret (ADR-32)
+
+The press moves to Kimi K2. The pipeline reads MOONSHOT_API_KEY from
+a Modal secret named `moonshot`. Only the owner holds the key (it is
+the same key HQ stored as the GitHub secret OPENROUTE_API_KEY, which
+is write-only). One terminal command, paste the key when prompted so
+it never appears in a transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+Then the chair deploys and prints. Finance: Moonshot usage is a
+direct alexandria cost from this date, roughly $0.05 an issue.
+
+## Press recovery: your one check, and what the chair runs (engineer, 2026-09-24)
+
+Added by the engineer seat under your urgent dispatch of 2026-09-24,
+which directed this seat to write the one-click check into this file.
+Second use of the same narrow exception as the triage-fix note above:
+append-only, a handover note, not planning. The PM should treat it as
+such.
+
+### 1. The one-click check only you can run
+
+**Did Monday's 15:00 UTC schedule fire at all?** The repo cannot answer
+this and neither can the Modal CLI. `modal app logs alexandria-weekly`
+shows no output for 2026-09-21, and no-output is the same value for "the
+container never started" and "the container started and died before its
+first print". Schedule history lives only in the dashboard.
+
+One click:
+
+> **https://modal.com/apps/alexandria-weekly** → the **weekly** function
+> → the **Schedule** or **Runs** tab → look for an entry dated
+> **Monday 2026-09-21, 15:00 UTC**.
+
+Three possible answers, and what each one means:
+
+- **A run is listed and it failed.** Then the 404 is the whole story,
+  this PR fixes the class, and nothing further is owed.
+- **No run is listed.** Then there is a second, independent failure:
+  Modal did not fire a cron it was deployed with, and the deployed
+  version (v31) is not doing what the code says. That is a new incident,
+  and it is the more serious of the two. Tell the chair and it gets its
+  own register entry.
+- **A run is listed and it succeeded.** Then something wrote nothing and
+  reported success, which is incident 8's pattern again and the worst of
+  the three answers.
+
+Please note which one it is. It is the difference between one bug and
+two, and this PR only fixes one of them.
+
+### 2. Decision 2 is closed: you took it, and the press fits again
+
+This section asked you to choose between shortening the generator prompt,
+splitting the issue across several requests, and paying Groq. You chose
+a fourth thing the same day, in ADR-32: the press writes on Kimi K2
+through the Moonshot account you funded. This PR is that wiring, and the
+arithmetic is no longer a complaint:
+
+    kimi-k2.6: prompt 9865 + payload 20205 + output reservation 6000
+    + envelope 32 = 36102 tokens against 222822 usable
+    (262144-token context less 15% margin); fits, headroom 186720
+
+Nothing was trimmed to reach that. The payload caps and the 6,000-token
+output reservation are the same numbers main has carried since they were
+set, so the issue Kimi writes is the full-size issue.
+
+**One correction you need, and it is the kind that costs a week.** ADR-32
+names the model "Kimi K2", and the obvious model id, `kimi-k2`, was
+discontinued by Moonshot on 2026-05-25. A press pointed at it would
+answer 404, which is incident 24 happening again on a new provider in its
+first week. The live 256K general model is **`kimi-k2.6`**, and that is
+what this PR uses. `kimi-k2` is recorded as withdrawn so nothing can
+point at it by accident.
+
+**Cost, for finance.** $0.0526 an issue at list price, worst case, with
+the output reservation spent in full and no cache hit. That is 52 issues
+a year for about $2.70. It matches what ADR-32 told finance to expect.
+
+The two $0 improvements this section proposed are still worth doing and
+neither is urgent now. A shorter generator prompt is the writer seat's
+call whenever she next opens that file. Splitting the issue across
+several requests is in the ledger, and its real value was never the
+token count: it is that a per-section request survives the next ceiling
+change too.
+
+### 3. Correction to the dispatch: a dedicated Groq key would not help
+
+Your dispatch offered "either the press gets its own key, or the press
+runs when the crons are idle". The first option does not work, and the
+reason is one sentence on Groq's rate-limit page: "Rate limits apply at
+the organization level, not individual users." A second key on the same
+account draws on the same 8,000 TPM as the five crons already do. Only a
+separate Groq organization or the paid plan changes the number.
+
+So this run took the second option. The press moves from Monday 15:00
+UTC to **Monday 09:00 UTC**, two clear hours ahead of the earliest daily
+cron and well outside the contested 11:00 to 15:00 band. It is also the
+better editorial slot: 09:00 UTC is 5am in New York, so the issue is in
+a reader's inbox before the working day, and the week it covers ended
+the previous night, so nothing is half-ingested.
+
+**No action owed from you on this one**, beyond knowing the send time
+moved. ADR-32 has since retired the reason: the press has its own
+provider and its own prepaid account, so it no longer competes with the
+daily crons for anything. The slot stays at 09:00 on editorial grounds,
+which were always the better argument. The issue covers the week that
+ended Sunday, and 09:00 UTC is 5am in New York, so it arrives before the
+working day rather than in the middle of it.
+
+### 4. What the chair runs after this PR merges
+
+Merging deploys nothing; Modal runs the last deployed version. Two
+commands, and the first is yours because only you hold the key.
+
+**You, once.** Paste the key at the prompt rather than typing it into the
+command line, so it never lands in a shell history or a transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+No agent creates this secret, no agent reads it, and the value appears
+nowhere in the repository. `pipeline/weekly.py` references the name and
+nothing else.
+
+**Then the chair**, in order, stopping at the first failure:
+
+    python3 pipeline/budget.py \
+      && modal run pipeline/weekly.py::preflight \
+      && modal run pipeline/weekly.py \
+      && modal deploy pipeline/weekly.py
+
+The middle two are the smoke test that
+docs/agents/runtime-changes.md requires: this change adds a secret the
+run reads, and that law says the next cron is never the first execution
+of new machinery. `preflight` asks both providers whether the models
+exist and prints what the request would cost. The manual `modal run`
+prints a real issue. Only then does the deploy install the schedule.
+
+If the secret is missing, the run does not die on a stack trace. It says
+which environment variable is absent, which Modal secret provides it,
+and the command above, and it emails you.
+
+One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
+Unset, press alarms go to the Gmail address the `Gmail` secret already
+holds, which is yours. Set it if you would rather they went elsewhere.
