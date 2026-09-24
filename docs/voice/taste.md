@@ -185,3 +185,13 @@ the chair and the PM record her rulings.
   thread continues across issues, the sentence restates the thread in
   full instead of pointing back at it. Applies to the weekly and the
   daily alike, and to the digest prompt as a rule, not a preference.
+- 2026-09-24 — On W39 after the stands-alone fix: "so much better,
+  but feels dense and like a hassle to read. not really enjoyable."
+  The issue must be ENJOYABLE TO READ, not only correct. Density is
+  now a failing grade on its own: long paragraphs that pack four
+  results each, numbers in every sentence, no air between ideas. A
+  reader should be carried through, not made to work. Shorter
+  paragraphs, one result per paragraph, the number only where it
+  changes the reader's decision, and a line of plain meaning after
+  every result. The market seat ranks the issue against the
+  newsletters builders actually enjoy; the PM decides from that rank.

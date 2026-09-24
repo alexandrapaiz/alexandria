@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: write # owner 2026-09-24: the ranking run hands its result to the PM by dispatch
   pull-requests: write
   id-token: write
 
