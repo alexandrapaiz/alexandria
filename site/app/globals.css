@@ -156,6 +156,7 @@ a {
 .mobile-nav-toggle {
   width: 32px;
   height: 32px;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -165,6 +166,18 @@ a {
   border: none;
   padding: 0;
   cursor: pointer;
+}
+
+/* The drawn control is 32px, which is what the bar wants optically, but the
+   canon's touch law is 44 and this is the only way into the site's navigation
+   on a phone. The hit area is extended past the glyph instead of the glyph
+   being grown, so nothing moves on the page: 32 + 6 on every side is 44.
+   Freiberg's Fitts note is the argument, and .skill-line already does the
+   same thing with a negative margin. */
+.mobile-nav-toggle::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
 }
 
 .mobile-nav-toggle span {
@@ -282,6 +295,31 @@ a {
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
+}
+
+/* ---------- focus, house-wide ---------- */
+/* Keyboard focus was the one state nobody had systematised. Three elements
+   carried a designed ring (the pill's double ring, the waitlist field, a
+   skill row) and everything else fell back to the browser's own 1px auto
+   outline: the wordmark, all three nav links, the footer links, /llms.txt
+   and every row in the archive. Tabbing the site put the UA's cramped
+   rectangle next to the house's own ring on the very next stop. Ban list
+   entry 25 was written about motion, and this is that defect one layer over.
+   The ring is the house hairline. The one thing that varies is its offset,
+   with the size of what it wraps: 2px on a field, 3px on inline text, 4px on
+   a full-width row band. That is a scale rather than drift, and the
+   per-component rules below it still win on purpose.
+   It fades in rather than snapping, which is Consensus's measured practice
+   (it moves outline-color on the same 100ms clock as its other states) and
+   the reason the ring needs a transparent value at rest to move from. */
+:where(a, button, summary, input, select, textarea, [tabindex]) {
+  outline: 1px solid transparent;
+  outline-offset: 3px;
+  transition: outline-color var(--fast) var(--ease);
+}
+
+:where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+  outline-color: var(--ink);
 }
 
 /* the pill's own color (black bg or white bg) matches the browser's
@@ -859,6 +897,75 @@ a {
   margin: 36px 0;
 }
 
+/* ---------- tables in rendered markdown ---------- */
+/* Nothing styled these until now, so the browser's defaults collapsed every
+   column against its neighbour. The desk's own sprint table read
+   "1Remove the digest teaser gate" and "engineernot started" at 1440, on the
+   owner's daily surface, and any issue the press writes with a table would
+   have printed the same way. The canon names Stripe for tables treated as a
+   first-class design object; the house version is the hairline, the 8-point
+   gutter, and the same uppercase meta register the rest of the site already
+   uses for column labels. No zebra striping and no cell borders: the rule
+   under the head and the row hairlines carry the structure on their own. */
+.digest table,
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+  text-align: left;
+}
+
+.digest th,
+.prose th {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray);
+  padding: 0 24px 8px 0;
+  border-bottom: 1px solid var(--ink);
+  vertical-align: bottom;
+}
+
+.digest td,
+.prose td {
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+  padding: 12px 24px 12px 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.digest th:last-child,
+.digest td:last-child,
+.prose th:last-child,
+.prose td:last-child {
+  padding-right: 0;
+}
+
+/* At 390px the cells wrap hard rather than the type shrinking, because a
+   smaller size here would be a value the canon's scale does not contain. The
+   trade is a tall table over a clipped one, and nothing is hidden: verified
+   at 390 with the desk's own seven-row sprint table, page scrollWidth equal
+   to clientWidth. overflow-x is the safety net under that, for a row that
+   genuinely cannot shrink any further, such as one carrying a long URL. */
+@media (max-width: 560px) {
+  .digest table,
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .digest th,
+  .prose th,
+  .digest td,
+  .prose td {
+    padding-right: 16px;
+  }
+}
+
 /* The lock on a spine route. It used to fade out of a truncated digest
    teaser, which is why it pulled itself up over the text above; the digest is
    free in full now, so there is nothing to fade and nothing to pull over. */
@@ -991,6 +1098,16 @@ a {
 .lib-filter input:focus {
   border-color: var(--ink);
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+/* The field sets outline: none at a specificity the house rule cannot reach,
+   so it was the one control left with no ring at all: a keyboard user got a
+   border that darkens and nothing else. That is the case the waitlist field
+   already argues against in its own comment, and this is the same field in a
+   different place, so it gets the same field offset. */
+.lib-filter input:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
 }
 
 /* Chromium draws its own clear button inside a search field and draws it in
@@ -1166,7 +1283,15 @@ a {
   content: "";
   position: absolute;
   right: 14px;
-  top: 50%;
+  /* Anchored to the first line, not to the middle of the row. top: 50% is the
+     same thing only while the name fits on one line; the moment it wraps, the
+     metadata stays on the first baseline and the marker slides down to the
+     row's centre, so the right-hand cluster comes apart. Measured at 390px:
+     meta at 26px from the row's top, marker at 38px on a two-line row. Most
+     kebab-case skill names wrap on a phone, so at the fifty rows this library
+     is built for it was the common case rather than the edge one.
+     12px is the row's own padding-top and 14px is half the first line box. */
+  top: 26px;
   width: 11px;
   height: 1px;
   background: var(--gray);
@@ -1638,6 +1763,12 @@ a {
      belongs with the other colour transitions the house already mutes. */
   .nav-links a,
   .mobile-nav-toggle span {
+    transition: none;
+  }
+
+  /* The focus ring fades on the colour clock, so it is muted with the other
+     colour transitions rather than left as the one thing still moving. */
+  :where(a, button, summary, input, select, textarea, [tabindex]) {
     transition: none;
   }
 
