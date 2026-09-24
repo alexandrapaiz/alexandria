@@ -403,3 +403,20 @@ gap that the same collision had left empty (incident 25).
     finding. The cure is not decoration: it is noticing which of the day's
     material is parallel and setting that part as a list, per canon law 14.
     Added 2026-09-24 from the W39 shape read.
+50. The hedge that licenses the claim it qualifies. The shape is a true
+    concession, a comma, and then the assertion the concession should have
+    stopped. 2026-W39: "The contexts differ, agent construction versus
+    combat simulation, but the broader belief that expert-authored
+    baselines set immovable ceilings took a hit this week." Every clause
+    before the "but" is correct and honest, and the sentence uses that
+    honesty as permission. This is not hedging in the usual sense and the
+    usual cure makes it worse: deleting the qualifier leaves a bare false
+    claim, and keeping it leaves a false claim that sounds careful. The
+    test is which way the sentence would go without the hedge. A real
+    qualifier narrows a claim that still stands. This one is load-bearing,
+    and a claim that cannot stand without being apologized for is a claim
+    to drop. Related to entry 47, the result that never lands, and its
+    opposite in a way worth seeing: 47 is a finding with no meaning
+    attached, this is a meaning with no finding under it. Added 2026-09-24
+    from the fourth grade of W39, which is where four prose passes had
+    missed it, because it is not a prose defect.
