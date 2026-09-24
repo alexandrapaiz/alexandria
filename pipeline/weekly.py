@@ -418,7 +418,7 @@ class PressCannotPrint(RuntimeError):
 # not the model writes them: Groq's per-request ceiling counts the reservation,
 # not the output. The one issue the press has actually written came to 1,103
 # tokens, so 6,000 is generous rather than tight.
-MAX_COMPLETION_TOKENS = 6000
+MAX_COMPLETION_TOKENS = 24000  # kimi-k2.6 reasons before it writes; 6000 was consumed by hidden thinking (finish_reason length, empty content, 2026-09-24)
 
 
 def log_limits(resp, model: str) -> None:
