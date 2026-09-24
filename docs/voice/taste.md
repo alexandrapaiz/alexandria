@@ -195,3 +195,9 @@ the chair and the PM record her rulings.
   changes the reader's decision, and a line of plain meaning after
   every result. The market seat ranks the issue against the
   newsletters builders actually enjoy; the PM decides from that rank.
+  Her proposal, same night: "some sections with bullets and playing
+  with formatting beyond dense paragraphs." Formatting is now a tool
+  of the issue, not a violation of it: bullets where results are
+  parallel, a short bold lead per item, a one-line pull for the
+  number that matters, white space between sections. Prose stays
+  for the argument; lists carry the inventory.
