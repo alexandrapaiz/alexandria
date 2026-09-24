@@ -3234,9 +3234,15 @@ the uploaded `transcript-35958636133` artifact before treating this as
 closed.
 
 **No fix applied in this PR.** The PM seat's writable surface does not
-extend to the market seat's workflow or prompt. The dispatch queue in
-this same PR proposes a market re-run that builds on the open branch to
-finish the brief; the process question (why a clean, uncapped success
-can still end short of its own stated deliverable) is left for the ExO
-seat's weekly pattern read, the same seat that turned incident 8 into
-the original ship-first-commit rule.
+extend to the market seat's workflow or prompt.
+
+**Update, same run, before this PR came out of draft.** A separate
+market run (`alexandria-market/2026-09-24-window`, PR #98) landed
+independently in the same window and did finish the brief, superseding
+PR #93. The deliverable gap this incident names is closed in substance;
+this entry stands as the record of the pattern (a clean, uncapped
+success shipping short of its own stated deliverable), left for the
+ExO seat's weekly pattern read, the same seat that turned incident 8
+into the original ship-first-commit rule. Whether the first run's 34
+turns did the research and lost it, or never did it, is still unknown
+and still worth pulling from the `transcript-35958636133` artifact.
