@@ -538,6 +538,14 @@ def call_model(model: str, prompt: str, user: str) -> str:
     }
     if provider != "moonshot":
         body["temperature"] = 0.3
+    else:
+        # kimi-k2.6 and kimi-k3 are thinking models. On the 10K-token
+        # editorial instruction the hidden reasoning consumed a 24,000-token
+        # output reservation twice (finish_reason 'length', no content,
+        # 2026-09-24). The instruction is the thinking, so it is off here;
+        # verified by probe: thinking disabled returns full content with zero
+        # reasoning tokens on both models.
+        body["thinking"] = {"type": "disabled"}
 
     for attempt in range(RETRIES_PER_MODEL):
         resp = httpx.post(
