@@ -4356,3 +4356,106 @@ needs an owner decision or an owner push, not an engineer build.
   and costs one query.
 - Cost: $0 to investigate.
 - Status: proposed
+
+### 2026-09-24 — Nine runs of prompt fixes HAVE now reached the press (writer seat, closing an open entry)
+
+- Trigger: the fifth editorial run, establishing which generator wrote the
+  W39 reprint before grading it.
+- The fact: the `digests` row for 2026-W39, id 18, written 16:04 UTC today,
+  carries `prompt_sha` `0f642e2ce9f3`. That is the sha256 prefix of
+  `prompts/digest.md` on `origin/main` as of this run. The earlier entry
+  filed this morning, "Nine runs of prompt fixes have never reached the
+  press", reported that main's generator was still the 2026-09-19 one at
+  c3b4c49 and that seven editorial pull requests were waiting. The owner
+  merged them. #81, #89 and #92 are in, the press redeployed, and the
+  reprint was written by the current generator.
+- Why this is filed rather than left implicit: every grade from 2026-09-20
+  onward has carried the caveat that W39's defects might belong to a stale
+  generator. That caveat is now spent, and no future grade may use it. The
+  four failures in `docs/voice/reviews/2026-09-24-e.md` are failures of the
+  generator as it stands on main tonight.
+- What it bought, measured on the same issue: longest paragraph 191 words
+  to 98, paragraphs over 100 words 5 to 0, numbers in the heaviest
+  paragraph 10 to 0, canon law 13 clean, ban list 50's false comparison
+  gone. What it cost is in the same review and in
+  INC-2026-09-24-fix-by-deletion.
+- Status: closed, no action. Recorded so the next run does not re-derive it.
+- Cost: $0.
+
+### 2026-09-24 — The masthead is still the recipe, five days and three grades on (writer seat, confirming an open entry)
+
+- Trigger: the fifth editorial run. Law 3 failed again on the same line.
+- Confirms: "2026-09-19 — The masthead is the recipe, and it is in code
+  (writer seat)", filed on the first editorial run. Unchanged since. The
+  constant has moved from `pipeline/weekly.py:311` to
+  `pipeline/weekly.py:685` and its text is identical.
+- What it prints, as the second line of every issue: "*The latest in AI
+  research, read in full and distilled weekly: what's new, what's gaining
+  acceptance, and what newer evidence has overturned.*"
+- The new evidence, and it raises this above a law 3 nuisance. That line
+  does not only describe the method. Its three clauses are the internal
+  framework, in order: what is new is the new-work slot, what is gaining
+  acceptance is the traction slot, what newer evidence has overturned is
+  the fell-behind slot. Canon law 12 says the framework never prints. The
+  generator was patched four times to stop printing it in headings and
+  today's incident records the third time it printed one anyway. Meanwhile
+  a hardcoded string has been printing the whole framework, in reader
+  position, above the fold, in every issue, for the entire time. No prompt
+  change can reach it and no heading gate can see it, because it is not in
+  the model's output at all.
+- Three grades have now failed it: 2026-09-19, 2026-09-20 and 2026-09-24-e.
+  The structure-watch rule fired on run one. This is run five.
+- What to put there instead is unchanged from the original entry and is a
+  decision for the owner, not a patch for this seat: a line that sells the
+  product and does not enumerate the sections. Whatever replaces it, the
+  enumeration goes.
+- Whose call: the engineer writes it, the owner rules on the words, and
+  this seat drafts them the moment `docs/voice/value.md` is approved,
+  because it is reader-facing copy and the copy pipeline's phase zero is
+  still open.
+- Cost: minutes, one constant.
+- Status: proposed, third confirmation
+
+### 2026-09-24 — Three rewrites of the ASCII rule and six em dashes still shipped (writer seat, for the engineer)
+
+- Trigger: the fifth editorial run. Canon law 1 failed on the issue written
+  by the fully patched generator.
+- The fact: the W39 reprint contains six U+2014 em dashes and no other
+  non-ASCII character. Specimens: "hits **44.3%** — higher than the model
+  that still carries the full scaffolding", "it collapses to 14.6 — a
+  **30.6 point drop**", and a parenthetical pair around "— direct
+  stronger-model trajectories, ... —".
+- Why this is filed instead of patched, which is charter step 4. The ASCII
+  rule in `prompts/digest.md` has been rewritten three times by this seat:
+  51400c1 on 2026-09-21 made it ask the class question, f9530fa on
+  2026-09-22 rewrote six rules as class questions, 4d50060 on 2026-09-23
+  added that the payload arrives dirty. Incident 27 is the same defect. A
+  fourth paragraph in a prompt that already spends nine lines on this is
+  not a fix, it is the memorial ban list 36 describes.
+- What to build, and it is small: normalize the model's output to ASCII in
+  the pipeline, after generation and before the row is written. The mapping
+  needed is a handful of pairs, em dash and en dash to a spaced hyphen or a
+  full stop, curly quotes to straight, the multiplication sign to "x",
+  non-breaking hyphen and narrow no-break space to their plain forms. The
+  exception the ban list already names is a person's or an institution's
+  name as the source spells it, which in practice means the substitution
+  runs on punctuation and separators only and never on letters.
+- Why the pipeline and not the prompt: this class of defect is decidable
+  without a language model, which is the same argument that carried the
+  claim-graph entry filed earlier today. A rule asking a model to notice
+  every character it emits competes with every other rule in a 1000-line
+  file. A codepoint check does not compete with anything.
+- Where it goes: alongside the existing pre-send quality gate
+  (`tools/check_digest_quality.py`, PR #60), but as a normalizer rather
+  than a checker. A gate that fails the issue at 16:00 on press day costs
+  the issue. A normalizer that fixes six characters costs nothing and
+  cannot fail closed.
+- One thing to check while in there: `pipeline/weekly.py:971` builds the
+  `dates` string with an en dash, "September 7-13" written with U+2013, and
+  hands it to the prompt. The generator is separately instructed to
+  normalize it. The pipeline should not be emitting what the prompt is told
+  to clean up, which is ban list 41 in the one place the writer seat cannot
+  reach.
+- Blocked by: nothing.
+- Cost: under an hour.
+- Status: proposed

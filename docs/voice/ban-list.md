@@ -420,3 +420,69 @@ gap that the same collision had left empty (incident 25).
     attached, this is a meaning with no finding under it. Added 2026-09-24
     from the fourth grade of W39, which is where four prose passes had
     missed it, because it is not a prose defect.
+51. The rule's own name printed as a label. 2026-W39's reprint prints "**The
+    number that matters:** 44.3% with the harness gone, up from 23.3%." There
+    is no such phrase in the research. It is the name of a formatting rule in
+    prompts/digest.md, line 169, and the generator printed the name of the
+    rule it was obeying at the top of the line where it obeyed it. Entry 14
+    asks whether a subscriber who has never seen the codebase could say what a
+    word refers to, and it was written about the pipeline's vocabulary, the
+    claim graph's and the ISO week's. This is the fourth vocabulary in the
+    building and the only one the writer seat owns: every rule name in the
+    generator is internal vocabulary by entry 14's own question. The specimen
+    fails three other ways at once, which is what makes it worth its own
+    entry rather than a cross-reference. It is the label welded to a sentence
+    of entry 46. What follows the colon is a fragment and not the standing
+    sentence canon law 14 asks for. And the rule it names is the one rule the
+    issue was trying hardest to follow, so the tell arrives in the shape of
+    compliance. Added 2026-09-24 from the fifth grade of W39.
+52. The fix by deletion. A sentence is struck, and the repair removes it
+    rather than rewriting it, so the issue quietly loses the element that
+    sentence was occupying. The owner struck W39's opening, "You spent last
+    week watching agents get faster by doing less at test time", for assuming
+    a returning reader. The reprint has no greeting at all. It cleared the
+    gate, because a greeting that is absent cannot assume anything, and the
+    greeting is house law she asked for back by name. The same move took the
+    evidence grades out under the density ruling: the grade is a clause,
+    compression cuts clauses, and four of them went. This is the cheapest
+    failure in the register to commit, because it passes every check written
+    for the defect and leaves nothing on the page to catch. Canon law 13
+    already says of the thread that "the fix is always the same and it is
+    never deletion", and that sentence needs to be read as binding the slot
+    and not only the sentence in it. A ruling against how an element was
+    written is never a ruling against the element. Added 2026-09-24 from the
+    fifth grade of W39.
+53. The prohibition that supplies the string. Entry 44 is the tell an
+    instruction requires. This is the tell an instruction QUOTES. The reading
+    list's heading slot in prompts/digest.md read, in full, `## {The heading
+    for the reading list, written fresh and never the words "Read these
+    yourself"...}`, and the issue printed "## Read these yourself". All four
+    heading slots were written that way and each one carried its own forbidden
+    name inside the braces the model was told to replace with its own writing.
+    Two more of the file's sentences shipped in the same issue, both worked
+    examples: the plain-meaning line and the number line, which were drawn
+    from W39's own material because W39 is the issue that produced the ruling
+    they illustrate. An exemplar written from the material the generator will
+    be handed is not an illustration of the answer. It is the answer. The
+    general test, and it applies to any prompt and any register, not only to
+    this one: read the instruction from the position the writer occupies when
+    they obey it. If the nearest quoted English at that position is the thing
+    being banned, the sentence around it is not doing the work its author
+    thinks. Hold specimens where the output is read, never where it is
+    written. Added 2026-09-24 from the fifth grade of W39, where the
+    invariant "no sentence quoted from this file as an example survives into
+    the issue" had been standing in the same file the whole time.
+54. The term introduced under one name and used under another. Entry 26 is the
+    term of art standing bare, with no clause beside it. This is the term of
+    art that got its clause, under a synonym, and is then used for the rest of
+    the issue under the word that never got one. W39's reprint opens on
+    "scaffolding: the extra instructions and tooling that make frontier models
+    reliable on real tasks", which is the correct gloss correctly placed. It
+    then uses "scaffolding" twice and "harness" thirty-eight times, beginning
+    in the title, and nowhere says the two are the same thing. The outsider is
+    handed a definition for the word the issue does not use. This survives the
+    first-use pass because the pass looks for terms without clauses and this
+    term has one, three paragraphs away, spelled differently. The test is not
+    whether every term was defined. It is whether every term the reader
+    actually meets was, counted in the words on the page. Added 2026-09-24
+    from the fifth grade of W39.

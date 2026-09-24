@@ -3388,3 +3388,170 @@ neither may any future daily press on the same key. Options for the
 engineer: a scratch-row lock the callers check, or a second Moonshot
 organization for rehearsals. ExO: the concurrency ceiling belongs in
 `docs/agents/model-routing.md` beside the Groq rate-limit note.
+
+## INC-2026-09-24-prohibition-supplies-the-string — A rule recorded in five places was broken by one of the recordings (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file. Not a sequential number, and nothing here is renumbered.
+
+### What happened
+
+2026-W39 was reprinted at 16:04 on 2026-09-24 under the new prose rules.
+The reprint is headed, over its reading list:
+
+> ## Read these yourself
+
+That is one of the four internal framework names, printed verbatim at
+the top of a section a subscriber reads. It is the violation the owner
+has flagged twice, the second time in the word "AGAIN", and incident 20
+exists because the first recording did not prevent the second
+occurrence. This is the third occurrence.
+
+Two things make it worse than a recurrence.
+
+**It is a regression.** The stale 2026-09-19 generator, writing the same
+slot from the same material eleven hours earlier, produced "## The hour
+you should spend", which is the craft the ruling asks for. The patched
+generator replaced a heading written from the day's news with the
+skeleton's own label.
+
+**The generator that did it was the fully patched one.** The digests row
+carries `prompt_sha` `0f642e2ce9f3`, which is the sha of
+`prompts/digest.md` on `origin/main`. Nine editorial runs had merged.
+This is the first issue written by the current generator, so the defect
+cannot be assigned to an unmerged fix.
+
+### Why five recordings did not stop it
+
+The rule was written down in five places before the issue was generated:
+the owner's ruling in `docs/voice/taste.md`, given twice; canon law 12;
+ban list entry 20; the heading slot in `prompts/digest.md`; and the
+heading gate at the end of the same file, which asks the correct class
+question and would have failed the line.
+
+One of those five caused the failure. The heading slot read, in full:
+
+> `## {The heading for the reading list, written fresh and never the
+> words "Read these yourself". ...}`
+
+The curly braces are the one position in the template the model is told
+to replace with its own writing. The nearest quoted English at that
+position is the forbidden phrase. The model wrote what was there.
+
+All four heading slots were built this way, each quoting its own
+forbidden name. Three more of them were still loaded when this incident
+was written.
+
+The same mechanism produced two more leaks in the same issue, both from
+worked examples in the same file. The plain-meaning example and the
+number-line example were drawn from W39's own material, because W39 is
+the issue whose grade produced canon law 14, and both shipped nearly
+verbatim when the generator was pointed at W39 again.
+
+### The general form, for the ExO
+
+**Recording count is not enforcement strength.** L-A9 says recording a
+rule is not enforcing it, and L-A4 says a repeated correction is a
+register defect. Both are right and neither predicts this, because both
+are about rules that were written somewhere and not checked. This rule
+was checked, by a gate that asks the right question, and it still
+shipped, because a sixth recording was working against the other five.
+
+So the question to put to any register, prompt or charter is not how
+many places the rule appears in. It is: **read the instruction from the
+position of the person who obeys it. If the nearest quoted example at
+that position is the thing being banned, the prohibition is a supply.**
+Hold specimens where output is read, never where it is written.
+
+This generalizes past prompts. Any checklist, charter or standard that
+quotes a rejected specimen next to the blank where the work goes has the
+same defect, and this org quotes rejected specimens constantly and on
+purpose, because the preference data is the product of eight rejected
+copy rounds. The specimens are worth keeping. Where they sit is now a
+question worth asking.
+
+### Fixed in this PR
+
+All four heading slots state their rule positively and quote nothing.
+The four names move to the heading gate at the end of the file, run
+after the class question and never instead of it, per ban list 36. The
+two leaked examples are rewritten from a subject no payload can contain,
+and the invariant that already forbade example leakage now carries the
+evidence that it failed. Ban list entries 51, 53 and 54 are appended.
+
+## INC-2026-09-24-fix-by-deletion — Three house-law elements left the issue while it was being repaired (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file.
+
+### What happened
+
+The 2026-W39 reprint did what the previous grade asked. It is
+measurably less dense: the longest paragraph fell from 191 words to 98,
+paragraphs over 100 words from five to zero, numbers in the heaviest
+paragraph from ten to zero. The false ceiling comparison that ban list
+50 was written from is gone.
+
+It paid for that with three things that were already house law.
+
+- **The greeting.** The owner struck "You spent last week watching
+  agents get faster by doing less at test time" for assuming a returning
+  reader. The reprint has no greeting at all. It cleared canon law 13's
+  gate, because an absent greeting assumes nothing, and the greeting is
+  an element she asked for by name.
+- **The evidence grades.** Four in the pre-reprint, zero in the reprint,
+  in an issue whose four items all carry numbers. Law 6 calls the grade
+  "product, not weakness" and the canon calls it "the difference between
+  this and a press release".
+- **The traction evidence.** "three independent papers building on it"
+  in the pre-reprint, nothing of the kind in the reprint. Law 5 requires
+  the ranking to say what earned each slot.
+
+Each one is a clause. Every compression pass reaches for clauses.
+
+### Why the links survived and the grades did not
+
+This issue is close to a controlled experiment, which is why it is worth
+the register's space. The link rule and the evidence-grade rule are
+adjacent in `prompts/digest.md`, at lines 788 and 790 of the generator that
+wrote the issue. The same model read both in the same pass. Links shipped five
+out of five. Grades shipped zero out of four.
+
+The only difference between the two rules is one sentence, which the
+link rule has and the grade rule did not:
+
+> Count the items. Count the links. They match, or the issue is not
+> finished.
+
+**A rule survives a compression pass only if something counts it
+afterwards.** Prose describing a requirement is removed by the same
+edit that removes anything else made of prose.
+
+### The general form, for the ExO
+
+This is a near neighbour of INC-2026-09-24-grading-has-no-truth-pass,
+recorded earlier the same day, and the pair is more useful than either
+alone. That one says: when a check passes, ask what result it was
+capable of returning. This one says: when a rule is stated, ask what
+counts it. Both are the same underlying question asked at different
+ends, which is whether the mechanism can register the failure at all.
+
+The second question has an answer that is cheap to act on anywhere in
+the org. Any requirement that can be expressed as "there should be N of
+these" gets a count beside it, and the count is the rule rather than a
+reminder of it. Requirements expressed only as prose survive exactly as
+long as nobody is editing for length.
+
+The subtler half is the deletion itself, and it is ban list 52. A ruling
+against how an element was written is never a ruling against the
+element. Canon law 13 already says the repair "is never deletion", and
+it said that about threads, so the generator deleted a greeting instead.
+Every gate that names a fix should say what must still be there when the
+fix is done.
+
+### Fixed in this PR
+
+The evidence grade gets the count the link rule already has. Canon law
+13's "never deletion" clause is extended to bind the slot as well as the
+sentence, with the opening's four jobs rechecked after any repair. Ban
+list entry 52 is appended.
