@@ -370,3 +370,36 @@ gap that the same collision had left empty (incident 25).
     specimen from the same issue is the aphoristic version, "Three labs,
     one bet:", where the colon props up a snap summary that the paragraph
     it closes has already earned. Added 2026-09-24 from the W39 grade.
+47. The paragraph that reports and never lands. A result stated with its
+    number, its baseline and its evidence grade, and then the next result
+    starting in the same paragraph, so the reader is handed the arithmetic
+    and left to work out what it means. 2026-W39 does it six times:
+    "beating even the 41.7% achieved when the specialized harness stays
+    attached at runtime" is the week's most surprising fact and no sentence
+    anywhere says what it means for a builder. Entry 7 is the summary that
+    restates the headline. This is its opposite, a paragraph that adds
+    nothing but more facts. The fix is one sentence with no number in it,
+    under every result, saying what the number makes true. Added 2026-09-24
+    from her ruling that the issue must be enjoyable.
+48. The line that is entirely bold, standing alone. It looks like emphasis
+    in the markdown and it is a heading in every other sense: it announces
+    the block under it, the eye reads it as furniture, and the heading gate
+    at the end of prompts/digest.md already collects it. Two things make it
+    worth its own entry now. The owner has asked for a one-line pull for the
+    number that matters, which is exactly the shape that reaches for this.
+    And the email template sets a bold line standing alone as a grey
+    uppercase group label, verified against `pipeline/email_render.py` on
+    2026-09-24, so the pull arrives in the inbox looking like the taxonomy
+    label canon law 12 bans. Bold inside the sentence. Never the whole line.
+    Added 2026-09-24 from the formatting ruling.
+49. One shape for a whole issue. Not a sentence tell and not a word tell, a
+    page tell, and it is the one the owner named when she said an issue was
+    "a hassle to read". 2026-W39 is twenty-one paragraphs and nothing else:
+    no list, no line standing on its own, no change of texture from the
+    title to the close, in a week whose material included four replacements
+    that were four of a kind and three constraints that were three of a
+    kind. The tell is visible before a word is read, which is why it can be
+    checked before the prose is. Count the shapes on the page. One is the
+    finding. The cure is not decoration: it is noticing which of the day's
+    material is parallel and setting that part as a list, per canon law 14.
+    Added 2026-09-24 from the W39 shape read.
