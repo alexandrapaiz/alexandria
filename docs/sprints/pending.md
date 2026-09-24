@@ -512,3 +512,136 @@ it never appears in a transcript:
 
 Then the chair deploys and prints. Finance: Moonshot usage is a
 direct alexandria cost from this date, roughly $0.05 an issue.
+
+## Press recovery: your one check, and what the chair runs (engineer, 2026-09-24)
+
+Added by the engineer seat under your urgent dispatch of 2026-09-24,
+which directed this seat to write the one-click check into this file.
+Second use of the same narrow exception as the triage-fix note above:
+append-only, a handover note, not planning. The PM should treat it as
+such.
+
+### 1. The one-click check only you can run
+
+**Did Monday's 15:00 UTC schedule fire at all?** The repo cannot answer
+this and neither can the Modal CLI. `modal app logs alexandria-weekly`
+shows no output for 2026-09-21, and no-output is the same value for "the
+container never started" and "the container started and died before its
+first print". Schedule history lives only in the dashboard.
+
+One click:
+
+> **https://modal.com/apps/alexandria-weekly** → the **weekly** function
+> → the **Schedule** or **Runs** tab → look for an entry dated
+> **Monday 2026-09-21, 15:00 UTC**.
+
+Three possible answers, and what each one means:
+
+- **A run is listed and it failed.** Then the 404 is the whole story,
+  this PR fixes the class, and nothing further is owed.
+- **No run is listed.** Then there is a second, independent failure:
+  Modal did not fire a cron it was deployed with, and the deployed
+  version (v31) is not doing what the code says. That is a new incident,
+  and it is the more serious of the two. Tell the chair and it gets its
+  own register entry.
+- **A run is listed and it succeeded.** Then something wrote nothing and
+  reported success, which is incident 8's pattern again and the worst of
+  the three answers.
+
+Please note which one it is. It is the difference between one bug and
+two, and this PR only fixes one of them.
+
+### 2. Decision 2 is closed: you took it, and the press fits again
+
+This section asked you to choose between shortening the generator prompt,
+splitting the issue across several requests, and paying Groq. You chose
+a fourth thing the same day, in ADR-32: the press writes on Kimi K2
+through the Moonshot account you funded. This PR is that wiring, and the
+arithmetic is no longer a complaint:
+
+    kimi-k2.6: prompt 9865 + payload 20205 + output reservation 6000
+    + envelope 32 = 36102 tokens against 222822 usable
+    (262144-token context less 15% margin); fits, headroom 186720
+
+Nothing was trimmed to reach that. The payload caps and the 6,000-token
+output reservation are the same numbers main has carried since they were
+set, so the issue Kimi writes is the full-size issue.
+
+**One correction you need, and it is the kind that costs a week.** ADR-32
+names the model "Kimi K2", and the obvious model id, `kimi-k2`, was
+discontinued by Moonshot on 2026-05-25. A press pointed at it would
+answer 404, which is incident 24 happening again on a new provider in its
+first week. The live 256K general model is **`kimi-k2.6`**, and that is
+what this PR uses. `kimi-k2` is recorded as withdrawn so nothing can
+point at it by accident.
+
+**Cost, for finance.** $0.0526 an issue at list price, worst case, with
+the output reservation spent in full and no cache hit. That is 52 issues
+a year for about $2.70. It matches what ADR-32 told finance to expect.
+
+The two $0 improvements this section proposed are still worth doing and
+neither is urgent now. A shorter generator prompt is the writer seat's
+call whenever she next opens that file. Splitting the issue across
+several requests is in the ledger, and its real value was never the
+token count: it is that a per-section request survives the next ceiling
+change too.
+
+### 3. Correction to the dispatch: a dedicated Groq key would not help
+
+Your dispatch offered "either the press gets its own key, or the press
+runs when the crons are idle". The first option does not work, and the
+reason is one sentence on Groq's rate-limit page: "Rate limits apply at
+the organization level, not individual users." A second key on the same
+account draws on the same 8,000 TPM as the five crons already do. Only a
+separate Groq organization or the paid plan changes the number.
+
+So this run took the second option. The press moves from Monday 15:00
+UTC to **Monday 09:00 UTC**, two clear hours ahead of the earliest daily
+cron and well outside the contested 11:00 to 15:00 band. It is also the
+better editorial slot: 09:00 UTC is 5am in New York, so the issue is in
+a reader's inbox before the working day, and the week it covers ended
+the previous night, so nothing is half-ingested.
+
+**No action owed from you on this one**, beyond knowing the send time
+moved. ADR-32 has since retired the reason: the press has its own
+provider and its own prepaid account, so it no longer competes with the
+daily crons for anything. The slot stays at 09:00 on editorial grounds,
+which were always the better argument. The issue covers the week that
+ended Sunday, and 09:00 UTC is 5am in New York, so it arrives before the
+working day rather than in the middle of it.
+
+### 4. What the chair runs after this PR merges
+
+Merging deploys nothing; Modal runs the last deployed version. Two
+commands, and the first is yours because only you hold the key.
+
+**You, once.** Paste the key at the prompt rather than typing it into the
+command line, so it never lands in a shell history or a transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+No agent creates this secret, no agent reads it, and the value appears
+nowhere in the repository. `pipeline/weekly.py` references the name and
+nothing else.
+
+**Then the chair**, in order, stopping at the first failure:
+
+    python3 pipeline/budget.py \
+      && modal run pipeline/weekly.py::preflight \
+      && modal run pipeline/weekly.py \
+      && modal deploy pipeline/weekly.py
+
+The middle two are the smoke test that
+docs/agents/runtime-changes.md requires: this change adds a secret the
+run reads, and that law says the next cron is never the first execution
+of new machinery. `preflight` asks both providers whether the models
+exist and prints what the request would cost. The manual `modal run`
+prints a real issue. Only then does the deploy install the schedule.
+
+If the secret is missing, the run does not die on a stack trace. It says
+which environment variable is absent, which Modal secret provides it,
+and the command above, and it emails you.
+
+One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
+Unset, press alarms go to the Gmail address the `Gmail` secret already
+holds, which is yours. Set it if you would rather they went elsewhere.

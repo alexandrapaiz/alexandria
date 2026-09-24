@@ -1105,3 +1105,123 @@ single writing call onto the Claude subscription that already runs
 every seat (an Actions job on the OAuth token, 200K context, no TPM
 wall), which keeps the $0 principle and ends the provider roulette.
 The chair's temporary edits were restored; nothing was committed.
+
+## Incident 24, continued — the free tier has no model that can print the issue (2026-09-24, engineer)
+
+Appended by the engineer seat under the standing rule at the top of this
+file, on the owner's urgent dispatch of 2026-09-24. Incident 24's own
+entry, written 2026-09-23, named the 404 and the missing Monday. This is
+what reading Groq's live documentation added to it, and it is worse than
+the 404.
+
+**Verified from the live web this run.** `https://console.groq.com/docs/models`
+no longer lists `groq/compound` or `groq/compound-mini` in any section.
+That is the 404, confirmed independently of the manual Modal run. The
+free-tier table at `https://console.groq.com/docs/rate-limits` now
+contains exactly ten rows, and only three of them are general text
+writers:
+
+| model | RPM | RPD | TPM | TPD |
+| --- | --- | --- | --- | --- |
+| openai/gpt-oss-120b | 30 | 1K | 8K | 200K |
+| openai/gpt-oss-20b | 30 | 1K | 8K | 200K |
+| qwen/qwen3.8-27b | 30 | 1K | 8K | 200K |
+
+The other seven are two speech models, two text-to-speech models, two
+prompt-guard classifiers and one safety classifier. The only free
+entries with a TPM above 8,000 are the two prompt guards at 15K, and
+they cannot write prose.
+
+**So the ceiling is 8,000 TPM, everywhere on the free tier.** Incident
+22 established that a single request larger than TPM is rejected 413
+before generation starts, which makes TPM a per-request ceiling.
+`prompts/digest.md` is 9,865 tokens on its own. The output reservation
+is 6,000. That is 15,865 tokens before one row of payload, against
+6,800 usable, and `python3 pipeline/budget.py` now prints exactly that
+for all three fallbacks. **The press cannot print the weekly issue on
+Groq's free tier at any model, at the current prompt size.** Incident 22
+had an escape hatch, which was compound's 70K. There is no hatch now.
+
+**Two things that look like remedies and are not.**
+
+1. *A dedicated key for the press.* Groq's rate-limit page, verbatim:
+   "Rate limits apply at the organization level, not individual users."
+   A second key on the same account draws from the same 8,000 TPM, so
+   the dedicated-key option in the dispatch buys nothing. Only a
+   separate organization or the paid Developer plan moves the ceiling,
+   and both are owner decisions (docs/sprints/pending.md).
+2. *Prompt caching.* Groq's caching page says cached tokens "do not
+   count towards your rate limits", which reads like the answer. It is
+   not, for two independent reasons. The same paragraph says cached
+   tokens "are subtracted from your limits after processing", and the
+   413 is an admission decision taken before processing. And cached
+   prefixes "expire after 2 hours without use", while the press runs
+   once a week, so it would never see a cache hit on its own cadence.
+   Recorded here so nobody spends a day on it.
+
+**The repeat, which is the finding.** Three press failures in five days:
+413 on 2026-09-19 (incident 22), 429 collisions on the shared key, 404
+on 2026-09-23. Each has been treated as its own break-fix, and each fix
+has been a new model. That is the pattern: the press's availability is
+pinned to one vendor's free tier, and a free tier is not a contract.
+The fix this run ships is not another model. It is that the press now
+checks the provider before it trusts it, walks an ordered list when the
+answer is no, and emails the owner when it cannot print at all. The
+press will still fail. It will no longer fail quietly, and that is the
+part that cost three days.
+
+**Still only answerable from the Modal dashboard.** Whether the Monday
+2026-09-21 15:00 UTC schedule fired at all. The repo can prove the
+model was withdrawn, that no `2026-W38` row exists in `digests`, and
+that a run which did fire would have raised on the 404; it cannot prove
+whether a container ever started, because `modal app logs` shows no
+output for that date and the CLI does not expose schedule history. The
+one-click check is written into docs/sprints/pending.md for the owner.
+
+## Incident 24, third entry — the fix for a 404 was nearly shipped with a 404 in it (2026-09-24, engineer)
+
+Appended under the standing rule at the top of this file. This one is a
+near miss rather than a failure, and it is recorded because the standing
+rule is about the repeat, not about the damage, and because a near miss
+that goes unwritten is a failure waiting for the next run.
+
+**What happened.** ADR-32 moved the press off Groq and onto Kimi K2,
+naming the model as "Kimi K2" and the dispatch naming the id as
+`kimi-k2`. Read from Moonshot's live catalog this morning: the bare
+`kimi-k2` series was **discontinued on 2026-05-25**, four months ago. A
+press pointed at that id answers 404. That is incident 24's exact
+failure, in incident 24's own remedy, on a provider chosen partly to
+escape it, in its first hour.
+
+The live 256K-context general model is `kimi-k2.6`. The catalog's other
+K2 ids are `kimi-k2.7-code` and `kimi-k2.7-code-highspeed`, which are
+coding models, and the press writes prose. `kimi-k2` and `kimi-k2.5` are
+now in `budget.DECOMMISSIONED` with their dates, so pointing at either
+one fails at import time with the reason rather than at 09:00 on a
+Monday with a 404.
+
+**Why it did not ship.** Two things caught it, and only one of them was
+the seat paying attention. The dispatch said to read the provider's
+current docs for the exact model id, which is the instruction that
+found it. Underneath that, `check_availability` and `preflight` would
+have caught it anyway, because both ask `GET /models` before the run
+trusts a name. That is the machinery incident 24 bought, doing exactly
+what it was bought for, one week later, on a different provider.
+
+**The finding, which is about how the org writes decisions.** A model
+name in prose is not a model id. "Kimi K2" is a family, "Claude 5" is a
+family, and a family name written into an ADR reads like a
+specification and is not one. The rule this suggests, for any seat
+implementing a decision that names a model: **the ADR names the family,
+the code names the id, and the id is read from the provider's live
+catalog on the day it is written, never from memory.** Three of the
+four press failures in the last week (incident 22's 413, the 404 of
+2026-09-23, and this near miss) come from the gap between what a model
+was believed to be and what the provider currently serves.
+
+**Two failure classes now covered on both providers.** Deprecation is
+not a Groq problem. Moonshot has run three deprecation waves of its own
+in 2026, and Groq has run at least two. The press's guards were written
+against one vendor and are now written against a provider table, which
+is the honest shape: any provider will withdraw any model, and the only
+defence that keeps working is asking before the run, every run.

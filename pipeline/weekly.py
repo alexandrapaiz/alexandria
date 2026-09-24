@@ -21,20 +21,56 @@ same Monday process makes the trajectories maximally fresh and costs no slot.
 The digest is a workflow, not an agent (ADR-6): every query is known in
 advance, so the model only writes.
 
-Needs secrets: `neon`, `groq`, and the Gmail secret(s) (GMAIL_ADDRESS +
-GMAIL_APP_PASSWORD) once the newsletter is live; until then the run succeeds
-and only skips the email.
+Needs secrets: `neon`, `moonshot`, `groq`, and the Gmail secrets
+(GMAIL_ADDRESS + GMAIL_APP_PASSWORD) once the newsletter is live; until then
+the run succeeds and only skips the email.
 
-    python3 pipeline/budget.py           # does the request fit? run before deploy
-    modal run pipeline/weekly.py         # one-off manual run (citations + digest)
-    modal deploy pipeline/weekly.py      # install the Monday schedule
+**The one command the chair runs before the first deploy** (ADR-32). The press
+writes on Moonshot's Kimi now, and the key lives in a Modal secret named
+`moonshot`. Only the owner holds the key. Paste it at the prompt rather than
+putting it on the command line, so it never lands in a shell history or a
+transcript:
 
-The budget check is not optional ceremony. Incident 22: an editorial merge
-grew the generator prompt past the model's per-request token ceiling, Groq
-answered 413, and no issue was written. The same check runs in CI on every
-change to a generator prompt or this pipeline (once someone moves
-.github/workflows-pending/checks.yml into place; agent tokens cannot write
-workflows), and the run below refuses to call Groq when the sums do not work.
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+No agent creates this, no agent reads it, and the value appears nowhere in this
+repository. The name does, and the name is all the code needs.
+
+**Then the deploy**, unchanged in shape and with one more thing checked:
+
+    python3 pipeline/budget.py                    # does the request fit?
+    modal run pipeline/weekly.py::preflight        # does the model still exist?
+    modal run pipeline/weekly.py                  # one-off manual run (both, then print)
+    modal deploy pipeline/weekly.py               # install the Monday schedule
+
+As one line, which is what the chair runs after a merge that touches this file
+or prompts/digest.md:
+
+    python3 pipeline/budget.py \
+      && modal run pipeline/weekly.py::preflight \
+      && modal deploy pipeline/weekly.py
+
+Neither guard is optional ceremony, and they check different things.
+
+**Does the request fit?** Incident 22: an editorial merge grew the generator
+prompt past the model's per-request token ceiling, the provider answered 413,
+and no issue was written. `pipeline/budget.py` owns that arithmetic and runs in
+CI on every change to a generator prompt or this pipeline, before deploy, and
+again inside the container before the writing call.
+
+**Does the model still exist?** Incident 24: Groq withdrew `groq/compound`, the
+press answered 404 for three days, and the discovery was the owner noticing that
+Monday's issue never arrived. The budget guard had been perfectly happy: it
+checks that a request fits, not that there is anything to send it to. So
+`preflight` asks `GET /models` before the deploy, `check_availability` asks
+again at the start of every run, `FALLBACK_MODELS` gives the run somewhere to
+go when the answer is no, and `notify_owner` mails the owner the moment the
+press cannot print. That last one is the important one. A press that fails
+silently has no failure mode the org can respond to.
+
+Both questions are now asked of both providers, because the fallback list
+crosses providers on purpose and a check that only covers one of them is a
+check with a hole in it exactly where the press lives.
 """
 
 import hashlib
@@ -45,22 +81,67 @@ from datetime import date, timedelta
 
 import modal
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+# ADR-32 (2026-09-24): the press's single writing call runs on Moonshot's Kimi.
+# Groq stays as the corpus's brain and as the press's last resort.
+#
+# Neither URL is written out here. `pipeline/budget.py` owns the provider table
+# (base URL, key environment variable, Modal secret name, docs) so that one
+# file answers "where does this model live and what will it accept", and the
+# guard cannot be checking a different endpoint from the one the press calls.
 
-# Incident 22: `openai/gpt-oss-120b` is capped at 8,000 tokens per request on
-# Groq's free tier, and the generator prompt alone is 8,651. No payload
-# selection can rescue that, so the press moved to the one free-tier model with
-# room to print: `groq/compound`, at 70,000. It is an agentic system, which the
-# digest must not be (ADR-6: every query is known in advance, the model only
-# writes), so every request disables its built-in tools and every response is
-# checked for a tool that fired anyway. Rollback is this one line, and
-# pipeline/budget.py will then say precisely how far over the old model is.
-MODEL = "groq/compound"
+# Incident 24, 2026-09-23: Groq withdrew `groq/compound` and the press answered
+# 404 for three days without telling anyone. The press had been moved to it on
+# 2026-09-19 (PR #51) for one reason, its 70,000 TPM, and a capacity number
+# turned out to be the worst possible reason to pick a model: compound was an
+# agentic *preview* system, and previews are withdrawn without the deprecation
+# notice production models get.
+#
+# Then the whole free tier turned out to be too small: every remaining Groq
+# free model caps a single request at 8,000 tokens and the generator prompt
+# alone is 9,865. ADR-32 is the owner's answer. The press writes on Kimi, which
+# she funded, and the list below is what happens when Kimi is not there.
+#
+# 1. **`kimi-k2.6`, on Moonshot, is the press.** 256K of context against a
+#    ~36,000-token worst case, a prepaid account rather than a free tier, and
+#    open weights, which is what makes the destination in ADR-32 reachable:
+#    the same class of model served by alexandria itself, so no provider can
+#    withdraw the press's model a third time.
+#
+#    The id is `kimi-k2.6` and not `kimi-k2`. The bare series was discontinued
+#    on 2026-05-25, so the obvious id is the one that 404s. That is incident 24
+#    exactly, and the only reason it did not happen again here is that
+#    `check_availability` asks the provider before the run trusts the name.
+#
+# 2. **Then Groq, in the order incident 24 argued for**: production before
+#    preview, and a second vendor at rank two so a family withdrawal cannot
+#    take the whole list. Be honest about what these three are worth today:
+#    at 8,000 TPM they cannot print the issue at the current prompt size, and
+#    the budget guard prints that arithmetic on every run. They are here for
+#    the day the prompt gets shorter or a ceiling moves, and if they ever do
+#    write, they will write a short issue. A last resort that prints something
+#    small beats a last resort that does not exist.
+#
+# Every entry is verified by pipeline/budget.py, which reads this list out of
+# this file rather than keeping a copy, and refuses the deploy if any entry has
+# no published limits or has been withdrawn.
+FALLBACK_MODELS = [
+    "kimi-k2.6",
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-20b",
+]
 
-# Built-in tools off. An issue's whole claim is that it was written from our
-# corpus, and a writer that can quietly search the web is a writer that can
-# quietly source from somewhere else.
-COMPOUND_CUSTOM = {"tools": {"enabled_tools": []}}
+# The default. `write_digest` walks the list from here and may end up further
+# down it; whichever model actually wrote the issue is what lands in the
+# `digests.model` column, never this constant.
+MODEL = FALLBACK_MODELS[0]
+
+# Retries per model before the press gives up on it and tries the next one.
+# 429 is the case this exists for: a per-model rate limit means moving down the
+# list is itself a rate-limit remedy and not only a deprecation remedy.
+RETRIES_PER_MODEL = 4
+BACKOFF_SECONDS = 30      # doubled each attempt, capped below
+BACKOFF_CEILING = 180
 
 S2_BATCH_URL = "https://api.semanticscholar.org/graph/v1/paper/batch"
 S2_BATCH_SIZE = 100       # ids per API call (S2 allows up to 500; be gentle)
@@ -306,16 +387,30 @@ def budget():
     return module
 
 
-def shrink(payload: dict, prompt: str, max_completion: int) -> str:
-    """Trim the payload until the whole request fits the model's budget.
+class ModelGone(RuntimeError):
+    """The provider does not have this model any more. Incident 24's 404."""
 
-    The old version counted characters against a fixed 17,000 cap and only
-    ever trimmed new_claims, so a run with many deprecations could exhaust
-    new_claims and still return a body over the cap. This one counts tokens
-    against the model's actual per-request ceiling, trims every stream in a
-    stated order, and raises rather than returning something that will 413.
+
+class RateLimited(RuntimeError):
+    """429 survived every retry on this model."""
+
+
+class MissingKey(RuntimeError):
+    """A provider's API key is not in this environment.
+
+    Its own class rather than a bare KeyError, so the fallback walk can treat
+    "we cannot reach this provider" the same way it treats a withdrawn model:
+    record it, say which Modal secret is missing, and try the next one.
     """
-    return budget().fit_payload(payload, prompt, max_completion, MODEL)
+
+
+class PressCannotPrint(RuntimeError):
+    """No model in the fallback list could write the issue.
+
+    This is the exception the owner gets an email about. It carries the whole
+    trail, one line per model, because the point of the email is that she
+    should not have to open Modal's logs to know what happened.
+    """
 
 
 # Depth sections got truncated at the default cap, so the issue asks for room.
@@ -326,81 +421,228 @@ def shrink(payload: dict, prompt: str, max_completion: int) -> str:
 MAX_COMPLETION_TOKENS = 6000
 
 
-def log_limits(resp) -> None:
-    """Groq's own account of the budget, which outranks anything we assume."""
+def log_limits(resp, model: str) -> None:
+    """The provider's own account of the budget, which outranks what we assume.
+
+    Groq sends these headers on every response. Moonshot does not always, and
+    silence is not a problem: the header is a cross-check on budget.MODELS, not
+    an input to any decision.
+    """
     limit = resp.headers.get("x-ratelimit-limit-tokens")
     remaining = resp.headers.get("x-ratelimit-remaining-tokens")
     if limit:
-        print(f"groq says: limit {limit} tokens, {remaining} remaining. If that "
-              f"disagrees with budget.MODELS[{MODEL!r}], the header is right.")
+        print(f"provider says: limit {limit} tokens, {remaining} remaining. If "
+              f"that disagrees with budget.MODELS[{model!r}], the header is "
+              "right and the table is the thing to fix.")
 
 
-def write_digest(payload: dict, prompt: str) -> str:
+def api_key_for(provider: str) -> str:
+    """The key for `provider`, or a loud failure naming the Modal secret.
+
+    ADR-32 gave the press a funded account, and the chair creates the secret
+    from the owner's key. This seat never sees the value and must never print
+    it; what it can do, when the value is not there, is say exactly which
+    secret is missing and what command creates it. A press that dies on a
+    KeyError for `MOONSHOT_API_KEY` tells the owner nothing.
+    """
     import os
 
+    spec = budget().PROVIDERS[provider]
+    key = os.environ.get(spec["key_env"], "").strip()
+    if not key:
+        raise MissingKey(
+            f"{spec['key_env']} is not in this environment, so the press "
+            f"cannot reach {provider}. It comes from the Modal secret named "
+            f"`{spec['secret']}`, which the chair creates with:\n"
+            f"    modal secret create {spec['secret']} {spec['key_env']}=<paste>\n"
+            f"Then redeploy: modal deploy pipeline/weekly.py"
+        )
+    return key
+
+
+def check_availability() -> set[str]:
+    """Which models the press's providers actually have, right now, for our keys.
+
+    Incident 24's standing fix. The budget guard checks that the request fits;
+    this checks that there is something to send it to. It costs no tokens
+    against any ceiling, so it runs at deploy and again at the start of every
+    run, and it raises loudly rather than guessing.
+
+    One provider being unreachable is a note, not the end of the run, because
+    the fallback list crosses providers on purpose. What ends the run is no
+    usable model anywhere, and the missing primary key, which is a
+    configuration fact the owner can fix in one command.
+    """
+    import os
+
+    guard = budget()
+    primary = guard.PRIMARY_PROVIDER
+    # fail here rather than three functions later, and name the secret
+    try:
+        api_key_for(primary)
+    except MissingKey as exc:
+        raise PressCannotPrint(str(exc)) from exc
+
+    available, notes = guard.available_everywhere(FALLBACK_MODELS, os.environ)
+    for note in notes:
+        print(f"availability: {note}")
+    usable = [m for m in FALLBACK_MODELS if m in available]
+    for name in FALLBACK_MODELS:
+        if name in available:
+            continue
+        provider = guard.MODELS.get(name, {}).get("provider", "?")
+        print(f"AVAILABILITY: {name} is in FALLBACK_MODELS but {provider} does "
+              "not list it. A request to it would 404, as it did in incident 24.")
+    print(f"fallbacks present: {usable or 'NONE'}")
+    if not usable:
+        docs = ", ".join(
+            guard.PROVIDERS[p]["docs"] for p in guard.providers_for(FALLBACK_MODELS))
+        raise PressCannotPrint(
+            "no provider lists any of the press's fallback models "
+            f"({', '.join(FALLBACK_MODELS)}). The press cannot print until "
+            "pipeline/weekly.py FALLBACK_MODELS and pipeline/budget.py MODELS "
+            f"are updated from {docs}."
+        )
+    return available
+
+
+def call_model(model: str, prompt: str, user: str) -> str:
+    """One model, with backoff on 429. Raises so the caller can move down the list.
+
+    The request body is the OpenAI-compatible minimum and nothing else. Both
+    providers speak that dialect, so there is one code path and no provider
+    branch to get wrong. Two deliberate absences:
+
+    * **No `compound_custom`.** It was a Groq-only block for the agentic
+      compound system, and compound is gone. ADR-6 holds regardless: the press
+      is a workflow, one prompt in, one issue out, no tools.
+    * **No `temperature` on Kimi.** Moonshot documents temperature, top_p, n
+      and both penalties as fixed values on k2.6, so sending 0.3 would be a
+      parameter the model overrides. Sending settings that do nothing is how a
+      reader comes to believe a knob exists.
+    """
     import httpx
 
     guard = budget()
-    user = shrink(payload, prompt, MAX_COMPLETION_TOKENS)
-    report = guard.check_request(prompt, user, MAX_COMPLETION_TOKENS, MODEL)
-    print(f"payload: {len(user)} chars, {len(payload['new_claims'])} new claims kept")
-    print(f"budget: {report.summary()}")
-    if not report.fits:
-        # shrink() should have made this impossible; if it did not, say so here
-        # rather than letting Groq say it with a 413 and no issue
-        raise guard.BudgetExceeded(report.summary())
+    provider = guard.provider_of(model)
+    url = guard.endpoint(provider, "/chat/completions")
+    key = api_key_for(provider)
 
-    for attempt in range(4):
+    body = {
+        "model": model,
+        "max_completion_tokens": MAX_COMPLETION_TOKENS,
+        "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": user},
+        ],
+    }
+    if provider != "moonshot":
+        body["temperature"] = 0.3
+
+    for attempt in range(RETRIES_PER_MODEL):
         resp = httpx.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY'].strip()}"},
-            json={
-                "model": MODEL,
-                "temperature": 0.3,
-                "max_completion_tokens": MAX_COMPLETION_TOKENS,
-                "messages": [
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": user},
-                ],
-                # compound-only parameter: rolling MODEL back to a plain model
-                # must not fail for a second, unrelated reason
-                **({"compound_custom": COMPOUND_CUSTOM}
-                   if MODEL.startswith("groq/compound") else {}),
-            },
+            url,
+            headers={"Authorization": f"Bearer {key}"},
+            json=body,
             timeout=300,
         )
-        log_limits(resp)
-        if resp.status_code == 429 and attempt < 3:
-            wait = float(resp.headers.get("retry-after") or 30 * (attempt + 1))
-            print(f"rate limited; backing off {wait:.0f}s")
-            time.sleep(min(wait, 180))
-            continue
+        log_limits(resp, model)
+
+        # 404 is a withdrawn or misspelled model, and no amount of waiting fixes
+        # it. Going straight to the next model is the whole point of the list.
+        if resp.status_code == 404:
+            raise ModelGone(f"404 Not Found: {resp.text[:400]}")
+
+        if resp.status_code == 429:
+            wait = float(resp.headers.get("retry-after")
+                         or BACKOFF_SECONDS * (2 ** attempt))
+            wait = min(wait, BACKOFF_CEILING)
+            if attempt < RETRIES_PER_MODEL - 1:
+                print(f"{model}: rate limited (attempt {attempt + 1} of "
+                      f"{RETRIES_PER_MODEL}); backing off {wait:.0f}s")
+                time.sleep(wait)
+                continue
+            raise RateLimited(
+                f"429 after {RETRIES_PER_MODEL} attempts: {resp.text[:400]}")
+
         if resp.status_code >= 400:
             # incident 22 cost a day partly because raise_for_status() prints
-            # the status and throws the body away. The body is where Groq
-            # states the actual limit and the actual request size.
-            print(f"groq {resp.status_code}: {resp.text[:1000]}")
-        resp.raise_for_status()
-        message = resp.json()["choices"][0]["message"]
+            # the status and throws the body away. The body is where the
+            # provider states the actual limit and the actual request size.
+            print(f"{provider} {resp.status_code} on {model}: {resp.text[:1000]}")
+            # 400 on a model that exists is usually an unsupported parameter,
+            # which the next model may well accept
+            raise ModelGone(f"{resp.status_code}: {resp.text[:400]}")
+
+        choice = resp.json()["choices"][0]
+        message = choice["message"]
         fired = message.get("executed_tools") or []
         if fired:
-            # tools are disabled per request; if one ran anyway, the issue may
-            # contain something that did not come from our corpus
+            # No model in FALLBACK_MODELS is agentic today, and ADR-6 says the
+            # press never gets tools. If one ever fires anyway, the issue may
+            # contain something that did not come from our corpus, and that is
+            # a fact about the issue, not a warning about the call.
             names = ", ".join(sorted({t.get("type", "?") for t in fired}))
-            print(f"WARNING: {MODEL} executed built-in tools ({names}) despite "
-                  "compound_custom disabling them. Treat this issue as "
-                  "unverified and check it against the payload before sending.")
+            print(f"WARNING: {model} executed built-in tools ({names}). Treat "
+                  "this issue as unverified and check it against the payload "
+                  "before sending.")
         content = message.get("content")
         if not content:
-            # an agentic model can answer with tool calls and no prose; there is
-            # no issue in that, and the empty string must not reach the database
-            raise RuntimeError(
-                f"{MODEL} returned no content (finish_reason "
-                f"{resp.json()['choices'][0].get('finish_reason')!r}); no issue "
-                "was written"
-            )
+            raise ModelGone(
+                f"{model} returned no content (finish_reason "
+                f"{choice.get('finish_reason')!r}); no issue was written")
         return content.strip()
-    raise RuntimeError("groq: exhausted retries")
+    raise RateLimited(f"{model}: exhausted retries")
+
+
+def write_digest(payload: dict, prompt: str,
+                 available: set[str] | None = None) -> tuple[str, str]:
+    """Write the issue, walking the fallback list. Returns (body, model used).
+
+    Each model gets its own copy of the payload, because `fit_payload` trims in
+    place: sharing one payload would mean the second model inherits the first
+    model's trimming and writes a thinner issue than it had room for.
+    """
+    import copy
+
+    guard = budget()
+    tried: list[str] = []
+
+    for model in FALLBACK_MODELS:
+        if available is not None and model not in available:
+            provider = guard.MODELS.get(model, {}).get("provider", "?")
+            tried.append(f"{model}: not listed by {provider} for this key; "
+                         "skipped without a request (incident 24's 404)")
+            continue
+        try:
+            user = guard.fit_payload(copy.deepcopy(payload), prompt,
+                                     MAX_COMPLETION_TOKENS, model)
+        except (guard.BudgetExceeded, KeyError) as exc:
+            tried.append(f"{model}: does not fit. {exc}")
+            print(f"{model}: over budget, trying the next fallback. {exc}")
+            continue
+
+        report = guard.check_request(prompt, user, MAX_COMPLETION_TOKENS, model)
+        print(f"{model}: payload {len(user)} chars; budget: {report.summary()}")
+        if not report.fits:
+            # fit_payload should have made this impossible; if it did not, say
+            # so here rather than letting Groq say it with a 413
+            tried.append(f"{model}: {report.summary()}")
+            continue
+
+        try:
+            body = call_model(model, prompt, user)
+        except (ModelGone, RateLimited, MissingKey) as exc:
+            tried.append(f"{model}: {exc}")
+            print(f"{model} failed ({exc}); trying the next fallback")
+            continue
+        print(f"issue written by {model}")
+        return body, model
+
+    raise PressCannotPrint(
+        "every model in the press's fallback list failed:\n  "
+        + "\n  ".join(tried)
+    )
 
 
 # The standing introduction under the title. Fixed in code, not written by the
@@ -482,9 +724,127 @@ def send_newsletter(conn, week: str, body: str) -> str:
     return f"sent {week} to {len(rows)} subscribers via Gmail"
 
 
+def notify_owner(subject: str, detail: str) -> str:
+    """Tell the owner the press could not print, by email, immediately.
+
+    Incident 24's real cost was not the 404. It was that the 404 was discovered
+    three days later, by the owner noticing her inbox was empty. A press that
+    fails silently has no failure mode the org can respond to, so every path
+    out of this run that ends without an issue goes through here first.
+
+    Same SMTP path the newsletter already uses, so it needs no new secret and
+    no new service. The alert goes to the owner's own Gmail address, the one
+    the `Gmail` secret provides, unless `PRESS_ALERT_TO` names another; a
+    self-addressed mail is the cheapest reliable channel we have.
+
+    Never raises. A failure to deliver the alarm must not replace the original
+    error with a different one, so this returns a status string and the caller
+    prints it.
+    """
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+
+    addr = os.environ.get("GMAIL_ADDRESS", "").strip()
+    pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
+    to = os.environ.get("PRESS_ALERT_TO", "").strip() or addr
+    if not addr or not pw:
+        return ("NOT NOTIFIED: no gmail secret in this environment, so the "
+                "owner was not told. This is the incident 24 failure mode and "
+                "it is still open here.")
+    body = (
+        f"{detail}\n\n"
+        "-- \n"
+        "This is an automated alarm from alexandria's weekly press "
+        "(pipeline/weekly.py). It means no issue was written and nothing was "
+        "sent to subscribers.\n\n"
+        "What to check, in order:\n"
+        "  1. modal app logs alexandria-weekly\n"
+        "  2. https://platform.kimi.ai/docs/models and "
+        "https://console.groq.com/docs/models, against "
+        "pipeline/weekly.py FALLBACK_MODELS\n"
+        "  3. python3 pipeline/budget.py, which prints the arithmetic for "
+        "every fallback\n"
+    )
+    try:
+        msg = MIMEText(body, "plain")
+        msg["Subject"] = f"[alexandria] {subject}"
+        msg["From"] = f"alexandria press <{addr}>"
+        msg["To"] = to
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+            smtp.login(addr, pw)
+            smtp.sendmail(addr, [to], msg.as_string())
+    except Exception as exc:
+        return f"NOT NOTIFIED: the alarm email itself failed ({exc})"
+    return f"owner notified at {to}: {subject}"
+
+
 @app.function(
-    schedule=modal.Cron("0 15 * * 1"),  # Monday 15:00 UTC, after the daily crons
-    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq"),
+    # Both providers, because preflight's whole job is to ask each of them
+    # whether the models named in FALLBACK_MODELS still exist. Values are never
+    # read by this seat; only the names appear in the repository.
+    secrets=[modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
+    timeout=300,
+)
+def preflight() -> str:
+    """Can the press print at all? Run this before every deploy.
+
+    `modal deploy` does not run a local entrypoint, so without this function
+    nothing checks the provider between one Monday and the next. It needs the
+    real key, which only exists inside Modal, which is why it is a deployed
+    function rather than a local script.
+
+    Loud on purpose: it raises, so a failed preflight stops the chair's deploy
+    command at the `&&`. No email here, because a human is watching a deploy;
+    the emailing path is the scheduled run, where nobody is.
+    """
+    guard = budget()
+    available = check_availability()
+    prompt = open("/root/prompts/digest.md").read()
+    payload_json = guard.encode(guard.worst_case_payload())
+    choice = guard.choose_model(FALLBACK_MODELS, available, prompt,
+                                payload_json, MAX_COMPLETION_TOKENS)
+    print("preflight, worst-case payload:")
+    print(choice.summary())
+    if choice.model:
+        print(f"  cost at list price, worst case: ${choice.report.cost:.4f} "
+              "an issue")
+    if not choice.model:
+        raise PressCannotPrint(
+            "preflight: no model in the fallback list can write this issue.\n"
+            + choice.summary()
+        )
+    return f"preflight ok: {choice.model} would write the issue"
+
+
+@app.function(
+    # Monday 09:00 UTC. Moved from 15:00 on 2026-09-24, and it stays at 09:00
+    # now that the press writes on Moonshot, for a different and better reason.
+    #
+    # The original reason was contention: the press shared one Groq key, and
+    # therefore one 8,000-token-per-minute budget, with four daily crons, and
+    # Groq applies rate limits "at the organization level, not individual
+    # users". ADR-32 ends that argument. The press has its own provider and its
+    # own prepaid account, so it no longer competes with triage, distill or
+    # interpret for anything. The Groq fallbacks still would, which is one more
+    # reason for the press to keep out of the 11:00-to-15:00 band the daily
+    # crons occupy (11:00 ingest, 11:30 distill, 12:00 triage, 14:00 interpret,
+    # each with a one-hour timeout).
+    #
+    # The reason to keep 09:00 is editorial. The issue covers the week that
+    # ended Sunday, so Monday's own ingest is not in it, and 09:00 UTC is 5am
+    # in New York, which puts the issue in a reader's inbox before the working
+    # day rather than in the middle of it.
+    #
+    # Runtime change under docs/agents/runtime-changes.md. Its smoke test is
+    # the deploy command in this module's docstring: preflight, then one manual
+    # `modal run`, then the deploy that installs this schedule. The next cron
+    # is not the first execution of this machinery.
+    schedule=modal.Cron("0 9 * * 1"),
+    secrets=[modal.Secret.from_name("neon"),
+             # ADR-32: the press writes on Kimi. `moonshot` holds
+             # MOONSHOT_API_KEY and the chair creates it from the owner's key.
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq"),
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=1800,
 )
@@ -505,48 +865,81 @@ def weekly() -> str:
     prompt = open("/root/prompts/digest.md").read()
     sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
 
-    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        try:
-            check_citations(conn)
-        except Exception as exc:
-            print(f"citation check failed ({exc}); digest proceeds without fresh citations")
-        payload = gather(conn)
-        payload["week"] = week
-        payload["dates"] = dates
-        print(f"{week}: {payload['stats']} | new_claims={len(payload['new_claims'])} "
-              f"deprecated={len(payload['deprecated'])}")
-        body = write_digest(payload, prompt)
-        body = add_masthead(body)
-        conn.execute(
-            """
-            insert into digests (week, body, model, prompt_sha) values (%s, %s, %s, %s)
-            on conflict (week) do update
-                set body = excluded.body, model = excluded.model,
-                    prompt_sha = excluded.prompt_sha, created_at = now()
-            """,
-            (week, body, MODEL, sha),
-        )
-        conn.commit()
-        try:
-            print(send_newsletter(conn, week, body))
-        except Exception as exc:
-            # the digests table is the record of record; a send failure must
-            # never fail the run
-            print(f"newsletter send failed ({exc}); digest is safe in the database")
+    try:
+        # Run-start availability check, before a single token is spent and
+        # before the citation pass burns twenty minutes writing nothing.
+        # Incident 24: the budget guard proved the request fit a model that no
+        # longer existed.
+        available = check_availability()
+
+        with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+            try:
+                check_citations(conn)
+            except Exception as exc:
+                print(f"citation check failed ({exc}); digest proceeds without "
+                      "fresh citations")
+            payload = gather(conn)
+            payload["week"] = week
+            payload["dates"] = dates
+            print(f"{week}: {payload['stats']} | "
+                  f"new_claims={len(payload['new_claims'])} "
+                  f"deprecated={len(payload['deprecated'])}")
+            body, model = write_digest(payload, prompt, available)
+            body = add_masthead(body)
+            conn.execute(
+                """
+                insert into digests (week, body, model, prompt_sha)
+                values (%s, %s, %s, %s)
+                on conflict (week) do update
+                    set body = excluded.body, model = excluded.model,
+                        prompt_sha = excluded.prompt_sha, created_at = now()
+                """,
+                (week, body, model, sha),
+            )
+            conn.commit()
+            try:
+                print(send_newsletter(conn, week, body))
+            except Exception as exc:
+                # the digests table is the record of record, so a send failure
+                # must never fail the run. It must still be loud: an issue
+                # written and never delivered is the same silence to a reader
+                # as an issue never written.
+                print(f"newsletter send failed ({exc}); digest is safe in the "
+                      "database")
+                print(notify_owner(
+                    f"{week} was written but NOT sent",
+                    f"The {week} issue is in the digests table and on the site, "
+                    f"but the email send failed:\n\n{exc}\n\n"
+                    f"It was written by {model}, so nothing needs rewriting. "
+                    "The send is the part that needs retrying."))
+    except Exception as exc:
+        # Every path out of this run that ends without an issue comes through
+        # here. This is incident 24's standing fix: the discovery must never
+        # again be the owner's inbox being empty.
+        print(f"PRESS FAILED: {exc}")
+        print(notify_owner(
+            f"{week} could not be printed",
+            f"The weekly press failed and no issue was written for {week}.\n\n"
+            f"{type(exc).__name__}: {exc}"))
+        raise
     return body
 
 
 @app.local_entrypoint()
 def main():
-    # The budget check runs here, before anything is spent, because `modal run`
-    # is how a human starts this press by hand and how the chair will start it
-    # after an editorial merge. It is the same check CI runs
-    # (.github/workflows-pending/checks.yml) and the same one the container
-    # runs before it calls Groq. Incident 22 is the reason it runs three times.
+    # Two checks before anything is spent, in this order, because they fail for
+    # different reasons and the operator needs to know which one bit.
+    #
+    # 1. The budget: does the request fit? Incident 22. Runs locally, needs no
+    #    key, and is the same check CI runs
+    #    (.github/workflows-pending/checks.yml).
+    # 2. Availability: does the model exist? Incident 24. Needs the real key,
+    #    so it runs inside Modal via preflight.
     if budget().main() != 0:
         raise SystemExit(
-            "budget check failed; the request would not fit the model and no "
-            "issue would be written. Nothing was run."
+            "budget check failed; the request would not fit any model in the "
+            "fallback list and no issue would be written. Nothing was run."
         )
+    print(preflight.remote())
     body = weekly.remote()
     print("\n" + body)
