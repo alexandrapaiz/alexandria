@@ -1,3 +1,60 @@
+## Updated 2026-09-24 (Thursday night standup, owner present)
+
+Owner directive for this run: standup mode, synchronous, owner present.
+Two new items to track, both already dispatched by the chair before
+this run started, and the night's reconciliation.
+
+**Two new owner items, dispatched by the chair tonight:**
+
+1. **engineer** — send the press through `site/emails/digest.html`, not
+   the inline `<div>` (owner: "i want the emails to have ui").
+   `pipeline/weekly.py` (around line 709-713) still builds the email
+   body as a bare styled `<div>` wrapping raw markdown-to-HTML;
+   `site/emails/digest.html` (built earlier, commits 8bb12ed/589b2a0) is
+   the real newsletter-shaped template and is not yet wired into the
+   send path. Dispatched tonight (`workflow_dispatch`, in progress as of
+   04:49Z when this run started); no PR yet.
+2. **writer** — every issue stands alone: the opening never references a
+   previous issue or "last week" (owner ruling, `docs/voice/taste.md`'s
+   2026-09-24 entry, to become canon and apply to `prompts/digest.md`).
+   PR #89 (open, draft, `writer/2026-09-24-b`) delivers this: promotes
+   the rule into `docs/voice/canon.md`, applies it to `prompts/digest.md`,
+   and grades 2026-W39 against the full canon and ban list. Supersedes
+   #81, #74, #71, #67, #62, #55 per its own body. Awaiting your merge.
+
+**Landed since the last snapshot (PR #88), reconciling this tracker
+against what merged tonight:**
+
+- **ADR-32 duplicate, resolved.** `docs/decisions.md` now has Clerk at
+  ADR-34 and the Kimi K2 press decision keeps ADR-32; ADR-33 (dispatch
+  authority) is recorded. Struck from "Top three for you" below.
+- **ExO chain, done.** #61, #65, #77, and #87 are all merged
+  (04:50:01-03Z), not collapsed to #77 alone the way this file's prior
+  pass suggested, but functionally equivalent: nothing from that chain
+  is left open.
+- **#69 merged** (04:52:11Z): the digest-HTML XSS sanitize fix, item 1
+  of the "independent, ready to merge now" list below. Next in that
+  list's order: #66, then #60 (its "#55/#31" dependency note is now
+  effectively moot, since #55 is superseded up the writer chain rather
+  than merged, and #79 says close #31 unmerged), then #72, then #35
+  (close unmerged once #60 lands), then #80, then #84.
+- **W39 printed, sent, and published.** `kimi-k2.6` printed 2026-W39 at
+  04:31Z and it sent. The chair published it to the site as
+  `site/content/issues/2026-W39.md` (confirmed present on main). The
+  subscriber roll now carries the owner's three addresses.
+
+**Top three for you, this pass** (updates the list below, does not
+replace it): (1) the merge order across the still-open PRs, unchanged
+in shape, shorter now that #61/65/69/75/77/87 are done; (2) the
+incident-numbering collision (23-29, `docs/agents/incidents.md`, PR
+#83's finding, still unresolved); (3) the finance dormant-vs-activated
+question. The ADR-32 numbering call is done; it is off this list.
+
+No dispatches fired or proposed this run: an engineer run and a writer
+run (PR #89) are `workflow_dispatch` runs from tonight, so the org is in
+synchronous mode under charter §5's guardrail. See
+`docs/sprints/dispatch-queue.md`.
+
 ## Updated 2026-09-24 (ceremony-lite sync, third pass this session)
 
 Owner directive: ceremony-lite update (not the full Monday ceremony,

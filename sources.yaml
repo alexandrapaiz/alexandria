@@ -41,6 +41,17 @@ feeds:
   # ai.meta.com has no RSS (verified 2026-09-07); engineering.fb.com carries
   # Meta's systems/infra writing, which is the half we most want anyway
   - {name: meta-engineering, url: "https://engineering.fb.com/feed/", tier: c}
+  # ---- engineering practice: what people ran in production, and what broke.
+  # First of the five engineering blogs the corpus-expansion spike asks for
+  # (docs/ideas.md, accepted 2026-09-18); the others follow once this one has
+  # a week of triage decisions to judge it by. Cloudflare first because its
+  # writing is mechanism-first with real numbers, and because agent
+  # infrastructure (sandboxes, per-agent access, preview environments) is now
+  # a standing subject there rather than an occasional one. Verified 200 with
+  # 20 items and per-item summaries on 2026-09-23. It is a high-volume general
+  # engineering feed, so most of it is DNS, cache and security work that triage
+  # should discard; prompts/triage.md now knows what a practice report is.
+  - {name: cloudflare-engineering, url: "https://blog.cloudflare.com/rss/", tier: d}
   - {name: stanford-sail, url: "https://ai.stanford.edu/blog/feed.xml", tier: d}
   - {name: mit-news-ai, url: "https://news.mit.edu/rss/topic/artificial-intelligence2", tier: d}
   - {name: mit-csail, url: "https://www.csail.mit.edu/rss.xml", tier: d}
@@ -65,8 +76,17 @@ feeds:
   - {name: gh-a2a-protocol, url: "https://github.com/a2aproject/A2A/releases.atom", tier: d}
   - {name: gh-spiffe, url: "https://github.com/spiffe/spiffe/releases.atom", tier: d}
   - {name: hf-blog, url: "https://huggingface.co/blog/feed.xml", tier: d}
-  - {name: openai-blog, url: "https://openai.com/news/rss.xml", tier: d}
-  - {name: deepmind-blog, url: "https://deepmind.google/blog/rss.xml", tier: d}
+  # openai-blog and deepmind-blog were added here on 2026-09-19 and removed on
+  # 2026-09-21 (research meta-review): both carried URLs byte-identical to the
+  # `openai` and `deepmind` entries above, so every item was ingested twice under
+  # two different tier priors. Measured in the corpus on 2026-09-21: source
+  # `openai-blog` holds 1210 rows at tier d against 38 at tier c for `openai`,
+  # and `deepmind-blog` 100 at tier d against 2 at tier c, all of the tier-d rows
+  # landing in a single 2026-09-20 ingest. The lab feeds are kept at tier c,
+  # which is the tier the legend defines for open-lab owned channels; the
+  # ecosystem-awareness intent of the 2026-09-19 addition is unaffected, because
+  # the same URL is still ingested, once, with the stronger prior. Do not re-add
+  # a second entry for a URL already listed above.
   - {name: hn-frontpage, url: "https://hnrss.org/frontpage", tier: d}
   - {name: gh-vllm, url: "https://github.com/vllm-project/vllm/releases.atom", tier: d}
   - {name: gh-sglang, url: "https://github.com/sgl-project/sglang/releases.atom", tier: d}

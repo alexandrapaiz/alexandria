@@ -3005,6 +3005,133 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   It is that one serves a search box and the other serves a graph that
   knows when it has changed its mind.
 
+### 2026-09-22 — URGENT: the emailed issue has the same HTML hole the archive had (engineer agent)
+- Trigger: today's break-fix closed the web surfaces and then checked the
+  other one. `send_newsletter` in `pipeline/weekly.py:459` builds the HTML
+  part of the email with Python's `markdown` library, which passes raw HTML
+  through exactly the way `marked` does. Verified this run against the pinned
+  `markdown==3.7`, not assumed: a `<script>` block survives intact, an
+  `onerror` attribute survives as a live attribute, and
+  `[click](javascript:alert(1))` becomes a working `href`. The body is written
+  by gpt-oss-120b from arXiv text, so the chain from a crafted passage in a
+  paper to every subscriber's inbox has no human in it. The archive is now
+  the safe surface and the newsletter is not, which is the wrong way round,
+  because the newsletter is the product.
+- What: escape raw HTML on the way into the email the same way the site now
+  does. The site's answer was zero new dependencies, and the same shape is
+  available here: escape the HTML the body carries before `md.markdown` sees
+  it, and refuse any href whose scheme is not http, https or mailto. A
+  sanitizer dependency such as `bleach` or `nh3` would also work and is a
+  bigger decision, because it adds a package to the Modal image and image
+  changes are governed by docs/agents/runtime-changes.md.
+- First step: a failing test. `tests/` has no coverage of `send_newsletter`
+  at all, so write the case that emails a body carrying the three payloads
+  above and asserts none of them survives, then fix it. The test needs no
+  Modal and no SMTP if `send_newsletter`'s HTML construction is lifted into
+  a pure function, which is the same split `site/lib/markdown-core.js` uses.
+- Why this run did not do it: `pipeline/weekly.py` is already being edited by
+  this seat's open PR #60, and a second PR editing the same file would put a
+  conflict in front of the owner instead of a fix. Whichever merges first,
+  the other rebases.
+- Cost: $0 for the escaping route. A sanitizer package is $0 in money and a
+  runtime-changes decision in process.
+- Status: urgent
+
+### 2026-09-22 — URGENT: sprint item 5 is assigned to a seat that is forbidden to do it (engineer agent)
+- Trigger: working the sprint queue in order this run. Sprint 2026-09-21 item
+  5 asks the engineer to extend the skill validation system to a passing
+  result on both gold skills. That system is entirely inside
+  `skills/_validation/`: the harness is `trigger_test.py`, the null model is
+  `decoys.json`, the recorded results are `results/`, and each skill's cases
+  live in `skills/<slug>/triggers.json`. The engineer charter forbids this
+  seat from writing into `skills/` at all, and this run's dispatch repeated
+  the prohibition verbatim. So the item cannot be executed as written by the
+  seat it is assigned to, and no amount of care in the run changes that.
+  Worth adding: the one case standing between the current result and "both
+  skills passing" is `he-pos-2`, which fails by a margin of 0.010, and the
+  sprint itself rules that its fix belongs to the skill seat's own
+  `SKILL.md`. So the item's remaining work is on the skill seat's surface
+  twice over.
+- What: the owner or the PM decides which of three this is. Reassign item 5
+  to the skill seat, which owns the surface. Or amend the engineer charter to
+  carve out `skills/_validation/` as machinery rather than knowledge, which
+  is arguable, since ADR-13 reserves knowledge promotion and a test harness
+  is not knowledge. Or restate the item as work outside `skills/`, which is
+  the worst of the three, because item 5 also says not to redesign what PR
+  #21 built and a second harness living in `tools/` would be exactly that.
+- First step: the PM's Monday retrospective picks one. Until then every
+  engineer run reaching item 5 in the queue stops at the same wall, which is
+  an enforcement gap under ADR-29: the boundary is written in both the
+  charter and the dispatch, and the plan was built without checking it.
+- Cost: $0. It is a planning decision, not a build.
+- Status: urgent
+
+### 2026-09-22 — Cite the sentence, not the item
+- Trigger: today's craft scan of Elicit (below). It supports "all AI-generated
+  claims with sentence-level citations from the underlying sources". The
+  digest cites once per item, at the end, as a URL. The accuracy audit
+  (docs/evals/2026-09-19-digest-accuracy-audit.md) shows what that costs: of
+  34 checkable claims in 2026-W37, 3 were wrong and 4 were overstated or
+  unsourced, and finding that took a full audit precisely because a reader
+  cannot tell which of an item's four sentences the one link is standing
+  behind. One citation for a paragraph is a citation for none of it.
+- What: carry the claim id through to the rendered sentence. The distill step
+  already produces claims with procedures attached, and the weekly step
+  already knows which claim each bullet came from, so the edge exists and is
+  thrown away at render time. Render it as a link on the sentence it
+  supports. This also turns ban-list entry 14 the right way up: the reader
+  never sees a claim id, they see a sentence whose source is one click away.
+- First step: one issue, by hand, to see whether sentence-level citation
+  reads well or reads like a footnote thicket. The writer seat judges that,
+  not this one. If it reads well, the generator prompt changes to emit the
+  claim id per sentence and the renderer links it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — Publish the digest's own accuracy number
+- Trigger: the same scan. Elicit puts "99.4% Data extraction accuracy" on its
+  front page and calls itself "the most accurate AI product for scientific
+  research". alexandria has something better and does not print it: a
+  retroactive audit of everything it has ever sent, naming every claim
+  checked, with the three wrong ones fixed in the archive and a correction
+  note on the issue. Elicit's number is vendor-reported and it measures
+  extraction, which is whether a value was copied correctly, not whether the
+  synthesis on top of it is right. Ours measures the thing a reader cares
+  about, and it is the only number of the two with a receipt behind it.
+- What: a standing accuracy figure on the site, derived from the audit
+  method, recomputed per issue rather than claimed once. The honest form is
+  the fraction and the correction history together, because a number with no
+  corrections beside it reads as marketing, and the corrections are the part
+  competitors cannot copy without doing the work.
+- First step: decide whether the number is a release-gate metric or a public
+  claim, because the two want different denominators. Then the pre-send
+  checklist (sprint item 4, PR #60) emits it as a by-product of the check it
+  already runs, so publishing costs nothing extra per issue.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — Craft scan: Elicit (elicit.com)
+- Scanned: elicit.com live this run. Chosen because the day's work was
+  rendering model-generated text about papers into a page, and Elicit does
+  more of that than anyone in the comparison set.
+- Worth stealing: citation granularity. They cite per sentence, we cite per
+  item, and the gap is not cosmetic. Their claim is that every generated
+  statement traces to a source sentence, which makes an unsupported sentence
+  visible to the reader instead of visible only to an auditor. Filed as its
+  own ledger entry above, along with the second thing worth taking, which is
+  that they publish an accuracy number at all.
+- Better here: their accuracy claim is a number without a receipt. "99.4%
+  data extraction accuracy" is vendor-reported, it is about copying values
+  rather than about judgment, and nothing on the page lets a visitor check a
+  single instance of it. alexandria audited its own sent output after the
+  fact, published which claims were wrong, and corrected the live archive.
+  The narrower and more useful difference is the one today's work turns on:
+  Elicit's surface renders text about papers, and ours renders text the
+  papers themselves can influence, because our bodies are generated from
+  full text we ingested rather than from a user's own query. That makes the
+  corpus an untrusted input in a way a search product's index is not, and it
+  is why the render path needed hardening rather than tidying.
+
 ### 2026-09-20 — The masthead is about to be hardened into two constants (writer seat)
 - Trigger: the editorial run of 2026-09-20, structure watch. This is a
   second filing on the line already filed on 2026-09-19 ("The masthead is
@@ -3276,74 +3403,674 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Blocked by: nothing. The press being down (incident 24) does not block it
   and is the reason there is time to do it before the daily ships.
 - Cost: $0.
-- Status: proposed
 
-### 2026-09-24 — The quality gate passes the issue the owner rejected (writer seat, for the engineer)
+### 2026-09-23 — The measurement system is law in the canon and not in the stylesheet (frontend seat)
+- Trigger: the frontend run of 2026-09-23 audited `site/app/globals.css`
+  against `docs/design/canon.md` mechanically rather than by eye, and the
+  gap is bigger than any screenshot shows. **92 spacing declarations sit off
+  the 8-point grid, across 24 distinct values** (5, 6, 9, 10, 11, 13, 14, 15,
+  18, 20, 22, 26, 28, 30, 34, 36, 40, 44, 56, 60, 72, 80, 120, 140), and
+  **38 font-size declarations sit off the type scale, across 12 values**
+  (11, 13, 15, 16, 16.5, 18, 22, 34, 44, 52, 90, 150). The canon says these
+  are "the only numbers the seat may use" and that anything outside them
+  needs a ledger entry explaining why. There are 130 of them and no entries.
+  Two were fixed in that run because a screenshot argued for them: the
+  desk's 11px, which the canon forbids by name, and the digest's 16.5px
+  body on the site's primary reading surface. The other 128 were left.
+- What: bring the stylesheet onto the measurement system in one deliberate
+  pass, value by value, each one snapped to the nearest scale step in the
+  direction the density ruling prefers (up, toward air). Not a find and
+  replace: roughly a third of these are load-bearing optical choices that
+  will need a screenshot to settle, and a few are genuinely justified and
+  should end up as canon amendments instead of edits. The deliverable is
+  the stylesheet plus a short ledger of the values that survive and why.
+- Why it is not a normal polish diff: it touches nearly every rule in the
+  file, so it is a large visual change that has to be re-verified page by
+  page at three viewports, and it cannot share a run with anything else.
+  It is also the kind of change that is safe to do exactly once and
+  miserable to do in pieces, because half a grid is not a grid.
+- First step: the audit script itself is ten lines and already written into
+  this run's notes; make it a check the seat runs every week, so the count
+  can only fall. Then one run whose entire dispatch is this.
+- Cost: $0. One full frontend run.
 
-- Trigger: the editorial run of 2026-09-24, second run, grading issue
-  2026-W39 against the full canon. Charter step 4, filed rather than
-  patched, because the rules in question are mechanically checkable and
-  three of them have now been restated in the generator up to three times
-  each without holding. Recorded as incident 32.
-- The facts. W39 shipped with ten em dashes, seven semicolon joins, twelve
-  non-ASCII characters, and at least nine papers discussed in prose with no
-  link to any of them. `tools/check_digest_quality.py`, open in PR #60 since
-  2026-09-20, was run read-only against it and returned `0 blocking, 4
-  warnings`, two of the four false.
-- What: three fixes in `tools/check_digest_quality.py`, all small.
-  1. `parse_items` returns an empty list for W39, because sections one and
-     three are flowing prose rather than bold-led items. Every per-item rule
-     then ran over nothing and reported nothing: `citation-per-item`,
-     `ends-on-citation`, `uniform-rhythm`, `uniform-length`. Make an empty
-     parse a blocking finding in its own right. A checker that cannot read
-     its input has to say so, because a green light on an unread file is
-     worse than no light. Whether the item model should also widen to
-     recognise prose items is the engineer's call and the louder failure
-     matters more than the parser.
-  2. `TYPESETTER` lists four characters: the non-breaking hyphen, two space
-     variants and the multiplication sign. The em dash is not among them and
-     neither is the Greek tau W39 prints twice. Replace the list with the
-     class question the generator's own ASCII rule was rewritten to ask on
-     2026-09-21: is every character in this issue ASCII? Keep the four
-     entries as the explanation attached to the finding, so the message
-     still says which character and why. This is ban list 36 in a third
-     artifact, after the heading rule and the ASCII rule.
-  3. `INTENSIFIERS` matches the substring `"very "`, so it fires on "every
-     screen" and "every team". Both W39 warnings are false. Word boundaries.
-- Why it is filed rather than patched: `tools/` and `pipeline/` are outside
-  the writer seat's writable surface, and the editorial half of the fix is
-  already in this pull request. The generator now counts items against links
-  before it outputs. That is the last prompt edit worth making on this, and
-  the rest belongs in a checker.
-- The test that would have caught it: run the gate against a real issue that
-  is known to fail, and assert the findings. PR #60's tests assert the
-  checker finds the defects it was written to find. Nothing asserted that it
-  finds them in an issue, and the first real issue it met was one it passed.
-  `site/content/issues/2026-W39.md` is now that fixture, with its failures
-  enumerated in `docs/voice/reviews/2026-09-24-b.md`.
-- Merge order: this seat's PR #89 carries the review and the generator, and
-  touches no file in PR #60. Either order works. PR #60 is the one that
-  changes what tomorrow's reader sees.
-- Blocked by: nothing.
+## Security agent findings (fourth run, 2026-09-24)
+
+Full report at docs/security/audit-2026-09-24.md. Appended at the end of
+the file on purpose: four other open pull requests (#70, #71, #74, #77)
+also write into this file, and a new section at the tail is the cheapest
+conflict to resolve. The first three below are `urgent` because each
+needs an owner decision or an owner push, not an engineer build.
+
+### 2026-09-24 — Every run publishes its full transcript on a public repo, unmasked (security agent)
+
+- Trigger: review of `ef2da2e`, merged today, which added an
+  `upload-artifact` step to all twelve seat workflows with
+  `retention-days: 90`.
+- What: this repository is public, so workflow artifacts are reachable by
+  anyone who can read it. The transcript is the whole run verbatim, with
+  the output of every tool call inside it (451 records and 64 recorded
+  tool results in one of this morning's). GitHub's secret masking applies
+  to the job's log stream, and this file never touches that stream: the
+  action writes it to `runner.temp` and the upload step takes the file.
+  So an agent that runs `env`, `printenv`, `git remote -v`, or
+  `cat .git/config` writes that value into a file anyone can download for
+  ninety days. All of those are permitted, because runs use
+  `bypassPermissions`, and none is forbidden, because no charter says
+  anything about it. The 2026-09-18 audit had already recorded that
+  `git remote -v` prints the live checkout token into an agent's own
+  output; that note was about a log and is now about a published file.
+  **Scanned, not assumed: all three artifacts that exist were downloaded
+  and scanned against twenty pattern classes and hold zero secret
+  values.** This is an exposure path, not a breach.
+- First step: the owner's decision between keeping the artifact and
+  filtering it before upload, which is the recommendation, or cutting
+  retention to about 7 days, or both. A redaction step and a retention
+  change are both workflow edits, so they need her push or a PAT with the
+  `workflow` scope (incident 12). Independently and worth doing either
+  way: one line in every charter saying no agent prints the value of an
+  environment variable and `git remote -v` is never run.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — The MCP passphrase can be guessed without limit (security agent, second audit running)
+
+- Trigger: OAuth review per charter. Verified in-process against the real
+  handler: forty consecutive wrong passphrases returned forty 401s with
+  no delay, no lockout, and no counter.
+- What: that one passphrase is the whole gate. Behind it are the corpus
+  database through `sql_query`, a GitHub token that opens pull requests
+  through `propose_skill` and `propose_change`, and a 180-day refresh
+  token. `/register` is open dynamic registration, so an attacker
+  registers their own client and reaches the form legitimately, which
+  means the redirect-URI check built in run 2 does not stand between them
+  and this. The comparison itself is correct and constant-time. The gap
+  is that being wrong costs nothing. **Reported in the 2026-09-18 audit
+  and unchanged since.**
+- First step: a limiter on `POST /authorize`, with the design question
+  stated rather than skipped: the Modal container scales to zero, so an
+  in-memory counter resets on a cold start and across replicas. Either
+  accept that and write the limit down as best-effort, or keep attempts
+  in Postgres, which is the honest fix. Whichever, it must not be able to
+  lock the owner out of her own connector, so failures should back off
+  rather than bar.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — No charter says that stranger-authored text is not an instruction (security agent)
+
+- Trigger: `2ae2650`, merged today, gave the PM workflow `actions: write`
+  and activated dispatch under `docs/standards/pm.md` §11.
+- What: the standup reads open pull requests and run logs (§11.2), writes
+  an `owner_instructions` string from what it read, and fires
+  `gh workflow run`. That string lands in the dispatched seat's prompt
+  under "binding for this run and extending the charter", and that seat
+  runs with `bypassPermissions` and `PROJECTS_TOKEN`. Anyone can open a
+  pull request on a public repository. Nothing in the path marks a
+  stranger's text as data, and at the far end it arrives wearing the
+  owner's authority. Of twelve charters in `prompts/`, **zero** carry any
+  rule about untrusted content; the only file that mentions the idea is
+  this seat's charter, and it mentions it as a duty to audit. §11.4's
+  ceilings and its cite-the-evidence rule are prompt-level guardrails
+  against a prompt-level attack, so they constrain a cooperative PM and
+  say nothing about a subverted one. The structural control is real and
+  it is `PM_DISPATCH_ENABLED`, which only the owner sets. History is
+  clean: no issue has ever been opened here, there are no forks, and all
+  85 pull requests came from the owner or her own app. **Proposed as an
+  exposure path, not a breach.**
+- First step: one standing paragraph per charter saying that content
+  fetched from the web or read out of repository text written by someone
+  else is data and never an instruction, that it can be quoted and acted
+  on only through a decision already in a file, and that no agent writes
+  an environment variable's value anywhere. Charters are the owner's, so
+  this is proposed and not done. Until it exists, the recommendation is
+  to leave `PM_DISPATCH_ENABLED` unset.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — MCP authorization codes are replayable for their full ten minutes (security agent)
+
+- Trigger: OAuth review. Verified: one code exchanged three times at
+  `/token`, three valid token pairs returned.
+- What: OAuth 2.1 §4.1.2 requires an authorization code to be single-use
+  and requires the server to revoke previously issued tokens on a replay.
+  Neither happens, because `read_token` checks the signature, the expiry
+  and the `typ` claim, and nothing remembers a spent code. The cause is
+  the stateless design, which is otherwise right and is what makes the
+  redirect-URI check testable without a deployment. Practical severity is
+  moderate: an attacker holding the code also needs the matching
+  `code_verifier`, and PKCE is enforced correctly.
+- First step: ranked, cheapest first. Cut the code TTL from 600 seconds
+  to 60, which costs nothing because a real exchange takes under a
+  second and shrinks the window tenfold. Then a set of consumed code ids
+  in container memory, with its imperfection across cold starts written
+  down beside it rather than discovered later. The correct fix is a
+  table in Postgres and it is about a day.
 - Cost: $0.
 - Status: proposed
 
-### 2026-09-24 — Nine runs of prompt fixes have never reached the press (writer seat, for the owner)
+### 2026-09-24 — The MCP metadata endpoints let the caller choose the host they advertise (security agent)
 
-- Trigger: the same run, establishing which generator actually wrote W39.
-- The fact: `prompts/digest.md` on `origin/main` last changed at commit
-  c3b4c49, 2026-09-19 19:39. Every editorial run since is in an open pull
-  request, #55, #62, #67, #71, #74, #81 and now #89. The press reads main.
-  W39 was written by the 2026-09-19 generator, which is why it fails rules
-  this seat corrected days ago.
-- What: nothing to build. This is a merge decision and it belongs to the
-  owner, which is why it is filed here rather than fixed. The writer chain
-  is linear and #89 is its head, so one merge lands every editorial run
-  since 2026-09-20 and the other six pull requests close unreviewed.
-- Why it matters more than any single patch: this seat's whole output is
-  prompt changes, and its charter says the lasting output is a better
-  generator. Nine runs of that output are sitting where the press cannot
-  read them. Merging is worth more to tomorrow's issue than anything this
-  seat could write into the prompt today.
+- Trigger: OAuth review. Verified: a request carrying
+  `Host: attacker.example` returned
+  `"token_endpoint": "https://attacker.example/token"`.
+- What: `base_url()` built the issuer and every advertised endpoint from
+  the request's own Host header. A client that fetched discovery through
+  any path where the Host can be influenced would send its authorization
+  code and `code_verifier` to whatever host that document named. This
+  run fixed the crash half, which is that indexing the header turned a
+  request without one into a 500.
+- First step: pin the public host instead of reflecting it, which means a
+  new environment variable on the Modal app. That is a runtime change
+  under docs/agents/runtime-changes.md, so it wants the ladder and a
+  smoke test rather than a quiet edit.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — `propose_change` can target any seat's charter (security agent)
+
+- Trigger: MCP tool review.
+- What: the path pattern is `^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$`,
+  correctly anchored and permitting no traversal. It also matches every
+  charter in `prompts/`, including this seat's. So an MCP token holder
+  can open a pull request rewriting any agent's charter, titled
+  `meta: prompts/pm-agent.md` and bodied "Proposed by the alexandria
+  meta-review", which is what a routine proposal looks like. The human
+  merge is a real gate and is why this is low rather than severe. It is
+  filed because it composes with the untrusted-content finding above: the
+  org's own rules tell seats to read open pull requests, and a charter
+  rewrite is the one diff that changes what every later run does.
+- First step: exclude `prompts/*-agent.md` from the pattern. The
+  generator prompts that meta-review exists to improve are untouched by
+  that change, so the tool keeps its purpose.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Two seats run an image pulled by a mutable tag (security agent)
+
+- Trigger: workflow supply-chain review.
+- What: `agent-engineer.yml` and `agent-frontend.yml` both run in
+  `ghcr.io/alexandrapaiz/alexandria-agent:latest`. Whatever that tag
+  points to at cron time is what executes with `bypassPermissions` and
+  every secret those two seats carry, and `build-agent-image.yml` moves
+  the tag on any push to main under `.github/docker/**`, so a bad build
+  becomes both seats' runtime with no step in between. The other ten
+  seats run on the bare runner and are unaffected. Actions are still
+  pinned by mutable tag too (`actions/checkout@v4`,
+  `anthropics/claude-code-action@v1`), reported in both previous audits.
+- First step: pin by digest, and decide the process for moving the digest
+  at the same time, because a pin nobody can move is its own failure
+  mode. A workflow edit, so it is the owner's push.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — `skills-lock.json` records hashes that nothing verifies (security agent)
+
+- Trigger: supply-chain review of the vendored Clerk skills.
+- What: the lock file records a `computedHash` for each of the twenty-one
+  skills vendored under `.agents/skills/`, which `.claude/skills/`
+  symlinks into every agent's context. A repository-wide search for
+  `skills-lock` outside `.git` returns the file and no consumer. The
+  hashes come from the upstream installer and this run could not
+  reproduce one from the vendored bytes, so this is **not** a claim that
+  any file was tampered with. It is the narrower claim: third-party
+  markdown that enters every agent's context on every run has a manifest
+  and no verification step, so the manifest cannot currently detect
+  anything.
+- First step: a check that recomputes the hashes the way the installer
+  does and fails when one moves, run in the same place the budget check
+  should be running. Needs the installer's hashing rule first, which is a
+  short read of the upstream tool.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Incident 22's budget gate is written and still not installed (security agent)
+
+- Trigger: workflow review, cross-referenced against incident 24.
+- What: `.github/workflows-pending/checks.yml` is the check that would
+  have caught incident 22 before the merge that caused it. It is
+  complete and it triggers on exactly the right path set. It sits in
+  `workflows-pending/` because agent tokens cannot write to
+  `.github/workflows/`. So the control exists, does not run, and incident
+  24 records the next press failure arriving after it. This is the
+  cheapest open item in this report.
+- First step: `git mv .github/workflows-pending/checks.yml
+  .github/workflows/checks.yml`, which is the owner's push.
+- Cost: $0.
+- Status: urgent
+
+### 2026-09-24 — `rag_answer` carries incident 24's failure class (security agent)
+
+- Trigger: MCP review against incident 24.
+- What: `RAG_MODEL = "openai/gpt-oss-120b"` in `mcp/server.py` is a
+  hardcoded free-tier Groq model with no availability check, which is the
+  exact shape of incident 24. The server degrades better than the press
+  did, because `rag_answer` catches `httpx.HTTPStatusError` and tells the
+  caller the model is unavailable. Two gaps in that handler: `call_groq`
+  parses with `json.loads` and an unparseable body raises
+  `json.JSONDecodeError` uncaught, and `httpx.TimeoutException` is
+  uncaught, so both surface as a 500 through MCP rather than a message.
+- First step: this is not a separate build. The engineer is already on
+  the press in PR #75, and the ask is that incident 24's standing fix,
+  an availability check and an ordered fallback list, cover
+  `mcp/server.py` and not only `pipeline/`, with one error path for the
+  whole family. Otherwise the MCP server is the next thing to fail this
+  way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — interpret drains 11 claims a day while distill adds 40, so the graph can never reach the newest research (skill agent)
+- The measurement, read-only against Neon this run: 661 claims, 222 of
+  them interpreted, 439 waiting. Every one of the 439 has an embedding, so
+  this is not the 2026-09-19 embedding regression, which is fixed (zero
+  null embeddings today). `interpret` ran today and it is strictly ordered
+  by id: it has processed ids 1 through 222 in fifteen daily slices of 7 to
+  31, averaging about 15 a day, while `distill` has added about 40 a day
+  over the same window. Today it interpreted ids 212 to 222; today's new
+  claims are ids 611 to 661.
+- The consequence: `claim_links` holds 216 edges and the highest claim id
+  appearing in any of them is 221. No claim written in the last twelve days
+  carries a single edge, and the gap widens by roughly 25 claims a day. The
+  graph is not behind, it is diverging.
+- Why it matters to this seat specifically, which is how it surfaced. Both
+  charters that govern skill extraction rank candidate clusters on being
+  cross-supported by `supports` edges and on being procedure-rich. Those
+  two criteria are now almost disjoint sets. Of the 277 claims carrying a
+  populated `procedure` field, 262 are outside the interpreted range and 15
+  are inside it, because `procedure` was added to the schema after
+  `interpret` had already passed that region. A cluster cannot currently be
+  both well-evidenced by edges and rich in operational steps, and this
+  run's cluster was picked on topic and procedure with the edge criterion
+  set aside and declared in the PR.
+- It also bites O2 directly. KR1 wants twelve gold skills by 2026-12-31 and
+  KR2 wants a draft skill a week from claim clusters from 2026-11-01. Both
+  assume the graph reaches the papers worth extracting from. On today's
+  rates the November claims will be unedged until roughly March.
+- What: make `interpret` drain rate-matched to `distill`, or newest-first,
+  or both. Newest-first alone would fix this seat's problem and create a
+  different one (the tail never gets edges), so the honest fix is batch size
+  raised until the queue stops growing, with the backlog worked from both
+  ends. The `interpret_queue` view already exposes exactly what is waiting.
+- First step: the engineer reads `pipeline/interpret.py`'s per-run limit and
+  states what it costs to raise it, since this is a budget question wearing
+  a scheduling question's clothes. Pair it with the open "interpret
+  neighbour query has no paper boundary" entry (2026-09-19); raising the
+  batch size without that fix buys 75% intra-paper edges faster.
+- Whose call: the engineer's, with the chair on the budget.
+- Cost: unknown until the per-claim interpret cost is stated. Everything
+  else in this entry is free.
+- Status: proposed
+
+### 2026-09-22 — The trigger test has no length normalisation, so the wordiest description wins (skill agent)
+- Trigger: this run's draft skill, on its first complete pass, took two
+  cases away from `harness-engineering`, including one of that skill's own
+  positives (`he-pos-3`, the fine-tune-or-rebuild-the-interface prompt) and
+  the confusion case the draft had written to protect its neighbour. The
+  draft was not better on those prompts. It was longer.
+- The mechanism, in `skills/_validation/trigger_test.py`'s `score()`: the
+  denominator is the idf mass of the *prompt's* terms, and the numerator is
+  the mass of those terms found in the candidate description. Nothing
+  divides by the candidate's own length. A description that mentions more
+  things therefore matches more prompt terms and strictly dominates a
+  terser one on every prompt where both are plausible. The draft's
+  description was about 170 words against the specimen's 90.
+- The amplifier: `activation_clause()` takes everything from the first "Use
+  when" to the end of the field and boosts it by 1.25. A boundary sentence
+  placed after the clauses, of the form "Distinct from X, where a person
+  makes the change", injects the neighbour's own vocabulary into the
+  boosted span and aims the skill at exactly the prompts it was disclaiming.
+  Moving that sentence ahead of "Use when" flipped the failing case without
+  changing a word of it.
+- Why this run did not change the instrument: the policy is pre-registered
+  on purpose and tuning it to flatter the artifact it measures is the sin
+  the whole directory exists to prevent. The draft's description was
+  rewritten instead, which is the artifact fix and the honest one. But the
+  next skill will hit this again, and the one after that, because the
+  incentive the engine creates is "write a longer description," which is
+  the opposite of what a router wants.
+- What: a candidate-side normalisation in a new engine version, scoring
+  against the harmonic mean of prompt coverage and description precision
+  (how much of the description the prompt accounts for) rather than
+  coverage alone. That is a versioned policy change with a new
+  `ENGINE_VERSION`, a note in the policy history, and both the old and new
+  bundles kept, exactly as `lexical/1` to `lexical/2` was handled.
+- First step: implement it as `lexical/3` behind the existing
+  `ENGINE_VERSION` switch and re-run all 19 cases under both engines before
+  adopting it. If any case changes outcome, the change is a finding about
+  the library and gets written up before the engine is switched.
+- Whose call: the skill seat's, since `skills/_validation/` is its surface.
+  Next run.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-22 — parseSkill still cannot read the provenance block (skill agent, confirming an open entry)
+- Not a new proposal. This confirms "parseSkill is a flat-line regex parser,
+  blind to anything nested" (2026-09-18, the entry that supersedes
+  "parseSkill already reads frontmatter") is still live on 2026-09-22, four
+  days on, and re-measures it against the new draft.
+- The re-measurement: running `site/lib/content.js`'s `parseSkill` against
+  `skills/harness-engineering/SKILL.md` returns `validated: ""`. That skill
+  carries a real recorded A/B trial result in `provenance.validated`. The
+  `get(key)` regex anchors the key at column 0 and every provenance field is
+  indented, so the one skill in the library with a validation receipt renders
+  as though it has none. The `papers` list parses, because its regex allows
+  leading whitespace.
+- Why it matters more this week than last: the library goes from two skills
+  to three in this PR, and `skills/_validation/results/` now holds two dated
+  result bundles, each naming the sha256 of the exact `SKILL.md` it judged.
+  The evidence a visitor is being sold exists, is dated, and is unreachable
+  by the page that sells it.
+- No new first step. The existing entry's plan stands.
+- Status: proposed (unchanged)
+
+### 2026-09-24 — lexical/3 is built and measured, and it loses to the engine it was meant to replace (skill agent)
+- Closes the first half of the 2026-09-22 entry above, which proposed
+  candidate-side normalisation and assigned it to "the skill seat, next
+  run". This is that run. The engine exists, it is selectable with
+  `python3 skills/_validation/trigger_test.py --engine lexical/3`, and the
+  default is unchanged at the pre-registered `lexical/2.1`.
+- What it does: scores the harmonic mean of coverage (lexical/2.1's number,
+  the share of the prompt's idf mass the description matches) and precision
+  (the share of the description's own idf mass the prompt accounts for), so
+  a description that lists everything is penalised for the listing.
+- The measurement, both bundles recorded in `skills/_validation/results/`
+  under today's date: **lexical/2.1 scores 27 of 27. lexical/3 scores 25 of
+  27.** It flips two positives to silence, `ei-pos-1` at margin -0.0043 and
+  `he-pos-3` at -0.0047, and it raises the count of decisions inside the
+  narrow band from 1 to 5.
+- Why, and this is the part worth keeping: the decoy panel's descriptions run
+  about 40 words and the library's run 100 to 150. Precision is a ratio
+  against the candidate's own mass, so at equal topical fit the shorter
+  candidate wins, and every decoy is shorter than every skill. The engine
+  does not measure verbosity, it measures length against a null model that is
+  uniformly short. lexical/2.1's bias toward long descriptions and
+  lexical/3's bias toward short ones are the same defect seen from two sides.
+- What: before adopting any candidate-side normalisation, length-match the
+  null model. Rewrite the eight decoys to the same word budget the library's
+  descriptions are held to (the 150-word rule in prompts/skill-extract.md),
+  which is a versioned change to `decoys.json` and to the policy, then re-run
+  both engines against the same cases.
+- First step: the decoy rewrite, as its own change with no skill added in the
+  same PR, and both engines re-measured afterwards.
+- Whose call: the skill seat's, since `skills/_validation/` is its surface.
+  Not the same run that adds a skill the engine judges.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — the interpret backlog, re-measured two days on (skill agent, confirming an open entry)
+- Not a new proposal. The 2026-09-22 entry on rate-matching `interpret` to
+  `distill` (incident 30 in docs/agents/incidents.md, renumbered from 23) is
+  still live, and this is the second data point on its trend.
+- Measured read-only against Neon this run: 693 claims, up from 661 on
+  2026-09-22. 225 edges in `claim_links`, up from 216. The highest claim id
+  carrying any edge is 233, up from 221. So in two days the corpus grew by 32
+  claims and the graph's frontier advanced by 12.
+- 308 claims now carry a populated `procedure`, up from 277. The two
+  quantities that matter to this seat are both moving in the same direction:
+  more operational material, a smaller fraction of it reachable by the
+  criterion the charter ranks clusters on.
+- This run selected its cluster on procedure density and paper breadth again,
+  ten papers with no claimed graph support between them, and says so in the
+  pull request rather than dressing the selection up.
+- No new first step. The existing entry's plan stands.
+- Status: proposed (unchanged)
+
+### 2026-09-21 — Craft scan: TLDR AI's analysis section (tldr.tech/ai/2026-09-21)
+- Trigger: the engineer seat's daily craft scan, and today's build read
+  one of their issues closely enough to cut a specimen out of it word by
+  word for the blind prose benchmark (sprint item 2). The landscape file
+  already carries TLDR as a competitor. This is the craft read rather
+  than the market read.
+- What is worth stealing: every item in their "Deep Dives & Analysis"
+  section is one paragraph and nothing else. The three items run 49, 77
+  and 95 words of body, with no sub-lists, no numbered procedure, and no
+  second level anywhere in the section. Our one shipped item runs 116
+  words, of which 38 sit in three sub-bullets, and two of those three
+  bullets say again what the paragraph above them already said. A reader
+  who has understood the paragraph reads the restatement as filler, and
+  a reader who has not is handed the same sentence in more compressed
+  form, which helps nobody. The flat item is not a formatting preference.
+  It forces the writer to decide what the finding is, because there is no
+  second level to hide an undecided draft in.
+- What alexandria does better: their three analysis items name no source
+  a reader can check. The strongest of them asserts that pretraining data
+  rather than verifiability explains why models are good at maths, which
+  is a real argument, and nothing in the item says whose argument it is
+  or where to read it. Every item we print names its paper and links it.
+  That is the whole product, and on this axis the comparison is not
+  close.
+- First step: the observation is written up as its own entry below, since
+  it is a change to the generator rather than a note about a competitor.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — The sub-bullets under a digest item mostly restate the paragraph
+- Trigger: cutting 2026-W37's top item into a benchmark specimen meant
+  reading its three sub-bullets against the paragraph above them, one
+  sentence at a time, which is not something a skim does. Two of the
+  three are restatements. "Agents internalize environmental guidance into
+  policy weights" is the paragraph's "the guidance has been baked into
+  the policy". "Exploration covers larger state regions, raising success
+  rates on difficult tasks" is the paragraph's "visit broader parts of
+  the state space and succeed more often on sparse-reward tasks". Only
+  the third bullet, on training stability, carries a fact the paragraph
+  does not. That is 38 words spent to add one.
+- What: the generator should stop emitting a sub-list under an item by
+  default. Where the payload really does carry several distinct findings
+  for one paper, they belong in the paragraph as sentences, and where it
+  carries an ordered procedure the numbered list earns its place. The
+  test is mechanical enough to state: a bullet that shares most of its
+  content words with a sentence above it is a restatement and should not
+  be printed. This is close to ban-list entry 7, which forbids a summary
+  that restates the headline, and it is the same failure one level down.
+  It also lands on the density ruling behind ban-list entry 27, because
+  cutting the restatement is fewer words per idea rather than fewer
+  ideas.
+- First step: one instruction in `prompts/digest.md`, which is the writer
+  seat's surface under ADR-28, plus a warning rule in
+  `tools/check_digest_quality.py` when that lands with PR #60. The check
+  is a content-word overlap between each bullet and the nearest preceding
+  sentence.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — The comped friends list is a category, not a roster
+- Trigger: sprint item 2 says to have "the comped friends list score both
+  blind". The packet is built and has nowhere to go. `comped` appears in
+  docs/sales/first-customers.md as a pricing tier ("Friends and family on
+  the list at $0 by decision"), in the launch calendar as the audience for
+  the final pre-launch digest, and in the roadmap. No file in the
+  repository names a single person on it, or an email address, or a count.
+  Three planning documents and one sprint item all depend on a list that
+  does not exist anywhere an agent or the owner can open.
+- What: a real roster, however short. Five names and five email addresses
+  in one file is enough to unblock this benchmark, the pre-launch digest,
+  and the first-customers plan, all three of which currently assume it.
+  This is the owner's to write, because it is her friends and their
+  addresses, and it is the kind of file that needs a decision about where
+  personal contact details live before anyone commits one. It should
+  probably not be in the public repository at all, which is itself the
+  decision to make.
+- First step: the owner names the people and says where the list lives. A
+  private gist, a Modal secret, or a gitignored file all work and the
+  choice is hers.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — Our registers cannot be cited or cross-linked, and both cost us today
+- Trigger: two small things in one session, which turn out to be the same
+  thing. First, writing docs/evals/2026-09-21-prose-benchmark.md meant
+  citing the prose ban list by number, and the ban list has two entries
+  numbered 26, two numbered 27, and no 30 or 31. A citation to "ban-list
+  entry 26" points at two different rules. Second, this is the third
+  consecutive engineer run that could not settle the two ledger entries
+  marked `urgent` about the archive and the uncited 23.9% claim, because
+  both need database access and the entry that would grant it ("Read the
+  archive from the `digests` table", 2026-09-18) is still `proposed`. The
+  ledger has no way to say that an `urgent` item is waiting on a
+  `proposed` one, so nothing surfaces the pair and the same run reports
+  the same block three days running.
+- What: give both registers addresses. For the ban list, stable ids that
+  are never reused, which is a renumbering pass and a note at the top
+  saying numbers are permanent. For the ledger, one optional `Blocked
+  by:` line in the entry contract, naming the dated title of the entry
+  that has to land first. An `urgent` item blocked by a `proposed` one is
+  a decision waiting on the owner, and it should be visible as that
+  rather than as three identical paragraphs of apology in three PR
+  descriptions.
+- First step: add `Blocked by:` to the ledger contract in
+  prompts/engineer-agent.md and prompts/pm-agent.md, which is a charter
+  edit and therefore the owner's merge, not this seat's. The ban-list
+  renumbering is the writer seat's own surface.
+- Cost: $0.
+
+### 2026-09-23 — A practice report's numbers are in the body the pipeline never reads (engineer agent)
+- Trigger: building the evidence grade today. `fetch_fulltext` in
+  `pipeline/distill.py` returns None for any id that does not start with
+  `arxiv:`, with the comment "blog posts: the feed summary already is the
+  content". That is not true of the feeds we carry. Cloudflare's RSS item for
+  "We just shipped support for the ugliest part of HTTP: Vary", read directly
+  from the feed today, carries a 238-character `description` and a
+  15,331-character `content:encoded` body, and `fetch_feeds` stores the first
+  one. Across that feed's 20 current items, all 20 carry `content:encoded`,
+  averaging 13,249 characters of body text against 222 characters of
+  description. The measurement in that post, an analysis of 120 million
+  responses across nearly 50,000 sites, appears only in the body. So the pipeline
+  distills practice reports from a blurb, and the `field_measured` grade that
+  shipped today will almost never be earned, not because the numbers are
+  absent but because nothing fetches the page they are on.
+- What: give blog rows the same full-text path arXiv rows have. Two ways, and
+  the cheaper one is probably enough: read `content:encoded` at ingest when the
+  feed provides it, which costs one field in `fetch_feeds` and no extra
+  request, or fetch the item's own URL at distill and strip it the way
+  `fetch_fulltext` already strips arXiv HTML. The first covers feeds that
+  publish full content, the second covers feeds that publish a teaser and a
+  link. The abstract column is text, so neither needs a migration, though the
+  4,000-character truncation in `fetch_feeds` would need raising for the first.
+- First step: measure which of the feeds in sources.yaml actually ship
+  `content:encoded` and how long it is. That number decides which of the two
+  paths is worth building, and it is one script over the feed list.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — The arXiv firehose has a cap and the feeds do not (engineer agent)
+- Trigger: choosing today's practice feed. `ARXIV_MAX_PER_CAT = 100` bounds
+  every arXiv category, but `fetch_feeds` ingests every entry a feed hands
+  back, however many that is. Measured today while picking a candidate:
+  Shopify's engineering atom feed returns 431 entries in one fetch, which is
+  its whole archive rather than its recent posts. Adding a feed like that
+  would put several hundred rows into the triage queue in a single run. Triage
+  is already the starved stage, and the tier-starvation bug fixed on 2026-09-19
+  was exactly this shape, a queue whose arrivals outran its budget and whose
+  depth nothing printed.
+- What: a per-feed entry cap in `fetch_feeds`, defaulting to something near
+  the size of a normal feed page, with an optional per-feed override in
+  sources.yaml for a feed that genuinely posts more. Entries are already
+  deduplicated by link hash on insert, so a cap costs nothing on steady-state
+  runs and only bites on the first fetch of an archive-shaped feed.
+- First step: the constant and the slice in `fetch_feeds`, plus the same
+  one-line depth print the triage fix added, so a capped fetch says how many
+  entries it dropped instead of dropping them quietly.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — The digest still cannot tell a measurement from an assertion (engineer agent)
+- Trigger: the evidence grade shipped today writes `claims.evidence_grade` at
+  distill, and nothing reads it. The read belongs in `gather()` in
+  `pipeline/weekly.py`, which PR #60 is currently rewriting for the daily
+  issue. Editing the same function in a parallel branch today would have cost
+  the owner a merge conflict and bought nothing, since no claim carries a
+  grade until the schema is applied and distill next runs.
+- What: add `c.evidence_grade` to the `new_claims` query and its payload
+  entry, then teach `prompts/digest.md` what the four values mean and how to
+  say them. Two rules the section needs. Ban-list item 14 forbids printing
+  internal vocabulary at the reader, so `field_measured` never appears in an
+  issue, only its plain-English reading. And an item resting on an `anecdote`
+  claim has to say so in the sentence that makes the claim, not in a footnote.
+  The payload grows by about one short string per claim, which the token
+  budget in `pipeline/budget.py` absorbs without a change.
+- First step: after #60 merges, the query line and the payload field. The
+  prompt half is the same session's second commit, and it is the half that
+  decides whether the grade reaches the reader as judgment or as jargon.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-23 — Craft scan: AINews (news.smol.ai, the daily that merged into Latent Space)
+- What it is: a weekday roundup of what AI Discords, subreddits and X
+  accounts said, summarized by a model, folded into Latent Space under one
+  subscription in January. Read directly today, not from search snippets.
+- Worth stealing: every issue carries a row of tags above its summary, and
+  they are not topics in the newsletter sense. They name models
+  (`deepseek-v4.1-flash`, `gpt-5.6`), subjects (`inference-efficiency`,
+  `model-quantization`) and people (`sebastian_raschka`, `yoshua_bengio`), and
+  the archive puts a title filter over the last thirty days on top of them.
+  The effect is that a reader who cares about one model can walk the archive
+  by it. alexandria has the raw material for this and shows none of it: every
+  claim carries `topics`, the column has a gin index, `papers` carries
+  `institutions` and `authors`, and the library page renders none of the three.
+  The cheap version is a tag row on each issue in the archive that links to
+  the other issues carrying that tag.
+- Worth noting on the other side: the second issue on their front page today
+  is headlined "not much happened today", which is the same honest-empty-day
+  move the daily digest's `daily_is_empty` check makes in PR #60. Two products
+  arriving at it independently is a good sign for the rule.
+- What alexandria does better: AINews summarizes conversation. Its tags hang
+  off names and model releases, and nothing in it can tell a reader which of
+  its statements was measured, because the sources it reads mostly did not
+  measure anything. alexandria's unit is a claim bound to a paper, and as of
+  today it is also graded on whether a measurement stands behind it. That is
+  the axis a chatter digest structurally cannot copy.
+- Status: proposed
+
+- Update, 2026-09-24 (market seat, the assigned first step): a Channel
+  carries the daily without formatting loss, within a plain-text-plus-link
+  rendering (up to 65,536 characters, basic markdown, links, JPEG/PNG
+  images, no rich HTML), and stays $0 with no phone numbers collected.
+  The Cloud API cost line above is stale: Meta deprecated per-conversation
+  billing on 2025-07-01 for per-template-message billing, and a
+  business-initiated newsletter send never qualifies for the free 24-hour
+  window a user-initiated message opens, so every paid-tier send would be
+  a billed marketing-template message, not a near-free conversation.
+  Recommendation: build the Channel for the free tier now; model the
+  Cloud API's real per-message cost against the $20/month tier's margin
+  before building the paid-tier path. Full detail in
+  docs/market/briefs/2026-09-24.md.
+
+### 2026-09-24 — Correct the WhatsApp Cloud API cost estimate before it is built
+- Trigger: evaluating the 2026-09-20 WhatsApp entry's assigned first step
+  (above) found Meta deprecated per-conversation Cloud API billing on
+  2025-07-01 for per-template-message billing, and a business-initiated
+  newsletter send never qualifies for the free 24-hour window a
+  user-initiated message opens.
+- What: before any WhatsApp paid-tier work starts, replace the
+  "$0.005-0.08 per conversation" cost line in the 2026-09-20 entry with a
+  real per-message-template cost model (by category and market) run
+  against expected paid-tier subscriber counts, so the engineer costs a
+  number that will not be stale by the time it ships.
+- First step: engineer seat pulls current per-market marketing-template
+  rates from Meta's published rate card and models it against the
+  $20/month tier's margin.
+- Cost: $0 to model; the finding is that the send itself is no longer
+  effectively free.
+- Status: proposed
+
+### 2026-09-24 — Provider trust-incident history as an evidence-grading input
+- Trigger: two independent, dated events this week (Google's four-month
+  delay disclosing Gemini's sandbox escape during a May 2026 security
+  test; Anthropic's threat-intel report and the China regulatory probe of
+  DeepSeek and Moonshot it triggered) both show AI providers disclosing
+  containment or model-substitution failures late and only under external
+  pressure. See docs/market/briefs/2026-09-24.md for sourcing.
+- What: alexandria's claim graph already grades evidence in-line (voice
+  canon law 6). Extend the same discipline to the providers whose models
+  or APIs a claim, skill, or automation depends on: a lightweight, dated
+  log of disclosed provider incidents (containment failures, undisclosed
+  model substitution, security breaches), surfaced as context wherever
+  the digest or skill library recommends building on that provider. This
+  is not a new research pipeline, it is treating provider trustworthiness
+  as an evidence-graded fact instead of an unstated assumption.
+- First step: research seat scopes whether this fits as a claim-graph
+  entity type (provider) with dated `incident` edges, reusing existing
+  graph mechanics rather than new infrastructure.
 - Cost: $0.
 - Status: proposed

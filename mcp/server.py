@@ -39,6 +39,11 @@ image = (
         "fastapi>=0.115",
         "pyjwt>=2.9",
         "psycopg[binary]==3.2.4",
+        # The OAuth endpoints are Form-based, and FastAPI's Form(...) raises at
+        # request time without this. It reaches the image today only as a
+        # transitive dependency of `mcp` (pulled by fastmcp), so a resolver
+        # change upstream would break /token and /authorize with no warning.
+        "python-multipart>=0.0.18",
         "httpx==0.28.1",
         "sentence-transformers",
     )
@@ -485,7 +490,8 @@ def serve():
             auth = request.headers.get("authorization", "")
             token_ok = auth.startswith("Bearer ") and read_access_token(auth[7:])
             if not token_ok:
-                meta = f"https://{request.headers['host']}/.well-known/oauth-protected-resource"
+                host = request.headers.get("host", "")  # .get: see oauth_flow.base_url
+                meta = f"https://{host}/.well-known/oauth-protected-resource"
                 return JSONResponse(
                     {"error": "unauthorized"},
                     status_code=401,

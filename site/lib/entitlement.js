@@ -9,10 +9,18 @@ import { neon } from "@neondatabase/serverless";
 // db/schema.sql. 'full' is the $20 tier.
 export const SPINE_TIER = "full";
 
-// Clerk is not wired yet: its keys are the owner's action, due 2026-09-19.
-// Until then there is no session to read and every visitor is signed out.
-// When Clerk lands this is the only function that changes, and it returns the
-// signed-in user's primary email address.
+// STILL THE PRE-CLERK STUB, and the comment that used to sit here said Clerk
+// was not wired yet. It is. `@clerk/nextjs` landed 2026-09-17: middleware.js
+// runs clerkMiddleware, /sign-in and /sign-up are real routes, and
+// /api/clerk-webhook exists. What did not change is this function, so it still
+// returns null for everyone and `hasSpine()` below can therefore never return
+// true, for a paying subscriber or for anyone else.
+//
+// The consequence is that the whole $20 spine is shut. It fails closed, so
+// nothing leaks, and that is the only good news in it. Rewiring this to read
+// the signed-in user's primary email address is the engineer's `urgent` item
+// in docs/ideas.md and it is deliberately not done here, because a security
+// run fixes defects and does not build the accounts path.
 export async function currentEmail() {
   return null;
 }
