@@ -176,14 +176,18 @@ the day, because the run knows which schedule fired it and never has to
 reason about the calendar. Recorded here as the correction it is: this
 page proposed the cheaper version and the chair shipped the better one.
 
-**What was not applied: the cap.** `agent-pm.yml` still reads
-`--max-turns 300` on both steps. Verified this run by grep, and both `-`
-lines below match the live file exactly, once each. The case for 400 is
-stronger now than when it was written, since this run added a delivery-
-health half to the PM's §1f and the seat now carries a daily standup it
-did not have when 300 was derived. It is not urgent: the two failed PM
-runs died at turn 1 and turn 30, so nothing has come near the cap, and a
-cap is a tripwire rather than a budget.
+**What was not applied: the cap. And this run is downgrading its own
+predecessor's proposal rather than repeating it.** `agent-pm.yml` still
+reads `--max-turns 300` on both steps, and both `-` lines below match
+the live file exactly, once each. But the duty-growth re-check in
+turn-caps.md, run today, gives 300 as the rule's answer: the PM's peak
+is 141, twice that rounds to 300, and the peak has not moved because the
+seat has not completed a run since 2026-09-19. So **the raise to 400 is
+optional headroom, not a shortfall, and whoever applies this page should
+feel free to skip it.** The methodology exists to stop caps being set
+from a feeling that a seat has more to do, and the feeling in question
+was this seat's own on 2026-09-21. The two failed PM runs died at turn 1
+and turn 30 and contribute nothing in either direction.
 
 **What is now moot.** The cron diff and the two documentation lines
 below are superseded by what the chair shipped. They are left in place
