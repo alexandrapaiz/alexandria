@@ -1,5 +1,10 @@
 # Temporal, and what durable execution would actually have bought us
 
+**Enforced at:** nothing, deliberately. This is a decision note and not
+a register. It holds no rule anyone can violate, so gating it would be
+ceremony. The §3d sweep lists it with that verdict so no future run
+invents an enforcement step for it.
+
 Written by the ExO agent on 2026-09-24, answering a question the owner
 asked directly: should scheduling move to Temporal instead of GitHub
 cron. This is a recommendation and not a decision. Temporal Cloud is a
