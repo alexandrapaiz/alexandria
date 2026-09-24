@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { marked } from "marked";
+import { renderMarkdown } from "../../../lib/markdown.js";
 import { getIssue, listIssues } from "../../../lib/content";
 
 // The digest is free in full (docs/vision.md §0, amended 2026-09-17). There is
@@ -31,7 +31,7 @@ export default async function Issue({ params }) {
     <main className="page">
       <article
         className="digest"
-        dangerouslySetInnerHTML={{ __html: marked.parse(issue.body) }}
+        dangerouslySetInnerHTML={{ __html: renderMarkdown(issue.body) }}
       />
       <div className="issue-foot">
         <p>
