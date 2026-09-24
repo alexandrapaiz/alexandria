@@ -90,7 +90,19 @@ approaches, reward-model design and reward hacking, verifiable-reward
 training (RLVR), and where human feedback still beats AI feedback.
 Multi-modal systems live here. Standing question: what each method
 measurably buys over the last, and what a builder aligning a model
-should actually do this month. Compounds into the training-loops
+should actually do this month. Owner's order, 2026-09-23, two named
+priorities inside this layer: (a) REASONING MODELS at the state of
+the art, not simple NLP: how reasoning is trained (verifiable-reward
+RL, chain-of-thought training, distillation of reasoning traces),
+test-time compute and its scaling, and what the frontier reasoning
+models actually changed, tracked as a first-class current with its
+own extraction targets; (b) RLHF INCLUDING SYNTHETIC DATA: AI
+feedback, self-play, synthetic preference and instruction data,
+where synthetic data helps and where it collapses. Two people on
+the radar by name, read every week as steering (their writing is
+signal, their cited papers are evidence): Nathan Lambert
+(Interconnects, the RLHF book) and Sebastian Raschka (Ahead of AI
+and his blog), both now ingested as feeds. Compounds into the training-loops
 shelf, where self-improving-post-training-loops already stands gold.
 
 **Layer 4 — Orchestration.** Agents and the systems that run them,
