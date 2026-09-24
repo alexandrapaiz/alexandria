@@ -35,7 +35,7 @@ A daily cannot use the weekly's citation movers, because citations do not move
 in a day. Its traction signal is the corpus instead: a claim leads today
 because today's work connects to something alexandria already held, an edge
 drawn to an older claim, a result that repeats one already in the graph, a
-contradiction of something the corpus believed on Monday. Say the connection
+contradiction of something the corpus held until today. Say the connection
 in plain words as the reason the item leads. A day whose work connects to
 nothing older has no traction slot, so it opens on the new work and says so.
 That is law 5 at a 24-hour window: what leads is what compounds, never what
@@ -374,7 +374,13 @@ person's morning and the newsletters worth learning from say hello before
 they say anything else. One short line. Address the reader directly, as
 "you". Make the line earn its place by being true about this particular
 day: what the week has felt like for someone building agents, what landed
-overnight, what the field spent the week arguing about. "Welcome to another
+overnight, what the field spent the week arguing about.
+That "you" says what the reader is building and what their week has been
+like. It never says what the reader has READ, because this seat cannot know
+that and law 13 forbids assuming it. "You spent last week watching agents
+get faster" was struck for exactly that slip, and it is the one failure this
+line is most prone to, because a greeting reaches for shared history and the
+only history it may reach for is the field's. "Welcome to another
 edition" and "Happy Monday" are the failure case, because they carry no
 information and they are exactly what a form being filled in says. Vary the
 construction every issue and never open two issues running the same way.
@@ -405,6 +411,28 @@ reinforcement learning", "serving models cheaply", "post-training"), what
 problem that field has been stuck on, and why that problem matters to someone
 building AI systems, before naming what moved. Why comes before what.
 
+A second invariant sits beside it and binds every line of the issue, not
+only this one (canon law 13, owner's ruling 2026-09-24). This issue is the
+only one its reader has read. Write it that way. No sentence refers to a
+previous issue, to "last week", to "as we covered" or "the thread we have
+been following", or to anything the reader is presumed to have seen before
+today. Her rejected specimen, verbatim, is an opening of exactly the kind
+this file used to invite: "You spent last week watching agents get faster
+by doing less at test time." Her ruling on it: "dont assume readers read
+each issue."
+The fix is never to drop the thread, because the thread is the product. The
+fix is to restate it inside the sentence, so a first-time reader gets it for
+free: "Agents have been getting cheaper by thinking less at the moment they
+answer. That trick has a ceiling. This week the field went after something
+harder." One extra line, and the issue now works for everyone who opens it.
+The test is one question, and it is a hard gate in the final checks. Strike
+every sentence that would leave a reader wondering what they missed. Note
+which side of the line this falls on, because it is easy to overcorrect:
+what the FIELD used to believe is the issue's whole job and stays. What
+ALEXANDRIA printed about it is the thing that goes. "The field had accepted
+that expert baselines set the ceiling" is right. "We flagged that ceiling
+last week" is the violation.
+
 The opening carries the strictest version of the first-use rule in the
 issue, because it is where an outsider decides whether this is written for
 them, and both of the rejected specimens on file came from one (owner's
@@ -419,11 +447,13 @@ sentences about the problem the field has been stuck on, and then the
 week's sharpest number lands hard in the third ("Best-of-three sampling
 just beat sequential self-correction by up to 9.7 points on less compute.
 Then two papers explained why single-pass reflection had been the wrong
-default all along"). Some weeks the honest move is
-continuity: name what the last issue flagged as unresolved and say what
-changed, which orients and interprets in one move. Some weeks a question
-carries the opening, but only a real one a builder is already asking, never
-the rhetorical kind that answers itself. Pick whichever shape actually fits
+default all along"). Some weeks the honest move is the running thread,
+stated whole: say what the field has been believing and doing lately, in
+plain words that assume nothing, and then say what moved against it. That
+orients and interprets in one move, and it is the shape law 13 governs, so
+write the thread out rather than pointing at where it was last printed. Some
+weeks a question carries the opening, but only a real one a builder is
+already asking, never the rhetorical kind that answers itself. Pick whichever shape actually fits
 this week's material, and never default to the same shape twice running
 without noticing that you are defaulting.
 
@@ -671,6 +701,14 @@ the rule's question to the thing in front of you.
   promises, and an abstract page breaks that promise. This binds every
   section, the reading list included, where a missing link is the whole failure
   rather than a small one.
+  Coverage is the half of this rule that the form of the link keeps hiding,
+  so count before you output. Every item in every section carries its own
+  link, and the traction section and the fell-behind section are items just
+  as much as the reading list is. The 2026-W39 issue got the form right on
+  all three of its links and printed seven more items, in three sections,
+  with no link on any of them, because this rule was read as a rule about
+  what a url should look like. Count the items. Count the links. They
+  match, or the issue is not finished.
 - **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line:
   "the authors' own experiments, not yet replicated", "three independent
@@ -697,6 +735,11 @@ the rule's question to the thing in front of you.
   this is the update to it, in plain words, with no issue number and no week
   id. That thread is what a subscription gives a reader and a search does not.
   Draw it only from the payload's edges, never from memory.
+  State the older belief in full, because the reader has not read the issue
+  that carried it (law 13). "The field had held that an expert-written
+  reference sets the ceiling" works on its own. "The ceiling we reported"
+  does not, and neither does any clause that only resolves for someone who
+  was here last time.
 - **Honesty without narration (owner's ruling, 2026-09-19).** Nothing stands
   between the fell-behind section and the reading list, because there is no
   standing meta section and the issue never narrates its own methodology, ranking
@@ -788,6 +831,26 @@ the rule's question to the thing in front of you.
   introduced. An issue that is accurate line by line and cannot be read
   through by a builder outside the research world has failed at the only job
   it has, and that is the owner's ruling of 2026-09-19 and canon law 12a.
+- **Then check that the issue stands alone. A hard gate (canon law 13,
+  owner's ruling 2026-09-24).** The outsider you just read as has also never
+  read alexandria before. Go through the issue once more looking only for
+  sentences that borrow from an issue they did not see. Four shapes to
+  catch, and the fourth is the one that gets through. A time reference that
+  points at your own publishing ("last week", "yesterday's issue", "on
+  Monday"). A first-person plural that claims shared history ("we covered",
+  "we flagged", "as we said"). A definite article standing in for an
+  introduction ("the ceiling the field accepted" is fine, "the ceiling from
+  the last issue" is not). And the bare continuation, which names no issue
+  and still assumes one: "You spent last week watching agents get faster by
+  doing less at test time", the opening she struck, which reads as a
+  continuation because it tells the reader what they were doing rather than
+  what the field was doing.
+  The fix is always the same and it is never deletion. Restate the thread in
+  full, in the sentence where it appears, so the reader who arrived today
+  gets it and the reader who has read every issue loses nothing. Then check
+  the repair itself: a sentence that says what the field believed is the
+  product, and a sentence that says what this newsletter printed is the
+  violation, whichever way it is worded.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic

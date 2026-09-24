@@ -337,3 +337,36 @@ gap that the same collision had left empty (incident 25).
     handed. This says to read the generator itself, and to read every
     generator, not the one this seat happens to own. Added 2026-09-24 from
     the second generator in PR #35.
+45. The opening billed to a reader who was not there. "You spent last
+    week watching agents get faster by doing less at test time", the
+    2026-W39 opening, struck by the owner with "dont assume readers read
+    each issue" and now canon law 13. Entry 17 is the greeting that would
+    fit any day. This is its inverse: a greeting so specific to one day
+    that it only works for the minority who read that day's issue. It
+    charges the reader for a purchase they did not make, in the first
+    sentence, which is where an outsider is deciding whether the thing is
+    for them. The tell is a second person doing the work of a footnote:
+    the line tells the reader what THEY were doing rather than what the
+    field was doing, and only a returning reader can check it. Three
+    quieter forms of the same failure: "we covered", "the ceiling from
+    the last issue", and the bare continuation that names no issue and
+    still needs one. The thread is not the problem and never was. Pointing
+    at it instead of stating it is. Added 2026-09-24 from her ruling on
+    the W39 opening.
+46. The colon that announces a finding, which is a heading in punctuation
+    costume. 2026-W39 runs it once per item, and the roll reads as a
+    template even though the findings underneath are real: "The problem
+    they address:", "The result:", "The task:", "The honest result:",
+    "The critical finding for builders:", "The training signal is what
+    matters for builders:". Entry 40 names the colon that pauses to gloss
+    a term the sentence just used, and this is the other job the mark
+    does, which is to label the clause behind it. The heading gate at the
+    end of the generator already asks whether a line could sit over a
+    different day's items unchanged, and every one of those six could.
+    The gate missed them because it collects lines beginning with `#` and
+    runs of bold or italic sitting alone, and a label welded to the front
+    of a sentence sits alone in none of those ways. A label is a label at
+    any level, in any typeface, and now in any punctuation. The related
+    specimen from the same issue is the aphoristic version, "Three labs,
+    one bet:", where the colon props up a snap summary that the paragraph
+    it closes has already earned. Added 2026-09-24 from the W39 grade.

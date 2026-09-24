@@ -110,6 +110,31 @@ Study decisions, never copy sentences.
     written fresh from that day's actual news, the way the title is.
     Printing "Gaining traction" or "Trailblazing" as a heading is a
     violation the owner has now flagged twice (incident 20).
+13. Every issue stands alone (owner's ruling, 2026-09-24). No
+    issue leans on a previous one. Not on "last week", not on "as we
+    covered", not on anything the reader is presumed to have already
+    seen. A first-time reader loses nothing, because most readers of
+    any issue have not read the one before it and the archive is read
+    out of order. Where a thread genuinely continues, the sentence
+    restates the thread in full instead of pointing back at it, in
+    plain words that cost a line and buy the whole audience.
+    Her rejected specimen, the opening of 2026-W39, verbatim: "You
+    spent last week watching agents get faster by doing less at test
+    time." Her words on it: "dont assume readers read each issue."
+    The repair, and what the opening should have been: "Agents have
+    been getting cheaper by thinking less at the moment they answer.
+    That trick has a ceiling. This week the field went after
+    something harder. Every reliable agent is wrapped in scaffolding,
+    meaning the checklists and retry rules and approval steps a team
+    builds around a model to keep it on track. Three labs asked
+    whether that structure could be taught to the model itself and
+    then thrown away." The thread survives, stated rather than
+    referenced, and nobody had to have been there.
+    This binds the daily and the weekly alike, and it binds the
+    generator as a rule rather than a preference. It does not touch
+    the corpus thread of law 5. Saying what the field used to believe
+    is the product. Saying what alexandria printed about it is the
+    violation.
 
 ## How an issue is graded
 
