@@ -1177,3 +1177,51 @@ that a run which did fire would have raised on the 404; it cannot prove
 whether a container ever started, because `modal app logs` shows no
 output for that date and the CLI does not expose schedule history. The
 one-click check is written into docs/sprints/pending.md for the owner.
+
+## Incident 24, third entry — the fix for a 404 was nearly shipped with a 404 in it (2026-09-24, engineer)
+
+Appended under the standing rule at the top of this file. This one is a
+near miss rather than a failure, and it is recorded because the standing
+rule is about the repeat, not about the damage, and because a near miss
+that goes unwritten is a failure waiting for the next run.
+
+**What happened.** ADR-32 moved the press off Groq and onto Kimi K2,
+naming the model as "Kimi K2" and the dispatch naming the id as
+`kimi-k2`. Read from Moonshot's live catalog this morning: the bare
+`kimi-k2` series was **discontinued on 2026-05-25**, four months ago. A
+press pointed at that id answers 404. That is incident 24's exact
+failure, in incident 24's own remedy, on a provider chosen partly to
+escape it, in its first hour.
+
+The live 256K-context general model is `kimi-k2.6`. The catalog's other
+K2 ids are `kimi-k2.7-code` and `kimi-k2.7-code-highspeed`, which are
+coding models, and the press writes prose. `kimi-k2` and `kimi-k2.5` are
+now in `budget.DECOMMISSIONED` with their dates, so pointing at either
+one fails at import time with the reason rather than at 09:00 on a
+Monday with a 404.
+
+**Why it did not ship.** Two things caught it, and only one of them was
+the seat paying attention. The dispatch said to read the provider's
+current docs for the exact model id, which is the instruction that
+found it. Underneath that, `check_availability` and `preflight` would
+have caught it anyway, because both ask `GET /models` before the run
+trusts a name. That is the machinery incident 24 bought, doing exactly
+what it was bought for, one week later, on a different provider.
+
+**The finding, which is about how the org writes decisions.** A model
+name in prose is not a model id. "Kimi K2" is a family, "Claude 5" is a
+family, and a family name written into an ADR reads like a
+specification and is not one. The rule this suggests, for any seat
+implementing a decision that names a model: **the ADR names the family,
+the code names the id, and the id is read from the provider's live
+catalog on the day it is written, never from memory.** Three of the
+four press failures in the last week (incident 22's 413, the 404 of
+2026-09-23, and this near miss) come from the gap between what a model
+was believed to be and what the provider currently serves.
+
+**Two failure classes now covered on both providers.** Deprecation is
+not a Groq problem. Moonshot has run three deprecation waves of its own
+in 2026, and Groq has run at least two. The press's guards were written
+against one vendor and are now written against a provider table, which
+is the honest shape: any provider will withdraw any model, and the only
+defence that keeps working is asking before the run, every run.

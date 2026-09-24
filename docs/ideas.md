@@ -2889,3 +2889,118 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   be read by an agent, which no signed letter can be.
 - Where it goes: the stealable thing is already the ledger entry above,
   which is the point of naming it here rather than filing a second copy.
+
+### 2026-09-24 — Sovereign hosting's first verifiable slice: the press's own model on Modal
+- Trigger: writing the provider table in this PR. ADR-32 names sovereign
+  hosting as the destination, an open-weight writer served by alexandria
+  itself so no provider can withdraw the press's model again, and puts it
+  on the post-launch roadmap next to the router evaluation. Building the
+  provider layer today changed what that destination costs. A provider is
+  now five lines in `budget.PROVIDERS` and an entry in `budget.MODELS`.
+  There is no second code path to write, no branch in `call_model`, and
+  nothing in `weekly.py` that knows a vendor's name.
+- What: a Modal function serving one open-weight writer over vLLM's
+  OpenAI-compatible server, registered as a third provider called
+  `self`, with `kimi-k2.6` staying primary and the self-hosted model
+  taking rank two. That ordering is the point. The press keeps writing on
+  the model that works while the sovereign path proves itself on real
+  Mondays, and the day Moonshot withdraws `kimi-k2.6` the fallback is not
+  a free tier that cannot print, it is a model nobody can take away.
+  vLLM's server speaks the same dialect both current providers speak, so
+  the whole integration is configuration.
+- Why the press is the right first tenant: ADR-6 makes it the simplest
+  possible workload, one prompt in, one issue out, no tools, running once
+  a week. Compare the corpus crons, which are five jobs, thousands of
+  calls, and a latency budget. If sovereign hosting cannot carry one
+  weekly request it cannot carry anything, and finding that out costs one
+  Monday.
+- Cost: not $0, and that is the whole proposal. A GPU minute on Modal for
+  one weekly request is real money against $0.05 an issue on Moonshot, so
+  this is worth building for independence and never for price. The number
+  the owner needs before she decides is what one issue costs on a cold
+  container, including the model load, which is exactly what the first
+  slice measures.
+- First step: one `@app.function` with a GPU, a small open-weight writer,
+  and no schedule. Run it by hand against last week's payload, print the
+  issue and the wall-clock cost, and put both in the ledger. No press
+  change until that number exists.
+- Status: proposed
+
+### 2026-09-24 — Watch the deprecation notices, not just the catalog
+- Trigger: this run's near miss, now incident 24's third entry. ADR-32
+  named the press's model "Kimi K2" and the obvious id, `kimi-k2`, had
+  been discontinued for four months. It was caught by reading the
+  provider's catalog on the day, which is luck dressed as process.
+- What: the existence check proposed above answers "is it gone", and it
+  answers it after the fact. Providers say so first. Moonshot's model
+  page carries dated deprecation waves, 2026-05-25 and 2026-08-31, both
+  published before the models stopped answering, and Groq marks a model
+  production or preview, which is the same information in weaker form.
+  So a weekly job reads each provider's catalog page, diffs it against
+  every model id the repo names, and opens an issue when a model the code
+  depends on is marked deprecated, previewed, or scheduled for removal.
+  Not when it breaks. When the provider says it will.
+- Why it is a different thing from the existence check: one is a smoke
+  alarm and one is a calendar. `GET /models` tells you the press cannot
+  print this morning. This tells you in March that the press will stop
+  printing in May, which is the only warning long enough to be acted on
+  by a project that ships once a day.
+- First step: a `models_in_use()` function that scrapes the ids out of
+  `budget.MODELS` and the pipeline's constants, then one weekly Modal
+  function that fetches both catalog pages and diffs. Reuse the alarm
+  path this PR gave the press.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Publish a retrieval benchmark with named competitors and real numbers
+- Trigger: today's craft scan, below. Undermind publishes a recall
+  benchmark on its front page with competitors named and beaten by
+  specific margins. alexandria has a blind prose benchmark for the issue
+  (PR #66, built and still unscored) and nothing at all for retrieval,
+  which is the half of the product a paying reader actually queries.
+- What: fifty questions with a hand-marked answer set drawn from the
+  corpus, run through `semantic_search` and `rag_answer`, scored on
+  recall at ten and on whether the cited claim actually supports the
+  answer. Published as a page on the site with the questions and the
+  marking open, so a reader can rerun it. The number matters far less
+  than its being checkable, because an unaudited benchmark is marketing
+  and an audited one is a product claim.
+- Why it earns its day: the paid product is the spine, the skills and the
+  graph, not the issue, and nothing in the repo currently measures
+  whether the spine answers questions well. The prose benchmark measures
+  the free thing. This measures the thing people would pay for.
+- First step: the fifty questions, written from real claims already in
+  silver so the answer set is knowable, committed as a fixture before any
+  scoring code exists. Writing the questions after seeing the scores is
+  how a benchmark becomes a mirror.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Craft scan: Undermind.ai
+- Trigger: the engineer seat's daily craft scan, next unscanned entry in
+  the academic-tools half of docs/market/landscape.md, where it has sat
+  since 2026-09-18 with search-snippet confidence only. Read live today.
+- What it actually is, now that someone has looked: an AI co-researcher
+  for literature discovery. Free tier, Pro at $16 a month billed
+  annually, Team at $15 a person, and an MCP endpoint at `/mcp` so it
+  works inside Claude and ChatGPT.
+- Worth stealing: **it publishes a benchmark that names its competitors
+  and gives them numbers.** 85% recall on the twenty most relevant papers
+  against 50% for GPT-5.6 Sol and 47% for Claude Opus 5, stated on the
+  front page rather than in a whitepaper. Two things make that work, and
+  both are available to us. The claim is falsifiable, which is why it
+  persuades a scientist. And it reframes the product's biggest apparent
+  weakness as the source of the number: a search takes 2.9 minutes on
+  average, published as plainly as the recall figure, because reading
+  hundreds of papers is what buys the recall. A slow honest instrument
+  beats a fast opaque one, and saying so out loud is cheaper than
+  arguing it. The ledger entry above is this thing, applied.
+- What alexandria does better: Undermind answers the question you bring
+  it. It cannot tell you that an answer it gave you in March has since
+  been contradicted, because a search engine has no memory of what it
+  told you and no opinion about what the field did next. alexandria's
+  left-behind section is exactly that, and the citation trajectory
+  underneath it is evidence rather than editorial. Both products are
+  reachable by an agent over MCP, so the difference is not the interface.
+  It is that one serves a search box and the other serves a graph that
+  knows when it has changed its mind.
