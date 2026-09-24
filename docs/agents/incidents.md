@@ -1082,3 +1082,26 @@ availability check at deploy and at run start against the provider's
 /models endpoint, an ordered fallback list, and a loud notification
 to the owner when the press cannot print, because the discovery
 should never again be her inbox.
+
+### Incident 24, addendum (2026-09-23, chair, from three manual print attempts)
+
+The chair tried to print the missing issue today under a temporary
+override and learned the full shape of the failure. (1) The budget
+guard from incident 22 works: it refused two runs that would have
+413'd, including catching that gather()'s SQL limits had drifted from
+PAYLOAD_CAPS. (2) Groq returns 404 not only for groq/compound but for
+meta-llama/llama-4-scout-17b-16e-instruct as well: Groq's production
+catalog, read from its docs today, is down to llama-3.1-8b-instant,
+llama-3.3-70b-versatile, openai/gpt-oss-120b and openai/gpt-oss-20b,
+with qwen/qwen3.8-27b and minimaxai/minimax-m2.7 in preview. The
+compound family and the Llama 4 models are gone. (3) The generator
+prompt alone is 9,865 tokens; with a floor payload and a 4,000-token
+reservation the request needs roughly 24,000 tokens per call, and no
+remaining free-tier Groq model is known to allow that. The structural
+conclusion for the engineer: the press has outgrown Groq's free tier,
+not one model on it. The options are a paid Groq tier, a different
+free provider with a real per-request budget, or moving the press's
+single writing call onto the Claude subscription that already runs
+every seat (an Actions job on the OAuth token, 200K context, no TPM
+wall), which keeps the $0 principle and ends the provider roulette.
+The chair's temporary edits were restored; nothing was committed.
