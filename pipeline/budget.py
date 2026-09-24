@@ -9,6 +9,12 @@ plus user payload plus `max_completion_tokens`. Reserve 6,000 tokens of
 output and you have spent 6,000 tokens of budget before the model writes a
 word.
 
+Since ADR-32 the press writes on Moonshot's Kimi and keeps Groq's free tier
+as its last resort, so the guard is now a two-provider guard. The ceiling
+that binds is not the same kind of number on each: Groq refuses on
+tokens-per-minute, Moonshot on the model's context window. `binding_limit`
+takes the smaller of the two and every printed line says which one it was.
+
 The arithmetic that must hold, every run:
 
     prompt + payload + max_completion_tokens + envelope  <=  TPM * (1 - MARGIN)
@@ -17,7 +23,7 @@ This module owns that arithmetic and nothing else. Three callers share it so
 the number can never drift between them:
 
 * `pipeline/weekly.py` sizes the payload against it (`fit_payload`) and
-  refuses to call Groq when the request cannot fit (`check_request`).
+  refuses to call the provider when the request cannot fit (`check_request`).
 * CI runs `python3 pipeline/budget.py` on every pull request that touches a
   generator prompt or the pipeline, and fails the build with the arithmetic
   printed, so an editorial merge cannot break the press again.
@@ -44,85 +50,190 @@ ROOT = Path(__file__).resolve().parent.parent
 
 # ---------------- what the model will accept ----------------
 
-# Groq's free-tier limits, re-read from the live docs on 2026-09-24 (incident
-# 24) at https://console.groq.com/docs/rate-limits and cross-checked against
-# https://console.groq.com/docs/models. Both pages are quoted in the PR that
-# landed this change.
+# The press talks to two providers now (ADR-32, 2026-09-24), and the number
+# that binds a single request is not the same kind of number on each of them.
 #
-# TPM is the number that bites: incident 22 established empirically that a
-# single request larger than the TPM ceiling is rejected 413 before any
-# generation starts, so the rolling per-minute limit is also a per-request
-# limit. RPM, RPD and TPD are recorded because the press shares this key with
-# four daily crons and the retry loop needs to know which ceiling it is near.
+# * **Moonshot** (Kimi K2) is a prepaid account, so the per-minute ceilings are
+#   enormous and the CONTEXT WINDOW is what a request has to fit inside.
+# * **Groq**'s free tier is the opposite: the context window is generous and
+#   the TOKENS-PER-MINUTE ceiling is what refuses the request, because incident
+#   22 established that a single request larger than TPM is rejected 413 before
+#   generation starts.
 #
-# The free tier has exactly three general text writers, and all three sit at
-# 8,000 TPM. There is no longer a free-tier model with room above that: the
-# only free entries with a larger TPM are the two prompt-guard classifiers at
-# 15K, which cannot write prose. Read that number carefully before proposing a
-# press design; it is the constraint the whole press now lives inside.
-#
-# Keep this table honest: every run of weekly.py logs Groq's own
-# `x-ratelimit-limit-tokens` header, which is the authority. If a logged value
-# ever disagrees with a number here, the logged value wins and this table is
-# the thing to fix.
-MODELS = {
-    "openai/gpt-oss-120b": {
-        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
-        "context": 131_072, "max_output": 65_536, "status": "production",
+# `limit_for` therefore takes the smaller of the two on every model, and
+# `Report.summary` says which one bit. Getting this wrong in either direction
+# is a press that either 413s in production or refuses a request that would
+# have been fine.
+PROVIDERS = {
+    "moonshot": {
+        "base_url": "https://api.moonshot.ai/v1",
+        "key_env": "MOONSHOT_API_KEY",
+        "secret": "moonshot",          # the Modal secret name, never its value
+        "docs": "https://platform.kimi.ai/docs/models",
+        "limits_docs": "https://platform.kimi.ai/docs/pricing/limits",
     },
-    "qwen/qwen3.8-27b": {
-        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
-        "context": 131_072, "max_output": 32_768, "status": "preview",
-    },
-    "openai/gpt-oss-20b": {
-        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
-        "context": 131_072, "max_output": 65_536, "status": "production",
+    "groq": {
+        "base_url": "https://api.groq.com/openai/v1",
+        "key_env": "GROQ_API_KEY",
+        "secret": "groq",
+        "docs": "https://console.groq.com/docs/models",
+        "limits_docs": "https://console.groq.com/docs/rate-limits",
     },
 }
 
-# Models the press has pointed at and that Groq has since withdrawn. Kept so a
-# 404 is explained rather than raising a bare KeyError, and so nobody proposes
-# a return to one of them without reading why it went.
+PRIMARY_PROVIDER = "moonshot"
+
+
+def provider_of(model: str) -> str:
+    """Which provider serves `model`. Raises rather than guessing from the id."""
+    if model not in MODELS:
+        raise KeyError(
+            f"{model!r} has no entry in budget.MODELS, so there is no provider "
+            "to send it to. Add it with the numbers from its provider's docs "
+            "before pointing a press at it."
+        )
+    return MODELS[model]["provider"]
+
+
+def endpoint(provider: str, path: str) -> str:
+    return f"{PROVIDERS[provider]['base_url']}{path}"
+
+
+# Every number here is read from the provider's live documentation, and the
+# date it was read is in the comment above its block. Nothing in this table is
+# remembered or inferred.
 #
-# This is the failure class incident 24 named: PROVIDER MODEL DEPRECATION. Both
-# entries were `groq/compound*`, an agentic *preview* system, and previews are
-# withdrawn without the deprecation notice production models get. The press
-# moved to compound on 2026-09-19 (PR #51) purely for its 70K TPM, which is now
-# the clearest evidence available that a capacity number is the wrong reason to
-# pick a model.
+# Keep it honest: weekly.py logs whatever rate-limit headers the provider
+# returns, and a logged value always outranks a value written here.
+#
+# `price_in` / `price_out` are USD per million tokens, cache-miss input. They
+# are not a guard input; they exist so `python3 pipeline/budget.py` can print
+# what an issue costs, which is the number finance books (ADR-32).
+MODELS = {
+    # Moonshot, read from https://platform.kimi.ai/docs/models,
+    # https://platform.kimi.ai/docs/pricing/chat and
+    # https://platform.kimi.ai/docs/pricing/limits on 2026-09-24.
+    #
+    # THE MODEL ID IS NOT `kimi-k2`. The dispatch and ADR-32 both say "Kimi
+    # K2", and the bare `kimi-k2` series was discontinued on 2026-05-25: a
+    # request to it would 404, which is incident 24 all over again on a new
+    # provider. The current 256K-class general Kimi is `kimi-k2.6`. The other
+    # two K2 ids in the catalog are `kimi-k2.7-code` and its high-speed
+    # variant, which are coding models, and the press writes prose.
+    #
+    # TPM is the tier-0 number, the floor of what a funded account gets ($1
+    # minimum recharge). Every higher tier has more. Even the floor is 500,000
+    # TPM against a 262,144-token context, so the context is what binds and the
+    # press's ~36,000-token request has room to spare at any tier.
+    "kimi-k2.6": {
+        "provider": "moonshot",
+        "tpm": 500_000, "rpm": 3, "rpd": None, "tpd": 1_500_000,
+        "context": 262_144, "max_output": 32_768, "status": "production",
+        "price_in": 0.95, "price_out": 4.00,
+    },
+
+    # Groq's free tier, re-read from the live docs on 2026-09-24 (incident 24)
+    # at https://console.groq.com/docs/rate-limits and cross-checked against
+    # https://console.groq.com/docs/models.
+    #
+    # All three general text writers sit at 8,000 TPM and there is no free-tier
+    # model above it that can write prose. At today's prompt size that ceiling
+    # is below the prompt plus the output reservation, so these three cannot
+    # print the weekly issue at all. They stay in the fallback list on purpose:
+    # they are the last resort for the day the prompt gets shorter or the
+    # ceiling moves, and the guard prints their arithmetic every run so nobody
+    # has to guess whether that day has arrived.
+    "openai/gpt-oss-120b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+    "qwen/qwen3.8-27b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 32_768, "status": "preview",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+    "openai/gpt-oss-20b": {
+        "provider": "groq",
+        "tpm": 8_000, "rpm": 30, "rpd": 1_000, "tpd": 200_000,
+        "context": 131_072, "max_output": 65_536, "status": "production",
+        "price_in": 0.0, "price_out": 0.0,
+    },
+}
+
+# Models the press has pointed at, or that a reader might reasonably reach for,
+# and that the provider has since withdrawn. Kept so a 404 is explained rather
+# than raising a bare KeyError, and so nobody proposes a return to one of them
+# without reading why it went.
+#
+# This is the failure class incident 24 named: PROVIDER MODEL DEPRECATION. It
+# is not a Groq problem. Moonshot has run three deprecation waves of its own,
+# and `kimi-k2` is in one of them, so the same discipline applies on both
+# providers: the id in the code is the id in today's catalog, checked by
+# `GET /models` before every deploy and at the start of every run.
 DECOMMISSIONED = {
     "groq/compound": "404 Not Found as of 2026-09-23; absent from Groq's "
                      "model catalog and rate-limit table on 2026-09-24. Was "
                      "70,000 TPM, which is why the press was moved to it.",
     "groq/compound-mini": "withdrawn with groq/compound; same catalog absence.",
+    "kimi-k2": "the bare kimi-k2 series was discontinued by Moonshot on "
+               "2026-05-25. ADR-32 names 'Kimi K2' as the press's model and "
+               "this is the id that sounds right and 404s; the live 256K "
+               "general model is kimi-k2.6.",
+    "kimi-k2.5": "discontinued by Moonshot on 2026-08-31, with kimi-k2.6 and "
+                 "kimi-k3 as the migration path.",
+    "moonshot-v1-128k": "the moonshot-v1 series was discontinued on "
+                        "2026-08-31; use kimi-k2.6.",
 }
 
 # Headroom held back from the published ceiling. Three things live in it: the
-# tokenizer estimate below is close but not Groq's own, the rolling window may
-# still hold tokens from the citation pass or a retried call, and an editorial
-# merge lands between one run and the next. Fifteen percent of 70K is 10,500
-# tokens, which is more than the whole prompt.
+# tokenizer estimate below is close but not the provider's own, the rolling
+# window may still hold tokens from the citation pass or a retried call, and an
+# editorial merge lands between one run and the next.
 MARGIN = 0.15
 
-# Chat framing Groq adds around the two messages. Measured generously; it is
-# tens of tokens against a budget of thousands.
+# Chat framing the provider adds around the two messages. Measured generously;
+# it is tens of tokens against a budget of thousands.
 ENVELOPE_TOKENS = 32
+
+
+def binding_limit(model: str) -> tuple[int, str]:
+    """The ceiling a single request must fit inside, and which one it is.
+
+    Two different ceilings can bind, on the same arithmetic: a per-minute token
+    budget applied to one request (Groq's 413, incident 22) and the model's own
+    context window (everywhere). Whichever is smaller is the real limit.
+    """
+    spec = MODELS[model]
+    tpm, context = spec["tpm"], spec["context"]
+    if tpm <= context:
+        return tpm, f"{tpm} TPM"
+    return context, f"{context}-token context"
 
 
 def limit_for(model: str) -> int:
     """Usable tokens per request for `model`, margin already deducted."""
     if model in DECOMMISSIONED:
         raise KeyError(
-            f"{model!r} was withdrawn by Groq: {DECOMMISSIONED[model]} A press "
-            "cannot be pointed at it. Pick from budget.MODELS."
+            f"{model!r} was withdrawn by its provider: {DECOMMISSIONED[model]} "
+            "A press cannot be pointed at it. Pick from budget.MODELS."
         )
     if model not in MODELS:
         raise KeyError(
             f"{model!r} has no published limits in budget.MODELS. Add it with "
-            "the numbers from https://console.groq.com/docs/rate-limits before "
-            "pointing a press at it."
+            "the numbers from its provider's docs before pointing a press at it."
         )
-    return int(MODELS[model]["tpm"] * (1 - MARGIN))
+    ceiling, _ = binding_limit(model)
+    return int(ceiling * (1 - MARGIN))
+
+
+def cost_usd(prompt_tokens: int, completion_tokens: int, model: str) -> float:
+    """What one request costs at list price, worst case (no cache hit)."""
+    spec = MODELS[model]
+    return (prompt_tokens * spec["price_in"]
+            + completion_tokens * spec["price_out"]) / 1_000_000
 
 
 # ---------------- does the model still exist? ----------------
@@ -133,7 +244,14 @@ def limit_for(model: str) -> int:
 # empty inbox. `GET /models` is the cheapest possible answer to "can we print at
 # all", it costs no tokens against any ceiling, and it runs twice: once at
 # deploy and once at the start of every run.
-MODELS_URL = "https://api.groq.com/openai/v1/models"
+#
+# Both providers serve it at the same OpenAI-compatible path, so one function
+# covers both: Groq at https://api.groq.com/openai/v1/models and Moonshot at
+# https://api.moonshot.ai/v1/models, each with its own bearer key.
+
+
+def models_url(provider: str) -> str:
+    return endpoint(provider, "/models")
 
 
 class AvailabilityError(RuntimeError):
@@ -144,42 +262,84 @@ class NoUsableModel(RuntimeError):
     """Every candidate is either missing from the provider or over budget."""
 
 
-def available_models(api_key: str, timeout: float = 30.0) -> set[str]:
-    """The set of model ids Groq reports as active for this key.
+def available_models(api_key: str, provider: str, timeout: float = 30.0) -> set[str]:
+    """The set of model ids `provider` reports as active for this key.
 
     Raises rather than returning an empty set on any failure. An empty set and
     a failed request are the same value and very different facts, and treating
     a network blip as "every model is gone" would walk the whole fallback list
     for nothing.
     """
+    if provider not in PROVIDERS:
+        raise AvailabilityError(f"unknown provider {provider!r}")
+    spec = PROVIDERS[provider]
+    url = models_url(provider)
+
     # the cheap check first: no key is a configuration fact, not a network one
     if not api_key:
         raise AvailabilityError(
-            "no Groq API key, so model availability cannot be checked. Set the "
-            "GROQ_API_KEY the `groq` Modal secret provides."
+            f"no {provider} API key, so model availability cannot be checked. "
+            f"Set the {spec['key_env']} that the `{spec['secret']}` Modal "
+            "secret provides."
         )
 
     import httpx
     try:
         resp = httpx.get(
-            MODELS_URL,
+            url,
             headers={"Authorization": f"Bearer {api_key.strip()}"},
             timeout=timeout,
         )
     except Exception as exc:
-        raise AvailabilityError(f"GET {MODELS_URL} failed: {exc}") from exc
+        raise AvailabilityError(f"GET {url} failed: {exc}") from exc
     if resp.status_code >= 400:
         raise AvailabilityError(
-            f"GET {MODELS_URL} answered {resp.status_code}: {resp.text[:500]}"
+            f"GET {url} answered {resp.status_code}: {resp.text[:500]}"
         )
     try:
         data = resp.json()["data"]
     except Exception as exc:
         raise AvailabilityError(
-            f"GET {MODELS_URL} returned no usable model list: {resp.text[:500]}"
+            f"GET {url} returned no usable model list: {resp.text[:500]}"
         ) from exc
-    # `active` is Groq's own flag; a listed but inactive model still 404s
+    # `active` is Groq's own flag and a listed but inactive model still 404s.
+    # Moonshot does not send one, so absent means listed means usable.
     return {m["id"] for m in data if m.get("active", True)}
+
+
+def providers_for(models: list[str]) -> list[str]:
+    """The providers a candidate list actually needs, primary first."""
+    seen = [MODELS[m]["provider"] for m in models if m in MODELS]
+    ordered = [p for p in PROVIDERS if p in seen]
+    return ordered
+
+
+def available_everywhere(models: list[str], env) -> tuple[set[str], list[str]]:
+    """Ask every provider the candidate list touches. Returns (ids, notes).
+
+    One provider being unreachable must not hide the models another provider
+    still has, so a failure here is a note rather than an exception. The caller
+    decides whether what survived is enough to print with, because that is a
+    judgment about the press and not about HTTP.
+    """
+    found: set[str] = set()
+    notes: list[str] = []
+    for provider in providers_for(models):
+        spec = PROVIDERS[provider]
+        key = env.get(spec["key_env"], "")
+        try:
+            ids = available_models(key, provider)
+        except AvailabilityError as exc:
+            notes.append(f"{provider}: NOT REACHED. {exc}")
+            continue
+        found |= ids
+        mine = [m for m in models if MODELS.get(m, {}).get("provider") == provider]
+        missing = [m for m in mine if m not in ids]
+        notes.append(
+            f"{provider}: {len(ids)} models listed for this key; "
+            + (f"MISSING {', '.join(missing)}" if missing
+               else f"all {len(mine)} fallback(s) present"))
+    return found, notes
 
 
 @dataclass
@@ -212,7 +372,8 @@ def choose_model(candidates: list[str], available: set[str] | None,
     choice = Choice(model=None, report=None)
     for name in candidates:
         if name in DECOMMISSIONED:
-            choice.rejected.append((name, f"withdrawn by Groq. {DECOMMISSIONED[name]}"))
+            choice.rejected.append(
+                (name, f"withdrawn by its provider. {DECOMMISSIONED[name]}"))
             continue
         if name not in MODELS:
             choice.rejected.append(
@@ -221,8 +382,9 @@ def choose_model(candidates: list[str], available: set[str] | None,
             continue
         if available is not None and name not in available:
             choice.rejected.append(
-                (name, f"not in the {len(available)} models Groq reports for "
-                       "this key; a request would 404"))
+                (name, f"not in the {len(available)} models "
+                       f"{MODELS[name]['provider']} reports for this key; a "
+                       "request would 404"))
             continue
         report = check_request(prompt, payload_json, max_completion, name)
         if not report.fits:
@@ -396,15 +558,21 @@ class Report:
         return self.limit - self.total
 
     def summary(self) -> str:
-        tpm = MODELS[self.model]["tpm"]
+        _, ceiling = binding_limit(self.model)
         verdict = "fits" if self.fits else "DOES NOT FIT"
         return (
             f"{self.model}: prompt {self.prompt_tokens} + payload "
             f"{self.payload_tokens} + output reservation {self.completion_tokens} "
             f"+ envelope {ENVELOPE_TOKENS} = {self.total} tokens against "
-            f"{self.limit} usable ({tpm} TPM less {MARGIN:.0%} margin); "
+            f"{self.limit} usable ({ceiling} less {MARGIN:.0%} margin); "
             f"{verdict}, headroom {self.headroom}"
         )
+
+    @property
+    def cost(self) -> float:
+        """List-price cost of this request, output reservation spent in full."""
+        return cost_usd(self.prompt_tokens + self.payload_tokens
+                        + ENVELOPE_TOKENS, self.completion_tokens, self.model)
 
 
 def check_request(prompt: str, payload_json: str, max_completion: int,
@@ -631,6 +799,21 @@ def selftest() -> list[str]:
         failures.append("selftest: a prompt far over the model's ceiling was "
                         "accepted; the press would 413 in production")
 
+    # 3. the head of the fallback list must take the real request at full
+    #    PAYLOAD_CAPS and the real reservation, untrimmed. This is the check
+    #    that makes the whole guard mean something: a press whose primary only
+    #    fits after trimming is a press that quietly prints a thinner issue
+    #    every week. ADR-32 moved the press to Kimi precisely so this holds.
+    real = ROOT / "prompts" / "digest.md"
+    if real.exists():
+        head = fallback_models()[0]
+        report = check_request(real.read_text(), encode(worst_case_payload()),
+                               6_000, head)
+        if not report.fits:
+            failures.append(
+                f"selftest: the primary model {head} cannot take the worst-case "
+                f"request untrimmed. {report.summary()}")
+
     return failures
 
 
@@ -648,28 +831,31 @@ def main() -> int:
         failures.append(problem)
         print(f"SELFTEST: {problem}\n")
 
-    # Availability, when a key happens to be present. CI has none, and that is
-    # fine: the deploy-time and run-time checks in weekly.py are the ones that
-    # gate a real send. Here it is a bonus, never a requirement, so the guard
-    # stays runnable offline.
+    # Availability, for whichever providers have a key here. CI has none, and
+    # that is fine: the deploy-time and run-time checks in weekly.py are the
+    # ones that gate a real send. Here it is a bonus, never a requirement, so
+    # the guard stays runnable offline.
     available = None
-    key = os.environ.get("GROQ_API_KEY", "")
-    if key:
-        try:
-            available = available_models(key)
-            print(f"groq reports {len(available)} active models for this key")
-            for name in MODELS:
-                if name not in available:
-                    failures.append(
-                        f"{name} is in budget.MODELS but Groq does not list it; "
-                        "a press pointed at it would 404")
-                    print(f"  MISSING AT PROVIDER: {name}")
-            print()
-        except AvailabilityError as exc:
-            print(f"availability check skipped: {exc}\n")
+    candidates = fallback_models()
+    if any(os.environ.get(PROVIDERS[p]["key_env"]) for p in providers_for(candidates)):
+        available, notes = available_everywhere(candidates, os.environ)
+        for note in notes:
+            print(f"  {note}")
+        for name in MODELS:
+            provider = MODELS[name]["provider"]
+            if not os.environ.get(PROVIDERS[provider]["key_env"]):
+                continue
+            if name not in available:
+                failures.append(
+                    f"{name} is in budget.MODELS but {provider} does not list "
+                    "it; a press pointed at it would 404")
+                print(f"  MISSING AT PROVIDER: {name}")
+        print()
     else:
-        print("no GROQ_API_KEY here, so model existence is not checked. "
-              "weekly.py checks it at deploy and at run start.\n")
+        missing = ", ".join(
+            PROVIDERS[p]["key_env"] for p in providers_for(candidates))
+        print(f"no provider key here ({missing}), so model existence is not "
+              "checked. weekly.py checks it at deploy and at run start.\n")
 
     for press in presses():
         path = ROOT / press.prompt
@@ -707,8 +893,16 @@ def main() -> int:
                                    model)
             flag = "" if available is None else (
                 " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
-            print(f"  {rank}. {report.summary()}{flag}")
+            provider = MODELS[model]["provider"]
+            print(f"  {rank}. [{provider}] {report.summary()}{flag}")
             if report.fits:
+                if not fits_any:
+                    # the first model that fits is the one that will write, so
+                    # its cost is the issue's cost. ADR-32 budgeted ~$0.05.
+                    print(f"     cost at list price, worst case: "
+                          f"${report.cost:.4f} an issue "
+                          f"(${MODELS[model]['price_in']:.2f}/M in, "
+                          f"${MODELS[model]['price_out']:.2f}/M out)")
                 fits_any = True
 
         if not fits_any:

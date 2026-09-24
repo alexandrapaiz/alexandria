@@ -21,17 +21,30 @@ same Monday process makes the trajectories maximally fresh and costs no slot.
 The digest is a workflow, not an agent (ADR-6): every query is known in
 advance, so the model only writes.
 
-Needs secrets: `neon`, `groq`, and the Gmail secret(s) (GMAIL_ADDRESS +
-GMAIL_APP_PASSWORD) once the newsletter is live; until then the run succeeds
-and only skips the email.
+Needs secrets: `neon`, `moonshot`, `groq`, and the Gmail secrets
+(GMAIL_ADDRESS + GMAIL_APP_PASSWORD) once the newsletter is live; until then
+the run succeeds and only skips the email.
+
+**The one command the chair runs before the first deploy** (ADR-32). The press
+writes on Moonshot's Kimi now, and the key lives in a Modal secret named
+`moonshot`. Only the owner holds the key. Paste it at the prompt rather than
+putting it on the command line, so it never lands in a shell history or a
+transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+No agent creates this, no agent reads it, and the value appears nowhere in this
+repository. The name does, and the name is all the code needs.
+
+**Then the deploy**, unchanged in shape and with one more thing checked:
 
     python3 pipeline/budget.py                    # does the request fit?
     modal run pipeline/weekly.py::preflight        # does the model still exist?
     modal run pipeline/weekly.py                  # one-off manual run (both, then print)
     modal deploy pipeline/weekly.py               # install the Monday schedule
 
-The deploy command, as one line, which is what the chair runs after a merge
-that touches this file or prompts/digest.md:
+As one line, which is what the chair runs after a merge that touches this file
+or prompts/digest.md:
 
     python3 pipeline/budget.py \
       && modal run pipeline/weekly.py::preflight \
@@ -40,10 +53,10 @@ that touches this file or prompts/digest.md:
 Neither guard is optional ceremony, and they check different things.
 
 **Does the request fit?** Incident 22: an editorial merge grew the generator
-prompt past the model's per-request token ceiling, Groq answered 413, and no
-issue was written. `pipeline/budget.py` owns that arithmetic and runs in CI on
-every change to a generator prompt or this pipeline, before deploy, and again
-inside the container before it calls Groq.
+prompt past the model's per-request token ceiling, the provider answered 413,
+and no issue was written. `pipeline/budget.py` owns that arithmetic and runs in
+CI on every change to a generator prompt or this pipeline, before deploy, and
+again inside the container before the writing call.
 
 **Does the model still exist?** Incident 24: Groq withdrew `groq/compound`, the
 press answered 404 for three days, and the discovery was the owner noticing that
@@ -54,6 +67,10 @@ again at the start of every run, `FALLBACK_MODELS` gives the run somewhere to
 go when the answer is no, and `notify_owner` mails the owner the moment the
 press cannot print. That last one is the important one. A press that fails
 silently has no failure mode the org can respond to.
+
+Both questions are now asked of both providers, because the fallback list
+crosses providers on purpose and a check that only covers one of them is a
+check with a hole in it exactly where the press lives.
 """
 
 import hashlib
@@ -64,7 +81,13 @@ from datetime import date, timedelta
 
 import modal
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+# ADR-32 (2026-09-24): the press's single writing call runs on Moonshot's Kimi.
+# Groq stays as the corpus's brain and as the press's last resort.
+#
+# Neither URL is written out here. `pipeline/budget.py` owns the provider table
+# (base URL, key environment variable, Modal secret name, docs) so that one
+# file answers "where does this model live and what will it accept", and the
+# guard cannot be checking a different endpoint from the one the press calls.
 
 # Incident 24, 2026-09-23: Groq withdrew `groq/compound` and the press answered
 # 404 for three days without telling anyone. The press had been moved to it on
@@ -73,27 +96,36 @@ GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 # agentic *preview* system, and previews are withdrawn without the deprecation
 # notice production models get.
 #
-# So the press no longer has a model. It has an ordered list, and three rules
-# about it.
+# Then the whole free tier turned out to be too small: every remaining Groq
+# free model caps a single request at 8,000 tokens and the generator prompt
+# alone is 9,865. ADR-32 is the owner's answer. The press writes on Kimi, which
+# she funded, and the list below is what happens when Kimi is not there.
 #
-# 1. **Production before preview.** `openai/gpt-oss-120b` is the primary
-#    because Groq lists it as a production model, which is the only status that
-#    carries a deprecation commitment.
-# 2. **A different vendor at rank two.** `qwen/qwen3.8-27b` is preview rather
-#    than production, and it is second anyway, because the failure this list
-#    exists to survive is a *family* withdrawal. If OpenAI's two gpt-oss models
-#    go the way compound went, they will very likely go together, and a
-#    fallback list of three OpenAI models is one point of failure wearing three
-#    hats.
-# 3. **Rank three covers capacity, not deprecation.** `openai/gpt-oss-20b` is
-#    the same family and the same limits as the primary, so it does nothing
-#    against a withdrawal, but it is a real second chance against a 429 or a
-#    single-model outage.
+# 1. **`kimi-k2.6`, on Moonshot, is the press.** 256K of context against a
+#    ~36,000-token worst case, a prepaid account rather than a free tier, and
+#    open weights, which is what makes the destination in ADR-32 reachable:
+#    the same class of model served by alexandria itself, so no provider can
+#    withdraw the press's model a third time.
+#
+#    The id is `kimi-k2.6` and not `kimi-k2`. The bare series was discontinued
+#    on 2026-05-25, so the obvious id is the one that 404s. That is incident 24
+#    exactly, and the only reason it did not happen again here is that
+#    `check_availability` asks the provider before the run trusts the name.
+#
+# 2. **Then Groq, in the order incident 24 argued for**: production before
+#    preview, and a second vendor at rank two so a family withdrawal cannot
+#    take the whole list. Be honest about what these three are worth today:
+#    at 8,000 TPM they cannot print the issue at the current prompt size, and
+#    the budget guard prints that arithmetic on every run. They are here for
+#    the day the prompt gets shorter or a ceiling moves, and if they ever do
+#    write, they will write a short issue. A last resort that prints something
+#    small beats a last resort that does not exist.
 #
 # Every entry is verified by pipeline/budget.py, which reads this list out of
 # this file rather than keeping a copy, and refuses the deploy if any entry has
 # no published limits or has been withdrawn.
 FALLBACK_MODELS = [
+    "kimi-k2.6",
     "openai/gpt-oss-120b",
     "qwen/qwen3.8-27b",
     "openai/gpt-oss-20b",
@@ -105,7 +137,7 @@ FALLBACK_MODELS = [
 MODEL = FALLBACK_MODELS[0]
 
 # Retries per model before the press gives up on it and tries the next one.
-# 429 is the case this exists for: Groq's TPM is per model, so moving down the
+# 429 is the case this exists for: a per-model rate limit means moving down the
 # list is itself a rate-limit remedy and not only a deprecation remedy.
 RETRIES_PER_MODEL = 4
 BACKOFF_SECONDS = 30      # doubled each attempt, capped below
@@ -363,6 +395,15 @@ class RateLimited(RuntimeError):
     """429 survived every retry on this model."""
 
 
+class MissingKey(RuntimeError):
+    """A provider's API key is not in this environment.
+
+    Its own class rather than a bare KeyError, so the fallback walk can treat
+    "we cannot reach this provider" the same way it treats a withdrawn model:
+    record it, say which Modal secret is missing, and try the next one.
+    """
+
+
 class PressCannotPrint(RuntimeError):
     """No model in the fallback list could write the issue.
 
@@ -381,62 +422,128 @@ MAX_COMPLETION_TOKENS = 6000
 
 
 def log_limits(resp, model: str) -> None:
-    """Groq's own account of the budget, which outranks anything we assume."""
+    """The provider's own account of the budget, which outranks what we assume.
+
+    Groq sends these headers on every response. Moonshot does not always, and
+    silence is not a problem: the header is a cross-check on budget.MODELS, not
+    an input to any decision.
+    """
     limit = resp.headers.get("x-ratelimit-limit-tokens")
     remaining = resp.headers.get("x-ratelimit-remaining-tokens")
     if limit:
-        print(f"groq says: limit {limit} tokens, {remaining} remaining. If that "
-              f"disagrees with budget.MODELS[{model!r}], the header is right.")
+        print(f"provider says: limit {limit} tokens, {remaining} remaining. If "
+              f"that disagrees with budget.MODELS[{model!r}], the header is "
+              "right and the table is the thing to fix.")
+
+
+def api_key_for(provider: str) -> str:
+    """The key for `provider`, or a loud failure naming the Modal secret.
+
+    ADR-32 gave the press a funded account, and the chair creates the secret
+    from the owner's key. This seat never sees the value and must never print
+    it; what it can do, when the value is not there, is say exactly which
+    secret is missing and what command creates it. A press that dies on a
+    KeyError for `MOONSHOT_API_KEY` tells the owner nothing.
+    """
+    import os
+
+    spec = budget().PROVIDERS[provider]
+    key = os.environ.get(spec["key_env"], "").strip()
+    if not key:
+        raise MissingKey(
+            f"{spec['key_env']} is not in this environment, so the press "
+            f"cannot reach {provider}. It comes from the Modal secret named "
+            f"`{spec['secret']}`, which the chair creates with:\n"
+            f"    modal secret create {spec['secret']} {spec['key_env']}=<paste>\n"
+            f"Then redeploy: modal deploy pipeline/weekly.py"
+        )
+    return key
 
 
 def check_availability() -> set[str]:
-    """Which models Groq actually has, right now, for our key.
+    """Which models the press's providers actually have, right now, for our keys.
 
     Incident 24's standing fix. The budget guard checks that the request fits;
     this checks that there is something to send it to. It costs no tokens
     against any ceiling, so it runs at deploy and again at the start of every
     run, and it raises loudly rather than guessing.
+
+    One provider being unreachable is a note, not the end of the run, because
+    the fallback list crosses providers on purpose. What ends the run is no
+    usable model anywhere, and the missing primary key, which is a
+    configuration fact the owner can fix in one command.
     """
     import os
 
     guard = budget()
-    available = guard.available_models(os.environ.get("GROQ_API_KEY", ""))
-    print(f"groq has {len(available)} active models for this key")
+    primary = guard.PRIMARY_PROVIDER
+    # fail here rather than three functions later, and name the secret
+    try:
+        api_key_for(primary)
+    except MissingKey as exc:
+        raise PressCannotPrint(str(exc)) from exc
+
+    available, notes = guard.available_everywhere(FALLBACK_MODELS, os.environ)
+    for note in notes:
+        print(f"availability: {note}")
     usable = [m for m in FALLBACK_MODELS if m in available]
-    missing = [m for m in FALLBACK_MODELS if m not in available]
-    for name in missing:
-        print(f"AVAILABILITY: {name} is in FALLBACK_MODELS but Groq does not "
-              "list it. A request to it would 404, as it did in incident 24.")
+    for name in FALLBACK_MODELS:
+        if name in available:
+            continue
+        provider = guard.MODELS.get(name, {}).get("provider", "?")
+        print(f"AVAILABILITY: {name} is in FALLBACK_MODELS but {provider} does "
+              "not list it. A request to it would 404, as it did in incident 24.")
     print(f"fallbacks present: {usable or 'NONE'}")
     if not usable:
+        docs = ", ".join(
+            guard.PROVIDERS[p]["docs"] for p in guard.providers_for(FALLBACK_MODELS))
         raise PressCannotPrint(
-            "Groq lists none of the press's fallback models "
+            "no provider lists any of the press's fallback models "
             f"({', '.join(FALLBACK_MODELS)}). The press cannot print until "
             "pipeline/weekly.py FALLBACK_MODELS and pipeline/budget.py MODELS "
-            "are updated from https://console.groq.com/docs/models."
+            f"are updated from {docs}."
         )
     return available
 
 
 def call_model(model: str, prompt: str, user: str) -> str:
-    """One model, with backoff on 429. Raises so the caller can move down the list."""
-    import os
+    """One model, with backoff on 429. Raises so the caller can move down the list.
 
+    The request body is the OpenAI-compatible minimum and nothing else. Both
+    providers speak that dialect, so there is one code path and no provider
+    branch to get wrong. Two deliberate absences:
+
+    * **No `compound_custom`.** It was a Groq-only block for the agentic
+      compound system, and compound is gone. ADR-6 holds regardless: the press
+      is a workflow, one prompt in, one issue out, no tools.
+    * **No `temperature` on Kimi.** Moonshot documents temperature, top_p, n
+      and both penalties as fixed values on k2.6, so sending 0.3 would be a
+      parameter the model overrides. Sending settings that do nothing is how a
+      reader comes to believe a knob exists.
+    """
     import httpx
+
+    guard = budget()
+    provider = guard.provider_of(model)
+    url = guard.endpoint(provider, "/chat/completions")
+    key = api_key_for(provider)
+
+    body = {
+        "model": model,
+        "max_completion_tokens": MAX_COMPLETION_TOKENS,
+        "messages": [
+            {"role": "system", "content": prompt},
+            {"role": "user", "content": user},
+        ],
+    }
+    if provider != "moonshot":
+        body["temperature"] = 0.3
 
     for attempt in range(RETRIES_PER_MODEL):
         resp = httpx.post(
-            GROQ_URL,
-            headers={"Authorization": f"Bearer {os.environ['GROQ_API_KEY'].strip()}"},
-            json={
-                "model": model,
-                "temperature": 0.3,
-                "max_completion_tokens": MAX_COMPLETION_TOKENS,
-                "messages": [
-                    {"role": "system", "content": prompt},
-                    {"role": "user", "content": user},
-                ],
-            },
+            url,
+            headers={"Authorization": f"Bearer {key}"},
+            json=body,
             timeout=300,
         )
         log_limits(resp, model)
@@ -460,9 +567,9 @@ def call_model(model: str, prompt: str, user: str) -> str:
 
         if resp.status_code >= 400:
             # incident 22 cost a day partly because raise_for_status() prints
-            # the status and throws the body away. The body is where Groq
-            # states the actual limit and the actual request size.
-            print(f"groq {resp.status_code} on {model}: {resp.text[:1000]}")
+            # the status and throws the body away. The body is where the
+            # provider states the actual limit and the actual request size.
+            print(f"{provider} {resp.status_code} on {model}: {resp.text[:1000]}")
             # 400 on a model that exists is usually an unsupported parameter,
             # which the next model may well accept
             raise ModelGone(f"{resp.status_code}: {resp.text[:400]}")
@@ -471,9 +578,10 @@ def call_model(model: str, prompt: str, user: str) -> str:
         message = choice["message"]
         fired = message.get("executed_tools") or []
         if fired:
-            # No model in FALLBACK_MODELS is agentic today. If one ever is, the
-            # issue may contain something that did not come from our corpus,
-            # and that is a fact about the issue, not a warning about the call.
+            # No model in FALLBACK_MODELS is agentic today, and ADR-6 says the
+            # press never gets tools. If one ever fires anyway, the issue may
+            # contain something that did not come from our corpus, and that is
+            # a fact about the issue, not a warning about the call.
             names = ", ".join(sorted({t.get("type", "?") for t in fired}))
             print(f"WARNING: {model} executed built-in tools ({names}). Treat "
                   "this issue as unverified and check it against the payload "
@@ -502,8 +610,9 @@ def write_digest(payload: dict, prompt: str,
 
     for model in FALLBACK_MODELS:
         if available is not None and model not in available:
-            tried.append(f"{model}: not listed by Groq for this key; skipped "
-                         "without a request (this is incident 24's 404)")
+            provider = guard.MODELS.get(model, {}).get("provider", "?")
+            tried.append(f"{model}: not listed by {provider} for this key; "
+                         "skipped without a request (incident 24's 404)")
             continue
         try:
             user = guard.fit_payload(copy.deepcopy(payload), prompt,
@@ -523,7 +632,7 @@ def write_digest(payload: dict, prompt: str,
 
         try:
             body = call_model(model, prompt, user)
-        except (ModelGone, RateLimited) as exc:
+        except (ModelGone, RateLimited, MissingKey) as exc:
             tried.append(f"{model}: {exc}")
             print(f"{model} failed ({exc}); trying the next fallback")
             continue
@@ -651,7 +760,8 @@ def notify_owner(subject: str, detail: str) -> str:
         "sent to subscribers.\n\n"
         "What to check, in order:\n"
         "  1. modal app logs alexandria-weekly\n"
-        "  2. https://console.groq.com/docs/models, against "
+        "  2. https://platform.kimi.ai/docs/models and "
+        "https://console.groq.com/docs/models, against "
         "pipeline/weekly.py FALLBACK_MODELS\n"
         "  3. python3 pipeline/budget.py, which prints the arithmetic for "
         "every fallback\n"
@@ -670,7 +780,10 @@ def notify_owner(subject: str, detail: str) -> str:
 
 
 @app.function(
-    secrets=[modal.Secret.from_name("groq")],
+    # Both providers, because preflight's whole job is to ask each of them
+    # whether the models named in FALLBACK_MODELS still exist. Values are never
+    # read by this seat; only the names appear in the repository.
+    secrets=[modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
     timeout=300,
 )
 def preflight() -> str:
@@ -693,6 +806,9 @@ def preflight() -> str:
                                 payload_json, MAX_COMPLETION_TOKENS)
     print("preflight, worst-case payload:")
     print(choice.summary())
+    if choice.model:
+        print(f"  cost at list price, worst case: ${choice.report.cost:.4f} "
+              "an issue")
     if not choice.model:
         raise PressCannotPrint(
             "preflight: no model in the fallback list can write this issue.\n"
@@ -702,29 +818,33 @@ def preflight() -> str:
 
 
 @app.function(
-    # Monday 09:00 UTC. Moved from 15:00 on 2026-09-24 for incident 24's part
-    # (d): the press shares one Groq key, and therefore one TPM budget, with
-    # four daily crons. Groq's own words, read from the live rate-limit docs
-    # this day: "Rate limits apply at the organization level, not individual
-    # users." A second API key on the same account is therefore worth nothing,
-    # which rules out the dedicated-key option as stated; the press has to run
-    # when the crons are idle instead.
+    # Monday 09:00 UTC. Moved from 15:00 on 2026-09-24, and it stays at 09:00
+    # now that the press writes on Moonshot, for a different and better reason.
     #
-    # The daily crons occupy 11:00 (ingest), 11:30 (distill), 12:00 (triage)
-    # and 14:00 (interpret), each with a one-hour timeout, so the contested
-    # band is 11:00 to 15:00 and the old 15:00 slot sat directly against
-    # interpret's worst case. 09:00 is two clear hours ahead of the earliest
-    # cron, and it is the right editorial slot anyway: the issue covers the
-    # week that ended Sunday, so Monday's own ingest is not in it, and 09:00
-    # UTC is 5am in New York, which puts the issue in a reader's inbox before
-    # the working day rather than in the middle of it.
+    # The original reason was contention: the press shared one Groq key, and
+    # therefore one 8,000-token-per-minute budget, with four daily crons, and
+    # Groq applies rate limits "at the organization level, not individual
+    # users". ADR-32 ends that argument. The press has its own provider and its
+    # own prepaid account, so it no longer competes with triage, distill or
+    # interpret for anything. The Groq fallbacks still would, which is one more
+    # reason for the press to keep out of the 11:00-to-15:00 band the daily
+    # crons occupy (11:00 ingest, 11:30 distill, 12:00 triage, 14:00 interpret,
+    # each with a one-hour timeout).
+    #
+    # The reason to keep 09:00 is editorial. The issue covers the week that
+    # ended Sunday, so Monday's own ingest is not in it, and 09:00 UTC is 5am
+    # in New York, which puts the issue in a reader's inbox before the working
+    # day rather than in the middle of it.
     #
     # Runtime change under docs/agents/runtime-changes.md. Its smoke test is
     # the deploy command in this module's docstring: preflight, then one manual
     # `modal run`, then the deploy that installs this schedule. The next cron
     # is not the first execution of this machinery.
     schedule=modal.Cron("0 9 * * 1"),
-    secrets=[modal.Secret.from_name("neon"), modal.Secret.from_name("groq"),
+    secrets=[modal.Secret.from_name("neon"),
+             # ADR-32: the press writes on Kimi. `moonshot` holds
+             # MOONSHOT_API_KEY and the chair creates it from the owner's key.
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq"),
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=1800,
 )
