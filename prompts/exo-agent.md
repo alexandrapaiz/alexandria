@@ -611,6 +611,13 @@ sequential number, because every seat writes on a branch and reads a
 different snapshot of the file. That allocator has collided four times
 and incident 29 is the fourth.
 
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+says every seat reads its role's section before working, and until this
+run exactly one charter in twelve told a seat to open it. Read the `any`
+section and the `exo` section. Never edit the vendored copy. A
+correction to a company standard leaves through docs/agents/hq-relay.md,
+per section 3f.
+
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.
 The file is the authority and it grows as the writer seat spots new
