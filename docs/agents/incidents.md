@@ -3262,3 +3262,55 @@ neither may any future daily press on the same key. Options for the
 engineer: a scratch-row lock the callers check, or a second Moonshot
 organization for rehearsals. ExO: the concurrency ceiling belongs in
 `docs/agents/model-routing.md` beside the Groq rate-limit note.
+
+## INC-2026-09-24-dispatch-403 — ADR-033's proof did not transfer: the PM's own dispatch call 403s
+
+The PM standup (pm/standup-2026-09-24-b, second run this day) tried to
+exercise charter §5 for the first time since ADR-033 marked it ACTIVE:
+`PM_DISPATCH_ENABLED` was `true`, the owner-present gate was clear
+(10h40m since the last `workflow_dispatch`), and two well-evidenced
+dispatch candidates were queued (market's stalled PR #93, engineer's
+conflicting PR #60). Both attempts failed identically:
+
+    gh workflow run agent-market.yml -f owner_instructions='...'
+    could not create workflow dispatch event: HTTP 403: Resource not
+    accessible by integration
+    (https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/360993730/dispatches)
+
+Reproduced directly against the REST endpoint (`gh api
+.../dispatches -X POST`), same 403, same message. This is not a typo
+or a wrong workflow id: the endpoint, the ref, and the input all
+matched `.github/workflows/agent-market.yml` exactly.
+
+**Why this contradicts ADR-033.** The decision states plainly that "a
+parent run started a child run with `GITHUB_TOKEN`" in HQ's
+`dispatch-probe` workflow, and that "no App key is needed" given
+`permissions: actions: write` on the calling workflow — which
+`.github/workflows/agent-pm.yml` already declares. Alexandria's own PM
+run, today, with that exact permission declared, could not create a
+dispatch event with the token it was given. Either the probe's result
+does not transfer from HQ's repo to this one (a different app
+installation, a different org-level Actions setting, or a
+fine-grained-PAT-vs-GITHUB_TOKEN difference nobody has isolated yet),
+or something about this specific run's token was scoped down from what
+the job's `permissions:` block requests. `gh auth status` in this run
+showed the active token authenticated as `claude[bot]` (the Claude Code
+app installation), not obviously the bare Actions-runner
+`GITHUB_TOKEN` the workflow YAML sets as `GH_TOKEN: ${{ github.token
+}}` — worth an engineer or ExO check of whether the two tokens are
+actually the same value in this harness, since if they are not, ADR-033
+was validated against a token this run never actually had.
+
+**What this run did instead of pretending it worked.** Neither
+dispatch fired. Both instructions are recorded in
+`docs/sprints/dispatch-queue.md` under "Dispatched by the PM (attempted,
+not fired)" with the exact 403 and the commands the owner or chair can
+run by hand to get the same result manually. No run URL exists for
+either because no run was created.
+
+**Standing question for the ExO or engineer, not answered here.**
+Confirm what token `github.token` actually resolves to inside a
+`claude-code-action` step (versus a plain `run:` shell step in the same
+job), and whether HQ's probe used the same execution path this seat
+uses. Until that is answered, charter §5 should be read as unproven in
+this repo specifically, not merely unproven in general.
