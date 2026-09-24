@@ -3239,3 +3239,129 @@ these workflows fired twice, and the two seats it hit tonight are the two
 the owner dispatched by hand. Worth checking whether the dispatch path
 sends one event or two before any seat writes more rules about how to
 survive the second one.
+
+## INC-2026-09-24-grading-has-no-truth-pass — The editorial instrument grades prose and cannot see a false claim (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file. Not a sequential number, and nothing here is renumbered.
+
+### What happened
+
+Issue 2026-W39 opened its fell-behind section on this:
+
+> Start with the number that turned out to be wrong. A prior benchmark
+> result held that an expert-authored reference implementation achieves
+> 82.2% success on τ^τ-Bench, establishing a high ceiling for agent
+> construction tasks. DRG-MAPPO, a hierarchical multi-agent
+> reinforcement learning method for cooperative air combat, now reports
+> 87% win rate in high-fidelity simulations. The contexts differ, agent
+> construction versus combat simulation, but the broader belief that
+> expert-authored baselines set immovable ceilings took a hit this week.
+
+82.2% is a task success rate on a benchmark for building agents. 87% is a
+win rate for simulated fighter aircraft against a simulated adversary.
+They are not measurements of the same thing, so no belief about
+agent-construction ceilings is touched by the second number. Nothing
+fell. The section whose entire job is to report what stopped being true
+led with something that did not stop being true.
+
+Four editorial passes ran over this issue on 2026-09-24 and none of them
+found it. Three separate writer runs graded it, one of them rewrote the
+passage in full, and the rewrite kept the claim and shortened the hedge:
+
+> The domains are different and the comparison is loose. What broke is
+> the belief that an expert-written baseline is a wall.
+
+### Why the instrument could not see it
+
+The canon's grading procedure ran four passes, in this order: the
+outsider read, the taste gate, the laws, the ban list. Every one of them
+asks how the issue is written. Not one of them asks whether what it says
+is so.
+
+That is not an oversight in any single pass. It is the shape of the whole
+instrument. The writer seat was created to own the words as a craft, and
+its grading procedure was built entirely out of craft questions, so a
+claim that is false and well made scores clean on all four. The better
+the prose, the more invisible the defect, which is why the rewrite made
+it worse rather than catching it.
+
+The hedge is how it survived contact with four careful readers. "The
+contexts differ" is correct, it is honest, and it reads as exactly the
+instrument honesty the owner ruled is part of the product. A reader
+checking for honesty finds honesty and stops. Nobody asked what the
+honest clause was doing there, which was licensing the claim behind it.
+
+### Why this is a repeat and not a new finding
+
+Third occurrence in two days of one shape: **a check passed something it
+had no way to fail.**
+
+1. **Incident 26.** The ASCII rule stated the class and the pre-output
+   gate enforced a narrower form of it, so four of eight non-ASCII
+   characters walked through a gate written to stop them.
+2. **Incident 32.** `tools/check_digest_quality.py` returned `0
+   blocking` on the issue the owner rejected, because `parse_items`
+   read zero items out of it and every per-item rule then ran over
+   nothing and reported nothing.
+3. **This one.** The grading canon returns four clean passes on a false
+   claim, because none of the four is a claim check.
+
+The general form is worth stating for the ExO's pattern reading, because
+incident 26 already produced one and this is its sharper version.
+Incident 26 asked: when a fix enumerates, what is it an instance of?
+This one asks the question one level up. **When a check passes, ask what
+result it is capable of returning.** A gate whose possible outputs do
+not include the defect in front of you has not examined it, and a green
+light from such a gate is not evidence. Incident 32 named this about a
+script. It is true of a procedure written in prose in exactly the same
+way, and the procedure is the one nobody thought to audit because it
+lives in a canon rather than in code.
+
+### The fix, in this pull request
+
+- **`docs/voice/canon.md`**: a fifth grading pass, the claims pass. It
+  takes every comparison and every fallen belief in the issue and asks
+  whether the two things measure the same quantity. It runs last, it is
+  procedure rather than law, and it enforces laws 6 and 7, which already
+  required the evidence grade to be aimed at the risk that is actually
+  there.
+- **`prompts/digest.md`**: the edge rule gains a second test. It had one,
+  for strength, covering the `contradicts` edge that is really a scope
+  limit. It now has one for kind, and the rule is that where two claims
+  do not measure the same thing there is no edge at any strength.
+  Alongside it, the hedge rule: if you find yourself writing the
+  concession, you do not have the finding.
+- **`docs/voice/ban-list.md` entry 50**: the hedge that licenses the
+  claim it qualifies, with the W39 sentence as the specimen.
+
+### What is still open, and it is not the writer seat's
+
+The prompt can only refuse to print an edge the claim graph hands it.
+The graph should not have produced this pair at all, because an
+agent-construction benchmark claim and an air-combat simulation claim
+share no measure and the edge between them is not a judgment call that
+needs a language model. Filed in `docs/ideas.md` for the engineer.
+Charter step 4 applies: the editorial half is in this pull request and
+it is the last prompt edit worth making on this one.
+
+### The second thing this run found, recorded because it is the same shape
+
+`docs/voice/value.md` was specified on 2026-09-21 as phase zero of the
+copy pipeline and did not exist on 2026-09-24. The writer charter says
+plainly that while it is missing, drafting copy is the wrong work and
+writing that page is the right work. Four writer runs happened in the
+twenty-four hours before this one. All four graded the same unchanged
+issue and none opened the file.
+
+The cost was already paid before the file was specified: eight rounds of
+site copy, all eight rejected, and the chair's own reading of them found
+that every one described the issue or the mechanism and none described
+the library. Incident 25 named the missing artifact. Nothing scheduled
+it, so every run chose the work its charter described first and the
+blocking work stayed last for four days.
+
+The shape is the same as the one above. A seat that grades its own output
+every run will find defects in its output every run, and will never find
+the work it has not started. Drafted in this pull request and awaiting
+her approval.
