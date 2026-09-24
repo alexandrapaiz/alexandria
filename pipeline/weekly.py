@@ -39,6 +39,7 @@ repository. The name does, and the name is all the code needs.
 **Then the deploy**, unchanged in shape and with one more thing checked:
 
     python3 pipeline/budget.py                    # does the request fit?
+    python3 tools/rehearse_email.py               # does the email still render?
     modal run pipeline/weekly.py::preflight        # does the model still exist?
     modal run pipeline/weekly.py                  # one-off manual run (both, then print)
     modal deploy pipeline/weekly.py               # install the Monday schedule
@@ -47,10 +48,23 @@ As one line, which is what the chair runs after a merge that touches this file
 or prompts/digest.md:
 
     python3 pipeline/budget.py \
+      && python3 tools/rehearse_email.py --quiet \
       && modal run pipeline/weekly.py::preflight \
       && modal deploy pipeline/weekly.py
 
-Neither guard is optional ceremony, and they check different things.
+No guard in that chain is optional ceremony, and each checks a different
+thing.
+
+**Does the email still render?** The owner's ruling of 2026-09-24: the
+emails had no UI and only the site did. The designed template had been in
+the repo since 2026-09-19 and the press had never opened it, because the
+only code path that rendered an email ran inside a container, at the
+moment of sending, to real subscribers. Nobody could look at one without
+mailing it. `tools/rehearse_email.py` fills the template through the
+press's own `build_messages()` and prints the result, sends nothing, costs
+nothing, and exits non-zero if any slot is left unfilled. It is the email
+half of docs/agents/press-rehearsal.md. The model-call half, `rehearse()`,
+is still unbuilt and still the third gate that document specifies.
 
 **Does the request fit?** Incident 22: an editorial merge grew the generator
 prompt past the model's per-request token ceiling, the provider answered 413,

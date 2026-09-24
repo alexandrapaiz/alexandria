@@ -19,6 +19,8 @@ on:
       - "prompts/daily.md"
       - "pipeline/**"
       - "tests/test_press_resilience.py"
+      - "tests/test_email_template.py"
+      - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
   push:
     branches: [main]
@@ -27,6 +29,8 @@ on:
       - "prompts/daily.md"
       - "pipeline/**"
       - "tests/test_press_resilience.py"
+      - "tests/test_email_template.py"
+      - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
   workflow_dispatch:
 
@@ -65,3 +69,17 @@ jobs:
       - name: the press survives a provider that changed under it
         if: always()
         run: python3 tests/test_press_resilience.py
+
+      # The owner's ruling of 2026-09-24: the emails had no UI, only the site
+      # did. The template had been in the repo for five days and the press had
+      # never opened it. These tests hold that seam: the press reaches the
+      # template, the image carries it, every slot fills, and the send keeps
+      # its plain-text part and its editorial subject.
+      #
+      # `site/emails/digest.html` is in this workflow's paths for the same
+      # reason. The template is the frontend seat's file and the renderer is
+      # the engineer's, so a change to one that breaks the other is a
+      # cross-seat break, which is the kind CI exists to catch.
+      - name: the press sends the designed email
+        if: always()
+        run: python3 tests/test_email_template.py
