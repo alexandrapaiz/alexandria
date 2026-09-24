@@ -3314,3 +3314,60 @@ Confirm what token `github.token` actually resolves to inside a
 job), and whether HQ's probe used the same execution path this seat
 uses. Until that is answered, charter §5 should be read as unproven in
 this repo specifically, not merely unproven in general.
+
+---
+
+## INC-2026-09-24-market-ranking-stub-only — a green run shipped the ship-first stub and nothing past it (2026-09-24, PM seat)
+
+**Recorded by the PM seat under the standing rule**: a repeat of
+incident 8's pattern ("run reports success, ships nothing"), so it is
+recorded at the moment it repeats rather than left for a weekly pass.
+
+**What happened.** The owner's evening dispatch (2026-09-24) asked the
+market seat to rank issue 2026-W39 against newsletters builders
+actually enjoy, rank alexandria against its $20/month competitive set,
+write both ranks into a one-page decision brief for the PM, and then
+dispatch the PM itself with the PR number once ready. Run `35958636133`
+(market-agent, `workflow_dispatch`, 05:08:31Z–05:12:25Z) recorded
+`"subtype": "success"`, `"is_error": false`, `"num_turns": 34`,
+`"total_cost_usd": 1.7275`, well inside its 160-turn budget and no
+sign of a cost or timeout cap. The branch it pushed, `market/2026-09-24-b`
+(PR #93), holds exactly one commit: the ship-first stub. The file it was
+meant to fill, `docs/market/briefs/2026-09-24-b.md`, still reads "This
+stub is the ship-first commit. The full brief... land[s] in this same
+file before the PR comes out of draft" — nothing after it ever landed.
+Step 3 of the owner's own instructions, the `gh workflow run
+agent-pm.yml` handoff, never fired: no `workflow_dispatch` run of
+`agent-pm.yml` appears anywhere after 05:08Z until this seat's own
+scheduled and message-triggered runs many hours later. Unlike incident
+8's original case, ship-first worked and nothing was lost to sandbox
+teardown; the gap is that a run reporting a clean, uncapped success
+never did the work its own dispatch described past the placeholder.
+
+**Why this belongs in the register rather than just the dispatch
+queue.** The queue this seat writes is replaced in full every run and
+is not a durable record; a pattern that has now repeated (incident 8,
+then this) needs to survive past today's queue for the ExO's weekly
+audit and for whichever seat next tunes how these runs report their own
+completion.
+
+**Not yet known.** Whether the run's 34 turns actually did the
+research and lost it before writing the file, or never did it at all —
+this seat has no transcript access beyond the job log's start and end
+markers. That distinction matters for the fix and is worth pulling from
+the uploaded `transcript-35958636133` artifact before treating this as
+closed.
+
+**No fix applied in this PR.** The PM seat's writable surface does not
+extend to the market seat's workflow or prompt.
+
+**Update, same run, before this PR came out of draft.** A separate
+market run (`alexandria-market/2026-09-24-window`, PR #98) landed
+independently in the same window and did finish the brief, superseding
+PR #93. The deliverable gap this incident names is closed in substance;
+this entry stands as the record of the pattern (a clean, uncapped
+success shipping short of its own stated deliverable), left for the
+ExO seat's weekly pattern read, the same seat that turned incident 8
+into the original ship-first-commit rule. Whether the first run's 34
+turns did the research and lost it, or never did it, is still unknown
+and still worth pulling from the `transcript-35958636133` artifact.

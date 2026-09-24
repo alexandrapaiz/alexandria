@@ -4,208 +4,137 @@ Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run. Holds at most three proposed dispatches, ordered, and is
 allowed to hold none.
 
-## 2026-09-24 (Thursday, second standup this day)
+## 2026-09-24, ~16:03 UTC (third PM pass this window, reconciles #97 and #99)
 
-**Context.** The prior standup (PR #91, 04:58 UTC) ran inside the
-owner's synchronous session and queued nothing, correctly, since a
-`workflow_dispatch` was in progress at that moment. This run starts at
-15:47 UTC, ~10h40m after the last `workflow_dispatch` (writer-agent,
-05:09:00Z). Charter §5's owner-present gate (any dispatch within the
-last two hours) does not apply. `PM_DISPATCH_ENABLED` is `true`.
-Dispatch authority is ACTIVE (ADR-033). Both required conditions hold,
-so this run tried to fire rather than only propose. Checked before
-firing: no PM-initiated dispatch has fired yet today (every prior
-dispatch-queue.md version today logged "None this run"), so the daily
-ceiling (3/day, 1 per seat) started at zero. **Both attempts then failed
-with HTTP 403** — see "Dispatched by the PM" below and
-INC-2026-09-24-dispatch-403. Read the two entries that follow as
-proposals after all, exactly as if dispatch authority were still
-dormant, since in practice it did not fire.
+**What this run is.** Not a new standup read. `gh run list` and
+`gh pr list --state open` at 16:03 UTC, six minutes after PR #99
+opened, show no new run, no new PR, and no new decision beyond what
+#97 and #99 already recorded. There is nothing new to propose. This
+run's only contribution is fixing the thing #99 itself flagged as a
+problem: two open PM PRs (#97, #99) each fully replacing this file
+from the same base, leaving the owner to resolve the conflict by
+hand. This branch merges both (#97 first, then #99, per #99's own
+recommended order) and resolves docs/agents/incidents.md (both
+branches' entries are additive, both kept) and this file (#99's
+version kept in full, per #99's own note that it supersedes #97's
+proposals) into one mergeable PR. **Recommend the owner close #97 and
+#99 unmerged and merge this PR instead**, so there is one queue to
+read rather than two to reconcile.
 
-### 1. market — PR #93 has sat with only its ship-first stub for 10+ hours
+No new dispatch is proposed. Owner presence and the two
+`workflow_dispatch` runs inside the last two hours (per #97's and
+#99's own timestamps) still hold, and six quiet minutes since #99
+does not change that.
 
-**Trigger.** The owner dispatched this run herself last night ("run
-while she sleeps") to rank issue 2026-W39 against newsletters builders
-actually enjoy and rank alexandria against the $20/month competitive
-set, landing both in one brief for the PM. The run's own workflow
-entry shows `success` in 4m1s (35958636133, 05:08:31Z), but the branch
-`market/2026-09-24-b` carries exactly one commit — the ship-first stub,
-05:10:22Z — and the file itself still reads "Status: draft, in
-progress... The full brief... land in this same file before the PR
-comes out of draft." No further commit has landed since.
+## 2026-09-24, ~16:00 UTC (message-triggered standup, chair holding presence)
 
-**Cost of skipping it today.** The ranking the owner asked for, and
-that this seat's own PR promises to hand back to the PM, stays
-undelivered. If the run is not resumed, there is no record of whether
-it stalled (turn cap, timeout) or was simply never finished, and
-tomorrow's standup re-discovers the same stale draft.
+**Mid-run collision, disclosed plainly.** A scheduled `pm-agent` run
+(36022688185) started 15:46:55Z, four minutes before this session
+reached the point of opening its own PR, and produced **PR #97**,
+covering the same standup ground (market's stub, PR #60's conflict,
+run health). PR #97 has better evidence than this run could gather on
+one point: it could read `PM_DISPATCH_ENABLED` (confirmed `true`) and
+tried two real dispatches, both returning `HTTP 403`, logged as
+`INC-2026-09-24-dispatch-403`. Trust that finding over anything this
+run says about dispatch authority. Two more PRs landed in the same
+window: **#98** (market, delivers the ranking brief PR #93's stub
+promised) and **#95** (writer, supersedes #92, the canon-law-14/W39
+rewrite chain's new head). #98 postdates #97, so #97 never read it —
+this run did, and that is this run's one piece of non-duplicate value:
+deciding from the finished brief, which the chair's handoff asked for
+by name. Read this file's proposals as an addendum to #97's, not a
+second copy of them; no new market or engineer dispatch is proposed
+here for that reason.
 
-**Dispatch.**
+### Decided from the market brief (PR #98, `docs/market/briefs/2026-09-24-b.md`)
 
-```bash
-gh workflow run agent-market.yml \
-  -f owner_instructions='PR #93 (branch market/2026-09-24-b) is a draft
-with only its ship-first stub commit from 05:10 UTC; the promised full
-brief never landed. Build on that branch, do not start a new one.
-Finish exactly what the PR body already commits to: rank issue 2026-W39
-(site/content/issues/2026-W39.md) against newsletters builders actually
-enjoy (Interconnects, Ahead of AI, Latent Space, The Batch, Import AI,
-TLDR AI, Bens Bites, and comparable others), scored on enjoyability,
-density, and whether a reader opens the next one; rank alexandria
-against the $20/month competitive set as the live site stands now; land
-both ranks plus a one-page priority-ordered decision brief for the PM
-in docs/market/briefs/2026-09-24-b.md; then take the PR out of draft.
-Note PR #60 (engineer) also touches docs/ideas.md if this run adds
-ledger proposals, per this PRs own collision note.'
-```
+The brief's own priority-ordered decision list, read and dispositioned:
 
-### 2. engineer — PR #60 is the oldest open PR and now conflicts with main
+1. **Land the enjoyability fix before the next issue ships dense.**
+   Already in flight and already the owner's own ruling
+   (`docs/voice/taste.md`, 2026-09-24 entries). Nothing to dispatch:
+   PR #95 (writer, supersedes #92) is the fix, open, and the only
+   action left is the merge, which is hers. Flagged with urgency below
+   under owner-only decisions, not queued as a dispatch, because
+   dispatching a seat with an open PR on the same chain is exactly the
+   hard stop charter §5 already sets.
+2. **Whether the claim graph belongs on the live pricing page before
+   October 13.** The brief frames this as a PM-and-engineer call, not
+   an owner one, but no existing ruling says which way to resolve it
+   (ADR-26's two non-negotiables — a real domain, no coming-soon pages
+   — bear on it without deciding it), and the relay rule in charter §4
+   says a judgment not already made in a file does not get guessed at
+   in a dispatch. Listed below as needing a decision rather than
+   queued as work, and engineer already has two open PRs (#60, #94),
+   so there is nowhere to send it today even once decided.
+3. **No pricing change.** $20/month reconfirmed from a new angle
+   (Ben's Bites' Pro tier). No action owed; recorded so it is not
+   re-derived.
 
-**Trigger.** PR #60 (`engineer/2026-09-20-digest-quality-gate`, sprint
-2026-09-21 item 4, the pre-send quality checklist) opened 2026-09-20 and
-is still open, the oldest PR in the repo by four days. Its own body
-named the deadline as "tomorrow's 15:00 UTC cron" relative to
-2026-09-20, so that deadline has already passed at least three times
-over. `gh pr view 60 --json mergeable` now reports `CONFLICTING`, a
-direct result of the roughly twenty PRs that merged today while this
-one sat untouched. The current sprint file's own mid-week status
-section still lists item 4 as "built, open, awaiting merge."
+**Nothing queued to writer, frontend, or engineer this run.** Writer's
+relevant work is already open (PR #95) and blocked only on merge.
+Frontend has no open PR and no filed, ready task from this brief — the
+claim-graph question is a decision, not yet a spec. Engineer has two
+open PRs and the hard stop in charter §5 rules it out regardless.
 
-**Cost of skipping it today.** The conflict only grows as more work
-lands on main, and Monday's retrospective would otherwise have to
-report a committed sprint item as neither shipped nor explicitly
-dropped, four days after its build finished.
+## Owner-only decisions, one line each
 
-**Dispatch.**
-
-```bash
-gh workflow run agent-engineer.yml \
-  -f owner_instructions='PR #60 (branch
-engineer/2026-09-20-digest-quality-gate, sprint item 4, the pre-send
-quality checklist) is four days old, its own stated deadline has
-passed, and gh pr view 60 now reports mergeable: CONFLICTING against
-main. Rebase that branch onto main and resolve the conflicts; do not
-start a new branch or redesign the checklist from scratch. Before
-resolving, check whether anything that merged today already covers
-part of what this PR does (the email-template send path in PR #90, the
-evidence-grade work in PR #72, or anything else now on main) and would
-make part of this PR redundant. If the checklist this PR adds is still
-needed as designed, land it clean. If it is now partly or fully
-redundant, say so plainly in the PR rather than merging duplicate
-logic, and state clearly whether you recommend closing PR #60 unmerged
-so the owner can act on a stated recommendation rather than a bare
-conflict.'
-```
-
-Two candidates this run, both evidenced against a specific stalled or
-conflicting PR. No third: nothing else found today clears the bar of a
-named trigger with a stated cost of skipping (the MCP-server daily-watch
-gap in docs/agents/delivery-health.md is real but is sprint-planning
-material for Monday's ceremony, not a today-dispatch — it has no PR, no
-run, and no date attached to skipping it one more day).
+- **Merge PR #95** (writer, supersedes #92): the enjoyability/canon-law-14
+  fix and W39 rewrite the owner asked for directly last night.
+- **Merge or close PR #98** (market): the finished ranking brief:
+  closes out PR #93 (stub) once merged.
+- **Rule on the claim graph vs. the live pricing page**: add it before
+  October 13, or confirm it is deliberate post-launch scope and say so
+  on the page. `docs/ideas.md` carries market's `proposed` entry for
+  this (filed on PR #98's branch).
+- **Rebase or retire PR #60** (engineer, `CONFLICTING`, sprint item 4):
+  already flagged in PR #97's queue with the hand-run command; not
+  repeated here to avoid a third copy of the same ask.
 
 ## Run health
 
-**Fleet.** `gh run list --limit 60` shows one non-success since the last
-PM run (PR #91, which itself reported all-green as of 04:25:27Z): a
-`writer-agent` run cancelled at 05:08:33Z after 1m36s
-(35958638663). Read alongside the timeline, this looks like a duplicate
-`workflow_dispatch` cancelled in favor of the writer run that started 27
-seconds later (35958671490, 05:09:00Z, success, 16m35s) and produced PR
-#89/#92's line of work — not a new failure class, and nothing was lost:
-the following run completed and shipped. No unregistered failure
-pattern found. Two `pm-agent` runs are `in_progress` as this file is
-written (this run, and an `engineer-agent` scheduled run that started 31
-seconds earlier) — both scheduled, not dispatched, not a synchronous-
-session signal.
+**Fleet health.** No new failure class beyond what PR #97 already
+logged (`INC-2026-09-24-dispatch-403`) and what this run adds
+separately (`INC-2026-09-24-market-ranking-stub-only`, the market
+run that reported success but shipped only its stub — since resolved
+in substance by PR #98, the incident stands as a record of the
+pattern, not as an open problem). Everything else in `gh run list
+--limit 30` is `success`, including the two runs `in_progress` when
+this session started (`pm-agent` 36022688185, now PR #97;
+`engineer-agent` 36022750452, still running as of this writing, not
+yet checked further since it is not this run's PR to review). One
+direct-to-main commit landed after all three PM passes started
+(504cc8d, "incidents: Kimi organization concurrency collision between
+rehearsal and press") — a chair fix for `INC-2026-09-24-kimi-org-concurrency`
+(below), not a workflow run, so it does not show in `gh run list`.
 
-**Delivery.**
-- **The press.** The live site's `/library` page shows 2026-W39 as the
-  newest issue, matching `docs/sprints/pending.md`'s note that it
-  printed and sent today (2026-09-24, recovery send). Not stale. This
-  run had no database credentials available to query the `digests`
-  table directly (no `NEON_RO_URL` or equivalent in this workflow's
-  env); the site is used as a cross-check instead, per
-  docs/agents/delivery-health.md's own rule to read the artifact, not
-  the scheduler, wherever a direct check is unavailable.
-- **The site.** Live: `https://libraryofalexandria.dev/` returns 200 as
-  of 15:49 UTC and serves 2026-W39 as the newest issue, consistent with
-  today's deploy.
-- **The MCP server.** Could not be checked this run: no public endpoint
-  is documented in the repo and no credentials for probing it are
-  available in this workflow's environment. This matches
-  docs/agents/delivery-health.md's own table, which already marks the
-  MCP server as "not watched daily" and names that gap as the next
-  thing to close, engineer work for a future sprint rather than
-  something this standup can instrument on the spot.
+**Delivery health.**
 
-**Board.** `PROJECTS_TOKEN` is available. Project 4 still shows the
-2026-09-18 split (43 Backlog, 15 Done, nothing In Progress or In
-Review) despite roughly twenty PRs merging since. The board is stale
-against real state; a full remap is ceremony-run work (per the
-2026-09-18 reorg note in pending.md, which already flagged this as
-"Monday's job, not a mid-week mirror's"), not fixed in this standup.
+- **The press.** No `DATABASE_URL` in this sandbox, so the `digests`
+  table was not queried directly. `https://libraryofalexandria.dev/library`
+  returns 200 and lists `2026-W39` as newest;
+  `https://libraryofalexandria.dev/library/2026-W39` returns 200 with a
+  real title, not a generic one. Consistent with the chair's report
+  that W39 sent at 05:05Z, but this is the site, not the table.
+- **The site.** Live, 200, serving current content.
+- **The MCP server.** `https://ap4509--alexandria-mcp-serve.modal.run/`
+  answers HTTP 404 on a bare GET rather than timing out — the process
+  is up; GET `/` simply is not a route on a mounted MCP app. Not a
+  protocol-level check.
 
-**Pending tracker.** `docs/sprints/pending.md` was last updated inside
-last night's session (~05:10 UTC) and is not re-reconciled in this run
-per charter §4 ("full reconciliation stays in the ceremony run"). One
-line past its date, seat named: **engineer**, PR #60 above — its own
-2026-09-20 deadline text ("tomorrow's 15:00 UTC cron") is now three
-cron cycles overdue.
+## Pending items past their date
 
-## Dispatched by the PM (attempted, not fired)
+`docs/sprints/pending.md` gets a new dated section from this run (see
+the top of that file) recording the decisions above, since the chair's
+handoff asked directly for it: "write decisions into the sprint and
+pending.md." Nothing else in the file is yet a day past its own date.
 
-Both conditions for charter §5 held (`PM_DISPATCH_ENABLED` true, owner
-absent for 10h40m), so this run tried to fire both entries above rather
-than only propose them. Both attempts failed identically:
+## Linear trial
 
-    gh workflow run agent-market.yml -f owner_instructions='...'
-    could not create workflow dispatch event: HTTP 403: Resource not
-    accessible by integration
+Not checked this run. Still a trial per the 2026-09-19 ruling; no new
+signal on adoption or abandonment.
 
-Reproduced against the raw REST endpoint too (`gh api
-repos/alexandrapaiz/alexandria/actions/workflows/<id>/dispatches -X
-POST`), same 403. This contradicts ADR-033's claim that the plain
-`GITHUB_TOKEN` can fire `workflow_dispatch` given `permissions: actions:
-write` on the calling workflow, which `agent-pm.yml` already declares.
-Filed as **INC-2026-09-24-dispatch-403** in docs/agents/incidents.md,
-with the open question of whether this harness's `github.token` is
-actually the same token ADR-033's probe used.
+## Dispatched by the PM
 
-Neither dispatch ran. No run URL exists for either. If you want these
-two things done today, the commands below are exactly what this run
-would have sent, and running them yourself (as the owner, with your own
-credentials) is the workaround until the token question above is
-answered:
-
-```bash
-gh workflow run agent-market.yml -f owner_instructions='PR #93 (branch market/2026-09-24-b) is a draft
-with only its ship-first stub commit from 05:10 UTC; the promised full
-brief never landed. Build on that branch, do not start a new one.
-Finish exactly what the PR body already commits to: rank issue 2026-W39
-(site/content/issues/2026-W39.md) against newsletters builders actually
-enjoy (Interconnects, Ahead of AI, Latent Space, The Batch, Import AI,
-TLDR AI, Bens Bites, and comparable others), scored on enjoyability,
-density, and whether a reader opens the next one; rank alexandria
-against the $20/month competitive set as the live site stands now; land
-both ranks plus a one-page priority-ordered decision brief for the PM
-in docs/market/briefs/2026-09-24-b.md; then take the PR out of draft.
-Note PR #60 (engineer) also touches docs/ideas.md if this run adds
-ledger proposals, per this PRs own collision note.'
-
-gh workflow run agent-engineer.yml -f owner_instructions='PR #60 (branch
-engineer/2026-09-20-digest-quality-gate, sprint item 4, the pre-send
-quality checklist) is four days old, its own stated deadline has
-passed, and gh pr view 60 now reports mergeable: CONFLICTING against
-main. Rebase that branch onto main and resolve the conflicts; do not
-start a new branch or redesign the checklist from scratch. Before
-resolving, check whether anything that merged today already covers
-part of what this PR does (the email-template send path in PR #90, the
-evidence-grade work in PR #72, or anything else now on main) and would
-make part of this PR redundant. If the checklist this PR adds is still
-needed as designed, land it clean. If it is now partly or fully
-redundant, say so plainly in the PR rather than merging duplicate
-logic, and state clearly whether you recommend closing PR #60 unmerged
-so the owner can act on a stated recommendation rather than a bare
-conflict.'
-```
+None this run. See PR #97 for the two dispatch attempts made this
+window and their `HTTP 403` result.
