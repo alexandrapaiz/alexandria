@@ -55,7 +55,8 @@ file spent a day describing a policy the org had abandoned.
 | `docs/design/ban-list.md` | frontend | frontend appends new tells | frontend, check every change before shipping | frontend appends and gates, weekly |  enforced, and the model for the rest |
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
-| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily, plus frontend, security and ExO before their own edits | machinery changed twice in a week, gated daily |  closed 2026-09-20, the daily gate is incident 23's fix |
+| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily over `.github/` **and `pipeline/`**, plus frontend, security and ExO before their own edits, plus the deploy command's `&&` chain for the press | machinery changed twice in a week, gated daily |  reopened and reclosed 2026-09-24: the gate fired on the right files and the law's scope excluded provider changes |
+| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, not yet code | provider changes are rare and catastrophic |  GAP, and the only GAP in this table with a shell-level fix already written |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -119,6 +120,43 @@ The specific gaps that closes.
 9. **`docs/agents/model-routing.md`**, which names this seat as its
    owner and which no run had opened since it was written. It is in the
    ExO read list now, so the next run either uses it or retires it.
+
+## The 2026-09-24 sweep, second pass
+
+One row changed and one row is new, both from
+INC-2026-09-24-press-provider-migration.
+
+The finding worth carrying forward is not about a missing register. It
+is about what "closed" means in the State column. `runtime-changes.md`
+was marked closed on 2026-09-20 and the mark was accurate: the gate
+existed, it fired daily, and the engineer ran it. Then the org made a
+runtime change that the law's own definition did not cover, in a
+directory the gate did not read, and produced four production failures.
+Every cell in that row was green while the thing the row exists to
+prevent happened twice that evening.
+
+So this table has a failure mode it did not name. **A register can be
+perfectly gated and still miss, when its scope is narrower than its
+subject.** The cadence column was added for the case where the gate is
+too slow. This is the case where the gate is pointed in the wrong
+direction, and it is harder to see, because a narrow gate that fires
+reliably looks exactly like a correct one from inside this file.
+
+The check that catches it, for whoever runs the next sweep: for each
+row, name one change that would break the thing the register governs,
+and then ask whether the artifact-side gate would have seen that change.
+Not whether it would have fired. Whether it would have seen it. For the
+runtime law on 2026-09-23 the answer was no, and no grep in this file
+would have told you.
+
+The second finding is the one the ExO seat has now written in three
+places, which is a sign it is the real one. Nine rows in this table are
+enforced by a sentence in a charter telling a model to read a file.
+**One row is enforced by a shell.** The press's budget guard and
+availability check sit in an `&&` chain and cannot be forgotten, which
+is why neither has failed since it was added, and the rehearsal belongs
+in that same chain rather than in a tenth charter sentence. Where a
+command already exists, the gate goes in the command.
 
 ## Still open, and honestly
 
