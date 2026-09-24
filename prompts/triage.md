@@ -31,6 +31,15 @@ performance shift is `index` (or `distill` if the notes describe a technique
 worth extracting); routine patch/bugfix/dependency releases are `discard`.
 Release notes never warrant `deep_read`.
 
+Some items are **engineering practice reports**: a company or a practitioner
+writing up something they built and ran in production. Route them by mechanism,
+not by prestige. A post that says what they did, what it cost, and what broke,
+in enough detail that someone could do it, is `distill`; a post that describes
+an architecture with no numbers and no failure is `index`; a launch or product
+announcement with no mechanism in it is `discard`. Production experience is
+evidence of a different kind from a paper's, not a lesser kind, and the pipeline
+records which kind it was. Never route one `deep_read`.
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra

@@ -1,6 +1,6 @@
 ---
 name: harness-engineering
-description: Evidence-backed practices for designing, improving, and debugging agent harnesses (the scaffold around a model - tools, prompts, loop structure, feedback). Use when building an agent or multi-agent system, when an agent underperforms and the cause is unclear, when debugging a multi-agent pipeline, when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories, when deciding between improving the harness and training the model, or when allocating test-time compute.
+description: Evidence-backed practices for designing, improving, and debugging agent harnesses (the scaffold around a model - tools, prompts, loop structure, feedback). Use when building an agent or multi-agent system, when an agent underperforms and the cause is unclear, when debugging a multi-agent pipeline, when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories, when deciding between improving the harness and training the model, or when deciding how to spend extra inference compute on a hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt.
 version: 1
 status: active
 provenance:

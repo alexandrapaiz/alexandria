@@ -227,6 +227,36 @@ maximum; write the full new file, keep the diff minimal, and cite the evidence
 in the rationale so the reviewer can verify it with one query. Zero proposals
 is the normal outcome in a healthy week.
 
+### Check that the file you are proposing into can reach production
+
+The ADR-12 whitelist names `prompts/*.md` and `sources.yaml` as one set.
+They are two, and they reach production by different routes.
+
+- **Image-baked, and frozen until someone runs `modal deploy`:**
+  `prompts/digest.md`, `distill.md`, `interpret.md`, `triage.md`,
+  `rag-answer.md`, `skill-extract.md`, and `sources.yaml`. Each is
+  installed into a Modal image with `add_local_file` (ingest.py,
+  distill.py, interpret.py, triage.py, weekly.py, mcp/server.py). A
+  merge to main changes nothing in the pipeline by itself.
+- **Read from the checkout at run time, live on the next run:** every
+  `prompts/*-agent.md` seat charter, which its `.github/workflows/agent-*.yml`
+  tells the agent to read from the repository it just checked out.
+
+Before spending the week's one proposal on an image-baked file, check
+whether the running image is current. The shas are recorded:
+`claim_links.method` for interpret, `triage_log.prompt_sha` for triage,
+`digests.prompt_sha` for the press. Compare against
+`sha256(prompts/<file>.md)[:12]` at HEAD.
+
+If the deployed sha is stale, do not propose into that file. A second
+fix stacked behind an undeployed first one reads as progress and changes
+nothing, and the stale prompt goes on producing the errors the proposal
+was meant to stop. Record the finding, route the deploy to the engineer
+in the brief, and either spend the proposal on a file that does reach
+production or spend none. Incident 25 is this failure once; the
+2026-09-24 run found it still live five days later, and found that
+`pipeline/*.py` merges are frozen the same way.
+
 ## Output
 
 End with a compact report: digest verdict (with any graph errors found), the
@@ -370,4 +400,20 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
