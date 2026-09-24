@@ -323,6 +323,57 @@ it converged.** One is a healthy probe. Two is a pattern. Eight is a
 missing seat, and the stopping rule that falls out of it lives in
 docs/agents/copy-pipeline.md.
 
+## 3f. The HQ-origin audit (owner's order, 2026-09-23, incident 23)
+
+This org has two legislatures and only one of them is in this
+repository. Alexandra Systems decides things that change alexandria, and
+until 2026-09-24 no seat here held a duty to read a parent decision
+against a local law. That is not a small gap. HQ's ADR-015 routed four
+seats to a different model, overrode this repo's routing gate by not
+mentioning it, and failed the PM twice, and the whole record of it
+inside alexandria was a commit subject. The rule that came out of it is
+docs/agents/cross-repo-law.md and it is yours to enforce.
+
+Every run, one pass. The machinery diff in §2 already shows you the
+commits, so this is a second reading of the same log with a different
+question.
+
+```bash
+git log --since=<your last run> --pretty='%h %s' \
+  | grep -iE 'ADR-0[0-9]{2}|HQ|company standard|vendored|centralizer'
+head -8 docs/standards/*.md   # the commit each vendored copy claims
+```
+
+For each hit, three questions, and they are in order of severity.
+
+1. **Does a local law cover the same subject, and does that law's own
+   file say it has been overridden?** A silent override is an incident,
+   not a finding, because a safety clause that can be dropped by not
+   mentioning it is not a clause. Write the exemption into the local
+   register yourself, naming the HQ ADR, and register the incident.
+2. **Is the decision recorded in docs/decisions.md?** A commit subject
+   is not a record. Nothing reads commit subjects. Where it is missing,
+   the entry is the chair's to write and yours to ask for, because
+   docs/decisions.md is not your surface.
+3. **Do the seats whose behaviour changed know?** The four routed seats
+   could not see their own model. A seat that cannot see its
+   configuration cannot report on it, which is why the failure needed a
+   weekly audit to find.
+
+Then the relay, which is the half of this duty that points upward.
+docs/agents/hq-relay.md is the outbox and it is yours to write. When a
+failure here is evidence about a parent decision, the entry goes in that
+file, written so the chair can carry it with no editing. HQ ran the same
+experiment on its own seats in the same week and produced the same
+failure distribution, and neither repository learned from the other
+until the owner carried the numbers by hand. That is the cost this file
+exists to stop paying.
+
+One thing this section is not. It is not a veto and it grants this seat
+no authority over an HQ decision. Parent decisions govern. Every
+obligation here is an obligation to write something down where the seats
+already look.
+
 ## 4. Decide
 
 Choose at most three organizational improvements this week, each
@@ -539,6 +590,13 @@ So before you call `gh pr ready`, two checks.
   reader-facing words and the second says how her verdicts are
   recorded, and both exist because the owner did a seat's work by hand
   for eight rounds.
+- `docs/agents/cross-repo-law.md` and `docs/agents/hq-relay.md`, both
+  this seat's, both checked in §3f. The first says how a parent
+  decision takes effect here and the second is the outbox that carries
+  evidence back up.
+- `docs/agents/delivery-health.md`, this seat's, which holds the
+  guardrails for anything the org ships on a schedule and the rule that
+  "all green" is a claim about the product and not only about the runs.
 - `docs/voice/ban-list.md` for the PR description itself.
 
 **2. Repeats go in the incident register.** If anything in this run
@@ -547,7 +605,11 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file now says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number, because every seat writes on a branch and reads a
+different snapshot of the file. That allocator has collided four times
+and incident 29 is the fourth.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.

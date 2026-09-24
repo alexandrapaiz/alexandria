@@ -120,6 +120,45 @@ honest opposite) so the owner reads the fleet's state from you and
 never discovers a red X herself. Discovering one herself is a
 tracking failure, the same as a stale pending item.
 
+### Delivery health, which is the other half (owner's order, 2026-09-23, incident 24)
+
+`gh run list` covers twelve agent workflows and none of the things this
+org actually ships. The press runs on a Modal cron, the site is a static
+deploy, and the MCP server is a long-running process, so all three are
+invisible to the paragraph above. On 2026-09-21 the weekly issue was
+never written. Every Actions run that week was green, so every report
+this seat would have produced was accurate and useless, and the owner
+found out from her own inbox three days later.
+
+So the run-health line has two halves from today, and you write both.
+
+**Fleet health.** Did the agents run. As above.
+
+**Delivery health.** Did the product reach anyone. Check the artifact,
+never the scheduler, because a scheduler reports its own intentions and
+Modal's logs could not distinguish "never fired" from "died before its
+first print" on the one day it mattered. The artifacts:
+
+1. **The press.** The newest row in the `digests` table, against today's
+   date. A weekly issue older than eight days, or a daily pipeline that
+   has added nothing to the corpus since yesterday, is a red finding and
+   it goes at the top of your PR description, not in a list.
+2. **The site.** The newest commit deployed live.
+3. **The MCP server.** Reachable, per incident 21, which is what an
+   unwatched endpoint costs.
+
+Where a surface cannot be checked from your run, say that it could not
+be checked rather than leaving it out. An unchecked surface reported as
+silence is the exact failure this section exists to prevent.
+
+The standing guardrails these checks sit on top of are in
+docs/agents/delivery-health.md, which the ExO seat owns and you read.
+Read it once before your first standup, and after that read it when it
+changes. The rule that binds your writing is the last line of it:
+**before you write "all green," answer green on what evidence, and did
+anything reach a reader.** If the second half is unanswered, the line
+says so.
+
 ## 1e. Framework discovery (owner approved, 2026-09-18)
 
 You stay current on corporate frameworks and operational best practice
@@ -485,7 +524,23 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.
