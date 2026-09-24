@@ -712,7 +712,7 @@ def send_newsletter(conn, week: str, body: str) -> str:
             msg = MIMEMultipart("alternative")
             # subject = the issue's editorial title (the digest's own H1);
             # the W code is an internal id and never reader-facing
-            subject = f"alexandria digest — {week}"
+            subject = "This week's issue from the library"
             if body.startswith("# "):
                 subject = body.split("\n", 1)[0][2:].strip()
             msg["Subject"] = subject
@@ -768,7 +768,7 @@ def notify_owner(subject: str, detail: str) -> str:
     )
     try:
         msg = MIMEText(body, "plain")
-        msg["Subject"] = f"[alexandria] {subject}"
+        msg["Subject"] = subject
         msg["From"] = f"alexandria press <{addr}>"
         msg["To"] = to
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
@@ -907,7 +907,7 @@ def weekly() -> str:
                 print(f"newsletter send failed ({exc}); digest is safe in the "
                       "database")
                 print(notify_owner(
-                    f"{week} was written but NOT sent",
+                    "This week's issue was written but not sent",
                     f"The {week} issue is in the digests table and on the site, "
                     f"but the email send failed:\n\n{exc}\n\n"
                     f"It was written by {model}, so nothing needs rewriting. "
@@ -918,7 +918,7 @@ def weekly() -> str:
         # again be the owner's inbox being empty.
         print(f"PRESS FAILED: {exc}")
         print(notify_owner(
-            f"{week} could not be printed",
+            "The press could not print this week's issue",
             f"The weekly press failed and no issue was written for {week}.\n\n"
             f"{type(exc).__name__}: {exc}"))
         raise
