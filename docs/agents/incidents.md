@@ -1042,3 +1042,20 @@ duty was known, assigned, and structurally unperformable. If a fifth
 class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
+
+## Incident 23 — Kimi routing rolled out to the PM without the golden-set gate (2026-09-23)
+
+HQ's ADR-015 (2026-09-19, commit 609d7cc) routed alexandria's four
+Sonnet seats (pm, market, okr, finance) to kimi-k2.7-code whenever the
+OPENROUTE secrets exist. The PM seat then failed both of its runs
+(35493791740 on 09-20 and 35626266985 on 09-21) with is_error:true at
+30 turns, zero permission denials: the model, not the plumbing. The
+same class hit HQ (pm 2/2 failed, finance 1/3, okr 1/2). Alexandria's
+own routing law (docs/agents/model-routing.md) requires golden-set
+gates before any seat moves off its explicit model, and the rollout
+skipped them. Repeat of the incident-9 class (a seat silently on a
+model nobody verified). Action, chair, same day: the OPENROUTE
+secrets removed from this repo so every routed seat falls back to
+Sonnet; the PM, the fleet-health seat, cannot be the experiment.
+Re-enable only after the golden-set comparison the law names, and
+never on the PM first.
