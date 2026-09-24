@@ -41,6 +41,7 @@ repository. The name does, and the name is all the code needs.
     python3 pipeline/budget.py                    # does the request fit?
     python3 tools/rehearse_email.py               # does the email still render?
     modal run pipeline/weekly.py::preflight        # does the model still exist?
+    modal run pipeline/weekly.py::rehearse         # does one real call work?
     modal run pipeline/weekly.py                  # one-off manual run (both, then print)
     modal deploy pipeline/weekly.py               # install the Monday schedule
 
@@ -50,6 +51,7 @@ or prompts/digest.md:
     python3 pipeline/budget.py \
       && python3 tools/rehearse_email.py --quiet \
       && modal run pipeline/weekly.py::preflight \
+      && modal run pipeline/weekly.py::rehearse \
       && modal deploy pipeline/weekly.py
 
 No guard in that chain is optional ceremony, and each checks a different
@@ -65,6 +67,19 @@ press's own `build_messages()` and prints the result, sends nothing, costs
 nothing, and exits non-zero if any slot is left unfilled. It is the email
 half of docs/agents/press-rehearsal.md. The model-call half, `rehearse()`,
 is still unbuilt and still the third gate that document specifies.
+
+**Does one real call work?** INC-2026-09-24-press-provider-migration: the
+press moved to a new provider and failed four times in one evening, and every
+one of the four was an integration property that only a real call reveals. The
+reservation a reasoning model spends on hidden thinking, the client timeout
+that has to be measured in minutes, the database transaction that must not
+stay open across the call, and the alarm subject that only a bad day renders.
+None of the four is in any provider's documentation and all four are in one
+print. `rehearse` makes that print against the real payload, writes it to
+`press_rehearsals` instead of `digests`, mails nobody, and refuses to report
+success unless the row it just wrote names the model and the prompt about to
+be deployed. It is the third gate in docs/agents/runtime-changes.md's ladder,
+specified in docs/agents/press-rehearsal.md, and it costs about a nickel.
 
 **Does the request fit?** Incident 22: an editorial merge grew the generator
 prompt past the model's per-request token ceiling, the provider answered 413,
@@ -439,6 +454,22 @@ class PressCannotPrint(RuntimeError):
 # tokens, so 6,000 is generous rather than tight.
 MAX_COMPLETION_TOKENS = 24000  # kimi-k2.6 reasons before it writes; 6000 was consumed by hidden thinking (finish_reason length, empty content, 2026-09-24)
 
+# Failure 2 of INC-2026-09-24-press-provider-migration: httpx defaults to a
+# 5-second read timeout and kimi-k2.6 was still reasoning. This was a literal
+# inside `call_model` until the rehearsal needed to print it. A rehearsal that
+# quotes a number typed twice proves nothing about the number the press uses,
+# so the press and its rehearsal now read the same name. The value is
+# unchanged, and it sits inside the 1800s Modal function timeout on purpose.
+CLIENT_TIMEOUT_SECONDS = 1500
+
+# The two subjects on the alarm path, as names rather than literals at the
+# call sites. Failure 4 of the same incident was an alarm subject that read
+# `[alexandria] 2026-W39`, and it survived because an alarm subject is prose
+# only a bad day renders. Naming them here is what lets `rehearse` print the
+# real strings, rather than a copy of them that can drift.
+ALARM_SUBJECT_CANNOT_PRINT = "The press could not print this week's issue"
+ALARM_SUBJECT_NOT_SENT = "This week's issue was written but not sent"
+
 
 def log_limits(resp, model: str) -> None:
     """The provider's own account of the budget, which outranks what we assume.
@@ -525,8 +556,17 @@ def check_availability() -> set[str]:
     return available
 
 
-def call_model(model: str, prompt: str, user: str) -> str:
+def call_model(model: str, prompt: str, user: str,
+               trace: dict | None = None) -> str:
     """One model, with backoff on 429. Raises so the caller can move down the list.
+
+    `trace`, when given, is filled with what the provider said about the call
+    that succeeded: `finish_reason`, `elapsed_seconds`, `usage` and the model
+    that answered. The scheduled run passes nothing and behaves exactly as it
+    did; `rehearse` passes a dict, because `finish_reason` is the difference
+    between failure 1 of INC-2026-09-24-press-provider-migration being a
+    silent empty response and being a legible one. It is an out-parameter and
+    not a return value so that the press's own path keeps one return type.
 
     The request body is the OpenAI-compatible minimum and nothing else. Both
     providers speak that dialect, so there is one code path and no provider
@@ -567,12 +607,14 @@ def call_model(model: str, prompt: str, user: str) -> str:
         body["thinking"] = {"type": "disabled"}
 
     for attempt in range(RETRIES_PER_MODEL):
+        started = time.monotonic()
         resp = httpx.post(
             url,
             headers={"Authorization": f"Bearer {key}"},
             json=body,
-            timeout=1500,  # kimi-k2.6 reasons for minutes before writing; 300s timed out on 2026-09-24
+            timeout=CLIENT_TIMEOUT_SECONDS,  # kimi-k2.6 reasons for minutes before writing; 300s timed out on 2026-09-24
         )
+        elapsed = time.monotonic() - started
         log_limits(resp, model)
 
         # 404 is a withdrawn or misspelled model, and no amount of waiting fixes
@@ -601,8 +643,16 @@ def call_model(model: str, prompt: str, user: str) -> str:
             # which the next model may well accept
             raise ModelGone(f"{resp.status_code}: {resp.text[:400]}")
 
-        choice = resp.json()["choices"][0]
+        payload_back = resp.json()
+        choice = payload_back["choices"][0]
         message = choice["message"]
+        if trace is not None:
+            trace.update({
+                "model": model,
+                "finish_reason": choice.get("finish_reason"),
+                "elapsed_seconds": round(elapsed, 1),
+                "usage": payload_back.get("usage") or {},
+            })
         fired = message.get("executed_tools") or []
         if fired:
             # No model in FALLBACK_MODELS is agentic today, and ADR-6 says the
@@ -623,7 +673,8 @@ def call_model(model: str, prompt: str, user: str) -> str:
 
 
 def write_digest(payload: dict, prompt: str,
-                 available: set[str] | None = None) -> tuple[str, str]:
+                 available: set[str] | None = None,
+                 trace: dict | None = None) -> tuple[str, str]:
     """Write the issue, walking the fallback list. Returns (body, model used).
 
     Each model gets its own copy of the payload, because `fit_payload` trims in
@@ -658,7 +709,7 @@ def write_digest(payload: dict, prompt: str,
             continue
 
         try:
-            body = call_model(model, prompt, user)
+            body = call_model(model, prompt, user, trace)
         except (ModelGone, RateLimited, MissingKey) as exc:
             tried.append(f"{model}: {exc}")
             print(f"{model} failed ({exc}); trying the next fallback")
@@ -877,6 +928,84 @@ def notify_owner(subject: str, detail: str) -> str:
     return f"owner notified at {to}: {subject}"
 
 
+def week_just_ended() -> tuple[str, str]:
+    """The ISO week label and the reader-facing date range, as one answer.
+
+    Shared by `weekly` and `rehearse` rather than computed twice. The
+    rehearsal's whole claim is that it runs the real thing against the real
+    payload, and the week label is an input to that payload: a rehearsal that
+    labels its own week differently is rehearsing a different issue.
+    """
+    y = date.today() - timedelta(days=1)   # yesterday is Sunday on cron day
+    week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
+    monday = y - timedelta(days=6)
+    if monday.month == y.month:
+        dates = f"{monday.strftime('%B')} {monday.day}–{y.day}, {y.year}"
+    else:
+        dates = (f"{monday.strftime('%B')} {monday.day} – "
+                 f"{y.strftime('%B')} {y.day}, {y.year}")
+    return week, dates
+
+
+def payload_line(week: str, payload: dict) -> str:
+    """The one line the press prints about what it is writing from.
+
+    One function so the rehearsal's stats line and the scheduled run's stats
+    line cannot diverge. Comparing a rehearsal's output against Monday's logs
+    is the point of printing it at all, and two format strings would make that
+    comparison a reading exercise.
+    """
+    return (f"{week}: {payload['stats']} | "
+            f"new_claims={len(payload['new_claims'])} "
+            f"deprecated={len(payload['deprecated'])}")
+
+
+def payload_counts(payload: dict) -> dict:
+    """What went into the issue, as numbers, for the rehearsal's scratch row.
+
+    The body alone does not say whether a thin issue was a thin week or a
+    trimmed payload. These counts do, and they are what a second rehearsal is
+    compared against when a prompt change makes the issue shorter.
+    """
+    traction = payload.get("traction") or {}
+    return {
+        "stats": payload.get("stats"),
+        "new_claims": len(payload.get("new_claims") or []),
+        "superseded": len(payload.get("superseded") or []),
+        "deprecated": len(payload.get("deprecated") or []),
+        "deep_reads": len(payload.get("deep_reads") or []),
+        "supported_claims": len(traction.get("supported_claims") or []),
+        "citation_movers": len(traction.get("citation_movers") or []),
+    }
+
+
+def rehearsal_report(*, model: str, body: str, prompt_sha: str,
+                     stats_line: str, finish_reason, elapsed_seconds,
+                     row_id, success_subject: str) -> str:
+    """The verbatim block a rehearsal prints. Pure, so a test can read it.
+
+    Incident 8 is the standing reason this is verbatim output and not a
+    summary: judge a run by its artifacts, never by its conclusion. Every line
+    here is one of the four failures of
+    INC-2026-09-24-press-provider-migration made visible before a deploy
+    rather than after one.
+    """
+    elapsed = "unknown" if elapsed_seconds is None else f"{elapsed_seconds}s"
+    return "\n".join([
+        f"rehearsal: {model} wrote {len(body.split())} words in {elapsed}",
+        f"  prompt_sha: {prompt_sha}   reservation: {MAX_COMPLETION_TOKENS}"
+        f"   timeout: {CLIENT_TIMEOUT_SECONDS}s",
+        f"  payload: {stats_line}",
+        f"  finish_reason: {finish_reason!r}",
+        f"  saved to press_rehearsals id {row_id}",
+        f"  subject it would have sent:      {success_subject}",
+        f"  subject if it could not print:   {ALARM_SUBJECT_CANNOT_PRINT}",
+        f"  subject if the send then failed: {ALARM_SUBJECT_NOT_SENT}",
+        "  first 400 characters of the body:",
+        "\n".join("  " + line for line in body[:400].split("\n")),
+    ])
+
+
 @app.function(
     # Both providers, because preflight's whole job is to ask each of them
     # whether the models named in FALLBACK_MODELS still exist. Values are never
@@ -951,15 +1080,7 @@ def weekly() -> str:
 
     import psycopg
 
-    # label with the ISO week that just ended (yesterday = Sunday)
-    y = date.today() - timedelta(days=1)
-    week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
-    monday = y - timedelta(days=6)
-    if monday.month == y.month:
-        dates = f"{monday.strftime('%B')} {monday.day}–{y.day}, {y.year}"
-    else:
-        dates = (f"{monday.strftime('%B')} {monday.day} – "
-                 f"{y.strftime('%B')} {y.day}, {y.year}")
+    week, dates = week_just_ended()
     prompt = open("/root/prompts/digest.md").read()
     sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
 
@@ -979,9 +1100,7 @@ def weekly() -> str:
             payload = gather(conn)
             payload["week"] = week
             payload["dates"] = dates
-            print(f"{week}: {payload['stats']} | "
-                  f"new_claims={len(payload['new_claims'])} "
-                  f"deprecated={len(payload['deprecated'])}")
+            print(payload_line(week, payload))
         # The read connection closes here, on purpose. Kimi reasons for
         # minutes before it writes, and Neon terminates a connection left
         # idle inside a transaction (IdleInTransactionSessionTimeout,
@@ -1011,7 +1130,7 @@ def weekly() -> str:
                 print(f"newsletter send failed ({exc}); digest is safe in the "
                       "database")
                 print(notify_owner(
-                    "This week's issue was written but not sent",
+                    ALARM_SUBJECT_NOT_SENT,
                     f"The {week} issue is in the digests table and on the site, "
                     f"but the email send failed:\n\n{exc}\n\n"
                     f"It was written by {model}, so nothing needs rewriting. "
@@ -1022,11 +1141,128 @@ def weekly() -> str:
         # again be the owner's inbox being empty.
         print(f"PRESS FAILED: {exc}")
         print(notify_owner(
-            "The press could not print this week's issue",
+            ALARM_SUBJECT_CANNOT_PRINT,
             f"The weekly press failed and no issue was written for {week}.\n\n"
             f"{type(exc).__name__}: {exc}"))
         raise
     return body
+
+
+@app.function(
+    # Neon and both model providers, and deliberately no Gmail secret. A
+    # rehearsal must not be able to mail anybody, and the strongest form of
+    # that promise is not a missing function call but a missing credential:
+    # `send_newsletter` in this container would find no address and no
+    # password and return "email send skipped" even if some future edit
+    # called it by mistake. The guarantee then holds at the reliability of
+    # Modal's secret mounting rather than at the reliability of code review.
+    secrets=[modal.Secret.from_name("neon"),
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
+    timeout=1800,
+)
+def rehearse() -> str:
+    """One real print, to a scratch row, to nobody. The third gate.
+
+    `docs/agents/runtime-changes.md` gives a provider or model change three
+    gates before `modal deploy`, and this is the third. The first asks whether
+    the request fits and the second asks whether the model exists. Both are
+    questions about the request. This one is the only one that exercises the
+    provider, and every one of the four failures of
+    INC-2026-09-24-press-provider-migration was on this question.
+
+        modal run pipeline/weekly.py::rehearse
+
+    It is `weekly()` with two differences and no others. It writes to
+    `press_rehearsals` rather than `digests`, so it cannot overwrite a
+    published week even by accident, and it sends nothing, printing instead
+    every subject line the run would have produced on the success path and on
+    the alarm path both. Failure 4 was an alarm subject, and an alarm subject
+    is only visible to a rehearsal that renders it.
+
+    Everything else is the real thing, and that is the part worth being
+    stubborn about: the real prompt, the real payload from `gather()` against
+    the real database, the real provider and key, the real reservation, the
+    real client timeout, and the real open-and-close sequence around the model
+    call. Three of the four failures were in that list. A rehearsal that mocks
+    the provider tests the mock.
+
+    It raises on any failure, the way `preflight` does, so the chair's `&&`
+    chain stops before the deploy. No email: a human is watching a rehearsal
+    by definition, and the emailing path belongs to the scheduled run where
+    nobody is.
+    """
+    import json
+    import os
+
+    import psycopg
+
+    week, dates = week_just_ended()
+    prompt = open("/root/prompts/digest.md").read()
+    sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
+
+    available = check_availability()
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        payload = gather(conn)
+        payload["week"] = week
+        payload["dates"] = dates
+        stats_line = payload_line(week, payload)
+        print(stats_line)
+    # The read connection closes before the model call, exactly as `weekly`
+    # closes it. Failure 3 was a transaction held open across a multi-minute
+    # call, and a rehearsal that simplifies the connection handling away
+    # cannot find failure 3 again.
+
+    trace: dict = {}
+    body, model = write_digest(payload, prompt, available, trace)
+    body = add_masthead(body)
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        row_id = conn.execute(
+            """
+            insert into press_rehearsals
+                (week, body, model, prompt_sha, elapsed_seconds,
+                 finish_reason, payload_stats)
+            values (%s, %s, %s, %s, %s, %s, %s::jsonb)
+            returning id
+            """,
+            (week, body, model, sha, trace.get("elapsed_seconds"),
+             trace.get("finish_reason"), json.dumps(payload_counts(payload))),
+        ).fetchone()[0]
+        conn.commit()
+        receipt = conn.execute(
+            "select model, prompt_sha from press_rehearsals where id = %s",
+            (row_id,),
+        ).fetchone()
+
+    print(rehearsal_report(
+        model=model, body=body, prompt_sha=sha, stats_line=stats_line,
+        finish_reason=trace.get("finish_reason"),
+        elapsed_seconds=trace.get("elapsed_seconds"), row_id=row_id,
+        success_subject=email_render().subject_for(body),
+    ))
+    if trace.get("usage"):
+        print(f"  usage as the provider reported it: {trace['usage']}")
+
+    # The receipt, which is what makes this a gate rather than advice. The row
+    # is written first and unconditionally, because a rehearsal that printed
+    # the wrong thing is still evidence and deleting it would be deleting the
+    # finding. What is conditional is calling the run a success.
+    expected = (FALLBACK_MODELS[0], sha)
+    if tuple(receipt) != expected:
+        raise PressCannotPrint(
+            "the rehearsal wrote a row, but not a receipt for what is about "
+            "to be deployed.\n"
+            f"  row {row_id}: model {receipt[0]!r}, prompt_sha {receipt[1]!r}\n"
+            f"  deploying:   model {expected[0]!r}, prompt_sha {expected[1]!r}\n"
+            "A receipt from a different model, or from a different prompt, is "
+            "not a receipt. If the head of FALLBACK_MODELS could not write "
+            "and a fallback did, that is the finding: fix the head before "
+            "deploying, because Monday will meet it first."
+        )
+    return (f"rehearsal ok: {model} printed {len(body.split())} words for "
+            f"{week} at prompt {sha}, saved to press_rehearsals {row_id}, "
+            "sent to nobody")
 
 
 @app.function(
