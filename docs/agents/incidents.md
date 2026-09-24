@@ -3423,11 +3423,11 @@ cannot be assigned to an unmerged fix.
 
 ### Why five recordings did not stop it
 
-The rule was written down in five places before the issue was generated:
-the owner's ruling in `docs/voice/taste.md`, given twice; canon law 12;
-ban list entry 20; the heading slot in `prompts/digest.md`; and the
-heading gate at the end of the same file, which asks the correct class
-question and would have failed the line.
+The rule was written down in five places before the issue was
+generated. The owner's ruling in `docs/voice/taste.md`, given twice.
+Canon law 12. Ban list entry 20. The heading slot in
+`prompts/digest.md`. And the heading gate at the end of the same file,
+which asks the correct class question and would have failed the line.
 
 One of those five caused the failure. The heading slot read, in full:
 

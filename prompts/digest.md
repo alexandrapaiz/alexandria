@@ -552,7 +552,7 @@ shape.}
 
 ## {The heading for the traction slot, written from the items you are about to
 put under it. See "Headings are written, not selected" above. The slot's
-internal name is not repeated here and is not a candidate; the heading gate at
+internal name is not repeated here and is not a candidate. The heading gate at
 the end of this file holds the four names.}
 
 {Traction leads, because relevance is impact and not release date. This is
@@ -602,8 +602,8 @@ sentence about the method (owner's ruling, 2026-09-19, docs/voice/taste.md).}
 ## {The heading for the new-work slot, written from this day's new work. It
 carries the honesty the slot exists for, so the reader learns from the heading
 itself that this work is fresh and unproven, in that day's words rather than in
-a label. The slot's internal name is not repeated here and is not a candidate;
-the heading gate at the end of this file holds the four names.}
+a label. The slot's internal name is not repeated here and is not a candidate.
+The heading gate at the end of this file holds the four names.}
 
 {The genuinely new, labeled honestly as unproven, because fresh work with no
 traction yet is listed as such and never dressed up as importance. An item
@@ -660,7 +660,7 @@ long this section runs.}
 
 ## {The heading for the fell-behind slot, written from what actually lost
 ground today. Name the belief that fell if one belief carries the section. The
-slot's internal name is not repeated here and is not a candidate; the heading
+slot's internal name is not repeated here and is not a candidate. The heading
 gate at the end of this file holds the four names.}
 
 {Research that has aged out. Open with 1-2 sentences of framing prose about
