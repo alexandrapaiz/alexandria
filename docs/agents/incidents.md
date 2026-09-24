@@ -1710,3 +1710,130 @@ prose, so it belongs to the ExO, and this entry is the brief.
 Until then, the rule that would have caught it costs one command. Before
 appending here, `git log origin/main -1 -- docs/agents/incidents.md` and
 read main's tail, not the branch's.
+
+## Incident 31 — The rejected sentence was the generator's own instruction, one day after the same defect was named in another file (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. A rule was written, in the right
+register, by the right seat, and the file that produces the artifact was
+never checked against it.
+
+**Recorded because the standing rule says so.** This is the second
+occurrence in twenty-four hours, in two different generators.
+
+**Numbering.** `origin/main`'s tail is still incident 24 and its
+continuations. Entries 25 through 30 are on the writer chain, unmerged.
+31 and 32 follow them, per the rule incident 30 left behind.
+
+### What happened
+
+The owner read issue 2026-W39 and struck its opening sentence: "You
+spent last week watching agents get faster by doing less at test time."
+Her ruling, verbatim: "dont assume readers read each issue." It is now
+canon law 13.
+
+The sentence was not the model's invention. `prompts/digest.md`, the
+generator this seat owns, contained this in its opening spec:
+
+> Some weeks the honest move is continuity: name what the last issue
+> flagged as unresolved and say what changed, which orients and
+> interprets in one move.
+
+The rejected sentence is that instruction carried out correctly.
+
+### Why it is a repeat
+
+Ban list entry 44 was added to `docs/voice/ban-list.md` on 2026-09-24,
+hours earlier, and says exactly this: "A tell a model reaches for by
+habit shows up in some issues. A tell its instruction requires shows up
+in all of them, and no amount of rereading the output catches it,
+because the writer is obeying." Entry 44 closes with the instruction to
+"read every generator, not the one this seat happens to own."
+
+The entry was written from `prompts/daily.md`, a generator in another
+seat's pull request. The same defect was sitting in `prompts/digest.md`
+at the time, and the sweep that found it in the unfamiliar file did not
+turn around and run over the familiar one. The seat looked everywhere
+except at itself on the day it wrote the rule about looking.
+
+### The fix, applied
+
+`prompts/digest.md` changed in six places in this pull request. The
+continuity shape is replaced by the running thread stated whole, the
+greeting is told that its "you" may name what the reader builds and
+never what they have read, and a hard gate before output names four
+shapes of the failure. Canon law 13 carries her specimen and the
+repaired opening.
+
+### The rule that would have caught it
+
+When a ban list entry is added from reading one generator, the same
+read runs over every other generator in the repo before the entry is
+committed. The sweep is the entry's cost of admission, not a follow-up.
+There are two generator files today and the seat owns one of them.
+
+## Incident 32 — The pre-send quality gate returns a pass on the issue the owner rejected (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap, in its sharpest form: the
+instrument ran, found nothing, and its silence was available to be read
+as approval.
+
+**Recorded because the standing rule says so.** This is the same defect
+as ban list entry 36 and incidents 26 and 27, now in a third artifact.
+A gate that enumerates instead of asking has failed once in the
+generator's heading rule, once in its ASCII rule, and now in the tool.
+
+### What happened
+
+Issue 2026-W39 shipped with ten em dashes, seven semicolon joins, twelve
+non-ASCII characters, and at least nine papers discussed in prose with
+no link to any of them. Four rules of `prompts/digest.md`, each stated
+in the version of the file that wrote the issue, some of them three
+times over.
+
+`tools/check_digest_quality.py` exists to catch exactly this before an
+issue sends. It has been written, tested and open in engineer PR #60
+since 2026-09-20. Run read-only against W39 during this editorial run,
+it reports:
+
+```
+2026-W39.md: 0 blocking, 4 warnings.
+  [warn] empty-intensifier (2x, ban list 5)
+  [warn] bare-number (2x, ban list 24)
+```
+
+Zero blocking findings. Two of the four warnings are false.
+
+### Three causes, all in the tool
+
+1. **It parses zero items.** `parse_items` returns an empty list for
+   W39, whose first and third sections are flowing prose rather than
+   bold-led items. Every per-item rule then ran over an empty list and
+   reported nothing: `citation-per-item`, `ends-on-citation`,
+   `uniform-rhythm`, `uniform-length`. The gate never said it had found
+   no items. A checker that cannot parse its input must fail loudly,
+   because a green light on an unread file is worse than no light.
+2. **The em dash is not in its character list.** `TYPESETTER` holds four
+   entries: the non-breaking hyphen, two space variants, and the
+   multiplication sign. The em dash is banned by canon law 1 and by the
+   generator three times and is not among them. Neither is the Greek
+   tau that W39 prints twice. The generator learned this exact lesson on
+   2026-09-21 and its ASCII rule now asks whether every character is
+   ASCII. The tool still lists offenders.
+3. **`INTENSIFIERS` matches substrings.** It looks for `"very "` inside
+   the lowercased line, so it fires on "every screen" and "every team".
+   Both intensifier warnings on W39 are false, and a gate that cries
+   wolf on "every" is a gate whose warnings get skimmed.
+
+### Not patched here
+
+`tools/` and `pipeline/` are outside the writer seat's writable surface.
+Filed to the engineer in `docs/ideas.md` with the evidence above, which
+is charter step 4: the third prompt edit is the wrong instrument when the
+rule is mechanically checkable.
+
+### The rule that would have caught it
+
+Every gate is tested against an artifact known to fail it before the
+gate is trusted. PR #60's tests assert that the checker finds the
+defects it was written to find. Nothing asserted that it finds them in a
+real issue, and the first real issue it met was one it passed.

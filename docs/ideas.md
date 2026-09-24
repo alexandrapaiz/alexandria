@@ -3277,3 +3277,73 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   and is the reason there is time to do it before the daily ships.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-24 — The quality gate passes the issue the owner rejected (writer seat, for the engineer)
+
+- Trigger: the editorial run of 2026-09-24, second run, grading issue
+  2026-W39 against the full canon. Charter step 4, filed rather than
+  patched, because the rules in question are mechanically checkable and
+  three of them have now been restated in the generator up to three times
+  each without holding. Recorded as incident 32.
+- The facts. W39 shipped with ten em dashes, seven semicolon joins, twelve
+  non-ASCII characters, and at least nine papers discussed in prose with no
+  link to any of them. `tools/check_digest_quality.py`, open in PR #60 since
+  2026-09-20, was run read-only against it and returned `0 blocking, 4
+  warnings`, two of the four false.
+- What: three fixes in `tools/check_digest_quality.py`, all small.
+  1. `parse_items` returns an empty list for W39, because sections one and
+     three are flowing prose rather than bold-led items. Every per-item rule
+     then ran over nothing and reported nothing: `citation-per-item`,
+     `ends-on-citation`, `uniform-rhythm`, `uniform-length`. Make an empty
+     parse a blocking finding in its own right. A checker that cannot read
+     its input has to say so, because a green light on an unread file is
+     worse than no light. Whether the item model should also widen to
+     recognise prose items is the engineer's call and the louder failure
+     matters more than the parser.
+  2. `TYPESETTER` lists four characters: the non-breaking hyphen, two space
+     variants and the multiplication sign. The em dash is not among them and
+     neither is the Greek tau W39 prints twice. Replace the list with the
+     class question the generator's own ASCII rule was rewritten to ask on
+     2026-09-21: is every character in this issue ASCII? Keep the four
+     entries as the explanation attached to the finding, so the message
+     still says which character and why. This is ban list 36 in a third
+     artifact, after the heading rule and the ASCII rule.
+  3. `INTENSIFIERS` matches the substring `"very "`, so it fires on "every
+     screen" and "every team". Both W39 warnings are false. Word boundaries.
+- Why it is filed rather than patched: `tools/` and `pipeline/` are outside
+  the writer seat's writable surface, and the editorial half of the fix is
+  already in this pull request. The generator now counts items against links
+  before it outputs. That is the last prompt edit worth making on this, and
+  the rest belongs in a checker.
+- The test that would have caught it: run the gate against a real issue that
+  is known to fail, and assert the findings. PR #60's tests assert the
+  checker finds the defects it was written to find. Nothing asserted that it
+  finds them in an issue, and the first real issue it met was one it passed.
+  `site/content/issues/2026-W39.md` is now that fixture, with its failures
+  enumerated in `docs/voice/reviews/2026-09-24-b.md`.
+- Merge order: this seat's PR #89 carries the review and the generator, and
+  touches no file in PR #60. Either order works. PR #60 is the one that
+  changes what tomorrow's reader sees.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Nine runs of prompt fixes have never reached the press (writer seat, for the owner)
+
+- Trigger: the same run, establishing which generator actually wrote W39.
+- The fact: `prompts/digest.md` on `origin/main` last changed at commit
+  c3b4c49, 2026-09-19 19:39. Every editorial run since is in an open pull
+  request, #55, #62, #67, #71, #74, #81 and now #89. The press reads main.
+  W39 was written by the 2026-09-19 generator, which is why it fails rules
+  this seat corrected days ago.
+- What: nothing to build. This is a merge decision and it belongs to the
+  owner, which is why it is filed here rather than fixed. The writer chain
+  is linear and #89 is its head, so one merge lands every editorial run
+  since 2026-09-20 and the other six pull requests close unreviewed.
+- Why it matters more than any single patch: this seat's whole output is
+  prompt changes, and its charter says the lasting output is a better
+  generator. Nine runs of that output are sitting where the press cannot
+  read them. Merging is worth more to tomorrow's issue than anything this
+  seat could write into the prompt today.
+- Cost: $0.
+- Status: proposed

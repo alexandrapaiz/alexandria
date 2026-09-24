@@ -132,9 +132,9 @@ Study decisions, never copy sentences.
     referenced, and nobody had to have been there.
     This binds the daily and the weekly alike, and it binds the
     generator as a rule rather than a preference. It does not touch
-    the corpus thread of law 5: saying what the field used to believe
-    is the product, and saying what alexandria printed about it is
-    the violation.
+    the corpus thread of law 5. Saying what the field used to believe
+    is the product. Saying what alexandria printed about it is the
+    violation.
 
 ## How an issue is graded
 
