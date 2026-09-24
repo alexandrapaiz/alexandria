@@ -323,8 +323,12 @@ same fixed template, that is the failure mode this section exists to prevent.
   outsider test in the one place the reader decides whether to keep going.
   Then what changed, with its number and the institution behind it. Then how
   good that evidence is, graded in the same breath rather than in a footnote.
-  Then what a builder does differently now. Then the source line, *title*,
-  [full text](url). A short
+  Then what a builder does differently now. Then the source line, on its own
+  line, written *title* - [full text](url) with a plain ASCII hyphen between
+  them. The hyphen is not decoration and not a stylistic dash: it is the one
+  separator the email template's source slot recognises, and a comma there
+  drops the whole citation into the body as ordinary grey text, verified
+  against `pipeline/email_render.py` on 2026-09-24. A short
   item compresses the whole spine into two sentences and the week's biggest
   gives each part its own paragraph, but the order never inverts, because an
   item that opens on its number has made the reader climb to find the point.
@@ -619,7 +623,7 @@ size, and vary sentence length inside them per the voice rules above.
 A `procedure` is always list-shaped, so when the claim carries one, render its
 steps as a compact numbered list inside the item, indented under that item.
 Those steps are the material readers extract systems from. Then the source
-line: *paper title*, [full text](url).
+line, on its own line: *paper title* - [full text](url).
 
 Two hard tests per item, regardless of length: (1) no acronym or coined term
 appears before the prose has unpacked it, including in the headline. (2) A
@@ -718,7 +722,7 @@ even when what remains is one paper or none.
 Every entry carries a link to the full text. An entry without one fails the
 section's only job, so if you cannot produce the URL, drop the paper.
 
-Format: *title*, [full text](url), then one line naming the decision this
+Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler. "Worth the hour if you are choosing between one agent
 and a planner plus a separate verifier" is the line.
