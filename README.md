@@ -36,7 +36,7 @@ flowchart TB
     subgraph ORG["The org: twelve seats, GitHub Actions cron, one PR per run"]
         direction TB
         BUILD["<b>Build</b><br/>engineer · daily 7:06 ET<br/>skill · Tue<br/>frontend · Wed"]
-        STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
+        STEER["<b>Steer</b><br/>pm · daily, Mon is the ceremony<br/>okr · monthly<br/>exo · Sun"]
         WATCH["<b>Watch</b><br/>research · Mon<br/>market · Fri<br/>security · 1st + 15th"]
         DORM["<b>Dormant</b><br/>finance · sales<br/>owner activates"]
     end
@@ -106,12 +106,12 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 | Seat | Cadence | Lane | ADR |
 |---|---|---|---|
 | engineer | daily 7:06 ET | product code and the pipeline | ADR-14 |
-| pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
+| pm | daily 6:35 ET standup, Mon is the ceremony | sprints, backlog, board, org chart, and the daily run-health and delivery-health report | ADR-15 |
 | research | Mon 16:30 UTC | what deserves reading: digest review, curation brief, sources, meta-review | ADR-25 |
 | skill | Tue 8:00 ET | the gold production line in skills/ | ADR-22 |
-| frontend | Wed 8:00 ET | the site, verified visually from screenshots | ADR-23 |
+| frontend | Wed 8:00 ET | the site, verified visually from screenshots, and setting approved copy rather than writing it | ADR-23 |
 | market | Fri 7:00 ET | the outside view in docs/market/ | ADR-17 |
-| writer | daily, after the digest | the words as a craft: docs/voice/ and the digest prompt | ADR-28 |
+| writer | daily, after the digest | the words as a craft: docs/voice/, the digest prompt, and drafting the site's copy | ADR-28 |
 | exo | Sun 10:00 ET | the org itself: charters, workflows, this README | ADR-19 |
 | security | 1st and 15th | debug sweeps and defensive audits | ADR-20 |
 | okr | monthly | quarterly objectives and purpose drift | ADR-16 |
@@ -121,7 +121,15 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 Every seat runs the same shape. A GitHub Actions cron checks out this repo,
 runs Claude Code headlessly against the seat's charter file, and the run ends
 with one branch and one pull request. No agent merges its own work, no agent
-pushes to main, and no agent touches secrets. Two modes govern when they run:
+pushes to main, and no agent touches secrets. The harness is the same for every
+seat and the model behind it is not. All twelve run on Claude today. From
+2026-09-19 to 2026-09-23 the pm, market, okr and finance seats were routed to
+an open model through a third-party endpoint, which is
+[model routing](docs/agents/model-routing.md) lever 2. That trial is paused: it
+failed the PM seat twice and the routing secrets were removed, so the four
+seats fall back to Sonnet. The workflows still hold the routed step, and the
+conditions for turning it back on are in
+[the incident register](docs/agents/incidents.md) under incident 23. Two modes govern when they run:
 **asynchronous**, where the schedules are the heartbeat, and **synchronous**,
 where the owner is present and seats are dispatched into her session.
 
@@ -262,6 +270,13 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
+- [ ] **The press is currently silent.** The last issue written is 2026-W37
+      (2026-09-14). No model on the provider's free tier can print the weekly
+      issue at the current prompt size, so the fix is a shorter generator prompt
+      or an issue split across several requests. Availability checks, an ordered
+      fallback list and an alarm to the owner are in flight. Incident 24 has the
+      diagnosis and [delivery health](docs/agents/delivery-health.md) has the
+      standing guardrails
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations
