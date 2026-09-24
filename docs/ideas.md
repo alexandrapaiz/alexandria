@@ -3814,3 +3814,113 @@ needs an owner decision or an owner push, not an engineer build.
   pull request rather than dressing the selection up.
 - No new first step. The existing entry's plan stands.
 - Status: proposed (unchanged)
+
+### 2026-09-21 — Craft scan: TLDR AI's analysis section (tldr.tech/ai/2026-09-21)
+- Trigger: the engineer seat's daily craft scan, and today's build read
+  one of their issues closely enough to cut a specimen out of it word by
+  word for the blind prose benchmark (sprint item 2). The landscape file
+  already carries TLDR as a competitor. This is the craft read rather
+  than the market read.
+- What is worth stealing: every item in their "Deep Dives & Analysis"
+  section is one paragraph and nothing else. The three items run 49, 77
+  and 95 words of body, with no sub-lists, no numbered procedure, and no
+  second level anywhere in the section. Our one shipped item runs 116
+  words, of which 38 sit in three sub-bullets, and two of those three
+  bullets say again what the paragraph above them already said. A reader
+  who has understood the paragraph reads the restatement as filler, and
+  a reader who has not is handed the same sentence in more compressed
+  form, which helps nobody. The flat item is not a formatting preference.
+  It forces the writer to decide what the finding is, because there is no
+  second level to hide an undecided draft in.
+- What alexandria does better: their three analysis items name no source
+  a reader can check. The strongest of them asserts that pretraining data
+  rather than verifiability explains why models are good at maths, which
+  is a real argument, and nothing in the item says whose argument it is
+  or where to read it. Every item we print names its paper and links it.
+  That is the whole product, and on this axis the comparison is not
+  close.
+- First step: the observation is written up as its own entry below, since
+  it is a change to the generator rather than a note about a competitor.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — The sub-bullets under a digest item mostly restate the paragraph
+- Trigger: cutting 2026-W37's top item into a benchmark specimen meant
+  reading its three sub-bullets against the paragraph above them, one
+  sentence at a time, which is not something a skim does. Two of the
+  three are restatements. "Agents internalize environmental guidance into
+  policy weights" is the paragraph's "the guidance has been baked into
+  the policy". "Exploration covers larger state regions, raising success
+  rates on difficult tasks" is the paragraph's "visit broader parts of
+  the state space and succeed more often on sparse-reward tasks". Only
+  the third bullet, on training stability, carries a fact the paragraph
+  does not. That is 38 words spent to add one.
+- What: the generator should stop emitting a sub-list under an item by
+  default. Where the payload really does carry several distinct findings
+  for one paper, they belong in the paragraph as sentences, and where it
+  carries an ordered procedure the numbered list earns its place. The
+  test is mechanical enough to state: a bullet that shares most of its
+  content words with a sentence above it is a restatement and should not
+  be printed. This is close to ban-list entry 7, which forbids a summary
+  that restates the headline, and it is the same failure one level down.
+  It also lands on the density ruling behind ban-list entry 27, because
+  cutting the restatement is fewer words per idea rather than fewer
+  ideas.
+- First step: one instruction in `prompts/digest.md`, which is the writer
+  seat's surface under ADR-28, plus a warning rule in
+  `tools/check_digest_quality.py` when that lands with PR #60. The check
+  is a content-word overlap between each bullet and the nearest preceding
+  sentence.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — The comped friends list is a category, not a roster
+- Trigger: sprint item 2 says to have "the comped friends list score both
+  blind". The packet is built and has nowhere to go. `comped` appears in
+  docs/sales/first-customers.md as a pricing tier ("Friends and family on
+  the list at $0 by decision"), in the launch calendar as the audience for
+  the final pre-launch digest, and in the roadmap. No file in the
+  repository names a single person on it, or an email address, or a count.
+  Three planning documents and one sprint item all depend on a list that
+  does not exist anywhere an agent or the owner can open.
+- What: a real roster, however short. Five names and five email addresses
+  in one file is enough to unblock this benchmark, the pre-launch digest,
+  and the first-customers plan, all three of which currently assume it.
+  This is the owner's to write, because it is her friends and their
+  addresses, and it is the kind of file that needs a decision about where
+  personal contact details live before anyone commits one. It should
+  probably not be in the public repository at all, which is itself the
+  decision to make.
+- First step: the owner names the people and says where the list lives. A
+  private gist, a Modal secret, or a gitignored file all work and the
+  choice is hers.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-21 — Our registers cannot be cited or cross-linked, and both cost us today
+- Trigger: two small things in one session, which turn out to be the same
+  thing. First, writing docs/evals/2026-09-21-prose-benchmark.md meant
+  citing the prose ban list by number, and the ban list has two entries
+  numbered 26, two numbered 27, and no 30 or 31. A citation to "ban-list
+  entry 26" points at two different rules. Second, this is the third
+  consecutive engineer run that could not settle the two ledger entries
+  marked `urgent` about the archive and the uncited 23.9% claim, because
+  both need database access and the entry that would grant it ("Read the
+  archive from the `digests` table", 2026-09-18) is still `proposed`. The
+  ledger has no way to say that an `urgent` item is waiting on a
+  `proposed` one, so nothing surfaces the pair and the same run reports
+  the same block three days running.
+- What: give both registers addresses. For the ban list, stable ids that
+  are never reused, which is a renumbering pass and a note at the top
+  saying numbers are permanent. For the ledger, one optional `Blocked
+  by:` line in the entry contract, naming the dated title of the entry
+  that has to land first. An `urgent` item blocked by a `proposed` one is
+  a decision waiting on the owner, and it should be visible as that
+  rather than as three identical paragraphs of apology in three PR
+  descriptions.
+- First step: add `Blocked by:` to the ledger contract in
+  prompts/engineer-agent.md and prompts/pm-agent.md, which is a charter
+  edit and therefore the owner's merge, not this seat's. The ban-list
+  renumbering is the writer seat's own surface.
+- Cost: $0.
+- Status: proposed
