@@ -68,3 +68,30 @@ a page looks clean but says nothing true, it is not done.
     already forbids it; it earns its own entry here because the failure
     is invisible in a normal browser and total without JavaScript, so
     it survives review. (Spotted 2026-09-18: the whole issue archive.)
+
+24. The same failure as 23, with the script removed. Content held at
+    opacity 0 by a scroll-driven CSS animation (`animation-timeline:
+    view()`) whose range never opens, because the element is taller
+    than the viewport or starts too near the fold. It passes every
+    check aimed at entry 23: there is no script, nothing is waiting
+    for an observer, and the rule reads as progressive enhancement.
+    It fails anyway, and it fails at one viewport while looking
+    correct at the other two, which is how it reaches production.
+    The test is not "is a script involved", it is "read the computed
+    opacity at rest, at every viewport you ship".
+    (Spotted 2026-09-20: the desk's lists at 390px, seven rows at
+    opacity 0 under a header that counted them.)
+
+25. A motion system that is a pile of values rather than a system: several
+    easing curves and a different duration per component, each one
+    defensible on its own and none of them agreeing. It is the hardest
+    tell on this list to see, because every individual transition looks
+    fine in isolation and nothing is ever *wrong* in a screenshot. It
+    shows up as a page that feels slightly incoherent to use without the
+    reader being able to name why, and it is what a surface built one
+    component at a time always drifts into. The benchmark is the test:
+    Linear runs its entire marketing site on ONE curve and two durations,
+    Consensus on one duration. The house rule that follows: one micro
+    curve, two clocks, plus whatever the owner has specifically approved,
+    and a new value needs the same justification a new colour would.
+    (Spotted 2026-09-23 at four curves and seven clocks in one stylesheet.)

@@ -1082,3 +1082,103 @@ availability check at deploy and at run start against the provider's
 /models endpoint, an ordered fallback list, and a loud notification
 to the owner when the press cannot print, because the discovery
 should never again be her inbox.
+
+*Renumbering note (2026-09-24, frontend run). These two entries were written
+on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
+carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
+They are re-identified here under the date-scoped scheme the ExO run shipped
+the same day, rather than allocated new numbers, because that scheme is the
+fix for exactly this collision.*
+
+## INC-2026-09-20-content-invisible-at-rest — Content invisible at rest, a second time (2026-09-20, frontend run)
+
+**The repeat.** Ban list entry 23 was appended on 2026-09-18 after the
+whole issue archive was found staged at opacity 0 waiting for a scroll
+script. On 2026-09-20 the same failure was found again, on the desk
+page: at 390px the first list rendered seven rows at computed opacity 0
+under a header reading "AWAITING YOUR MERGE 7", on a page with nothing
+else to scroll. Same symptom, same surface family, different mechanism.
+Recorded here under the standing rule, at the moment it repeated.
+
+**Why the existing guard did not catch it.** Entry 23 names the
+mechanism, a scroll script, rather than the symptom. The second
+occurrence had no script. It was `.hero-follow`'s CSS rise animation,
+`animation-timeline: view()` with `animation-range: entry 65% entry
+98%`, inherited by the desk because the desk reuses that class for its
+layout. A view-timeline range never opens for a block taller than the
+viewport that begins near the fold, so the animation holds at its first
+keyframe forever. Every property of entry 23 that a reviewer would
+check was absent: no script, no observer, no JavaScript dependency, and
+the rule reads as ordinary progressive enhancement. The check was
+looking for the cause it had seen before instead of the effect it cares
+about.
+
+**It also hid at two viewports out of three.** Computed opacity was 0 at
+390 and 1 at 820 and 1440. A review that looks at desktop, or at desktop
+and tablet, sees nothing wrong.
+
+**The fix, and the general one.** The desk now switches the inherited
+animation off (`.desk > * { animation: none }`), which is also what
+motion.md asks for on a high-frequency surface. The general fix is ban
+list entry 24, appended in the same pull request: the test is no longer
+"is a script involved" but "read the computed opacity at rest, at every
+viewport you ship". That is a two-line probe and it is now the way this
+seat checks, not a thing to remember.
+
+**The wider lesson, for any register.** An entry written as a cause
+only catches that cause. Incident 20 was a ruling that was recorded and
+never checked; this is its sibling, a rule that was recorded, checked,
+and worded too narrowly to fire. When a tell is appended to a register,
+the entry should name what is observably wrong, and the mechanism
+should be an example rather than the definition.
+
+## INC-2026-09-23-phantom-production-bug — A phantom production bug, twice in one run (2026-09-23, frontend run)
+
+**What happened.** The frontend run screenshotted `/desk` at 390x844 and
+got a white page carrying one line of text: "Application error: a
+client-side exception has occurred". It reproduced on retry, then stopped
+reproducing, then came back. Roughly a dozen turns went into chasing it:
+rendering the page in isolation (fine), reading the console (nothing but
+two aborted third-party requests), dumping `innerText`, and finally
+diffing the CSS hash the server was serving against the one on disk.
+
+**The cause was the run's own hands.** `next build` had been run while a
+`next start` server from the previous build was still listening on 3000.
+The HTML the running server emitted referenced chunk and stylesheet
+hashes that the rebuild had replaced, so the browser fetched assets that
+no longer existed and React failed to hydrate. The page was never broken.
+Nothing in the repository was ever broken.
+
+**Why it repeated inside one run.** The first occurrence was mistaken for
+flakiness and worked around with a retry loop in the screenshot harness,
+which made the symptom intermittent instead of removing it. It came back
+an hour later, after the next rebuild, and the retry loop then hid the
+cause a second time. The proximate reason the old server survived every
+restart is that `pkill -f next-server` matches the agent's own shell
+command string and kills the shell instead, and `kill` by port silently
+did nothing when the port lookup returned empty.
+
+**Why this matters beyond one run.** The failure presents as a
+production-grade bug on the owner's own daily surface. A seat that
+believed it would have filed it, or worse, "fixed" it. The whole point of
+a visual charter is that the pixels are the evidence, and this is the
+case where the pixels lie: they are a true photograph of a false server.
+
+**The fix, and the general one.** Never rebuild under a running server.
+The sequence is kill, verify the port is actually free, build, start, and
+then verify the served stylesheet hash matches the one on disk before
+screenshotting anything. That last check is one line and it is the only
+one that actually proves it:
+
+```bash
+curl -s localhost:3000/ | grep -o '/_next/static/css/[^"]*' | head -1
+ls .next/static/css/
+```
+
+The general lesson is the same one incident 23 ends on, arriving from the
+other direction. There, a register entry named a cause and missed the
+same effect from a different cause. Here, a symptom was treated as noise
+and worked around instead of explained. A retry loop that makes a failure
+intermittent has not fixed anything; it has deleted the evidence. When a
+run starts working around something it cannot explain, that is the moment
+to stop and explain it.
