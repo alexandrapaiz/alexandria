@@ -581,8 +581,15 @@ def call_model(model: str, prompt: str, user: str) -> str:
             raise ModelGone(f"404 Not Found: {resp.text[:400]}")
 
         if resp.status_code == 429:
-            wait = float(resp.headers.get("retry-after")
-                         or BACKOFF_SECONDS * (2 ** attempt))
+            # Moonshot's 429 for "max organization concurrency: 1" says
+            # retry-after 1s, and on 2026-09-24 the press honored that three
+            # times in four seconds and gave up while another seat's single
+            # Kimi call (the engineer's rehearsal print) was still running.
+            # A concurrency limit is not a rate limit: the other call takes
+            # minutes, so the wait must be our own schedule, and the header
+            # only ever lengthens it.
+            wait = max(float(resp.headers.get("retry-after") or 0),
+                       BACKOFF_SECONDS * (2 ** attempt))
             wait = min(wait, BACKOFF_CEILING)
             if attempt < RETRIES_PER_MODEL - 1:
                 print(f"{model}: rate limited (attempt {attempt + 1} of "
@@ -779,7 +786,7 @@ def build_messages(key: str, body: str, rows, addr: str) -> list[tuple[str, str,
         return [(email, subject, body, fallback) for email, _name in rows]
 
 
-def send_newsletter(conn, week: str, body: str) -> str:
+def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -> str:
     """Email the digest to active subscribers (friends-and-family phase).
 
     Sends through the owner's Gmail via authenticated SMTP: at this scale
@@ -800,6 +807,11 @@ def send_newsletter(conn, week: str, body: str) -> str:
     rows = conn.execute(
         "select email, name from subscribers where status = 'active'"
     ).fetchall()
+    if only:
+        # a resend to named subscribers only (a new signup, a bounced address);
+        # they must still be active rows, so the roll stays the one gate
+        wanted = {e.strip().lower() for e in only}
+        rows = [r for r in rows if r[0].lower() in wanted]
     if not rows:
         return "no active subscribers; nothing to send"
 
@@ -1035,7 +1047,7 @@ def weekly() -> str:
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=600,
 )
-def resend(week: str) -> str:
+def resend(week: str, only: str = "") -> str:
     """Send an issue that is already in the digests table, to active subscribers.
 
     No model call, no new row. This exists for two cases the press meets in
@@ -1044,6 +1056,7 @@ def resend(week: str) -> str:
     2026-09-24) that the owner wants to see on an issue that already went out.
 
         modal run pipeline/weekly.py::resend --week 2026-W39
+        modal run pipeline/weekly.py::resend --week 2026-W39 --only a@x.com,b@y.org
     """
     import os
     import psycopg
@@ -1054,7 +1067,8 @@ def resend(week: str) -> str:
         ).fetchone()
         if row is None:
             return f"no issue in the digests table for {week}; nothing sent"
-        return send_newsletter(conn, week, row[0])
+        return send_newsletter(conn, week, row[0],
+                               only=[e for e in only.split(",") if e.strip()])
 
 
 @app.local_entrypoint()
