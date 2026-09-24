@@ -4250,3 +4250,60 @@ needs an owner decision or an owner push, not an engineer build.
   been shipped and never used.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-24 — The email template cannot render the formatting the owner just made law (for the frontend seat)
+
+- Trigger: her ruling tonight, recorded in `docs/voice/taste.md` and now
+  canon law 14. "some sections with bullets and playing with formatting
+  beyond dense paragraphs." Formatting is a tool of the issue from today,
+  so the generator will start emitting bulleted lists with a short bold
+  lead per item and a line carrying the number that matters. She asked
+  this seat to check whether `site/emails/digest.html` renders that well
+  and to flag it here if it does not. It does not, in three specific
+  ways. All three were verified by running real issue markdown through
+  `pipeline/email_render.py` today, not by reading it.
+- **1. A bulleted list loses its bullets.** A top-level `- ` line becomes
+  a whole new ITEM in `parse_section()`, so three parallel results render
+  as three separate paragraphs with 24px between them and no marker on
+  any of them. The bold lead survives, the list does not, and a group of
+  parallel findings reads in the inbox as three more paragraphs, which is
+  the exact thing the ruling exists to break up. The template does own a
+  bullet, in `ITEM_POINT`, but that region only fires for bullets
+  INDENTED under an item, where it is documented as a procedure's steps.
+- **2. A line that is entirely bold becomes a grey uppercase group
+  label.** `BOLD_ONLY` at the top level of a section sets `item_kind`,
+  and `ITEM_KIND` is set 12px, letter-spaced, uppercase, `#86868b`. So a
+  one-line pull carrying the week's number arrives looking like the
+  taxonomy label canon law 12 bans, and it then sticks to every following
+  item in the section. Two consequences. The writer seat has banned the
+  shape outright (ban list 48) and routed the pull into a sentence with
+  the number bolded inside it, which renders correctly today. And
+  `ITEM_KIND` itself is worth a look: it exists for "Contradicted" and
+  "Replaced", which are the two labels law 12 forbids printing, so the
+  slot's only documented use is illegal.
+- **3. The source line the weekly generator writes never reaches the
+  source slot.** `SOURCE` requires a dash between the title and the link.
+  `prompts/digest.md` said comma. So every citation in every weekly issue
+  fell through into the body as ordinary text and `ITEM_SOURCE`, with its
+  underlined title and its grey host-and-path line, has never rendered.
+  Fixed from this side in this PR: the generator now writes
+  `*title* - [full text](url)`, and the rewritten W39 fills six source
+  slots where the published issue filled zero. Flagged anyway, because
+  three files disagreed (`site/emails/README.md` says dash,
+  `prompts/digest.md` said comma, `prompts/daily.md` says dash and prints
+  an em dash doing it, ban list 44) and one of them should become the
+  contract rather than the survivor.
+- **What would fix 1 and 2, and it is the frontend seat's call.** A LIST
+  region that top-level bullets fill, with the template owning the
+  marker the way `ITEM_POINT` already does, and a PULL region for one
+  sentence set larger with air around it. Both are additions to the
+  template plus a branch in `parse_section()`. Neither is the writer
+  seat's surface, which is why this is a ledger entry and not a diff.
+- **One fragility worth knowing about while you are in there.** The
+  parser is newline-sensitive: it treats every line as its own item, so a
+  hard-wrapped issue renders as one item per wrapped line, and `**bold**`
+  spanning a line break stays literal asterisks. The generator happens to
+  emit unwrapped paragraphs, so this has never bitten. Nothing enforces
+  it and nothing checks it.
+- Cost: $0 to file. The template work is an hour or two.
+- Status: proposed
