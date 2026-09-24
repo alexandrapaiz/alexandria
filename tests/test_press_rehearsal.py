@@ -109,7 +109,8 @@ def run_rehearse(*, model=None, rows=None, prompt="the editorial instruction"):
 
     model = model or weekly.FALLBACK_MODELS[0]
     log = []
-    rows = rows or {}
+    # the scratch table is there unless a test scripts it away
+    rows = {"to_regclass": ("press_rehearsals",), **(rows or {})}
     printed = []
 
     saved = {
@@ -345,6 +346,21 @@ def test_the_read_connection_closes_before_the_model_call():
           kinds[call:].count("open") == 1, f"{kinds}")
 
 
+def test_a_missing_scratch_table_costs_nothing():
+    """Gate 3 must not spend a model call to discover it has nowhere to write."""
+    print("no scratch table, no spending")
+    result, log, _ = run_rehearse(rows={"to_regclass": (None,)})
+    check("it raises before the model call",
+          isinstance(result, weekly.PressCannotPrint), repr(result))
+    check("no model was called",
+          not any(kind == "model_call" for kind, _, _ in log),
+          f"{[k for k, _, _ in log]}")
+    check("the message names the command that fixes it",
+          "db_setup.py::apply_schema" in str(result), str(result))
+    check("and says plainly that nothing was spent",
+          "Nothing was spent" in str(result), str(result))
+
+
 # ---------------- the receipt, which is what makes it a gate ----------------
 
 def test_a_receipt_from_a_different_model_is_not_a_receipt():
@@ -447,6 +463,7 @@ if __name__ == "__main__":
                test_the_client_timeout_is_one_name_in_two_places,
                test_the_scheduled_run_is_unchanged_by_the_trace,
                test_the_read_connection_closes_before_the_model_call,
+               test_a_missing_scratch_table_costs_nothing,
                test_a_receipt_from_a_different_model_is_not_a_receipt,
                test_a_receipt_from_a_different_prompt_is_not_a_receipt,
                test_the_deploy_chain_refuses_without_a_rehearsal,

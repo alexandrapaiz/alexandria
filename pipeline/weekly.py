@@ -1215,6 +1215,20 @@ def rehearse() -> str:
     available = check_availability()
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Before anything is spent. A rehearsal that writes no receipt is not
+        # a rehearsal, and finding that out after the model call means paying
+        # for an issue with nowhere to put it. The table is in db/schema.sql
+        # and `create table if not exists` makes applying it safe at any time,
+        # so the remedy is one idempotent command and this says which one.
+        if conn.execute("select to_regclass('public.press_rehearsals')"
+                        ).fetchone()[0] is None:
+            raise PressCannotPrint(
+                "there is no press_rehearsals table in this database, so a "
+                "rehearsal has nowhere to write its receipt. It is in "
+                "db/schema.sql; apply it with:\n"
+                "    modal run pipeline/db_setup.py::apply_schema\n"
+                "Nothing was spent."
+            )
         payload = gather(conn)
         payload["week"] = week
         payload["dates"] = dates
