@@ -182,12 +182,54 @@ register has which gate is docs/agents/registers.md.
 
 So before you call `gh pr ready`, two checks.
 
+**0. The machinery diff, before anything else** (ExO assignment,
+2026-09-20, incident 23). You are the only seat that runs every day, so
+you are the only seat that can catch a runtime change inside a day.
+
+```bash
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+The `pipeline/` half was added 2026-09-24 and it is not decoration. A
+provider change lands there and nowhere else, so scoping this command to
+`.github/` made the largest runtime change the org makes invisible to
+the only check that catches runtime changes. That cost four production
+failures in one evening (INC-2026-09-24-press-provider-migration).
+
+For every commit it returns, ask the two questions
+docs/agents/runtime-changes.md exists to ask. Did a merged pull request
+explain it, and was there a smoke run behind it in `gh run list`. A
+change to the image, to `claude_args`, to a cap, a timeout, a cron, a
+secret a run reads, or to a `container:` block is a runtime change even
+when it is two lines and obviously correct. **So is a change to a model
+id, a provider, an API base URL, a token reservation or a client
+timeout in `pipeline/`**, and for those the question is not whether
+there was a smoke run but whether there was a rehearsal. When you find one with no
+smoke run, write it into docs/agents/incidents.md in your own PR and say
+so in one line in the PR description, addressed to the owner. Do not
+try to fix it, because you cannot push a workflow file either.
+
+This duty was the ExO's alone until now and the ExO runs on Sundays.
+Incident 23 is what that cost: open routing landed on a Friday evening
+with no smoke run, and the first seat to meet it failed completely
+fourteen hours before the weekly audit that would have caught it. A
+daily check by the daily seat is the fix, and it costs you one command.
+
 **1. The registers your output is bound by.**
 
 - `docs/decisions.md`, the ADRs your change implements or contradicts.
 - `docs/agents/runtime-changes.md`, before any edit to a workflow, the
-  image, a secret, a turn cap or a timeout. That law binds every seat
-  and it was named in one charter until this run.
+  image, a secret, a turn cap or a timeout, and before any edit to the
+  model, provider, reservation or timeout a scheduled job uses. That law
+  binds every seat and it was named in one charter until this run.
+- `docs/agents/press-rehearsal.md`, which is a specification addressed
+  to you. It is the third gate in that law's ladder for a provider
+  change, it does not exist as code yet, and until it does the ladder
+  has two working links and a paragraph. Building it is a break-fix
+  sized piece of work: one Modal function, one scratch table, one more
+  `&&` in the deploy command. Take it when the sprint has room, and if
+  you decline it, say why in your PR so the next run does not
+  rediscover the decision.
 - `docs/voice/ban-list.md` for anything the owner will read.
 
 **2. Repeats go in the incident register.** If anything in this run
@@ -196,4 +238,20 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
