@@ -1467,3 +1467,104 @@ seat grades an artifact, has anyone looked at what the artifact was made
 from?** Nine runs improved the instructions to a writer nobody had watched
 work, from material nobody had read. A seat that only ever sees output will
 keep writing sharper prohibitions against defects its subject never chose.
+
+## Incident 29 — Nine enforcement runs over one file, while a second file with the same job went unread (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. Incident 20's class, at a new
+scope: the gate ran, the gate worked, and the gate was pointed at one of
+the two artifacts it was supposed to bind.
+
+**Recorded because the standing rule says so.** This is the fourth
+appearance of "recording is not enforcing" (20, 26, 27, 28) and the
+first where the enforcement genuinely happened and still missed.
+
+### What happened
+
+The owner's rulings of 2026-09-19 were recorded in docs/voice/taste.md
+and enforced into prompts/digest.md by nine consecutive writer runs.
+`prompts/daily.md`, a second complete generator created in engineer
+PR #35 at 02:55 the same morning, received none of them. On 2026-09-24
+it still carries the "[{dates}]" title suffix she struck by name, in
+three places, one of them an explicit instruction to print it. Seven
+taste rulings and seven canon laws fail against it. The full grade is
+docs/voice/reviews/2026-09-24.md.
+
+Neither seat erred at the moment it wrote. digest.md's sentence claiming
+both cadences (commit d134996) landed 48 minutes after PR #35's last
+commit. Both were honest answers to "how does the daily get written?",
+written 48 minutes apart, and nothing in the next five days put them in
+one room.
+
+### Why the existing gates could not catch it
+
+The writer charter's pre-ship check names the registers an output is
+bound by. It does not name the artifacts a register binds. So the check
+ran nine times, correctly, against the file this seat owns, and the
+question "is there another file doing this job?" was never a question
+anyone was asked. The charter's own custody sentence is what should have
+raised it: "No other seat, and not the chair, writes newsletter
+structure or prose rules anywhere else." A custody claim with nothing
+that enumerates the territory is a claim nobody can check.
+
+### The fix
+
+Ban list 44 makes the generator itself a graded artifact, every
+generator and not the one this seat happens to own. The structural fix,
+filed for the engineer in docs/ideas.md rather than patched here, is to
+stop having two files that can drift: one craft layer, one small cadence
+file each, concatenated at call time.
+
+### The general form, for the ExO's pattern reading
+
+Incident 28 asked, for every open ruling, who is it waiting on. This one
+asks the question one level out: **for every rule, what is the complete
+list of artifacts it binds, and does anything enumerate that list?** A
+seat that owns a rule will check the artifact it can see. Custody
+language does not produce an inventory, and an enforcement gate with no
+inventory is a gate on one door of a building nobody counted the doors
+of.
+
+## Incident 30 — The register's next number collided again, this time across seats (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. Incident 25 exactly, one scope
+out, and incident 6's same-anchor ledger collision in a different file.
+
+**Recorded because the standing rule says so.** Incident 25 recorded
+this failure inside one seat on 2026-09-20. It has now happened between
+seats, which is the repeat.
+
+### What happened
+
+Main shipped incidents 23 (Kimi routing) and 24 (the press's 404) on
+2026-09-23. The writer chain, open since 2026-09-20, already held four
+entries numbered 23, 25, 26 and 27. Merging main into writer/2026-09-24
+conflicted on one 386-line block, and two different incidents were
+numbered 23.
+
+Resolved in this pull request by keeping main's numbers, because main is
+canonical and the fleet was already dispatched against "incidents 23 and
+24" by name. The four writer entries moved to 25 through 28, and every
+cross-reference in the ban list, the ledger and five review files moved
+with them. No entry text changed.
+
+### Why incident 25's fix did not hold
+
+Incident 25's lesson was that nothing between one append and the next
+reads the file's own tail. The fix that followed was for a seat to read
+its own tail. That is sufficient against a second run of the same seat
+and useless against another seat's open branch, because the tail on main
+is not the tail that will exist when the branch merges. A sequential
+number assigned on a branch is a guess about what main will look like at
+merge time, and every seat appending to this file is making that guess
+independently.
+
+### The fix, filed not patched
+
+The durable fix is to stop assigning sequential numbers on branches.
+Date-scoped ids ("2026-09-24a") collide only when one seat files twice
+in a day, which it can see. That is a register convention rather than
+prose, so it belongs to the ExO, and this entry is the brief.
+
+Until then, the rule that would have caught it costs one command. Before
+appending here, `git log origin/main -1 -- docs/agents/incidents.md` and
+read main's tail, not the branch's.

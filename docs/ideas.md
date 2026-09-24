@@ -3006,3 +3006,40 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Blocked by: nothing.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-24 — One craft layer, two cadence files (writer seat, structure watch)
+
+- Who: engineer, and it is the reland of PR #35 rather than new work.
+- What is wrong: there are two generators. `prompts/digest.md` says at line
+  8 that it writes both cadences. `prompts/daily.md`, in PR #35 since
+  2026-09-19, also writes the daily, in 133 lines that restate the voice
+  rules in their own words. Neither seat was wrong when it wrote. PR #35's
+  last commit is 02:55 that morning and digest.md's claim of both cadences
+  is 03:43, forty-eight minutes later. Five days on, the two files have
+  drifted by seven taste rulings and seven canon laws, measured in
+  docs/voice/reviews/2026-09-24.md. The daily file reinstates "[{dates}]"
+  in its title, which the owner struck by name, and mandates the source
+  line that ban list 25 forbids.
+- What: split the generator the way the repo already splits a workflow from
+  its config. One craft file holds the voice, the four slots, the heading
+  rule, the link rule, the evidence grade and the close. One small cadence
+  file per issue type holds the payload description, the length, and what
+  that cadence does with an empty slot. The press concatenates craft plus
+  cadence at call time, so `prompts/daily.md` shrinks to its payload and its
+  cadence, and a rule written once binds both issues. `pipeline/budget.py`
+  already sizes two prompts separately and will size the sum instead.
+- Why it is filed rather than patched: the writer seat cannot fix this with
+  prompt edits. No edit to digest.md removes a second generator, and hand
+  porting nine runs of corrections into daily.md only restarts the same
+  drift from a new point. Charter step 4, and the second time this seat has
+  filed rather than patched.
+- What this run did instead: gave the daily a shape inside digest.md, since
+  the reason a parallel structure got built is that the base layer described
+  the daily in three lines and never said how long it is, what it does with
+  an empty slot, or what it prints on a dead day.
+- Merge order: this seat's PR #81 first, then the reland. #81 touches no
+  file in PR #35.
+- Blocked by: nothing. The press being down (incident 24) does not block it
+  and is the reason there is time to do it before the daily ships.
+- Cost: $0.
+- Status: proposed

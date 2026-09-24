@@ -314,3 +314,26 @@ gap that the same collision had left empty (incident 25).
     printing it is the release-date feed wearing the evidence's clothes. A
     number earns the impact section when a builder could act on it. Added
     2026-09-23 from the live payload.
+43. The stored sentence kept for the exceptional day. "Today's papers were
+    routine, so there is no issue. The next one comes tomorrow, and Monday's
+    weekly synthesis covers the whole week." It is honest, it is short, and
+    the generator is told to "output exactly this and nothing else", so the
+    second time an empty day arrives the reader gets a sentence they have
+    already read. Entry 17 is the greeting that would fit any day. This is
+    its harder case, because the day a newsletter has nothing to report is
+    the day its voice is the only thing on the page, and a canned line spends
+    exactly that day proving a person was not there. Honesty about a thin day
+    is house law and stays. The words are written fresh every time. Added
+    2026-09-24 from the empty-day template in prompts/daily.md.
+44. The tell the template orders. Entry 25 says an item never ends on its
+    citation. prompts/daily.md says "End each item with its source line:
+    *paper title* - [link](url)", which mandates entry 25, prints a stylistic
+    em dash against law 1, and makes the last word of every item "link".
+    Entry 22 says the date stays out of the headline, and the same file
+    orders "[{dates}]" into two of them. A tell a model reaches for by habit shows
+    up in some issues. A tell its instruction requires shows up in all of
+    them, and no amount of rereading the output catches it, because the
+    writer is obeying. Entry 41 says to read the payload the generator was
+    handed. This says to read the generator itself, and to read every
+    generator, not the one this seat happens to own. Added 2026-09-24 from
+    the second generator in PR #35.

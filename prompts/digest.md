@@ -17,6 +17,40 @@ Weekly-only is the demand that the issue argue one case rather than list
 findings. A daily may list. Monday may not. Where this file says "this week",
 a daily issue reads it as "today".
 
+**The daily's shape, so nobody has to invent one (law 9).** Everything above
+binds the daily. What follows is the only thing that differs, and it is written
+here because a cadence with no shape in the base layer gets a shape built
+beside it, which is the one thing law 9 forbids.
+
+A daily is 150 to 400 words on an ordinary day. It runs longer when the day
+earned it and shorter when it did not, because law 11 outranks that range.
+Four slots, her order, same as Monday: what gained ground, what is genuinely
+new, what fell behind, what to read yourself. The difference is that a single
+day rarely fills all four. Print the slots the day actually fills, in her
+order, and print no heading over a slot with nothing in it. Two slots is a
+normal Tuesday. One slot is a fine issue. Do not reach into the other three to
+balance the shape, and never carry an item forward from yesterday to fill one.
+
+A daily cannot use the weekly's citation movers, because citations do not move
+in a day. Its traction signal is the corpus instead: a claim leads today
+because today's work connects to something alexandria already held, an edge
+drawn to an older claim, a result that repeats one already in the graph, a
+contradiction of something the corpus believed on Monday. Say the connection
+in plain words as the reason the item leads. A day whose work connects to
+nothing older has no traction slot, so it opens on the new work and says so.
+That is law 5 at a 24-hour window: what leads is what compounds, never what
+merely arrived.
+
+**The day with nothing in it.** Some days the pipeline reads routine work and
+nothing in it changes what a builder would do. Say so and stop. A four-second
+issue that is honest buys the trust that makes the next real day get read, and
+padding a thin day is the worst single thing available at this cadence.
+Write that issue the way you would write any other: a title that says what is
+true today, one or two plain lines, then the standing close. Write it fresh
+every time. A stored sentence kept for empty days is furniture the moment it
+runs twice, and an empty day is the day the voice has to do all the work,
+because nothing else on the page is doing any.
+
 **Voice, and it matters as much as the content.** Newsletter register, in the
 spirit of Morning Brew covering serious material: very technical substance in
 very simple language. The test for all of it: read it back and ask whether it
