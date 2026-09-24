@@ -1839,3 +1839,84 @@ email that arrived.
 not code. Until the engineer ships it and the deploy command requires
 its receipt, the ladder is a document, and a document is what failed
 here.
+
+---
+
+## INC-2026-09-24-email-template-never-opened — the designed email shipped for five days without ever being rendered (2026-09-24, owner-reported)
+
+**Recorded by the engineer seat under the standing rule**, because this
+is a repeat of the class incident 20 named and docs/agents/registers.md
+generalized. It is not a new failure mode. It is the same one, in the
+one place the org had not put an artifact-side gate.
+
+**What happened.** The owner's words: "no ui applied to the emails...
+only the html. i want the emails to have ui." The frontend seat designed
+the newsletter on 2026-09-19 and shipped it correctly: the template at
+`site/emails/digest.html`, its slot contract at `site/emails/README.md`,
+and a working stdlib reference renderer at
+`docs/design/reviews/2026-09-19/render_sample.py`. Every one of those
+three files was right, and the review that produced them verified the
+rendering at 3x by eye.
+
+The press never opened any of them. `send_newsletter()` in
+`pipeline/weekly.py` kept doing what it had always done, which was run
+the markdown through `markdown.markdown()` and wrap the result in an
+inline Georgia `div`. So for five days every issue that reached a real
+subscriber was the undesigned email, while the designed one sat in the
+repository being nobody's next step.
+
+**Why it happened.** The same two halves incident 20 separated. The
+archive-side gate worked perfectly: the artifact was produced, reviewed,
+and filed where it belonged, by the seat that owns it. The artifact-side
+gate did not exist. Nothing between `site/emails/digest.html` and a
+message leaving the building ever opened the file, and no test, no
+check, and no charter line asked whether the press used the template the
+org had paid a design review for.
+
+**The aggravating detail, which is the useful one.** There was no way to
+look at the product. The only code path that rendered an email ran
+inside a Modal container, at the moment of sending, to real subscribers.
+To see one issue's email you had to mail it to somebody. An artifact
+nobody can inspect without shipping it to a customer will not be
+inspected, and then its defects are found by the customer. In this case
+the customer was the owner, which is the cheapest possible version of
+that and still the wrong one.
+
+**The handoff shape, named so it is searchable.** A seat delivers a
+finished artifact plus a reference implementation and calls the work
+done. The receiving seat is never told, because the ledger entry that
+would tell it is in a design review directory rather than in a sprint,
+a test, or a call site. The artifact is complete, correct, and
+unreferenced. Grep for the filename and the only hits are the file
+itself, its README, and its own sample renderer, which is exactly the
+fingerprint: **a designed asset whose only inbound references are the
+files that produced it**.
+
+**The fix, in this PR.**
+
+- The press renders through the template.
+  `pipeline/email_render.py` is the reference renderer lifted into the
+  pipeline, the template and the renderer are bundled into the Modal
+  image, and `send_newsletter()` fills it per recipient.
+- The artifact can be looked at without sending it.
+  `tools/rehearse_email.py` prints the filled HTML, sends nothing, costs
+  nothing, and goes through the press's own `build_messages()` rather
+  than a copy of it, so what it prints is what would go out.
+- The gate is a check and not a charter line, per incident 20's own
+  conclusion. `tests/test_email_template.py` fails if
+  `send_newsletter()` stops going through the template or starts
+  inlining styles again, the rehearsal exits non-zero on any unfilled
+  slot, and both are wired into the pending checks workflow with
+  `site/emails/digest.html` in its paths.
+
+**What the org should grow from it, beyond this one email.** The
+registers map asks, for each register, who writes to it and who checks
+it before shipping. This incident says the same question has to be asked
+of **designed assets**, not only of rulings and laws. A template, a
+component, a prompt, or a schema handed from one seat to another needs a
+named call site or a test that fails without it, in the same PR that
+delivers it. Otherwise the handoff is a hope. The cheap general check,
+which costs one command: for any asset a design review produces, grep
+the repository for its filename, and if the only hits are the asset and
+its own documentation, it is not in the product yet no matter how
+finished it looks.

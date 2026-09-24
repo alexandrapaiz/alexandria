@@ -3004,3 +3004,110 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   reachable by an agent over MCP, so the difference is not the interface.
   It is that one serves a search box and the other serves a graph that
   knows when it has changed its mind.
+
+## Engineer agent findings (2026-09-24, owner directive: the emails get the UI)
+
+### Craft scan — TLDR AI (tldr.tech/ai, fetched 2026-09-24)
+
+- What it is: a free weekday AI newsletter, 1,100,000 subscribers by its
+  own FAQ, positioned as "keep up with AI in 5 minutes" for engineers and
+  researchers. Each item is a few sentences with a link to the source.
+- Worth stealing: **the time contract, printed on the issue.** "5 minutes"
+  is not a tagline, it is a promise about the reader's afternoon, and it
+  appears before the reader has committed to anything. alexandria's issues
+  are long, deliberately, and the reader currently discovers that by
+  scrolling. Our email now has an `edition` line with room in it, and a
+  preheader that is the first thing an inbox shows. Both are places to
+  state the cost of reading before the reader pays it. Filed as an idea
+  below.
+- Where alexandria is better: TLDR summarizes what was published, and
+  every item carries the same weight because a summary has no opinion
+  about which claim survived. alexandria's issue is the only one of the
+  two that can tell a reader that something they read last month has been
+  overturned. The left-behind section and the evidence grade are that
+  difference, and a reader who only ever sees new things accumulates
+  stale beliefs at exactly the rate the field moves.
+
+### 2026-09-24 — Print the cost of reading on the issue, in the edition line
+
+- Trigger: today's craft scan of TLDR AI, whose whole promise is "5
+  minutes", read against the issue I rendered this morning: 2026-W39 is
+  10,278 bytes of markdown across 14 items, and nothing anywhere tells the
+  reader that before they open it. The email template's `edition` slot
+  currently reads "Weekly synthesis · September 21–27, 2026" and has room
+  for one more clause.
+- What: compute a reading estimate from the issue body at fill time and
+  print it in the edition line, "Weekly synthesis · September 21–27, 2026
+  · 9 minute read". It is arithmetic on a word count, so it costs nothing
+  and cannot be wrong in an interesting way. The honest version counts the
+  prose a reader actually reads and not the source URLs. The same number
+  belongs on the site's issue pages, where the archive currently gives a
+  visitor no way to tell a short issue from a long one.
+- Why it is more than a nicety for this product specifically: alexandria's
+  pitch is that it reads the papers so the reader does not have to. A
+  number that says "this week cost you nine minutes instead of nine
+  papers" is that pitch, stated as a measurement, in the one place the
+  reader is deciding whether to open it.
+- First step: one function in `pipeline/email_render.py` beside
+  `preheader_for()`, a slot value, and a test that a known body produces a
+  known number. Half a session.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — The writer should choose the preheader, because it is the sentence that sells the issue
+
+- Trigger: building `preheader_for()` today. The preheader is the grey
+  sentence an inbox prints next to the subject, and it is the second
+  thing every reader sees. Having no better source, I derive it from the
+  first sentence of the issue's opening, which for 2026-W39 gives "You
+  spent last week watching agents get faster by doing less at test time."
+  That happens to be good. It is good by luck: the opening is written to
+  start an issue a reader has already opened, and the preheader has to do
+  the opposite job, which is to make someone open it.
+- What: add a preheader to the generator's output contract in
+  `prompts/digest.md`, one plain sentence, written to be read next to the
+  subject and never a restatement of the title. It becomes a line in the
+  issue's own front matter or a labelled first line the parser lifts and
+  removes. The derived version stays as the fallback for every issue
+  already in the `digests` table.
+- Whose call: the writer seat owns `prompts/digest.md` and the voice. This
+  is filed for that seat rather than edited, the same way the frontend
+  seat filed the template for me. The engineer half is the parse and the
+  fallback, which is an hour.
+- The connection to today's incident: a slot the template asks for and no
+  seat owns is how the last one of these went unnoticed for five days.
+  `{{preheader}}` currently has a value because I invented a rule for it,
+  which is the weakest of the three possible answers.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — Grep every designed asset for a call site, as a check
+
+- Trigger: INC-2026-09-24-email-template-never-opened, recorded today. The
+  email template was complete, correct, reviewed at 3x, and filed in the
+  right directory on 2026-09-19, and the press never opened it. Verified
+  the fingerprint on main before writing the incident: `git grep
+  "emails/digest.html"` at `a693776` returned six hits, and every one was
+  the design review that produced the file, the file's own README, its own
+  sample renderer, or the ledger entry proposing that somebody use it. Not
+  one was code that runs.
+- What: a check that walks the assets a design review produces (anything
+  under `docs/design/reviews/*/` and the files those reviews say they
+  shipped, plus `site/emails/`, and `skills/` templates) and reports any
+  whose only inbound references are its own documentation. That is a
+  mechanical definition of "delivered but not in the product", and it is
+  the artifact-side gate that incident 20 said every register needs,
+  applied to assets instead of rulings.
+- Why it generalizes past this one email: the handoff that failed here is
+  the normal shape of work in this org. One seat produces a finished thing
+  and files it correctly, and the seat that would use it is never told,
+  because the telling lives in a directory that seat has no reason to
+  open. The org has twelve seats and one of them runs each day. Assets
+  will keep being handed across that gap.
+- First step: `tools/check_unreferenced_assets.py`, a list of asset globs,
+  `git grep -l` per filename, and a rule that discounts self-references.
+  Run it once over the whole repo first and read the output before wiring
+  it into CI, because the first run is also an inventory of what else has
+  been shipped and never used.
+- Cost: $0
+- Status: proposed
