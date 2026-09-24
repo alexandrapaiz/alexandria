@@ -157,6 +157,11 @@ image = (
     # the budget guard runs in the container too, so a request that cannot fit
     # is refused here with the arithmetic rather than 413'd by Groq
     .add_local_file("pipeline/budget.py", "/root/budget.py")
+    # The designed email (site/emails/digest.html) and the renderer that
+    # fills it. Owner's ruling 2026-09-24: the emails get the UI, not just
+    # the site. Both are data-and-stdlib, so the press gains no dependency.
+    .add_local_file("site/emails/digest.html", "/root/emails/digest.html")
+    .add_local_file("pipeline/email_render.py", "/root/email_render.py")
 )
 
 app = modal.App("alexandria-weekly", image=image)
@@ -669,6 +674,97 @@ def add_masthead(body: str) -> str:
     return f"{MASTHEAD}\n\n{body}"
 
 
+def email_render():
+    """pipeline/email_render.py, wherever this is running from.
+
+    Same two-path trick as budget(): Modal drops it at /root/email_render.py
+    and a local run finds it beside this file. The template it fills travels
+    the same way, bundled at /root/emails/digest.html.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import email_render as module
+
+    return module
+
+
+def legacy_html(body: str) -> str:
+    """The pre-2026-09-24 email: markdown in an inline Georgia div.
+
+    Kept only as the fallback under a rendering failure. An issue that reaches
+    its readers plain is a bad day; an issue that reaches nobody because the
+    template moved a comment marker is an outage.
+    """
+    try:
+        import markdown as md
+    except ImportError:
+        # The image pins markdown==3.7, so this is not the production path.
+        # It exists because this function is the last thing standing between
+        # a rendering failure and an issue nobody receives, and a last resort
+        # that can itself raise is not one.
+        import html as _html
+
+        return (
+            "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
+            "font-size:16px;line-height:1.6;color:#222'>"
+            f"<pre style='white-space:pre-wrap;font-family:Georgia,serif'>"
+            f"{_html.escape(body)}</pre></div>"
+        )
+
+    def is_list_line(line: str) -> bool:
+        return bool(re.match(r"^\s*([-*] |\d+[.)] )", line))
+
+    # markdown only recognizes a list after a blank line; without one the
+    # literal dashes leak into the rendered email
+    lines, spaced = body.split("\n"), []
+    for line in lines:
+        if is_list_line(line) and spaced and spaced[-1].strip() and not is_list_line(spaced[-1]):
+            spaced.append("")
+        spaced.append(line)
+
+    html_body = md.markdown("\n".join(spaced), extensions=["extra"])
+    return (
+        "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
+        "font-size:16px;line-height:1.6;color:#222'>"
+        f"{html_body}"
+        "<hr><p style='font-size:12px;color:#888'>You're receiving this as a "
+        "friend of alexandria. Reply to this email to unsubscribe.</p></div>"
+    )
+
+
+def build_messages(key: str, body: str, rows, addr: str) -> list[tuple[str, str, str, str]]:
+    """(email, subject, plain_text, html) per recipient, and nothing sent.
+
+    Split out from the SMTP loop so a rehearsal can print exactly what the
+    press would send without opening a connection to Gmail. That is the whole
+    reason this function exists: docs/agents/press-rehearsal.md's rule is that
+    a rehearsal renders the real thing, and a renderer only a live send can
+    reach is a renderer nobody checks before it goes out.
+    """
+    render = email_render()
+    subject = render.subject_for(body)
+    # No unsubscribe endpoint exists yet, and the slot contract
+    # (site/emails/README.md) accepts a mailto until one does.
+    unsubscribe = f"mailto:{addr}?subject=Unsubscribe"
+
+    try:
+        issue = render.parse_issue(body)
+        messages = []
+        for email, _name in rows:
+            meta = render.build_meta(key, issue, email, unsubscribe)
+            messages.append((email, subject, body, render.render(issue, meta)))
+        return messages
+    except Exception as exc:
+        print(f"designed template failed to render ({exc}); falling back to "
+              "the plain email. The issue still goes out.")
+        fallback = legacy_html(body)
+        return [(email, subject, body, fallback) for email, _name in rows]
+
+
 def send_newsletter(conn, week: str, body: str) -> str:
     """Email the digest to active subscribers (friends-and-family phase).
 
@@ -693,40 +789,20 @@ def send_newsletter(conn, week: str, body: str) -> str:
     if not rows:
         return "no active subscribers; nothing to send"
 
-    import markdown as md
+    # The designed email, one render per recipient because the footer names
+    # the address it was sent to. Subject stays the issue's own editorial
+    # title, and the plain-text part stays the markdown body: a multipart
+    # alternative without a real text part is what filters read as spam.
+    messages = build_messages(week, body, rows, addr)
 
-    def is_list_line(line: str) -> bool:
-        return bool(re.match(r"^\s*([-*] |\d+[.)] )", line))
-
-    # markdown only recognizes a list after a blank line; without one the
-    # literal dashes leak into the rendered email
-    lines, spaced = body.split("\n"), []
-    for line in lines:
-        if is_list_line(line) and spaced and spaced[-1].strip() and not is_list_line(spaced[-1]):
-            spaced.append("")
-        spaced.append(line)
-
-    html_body = md.markdown("\n".join(spaced), extensions=["extra"])
-    html = (
-        "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
-        "font-size:16px;line-height:1.6;color:#222'>"
-        f"{html_body}"
-        "<hr><p style='font-size:12px;color:#888'>You're receiving this as a "
-        "friend of alexandria. Reply to this email to unsubscribe.</p></div>"
-    )
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(addr, pw)
-        for email, name in rows:
+        for email, subject, text, html in messages:
             msg = MIMEMultipart("alternative")
-            # subject = the issue's editorial title (the digest's own H1);
-            # the W code is an internal id and never reader-facing
-            subject = "This week's issue from the library"
-            if body.startswith("# "):
-                subject = body.split("\n", 1)[0][2:].strip()
             msg["Subject"] = subject
             msg["From"] = f"alexandria <{addr}>"
             msg["To"] = email
-            msg.attach(MIMEText(body, "plain"))
+            msg.attach(MIMEText(text, "plain"))
             msg.attach(MIMEText(html, "html"))
             smtp.sendmail(addr, [email], msg.as_string())
     return f"sent {week} to {len(rows)} subscribers via Gmail"
