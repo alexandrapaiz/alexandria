@@ -71,6 +71,12 @@ file spent a day describing a policy the org had abandoned.
 | `docs/voice/preferences/` | chair records | chair appends per verdict, live in the session | writer's copy step and ship check, frontend before setting a word | she rules in hours, chair is present when she does | new 2026-09-21, schema in preference-data.md |
 | `docs/agents/copy-pipeline.md` | ExO | ExO writes the process | writer once before its first copy round, frontend run step 0, ExO §3e | the process changes rarely, gated per copy round | new 2026-09-21 |
 | `docs/agents/preference-data.md` | ExO | ExO writes the schema | PM's ruling-capture check, ExO §3e | rarely, gated per ruling | new 2026-09-21 |
+| `docs/standards/lessons.md` | HQ, vendored here | the exo centralizer syncs it, no seat here appends | **one charter in twelve named it until 2026-09-24**, now all twelve in the ship check | HQ appends continuously, gated per run from today | **was the largest GAP on this page**, closed 2026-09-24 |
+| `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
+| `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
+| `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
+| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24 |
+| `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 
 ## What this run changed
 
@@ -279,3 +285,51 @@ next run:** check whether the writer's first copy round after this merges
 actually opened `value.md`, and whether the preference file it produced
 uses the schema. If the next copy session is recorded as narrative again,
 the schema failed and more words are not the fix.
+
+
+## The 2026-09-24 sweep
+
+Four rows added, one of them a gap larger than anything this page has
+found before, and one new failure mode for the page itself.
+
+**The gap: the company standards were enforced nowhere.**
+`docs/standards/lessons.md` states in its own opening paragraph that
+"every seat in every product reads its role's section before working."
+It is the owner's own corrections, generalized into law, distributed by
+HQ, and vendored into this repository on 2026-09-21. Running the §3d
+grep against it, exactly one charter in twelve named the path, and that
+one was the PM citing the other standard, `pm.md`. So the org has spent
+three days holding a register that every seat is supposed to read and
+that eleven seats had no instruction to open.
+
+This is the same shape as incident 20 and it is worse in one specific
+way. Incident 20's register was written here, by a seat that also reads
+it. This one is written somewhere else, by a body with no visibility
+into whether it is read, and it arrives as a file drop. **A vendored
+register has no archive-side gate in this repository at all**, which
+means the only gate it can have here is the artifact-side one, and there
+was none. The fix shipped this run: clause 3 in every charter's ship
+check, in all twelve.
+
+**The new failure mode: a register whose gate depends on somebody
+outside the org.** `docs/agents/hq-relay.md` has a delivery column that
+no seat can advance. This seat writes an entry, and whether it reaches
+HQ depends on the chair reading it. That is not a defect worth avoiding,
+since the alternative is not relaying at all, but it is worth naming,
+because the page will look enforced while entries sit undelivered. The
+detection rule for a future run is one line: an entry in the relay whose
+delivered column is still empty after two runs is a finding, and the
+finding is about the channel rather than about the chair.
+
+**A row that is deliberately not a register.**
+`docs/agents/durable-execution.md` answers a question the owner asked
+and holds no rule anyone can violate. It is listed with "gated by
+nothing, correctly" so that the §3d grep does not flag it every week and
+so that no future run invents an enforcement step for a document that
+needs none. The org will accumulate more of these. A decision note is
+not a register and gating it would be ceremony.
+
+**Unchanged and still worth watching.** The three cosmetic marker lines
+under `docs/voice/` and `docs/design/` are now four days an open ledger
+request. Still not this seat's files, still not worth a second mention
+to the owner.

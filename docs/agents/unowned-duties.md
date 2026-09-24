@@ -64,6 +64,10 @@ finding of the same weight as an unowned row.
 | Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
 | Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
 | The owner's rulings become reusable preference data | chair records (pm-agent.md ship check, added 2026-09-21) | whenever she rules in chat | present whenever she is | assigned 2026-09-21, and the chair is the correct owner here, see below |
+| **The product reached its readers** | pm (§1f delivery half, added 2026-09-24) | daily and weekly, whenever the press or the site ships | daily standup | assigned 2026-09-24. **Was unowned from the first issue until now**, see below |
+| **An HQ decision is read against local law** | exo (§3f, added 2026-09-24) | two HQ decisions in the week of 2026-09-21 | weekly Sun | assigned 2026-09-24, and it is a cadence gap on its face, see below |
+| **Evidence from here reaches HQ** | exo writes, chair carries (hq-relay.md) | as incidents implicate a parent decision | weekly to write, unbounded to deliver | assigned 2026-09-24, with the delivery half outside any seat's control |
+| The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
@@ -304,3 +308,86 @@ splitting it further would produce shared custody, which is the defect
 this page was created to name. The honest options are a second ExO run
 midweek or nothing, and that is the owner's call rather than this
 seat's, because it spends her tokens.
+
+
+## The 2026-09-24 rows
+
+Four rows this run. Three of them come out of incidents 23 and 24 and one
+is the new hunt required by §3b.
+
+### The product reached its readers, which was owned by nobody
+
+This is the row that should embarrass the register, and it is the
+clearest instance yet of the class this page exists for. The org runs
+twelve seats, keeps a run-health duty, and assigns it to the PM daily.
+Every one of those checks reads `gh run list`. The newsletter is the
+product. It runs on a Modal cron, which is not GitHub Actions, so it was
+outside every health duty the org has ever written. On 2026-09-21 no
+issue was written, every Actions run that week was green, and the owner
+found out from her own inbox three days later.
+
+Nothing failed an audit. The fleet-health duty was owned, it was
+performed, and it was performed correctly on a definition of "health"
+that excluded the product. That is the same shape as incident 19 and it
+deserves naming as its own detection heuristic, because the §3b method
+did not find it: **grep the charters for the vocabulary of the thing the
+org sells, not only for the vocabulary of the duty.** Grepping for
+"run health" found an owner. Grepping for "digest," "issue," or "reader"
+in a monitoring context found nobody.
+
+Assigned to the PM, in §1f's new delivery half, with the artifact rather
+than the scheduler as the evidence. The cadence fits: the press ships
+weekly, the pipeline daily, and the standup now runs daily, so the
+detection lag is a day rather than a week.
+
+### An HQ decision is read against local law, and this one is a cadence gap on arrival
+
+Assigned to this seat in §3f, and honestly marked as a cadence gap in
+the same breath. HQ decided twice in the week of 2026-09-21, ADR-015 and
+ADR-033, and this seat runs weekly. So the worst case is that a parent
+decision governs alexandria for six days before any seat here compares
+it against local law, which is very close to what happened: ADR-015
+landed on a Friday evening and was first read on a Sunday, after it had
+already failed two PM runs.
+
+The register's own rule says a cadence gap is fixed with a cron change
+rather than another sentence in a charter. This one is not, and the
+reason is worth writing down so the next run does not re-open it. The
+trigger is not the calendar, it is a merge, so the correct detector is
+an event rather than a schedule: a check that fires when a commit
+touching this repository carries an HQ marker. That is a workflow
+change, the lane is still closed, and it is queued in
+pending-workflow-changes.md rather than argued about here. Until then
+the weekly pass is the backstop and it is marked honestly as a gap.
+
+### Evidence from here reaches HQ, with half the duty outside the org
+
+The writing half is this seat's and is assigned. The delivering half
+belongs to the chair, who is a human session and not a seat, so no cron
+covers it and no audit can. The row is here rather than absent because
+an unowned half that is visible beats one that is not. The detection
+rule is in registers.md: an entry still undelivered after two ExO runs
+is a finding about the channel.
+
+### The new unowned row: the daily pipeline's providers
+
+Found by the §3b hunt, and found by taking the delivery-health table
+seriously rather than by a grep. The weekly press now gets an
+availability check, a fallback list, and an alarm, all shipped in PR
+#75. The daily pipeline, which is triage, distill and interpret, and
+which feeds everything the weekly issue is made of, gets none of the
+three. It has a budget guard and nothing else. It runs on the same free
+tier, on the same account, against the same rate limits, and on models
+from the same provider that withdrew `groq/compound` without notice.
+
+So the org has hardened the visible surface and left the one underneath
+it exposed, which is the more expensive of the two, because a silent
+daily pipeline degrades the corpus rather than announcing itself with a
+missing email. Three provider failures in five days is the trigger rate,
+and no charter names the duty.
+
+Marked unowned rather than assigned, and deliberately. The fix is
+engineer work in the pipeline, which is not this seat's surface, and the
+sizing is the PM's to groom. What this seat can say is that the duty
+exists, that it has a known trigger rate, and that the fix is already
+written once in PR #75 and only needs applying a second time.
