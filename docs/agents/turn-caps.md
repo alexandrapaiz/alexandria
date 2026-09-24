@@ -256,3 +256,48 @@ That constraint lifts with ADR-27's GitHub App. See
 App's private key lands, a cap change becomes an ordinary PR from the
 seat that measured it, and "an agent raises its own cap and the owner
 merges it" is the test that the handover actually worked.
+
+## Duty-growth re-check, 2026-09-24
+
+Triggered by this run's charter edits, which added the delivery-health
+half to the PM's §1f and a company-standards read to all twelve seats.
+No cap was hit anywhere this week, so nothing here is censored and every
+number below is a free-running measurement.
+
+Measured 2026-09-24 from the last five runs of each seat whose duties
+grew or whose cap was already queued for a change.
+
+| Seat | Peak now | Rule (2x, next 50) | Cap today | Verdict |
+|---|---|---|---|---|
+| pm | 141 (run 35311930240) | 300 | 300 | **correct, and the queued raise is not required by the rule** |
+| writer | 83 (run 35649273894) | 200 | 150 | **short, confirms queued item 4** |
+| engineer | 91 (run 35747676069) | 200 | 200 | correct |
+| frontend | 174 (run 35887060776) | 350 | 600 | ample |
+
+Three things to carry forward.
+
+**The PM's queued raise to 400 is not supported by the measurement, and
+this run is correcting its own predecessor.** Item 2 on
+pending-workflow-changes.md proposed 300 to 400 on duty-growth grounds
+when the daily standup was added. The rule gives 300 from a peak of 141,
+and the peak has not moved, because the PM has not completed a run since
+2026-09-19. So the honest position is that the raise is optional
+headroom rather than a shortfall, and the queue now says so. The
+methodology exists precisely to stop a cap being set from a feeling that
+a seat has more to do, and the feeling in question was this seat's.
+
+**The two PM failures are not cap evidence and must not be fed to the
+rule.** Run 35493791740 ended at `num_turns: 1` and run 35626266985 at
+`num_turns: 30`, both with `is_error: true` against a cap of 300. Those
+are model failures, diagnosed in incident 23. A censored-low number is
+as dangerous to this table as a censored-high one: feeding 30 into the
+rule would propose cutting the PM's cap to 100. Clause 1 of the rule
+covers runs that hit the cap. This is the mirror case and it is worth
+naming, because it is the one the arithmetic gets wrong in the
+expensive direction. **A run that failed for any reason other than the
+cap contributes nothing to this table, high or low.**
+
+**The writer's case got stronger.** Its peak has moved from 80 to 83
+since the 2026-09-21 check, on a seat that runs daily and gained three
+duties that week. 150 has still never been hit, which is the reason
+nobody has noticed, and 200 remains the rule's answer.
