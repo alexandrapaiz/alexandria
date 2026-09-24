@@ -28,7 +28,7 @@ import hmac
 import html
 import json
 import time
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urlsplit
 
 #: Registrations do not expire on their own. A client that registered a year ago
 #: is still the same client, and an expiring `client_id` would just log the
@@ -196,7 +196,11 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
     from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
     def base_url(request) -> str:
-        return f"https://{request.headers['host']}"
+        # `.get`, not `[...]`: a request without a Host header is malformed
+        # rather than exceptional, and indexing turned it into a 500. The
+        # value is still the client's to choose, which is the open finding
+        # in docs/security/audit-2026-09-24.md on pinning the public host.
+        return f"https://{request.headers.get('host', '')}"
 
     def mint(claims: dict, ttl: int) -> str:
         return jwt.encode({**claims, "iat": int(time.time()), "exp": int(time.time()) + ttl},
@@ -292,8 +296,14 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
                                 status_code=401)
         code = mint({"typ": "code", "cid": client_id, "ru": redirect_uri,
                      "cc": code_challenge}, ttl=600)
+        # `state` is the client's opaque round-trip value and it arrives from a
+        # form field, so it is encoded rather than pasted in. Pasted raw, a
+        # state of "a&scope=admin" adds a parameter to the client's callback
+        # and one containing "#" truncates the query into a fragment. The JWT
+        # in `code` is unaffected: its alphabet is already URL-safe.
+        query = urlencode({"code": code, "state": state})
         sep = "&" if "?" in redirect_uri else "?"
-        return RedirectResponse(f"{redirect_uri}{sep}code={code}&state={state}", status_code=302)
+        return RedirectResponse(f"{redirect_uri}{sep}{query}", status_code=302)
 
     @api.post("/token")
     def token(grant_type: str = Form(...), code: str = Form(None),

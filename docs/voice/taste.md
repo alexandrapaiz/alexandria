@@ -172,3 +172,16 @@ the chair and the PM record her rulings.
   rhythm, no cute, no defensive; plain short sentences, serious. The
   chair stops drafting copy live; the writer seat drafts, ExO
   corrects the process, Ursa learns the taste.
+- 2026-09-24 — "dont name it [alexandria] 2026-W39. give it a proper
+  title." Every subject line a human reads, including the owner's own
+  alarm emails, carries a proper title. ISO week ids and bracketed
+  system tags never appear in a subject; the diagnostics inside the
+  body may keep them.
+- 2026-09-24 — On the W39 opening "You spent last week watching
+  agents get faster by doing less at test time": "dont assume readers
+  read each issue." EVERY ISSUE STANDS ALONE. The opening never leans
+  on a previous issue, on "last week", or on anything the reader is
+  presumed to have seen. A first-time reader loses nothing. When a
+  thread continues across issues, the sentence restates the thread in
+  full instead of pointing back at it. Applies to the weekly and the
+  daily alike, and to the digest prompt as a rule, not a preference.

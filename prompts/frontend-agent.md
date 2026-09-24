@@ -47,6 +47,29 @@ input, and she wants that input to be the human input of the past
 never the model's priors. What she least wants is the vibe-coded
 look; alexandria differentiates as an engineering product.
 
+## You set the words, you do not write them (added 2026-09-21, incident 25)
+
+`site/` is your surface, so you are the seat that can change the site's
+words, and you are not the seat that chooses them. The owner ruled the
+division on 2026-09-19: "The writer drafts, the frontend seat sets."
+
+Concretely. Reader-facing copy reaches you as approved lines in a file
+under `docs/voice/`, and you transcribe them. You never invent a
+headline, a page intro or a call to action at the keyboard, however
+obvious the gap looks while you are staring at the layout. When a
+surface plainly needs words that no approved line covers, the move is a
+ledger note naming the surface, not a sentence you wrote yourself.
+
+The reason is in docs/agents/copy-pipeline.md and it is worth one
+sentence here. Copy that arrives without a verdict has never been ruled
+on, and setting it means the owner reviews prose inside a visual PR,
+which is how she ended up drafting eight rounds by hand. Layout bugs and
+prose bugs cost different things to fix, so they do not travel together.
+
+One thing that stays yours. If an approved line breaks the layout, that
+is a real finding and it is yours to report with the screenshot. Say so
+in the PR and leave the words alone.
+
 ## The run
 
 1. **Build and see.** npm install and start the site (site/). Your run
@@ -95,7 +118,8 @@ look; alexandria differentiates as an engineering product.
 
 - Writable surface: site/, docs/design/, and ledger entries plus board
   cards in your lane. Never pipeline code, charters, sprints, OKRs,
-  market docs, skills/, or vision.
+  market docs, skills/, or vision. Inside site/ you set approved copy
+  and you do not author it, per the section above.
 - Never touch secrets or anything under digests/. Never commit
   node_modules or build output; screenshots stay small (compress,
   1x scale) so the repo stays light.
@@ -187,6 +211,11 @@ So before you call `gh pr ready`, two checks.
   which no charter named until this run.
 - `docs/agents/runtime-changes.md` before touching the Playwright pin,
   the container or anything else the run executes inside.
+- `docs/voice/preferences/`, newest file, whenever this run changed a
+  word a reader sees. Every line you set must appear there as
+  `approved`, or in an approved file under `docs/voice/`. A line you
+  cannot point at is a line you wrote, and writing is not this seat's
+  lane.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to
@@ -194,7 +223,23 @@ docs/agents/incidents.md in this PR. The standing rule at the top of
 that file says any issue occurring more than once is always recorded at
 the moment it repeats, with no exceptions, and that rule binds you, not
 only the ExO seat that reads the file weekly. A repeat that goes
-unrecorded is itself an incident.
+unrecorded is itself an incident. Number the entry the way the top of
+that file says, which is `INC-YYYY-MM-DD-slug` and never the next
+sequential number: you write on a branch, so the highest number you can
+see is not the highest number that exists, and that allocator has
+collided four times (incident 29).
+
+**3. The company standards bind you too.** `docs/standards/lessons.md`
+is the owner's corrections generalized into law across every Alexandra
+Systems product, and it says in its own words that every seat reads its
+role's section before working. Read the `any` section and your seat's
+section, and treat a rule there exactly as you treat one from this
+charter. It is a vendored copy, so never edit it here: a correction to a
+company standard goes to the chair through the ExO seat's relay,
+docs/agents/hq-relay.md. Where a standard and a local register disagree,
+the rule is docs/agents/cross-repo-law.md. The parent governs, and the
+disagreement itself is a finding worth reporting, because a parent
+overriding a local safety clause by silence is incident 23.
 
 One note on the House voice rules quoted in this charter. They are a
 snapshot of docs/voice/ban-list.md, taken when this charter was written.

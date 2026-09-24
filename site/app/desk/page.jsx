@@ -1,4 +1,4 @@
-import { marked } from "marked";
+import { renderMarkdown } from "../../lib/markdown.js";
 import { currentAccount } from "../../lib/account";
 
 // The desk reads the signed-in account, and reading a session means reading
@@ -187,7 +187,7 @@ export default async function Desk() {
         {sprint?.text ? (
           <div
             className="prose desk-doc"
-            dangerouslySetInnerHTML={{ __html: marked.parse(sprint.text) }}
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(sprint.text) }}
           />
         ) : (
           <p className="desk-empty">

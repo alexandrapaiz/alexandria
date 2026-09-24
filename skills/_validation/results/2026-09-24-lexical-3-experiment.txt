@@ -1,0 +1,51 @@
+trigger test — engine lexical/3, floor 0.05, 8 decoys (EXPERIMENT, not the pre-registered policy)
+library: 4 skills, 27 cases
+
+## evaluation-integrity  (skills/evaluation-integrity/triggers.json)
+  [FAIL] ei-pos-1     positive  expect evaluation-integrity -> (silence, best fit decoy-data-pipeline-ops)  [narrow, margin -0.004]
+         prompt: Every task in our eval suite is graded against criteria a model generated from the source document. Before we put that number in a release gate, how do we check that the criteria themselves cannot be satisfied by an answer that is wrong?
+         top: decoy-data-pipeline-ops 0.0911, evaluation-integrity 0.0868, recursive-harness-self-improvement 0.072, self-improving-post-training-loops 0.0704
+         library 0.087 vs null decoy-data-pipeline-ops 0.091 (margin -0.004)
+  [PASS] ei-pos-2     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-pos-3     positive  expect evaluation-integrity -> evaluation-integrity
+  [PASS] ei-neg-1     negative  expect (silence) -> (silence, best fit decoy-dependency-management)
+  [PASS] ei-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] ei-conf-1    confusion expect harness-engineering -> harness-engineering
+  [PASS] ei-conf-2    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] ei-conf-3    confusion expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  7/8 passed (positives 2/3, negatives 2/2, confusion 3/3, narrow 1); 95% CI [0.47, 1.00]
+
+## harness-engineering  (skills/harness-engineering/triggers.json)
+  [PASS] he-pos-1     positive  expect harness-engineering -> harness-engineering  [narrow, margin +0.004]
+  [PASS] he-pos-2     positive  expect harness-engineering -> harness-engineering
+  [FAIL] he-pos-3     positive  expect harness-engineering -> (silence, best fit decoy-dependency-management)  [narrow, margin -0.005]
+         prompt: We are deciding whether to spend the quarter fine-tuning our 8B model or rebuilding the tool interface it calls. Which buys more?
+         top: decoy-dependency-management 0.125, harness-engineering 0.1203, self-improving-post-training-loops 0.0462, decoy-incident-response 0.0427
+         library 0.120 vs null decoy-dependency-management 0.125 (margin -0.005)
+  [PASS] he-neg-1     negative  expect (silence) -> (silence, best fit decoy-cluster-capacity)
+  [PASS] he-neg-2     negative  expect (silence) -> (silence, best fit decoy-product-copy)
+  [PASS] he-conf-1    confusion expect harness-engineering -> harness-engineering
+  5/6 passed (positives 2/3, negatives 2/2, confusion 1/1, narrow 2); 95% CI [0.36, 1.00]
+
+## recursive-harness-self-improvement  (skills/recursive-harness-self-improvement/triggers.json)
+  [PASS] rhsi-pos-1   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-pos-2   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement  [narrow, margin +0.016]
+  [PASS] rhsi-pos-3   positive  expect recursive-harness-self-improvement -> recursive-harness-self-improvement
+  [PASS] rhsi-neg-1   negative  expect (silence) -> (silence, best fit decoy-incident-response)
+  [PASS] rhsi-neg-2   negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [PASS] rhsi-conf-1  confusion expect harness-engineering -> harness-engineering
+  [PASS] rhsi-conf-2  confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  7/7 passed (positives 3/3, negatives 2/2, confusion 2/2, narrow 1); 95% CI [0.59, 1.00]
+
+## self-improving-post-training-loops  (skills/self-improving-post-training-loops/triggers.json)
+  [PASS] pt-pos-1     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-pos-2     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops  [narrow, margin +0.009]
+  [PASS] pt-pos-3     positive  expect self-improving-post-training-loops -> self-improving-post-training-loops
+  [PASS] pt-neg-1     negative  expect (silence) -> (silence, best fit decoy-api-integration)
+  [PASS] pt-neg-2     negative  expect (silence) -> (silence, best fit decoy-data-pipeline-ops)
+  [PASS] pt-conf-1    confusion expect self-improving-post-training-loops -> self-improving-post-training-loops
+  6/6 passed (positives 3/3, negatives 2/2, confusion 1/1, narrow 1); 95% CI [0.54, 1.00]
+
+TOTAL 25/27 — reliability 0.93, 95% CI [0.76, 0.99]
+
+wrote skills/_validation/results/2026-09-24-lexical-3-experiment.json
