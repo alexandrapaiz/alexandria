@@ -1059,3 +1059,26 @@ secrets removed from this repo so every routed seat falls back to
 Sonnet; the PM, the fleet-health seat, cannot be the experiment.
 Re-enable only after the golden-set comparison the law names, and
 never on the PM first.
+
+## Incident 24 — Monday's issue never existed: the press's model returned 404 (2026-09-23, owner-reported)
+
+The owner: "i dont recall recieving the monday issue." The digests
+table holds only 2026-W37 (written 2026-09-14); W38 was never
+written. Two independent failures stack: (1) Groq now returns 404
+Not Found for `groq/compound`, the model the press was moved to on
+2026-09-19 (PR #51) to escape incident 22's request-size ceiling, so
+even a manual run today writes nothing; (2) the Modal weekly app
+(deployed v31, cron Monday 15:00 UTC) shows no log output at all for
+2026-09-21, so the schedule either never fired or died before
+logging; to be confirmed on the Modal dashboard's schedule history,
+which the CLI does not expose. New failure class for the register:
+PROVIDER MODEL DEPRECATION. The budget guard added in incident 22
+checks that the request fits, not that the model exists, and nothing
+in the pipeline verifies model availability before a scheduled send.
+Third press failure in five days (413, 429, 404), each a different
+face of the same fact: the $0 press runs on a provider whose free
+tier changes under it. Standing fix to come out of this: a model
+availability check at deploy and at run start against the provider's
+/models endpoint, an ordered fallback list, and a loud notification
+to the owner when the press cannot print, because the discovery
+should never again be her inbox.
