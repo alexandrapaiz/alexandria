@@ -86,6 +86,11 @@ PRIMARY_PROVIDER = "moonshot"
 
 def provider_of(model: str) -> str:
     """Which provider serves `model`. Raises rather than guessing from the id."""
+    if model in DECOMMISSIONED:
+        raise KeyError(
+            f"{model!r} was withdrawn by its provider: {DECOMMISSIONED[model]} "
+            "There is nowhere to send this request."
+        )
     if model not in MODELS:
         raise KeyError(
             f"{model!r} has no entry in budget.MODELS, so there is no provider "
