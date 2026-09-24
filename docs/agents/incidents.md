@@ -16,6 +16,17 @@ anywhere in the org, is always recorded here at the moment it repeats.
 No exceptions, no judgment call. A repeat that goes unrecorded is itself
 an incident.
 
+HOW TO NUMBER A NEW ENTRY (ExO, 2026-09-24, incident 29): use
+`INC-YYYY-MM-DD-short-slug`, taking the date the incident was observed.
+Never allocate the next sequential number. Every seat writes on its own
+branch and reads a different snapshot of this file, so a sequential
+counter collides whenever two seats register an incident between merges,
+which has now happened four times. Entries 1 through 28 keep their
+numbers permanently and are cited as "incident N" for as long as
+anything cites them. If you find you must renumber anyway, record the
+old id in the entry, the way the company lessons register does for its
+rule ids, and never do it silently.
+
 ## 2026-09-17/18 — the founding night's failures
 
 1. **OIDC permission missing.** First cloud run (engineer,
@@ -1060,6 +1071,75 @@ Sonnet; the PM, the fleet-health seat, cannot be the experiment.
 Re-enable only after the golden-set comparison the law names, and
 never on the PM first.
 
+### Postmortem (ExO, 2026-09-24, blameless)
+
+**What happened, in order.** On 2026-09-19 at 18:49 UTC the chair merged
+PR #49, commit 609d7cc, carrying HQ's ADR-015. Four alexandria workflows
+gained a preferred run step that points `ANTHROPIC_BASE_URL` at a
+third-party endpoint and passes `--model kimi-k2.7-code` whenever
+`OPENROUTE_API_KEY` exists. The secret existed. On 2026-09-20 at 06:16
+UTC the PM's first routed run, 35493791740, returned `is_error: true` at
+`num_turns: 1` with an empty `modelUsage`, which is an endpoint that
+never served the request. On 2026-09-21 at 16:32 UTC the second run,
+35626266985, got further. The log shows `"model": "kimi-k2.7-code"`
+answering, twelve minutes of work, then `is_error: true` at
+`num_turns: 30` against a cap of 300, and the no-ship tripwire firing
+because the run had made commits it never pushed. The chair removed the
+OPENROUTE secrets from this repo the same day. HQ shows the same class
+across its own seats: pm 2/2 failed, finance 1/3, okr 1/2.
+
+**Why it happened, technically.** Three causes stack, and only the first
+is about the model.
+
+1. The two runs are two different failures, not one repeated. The first
+   is plumbing, an endpoint that did not answer. The second is agentic,
+   a model that answered and could not hold a long tool-using run to
+   completion. That is exactly the hazard model-routing.md named in
+   advance on 2026-09-17: "open-model tool-calling reliability on long
+   agentic runs." The cap was 300 and the run died at 30, so nothing
+   here is turn starvation, and nobody should re-derive caps over it.
+2. The routing change was an either/or, not a fallback. The Sonnet step
+   sat twelve lines below the failing one, guarded by
+   `if: env.OPENROUTE == ''`, and was unreachable by construction while
+   the key existed. A routing experiment that fails therefore costs the
+   whole run rather than three minutes. That is queued item 1b and it is
+   still queued.
+3. The gate that should have caught it was owned by a weekly seat. This
+   file's own law in docs/agents/model-routing.md requires a golden-set
+   comparison before any seat moves off its explicit model. The rollout
+   skipped it, and the rollout landed on a Friday evening, so the first
+   reader of the register was an ExO run three days later. A register
+   read weekly cannot gate a change that ships in eighteen hours.
+
+**The cause nobody had named, which is the one worth keeping.** None of
+the three above explains why alexandria's routing law was not consulted
+at all. It was not consulted because the decision was not made in
+alexandria. HQ's ADR-015 is a parent-level decision that landed in this
+repo as a commit, and no seat here holds a duty to read HQ decisions
+against local law before they take effect. The seats affected did not
+know their model had changed. The seat that owns the routing register
+found out three days later by reading its own file. This is a new class
+and it is registered below as **cross-repo law collision**. The rule
+that comes out of it is docs/agents/cross-repo-law.md.
+
+**The fix, in three parts.** The chair's removal of the secrets is the
+containment and it is done. Queued item 1b in
+docs/agents/pending-workflow-changes.md is the structural fix and it is
+now a precondition rather than a suggestion: the secret does not go back
+until the either/or becomes a fallback, because re-adding it today
+re-arms the same failure on the same seat. The precedence rule in
+docs/agents/cross-repo-law.md is the prevention, and the relay note in
+docs/agents/hq-relay.md carries all of it to HQ, since HQ is running the
+same experiment on its own seats and has the same numbers.
+
+**What the org grew from it.** Two things. First, the ordering rule for
+experiments: route the seat whose failure costs least, and never the
+seat the org most needs present. The PM is the fleet-health seat and the
+only seat with dispatch authority, so it is the worst possible first
+subject and it was chosen first. Second, and larger, the org learned
+that it has two legislatures. Until now every law it kept was its own.
+
+
 ## Incident 24 — Monday's issue never existed: the press's model returned 404 (2026-09-23, owner-reported)
 
 The owner: "i dont recall recieving the monday issue." The digests
@@ -1082,6 +1162,70 @@ availability check at deploy and at run start against the provider's
 /models endpoint, an ordered fallback list, and a loud notification
 to the owner when the press cannot print, because the discovery
 should never again be her inbox.
+
+### Postmortem (ExO, 2026-09-24, blameless)
+
+**What happened.** The owner wrote "i dont recall recieving the monday
+issue." She was right. The `digests` table holds 2026-W37 and nothing
+after it, so 2026-W38 was never written. She found this from her own
+inbox, three days after the fact, and no seat had reported it.
+
+**Why it happened, technically.** Two independent failures, and the
+second is the more serious.
+
+1. `groq/compound` returns 404. It was a preview model, and previews are
+   withdrawn without the deprecation notice production models get. The
+   press was moved onto it on 2026-09-19 in PR #51 for exactly one
+   reason, its 70K TPM ceiling, which was the escape from incident 22.
+   So a capacity number was the whole basis for the choice, and capacity
+   is the property most likely to change on a free tier.
+2. The Modal weekly app shows no log output at all for 2026-09-21. No
+   output is the same value for "the schedule never fired" and "it fired
+   and died before its first print," and the Modal CLI does not expose
+   schedule history, so only the dashboard can tell the two apart. The
+   engineer seat wrote the one-click check into docs/sprints/pending.md.
+   Until someone runs it, the org does not know whether its product's
+   only scheduled trigger fires.
+
+**Three failures, one cause.** 413 on 2026-09-17, 429 on 2026-09-19, 404
+on 2026-09-21. Each was diagnosed correctly, each was fixed by moving to
+a different model, and each fix held until the free tier moved again.
+Treating them as three incidents is what made the org fix the symptom
+three times. They are one incident: **a scheduled product runs on an
+unmonitored free tier, with no availability check, no fallback, and no
+notification when it fails.** The budget guard added after incident 22
+checks that a request fits. Nothing checked that the model exists,
+nothing checked that the run happened, and nothing told anyone when it
+did not.
+
+**What the failure actually cost, which is not the issue.** The org lost
+one week's issue. It also lost three days of not knowing, and it spent
+the owner's attention on detection, which is the resource the whole
+agent org exists to conserve. The detection cost is the larger one and
+it is the one the guardrails below are aimed at.
+
+**The fix.** The pipeline half is the engineer seat's, shipped in PR #75:
+an ordered fallback list of production models, a `/models` availability
+check at deploy and at run start, retry with backoff that never retries
+a 404, `notify_owner` over the existing Gmail path on every exit that
+produces no issue, and the schedule moved out of the daily crons' band.
+That PR also establishes the harder fact, which is that no model on
+Groq's free tier can print the weekly issue at the current prompt size,
+so the press is silent-but-instrumented rather than fixed. The org half
+is this run's: the four guardrails are named as standing law in
+docs/agents/delivery-health.md, the PM's run-health duty is extended to
+cover the press rather than only Actions runs, and the duty "the product
+reached its readers" gets an owner in docs/agents/unowned-duties.md.
+
+**What the org grew from it.** The run-health duty had a hole shaped
+exactly like the product. Every seat watches `gh run list`, which covers
+twelve agent workflows and zero of the things the org actually ships.
+The newsletter, the site, and the MCP server all run outside GitHub
+Actions, so all three were invisible to every health check the org
+keeps. A fleet-health report that is green while the product has not
+shipped for a week is not a reporting failure, it is a definition
+failure, and the definition is what changed today.
+
 ## Incident 25 — The first open-routed run died at turn one (2026-09-20)
 
 *(Renumbered from 23 on 2026-09-24. See the numbering note under
@@ -1445,3 +1589,70 @@ cheapest such rule is exact-match on every removed line, run every time,
 with no judgment about which lines are likely to have moved.
 
 Next free number is 27.
+
+*(Superseded 2026-09-24. Sequential numbers are retired. See incident 29
+and the allocation rule at the top of this file.)*
+
+## Incident 29 — Two branches allocated the same incident numbers, for the fourth time (2026-09-24)
+
+Found by this run while merging. It is a repeat, and the standing rule
+at the top of this file is why it is written down rather than quietly
+fixed.
+
+**What happened.** On 2026-09-21 the ExO seat's run wrote incidents 23,
+24, 25 and 26 onto branch `exo/2026-09-21`, which is pull request #65,
+still unmerged. On 2026-09-23 the chair wrote incidents 23 and 24 onto
+main for entirely different events, the Kimi routing rollout and the
+press 404. Both were correct at the moment they were written, because
+both read the highest number that existed where they could see. Today's
+merge put four entries with two numbers in one file, and git reported it
+as a content conflict rather than as the semantic collision it is.
+
+**It had already happened three times.** Before this run the file
+contained two entries numbered 19, two numbered 20, and two numbered 22
+for unrelated events, which is the same defect landing silently on three
+earlier merges. Nobody registered any of them. So the true count is four,
+and the three that went unrecorded are themselves a violation of this
+file's standing rule.
+
+**Why it happened, technically.** The number is allocated at write time
+from a counter that lives in a file, and the file is per-branch. Every
+seat writes on its own branch, every seat reads the highest number
+visible to it, and the org runs eight to twelve open branches at once.
+Under those conditions collision is not a mistake anyone made. It is the
+guaranteed output of a sequential allocator with no central issuer, and
+it will recur on every run where two seats register an incident between
+merges.
+
+**It is not cosmetic, and here is the cost.** Incident numbers are
+quoted everywhere. Charters cite them as evidence, pull request titles
+carry them, the learning log reasons about them, and three open PRs
+today reference numbers that this merge has moved. A citation that
+resolves to the wrong event is worse than a dangling one, because it
+reads as correct. Incident 23 in a charter written last week and
+incident 23 in a commit written yesterday are different events, and
+nothing in the text tells a reader which one is meant.
+
+**The fix, shipped in this PR.** Sequential allocation is retired. New
+entries get a date-scoped id, `INC-YYYY-MM-DD-slug`, which is collision
+free by construction because two seats writing on the same day about the
+same event are writing about one incident, which is the correct outcome.
+The rule is at the top of this file and it binds every seat through the
+ship check. Existing numbers 1 through 28 are permanent and are never
+renumbered again, with one exception made today and recorded in full:
+the four entries from branch `exo/2026-09-21` moved from 23, 24, 25 and
+26 to 25, 26, 27 and 28, because main's 23 and 24 were merged first and
+merged numbers win. Each carries a renumbering note naming its old id,
+which is the discipline HQ's lessons register already applies to its own
+rule ids and which this file lacked.
+
+**What the org grew from it.** The org now keeps two kinds of
+identifier, and it had been treating them the same. An id that is only
+ever read by the run that wrote it can be sequential. An id that other
+artifacts cite has to be allocatable without coordination, because the
+seats cannot coordinate by construction: they never message each other
+and they each see a different snapshot of the repository. Anywhere else
+the org hands out citable numbers from a file, the same defect is
+waiting. ADR numbers are the obvious next one, and HQ ADR-033 landing in
+this repo while alexandria's own ADRs stop at 32 shows the shape of it
+already.
