@@ -513,7 +513,7 @@ it never appears in a transcript:
 Then the chair deploys and prints. Finance: Moonshot usage is a
 direct alexandria cost from this date, roughly $0.05 an issue.
 
-## Press recovery: your checks and your two decisions (engineer, 2026-09-24)
+## Press recovery: your one check, and what the chair runs (engineer, 2026-09-24)
 
 Added by the engineer seat under your urgent dispatch of 2026-09-24,
 which directed this seat to write the one-click check into this file.
@@ -551,33 +551,40 @@ Three possible answers, and what each one means:
 Please note which one it is. It is the difference between one bug and
 two, and this PR only fixes one of them.
 
-### 2. Decision: the press cannot print until the prompt gets shorter or the request gets split
+### 2. Decision 2 is closed: you took it, and the press fits again
 
-Not a request for a service. A statement of arithmetic, printed by
-`python3 pipeline/budget.py` on this branch: Groq's free tier now caps
-every text model at 8,000 tokens per minute, which is also the
-per-request ceiling, and the digest's generator prompt is 9,865 tokens
-before any payload or any room to write. Full detail in the incident 24
-continuation in docs/agents/incidents.md.
+This section asked you to choose between shortening the generator prompt,
+splitting the issue across several requests, and paying Groq. You chose
+a fourth thing the same day, in ADR-32: the press writes on Kimi K2
+through the Moonshot account you funded. This PR is that wiring, and the
+arithmetic is no longer a complaint:
 
-Three ways out. The first two are $0 and are ours to build; the third is
-yours alone.
+    kimi-k2.6: prompt 9865 + payload 20205 + output reservation 6000
+    + envelope 32 = 36102 tokens against 222822 usable
+    (262144-token context less 15% margin); fits, headroom 186720
 
-- **Shorten `prompts/digest.md`** from 9,865 tokens to under about
-  4,500. Fastest path to a printed issue, and it is the writer seat's
-  surface, not the engineer's. A 55% cut of an editorial document is a
-  real editorial decision and should be made as one.
-- **Split the issue across several requests**, one per section, each
-  carrying only the part of the brief its section needs. Durable, $0,
-  and it survives the next ceiling change too. Proposed as the
-  engineer's next slice in docs/ideas.md. Roughly a day.
-- **Groq's Developer plan.** Raises the same three models from 8K to
-  250K TPM, which makes the whole problem disappear. It costs money, so
-  it is a proposal and never an action: see the ledger entry. No agent
-  will act on this.
+Nothing was trimmed to reach that. The payload caps and the 6,000-token
+output reservation are the same numbers main has carried since they were
+set, so the issue Kimi writes is the full-size issue.
 
-We recommend the second, with the first as an independent improvement
-whenever the writer seat next opens that file.
+**One correction you need, and it is the kind that costs a week.** ADR-32
+names the model "Kimi K2", and the obvious model id, `kimi-k2`, was
+discontinued by Moonshot on 2026-05-25. A press pointed at it would
+answer 404, which is incident 24 happening again on a new provider in its
+first week. The live 256K general model is **`kimi-k2.6`**, and that is
+what this PR uses. `kimi-k2` is recorded as withdrawn so nothing can
+point at it by accident.
+
+**Cost, for finance.** $0.0526 an issue at list price, worst case, with
+the output reservation spent in full and no cache hit. That is 52 issues
+a year for about $2.70. It matches what ADR-32 told finance to expect.
+
+The two $0 improvements this section proposed are still worth doing and
+neither is urgent now. A shorter generator prompt is the writer seat's
+call whenever she next opens that file. Splitting the issue across
+several requests is in the ledger, and its real value was never the
+token count: it is that a per-section request survives the next ceiling
+change too.
 
 ### 3. Correction to the dispatch: a dedicated Groq key would not help
 
@@ -596,23 +603,44 @@ a reader's inbox before the working day, and the week it covers ended
 the previous night, so nothing is half-ingested.
 
 **No action owed from you on this one**, beyond knowing the send time
-moved.
+moved. ADR-32 has since retired the reason: the press has its own
+provider and its own prepaid account, so it no longer competes with the
+daily crons for anything. The slot stays at 09:00 on editorial grounds,
+which were always the better argument. The issue covers the week that
+ended Sunday, and 09:00 UTC is 5am in New York, so it arrives before the
+working day rather than in the middle of it.
 
 ### 4. What the chair runs after this PR merges
 
-Merging deploys nothing; Modal runs the last deployed version. In order,
-stopping at the first failure:
+Merging deploys nothing; Modal runs the last deployed version. Two
+commands, and the first is yours because only you hold the key.
+
+**You, once.** Paste the key at the prompt rather than typing it into the
+command line, so it never lands in a shell history or a transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+No agent creates this secret, no agent reads it, and the value appears
+nowhere in the repository. `pipeline/weekly.py` references the name and
+nothing else.
+
+**Then the chair**, in order, stopping at the first failure:
 
     python3 pipeline/budget.py \
       && modal run pipeline/weekly.py::preflight \
+      && modal run pipeline/weekly.py \
       && modal deploy pipeline/weekly.py
 
-The first command will FAIL today, by design, and its output is the
-arithmetic in decision 2 above. Until that decision is taken, the honest
-state is a press that cannot print and now says so loudly. Deploying
-the new code anyway is still worth doing the moment the budget clears,
-because it is what turns the next failure into an email instead of three
-days of silence.
+The middle two are the smoke test that
+docs/agents/runtime-changes.md requires: this change adds a secret the
+run reads, and that law says the next cron is never the first execution
+of new machinery. `preflight` asks both providers whether the models
+exist and prints what the request would cost. The manual `modal run`
+prints a real issue. Only then does the deploy install the schedule.
+
+If the secret is missing, the run does not die on a stack trace. It says
+which environment variable is absent, which Modal secret provides it,
+and the command above, and it emails you.
 
 One optional secret, no action needed for it to work: `PRESS_ALERT_TO`.
 Unset, press alarms go to the Gmail address the `Gmail` secret already
