@@ -29,6 +29,24 @@ that run.
 
 ## Updated 2026-09-24 (Thursday standup, synchronous session)
 
+**Later the same session (04:13 UTC), same run's owner window.** One
+material change since the section below was written: **PR #75 merged**
+at 03:37:34Z, carrying ADR-32 (owner's decision, recorded today: the
+press moves off Groq to Kimi K2 via Moonshot). Two further commits
+landed directly on main right after the merge (24000-token output
+reservation, then a 25-minute read timeout on the writing call), so the
+fix is still being tuned post-merge rather than settled. What this
+changes below: item 2 in "independent, ready to merge now" is done, not
+pending, and the "not yet merged" framing in the Modal press cron bullet
+is stale. What it does not change: deployment to Modal is still
+unconfirmed by anyone with dashboard access, so "the fix is built but
+not deployed" from this run's PR description still holds. No new run
+started and no other PR merged in this window (`gh run list` and
+`gh pr list --state open` both unchanged from the snapshot below).
+`PM_DISPATCH_ENABLED` synchronous-mode gate still applies: the last
+`workflow_dispatch` (engineer, 03:17:07Z) is under two hours old, so
+this run queues rather than fires, same as the run below.
+
 **Why this file went six days stale.** No PM run wrote to this tracker
 between 2026-09-18 and today. Not neglect: incident 23 (docs/agents/
 incidents.md) put the PM's two runs in that window (2026-09-20 and
@@ -57,17 +75,16 @@ gap above.
   within the same two minutes (02:56-02:58Z) — expected in a synchronous
   session, not a failure.
 - *Modal press cron (incident 24), tracked here per today's owner
-  instruction:* still down. `groq/compound` 404s, the free tier has no
-  model that fits the digest prompt at any size (engineer PR #75's
-  finding: the entire viable free-tier catalog tops out at 8K TPM
-  against a 9,865-token prompt before payload), and the fix is not yet
-  merged, let alone deployed. Deployment has historically been a manual
+  instruction:* the fix **merged** at 03:37:34Z as PR #75 (ADR-32, press
+  moves to Kimi K2 via Moonshot), with two tuning commits landing
+  directly on main right after. Deployment is still unconfirmed.
+  Deployment has historically been a manual
   `modal deploy pipeline/<app>.py` step (see "Deploy action owed" below
-  in this file's 2026-09-19 section, the same pattern), so merging PR
-  #75 will not by itself make Monday's issue print — someone needs to
-  run the deploy afterward. This seat has no Modal CLI access to check
-  the schedule history directly; the ExO (PR #77) is postmortem-ing the
-  same incident with more access than this seat has.
+  in this file's 2026-09-19 section, the same pattern), so the merge
+  alone may not make Monday's issue print — someone needs to run the
+  deploy, or confirm CI already does it. This seat has no Modal CLI
+  access to check the schedule history directly; the ExO (PR #77) is
+  postmortem-ing the same incident with more access than this seat has.
 
 **Sprint 2026-09-21 progress** (evidence: merged PRs). Items 1 and 3
 are done: item 1 (MCP redirect-URI validation) merged as PR #29
@@ -114,8 +131,9 @@ the head, per each PR's own "supersedes" claim):*
 notes imply:*
 1. **#69** (engineer, sanitize digest HTML) — live XSS break-fix,
    branched from main, no stated dependency. Merge first on urgency.
-2. **#75** (engineer, incident 24 press fix) — time-sensitive (the press
-   is down), branched from main, ready. Merge before #77 (above).
+2. **#75** (engineer, incident 24 press fix) — **merged 03:37:34Z**,
+   same session. #77 (exo) can now proceed; it said it must merge after
+   #75.
 3. **#66** (engineer, prose benchmark, sprint item 2) — branched from
    main, ready.
 4. **#60** (engineer, quality checklist, sprint item 4) — ready, but its

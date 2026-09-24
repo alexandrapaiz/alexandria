@@ -6,6 +6,15 @@ allowed to hold none.
 
 ## 2026-09-24 (standup, dispatch-triggered)
 
+**Refreshed later the same session (04:13 UTC).** One item below moved:
+PR #75 merged at 03:37:34Z (ADR-32, the Kimi K2 press fix), so ask 3 is
+now a narrower deployment question, not a merge-status one. No new run
+started since this queue was first written and no other PR opened,
+merged, or closed (`gh run list` and `gh pr list --state open` both
+checked again and unchanged otherwise). The synchronous-mode gate still
+holds: the newest `workflow_dispatch` (engineer, 03:17:07Z) is under two
+hours old.
+
 **No dispatches fired this run, and none proposed to fire later today.**
 `PM_DISPATCH_ENABLED` is reported `true` for this run, but charter §5 and
 company standard §11.4 both make a second condition absolute: "Never
@@ -27,16 +36,18 @@ recommendations in this run's PR description and in
 `docs/sprints/pending.md`, because they need a decision or a merge, not
 a workflow run:
 
-1. A merge order across the 26 open pull requests (oldest is PR #31,
-   about 5 days old), several of them chained supersessions of each
-   other.
+1. A merge order across the 27 open pull requests (oldest is PR #31,
+   about 5 days old; PR #86 opened after this queue was first written),
+   several of them chained supersessions of each other. Full breakdown
+   in `docs/sprints/pending.md`.
 2. A ruling on the incident register's numbering: PR #83 (skill,
    2026-09-24) reports that incident numbers 23 through 29 are each
    claimed by at least one open branch right now.
-3. Confirmation on the Modal press cron (incident 24): the fix is built
-   (engineer PR #75) but not yet deployed, and deployment has
-   historically been a manual `modal deploy` step, not something CI
-   does on merge.
+3. Confirmation on the Modal press cron (incident 24): the fix merged
+   (PR #75, ADR-32) at 03:37:34Z, but deployment is still unconfirmed.
+   Deployment has historically been a manual `modal deploy` step, not
+   something CI does on merge, so the question is now narrower: has
+   anyone run it, or does something already deploy on merge to main?
 
 ## Dispatched by the PM
 
