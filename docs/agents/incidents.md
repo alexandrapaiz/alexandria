@@ -1082,3 +1082,366 @@ availability check at deploy and at run start against the provider's
 /models endpoint, an ordered fallback list, and a loud notification
 to the owner when the press cannot print, because the discovery
 should never again be her inbox.
+## Incident 25 — The first open-routed run died at turn one (2026-09-20)
+
+*(Renumbered from 23 on 2026-09-24. See the numbering note under
+incident 29: this entry was written on branch `exo/2026-09-20` while
+the chair independently allocated 23 and 24 on main.)*
+
+Found by the ExO seat's scheduled run, 2026-09-20 17:15 UTC, in the
+standing run-failure sweep of charter §2b. Nobody had reported it in the
+eleven hours since it happened.
+
+### What happened
+
+The PM seat was dispatched at 2026-09-20 06:16 UTC (run 35493791740) and
+failed. The result block is the whole story.
+
+```
+"type": "result", "subtype": "success", "is_error": true,
+"duration_ms": 190501, "num_turns": 1, "total_cost_usd": 0,
+"permission_denials_count": 0, "modelUsage": {}
+```
+
+The seat initialized, spent three minutes on its first model call, and
+came back with an error, zero turns of work, zero cost, and an empty
+`modelUsage` map. It made no commit, pushed no branch, and opened no
+pull request. The seat's charter and the org's ship-first rule were both
+irrelevant, because the run never reached a second turn.
+
+The step that failed was `Seat run (open-routed)`, and the SDK options
+it logged name the cause: `"model": "kimi-k2.7-code"`, with
+`ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` pointed at the
+`OPENROUTE` endpoint. This was the first execution anywhere in the org
+of the open routing the chair merged in PR #49 (commit 609d7cc,
+2026-09-19 18:49 UTC), which put pm, market, okr and finance behind a
+third-party endpoint whenever `OPENROUTE_API_KEY` is set.
+
+The exact upstream error is not in the log. The action runs with full
+output hidden for security, so what the endpoint actually returned,
+whether an auth rejection, an unknown model id, or a timeout, is not
+recoverable from run 35493791740. That is a second finding and it is
+recorded below.
+
+### Why it happened
+
+Two causes, and the second is the one that generalizes.
+
+1. **The open-routed path has never worked, for any seat.** The routing
+   commit landed at 18:49 UTC on 2026-09-19. The last run of every other
+   routed seat predates it: market 2026-09-19 03:34, finance
+   2026-09-19 00:53, okr 2026-09-18 02:23. So the PM dispatch was the
+   first time the new machinery ran at all, and it ran on real work
+   rather than on a smoke task.
+
+2. **This was a runtime change with no smoke run behind it.**
+   docs/agents/runtime-changes.md names `claude_args`, the model flag,
+   and any new secret a run reads as runtime changes, all three of which
+   this commit touched. The law's ladder is explicit: smoke one seat on
+   a throwaway branch with the narrowest possible task, then one real
+   dispatch, then let a cron fire. None of that happened. A merged PR
+   explained the change, which answers half of the ExO's §2 test, and
+   `gh run list` answers the other half with no smoke run at all.
+
+The law binds the chair as well as the seats, so this is not a seat
+deviating from its charter. It is the law's detection lagging the
+change. The ExO's §2 machinery diff is the only step in the org that
+asks whether a runtime change was smoked, it runs once a week on
+Sundays, and this change landed 35 minutes after the previous ExO run
+started. The failure reached a real seat fourteen hours before the audit
+that would have caught it. That gap is now a row in
+docs/agents/unowned-duties.md and its fix is in the engineer charter,
+because the engineer seat runs daily and this audit needs to.
+
+### The fingerprint, so the next diagnosis is a lookup
+
+An open-routed seat that fails this way prints a result block with
+`num_turns` at 1 or 0, `total_cost_usd` exactly 0, `modelUsage` empty,
+and `is_error` true, after a duration long enough to be a network
+timeout rather than a refusal. Read it apart from the two cap flavors
+already in this register. `error_max_turns` at the cap plus one is a run
+killed mid-work with its turns spent. A `success` subtype carrying an
+`exceeding the configured maximum` error is a finished run failed
+afterwards. This third flavor is a run that never started, and the
+giveaway is that `modelUsage` is empty: no model ever answered.
+
+The diagnostic command, for whoever meets this next:
+
+```bash
+gh run view <id> --log | grep -E '"model"|num_turns|modelUsage|is_error'
+```
+
+If the model name is not a Claude model and `modelUsage` is `{}`, the
+seat's problem is its endpoint and not its charter. Do not re-read the
+charter, and do not raise the cap.
+
+### The fix
+
+Three parts, one of them owner-applied.
+
+**Queued, because no seat can push a workflow file.** Item 1b of
+pending-workflow-changes.md makes the open-routed step non-fatal and
+falls back to the Claude step when it fails, so a routing experiment
+costs the org a retry instead of a whole run. The probe in this run
+confirms the lane is still closed: a push touching
+`.github/workflows/agent-exo.yml` was refused with "refusing to allow a
+GitHub App to create or update workflow ... without `workflows`
+permission", which is incident 12 unchanged.
+
+**Shipped here.** docs/agents/model-routing.md now describes the routing
+that actually exists rather than the one it recommended, and it carries
+the evidence this experiment needs before the four seats stay open.
+
+**Shipped here.** The engineer charter gains the daily machinery diff,
+so the next runtime change is checked for its smoke run within a day
+rather than within a week.
+
+### The diagnostic gap, recorded separately
+
+A failed open-routed run currently yields no upstream error. Turning on
+`show_full_output` would fix that and would also print secrets into a
+public run log, which is not a trade this seat will propose. The cheap
+move belongs to the owner and costs one dispatch: re-run the PM seat by
+hand once with the action in debug mode, capture what the endpoint
+returns, and add that line to this entry. Until somebody does, the org
+knows the open-routed path fails and does not know why.
+
+### What the org grows from it
+
+The pattern already has a name in the learning log, and this is its
+sharpest instance yet. **Ship-first cannot save a run that dies before
+turn two.** Every no-ship protection the org has built, the draft PR, the
+early commit, the queued tripwire, assumes the seat gets to act. A
+runtime change breaks that assumption, which is exactly why runtime
+changes get smoked separately instead of being trusted to the seat's own
+discipline. A charter cannot defend a seat against its own environment.
+
+### Numbering note, added 2026-09-20
+
+This register's numbers have collided. Two entries are numbered 19 and
+two are numbered 22, and the dated sections reuse 11, 12 and 13 as list
+items. Renumbering now would break every charter that cites an incident
+by number, so the rule from here is: **cite an incident by number and
+title together**, and take the next free number from the bottom of this
+file rather than by counting.
+
+## Incident 26 — Two register defects repeated on the same day (2026-09-20)
+
+*(Renumbered from 24 on 2026-09-24; see incident 29.)*
+
+Recorded by the ExO seat under the standing rule at the top of this
+file, which has no judgment clause: anything that happens more than once
+is written down at the moment it repeats. Both of these are process
+defects rather than failed runs, which is the same shape as incident 20.
+Neither cost the org a run. Both cost it a day.
+
+**1. A register with a working gate was stale anyway.** Second instance
+of incident 20's class, "recording is not enforcing."
+docs/agents/model-routing.md was added to the ExO read list on
+2026-09-19 precisely so it would stop being unread. The gate fired
+exactly as designed on the next run, which is this one, and found the
+file describing a routing policy the org had abandoned eighteen hours
+earlier. The gate was not broken and the register still lied for a day.
+The refinement the class needs: **a gate on a weekly seat has a weekly
+blind spot.** Enforcing is not a binary, it is a rate, and it has to be
+compared against how fast the thing it governs changes. Routing changed
+in eighteen hours. Recorded with the argument in
+docs/agents/registers.md, 2026-09-20 sweep.
+
+**2. A duty was marked assigned before the charter edit existed.**
+Second instance of docs/agents/unowned-duties.md's founding bug, the one
+its own closing rule names. "Upstream compromise is in the threat model"
+moved to assigned on 2026-09-19 on the strength of incident 19's
+recommendation, and prompts/security-agent.md contained none of the
+vocabulary. The fix is one line in that charter, shipped 2026-09-20. The
+rule is now stated twice in that register: **a row moves when the
+charter edit merges, not when the incident recommending it is written**,
+and those are usually different pull requests.
+
+## Incident 27 — Eight rounds of site copy, every one rejected (2026-09-20, owner-reported)
+
+*(Renumbered from 25 on 2026-09-24; see incident 29.)*
+
+Registered by the ExO seat on 2026-09-21 on the owner's order. Blameless
+and specific, in that order.
+
+**Class, per ADR-29.** Enforcement gap, and a repeat of incident 20's
+class with a new mechanism. Incident 20 was a ruling recorded and not
+checked. This is a ruling recorded and CONTRADICTED by a live charter
+line, plus a second defect that incident 20 does not cover at all: a
+register made of rejections cannot converge on anything. The class name
+for the register half: **negative rulings do not converge without a
+positive spec.**
+
+### What happened
+
+On 2026-09-20 the chair drafted site copy live with the owner. Eight
+rounds, across the home statement, the library intro, the skills heading
+and intro, and the mission page. Twenty-two candidates were rejected and
+four short lines were approved. The prose register moved every round,
+from explanatory to selling to quiet to friendly to flat documentation to
+a deliberate plain-engineer voice, and none of it converged.
+
+The full verbatim record, with her verdict and her reason on each
+candidate in her own words, is
+docs/voice/preferences/site-copy-2026-09-20.md. Her diagnosis of the
+last round is the sentence that explains all eight:
+
+> "its describing the mechanism not what it delivers. or the value to a
+> builder."
+
+and
+
+> "no mention of a growing self mantaining corpus, nothing. thats my
+> point."
+
+### Why it happened, in three layers
+
+Each layer is sufficient to cause a bad round. Together they are
+sufficient to cause eight.
+
+1. **The duty was assigned to a seat forbidden from performing it.** Her
+   ruling of 2026-09-19, recorded correctly in docs/voice/taste.md, says
+   "The writer drafts, the frontend seat sets." On 2026-09-20
+   prompts/writer-agent.md line 78 still read "Never site copy
+   (frontend's lane)", and the frontend charter's five run steps are
+   entirely visual, with no step that writes a word. So the duty read as
+   owned from both sides and was performed by neither, which is the worst
+   available state, because it passes every audit. It fell to whoever was
+   present, and that was the owner.
+2. **There was no positive specification.** docs/voice/taste.md held
+   roughly forty rulings and nearly all of them are rejections. Nothing
+   in the repository stated what alexandria is worth to a builder. Each
+   round therefore removed one region from an unbounded space and located
+   nothing, which is why better prose did not mean closer. Her own
+   instruction names the missing content, which is the growing,
+   self-maintaining corpus and what having it does for a builder.
+3. **The drafting happened in chat, so nothing accumulated.** No file
+   existed until the session was over. Each round started from a verdict
+   held in conversation rather than from a register a later round could
+   read, so round seven repeated round two's failure in a new costume.
+   The preference file was written after the fact, which is also why two
+   of the eight rounds have no recoverable candidate text.
+
+### The relationship to incident 22
+
+Same shape, different seat. There the owner said "right now i feel like
+im doing the PMs job, i want the pm to be proactive", and the PM was
+asleep. Here the writer was forbidden. In both cases every seat obeyed
+its charter, no audit failed, and the work landed on the only actor in
+the org with no cron and no cap.
+
+That is the generalization worth keeping: **every audit the org runs
+measures a seat against its charter, so none of them can see work the
+owner did herself.** The detector for it is now prompts/exo-agent.md §3e,
+the owner-as-seat audit.
+
+### Honest about the chair
+
+The chair is the seat with no workflow, no turn cap and no cron, so it is
+always the cheapest actor to reach for, and on 2026-09-20 it was reached
+for eight times. Two things are true at once. Drafting the first round
+live was the right call and the fastest way to probe a direction. Drafting
+the eighth was not, and by then the correct move had been available for
+six rounds, which was to stop, say that the writer seat owns this and
+that no value statement exists, and hand the round over.
+
+The chair also recorded the session afterwards, in detail and in her
+words, which is the only reason this entry can be written at all. The
+failure was not the drafting. It was the absence of a stopping rule, and
+the chair had no written limit to hit because every other seat's limit is
+enforced by a workflow and the chair's had never been written down.
+
+### The fix, shipped in this PR
+
+- **docs/agents/copy-pipeline.md.** Who drafts, who rules, who records,
+  who sets, plus the spec for the value statement and the stopping rule:
+  after ONE rejected round on the same surface, the chair hands the round
+  to the writer seat.
+- **The precondition.** docs/voice/value.md, one page, drafted by the
+  writer and approved by the owner, before any copy round resumes. The
+  writer charter now refuses to draft copy without it.
+- **prompts/writer-agent.md.** Site copy is this seat's to draft, the
+  contradicting boundary line is corrected, and the value statement and
+  the preference file are in its read list and its shipping check.
+- **prompts/frontend-agent.md.** It sets approved words and never authors
+  them, and every line it sets must be pointable to an approved record.
+- **prompts/pm-agent.md.** When recording a ruling, check for the live
+  charter line that contradicts it. That check is what would have caught
+  this on 2026-09-19.
+- **docs/agents/preference-data.md.** The schema, so the next session's
+  verdicts are data rather than narrative.
+- **prompts/exo-agent.md.** §3d gains the polarity test and §3e is the
+  owner-as-seat audit.
+
+### What the org grew from it
+
+Three sentences, for the run that reads this cold.
+
+A recorded ruling that contradicts a live charter line is not law, it is
+a note, and the charter wins every time because the charter is what the
+seat is holding.
+
+A register of rejections tells a seat when it has failed and never where
+to aim. Rulings need a companion that states the target.
+
+The owner is the cheapest actor in the org to reach for and the most
+expensive one to spend. Every seat has a limit enforced by a workflow.
+The chair's limit has to be written down instead, which is what the
+stopping rule is.
+
+## Incident 28 — The queued diff rotted a second time (2026-09-21)
+
+*(Renumbered from 26 on 2026-09-24; see incident 29.)*
+
+Recorded by the ExO seat under the standing rule, which has no judgment
+clause. Second occurrence of the class first recorded on 2026-09-20 in
+incident 23's entry and in item 2 of
+docs/agents/pending-workflow-changes.md. No run was lost. What was at
+risk was a workflow being edited wrongly by a hand that trusted the page.
+
+**What happened.** Item 2 of the pending queue, the PM's daily cron,
+carries four diffs. Two of their anchors no longer existed.
+
+```
+queued:  -    timeout-minutes: 60      live: timeout-minutes: 120
+queued:  -    --model sonnet           live: --model claude-sonnet-5
+```
+
+Commit 440163a changed both on 2026-09-20 at 12:34. The ExO run at 17:15
+that same day re-verified this item against the live file and rewrote it,
+and missed both.
+
+**Why it happened, and this is the part worth keeping.** The
+re-verification was real and it was scoped to the previous failure. On
+2026-09-19 the item rotted because the file gained a second run step, so
+the 2026-09-20 run checked the step structure, found it correct for the
+rewritten diffs, and stopped. It did not re-read the values inside the
+steps, because those were not what had broken before.
+
+**A check shaped around the last failure finds the last failure.** That is
+the general form, and it is close kin to incident 24's "a gate on a weekly
+seat has a weekly blind spot". Both are about a control that works
+exactly as designed and has a blind spot its designer inherited from the
+incident that prompted it.
+
+**The cost, had it not been caught.** The timeout diff's intent was to
+raise 60 to 75. Applied against a file that now says 120, a careful hand
+sees no anchor and asks. A hurried hand sets 75 and the PM seat loses 45
+minutes of runway, which is a regression shipped by a page whose whole
+purpose is to be trustworthy enough to apply without thinking.
+
+**The fix, shipped in this PR.** prompts/exo-agent.md §5 now states the
+mechanical form: for each queued diff, grep the live file for every `-`
+line verbatim and confirm it appears exactly once, every line, not the
+line that broke last time. Item 2's timeout edit is marked cancelled in
+the queue with the reason, since 120 already exceeds what it wanted, and
+the model flag is corrected.
+
+**What the org grew from it.** A queue of diffs against files the queue
+cannot see is a stale cache, and every stale cache needs a validation
+rule that does not depend on remembering why it went stale before. The
+cheapest such rule is exact-match on every removed line, run every time,
+with no judgment about which lines are likely to have moved.
+
+Next free number is 27.

@@ -463,6 +463,21 @@ So before you call `gh pr ready`, two checks.
   of the owner's rulings. Recording it is half the job. The other half
   is saying, in your PR, which seat's shipping step now checks it,
   because a ruling with no artifact-side gate is incident 20 again.
+  Then run the check incident 25 added: does any live charter line
+  CONTRADICT the ruling you just recorded? On 2026-09-19 a
+  ruling gave site copy to the writer seat while that seat's charter
+  said "never site copy", and the ruling lost. A recorded ruling that
+  no charter obeys is not law, it is a note. Naming the charter line
+  that has to change is part of recording the ruling, and the edit
+  itself is the ExO seat's to make.
+- `docs/agents/preference-data.md` when the ruling was a verdict on
+  specific words or pixels rather than a general rule. Her rulings are
+  recorded TWICE and the two writes are different. taste.md gets the
+  rule. The current file in `docs/voice/preferences/` gets the data,
+  which is the candidate verbatim, her verdict, and her reason in her
+  own words and spelling. The rule is what the org obeys and the data
+  is what a taste model can learn from, and the second one is
+  unrecoverable if it is not written while the session is live.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to

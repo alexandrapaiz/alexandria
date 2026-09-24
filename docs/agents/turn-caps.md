@@ -108,8 +108,8 @@ twice that, rounded up to the next 50, floor 100.
 | frontend | 8 | 286 | 600 | 600 | ok |
 | pm (ceremony) | 8 | 141 (censored) | 300 | 400 queued | censored, and duties grew 2026-09-19 |
 | pm (standup) | 0 | unmeasured | shares the pm cap | n/a | provisional, measure after the first run |
-| security | 2 | 108 | 250 | 250 | ok |
-| engineer | 7 | 75 | 200 | 150 | ok |
+| security | 3 | 108 | 250 | 250 | ok, re-checked 2026-09-20 after duty growth |
+| engineer | 8 | 82 | 200 | 200 | ok, re-checked 2026-09-20 after duty growth |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
 | skill | 3 | 67 | 180 | 150 | ok |
 | research | 1 | 54 | 180 | 120 | ok, first measurement |
@@ -118,6 +118,32 @@ twice that, rounded up to the next 50, floor 100.
 | market | 3 | 47 | 160 | 100 | ok |
 | okr | 1 | 33 | 160 | 100 | ok |
 | finance | 1 | 29 | 120 | 100 | ok, first measurement |
+
+## Duty-growth re-check, 2026-09-20
+
+Rule 3 fired. This ExO run added a duty to two charters, so both seats
+were re-measured in the same run rather than waiting for a failure,
+which is what rule 3 is for.
+
+| Seat | Duty added | Peak turns, 8 newest runs | Cap | Required | Verdict |
+|---|---|---|---|---|---|
+| engineer | §0, the daily machinery diff | 82 (run 35517189213, 2026-09-20) | 200 | 200 | ok, no change |
+| security | §2, upstream and supply chain | 108 (run 35393327494) | 250 | 250 | ok, no change |
+
+Neither duty is turn-hungry. The engineer's is one `git log` and a
+conditional register append, and the security seat's is a written answer
+inside a sweep it already runs. The engineer's peak moved from 75 to 82
+on its own, which is drift in the seat's normal work rather than
+anything this run caused, and 82 doubled and rounded is exactly the 200
+in force. That row now has no headroom, so the next engineer run that
+peaks above 100 turns takes the cap to 250. Flag for the next ExO run.
+
+One measurement note for whoever repeats this. The open-routed seats
+cannot be measured right now. A run that dies at turn one reports
+`num_turns: 1`, and feeding that into the rule would silently propose a
+cap of 100 for the PM seat. Incident 23's fingerprint is how you tell
+that flavor apart, and the standing clause is rule 1: a run that failed
+for a reason other than its own work is not a measurement of its work.
 
 **Every cap in the org now clears the rule.** The three that were short
 on 2026-09-18 (frontend 400, pm 250, security 200) were applied by the
@@ -171,6 +197,49 @@ Notes on the rows that need them.
 - Job timeouts were re-checked against the required caps at roughly nine
   turns per minute. Every seat's `timeout-minutes` clears its required
   cap, so no timeout change is needed.
+
+## Duty-growth re-check, 2026-09-21
+
+Rule 3 fired again. This run edited four charters, so the seats were
+re-measured before waiting for a failure. Two of them needed the
+measurement and two did not, and saying which is which is part of the
+method.
+
+Measured, because their work genuinely grew:
+
+| Seat | Duty added | Peak turns, 8 newest runs | Cap in force | Required | Verdict |
+|---|---|---|---|---|---|
+| writer | site copy drafting, the value statement, preference capture | **80** (run 35459141039, 2026-09-19) | 150 | **200** | **UNDER-CAPPED, raise queued as item 4** |
+| exo | §3d polarity test, §3e owner-as-seat audit | 93 all-time (run 35307859161, at a cap of 100), 79 in the last seven | 200 | 200 | ok, and no headroom at all |
+
+Not measured, with the reason:
+
+- **frontend** gained a restriction rather than a duty. "You set the
+  words, you do not write them" removes work from the run. Its peak is
+  286 against a cap of 600, so there are 314 turns of headroom even if
+  the reasoning is wrong.
+- **pm** gained two checks inside a step it already runs. Its cap is
+  already censored and a raise to 400 is already queued as item 2, which
+  covers this.
+
+### The writer finding, stated plainly
+
+The writer's cap was set from two runs on 2026-09-19, when its peak was
+53. It has run eight times since and peaked at 80, which the rule turns
+into a required cap of 200. **So the cap was already too low before this
+run added a duty to it**, and nobody had re-measured because the seat
+never failed.
+
+That is worth a note about the method rather than about the seat. Rule 3
+triggers re-measurement on duty growth, and monthly review triggers it on
+the calendar, and a seat whose peak simply drifts upward between those two
+triggers is measured by neither. The writer went from 53 to 80 in a day
+because it started running daily. **A seat's first measurement is its
+least reliable one, and the seats that run most often outgrow theirs
+fastest.** The cheap correction: whenever this page is opened for any
+reason, re-measure any seat whose row was built from fewer than five runs.
+Writer, research and finance were all first-measurement rows on
+2026-09-19. Writer has now moved.
 
 ## Who applies a cap change
 

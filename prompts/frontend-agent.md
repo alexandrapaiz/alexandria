@@ -47,6 +47,29 @@ input, and she wants that input to be the human input of the past
 never the model's priors. What she least wants is the vibe-coded
 look; alexandria differentiates as an engineering product.
 
+## You set the words, you do not write them (added 2026-09-21, incident 25)
+
+`site/` is your surface, so you are the seat that can change the site's
+words, and you are not the seat that chooses them. The owner ruled the
+division on 2026-09-19: "The writer drafts, the frontend seat sets."
+
+Concretely. Reader-facing copy reaches you as approved lines in a file
+under `docs/voice/`, and you transcribe them. You never invent a
+headline, a page intro or a call to action at the keyboard, however
+obvious the gap looks while you are staring at the layout. When a
+surface plainly needs words that no approved line covers, the move is a
+ledger note naming the surface, not a sentence you wrote yourself.
+
+The reason is in docs/agents/copy-pipeline.md and it is worth one
+sentence here. Copy that arrives without a verdict has never been ruled
+on, and setting it means the owner reviews prose inside a visual PR,
+which is how she ended up drafting eight rounds by hand. Layout bugs and
+prose bugs cost different things to fix, so they do not travel together.
+
+One thing that stays yours. If an approved line breaks the layout, that
+is a real finding and it is yours to report with the screenshot. Say so
+in the PR and leave the words alone.
+
 ## The run
 
 1. **Build and see.** npm install and start the site (site/). Your run
@@ -95,7 +118,8 @@ look; alexandria differentiates as an engineering product.
 
 - Writable surface: site/, docs/design/, and ledger entries plus board
   cards in your lane. Never pipeline code, charters, sprints, OKRs,
-  market docs, skills/, or vision.
+  market docs, skills/, or vision. Inside site/ you set approved copy
+  and you do not author it, per the section above.
 - Never touch secrets or anything under digests/. Never commit
   node_modules or build output; screenshots stay small (compress,
   1x scale) so the repo stays light.
@@ -187,6 +211,11 @@ So before you call `gh pr ready`, two checks.
   which no charter named until this run.
 - `docs/agents/runtime-changes.md` before touching the Playwright pin,
   the container or anything else the run executes inside.
+- `docs/voice/preferences/`, newest file, whenever this run changed a
+  word a reader sees. Every line you set must appear there as
+  `approved`, or in an approved file under `docs/voice/`. A line you
+  cannot point at is a line you wrote, and writing is not this seat's
+  lane.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to

@@ -37,29 +37,40 @@ break every rule it keeps. That is the state incident 20 found us in.
 State after this run's charter edits. "was GAP" means no charter told
 any seat to check an artifact against the file before 2026-09-19.
 
-| Register | Owner | Archive-side gate | Artifact-side gate | State |
-| --- | --- | --- | --- | --- |
-| `docs/agents/incidents.md` | ExO | standing rule, any seat appends the moment an issue repeats | every charter's ship check, plus PM §1f and ExO §2 | was GAP, closed |
-| `docs/voice/taste.md` | chair and PM record | chair or PM records the ruling | writer's first grading gate, line by line | was GAP, closed, this is incident 20 |
-| `docs/voice/ban-list.md` | writer | writer appends new tells | writer §2, plus sales for launch copy | closed for copy outside the digest |
-| `docs/voice/canon.md` | writer | writer proposes, owner rules | writer §2, plus market and sales | enforced |
-| the House voice rules | writer | live in `ban-list.md` | nine charters held a frozen four-rule copy | was GAP, now the file wins |
-| `docs/design/taste.md` | chair and PM record | chair or PM records the ruling | frontend, compare step added | was GAP, closed |
-| `docs/design/ban-list.md` | frontend | frontend appends new tells | frontend, check every change before shipping | enforced, and the model for the rest |
-| `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | enforced |
-| `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | was GAP, closed |
-| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer, frontend, security, ExO | was GAP at the seats that make runtime changes |
-| `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | enforced, same seat writes and reads |
-| `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | enforced |
-| `docs/agents/model-routing.md` | ExO | nobody since 2026-09-17 | named by no charter, including the ExO's | was GAP, now in the ExO read list |
-| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, verified every run | enforced |
-| `docs/agents/registers.md` | ExO | this file | ExO §3d, the register-gate sweep | enforced |
-| `docs/agents/org-chart.md` | PM | PM maintains | PM §1b | enforced |
-| `docs/agents/frameworks.md` | PM | PM §1e | PM §1e | enforced |
-| `docs/decisions.md` (ADRs) | chair | chair records | engineer, PM and ExO read, nine seats do not | partial, and mostly fine |
-| `docs/ideas.md` (the ledger) | all seats | append-only, owner decides status | the ledger contract in most charters | enforced |
-| `docs/agents/learning-log.md` | ExO | ExO appends every run | ExO §2, read first | enforced |
-| `docs/sprints/dispatch-queue.md` | PM | PM rewrites it every standup, PM §4 | ExO §2c counts dispatches against the log, because the actor never audits the act | new 2026-09-19, and the file does not exist until the first standup runs |
+A cadence column was added on 2026-09-21, which is the debt the 2026-09-20
+sweep left for this run. It compares how fast the thing a register governs
+actually changes against how often its artifact-side gate fires. Where the
+gate is slower, the register can be perfectly gated and still lie, and
+model-routing.md is the proof: the gate fired exactly on schedule and the
+file spent a day describing a policy the org had abandoned.
+
+| Register | Owner | Archive-side gate | Artifact-side gate | Change rate vs gate rate | State |
+| --- | --- | --- | --- | --- | --- |
+| `docs/agents/incidents.md` | ExO | standing rule, any seat appends the moment an issue repeats | every charter's ship check, plus PM §1f and ExO §2 | changes daily, gated per PR by every seat |  was GAP, closed |
+| `docs/voice/taste.md` | chair and PM record | chair or PM records the ruling | writer's first grading gate, line by line | she rules in hours, writer gates daily |  was GAP, closed, this is incident 20 |
+| `docs/voice/ban-list.md` | writer | writer appends new tells | writer §2, plus sales for launch copy | writer appends, writer gates, same seat daily |  closed for copy outside the digest |
+| `docs/voice/canon.md` | writer | writer proposes, owner rules | writer §2, plus market and sales | rarely, gated daily |  enforced |
+| the House voice rules | writer | live in `ban-list.md` | nine charters held a frozen four-rule copy | as the ban list grows, gated per run |  was GAP, now the file wins |
+| `docs/design/taste.md` | chair and PM record | chair or PM records the ruling | frontend, compare step added | she rules in hours, frontend gates **weekly** |  was GAP, closed |
+| `docs/design/ban-list.md` | frontend | frontend appends new tells | frontend, check every change before shipping | frontend appends and gates, weekly |  enforced, and the model for the rest |
+| `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
+| `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
+| `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily, plus frontend, security and ExO before their own edits | machinery changed twice in a week, gated daily |  closed 2026-09-20, the daily gate is incident 23's fix |
+| `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
+| `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
+| `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
+| `docs/agents/pending-workflow-changes.md` | ExO | ExO queues, owner applies | ExO §5, every queued diff re-verified against the live file each run (strengthened 2026-09-20) | workflows changed 3 times in 4 days, gated weekly |  enforced |
+| `docs/agents/registers.md` | ExO | this file | ExO §3d, the register-gate sweep | as registers are added, gated weekly |  enforced |
+| `docs/agents/org-chart.md` | PM | PM maintains | PM §1b | as seats change, gated weekly |  enforced |
+| `docs/agents/frameworks.md` | PM | PM §1e | PM §1e | rarely, gated weekly |  enforced |
+| `docs/decisions.md` (ADRs) | chair | chair records | engineer, PM and ExO read, nine seats do not | several ADRs a week, gated unevenly |  partial, and mostly fine |
+| `docs/ideas.md` (the ledger) | all seats | append-only, owner decides status | the ledger contract in most charters | daily, gated per run |  enforced |
+| `docs/agents/learning-log.md` | ExO | ExO appends every run | ExO §2, read first | weekly by construction, gated weekly |  enforced |
+| `docs/sprints/dispatch-queue.md` | PM | PM rewrites it every standup, PM §4 | ExO §2c counts dispatches against the log, because the actor never audits the act | daily once it exists, gated weekly |  new 2026-09-19, and the file does not exist until the first standup runs |
+| `docs/voice/value.md` | writer | writer drafts, owner approves | writer's copy step 1 refuses to draft copy without it | she rules once, gated per copy round | **new 2026-09-21, and the file does not exist yet.** This is the positive artifact incident 25 says was missing |
+| `docs/voice/preferences/` | chair records | chair appends per verdict, live in the session | writer's copy step and ship check, frontend before setting a word | she rules in hours, chair is present when she does | new 2026-09-21, schema in preference-data.md |
+| `docs/agents/copy-pipeline.md` | ExO | ExO writes the process | writer once before its first copy round, frontend run step 0, ExO §3e | the process changes rarely, gated per copy round | new 2026-09-21 |
+| `docs/agents/preference-data.md` | ExO | ExO writes the schema | PM's ruling-capture check, ExO §3e | rarely, gated per ruling | new 2026-09-21 |
 
 ## What this run changed
 
@@ -136,3 +147,135 @@ correct output, not a gap.
 This is a cheap invariant on purpose. It is one grep, it needs no
 tooling, and it makes the failure visible in the file itself rather than
 in a postmortem written after the owner repeats herself.
+
+
+## The 2026-09-20 sweep
+
+Both detection commands were run. Every file under `docs/agents/` now
+carries an `Enforced at:` line. The eight files without one are all
+under `docs/voice/` and `docs/design/`, which is the state this page
+recorded on 2026-09-19 and explained then: those are the writer's and
+the frontend's surfaces, the enforcement lives in their charters where
+enforcement belongs, and the marker line is a ledger request rather than
+an edit this seat may make. That request is still open after a day. It
+is cosmetic and it stays a request.
+
+The charter-count command produced one finding this run and it is the
+kind this page warned would look healthy.
+
+### `docs/agents/model-routing.md`, one charter, and one day too late
+
+The count said 1, which is this seat's own charter, and 1 was the
+correct and intended number. The file still failed. It was added to the
+ExO read list on 2026-09-19 with the note that the next run would
+"either use it or retire it", and the next run, this one, opened it and
+found it describing a routing policy the org had already abandoned.
+Four seats had been moved to a third-party endpoint eighteen hours
+earlier and the register that owns routing said they ran on Sonnet.
+
+So the artifact-side gate existed, it fired on schedule, and it still
+let a day pass with the register lying. **A gate on a weekly seat has a
+weekly blind spot**, which is the same sentence as the cadence test on
+docs/agents/unowned-duties.md, arriving here from the other direction.
+Recording is not enforcing, and enforcing weekly is not enforcing daily.
+This page should carry a cadence column eventually. It does not yet,
+because the honest fix for most rows is not a faster ExO but a different
+owner, and picking those owners is a run's worth of work on its own.
+
+**For the next run:** add a cadence column to the map above, comparing
+each register's artifact-side gate against how fast the thing it governs
+actually changes. Routing changed in 18 hours. The voice canon changes
+when the owner rules, which is also fast. The turn-caps table changes
+monthly, and a weekly gate is ample. The column will separate them.
+
+### `docs/voice/prose-benchmark-2026-09-19.md`, named by zero charters
+
+New since the last sweep, from the writer seat's PR #36, and it has no
+`Enforced at:` line and no charter names it. Before filing it as a gap,
+apply this page's own reading note: not every file under a register
+directory is a register. A benchmark is a measurement taken on a date,
+which makes it evidence rather than a rule, and evidence is finished in
+the same way a plan is finished. **Classified as an artifact, not a
+gap.**
+
+One question goes to the writer seat as a ledger note rather than a
+charter edit, because it is that seat's call to make. If the intent is
+to re-score the digest against that benchmark periodically, then the
+benchmark becomes a standard and needs a line in the writer charter
+naming when it is re-run. If it was a one-time read of the competition,
+it is done and correctly unnamed. Nobody outside that seat can tell
+which from the file.
+
+
+## The 2026-09-21 sweep
+
+Both detection commands were run again. Every file under `docs/agents/`
+carries its `Enforced at:` line, including the two added this run. The
+eight files under `docs/voice/` and `docs/design/` still lack the marker
+for the reason this page has given twice: those are the writer's and the
+frontend's surfaces, the enforcement lives in their charters, and the
+marker line is a ledger request rather than an edit this seat may make.
+Two days open now. It is still cosmetic and it is still a request.
+
+Three findings, and the first one is a new kind.
+
+### The polarity finding: a gated, current register that cannot converge
+
+`docs/voice/taste.md` passes every test this page has ever applied. It has
+an owner, an archive-side gate that fires within the hour, and an
+artifact-side gate at the writer's first grading step, checked daily.
+Nothing about it is stale.
+
+It still produced eight rejected rounds of site copy on 2026-09-20,
+because roughly forty of its rulings say what the words must not be and
+none of them says what the product is worth to a builder. That is
+incident 25.
+
+So the sweep gains a third question, beside "who writes it" and "who
+checks it": **does the register say what good looks like, or only what bad
+looks like?** A register of rejections cannot converge, and the reason is
+arithmetic. Each "no" removes one candidate from an unbounded space, so a
+hundred of them still leave the target unlocated, and the seat reading it
+can avoid every recorded failure and miss every time.
+
+Where the ratio is lopsided, the finding is not a missing gate. It is a
+**missing positive artifact**, and the fix has three parts: name the file,
+say which seat drafts it and which approval makes it law, and put the
+precondition in that seat's charter so the work downstream of it cannot
+start first. `docs/voice/value.md` is the first one and it is specified in
+[copy-pipeline.md](copy-pipeline.md).
+
+The rule, for the next register that grows this way: **a register of
+rulings needs a companion that states the target.** The rulings tell a
+seat when it has failed. Only the target tells it where to aim. The check
+is now in prompts/exo-agent.md §3d.
+
+### What the cadence column found on its first run
+
+It was added this run as the debt the 2026-09-20 sweep left, and it paid
+for itself once. **`docs/design/taste.md` is a cadence gap.** The owner
+rules on pixels in the same hours she rules on words, and the only
+artifact-side gate is the frontend seat's compare step, which fires
+weekly on Wednesdays. The voice register has the same archive rate and a
+daily gate, because the writer runs daily. The two registers look
+identical in every other column and they are not equivalent.
+
+It is recorded rather than fixed, for the same reason as the frontend row
+in unowned-duties.md. The honest answer is not a faster frontend cron,
+since nothing else in that seat's week wants to run seven times, and the
+chair can apply a design ruling in the session that produced it. Watch
+it, and treat a design ruling that waited for a Wednesday as the evidence
+that changes the answer.
+
+### The two new registers, and one honest note about them
+
+`copy-pipeline.md` and `preference-data.md` were written this run and both
+carry `Enforced at:` lines naming charter steps that also shipped this
+run, which is the arrangement this page asks for. The note worth keeping
+is that neither has fired yet. A register whose gate has never executed is
+in the same state `docs/agents/model-routing.md` was in on 2026-09-19,
+which was named by exactly the right charter and wrong anyway. **For the
+next run:** check whether the writer's first copy round after this merges
+actually opened `value.md`, and whether the preference file it produced
+uses the schema. If the next copy session is recorded as narrative again,
+the schema failed and more words are not the fix.
