@@ -2771,6 +2771,240 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Cost: Channels $0; Cloud API free up to 1,000 conversations a month then roughly $0.005-0.08 per conversation by country; a dedicated business number.
 - Status: proposed
 
+### 2026-09-24 — The sectioned press: one request per section, not one per issue
+- Trigger: `python3 pipeline/budget.py` on this branch, against Groq's
+  free-tier limits re-read from the live docs today. Every free text
+  model is capped at 8,000 tokens per minute, which incident 22 proved
+  is also a per-request ceiling, and `prompts/digest.md` is 9,865
+  tokens on its own. The prompt plus the output reservation is 15,865
+  tokens against 6,800 usable, before one row of payload. The press
+  cannot print the weekly issue in one request on any free model, and
+  the three-model fallback list this run added does not change that: all
+  three fail identically, because all three sit at the same ceiling.
+- What: stop sending one request for a whole issue. The digest has a
+  fixed section skeleton, so send one request per section, each carrying
+  a shared editorial core (voice, the house rules, the masthead
+  contract) plus only that section's own instructions and only that
+  section's slice of the payload. Stitch the returned sections in a
+  fixed order in code, the way `add_masthead` already writes the brand
+  line in code rather than asking the model for it. Three effects, all
+  of them wanted independently of the budget. Each request is small
+  enough to fit a ceiling far below today's. A section whose payload is
+  empty is skipped rather than hallucinated, which is the defect the
+  writer seat's PR #62 found ("the section printed over nothing"). And a
+  single section failing costs one section, not the issue, which is the
+  first time this press would degrade instead of stopping.
+- First step: split the generator prompt's reading, not the file. Parse
+  `prompts/digest.md` into its shared preamble and its per-section
+  blocks by heading, and have `budget.py` prove that preamble + the
+  largest section block + that section's worst-case payload + a 1,500
+  token reservation fits 6,800. That is one afternoon and it either
+  works on paper or it does not, before any editorial file is touched.
+  If the arithmetic holds, the second day builds the loop.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Every external dependency gets an existence check, not just the press
+- Trigger: incident 24's root cause, stated precisely. The budget guard
+  was correct, thorough, tested, and ran three times per send. It
+  checked that the request would fit and never checked that the thing it
+  was fitting still existed, so a withdrawn model passed every gate the
+  repo had. The press now checks. Nothing else does: `ingest.py` assumes
+  arXiv's feed shape, `distill.py` assumes an embedding model id,
+  `check_citations` assumes Semantic Scholar's batch endpoint, and
+  `send_newsletter` assumes Gmail will accept an app password that
+  Google can revoke without telling us.
+- What: one small module the whole pipeline shares, with one function
+  per external dependency that answers "is this still there, and is it
+  still the shape we think", plus the alarm path the press just got. Run
+  it at the start of every cron, cheap enough to be unconditional: a
+  `GET /models` for Groq, a one-paper batch call for Semantic Scholar, a
+  feed fetch with a shape assertion for arXiv, an SMTP login with no
+  message for Gmail. Each failure names the dependency, the assumption
+  that broke, and the file that holds it, and each failure emails rather
+  than printing into a log nobody reads until the owner asks.
+- What this is really about: the org has repeatedly discovered a broken
+  dependency by noticing the absence of an output. That is the slowest
+  possible detector and it has now cost three days once. A dependency
+  check is not defensive programming, it is the difference between a
+  failure the org responds to and a failure the owner reports.
+- First step: `pipeline/health.py` with the Groq and Semantic Scholar
+  probes lifted out of this PR's `check_availability`, plus one
+  `@app.function` per app calling it. One cron adopts it first, ingest,
+  because its dependency is the one with no key and therefore no
+  excuses.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Proposal, not an action: a paid floor under the press
+- Trigger: the arithmetic above. Groq's free tier moved from 70,000 TPM
+  to 8,000 TPM under this project inside five days, without notice, and
+  took the weekly issue with it. The press is the acquisition engine
+  (docs/vision.md §0) and it is currently the least reliable thing the
+  company owns, because it is the only reader-facing surface whose
+  supplier can change the terms on a Tuesday.
+- What: put the press, and only the press, on a paid floor. Groq's
+  Developer plan raises the same three models from 8,000 to 250,000 TPM,
+  which makes both incident 22 and this one arithmetically impossible
+  and costs a low monthly fee. Two alternatives worth costing beside
+  it: a second free-tier account in a separate Groq organization, which
+  is free but is a terms question and gives one bucket rather than a
+  larger one; and a second provider behind the same interface, which
+  buys real vendor independence and is the only option that survives
+  Groq itself changing.
+- Why it belongs to the owner and no agent: it costs money, so the
+  standing rule makes it a proposal. Recorded here rather than acted on,
+  and written into docs/sprints/pending.md as her decision alongside the
+  two $0 paths, so it is a choice and not a surprise.
+- First step: the finance seat costs all three against the sectioned
+  press above, since the sectioned press may make the paid floor
+  unnecessary rather than merely cheaper.
+- Cost: not $0. The Developer plan's monthly fee for option one.
+- Status: proposed
+
+### 2026-09-24 — Craft scan: The Batch (deeplearning.ai, Andrew Ng)
+- Trigger: the engineer seat's daily craft scan, next unscanned entry in
+  the newsletter half of docs/market/landscape.md. Chosen today over the
+  academic tools because the day's failure was a publishing failure, and
+  The Batch is the comp in that column that has printed weekly for years.
+- Worth stealing: **the issue's shape is fixed before the week's news
+  exists.** Every issue opens with Ng's signed letter and then runs the
+  same named sections, business, research, culture, hardware, career, in
+  the same order. The skeleton is editorial furniture, not a response to
+  what happened that week. Two things fall out of that, and the second
+  is the one this project needs. A reader learns where to look once and
+  never relearns it. And the issue can be assembled section by section,
+  because each section's brief is independent of the others, which is
+  precisely the property the sectioned-press idea above depends on.
+  alexandria's press currently asks one model, in one request, for a
+  whole issue at once, and it therefore fails as a whole issue at once.
+  A fixed skeleton is what makes partial success possible.
+- What alexandria does better: every item is checkable rather than
+  authoritative. The Batch is trustworthy because Andrew Ng signs it, and
+  that trust does not transfer, decompose, or survive him. An alexandria
+  item carries the claim, the claim-graph edge that supports it, the
+  paper, and a citation trajectory showing whether the field has come
+  around, so a reader who does not know or trust us can verify a single
+  line without taking anything on faith. That is also why the digest can
+  be read by an agent, which no signed letter can be.
+- Where it goes: the stealable thing is already the ledger entry above,
+  which is the point of naming it here rather than filing a second copy.
+
+### 2026-09-24 — Sovereign hosting's first verifiable slice: the press's own model on Modal
+- Trigger: writing the provider table in this PR. ADR-32 names sovereign
+  hosting as the destination, an open-weight writer served by alexandria
+  itself so no provider can withdraw the press's model again, and puts it
+  on the post-launch roadmap next to the router evaluation. Building the
+  provider layer today changed what that destination costs. A provider is
+  now five lines in `budget.PROVIDERS` and an entry in `budget.MODELS`.
+  There is no second code path to write, no branch in `call_model`, and
+  nothing in `weekly.py` that knows a vendor's name.
+- What: a Modal function serving one open-weight writer over vLLM's
+  OpenAI-compatible server, registered as a third provider called
+  `self`, with `kimi-k2.6` staying primary and the self-hosted model
+  taking rank two. That ordering is the point. The press keeps writing on
+  the model that works while the sovereign path proves itself on real
+  Mondays, and the day Moonshot withdraws `kimi-k2.6` the fallback is not
+  a free tier that cannot print, it is a model nobody can take away.
+  vLLM's server speaks the same dialect both current providers speak, so
+  the whole integration is configuration.
+- Why the press is the right first tenant: ADR-6 makes it the simplest
+  possible workload, one prompt in, one issue out, no tools, running once
+  a week. Compare the corpus crons, which are five jobs, thousands of
+  calls, and a latency budget. If sovereign hosting cannot carry one
+  weekly request it cannot carry anything, and finding that out costs one
+  Monday.
+- Cost: not $0, and that is the whole proposal. A GPU minute on Modal for
+  one weekly request is real money against $0.05 an issue on Moonshot, so
+  this is worth building for independence and never for price. The number
+  the owner needs before she decides is what one issue costs on a cold
+  container, including the model load, which is exactly what the first
+  slice measures.
+- First step: one `@app.function` with a GPU, a small open-weight writer,
+  and no schedule. Run it by hand against last week's payload, print the
+  issue and the wall-clock cost, and put both in the ledger. No press
+  change until that number exists.
+- Status: proposed
+
+### 2026-09-24 — Watch the deprecation notices, not just the catalog
+- Trigger: this run's near miss, now incident 24's third entry. ADR-32
+  named the press's model "Kimi K2" and the obvious id, `kimi-k2`, had
+  been discontinued for four months. It was caught by reading the
+  provider's catalog on the day, which is luck dressed as process.
+- What: the existence check proposed above answers "is it gone", and it
+  answers it after the fact. Providers say so first. Moonshot's model
+  page carries dated deprecation waves, 2026-05-25 and 2026-08-31, both
+  published before the models stopped answering, and Groq marks a model
+  production or preview, which is the same information in weaker form.
+  So a weekly job reads each provider's catalog page, diffs it against
+  every model id the repo names, and opens an issue when a model the code
+  depends on is marked deprecated, previewed, or scheduled for removal.
+  Not when it breaks. When the provider says it will.
+- Why it is a different thing from the existence check: one is a smoke
+  alarm and one is a calendar. `GET /models` tells you the press cannot
+  print this morning. This tells you in March that the press will stop
+  printing in May, which is the only warning long enough to be acted on
+  by a project that ships once a day.
+- First step: a `models_in_use()` function that scrapes the ids out of
+  `budget.MODELS` and the pipeline's constants, then one weekly Modal
+  function that fetches both catalog pages and diffs. Reuse the alarm
+  path this PR gave the press.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Publish a retrieval benchmark with named competitors and real numbers
+- Trigger: today's craft scan, below. Undermind publishes a recall
+  benchmark on its front page with competitors named and beaten by
+  specific margins. alexandria has a blind prose benchmark for the issue
+  (PR #66, built and still unscored) and nothing at all for retrieval,
+  which is the half of the product a paying reader actually queries.
+- What: fifty questions with a hand-marked answer set drawn from the
+  corpus, run through `semantic_search` and `rag_answer`, scored on
+  recall at ten and on whether the cited claim actually supports the
+  answer. Published as a page on the site with the questions and the
+  marking open, so a reader can rerun it. The number matters far less
+  than its being checkable, because an unaudited benchmark is marketing
+  and an audited one is a product claim.
+- Why it earns its day: the paid product is the spine, the skills and the
+  graph, not the issue, and nothing in the repo currently measures
+  whether the spine answers questions well. The prose benchmark measures
+  the free thing. This measures the thing people would pay for.
+- First step: the fifty questions, written from real claims already in
+  silver so the answer set is knowable, committed as a fixture before any
+  scoring code exists. Writing the questions after seeing the scores is
+  how a benchmark becomes a mirror.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — Craft scan: Undermind.ai
+- Trigger: the engineer seat's daily craft scan, next unscanned entry in
+  the academic-tools half of docs/market/landscape.md, where it has sat
+  since 2026-09-18 with search-snippet confidence only. Read live today.
+- What it actually is, now that someone has looked: an AI co-researcher
+  for literature discovery. Free tier, Pro at $16 a month billed
+  annually, Team at $15 a person, and an MCP endpoint at `/mcp` so it
+  works inside Claude and ChatGPT.
+- Worth stealing: **it publishes a benchmark that names its competitors
+  and gives them numbers.** 85% recall on the twenty most relevant papers
+  against 50% for GPT-5.6 Sol and 47% for Claude Opus 5, stated on the
+  front page rather than in a whitepaper. Two things make that work, and
+  both are available to us. The claim is falsifiable, which is why it
+  persuades a scientist. And it reframes the product's biggest apparent
+  weakness as the source of the number: a search takes 2.9 minutes on
+  average, published as plainly as the recall figure, because reading
+  hundreds of papers is what buys the recall. A slow honest instrument
+  beats a fast opaque one, and saying so out loud is cheaper than
+  arguing it. The ledger entry above is this thing, applied.
+- What alexandria does better: Undermind answers the question you bring
+  it. It cannot tell you that an answer it gave you in March has since
+  been contradicted, because a search engine has no memory of what it
+  told you and no opinion about what the field did next. alexandria's
+  left-behind section is exactly that, and the citation trajectory
+  underneath it is evidence rather than editorial. Both products are
+  reachable by an agent over MCP, so the difference is not the interface.
+  It is that one serves a search box and the other serves a graph that
+  knows when it has changed its mind.
+
 ### 2026-09-22 — URGENT: the emailed issue has the same HTML hole the archive had (engineer agent)
 - Trigger: today's break-fix closed the web surfaces and then checked the
   other one. `send_newsletter` in `pipeline/weekly.py:459` builds the HTML
