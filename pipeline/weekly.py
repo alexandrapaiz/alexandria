@@ -1029,6 +1029,34 @@ def weekly() -> str:
     return body
 
 
+@app.function(
+    image=image,
+    secrets=[modal.Secret.from_name("neon"),
+             modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
+    timeout=600,
+)
+def resend(week: str) -> str:
+    """Send an issue that is already in the digests table, to active subscribers.
+
+    No model call, no new row. This exists for two cases the press meets in
+    practice: a send that failed after the issue was written (the alarm
+    "written but not sent"), and a change to the email itself (the template,
+    2026-09-24) that the owner wants to see on an issue that already went out.
+
+        modal run pipeline/weekly.py::resend --week 2026-W39
+    """
+    import os
+    import psycopg
+
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        row = conn.execute(
+            "select body from digests where week = %s", (week,)
+        ).fetchone()
+        if row is None:
+            return f"no issue in the digests table for {week}; nothing sent"
+        return send_newsletter(conn, week, row[0])
+
+
 @app.local_entrypoint()
 def main():
     # Two checks before anything is spent, in this order, because they fail for
