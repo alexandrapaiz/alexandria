@@ -686,3 +686,23 @@ email, and a gating helper are engineer work. Per-user MCP identity (the
 server is single-passphrase today, ADR-11) is the immediate follow-on:
 it is what makes the paid tier reachable from inside Claude. Third-party
 machine principals (Clerk M2M tokens) are a ledger idea, not launch work.
+
+## ADR-32: The press writes on Kimi K2; sovereign hosting is the destination
+
+Owner's decision (2026-09-24). Groq's free tier can no longer carry
+the press (incident 24: every remaining free model has an 8K
+per-request ceiling and the generator prompt alone is 9,865 tokens).
+The press's single writing call moves to Kimi K2 through the
+Moonshot API the owner funded on 2026-09-20: open weights, 256K
+context, no per-request wall on a prepaid account, roughly $0.05 an
+issue. The corpus crons (triage, distill, interpret) stay on Groq's
+free tier, where their small prompts fit. The PM's failures on Kimi
+(incident 23) do not bear on this: those were 30-turn agent loops
+under a harness, and the press is one prompt in, one issue out, no
+tools, graded by the writer seat the next morning. Finance books
+Moonshot usage as a direct alexandria cost. The destination, on the
+post-launch roadmap next to the router evaluation: SOVEREIGN HOSTING,
+the model served by alexandria itself (vLLM on Modal, an open-weight
+writer such as gpt-oss-120b or Qwen3), so no provider can withdraw
+the press's model again. Groq's role stays as it was: the corpus's
+brain, not the company's.
