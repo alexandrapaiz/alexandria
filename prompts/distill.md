@@ -21,6 +21,13 @@ For each claim provide:
   deltas over baselines, model and dataset sizes, ablation conditions. "Improves
   performance" without the numbers is not evidence. Use "authors' assertion" only
   when the source truly gives no measurement.
+- `measured` — `true` only when the `evidence` you just wrote carries a concrete
+  measurement: a benchmark score, a delta over a baseline, an ablation result, a
+  model or dataset size, a latency or cost number. `false` when the source only
+  asserts the claim, which is the same case that makes you write "authors'
+  assertion" above. This is not a judgement of how good the work is, only of
+  whether a number is there, and it decides whether the claim reaches the reader
+  as a measured result or as a report.
 - `procedure` — when the paper describes HOW (a method, recipe, or mechanism):
   the operational steps, numbered, 2-6 steps, each one short sentence. Write
   them so an engineer could act on them without the paper ("1) Route each query
@@ -42,5 +49,5 @@ University", "Google DeepMind"). Empty list if the text doesn't show them.
 Respond with JSON only:
 
 ```json
-{"institutions": ["..."], "claims": [{"claim": "...", "evidence": "...", "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
+{"institutions": ["..."], "claims": [{"claim": "...", "evidence": "...", "measured": true, "procedure": "1) ... 2) ..." , "topics": ["retrieval"]}]}
 ```
