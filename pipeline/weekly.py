@@ -979,6 +979,18 @@ def payload_counts(payload: dict) -> dict:
     }
 
 
+def word_count(body: str) -> int:
+    """Words a reader would count, not tokens a splitter would.
+
+    `len(body.split())` counts every `#`, `-` and `**` as a word, which
+    inflates a markdown issue by the size of its own formatting. The rehearsal
+    prints this number next to the model that wrote it, and a number that
+    moves when the formatting changes is a number nobody can compare across
+    two rehearsals.
+    """
+    return sum(1 for token in body.split() if any(c.isalnum() for c in token))
+
+
 def rehearsal_report(*, model: str, body: str, prompt_sha: str,
                      stats_line: str, finish_reason, elapsed_seconds,
                      row_id, success_subject: str) -> str:
@@ -992,7 +1004,7 @@ def rehearsal_report(*, model: str, body: str, prompt_sha: str,
     """
     elapsed = "unknown" if elapsed_seconds is None else f"{elapsed_seconds}s"
     return "\n".join([
-        f"rehearsal: {model} wrote {len(body.split())} words in {elapsed}",
+        f"rehearsal: {model} wrote {word_count(body)} words in {elapsed}",
         f"  prompt_sha: {prompt_sha}   reservation: {MAX_COMPLETION_TOKENS}"
         f"   timeout: {CLIENT_TIMEOUT_SECONDS}s",
         f"  payload: {stats_line}",
@@ -1260,7 +1272,7 @@ def rehearse() -> str:
             "and a fallback did, that is the finding: fix the head before "
             "deploying, because Monday will meet it first."
         )
-    return (f"rehearsal ok: {model} printed {len(body.split())} words for "
+    return (f"rehearsal ok: {model} printed {word_count(body)} words for "
             f"{week} at prompt {sha}, saved to press_rehearsals {row_id}, "
             "sent to nobody")
 
