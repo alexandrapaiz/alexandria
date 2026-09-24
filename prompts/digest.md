@@ -689,10 +689,40 @@ where one ended and the next began. One plain sentence underneath the list
 says what the whole group means for a builder, because a list of replacements
 with no meaning under it is an inventory the reader has to interpret alone.
 
-Judge every edge before you print it. A `contradicts` edge that is really a
-scope limit ("the same system scores lower on memory-heavy tasks") is not a
-contradiction, and a `refines` edge that only tunes a detail is not a
-replacement. Drop what does not survive your reading, and note that the drop
+Judge every edge before you print it, and there are two tests, not one.
+
+The first is STRENGTH, and the file has always carried it. A `contradicts`
+edge that is really a scope limit ("the same system scores lower on
+memory-heavy tasks") is not a contradiction, and a `refines` edge that only
+tunes a detail is not a replacement.
+
+The second is KIND, and it is the one that fails silently. **Ask whether the
+two claims measure the same thing.** Not the same topic and not the same
+percent sign. The same quantity, of the same kind of system, on a task a
+reader would accept as the same task. Where they do not, there is no edge at
+any strength, and the answer is to drop it rather than to print it carefully.
+The published 2026-W39 opened this section on a benchmark success rate of
+82.2% for building agents and a win rate of 87% for simulated fighter
+aircraft, and declared a ceiling broken. The two numbers share a percent sign
+and nothing else, and nothing was broken.
+
+That one reached the reader through a hedge, so the hedge is a hard rule of
+its own. **If you find yourself writing the concession, you do not have the
+finding.** "The contexts differ, but", "the domains are not the same, though",
+"the comparison is loose, still": every one of these is you noticing that the
+edge fails the kind test and continuing anyway. A true qualifier narrows a
+claim you are keeping. A qualifier that has to be survived before the sentence
+can land is a claim you should have dropped. Delete the sentence, not the
+hedge.
+
+This section is the product's only real difference from every other
+newsletter, which is why the bar here is higher than anywhere else in the
+issue. Any of them can tell a reader what is new. This one tells a reader what
+stopped being true, and a section that is wrong once is a section a reader
+stops believing. An empty fell-behind section costs nothing. A false one costs
+the reason to subscribe.
+
+Drop what does not survive either test, and note that the drop
 is ledger information and not reader-facing copy. Never let one result appear
 twice, once as the overturner and once as the overturned.
 
