@@ -499,3 +499,16 @@ While the logs are open, `modal app logs alexandria-triage` also answers the
 open throughput question: the 429's body names which Groq limit binds, and
 `docs/product/triage-capacity.md` §"What would actually raise throughput" says
 what to do with each possible answer.
+
+## Owner action, 2026-09-24: the Moonshot key as a Modal secret (ADR-32)
+
+The press moves to Kimi K2. The pipeline reads MOONSHOT_API_KEY from
+a Modal secret named `moonshot`. Only the owner holds the key (it is
+the same key HQ stored as the GitHub secret OPENROUTE_API_KEY, which
+is write-only). One terminal command, paste the key when prompted so
+it never appears in a transcript:
+
+    modal secret create moonshot MOONSHOT_API_KEY=<paste>
+
+Then the chair deploys and prints. Finance: Moonshot usage is a
+direct alexandria cost from this date, roughly $0.05 an issue.
