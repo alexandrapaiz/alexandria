@@ -64,6 +64,25 @@ alter table claims add column if not exists interpreted_at timestamptz;
 -- works" sections, skill proposals)
 alter table claims add column if not exists procedure text;
 
+-- evidence_grade: what kind of support this claim has, written at distill from
+-- the paper's source class and whether the model found a measurement in the
+-- evidence it wrote (pipeline/evidence.py holds the rules and the reasoning).
+-- NULL means ungraded, which is every claim distilled before this column
+-- existed; nothing backfills it, because the measurement judgment belongs to
+-- the run that read the source.
+alter table claims add column if not exists evidence_grade text;
+
+do $$
+begin
+    if not exists (select 1 from pg_constraint where conname = 'claims_evidence_grade_check') then
+        alter table claims add constraint claims_evidence_grade_check
+            check (evidence_grade is null or evidence_grade in
+                   ('controlled', 'field_measured', 'asserted', 'anecdote'));
+    end if;
+end $$;
+
+create index if not exists claims_evidence_grade_idx on claims (evidence_grade);
+
 -- ============ claim graph: relations between claims ============
 -- Append-only and time-directional: from_claim is always the newer, judging
 -- claim (ADR-10). Re-judgment belongs to the slow loop, not to edits.

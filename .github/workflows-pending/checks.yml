@@ -18,6 +18,7 @@ on:
       - "prompts/digest.md"
       - "prompts/daily.md"
       - "pipeline/**"
+      - "tests/test_press_resilience.py"
       - ".github/workflows/checks.yml"
   push:
     branches: [main]
@@ -25,6 +26,7 @@ on:
       - "prompts/digest.md"
       - "prompts/daily.md"
       - "pipeline/**"
+      - "tests/test_press_resilience.py"
       - ".github/workflows/checks.yml"
   workflow_dispatch:
 
@@ -50,3 +52,16 @@ jobs:
 
       - name: prompt + worst-case payload + output reservation vs the limit
         run: python3 pipeline/budget.py
+
+      # Incident 24: the budget guard checked that the request fits and nothing
+      # checked that the model exists. These tests cover the paths that only run
+      # on a bad day, which is exactly the set nothing had ever exercised: the
+      # 404 hand-off down the fallback list, 429 backoff, and the owner alarm.
+      # No key, no network, no database.
+      #
+      # `always()` on purpose: the budget step above fails today, for a real
+      # reason (incident 24, the 8,000 TPM ceiling), and a red build there must
+      # not hide whether the resilience paths still work.
+      - name: the press survives a provider that changed under it
+        if: always()
+        run: python3 tests/test_press_resilience.py
