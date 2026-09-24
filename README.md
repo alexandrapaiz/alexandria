@@ -51,7 +51,7 @@ flowchart TB
         SIL[("Silver<br/>claims + embeddings")]
         INT["Interpret<br/>14:00 UTC"]
         GR[("Claim graph<br/>supports · refines<br/>contradicts")]
-        WK["Weekly job<br/>Mon 15:00 UTC"]
+        WK["Weekly job<br/>Mon 09:00 UTC"]
         DIGEST["Free digest<br/>full issues, by email"]
         MCP["MCP server<br/>search · RAG · proposals"]
         GOLD[("Gold<br/>skills + pattern notes")]
@@ -152,6 +152,7 @@ flowchart TB
     FEEDS["arXiv · HF daily papers · lab blog feeds"]
     NEON[("Neon: serverless Postgres + pgvector<br/>bronze · silver + claim graph · gold<br/>triage log · digests · subscribers")]
     GROQ["Groq free tier, gpt-oss-120b<br/>every judgment call: triage, distill,<br/>interpret, and rag_answer"]
+    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's one writing call<br/>256K context, about $0.05 an issue"]
 
     subgraph MODAL["Modal: scheduled jobs, scale to zero"]
         direction TB
@@ -169,6 +170,8 @@ flowchart TB
     WK2 <--> NEON
     MCP2 <--> NEON
     DAILY --> GROQ
+    WK2 --> KIMI
+    WK2 -.->|"last resort"| GROQ
     WK2 -->|"Gmail SMTP"| SUBS["Subscribers<br/>free digest, full issues"]
     MCP2 --> CLIENTS["Claude clients<br/>semantic_search · rag_answer · sql_query<br/>get_digest · discovery_report"]
     MCP2 -->|"propose_skill · propose_change"| GH
@@ -186,6 +189,7 @@ flowchart TB
 | Compute | [Modal](https://modal.com), scheduled functions, scale to zero | Per-second billing matches a system that works minutes per day, and free credits cover it entirely |
 | Database | [Neon](https://neon.tech), serverless Postgres + pgvector | Scale to zero, and one DB holds vectors *and* structured data, so hybrid queries are single statements |
 | Judgment models | `openai/gpt-oss-120b` via Groq free tier, for triage, distill, interpret, and RAG | Won the blind distill bake-off 4-1-3, open, $0, with 10x headroom over our volume |
+| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), for the weekly issue and nothing else (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
 | Embeddings | Qwen3-Embedding-0.6B, in-process on Modal | Top open family on MTEB, and batch jobs need no serving endpoint |
 | Interactive search | MCP tools over Postgres: `semantic_search`, `rag_answer`, `sql_query`, `get_digest`, `discovery_report`, `propose_skill`, `propose_change` | Agentic retrieval for humans and agents, hardwired retrieval for batch |
 | Agent org | GitHub Actions cron + `anthropics/claude-code-action`, on the owner's existing subscription token | Actions minutes are free on a public repo, so the org's heartbeat costs nothing and does not depend on a laptop being open (ADR-18) |
@@ -255,6 +259,9 @@ The pipeline, built bottom-up.
 - [x] First claims in silver, first edges in the claim graph
 - [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
       first edition 2026-W37, written to the `digests` table as the record
+- [x] The press writes on Kimi K2 (ADR-32), with the Groq free tier behind it as a
+      last resort, a model-availability check at deploy and at run start, and an
+      email to the owner on every path that ends without an issue (incident 24)
 - [x] Slow loop: citation tracking via Semantic Scholar, merged into the weekly cron (ADR-8)
 - [x] MCP server live (ADR-11): OAuth 2.1, semantic_search / rag_answer / sql_query /
       get_digest / discovery_report / propose_skill / propose_change, at

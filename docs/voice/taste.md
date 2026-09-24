@@ -172,3 +172,8 @@ the chair and the PM record her rulings.
   rhythm, no cute, no defensive; plain short sentences, serious. The
   chair stops drafting copy live; the writer seat drafts, ExO
   corrects the process, Ursa learns the taste.
+- 2026-09-24 — "dont name it [alexandria] 2026-W39. give it a proper
+  title." Every subject line a human reads, including the owner's own
+  alarm emails, carries a proper title. ISO week ids and bracketed
+  system tags never appear in a subject; the diagnostics inside the
+  body may keep them.
