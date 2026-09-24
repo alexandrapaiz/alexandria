@@ -187,15 +187,24 @@ So before you call `gh pr ready`, two checks.
 you are the only seat that can catch a runtime change inside a day.
 
 ```bash
-git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
 ```
+
+The `pipeline/` half was added 2026-09-24 and it is not decoration. A
+provider change lands there and nowhere else, so scoping this command to
+`.github/` made the largest runtime change the org makes invisible to
+the only check that catches runtime changes. That cost four production
+failures in one evening (INC-2026-09-24-press-provider-migration).
 
 For every commit it returns, ask the two questions
 docs/agents/runtime-changes.md exists to ask. Did a merged pull request
 explain it, and was there a smoke run behind it in `gh run list`. A
 change to the image, to `claude_args`, to a cap, a timeout, a cron, a
 secret a run reads, or to a `container:` block is a runtime change even
-when it is two lines and obviously correct. When you find one with no
+when it is two lines and obviously correct. **So is a change to a model
+id, a provider, an API base URL, a token reservation or a client
+timeout in `pipeline/`**, and for those the question is not whether
+there was a smoke run but whether there was a rehearsal. When you find one with no
 smoke run, write it into docs/agents/incidents.md in your own PR and say
 so in one line in the PR description, addressed to the owner. Do not
 try to fix it, because you cannot push a workflow file either.
@@ -210,8 +219,17 @@ daily check by the daily seat is the fix, and it costs you one command.
 
 - `docs/decisions.md`, the ADRs your change implements or contradicts.
 - `docs/agents/runtime-changes.md`, before any edit to a workflow, the
-  image, a secret, a turn cap or a timeout. That law binds every seat
-  and it was named in one charter until this run.
+  image, a secret, a turn cap or a timeout, and before any edit to the
+  model, provider, reservation or timeout a scheduled job uses. That law
+  binds every seat and it was named in one charter until this run.
+- `docs/agents/press-rehearsal.md`, which is a specification addressed
+  to you. It is the third gate in that law's ladder for a provider
+  change, it does not exist as code yet, and until it does the ladder
+  has two working links and a paragraph. Building it is a break-fix
+  sized piece of work: one Modal function, one scratch table, one more
+  `&&` in the deploy command. Take it when the sprint has room, and if
+  you decline it, say why in your PR so the next run does not
+  rediscover the decision.
 - `docs/voice/ban-list.md` for anything the owner will read.
 
 **2. Repeats go in the incident register.** If anything in this run
