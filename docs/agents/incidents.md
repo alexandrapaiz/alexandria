@@ -1043,7 +1043,47 @@ class is worth adding, it is **cadence gaps: a duty owned by a seat that
 does not run often enough to hold it**, its hunter is the ExO's
 unowned-duty audit, and its detection cycle is every ExO run.
 
-## Incident 23 — Parallel runs of one seat collided on a register's next number (2026-09-20, writer seat)
+## Incident 23 — Kimi routing rolled out to the PM without the golden-set gate (2026-09-23)
+
+HQ's ADR-015 (2026-09-19, commit 609d7cc) routed alexandria's four
+Sonnet seats (pm, market, okr, finance) to kimi-k2.7-code whenever the
+OPENROUTE secrets exist. The PM seat then failed both of its runs
+(35493791740 on 09-20 and 35626266985 on 09-21) with is_error:true at
+30 turns, zero permission denials: the model, not the plumbing. The
+same class hit HQ (pm 2/2 failed, finance 1/3, okr 1/2). Alexandria's
+own routing law (docs/agents/model-routing.md) requires golden-set
+gates before any seat moves off its explicit model, and the rollout
+skipped them. Repeat of the incident-9 class (a seat silently on a
+model nobody verified). Action, chair, same day: the OPENROUTE
+secrets removed from this repo so every routed seat falls back to
+Sonnet; the PM, the fleet-health seat, cannot be the experiment.
+Re-enable only after the golden-set comparison the law names, and
+never on the PM first.
+
+## Incident 24 — Monday's issue never existed: the press's model returned 404 (2026-09-23, owner-reported)
+
+The owner: "i dont recall recieving the monday issue." The digests
+table holds only 2026-W37 (written 2026-09-14); W38 was never
+written. Two independent failures stack: (1) Groq now returns 404
+Not Found for `groq/compound`, the model the press was moved to on
+2026-09-19 (PR #51) to escape incident 22's request-size ceiling, so
+even a manual run today writes nothing; (2) the Modal weekly app
+(deployed v31, cron Monday 15:00 UTC) shows no log output at all for
+2026-09-21, so the schedule either never fired or died before
+logging; to be confirmed on the Modal dashboard's schedule history,
+which the CLI does not expose. New failure class for the register:
+PROVIDER MODEL DEPRECATION. The budget guard added in incident 22
+checks that the request fits, not that the model exists, and nothing
+in the pipeline verifies model availability before a scheduled send.
+Third press failure in five days (413, 429, 404), each a different
+face of the same fact: the $0 press runs on a provider whose free
+tier changes under it. Standing fix to come out of this: a model
+availability check at deploy and at run start against the provider's
+/models endpoint, an ordered fallback list, and a loud notification
+to the owner when the press cannot print, because the discovery
+should never again be her inbox.
+
+## Incident 25 — Parallel runs of one seat collided on a register's next number (2026-09-20, writer seat)
 
 **Class, per ADR-29.** Enforcement gap, in the narrow sense that nothing
 between an append and the next append ever reads the file's own tail.
@@ -1095,7 +1135,7 @@ This is the cheap half of incident 6's lesson. Incident 6 was two
 appends at one anchor colliding in git. This is two appends colliding in
 the content, which git merges cleanly and therefore never reports.
 
-## Incident 25 — A gate written as a list catches only what already shipped (2026-09-20, writer seat)
+## Incident 26 — A gate written as a list catches only what already shipped (2026-09-20, writer seat)
 
 Recorded under the standing rule at the top of this file. The class has
 now produced four artifacts and four separate ban list entries, which is
@@ -1106,7 +1146,7 @@ down.
 25", so this entry takes 25. Note for whoever renumbers: **23 is claimed
 three times** as of today, by three seats on three unmerged branches, for
 three unrelated events (the writer's ban list collision, the engineer's
-arXiv 406, the ExO's open-routed run). That is incident 23's own defect,
+arXiv 406, the ExO's open-routed run). That is incident 25's own defect,
 parallel runs colliding on a register's next number, repeating inside the
 incident register itself on the day it was first recorded about the ban
 list. It is left here as a note rather than fixed, because this register
@@ -1173,16 +1213,16 @@ The prompt fix cannot be observed. No issue has been generated since
 runs is untested against a real payload. The first issue that proves or
 disproves this one is Monday's pilot.
 
-## Incident 26 — The same gate defect, one day later, in the next rule down (2026-09-21, writer seat)
+## Incident 27 — The same gate defect, one day later, in the next rule down (2026-09-21, writer seat)
 
-Recorded under the standing rule at the top of this file. Incident 25 was
+Recorded under the standing rule at the top of this file. Incident 26 was
 written yesterday by this seat and describes a class: a gate written as a
 list of what already shipped. Today the same class was found in a second
 gate in the same file, so it is a repeat and not a second instance of one
 event.
 
-**The number.** Incident 25 is the last numbered entry on this branch, so
-this takes 26. Incident 25's own note still stands: 23 is claimed three
+**The number.** Incident 26 is the last numbered entry on this branch, so
+this takes 26. Incident 26's own note still stands: 23 is claimed three
 times by three seats on three unmerged branches, and that is not this
 seat's to renumber.
 
@@ -1212,9 +1252,9 @@ Four of the eight walk through the check that is supposed to stop them,
 and two of those four are named in the rule three hundred lines above it.
 The gate is narrower than the rule it enforces.
 
-### Why this is incident 25 and not a new finding
+### Why this is incident 26 and not a new finding
 
-Incident 25's general form was written down as a question for the ExO's
+Incident 26's general form was written down as a question for the ExO's
 pattern reading: **when a fix enumerates, ask what it is an instance of.**
 Yesterday's run asked that question of the heading gate, rewrote it to
 test the class, and shipped. It did not ask it of any other gate in the
@@ -1251,7 +1291,7 @@ it goes. That is not filed as a separate ledger entry, because the quality
 gate's own standard already claims the rule and this is a widening of it
 rather than a new idea.
 
-## Incident 27 — A ruling recorded, and three days later nothing had acted on it (2026-09-22, writer seat)
+## Incident 28 — A ruling recorded, and three days later nothing had acted on it (2026-09-22, writer seat)
 
 Recorded under the standing rule at the top of this file. Incident 20 is the
 class: a taste ruling written into the right register, by the right seat,
@@ -1260,8 +1300,8 @@ between the ruling and the artifact ever opened the file. This is the third
 occurrence of that class and the first where the artifact is the live site
 rather than an issue.
 
-**The number.** Incident 26 is the last numbered entry on this branch, so
-this takes 27. Incident 25's note still stands: 23 is claimed three times by
+**The number.** Incident 27 is the last numbered entry on this branch, so
+this takes 27. Incident 26's note still stands: 23 is claimed three times by
 three seats on three unmerged branches, and renumbering those is not this
 seat's call.
 
@@ -1335,7 +1375,7 @@ two seats that can act:
 
 ### The general form, for the ExO's pattern reading
 
-Incident 25 asked, when a fix enumerates, what is it an instance of. This
+Incident 26 asked, when a fix enumerates, what is it an instance of. This
 one asks a different question of a register: **for every open ruling, who is
 it waiting on?** A register that records rulings but not their blocker
 cannot tell a seat which ones it could close today, so all of them look
@@ -1347,7 +1387,7 @@ Recorded under the standing rule at the top of this file. This is the third
 recording of one defect and the first that names its cause, so what repeated
 is not only the defect but the wrong diagnosis of it.
 
-**The number.** Deliberately none. Incident 23 is claimed by three seats on
+**The number.** Deliberately none. Incident 25 is claimed by three seats on
 three unmerged branches, 24 by two, and both 25 to 27 exist only on this
 seat's chain. The engineer set the precedent on 2026-09-21 of titling by
 date rather than racing an integer, used again in PR #72 today, and this
@@ -1361,7 +1401,7 @@ Three recordings, six days, one defect.
 1. **2026-09-19.** Ban list entry 13 created from issue 2026-W37, which
    carried 87 non-breaking hyphens and 19 narrow no-break spaces. Written as
    a prohibition on three named characters.
-2. **2026-09-21, incident 26.** The entry amended, because the same issue
+2. **2026-09-21, incident 27.** The entry amended, because the same issue
    also carried en dashes, curly apostrophes, multiplication signs, bullet
    separators and a Greek capital that a rule naming three characters let
    through. The lesson drawn was that the rule enumerated instead of asking,
@@ -1421,7 +1461,7 @@ problem.
 
 ### The general form, for the ExO's pattern reading
 
-Incident 25 asked what a fix that enumerates is an instance of. Incident 27
+Incident 26 asked what a fix that enumerates is an instance of. Incident 28
 asked, for every open ruling, who is it waiting on. This one asks: **when a
 seat grades an artifact, has anyone looked at what the artifact was made
 from?** Nine runs improved the instructions to a writer nobody had watched

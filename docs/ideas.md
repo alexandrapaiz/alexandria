@@ -2817,7 +2817,7 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   flag, incident 20), 30 (the same word in bold one level down), 33
   (the same word in italics over a list). Each fix added the newly seen
   string to a list, and the next occurrence wore a disguise the list did
-  not hold. Incident 25.
+  not hold. Incident 26.
 - What is wrong with the gate we have: `skeleton-heading` in
   `tools/check_digest_quality.py` (PR #60) blocks when a heading matches
   one of the known slot labels. That is the right rule and the wrong
@@ -2934,7 +2934,7 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Status: proposed
 
 ### 2026-09-22 — Every open ruling should name who it is waiting on (writer seat)
-- Trigger: incident 27, this run. Two rulings of 2026-09-19 were still
+- Trigger: incident 28, this run. Two rulings of 2026-09-19 were still
   unexecuted on 2026-09-22. One is blocked, because no approved copy
   exists to replace the rejected library headline and rounds two to eight
   were all rejected. One is blocked by nothing, because removing
@@ -2962,7 +2962,7 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   non-ASCII characters across 42 of its 48 claim strings, 188 of them the
   non-breaking hyphen inside ordinary words ("on-policy", "inference-time").
 - The gap: ban list entry 13 has been written twice as a prohibition on the
-  writer, on 2026-09-19 and again on 2026-09-21 as incident 26. The writer
+  writer, on 2026-09-19 and again on 2026-09-21 as incident 27. The writer
   never typed those characters. The claim text is machine-extracted from
   PDFs and arrives that way, so both recordings fixed the wrong end.
 - What: a transliteration pass over the string fields in `gather()`, before

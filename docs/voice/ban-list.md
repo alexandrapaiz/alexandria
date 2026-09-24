@@ -10,7 +10,7 @@ exactly as an issue is.
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
 The text of both is untouched, and only the numerals moved, into the
-gap that the same collision had left empty (incident 23).
+gap that the same collision had left empty (incident 25).
 
 1. The slop lexicon: delve, landscape, tapestry, realm, pivotal,
    crucial, seamless, robust, leverage (as a verb), unlock, empower,
@@ -43,7 +43,7 @@ gap that the same collision had left empty (incident 23).
     the agent loading the issue both match on plain ASCII, and neither
     matches on these. Added 2026-09-19 from 2026-W37, which carried 87
     non-breaking hyphens and 19 narrow spaces.
-    Amended 2026-09-21, incident 26: the three characters named above are
+    Amended 2026-09-21, incident 27: the three characters named above are
     examples and the entry is the class, which is every character outside
     plain ASCII. The same issue also carries 12 en dashes, 5 curly
     apostrophes, 3 multiplication signs, 2 bullet separators and a Greek
@@ -232,7 +232,7 @@ gap that the same collision had left empty (incident 23).
     question about any line ("could this sit over a different day's items
     unchanged?") is enforced as that question, and the enumerated examples
     are evidence that the question is worth asking, never the test itself.
-    Added 2026-09-20, incident 25.
+    Added 2026-09-20, incident 26.
 37. The comma that should have been a full stop. "Your agents get the same
     findings, as files they can load" carries one comma and the owner struck
     it, in the word "unneeded", with the positive instruction beside it: "i
@@ -285,7 +285,7 @@ gap that the same collision had left empty (incident 23).
     only as a register tell in entry 38). The fifth will be a mark nobody
     has written a rule for. Read the punctuation with the question, which
     is whether the mark is standing in for a stop, and split the sentence
-    when it is. Added 2026-09-22 from the generator sweep of incident 26.
+    when it is. Added 2026-09-22 from the generator sweep of incident 27.
 41. The gate that reads the output and never the input. Entry 36 is a gate
     that enumerates instead of asking. This one asks the right question of
     the wrong artifact. Every rule in the generator, and there are now about

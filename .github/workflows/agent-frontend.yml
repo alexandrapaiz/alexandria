@@ -65,6 +65,14 @@ jobs:
       # success, and lost everything at teardown because nothing was pushed
       # (alexandria's register; incident numbering differs per repo). A green
       # conclusion is not evidence of shipping.
+      - name: Upload run transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transcript-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: ignore
+          retention-days: 90
       - name: No-ship tripwire
         if: always()
         run: |
