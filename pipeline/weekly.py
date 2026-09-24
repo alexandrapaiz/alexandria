@@ -790,8 +790,8 @@ def weekly() -> str:
                     f"{week} was written but NOT sent",
                     f"The {week} issue is in the digests table and on the site, "
                     f"but the email send failed:\n\n{exc}\n\n"
-                    f"It was written by {model}. Nothing needs rewriting; the "
-                    "send is what needs retrying."))
+                    f"It was written by {model}, so nothing needs rewriting. "
+                    "The send is the part that needs retrying."))
     except Exception as exc:
         # Every path out of this run that ends without an issue comes through
         # here. This is incident 24's standing fix: the discovery must never
