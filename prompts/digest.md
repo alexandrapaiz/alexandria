@@ -399,7 +399,7 @@ broken three times in one issue on 2026-09-24, so it is now backed rather than
 repeated. Every example in this file is drawn from a subject the payload
 cannot contain, and the four slot names are held only in the heading gate at
 the end. An example written from the same research the generator is about to
-be handed is not an illustration of the answer, it is the answer, which is how
+be handed is not an illustration of the answer. It is the answer. That is how
 a worked rewrite of an issue became that issue's prose the next time it ran.
 Whoever edits this file next keeps examples out of the week they are grading.
 
@@ -752,7 +752,7 @@ underneath it. It can name what the day's picks have in common or simply hand
 the reader the hour, but it is a written line like every other heading. The
 slot's internal name is not a candidate and is not repeated here, because a
 forbidden phrase quoted inside the slot the model writes into is not a
-prohibition, it is the nearest available draft. The heading gate at the end of
+prohibition. It is the nearest available draft. The heading gate at the end of
 this file holds the four names.}
 
 {Chosen, never listed. Print the papers you would actually tell a builder to
@@ -851,7 +851,7 @@ the rule's question to the thing in front of you.
   `procedure` actually cover, and never invent an omission.
   Then count them, the way the links are counted one rule above. Count the
   items carrying a number. Count the grades. They match, or the issue is not
-  finished. The count is the rule, not a reminder of it: on 2026-09-24 these
+  finished. The count is the rule and not a reminder of it. On 2026-09-24 these
   two rules sat next to each other in this file, one of them counted and the
   other only described, and the issue shipped with five links out of five and
   zero grades out of four. The grade is a clause, every compression pass
