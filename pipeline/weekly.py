@@ -581,8 +581,15 @@ def call_model(model: str, prompt: str, user: str) -> str:
             raise ModelGone(f"404 Not Found: {resp.text[:400]}")
 
         if resp.status_code == 429:
-            wait = float(resp.headers.get("retry-after")
-                         or BACKOFF_SECONDS * (2 ** attempt))
+            # Moonshot's 429 for "max organization concurrency: 1" says
+            # retry-after 1s, and on 2026-09-24 the press honored that three
+            # times in four seconds and gave up while another seat's single
+            # Kimi call (the engineer's rehearsal print) was still running.
+            # A concurrency limit is not a rate limit: the other call takes
+            # minutes, so the wait must be our own schedule, and the header
+            # only ever lengthens it.
+            wait = max(float(resp.headers.get("retry-after") or 0),
+                       BACKOFF_SECONDS * (2 ** attempt))
             wait = min(wait, BACKOFF_CEILING)
             if attempt < RETRIES_PER_MODEL - 1:
                 print(f"{model}: rate limited (attempt {attempt + 1} of "

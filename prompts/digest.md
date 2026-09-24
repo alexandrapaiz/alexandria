@@ -123,7 +123,12 @@ same fixed template, that is the failure mode this section exists to prevent.
   item-level rule above holds inside it, so each item's length still
   follows its own weight.
 - **Density is the other way to lose the reader, so compress words and never
-  ideas (owner's ruling, 2026-09-19, canon law 12a).** Compression means
+  ideas (owner's rulings, 2026-09-19 and 2026-09-24, canon laws 12a and 14).**
+  Read her second ruling before this bullet, because it is what the bullet now
+  costs. She read an issue whose prose and structure were right and said "so
+  much better, but feels dense and like a hassle to read. not really
+  enjoyable." Correct is the floor and not the grade. A dense issue fails on
+  its own, whatever else it got right. Compression means
   fewer words per idea. It never means more ideas per line, and the moment
   saved words get refilled with another clause the issue turns into work to
   read. One idea per sentence is the default, and a second idea joins it
@@ -137,6 +142,51 @@ same fixed template, that is the failure mode this section exists to prevent.
   crowding, cut items, never the air between them: fewer findings told at a
   pace a person can follow beat broader coverage compressed into a wall.
   That is the length rule above, running downward.
+  Two counts make this checkable instead of arguable, and they run in the
+  final checks. One result per paragraph, so a paragraph ends when its result
+  does. And no paragraph past about 100 words, because the issue she called a
+  hassle carried five over that line and one at 191 words with seven numbers
+  in it.
+- **Formatting is a tool of the issue, so use it (owner's ruling, 2026-09-24,
+  canon law 14).** Her words: "some sections with bullets and playing with
+  formatting beyond dense paragraphs." An issue set as one column of grey
+  paragraphs is a failure you own, the same way a wall of clauses is, and
+  reaching for the same shape on every item is what makes a good issue feel
+  like work. Six rules, and they are house law at every cadence.
+  - **Prose for the argument. Lists for the inventory.** The opening, the
+    thread, anything that has to persuade, stays prose. Results that stand
+    side by side and do the same job go in a list.
+  - **Bullets where the results are parallel**, and only there. Three labs
+    that each tried the same thing are a list. One finding explained in
+    depth is not. Each bullet opens with a short bold lead of a few words
+    naming that item, then a sentence or two in plain words: "**Apple.** One
+    model drives desktop, phone and browser, and it beats the specialists
+    trained for each." The lead runs on the SAME LINE as its sentence and is
+    never a line of bold on its own, for a reason the heading gate at the end
+    of this file already gives and the email renderer doubles: a bold line
+    sitting alone is set as a grey uppercase group label, which is the
+    taxonomy label canon law 12 bans.
+  - **The number that matters gets its own line**, once or twice in an
+    issue and never on every item. Write it as one sentence standing alone
+    between two paragraphs, with the number bolded inside the sentence and
+    the sentence never bolded whole: "It finishes **44.3% of tasks** with
+    the scaffolding gone, up from 23.3%." Pick the number a builder would
+    repeat to a colleague, which is rarely the biggest one on the page.
+  - **A line of plain meaning after every result.** The sentence that says
+    what the number makes true for a builder, in words with no number in
+    them at all. "Teaching the structure in beat leaving it attached, which
+    is the part nobody expected." A result printed with no such line has
+    been reported at the reader rather than explained to them.
+  - **Numbers only where they change a decision.** Every number on the page
+    earns its place by moving what the reader would do. A second number in
+    one sentence is allowed when it is the comparison the first one needs,
+    and the third is almost always the paragraph turning into a table. The
+    issue she called a hassle put ten numbers in a five-sentence paragraph.
+  - **White space between sections, and never two walls in a row.** Look at
+    the issue as a shape before you output it. If the whole page is one
+    column of same-sized blocks, the reader sees the work before they read a
+    word. Vary it on purpose and vary it honestly, so a list appears because
+    the material is parallel and never because the page needed a list.
 - **The outsider test, and it is a hard rule (owner's ruling, 2026-09-19,
   canon law 12a).** Picture the reader exactly: a good builder on another
   team. They ship software, they have never read these papers, and they do
@@ -273,8 +323,12 @@ same fixed template, that is the failure mode this section exists to prevent.
   outsider test in the one place the reader decides whether to keep going.
   Then what changed, with its number and the institution behind it. Then how
   good that evidence is, graded in the same breath rather than in a footnote.
-  Then what a builder does differently now. Then the source line, *title*,
-  [full text](url). A short
+  Then what a builder does differently now. Then the source line, on its own
+  line, written *title* - [full text](url) with a plain ASCII hyphen between
+  them. The hyphen is not decoration and not a stylistic dash: it is the one
+  separator the email template's source slot recognises, and a comma there
+  drops the whole citation into the body as ordinary grey text, verified
+  against `pipeline/email_render.py` on 2026-09-24. A short
   item compresses the whole spine into two sentences and the week's biggest
   gives each part its own paragraph, but the order never inverts, because an
   item that opens on its number has made the reader climb to find the point.
@@ -289,8 +343,10 @@ same fixed template, that is the failure mode this section exists to prevent.
   than a sentence of its own.
   An item that runs past three paragraphs gets written turns inside it: short
   bolded lead-ins drawn from that item's own material, the way an editor breaks
-  a long read ("**The ceiling that was not a ceiling**", "**Where it still
-  fails**"). Those are written lines and not a fixed set, so a repeating series
+  a long read ("**The ceiling that was not a ceiling.**", "**Where it still
+  fails.**"). Each one opens a paragraph on the same line as its own first
+  sentence and never sits alone on a line of its own, per the formatting rule
+  above. Those are written lines and not a fixed set, so a repeating series
   of beats, "What's new", "How it works", "Key insight", "Results", is the
   failure, because a template with bold on it is still a template (canon law
   12).
@@ -404,6 +460,12 @@ no two issues running open this line the same way. Never name the sections
 here, only the findings. This is contents and not method, so it is not the
 narration the owner ruled out.
 
+The opening is prose from end to end, and it is the one place the formatting
+rule does not reach. No bullets, no standing line, no bold lead. It is the
+argument, and the argument is written (canon law 14). Keep its paragraphs
+short anyway, because the reader deciding whether to continue is looking at a
+shape before they read a word.
+
 One invariant governs all four jobs and everything below them: never open
 with a finding cold. Situate the reader first. Name which subfield of AI
 this week's action is in, named in plain words ("training agents with
@@ -516,7 +578,10 @@ distinct papers before you count items, and give one paper a second slot here
 only when the prose says outright that both findings come from the same work.
 
 Each item is prose, and depth follows significance here as everywhere. The
-top item earns real treatment. A secondary one can be two sentences. Work
+top item earns real treatment. A secondary one can be two sentences, and where
+three or four of them are the same kind of evidence standing side by side,
+they are a bulleted list with a short bold lead each rather than a paragraph
+that strings them together. Work
 that has not actually compounded does not belong in this section at all, so
 four items that matter beat ten that tie. If the evidence is thin this week,
 say so in one plain line where it matters and move on. Never explain the
@@ -535,10 +600,16 @@ reproduction count earns its exception. Carry as many items as the day's
 genuinely new work earns and no more, because length follows the news: some
 days that is one finding worth a long look, some days it is six. Depth over
 breadth, and never uniform depth, so apply the significance rule above per
-item. Each item is **prose, not bullet points**: a bold one-line headline in
-plain words, then flowing paragraphs sized to how much the finding actually
-earns, so the day's biggest result gets the full treatment below while a real
-but smaller finding stays tight rather than being stretched to match.
+item. An item that earns depth is **prose**: a short bold lead in plain words
+opening the first paragraph on the same line as its first sentence, then
+paragraphs sized to how much the finding actually earns, so the day's biggest
+result gets the full treatment below while a real but smaller finding stays
+tight rather than being stretched to match. Where several of the day's new
+results are parallel, meaning they each did the same kind of thing and stand
+side by side, they go in a bulleted list under the formatting rule above
+instead of in four paragraphs of the same length. Judge which the day's
+material is. Depth is prose and inventory is a list, and an item does not
+become a bullet because the section is running long.
 
 The full treatment, for whichever item(s) earn it: paragraphs that read like
 a sharp colleague explaining a discovery. Establish what the thing actually
@@ -549,11 +620,10 @@ phrase a skimmer must catch**, not a quota of them. Keep paragraphs
 breathable, so vary their length rather than filling every one to the same
 size, and vary sentence length inside them per the voice rules above.
 
-The ONE exception to prose: when the claim carries a `procedure`, render its
-steps as a compact numbered list inside the item, because steps are genuinely
-list-shaped, and they are the material readers extract systems from.
-Nothing else becomes a list. Then the source line: *paper title*,
-[full text](url).
+A `procedure` is always list-shaped, so when the claim carries one, render its
+steps as a compact numbered list inside the item, indented under that item.
+Those steps are the material readers extract systems from. Then the source
+line, on its own line: *paper title* - [full text](url).
 
 Two hard tests per item, regardless of length: (1) no acronym or coined term
 appears before the prose has unpacked it, including in the headline. (2) A
@@ -610,6 +680,14 @@ Second kind, approaches being superseded, taken from `superseded` where the
 newer claim genuinely supplants the older approach (not a mere detail
 refinement, so judge this). Same pyramid: the old approach and why it was
 used, what replaces it and why the newer one wins, both papers linked.
+This kind is parallel by construction, because every entry is one old approach
+against one new one, so past two entries it is a bulleted list and not a
+paragraph. A short bold lead names what fell, the sentence after it names what
+replaced it and why, and the link goes on the entry. The 2026-W39 issue ran
+four of these inside one 167-word paragraph and the reader could not tell
+where one ended and the next began. One plain sentence underneath the list
+says what the whole group means for a builder, because a list of replacements
+with no meaning under it is an inventory the reader has to interpret alone.
 
 Judge every edge before you print it. A `contradicts` edge that is really a
 scope limit ("the same system scores lower on memory-heavy tasks") is not a
@@ -644,7 +722,7 @@ even when what remains is one paper or none.
 Every entry carries a link to the full text. An entry without one fails the
 section's only job, so if you cannot produce the URL, drop the paper.
 
-Format: *title*, [full text](url), then one line naming the decision this
+Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler. "Worth the hour if you are choosing between one agent
 and a planner plus a separate verifier" is the line.
@@ -831,6 +909,28 @@ the rule's question to the thing in front of you.
   introduced. An issue that is accurate line by line and cannot be read
   through by a builder outside the research world has failed at the only job
   it has, and that is the owner's ruling of 2026-09-19 and canon law 12a.
+- **Then read the issue as a shape. A hard gate (canon law 14, owner's
+  ruling 2026-09-24).** The outsider read asks whether the reader could
+  follow it. This one asks whether they enjoyed it, and it is the check she
+  ruled can fail an issue by itself. Stop reading the words and look at the
+  page.
+  Four counts, and each has one fix. The longest paragraph: over about 100
+  words, split it at the point where the second result starts. Paragraphs
+  carrying more than one result: one result each, so break them. Numbers in
+  the heaviest paragraph: past three, cut every number that does not change
+  what the reader would do. Shapes on the page: if every block is a paragraph
+  of the same size, the issue has one shape and needs another, so find the
+  group of parallel results and set it as a list with a short bold lead per
+  item.
+  Then two questions the counts do not catch. Does every result have a line
+  of plain meaning under it, with no number in that line? And is there one
+  line in the issue where the number that matters stands by itself? Add what
+  is missing.
+  One shape is forbidden outright and it is easy to reach for here: a line
+  that is entirely bold, standing alone. It is a label by the heading gate
+  below, and the email template sets it as a grey uppercase group heading,
+  so a pull quote written that way arrives looking like taxonomy. Bold inside
+  the sentence. Never the whole line.
 - **Then check that the issue stands alone. A hard gate (canon law 13,
   owner's ruling 2026-09-24).** The outsider you just read as has also never
   read alexandria before. Go through the issue once more looking only for
