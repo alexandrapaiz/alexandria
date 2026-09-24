@@ -55,10 +55,33 @@ page.
 
 ### 1b. The open-routed step must fall back instead of failing the run
 
-**Queued 2026-09-20 by the ExO agent. Incident 23. This is the most
-urgent item on the page, and it is urgent on a date: the PM's ceremony
-cron fires Monday 2026-09-21 at 10:35 UTC and will fail the same way
-unless this is applied or the `OPENROUTE_API_KEY` secret is removed.**
+**Queued 2026-09-20 by the ExO agent. Incident 23.**
+
+**RE-VERIFIED 2026-09-24, and its status has changed from urgent to
+conditional.** The owner took the alternative at the bottom of this
+item: the chair removed the OPENROUTE secrets from this repository on
+2026-09-23, so all four seats fall back to Sonnet today and nothing is
+currently failing. Every `-` line in the diffs below was grepped against
+the live files this run and each appears exactly once, in all four
+workflows, so the diffs are good.
+
+**What changed is what this item now means. It is a precondition rather
+than a fix.** The either/or shape is still in all four files. It is
+dormant only because a secret is absent, and a secret is the easiest
+thing in this org to put back. So:
+
+> **The OPENROUTE secrets do not go back into this repository until this
+> item is applied.** Re-adding the key today re-arms the identical
+> failure on the identical seat, and the PM is the seat that reports
+> every other failure.
+
+That sentence is the recommendation this seat carries to the owner, and
+it is also in the relay note to HQ, because HQ's copies have the same
+shape and HQ has not removed its key. The second precondition is the
+golden-set comparison this repo's routing law already requires, and the
+third is the ordering rule from incident 23's postmortem: the first seat
+routed is the one whose failure costs least, which is finance or okr,
+and never the PM.
 
 **Why.** Commit 609d7cc gave four workflows two run steps, chosen by a
 condition rather than by an outcome:
@@ -137,7 +160,37 @@ reversible.
 
 ### 2. The PM goes daily, so the org has a seat that is present
 
-**Queued 2026-09-19 by the ExO agent, on the owner's order.**
+**Queued 2026-09-19 by the ExO agent, on the owner's order. THE CADENCE
+HALF WAS APPLIED 2026-09-23 by the chair, in commit 2ae2650, and the cap
+half was not. Read the next three paragraphs before the diffs below,
+because two of them are now historical.**
+
+**What the chair applied, and it is better than what this page
+proposed.** This item asked for one daily cron, `35 10 * * *`, with the
+charter branching on the day. The live file instead carries two crons,
+`35 10 * * 1` for the Monday ceremony and `5 11 * * 0,2-6` for the
+standup, plus a `RUN_MODE` env var computed from
+`github.event.schedule` and `actions: write` for the dispatch grant. Two
+crons and an explicit mode beat one cron and a charter that has to infer
+the day, because the run knows which schedule fired it and never has to
+reason about the calendar. Recorded here as the correction it is: this
+page proposed the cheaper version and the chair shipped the better one.
+
+**What was not applied: the cap.** `agent-pm.yml` still reads
+`--max-turns 300` on both steps. Verified this run by grep, and both `-`
+lines below match the live file exactly, once each. The case for 400 is
+stronger now than when it was written, since this run added a delivery-
+health half to the PM's §1f and the seat now carries a daily standup it
+did not have when 300 was derived. It is not urgent: the two failed PM
+runs died at turn 1 and turn 30, so nothing has come near the cap, and a
+cap is a tripwire rather than a budget.
+
+**What is now moot.** The cron diff and the two documentation lines
+below are superseded by what the chair shipped. They are left in place
+rather than deleted so that the next reader can see what was proposed
+against what landed, and they are marked here rather than there.
+
+**Original item follows.**
 
 **Why.** Her words: "right now i feel like im doing the PMs job, i want
 the pm to be proactive." The evidence is one day. On 2026-09-19 the org
@@ -385,6 +438,81 @@ items 1b and 2.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
 budget.
+
+### 5. An HQ-origin commit should announce itself when it lands
+
+**Queued 2026-09-24 by the ExO agent. Incident 23, and the cadence gap
+recorded against the new row in unowned-duties.md.**
+
+**Why.** §3f of the ExO charter now requires that every HQ decision
+reaching this repository is read against local law. The trigger for that
+duty is a merge, and merges do not respect a weekly cron. ADR-015 landed
+on a Friday evening and was first read on a Sunday, after it had already
+failed two PM runs. A weekly seat holding a merge-triggered duty is the
+same cadence gap this org has already written down twice, and the
+register's own rule says the fix is a cron change rather than another
+sentence in a charter. Here the correct fix is not a cron at all, since
+the trigger is an event.
+
+**How.** A new workflow, `.github/workflows/hq-origin-notice.yml`, that
+runs on push to main and does one cheap thing: if the pushed commits
+carry an HQ marker, write a job summary naming them and open nothing.
+No seat is dispatched and nothing is merged, so the blast radius is a
+line of text in the Actions UI plus, once a seat can read it, an entry
+the ExO run does not have to reconstruct from `git log`.
+
+```yaml
+name: hq-origin-notice
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  notice:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Flag HQ-origin commits
+        run: |
+          range="${{ github.event.before }}..${{ github.sha }}"
+          hits=$(git log --pretty='%h %s' "$range" \
+            | grep -iE 'ADR-0[0-9]{2}|HQ |company standard|vendored|centralizer' || true)
+          if [ -n "$hits" ]; then
+            {
+              echo "### HQ-origin commits in this push"
+              echo ""
+              echo "$hits" | sed 's/^/- /'
+              echo ""
+              echo "Read these against local law before they take effect:"
+              echo "docs/agents/cross-repo-law.md. The three questions are"
+              echo "in prompts/exo-agent.md section 3f."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+```
+
+**What it does and does not do.** It makes an HQ-origin change visible
+at the moment it lands rather than up to six days later, and it costs
+one short job per push to main. It does not read the local law, it does
+not block anything, and it cannot tell a real override from a commit
+that merely mentions an ADR number. It is a smoke alarm, not a gate. The
+judgment stays with the ExO run, which is correct, because deciding
+whether a parent decision overrode a local safety clause is exactly the
+kind of reading a grep cannot do.
+
+**One honest caveat about `github.event.before`.** On a force push or a
+first push it is unreliable, and the `|| true` means the step then says
+nothing rather than failing. Silence on an edge case is the right
+failure mode for a notifier whose backstop is a weekly human-read audit.
+
+**Cost.** $0, a few seconds per push to main.
+
+**Ordering.** Independent of every other item on this page.
 
 ### 3. Nothing else. The caps are done.
 
