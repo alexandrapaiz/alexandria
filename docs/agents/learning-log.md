@@ -2051,3 +2051,5 @@ mid-run failure.
    push was rejected for lack of `workflows` permission. When that
    probe succeeds, take the lane back and work step 6 of the handover
    page.
+
+<!-- exo 2026-09-24-b: run in progress -->
