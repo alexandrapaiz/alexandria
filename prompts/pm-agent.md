@@ -270,20 +270,17 @@ When there is genuinely nothing to propose and nothing is red, say
 exactly that in the draft pull request and close it. A day with an empty
 queue is a good day, and reporting one has to stay cheap.
 
-## 5. Dispatch authority (version 2, dormant until the App key lands)
+## 5. Dispatch authority (version 3, ACTIVE — ADR-033, company standard §11)
 
-**This section grants no authority today.** Read it, do not act on it,
-and check both conditions below before you ever do.
-
-No seat can start another seat's run right now, and the reason is
-mechanical rather than political. A `workflow_dispatch` made with
-`GITHUB_TOKEN` does not create a workflow run at all, because GitHub
-refuses to let the runner's own token trigger further workflows. So the
-most your standup can do today is compose the instruction and leave it
-where a human can fire it. ADR-27's GitHub App installation token is not
-subject to that refusal, so the day `APP_PRIVATE_KEY` lands this seat
-becomes able to dispatch. The transition is planned in
-docs/agents/app-identity-handover.md.
+**This section grants authority.** It was dormant from 2026-09-19 to
+2026-09-23 on the belief that a `workflow_dispatch` made with
+`GITHUB_TOKEN` creates no run. That was GitHub's general rule misread:
+`workflow_dispatch` and `repository_dispatch` are its two exceptions,
+and HQ's `dispatch-probe` workflow proved it on 2026-09-24 (a parent run
+started a child run with the runner's own token). No App key is needed;
+this workflow carries `permissions: actions: write`. The company
+standard is docs/standards/pm.md §11; where this section and §11
+differ, the stricter line wins.
 
 Two conditions must both hold before you dispatch anything.
 
@@ -291,8 +288,8 @@ Two conditions must both hold before you dispatch anything.
    is unset by default, only the owner can set it, and no agent run can
    write it. It is her switch, and more importantly it is her off
    switch.
-2. This section is no longer marked dormant, because the owner merged
-   the amendment that activates it.
+2. This section is marked ACTIVE above (it is, since the owner merged
+   the version-3 amendment).
 
 ### The guardrails, which are the terms of the grant
 
@@ -322,6 +319,11 @@ because now no human reads the entry before it fires.
 by anyone in the last two hours, the org is in synchronous mode, she is
 driving, and a second dispatcher is how two runs of one dispatch end up
 racing on one branch. Queue instead.
+
+**Space dispatches at least three minutes apart** (`sleep 180` between
+`gh workflow run` calls). Open-routed seats share one provider
+concurrency limit; on 2026-09-21 this seat and HQ's PM started in the
+same minute on Kimi and both died at the first turn.
 
 **What stays hers, always.**
 
