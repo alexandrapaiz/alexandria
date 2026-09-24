@@ -60,7 +60,7 @@ finding of the same weight as an unowned row.
 | Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
 | Runs that fail get reported to the owner | pm (§1f) | daily | weekly Mon, daily once queued | **cadence gap, fix queued** |
 | The org decides what to do next between Mondays | **none, and the owner did it** | hourly | n/a | **fix queued, see below** |
-| A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, was a cadence gap |
+| A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, **and it was true only for `.github/` until 2026-09-24**, see below |
 | Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
 | Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
 | The owner's rulings become reusable preference data | chair records (pm-agent.md ship check, added 2026-09-21) | whenever she rules in chat | present whenever she is | assigned 2026-09-21, and the chair is the correct owner here, see below |
@@ -391,3 +391,43 @@ engineer work in the pipeline, which is not this seat's surface, and the
 sizing is the PM's to groom. What this seat can say is that the duty
 exists, that it has a known trigger rate, and that the fix is already
 written once in PR #75 and only needs applying a second time.
+
+### The assigned row that was true of half its subject (2026-09-24)
+
+§3b's first test is to confirm the assigned rows are still real, and it
+caught one this run, which is the first time that test has paid for
+itself.
+
+"A runtime change is smoke-tested before the next cron fires" has said
+`assigned` since 2026-09-20. Both named gates existed, both fired, and
+the engineer's ran daily. The row was still false for the largest
+runtime change the org makes, because both gates run `git log` over
+`.github/` and a provider change lands in `pipeline/`. ADR-32 moved the
+press to a new provider, neither gate saw it, and it produced four
+production failures in one evening
+(INC-2026-09-24-press-provider-migration).
+
+Both commands now read `pipeline/` as well, and the runtime law now
+names a provider or model change as a runtime change, so the row is
+honest again.
+
+The lesson is for this page rather than for that row. The two tests this
+register applies are **wording** (does a charter name the duty in words
+a run can act on) and **cadence** (is the naming seat awake often
+enough). Both passed here. The defect was a third thing, and it needs a
+name because the page cannot catch it otherwise: **scope**. A charter
+can name a duty in perfect words, at the right cadence, and bind it to a
+command whose scope is narrower than the duty. From inside this table
+that reads as assigned, because the table records who is named and how
+often they wake, and not what their check actually reads.
+
+So the third test, to be applied to every assigned row from now on:
+**name one concrete event that would trigger the duty, then check that
+the named seat's actual command would see that event.** Not whether the
+seat would care about it. Whether the command's output would contain
+it. For this row on 2026-09-23 the answer was no, and neither of the
+first two tests could have told you.
+
+That test is deliberately expensive, so run it on one row a week rather
+than on all of them, starting with rows whose gate is a shell command,
+because a shell command has a scope and a charter sentence does not.
