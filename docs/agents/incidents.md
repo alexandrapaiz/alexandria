@@ -1840,6 +1840,1275 @@ not code. Until the engineer ships it and the deploy command requires
 its receipt, the ladder is a document, and a document is what failed
 here.
 
+## 2026-09-22 — A sprint item the assigned seat is not allowed to do (engineer seat, second occurrence)
+
+Titled by date rather than by number because PR #60 is taking incident 23
+and racing for an integer across two open PRs is how the numbering breaks.
+
+**Recorded because it is a repeat, per the standing rule at the top of this
+file.** The first occurrence was yesterday, 2026-09-21, in this same seat.
+
+### The two occurrences
+
+**First, sprint item 2.** The engineer run of 2026-09-21 (PR #66) built the
+blind prose benchmark and could not score it, because the comped friends
+list the item depends on does not exist anywhere in the repository. The
+sprint's own notes had said items 2 through 4 need "only the corpus, the
+sent issue(s), and the comped friends list", which reads as a statement
+that all three were in hand. Two were.
+
+**Second, sprint item 5, today.** The item asks the engineer to extend the
+skill validation system to a passing result on both gold skills. That
+system lives entirely inside `skills/_validation/`, and the engineer
+charter forbids this seat from writing into `skills/`. The run's own
+dispatch repeated the prohibition word for word. The item is not hard for
+this seat, it is closed to it.
+
+### Why they are one failure and not two
+
+Both items were planned as ready, both were assigned to a seat, and in both
+cases the thing that made them undoable was knowable at planning time from
+a file already in the repository. Item 2's blocker was an absent input,
+findable by grepping for the list. Item 5's blocker is a written boundary,
+findable by reading the assignee's own charter, which is two directories
+away from the sprint file. Neither needed the work to start before the wall
+appeared, and in both cases the wall appeared anyway, a day of queue apart,
+after a seat had spent a run reaching it.
+
+The cost is not the lost run. Today's run had somewhere useful to go, the
+urgent ledger entry it fell back to. The cost is that the sprint's order is
+no longer a queue. Two of five items cannot be pulled by the seat they are
+assigned to, so a run that follows the sprint faithfully has to discover
+that item by item, and the PM does not hear about it until the next
+retrospective.
+
+### What would have caught it
+
+A feasibility gate on the sprint, at plan time, not at build time. An item
+is plannable when three things hold, and all three are checkable by reading
+files the PM already has open:
+
+1. **Surface.** Every path the item must write is permitted to the seat it
+   is assigned to. The seat charters' Boundaries sections are the source,
+   and `docs/agents/registers.md` already maps which register holds what.
+2. **Inputs.** Every artifact the acceptance criteria name exists, or the
+   item names who is producing it and when. "The comped friends list" was
+   neither.
+3. **Ceiling.** The item's remaining work is not itself assigned elsewhere.
+   Item 5 fails this twice, since the one case standing between today's
+   result and both skills passing is `he-pos-2`, whose fix the sprint
+   explicitly rules belongs to the skill seat.
+
+This is the same shape as the recorded-is-not-enforced pattern, one level
+earlier. Incident 20 was a ruling that no artifact ever checked against.
+This is a plan that never checked against the charters it assigns work to.
+Writing the boundary in two places, the charter and the dispatch, did not
+help, because nothing between the boundary and the plan opened either file.
+
+### Class, under ADR-29
+
+An **enforcement gap**. The boundary was written, agreed, and repeated in
+the dispatch, and the artifact that had to respect it was produced without
+checking it. The hunter for enforcement gaps is the ExO's
+recorded-is-not-enforced audit, and the detection cycle is every ExO run.
+The proposal above would move the detection to plan time instead, which is
+one week earlier than the retrospective that would otherwise find it.
+
+**Not this seat's call to fix.** Planning surfaces belong to the PM and the
+owner, and the engineer charter forbids editing `docs/sprints/` and the
+charters both. Recorded here, and in `docs/ideas.md` with status `urgent`,
+so the Monday retrospective and tomorrow's run both see it.
+
+## Incident 25 — Parallel runs of one seat collided on a register's next number (2026-09-20, writer seat)
+
+**Class, per ADR-29.** Enforcement gap, in the narrow sense that nothing
+between an append and the next append ever reads the file's own tail.
+
+**Recorded because the standing rule says so.** This has now happened
+twice in two registers, which is the trigger at the top of this file, no
+judgment call available.
+
+### What happened
+
+docs/voice/ban-list.md carried two entries numbered 26 and two numbered
+27, with 30 and 31 unused, until this run renumbered the later pair into
+the empty gap. Entry text was not touched.
+
+The cause is the merge described in section 12 of
+docs/voice/reviews/2026-09-19.md: two writer runs on 2026-09-19 worked
+the same file from the same starting point, each appended entries
+numbered from its own copy of the list, and the merge pass that followed
+reconciled the four prose seams between them without noticing that the
+numerals had collided. The seams were about meaning, so meaning is what
+got read.
+
+The same defect is in this file. There are two entries numbered
+**Incident 22**, at the 2026-09-19 editorial-rebuild entry and at the PM
+presence entry. They are left as they are: this register is not the
+writer seat's to renumber, and the entry that cites one of them should
+not be silently repointed by whoever notices. It is flagged here for the
+ExO's weekly read.
+
+### Why it matters more than a cosmetic defect
+
+Both registers are cited by number, and the citations are the
+enforcement mechanism. prompts/digest.md's gates, the canon, and the
+review files all say things like "ban list 26" and "canon law 12". A
+duplicated number makes a citation ambiguous, and an ambiguous citation
+in a gate is a gate that cannot be checked. One such citation already
+existed and was corrected in this PR.
+
+### The fix, and it is small
+
+The append is the moment to check, because it is the only moment anyone
+holds the whole file. A seat appending a numbered entry reads the last
+number in the file it is appending to, in the branch it is appending
+from, and never numbers from memory or from the copy it read at the
+start of its run. Where a run has been open long enough for another run
+to land, that means rereading the tail before writing it.
+
+This is the cheap half of incident 6's lesson. Incident 6 was two
+appends at one anchor colliding in git. This is two appends colliding in
+the content, which git merges cleanly and therefore never reports.
+
+## Incident 26 — A gate written as a list catches only what already shipped (2026-09-20, writer seat)
+
+Recorded under the standing rule at the top of this file. The class has
+now produced four artifacts and four separate ban list entries, which is
+three repeats past the threshold at which it should have been written
+down.
+
+**The number.** The ExO's incident 24 closed with "Next free number is
+25", so this entry takes 25. Note for whoever renumbers: **23 is claimed
+three times** as of today, by three seats on three unmerged branches, for
+three unrelated events (the writer's ban list collision, the engineer's
+arXiv 406, the ExO's open-routed run). That is incident 25's own defect,
+parallel runs colliding on a register's next number, repeating inside the
+incident register itself on the day it was first recorded about the ban
+list. It is left here as a note rather than fixed, because this register
+is not the writer seat's to renumber.
+
+### What happened
+
+Four times, the same failure reached a reader or a sample, and four times
+it was fixed by adding the string that had just been seen to a list of
+forbidden strings.
+
+1. A section heading printed a category word, "Compounding" (ban list 19).
+2. A section heading printed the generator's own internal slot label,
+   "Gaining traction". The owner flagged this one for the second time, in
+   the word "AGAIN", and it became incident 20 (ban list 20).
+3. The same category word moved down one level and printed in bold over a
+   group inside a section, "**Replaced**" (ban list 30).
+4. The same category word moved again and printed in italics over a
+   numbered list, "*Procedure*" (ban list 33). Five rounds of grading had
+   read past it, because every gate written in rounds one through four
+   read `#` lines and bold runs, and none of them read italics.
+
+### Why it kept happening
+
+Each fix was written from the artifact in front of the writer, so each
+one described a position and a typeface rather than the thing being done
+wrong. The rule the org actually holds is a question that can be put to
+any line: could this sit over a different day's items without changing a
+word? Nothing in the pipeline or the prompt ever asked it. Both asked a
+narrower question, does this line match one of these strings, and that
+question has a different answer every time the category word moves, which
+it did four times.
+
+This is a second axis on incident 20. Incident 20 says that recording a
+rule is not enforcing it. This one says that enforcing it is not enough
+either, because a gate can be written, wired, and running, and still be
+shaped so that it can only recognise the last failure. A check written
+from the previous incident is a memorial.
+
+The general form, for the ExO's pattern reading: **when a fix enumerates,
+ask what it is an instance of.** If the enumeration can be replaced by a
+question the machine or the model can put to any candidate, the question
+is the fix and the enumeration is evidence.
+
+### The fix, in this pull request
+
+- `prompts/digest.md`: the pre-output heading gate no longer decides by
+  list. It collects every line that announces a block rather than saying
+  something, at any level and in any typeface, and puts the class
+  question to each one. The known labels stay in the file, demoted to
+  examples, with the reason they are not the test written beside them.
+- `docs/voice/ban-list.md` gains entry 36, the gate that lists instead of
+  testing, so the register carries the class and not only its four
+  instances.
+- `docs/ideas.md`: the machine half is proposed to the engineer, on top
+  of PR #60, as a comparison against the previous issues' headings rather
+  than against a word list. That is the deterministic shadow of the class
+  question, and it needs no judgment to run.
+
+### What is still open
+
+The prompt fix cannot be observed. No issue has been generated since
+2026-09-14, so every patch made to the generator across seven editorial
+runs is untested against a real payload. The first issue that proves or
+disproves this one is Monday's pilot.
+
+## Incident 27 — The same gate defect, one day later, in the next rule down (2026-09-21, writer seat)
+
+Recorded under the standing rule at the top of this file. Incident 26 was
+written yesterday by this seat and describes a class: a gate written as a
+list of what already shipped. Today the same class was found in a second
+gate in the same file, so it is a repeat and not a second instance of one
+event.
+
+**The number.** Incident 26 is the last numbered entry on this branch, so
+this takes 26. Incident 26's own note still stands: 23 is claimed three
+times by three seats on three unmerged branches, and that is not this
+seat's to renumber.
+
+### What happened
+
+`prompts/digest.md` carries a bullet headed "Plain ASCII punctuation,
+always." The heading is the class, correctly stated. Everything under it
+names instances: the non-breaking hyphen, the narrow no-break space, the
+multiplication sign. The pre-output check at the end of the file then
+enforced it in the narrower of the two forms, "no non-ASCII hyphens or
+spaces".
+
+2026-W37 carries eight distinct non-ASCII characters, 134 in total.
+
+| Character | Count | Named in the rule | Caught by the check |
+|---|---|---|---|
+| U+2011 non-breaking hyphen | 87 | yes | yes |
+| U+202F narrow no-break space | 19 | yes | yes |
+| U+2013 en dash | 12 | no | yes, as a hyphen |
+| U+2014 em dash | 5 | elsewhere | yes |
+| U+2019 curly apostrophe | 5 | yes, as "straight quotes" | no |
+| U+00D7 multiplication sign | 3 | yes | no |
+| U+2022 bullet separator | 2 | no | no |
+| U+03A8 Greek capital psi | 1 | no | no |
+
+Four of the eight walk through the check that is supposed to stop them,
+and two of those four are named in the rule three hundred lines above it.
+The gate is narrower than the rule it enforces.
+
+### Why this is incident 26 and not a new finding
+
+Incident 26's general form was written down as a question for the ExO's
+pattern reading: **when a fix enumerates, ask what it is an instance of.**
+Yesterday's run asked that question of the heading gate, rewrote it to
+test the class, and shipped. It did not ask it of any other gate in the
+file, and there were two. The lesson was applied to the artifact that
+produced it and nowhere else, which is the same shape as incident 20,
+where a ruling was recorded in the right register and not checked against
+the next thing that shipped.
+
+So the repeat is not "a list was written". It is that a class-level lesson
+was learned on Sunday and applied to exactly one instance of its own class.
+
+### The fix, in this pull request
+
+- `prompts/digest.md`: the ASCII rule now says its three characters are
+  examples and never the test, and the pre-output check asks whether every
+  character in the issue is plain ASCII. One exception, a person's or an
+  institution's name as the payload spells it, and none for punctuation,
+  spacing, separators or symbols.
+- `docs/voice/ban-list.md`: entry 13 amended to state the class, with the
+  five characters it would have missed named as evidence.
+
+### What this run did not do, deliberately
+
+It did not sweep every other rule in `prompts/digest.md` for the same
+defect. Two gates have now been rewritten one at a time, and the honest
+reading of this entry is that one-at-a-time is the failure. That sweep is
+a whole run's work and it is the first thing the next writer run should
+do, with this entry as its brief.
+
+A deterministic version belongs in the engineer's lane rather than in a
+prompt at all, because "is every character in this string below U+0080"
+needs no judgment, and `tools/check_digest_quality.py` (PR #60) is where
+it goes. That is not filed as a separate ledger entry, because the quality
+gate's own standard already claims the rule and this is a widening of it
+rather than a new idea.
+
+## Incident 28 — A ruling recorded, and three days later nothing had acted on it (2026-09-22, writer seat)
+
+Recorded under the standing rule at the top of this file. Incident 20 is the
+class: a taste ruling written into the right register, by the right seat,
+within the hour, and violated by the very next artifact because nothing
+between the ruling and the artifact ever opened the file. This is the third
+occurrence of that class and the first where the artifact is the live site
+rather than an issue.
+
+**The number.** Incident 27 is the last numbered entry on this branch, so
+this takes 27. Incident 26's note still stands: 23 is claimed three times by
+three seats on three unmerged branches, and renumbering those is not this
+seat's call.
+
+### What happened
+
+On 2026-09-19 the owner gave two rulings about the site, both recorded in
+`docs/voice/taste.md` the same day.
+
+1. "The pilot issue: the current archived issue (2026-W37) is to be removed
+   from the site and Monday's issue becomes the pilot, the first the public
+   reads."
+2. The library page's prose was rejected, quoting its own line back:
+   "Every issue, in full..."
+
+On 2026-09-22, three days later:
+
+- `site/content/issues/2026-W37.md` is present on main and on sixteen of the
+  seventeen other remote branches, the exception being `pm/sprint-2026-09-14`,
+  which predates the file. That includes `fe/2026-09-20-library-reveal-and-w37`,
+  whose
+  pull request title says W37 is retired behind config. There is no such
+  config. No flag in `site/lib` or `site/app` hides an issue, and
+  `listIssues()` returns every file in the directory.
+- `site/app/library/page.jsx:19` still reads `<h1 className="page-title">Every
+  issue, in full.</h1>`.
+
+### Why the two failures are not the same failure
+
+The second is blocked and the first is not, and that distinction is the
+finding.
+
+Rounds two to eight of her site copy were all rejected
+(`docs/voice/preferences/site-copy-2026-09-20.md`), so no approved line
+exists to replace the library H1 with. A seat that changed it today would be
+setting copy she has not seen, which the same register forbids. Blocked is
+the correct state for that one.
+
+The removal is blocked by nothing. It is one `git rm` and a merge, it needs
+no copy, no design and no owner round trip, and it did not happen.
+
+Both look identical from outside: a ruling in the register, an artifact that
+disobeys it, three days elapsed. Nothing in the org distinguishes a ruling
+waiting on her from a ruling waiting on nobody, so the second hides inside
+the first.
+
+### Why the existing gates did not catch it
+
+Incident 20's fix was the taste gate in every seat's charter, and it fires
+when a seat ships. It caught this one, in the sense that the writer run of
+2026-09-22 found both failures by running that gate. Three days late, and
+only because a writer run happened to be dispatched.
+
+The writer seat's own ledger entry of 2026-09-21, "A ruling can land with
+nothing scheduled to read it", proposed the deterministic half: compare the
+commit date of `taste.md` against the newest file in `docs/voice/reviews/`
+and say so when the ruling is newer. That entry is still `Status: proposed`.
+This incident is its second piece of evidence, and the first where the
+unread ruling was about something already live rather than about a generator
+that has not run.
+
+### The fix, in this pull request
+
+The writer seat owns neither `site/content/` nor `site/app/`, so this entry
+and the ledger entry beside it are the fix this seat can ship. Named for the
+two seats that can act:
+
+- Frontend: `git rm site/content/issues/2026-W37.md`. Her ruling, unblocked,
+  three days old.
+- Whoever runs the ledger check: the 2026-09-21 proposal now has two
+  instances behind it.
+
+### The general form, for the ExO's pattern reading
+
+Incident 26 asked, when a fix enumerates, what is it an instance of. This
+one asks a different question of a register: **for every open ruling, who is
+it waiting on?** A register that records rulings but not their blocker
+cannot tell a seat which ones it could close today, so all of them look
+equally stuck and none of them move.
+
+## 2026-09-23 — The same typographic defect, recorded three times, misdiagnosed each time (writer seat)
+
+Recorded under the standing rule at the top of this file. This is the third
+recording of one defect and the first that names its cause, so what repeated
+is not only the defect but the wrong diagnosis of it.
+
+**The number.** Deliberately none. Incident 25 is claimed by three seats on
+three unmerged branches, 24 by two, and both 25 to 27 exist only on this
+seat's chain. The engineer set the precedent on 2026-09-21 of titling by
+date rather than racing an integer, used again in PR #72 today, and this
+entry follows it. Renumbering the contended entries is the ExO's call, not
+this seat's.
+
+### What happened
+
+Three recordings, six days, one defect.
+
+1. **2026-09-19.** Ban list entry 13 created from issue 2026-W37, which
+   carried 87 non-breaking hyphens and 19 narrow no-break spaces. Written as
+   a prohibition on three named characters.
+2. **2026-09-21, incident 27.** The entry amended, because the same issue
+   also carried en dashes, curly apostrophes, multiplication signs, bullet
+   separators and a Greek capital that a rule naming three characters let
+   through. The lesson drawn was that the rule enumerated instead of asking,
+   which is ban list entry 36. Correct, and not the cause.
+3. **2026-09-23, this run.** The first run of this seat to hold database
+   credentials read the payload the generator is handed. It carries 286
+   non-ASCII characters across 42 of its 48 claim strings, 188 of them the
+   non-breaking hyphen, inside ordinary words like "on-policy" and
+   "inference-time".
+
+The model did not type those characters. It copied them. The claim text is
+machine-extracted from PDFs, where typesetter hyphens are normal, and it
+reaches the writer unwashed.
+
+### Why two rounds of patching missed it
+
+Every rule in `prompts/digest.md`, and there are about forty, is a gate on
+the model's output. The file describes the payload in eight lines, as a list
+of field names, and says nothing about its condition. The single place it
+acknowledges that the input is dirty is the `dates` field, which it tells the
+writer to normalize from an en dash. That instance was never generalized,
+so the file contains the correct instruction for one string out of hundreds.
+
+The instrument is the reason this took six days. Nine editorial runs graded
+the finished text and reasoned backwards to a rule. Reading the output tells
+you a defect exists. It cannot tell you whether the writer produced it or
+inherited it, and those two have opposite fixes: the first wants a sharper
+prohibition, which is what was written twice, and the second wants a cleaning
+step at the point the material comes in, which was written nowhere.
+
+### The class, which is larger than the characters
+
+Four defects in today's payload were diagnosed by earlier runs as the model's
+prose habits.
+
+| In the payload | Recorded as |
+|---|---|
+| 286 non-ASCII characters, 42 of 48 claim strings | ban list 13, twice |
+| 22 "new claims" that are 5 papers | ban list 16, 21, 29 |
+| 2 of 3 reading-list papers already covered elsewhere | ban list 15 |
+| A triage note opening "Provides a comprehensive framework" | ban list 39 |
+
+### The fix, in this pull request
+
+Six patches to `prompts/digest.md`, each stating what the payload actually
+contains and what to do about it at the point of lifting, plus ban list entry
+41 for the class and 42 for the citation floor, and an amendment to 16.
+
+### What is still open
+
+The deeper fix is not this seat's. The characters could be normalized once in
+`gather()` rather than by asking a language model to remember, and the
+claims-versus-papers mismatch is a query shape, not a prose problem. Both are
+filed in `docs/ideas.md` for the engineer. Charter step 4 applies: if the
+payload's shape defeats a prompt patch a second time, it stops being a prompt
+problem.
+
+### The general form, for the ExO's pattern reading
+
+Incident 26 asked what a fix that enumerates is an instance of. Incident 28
+asked, for every open ruling, who is it waiting on. This one asks: **when a
+seat grades an artifact, has anyone looked at what the artifact was made
+from?** Nine runs improved the instructions to a writer nobody had watched
+work, from material nobody had read. A seat that only ever sees output will
+keep writing sharper prohibitions against defects its subject never chose.
+
+## Incident 29 — Nine enforcement runs over one file, while a second file with the same job went unread (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. Incident 20's class, at a new
+scope: the gate ran, the gate worked, and the gate was pointed at one of
+the two artifacts it was supposed to bind.
+
+**Recorded because the standing rule says so.** This is the fourth
+appearance of "recording is not enforcing" (20, 26, 27, 28) and the
+first where the enforcement genuinely happened and still missed.
+
+### What happened
+
+The owner's rulings of 2026-09-19 were recorded in docs/voice/taste.md
+and enforced into prompts/digest.md by nine consecutive writer runs.
+`prompts/daily.md`, a second complete generator created in engineer
+PR #35 at 02:55 the same morning, received none of them. On 2026-09-24
+it still carries the "[{dates}]" title suffix she struck by name, in
+three places, one of them an explicit instruction to print it. Seven
+taste rulings and seven canon laws fail against it. The full grade is
+docs/voice/reviews/2026-09-24.md.
+
+Neither seat erred at the moment it wrote. digest.md's sentence claiming
+both cadences (commit d134996) landed 48 minutes after PR #35's last
+commit. Both were honest answers to "how does the daily get written?",
+written 48 minutes apart, and nothing in the next five days put them in
+one room.
+
+### Why the existing gates could not catch it
+
+The writer charter's pre-ship check names the registers an output is
+bound by. It does not name the artifacts a register binds. So the check
+ran nine times, correctly, against the file this seat owns, and the
+question "is there another file doing this job?" was never a question
+anyone was asked. The charter's own custody sentence is what should have
+raised it: "No other seat, and not the chair, writes newsletter
+structure or prose rules anywhere else." A custody claim with nothing
+that enumerates the territory is a claim nobody can check.
+
+### The fix
+
+Ban list 44 makes the generator itself a graded artifact, every
+generator and not the one this seat happens to own. The structural fix,
+filed for the engineer in docs/ideas.md rather than patched here, is to
+stop having two files that can drift: one craft layer, one small cadence
+file each, concatenated at call time.
+
+### The general form, for the ExO's pattern reading
+
+Incident 28 asked, for every open ruling, who is it waiting on. This one
+asks the question one level out: **for every rule, what is the complete
+list of artifacts it binds, and does anything enumerate that list?** A
+seat that owns a rule will check the artifact it can see. Custody
+language does not produce an inventory, and an enforcement gate with no
+inventory is a gate on one door of a building nobody counted the doors
+of.
+
+## Incident 30 — The register's next number collided again, this time across seats (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. Incident 25 exactly, one scope
+out, and incident 6's same-anchor ledger collision in a different file.
+
+**Recorded because the standing rule says so.** Incident 25 recorded
+this failure inside one seat on 2026-09-20. It has now happened between
+seats, which is the repeat.
+
+### What happened
+
+Main shipped incidents 23 (Kimi routing) and 24 (the press's 404) on
+2026-09-23. The writer chain, open since 2026-09-20, already held four
+entries numbered 23, 25, 26 and 27. Merging main into writer/2026-09-24
+conflicted on one 386-line block, and two different incidents were
+numbered 23.
+
+Resolved in this pull request by keeping main's numbers, because main is
+canonical and the fleet was already dispatched against "incidents 23 and
+24" by name. The four writer entries moved to 25 through 28, and every
+cross-reference in the ban list, the ledger and five review files moved
+with them. No entry text changed.
+
+### Why incident 25's fix did not hold
+
+Incident 25's lesson was that nothing between one append and the next
+reads the file's own tail. The fix that followed was for a seat to read
+its own tail. That is sufficient against a second run of the same seat
+and useless against another seat's open branch, because the tail on main
+is not the tail that will exist when the branch merges. A sequential
+number assigned on a branch is a guess about what main will look like at
+merge time, and every seat appending to this file is making that guess
+independently.
+
+### The fix, filed not patched
+
+The durable fix is to stop assigning sequential numbers on branches.
+Date-scoped ids ("2026-09-24a") collide only when one seat files twice
+in a day, which it can see. That is a register convention rather than
+prose, so it belongs to the ExO, and this entry is the brief.
+
+Until then, the rule that would have caught it costs one command. Before
+appending here, `git log origin/main -1 -- docs/agents/incidents.md` and
+read main's tail, not the branch's.
+
+*Renumbering note (2026-09-24, frontend run). These two entries were written
+on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
+carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
+They are re-identified here under the date-scoped scheme the ExO run shipped
+the same day, rather than allocated new numbers, because that scheme is the
+fix for exactly this collision.*
+
+## INC-2026-09-20-content-invisible-at-rest — Content invisible at rest, a second time (2026-09-20, frontend run)
+
+**The repeat.** Ban list entry 23 was appended on 2026-09-18 after the
+whole issue archive was found staged at opacity 0 waiting for a scroll
+script. On 2026-09-20 the same failure was found again, on the desk
+page: at 390px the first list rendered seven rows at computed opacity 0
+under a header reading "AWAITING YOUR MERGE 7", on a page with nothing
+else to scroll. Same symptom, same surface family, different mechanism.
+Recorded here under the standing rule, at the moment it repeated.
+
+**Why the existing guard did not catch it.** Entry 23 names the
+mechanism, a scroll script, rather than the symptom. The second
+occurrence had no script. It was `.hero-follow`'s CSS rise animation,
+`animation-timeline: view()` with `animation-range: entry 65% entry
+98%`, inherited by the desk because the desk reuses that class for its
+layout. A view-timeline range never opens for a block taller than the
+viewport that begins near the fold, so the animation holds at its first
+keyframe forever. Every property of entry 23 that a reviewer would
+check was absent: no script, no observer, no JavaScript dependency, and
+the rule reads as ordinary progressive enhancement. The check was
+looking for the cause it had seen before instead of the effect it cares
+about.
+
+**It also hid at two viewports out of three.** Computed opacity was 0 at
+390 and 1 at 820 and 1440. A review that looks at desktop, or at desktop
+and tablet, sees nothing wrong.
+
+**The fix, and the general one.** The desk now switches the inherited
+animation off (`.desk > * { animation: none }`), which is also what
+motion.md asks for on a high-frequency surface. The general fix is ban
+list entry 24, appended in the same pull request: the test is no longer
+"is a script involved" but "read the computed opacity at rest, at every
+viewport you ship". That is a two-line probe and it is now the way this
+seat checks, not a thing to remember.
+
+**The wider lesson, for any register.** An entry written as a cause
+only catches that cause. Incident 20 was a ruling that was recorded and
+never checked; this is its sibling, a rule that was recorded, checked,
+and worded too narrowly to fire. When a tell is appended to a register,
+the entry should name what is observably wrong, and the mechanism
+should be an example rather than the definition.
+
+## INC-2026-09-23-phantom-production-bug — A phantom production bug, twice in one run (2026-09-23, frontend run)
+
+**What happened.** The frontend run screenshotted `/desk` at 390x844 and
+got a white page carrying one line of text: "Application error: a
+client-side exception has occurred". It reproduced on retry, then stopped
+reproducing, then came back. Roughly a dozen turns went into chasing it:
+rendering the page in isolation (fine), reading the console (nothing but
+two aborted third-party requests), dumping `innerText`, and finally
+diffing the CSS hash the server was serving against the one on disk.
+
+**The cause was the run's own hands.** `next build` had been run while a
+`next start` server from the previous build was still listening on 3000.
+The HTML the running server emitted referenced chunk and stylesheet
+hashes that the rebuild had replaced, so the browser fetched assets that
+no longer existed and React failed to hydrate. The page was never broken.
+Nothing in the repository was ever broken.
+
+**Why it repeated inside one run.** The first occurrence was mistaken for
+flakiness and worked around with a retry loop in the screenshot harness,
+which made the symptom intermittent instead of removing it. It came back
+an hour later, after the next rebuild, and the retry loop then hid the
+cause a second time. The proximate reason the old server survived every
+restart is that `pkill -f next-server` matches the agent's own shell
+command string and kills the shell instead, and `kill` by port silently
+did nothing when the port lookup returned empty.
+
+**Why this matters beyond one run.** The failure presents as a
+production-grade bug on the owner's own daily surface. A seat that
+believed it would have filed it, or worse, "fixed" it. The whole point of
+a visual charter is that the pixels are the evidence, and this is the
+case where the pixels lie: they are a true photograph of a false server.
+
+**The fix, and the general one.** Never rebuild under a running server.
+The sequence is kill, verify the port is actually free, build, start, and
+then verify the served stylesheet hash matches the one on disk before
+screenshotting anything. That last check is one line and it is the only
+one that actually proves it:
+
+```bash
+curl -s localhost:3000/ | grep -o '/_next/static/css/[^"]*' | head -1
+ls .next/static/css/
+```
+
+The general lesson is the same one incident 23 ends on, arriving from the
+other direction. There, a register entry named a cause and missed the
+same effect from a different cause. Here, a symptom was treated as noise
+and worked around instead of explained. A retry loop that makes a failure
+intermittent has not fixed anything; it has deleted the evidence. When a
+run starts working around something it cannot explain, that is the moment
+to stop and explain it.
+
+## INC-2026-09-24-stale-server-kill-noop — The fix for the phantom server was itself a silent no-op (2026-09-24, frontend run)
+
+**The repeat.** `INC-2026-09-23-phantom-production-bug` (this file, one entry
+up) recorded a run that spent a dozen turns chasing a production-grade bug
+that was a stale `next start` serving asset hashes a rebuild had replaced. Its
+prescribed fix was: never rebuild under a running server, kill it first, and
+verify the port is actually free. That entry also named the trap in the kill
+itself, that `pkill -f next-server` matches the agent's own shell command
+string, and that `kill` by port "silently did nothing when the port lookup
+returned empty".
+
+Both halves of that fired again today, in the first ten minutes of this run.
+`pgrep -f "next start"` matched this run's own shell and killed it. The
+replacement, a kill driven by `ss -lptn | grep :3000`, reported the port free
+and killed nothing, because `ss` returns no rows at all in this container. The
+build that followed produced new asset hashes while the old server, which had
+never stopped, kept serving the old ones. It surfaced as `EADDRINUSE` in the
+server log rather than as a phantom page, so it cost minutes instead of turns,
+but it is the same failure with the same cause.
+
+**Why the recorded fix did not hold.** It named a tool rather than a
+property. "Verify the port is free" is only a verification if the thing doing
+the verifying can see ports, and in this container it cannot: `ss` produces
+empty output and no error, so every check built on it passes. A check that
+cannot fail is not a check. The general shape is the one
+`INC-2026-09-20-content-invisible-at-rest` already ends on from the other
+direction: an entry written as a mechanism only catches that mechanism.
+
+**The fix.** Identify the server by what it is rather than by a port or a
+command line, from `ps`, with a field match that cannot match the agent's own
+argv:
+
+```bash
+for pid in $(ps -eo pid=,args= | awk '$2=="next-server"{print $1}'); do kill "$pid"; done
+```
+
+`$2=="next-server"` is exact, so this run's own `/bin/bash -c ...` can never
+match it. Then verify by absence of the process rather than absence of a
+listener, and keep the served-versus-disk stylesheet hash comparison from the
+previous entry as the check that actually proves the server is the build:
+
+```bash
+curl -s localhost:3000/ | grep -o '/_next/static/css/[^"]*' | head -1
+ls .next/static/css/
+```
+
+Every rebuild in this run ran that comparison and printed HASH MATCH before
+anything was screenshotted.
+
+**What the org grows from it.** When a register entry prescribes a check,
+the entry should say how the check fails, not only how to run it. A command
+that returns empty on success and empty on error is the worst case, and it is
+common: `ss` without privileges, `grep` with no matches, and a `kill` with no
+arguments all succeed at doing nothing. The three tool traps this class has
+now produced, in order, are worth carrying as one rule: never match a process
+by a string that your own command line contains, never infer a process from a
+port unless you have seen the port lookup return something, and never trust a
+server to be the build you just made without comparing an asset hash.
+
+## Incident 25 — Merged prompt fixes do not reach production (2026-09-21, research seat)
+
+Filed under the standing rule: two instances in one run, the same
+failure both times.
+
+**Instance one.** On 2026-09-19, commit a94a003 sharpened
+`prompts/interpret.md` on contradictions, anaphora and loose `refines`.
+It was a meta-review proposal from this seat, reviewed and merged. Three
+days later every edge in the claim graph still carries method sha
+`fbe080261d6b`, including the nine written on 2026-09-21, while
+`prompts/interpret.md` at HEAD hashes to `6706ec7bffee`. The interpret
+worker has never once run the fixed prompt.
+
+The cost is not hypothetical. All five `contradicts` edges in the graph
+are miscategorised, three of them shipped in 2026-W37's "Left behind"
+section, and one produced a sentence that is simply false — *"The same
+reference implementation that achieved 82.2% was later shown to drop to
+12.5% on memory-intensive tasks"*, which welds two different systems on
+two different benchmarks together. The merged prompt forbids all five by
+name and carries that exact pair as its worked example.
+
+**Instance two.** The same commit range added `cs.CR` to `sources.yaml`,
+naming 2609.15906, 2609.17648 and 2609.14079 as the papers it existed to
+reach. All three are absent from the corpus. `sources.yaml` reached the
+ingest image roughly a day later, by which time arXiv's 100-most-recent
+window for a category running 34 papers a day had moved past them. The
+category works now; those three are gone for good.
+
+**Why, mechanically.** Every prompt and `sources.yaml` is baked into its
+Modal image with `add_local_file` (ingest.py:23, distill.py:53,
+interpret.py:27, triage.py:59, weekly.py:75). A scheduled function goes
+on running the image built at the last `modal deploy`. Merging to main
+therefore changes nothing in production, and nothing in the repository
+deploys, checks, or reports the difference. This covers every file
+ADR-12 authorises the research seat to propose diffs to, which makes the
+whole meta-review loop write-only until someone deploys by hand.
+
+**The part that makes it incident 20 again, one level down.** The
+`prompt_sha` column exists precisely so a stale prompt is visible, and
+it recorded the discrepancy correctly every single day for three days.
+The archive-side gate worked. There is no artifact-side gate: nothing
+between the merge and the running image ever compares the two. This is
+the same shape as the taste ruling recorded and then violated by the
+next artifact, and it is why this run proposed no second fix to
+`interpret.md` — a third sha that also never deploys would look like
+progress and change nothing.
+
+**Suggested fix, engineer's lane, not filed as a proposal here.** A CI
+check comparing `sha256(prompts/*.md)[:12]` against the newest
+`claim_links.method`, `triage_log.prompt_sha` and `digests.prompt_sha`
+would have failed on 2026-09-19 and every day since. Deployment itself
+should follow a merge to those paths rather than wait to be remembered.
+
+## Incident 26 — The deploy freeze is not about prompts, and it has cost the top research priority its whole corpus (2026-09-24, research seat)
+
+Filed under the standing rule. Incident 25 recorded that a merged
+`prompts/interpret.md` fix never reached production. Three days later it
+still has not, and the same failure has now been found in a second file
+class, which makes it a repeat and widens what the register knows.
+
+**The repeat.** Every edge in `claim_links`, up to and including the
+nine written on 2026-09-23, still carries method sha `fbe080261d6b`.
+That is `prompts/interpret.md` as it stood on 2026-09-07. HEAD hashes to
+`6706ec7bffee` and has since 2026-09-19. Five days, no deploy. All five
+`contradicts` edges in the graph remain miscategorised and two of them
+were written *after* the corrected prompt merged, by the prompt it was
+written to replace.
+
+**The widening.** Incident 25 framed this as a prompt problem. It is not.
+`pipeline/triage.py` gained interleaved per-tier draining on 2026-09-19
+(commits 74e0c99 and 73da628), written to end a tier starvation that a
+previous research brief had found by hand in the database — the code
+comment at triage.py:15 says so. Production has judged tier `b` and
+nothing else on 09-20, 09-21, 09-22 and 09-23. Merged application code is
+frozen exactly as merged prompts are, because both ride the same Modal
+image, and nothing in the repository deploys, checks, or reports the gap.
+
+`prompts/triage.md` at HEAD matches the sha production recorded, which
+dates the last deploy to roughly 2026-09-12. Everything merged in the
+twelve days since is sitting in main, unread by anything that runs.
+
+**What it cost, stated as a number.** 7,991 papers are ingested and 151
+produced all 693 claims, every one of them through `hf-daily`. Tier `a`
+(the seven arXiv categories) has 2,329 papers waiting and has never had
+one paper judged; tier `a-low`, which is where cs.CR lives, has 936 and
+zero triage rows of any kind. The consequence lands directly on the
+owner's own order: agent containment was made the top research priority
+on 2026-09-19, and the corpus holds **zero** claims mentioning a
+sandbox, an escape, isolation, least privilege or prompt injection. The
+fix for that was merged on the same day the priority was set. It has
+never run.
+
+**Why it is incident 20's shape again, one level further down.**
+Incident 25 already identified the missing artifact-side gate. This
+entry adds that the finding, the fix, and the merge can all be correct
+and the system still changes nothing, because the last gate — something
+that puts merged code in front of the running process — belongs to no
+seat. The research seat proposes, the engineer merges, and no charter
+owns the deploy.
+
+**Correction to incident 25, instance two.** That entry attributed the
+three missing cs.CR papers to arXiv's 100-most-recent window moving past
+them before `sources.yaml` reached the ingest image. The ingestion half
+is right; none of the three is in `papers`. The remedy stated there — "the
+category works now" — is wrong. No `a-low` paper has ever been triaged,
+so a cs.CR paper that did arrive would sit in the queue indefinitely.
+Fixing ingest reach would not have produced a single cs.CR claim.
+
+**Not filed as a proposal here; engineer's lane.** Incident 25's
+suggested CI sha check stands and should extend to `pipeline/*.py`, not
+only `prompts/*.md`. The research seat's own charter is amended in this
+PR instead, to stop this seat spending its one weekly proposal on files
+that cannot take effect (`prompts/research-agent.md`, Step 4).
+
+## Incident (number to be assigned on merge) — The security backlog is queued behind one permission, and five findings repeated because of it (2026-09-24, security agent)
+
+**On the number.** Four other open pull requests append to this file right
+now (#70, #71, #74, #77), and #71's title already claims "incident 26". This
+entry deliberately does not take a number, because the 2026-09-18 audit's own
+finding about this register was three entries numbered 11, two numbered 12 and
+two numbered 13, created by exactly this race. The ExO seat assigns the number
+when it merges. Appended at the tail so the conflict is one line rather than a
+hunk.
+
+**The repeat.** The standing rule at the top of this file says any issue that
+occurs more than once is recorded at the moment it repeats. Five findings from
+the 2026-09-18 and 2026-09-19 audits were re-verified against main today and
+are unchanged:
+
+1. No rate limit on the MCP passphrase, which is the single credential guarding
+   the corpus database and a GitHub token.
+2. No charter carries a rule about untrusted content. Still zero of twelve.
+3. Actions and the agent image pinned by mutable tag rather than digest.
+4. `digests/2026-W37.md` still in public history.
+5. Incident 22's budget check still sitting in `.github/workflows-pending/`,
+   after which incident 24 recorded the next press failure.
+
+Individually each has a reason. Together they are incident 20's shape for the
+fourth time: something gets written into the right register, by the right seat,
+and nothing between the record and the next artifact ever opens the file.
+
+**What is new, and it is the useful part.** Sort those five by what actually
+blocks them and they collapse onto one cause. Items 3 and 5 are workflow edits.
+The transcript exposure found today needs a workflow edit. Pinning the MCP
+public host needs a new secret. **No agent token can write to
+`.github/workflows/` or set a secret, which is incident 12.** So the org's
+security backlog is not queued behind engineering capacity or behind the
+owner's judgment. It is queued behind one permission, and every audit adds to
+the queue while no run can drain it. The 2026-09-18 audit noted the block once
+per finding, as a footnote on each. Four audits in, the footnote is the
+pattern.
+
+The consequence to watch is that the queue is silent. An item blocked on the
+owner's push looks identical in the ledger to an item nobody has started, so
+the backlog grows without anything reporting that it is growing.
+
+**Proposed, and it is the ExO's call rather than this seat's:** the ledger
+should carry a status that means "complete, blocked on an owner push", distinct
+from `proposed` and from `urgent`, so that the count of them is visible
+somewhere without a person reading every entry. Failing that, each audit should
+open with it, which this one now does.
+
+**This seat contributed to the pattern too, and the detail is worth keeping.**
+PR #31, the 2026-09-18 run's own pull request, has been open six days. Its
+headline fix was escaping the OAuth parameters reflected into the MCP login
+form. That hole is closed on main today, and it was not closed by that PR: the
+flow moved into `mcp/oauth_flow.py` and the engineer's rewrite carried the
+escaping with it. So the fix arrived, the report did not, and the PR now
+patches a function that no longer exists. A seat's report is not what fixes
+anything, and a run that measures itself by the report it filed will believe it
+shipped work that was in fact done by somebody else or not at all.
+
+## Incident 30 — The newest claims are invisible to the graph, for the second time (2026-09-22, skill agent)
+
+**Renumbered from 23 to 30 on 2026-09-24 by the skill seat.** This entry
+was written on the 2026-09-22 skill branch as incident 23. The Kimi
+routing rollout took 23 and the press 404 took 24 on main first, both
+dated 2026-09-23, so merging that branch into this run's conflicted
+here. Numbers 23 through 29 are all claimed by at least one open branch
+today (writer's #74 uses 23 and 25 through 27, the ExO's #77 uses 25
+through 29), so 30 is the first number no open branch has taken, and it
+is still only correct if this PR merges before those two. Nothing in
+the entry below changed except the number. The collision class itself is
+already recorded by the ExO seat as incident 29 in PR #77, "two branches
+allocated the same incident numbers, for the fourth time," so this seat
+records the instance here rather than minting a duplicate entry for it.
+
+**Recorded under the standing rule**, which says an issue that occurs
+more than once anywhere in the org is registered at the moment it
+repeats, with no judgment call. The effect here is the one recorded on
+2026-09-19; the mechanism is a different one, and the first mechanism
+was fixed in between.
+
+### The first occurrence
+
+Ledger, 2026-09-19, "29% of claims have no embedding and are invisible
+to search": 158 of 543 claims had a null embedding, every one written in
+the previous three days. The consequence recorded then was that those
+claims "cannot be reached by `interpret`'s neighbour query, so they draw
+no edges. The corpus is silently three days stale to its own
+agent-facing surface."
+
+### The second occurrence
+
+Measured read-only against Neon during this run. Embeddings are fixed:
+zero claims have a null embedding today. The staleness is worse anyway.
+
+- 661 claims, 222 interpreted, 439 waiting, all 439 embedded.
+- 216 edges in `claim_links`, and the highest claim id in any edge is
+  221.
+- `interpret` runs daily and strictly in id order, at 7 to 31 claims a
+  day, about 15 on average. `distill` adds about 40 a day. Today
+  `interpret` reached ids 212 through 222 while `distill` wrote ids 611
+  through 661.
+
+Three days stale on 2026-09-19 is twelve days stale on 2026-09-22, and
+the gap grows by roughly 25 claims a day. The first occurrence was a
+regression that stopped. This one is a rate mismatch that does not stop
+on its own.
+
+### Why it was not caught between the two
+
+The first occurrence was found by an ExO corpus sweep and written as a
+ledger entry about embeddings, so the fix that followed was an
+embeddings fix. Nothing in the org watches the interpret queue's depth
+or its trend, which is the quantity that actually determines whether the
+graph reaches the frontier. A backlog that is drained every day looks
+healthy in any check that asks "did it run", and every check the org has
+asks that.
+
+### What it cost this run
+
+The skill seat's cluster selection is specified against `supports` edges
+in two charters. With no edge above claim 221, that criterion could not
+be applied to the two thirds of the corpus where the operational
+material actually lives, so this run selected on topic and procedure
+density instead and said so in its pull request. It also means O2's
+twelve-skills target is running on a corpus whose graph layer is
+diverging from its claim layer.
+
+### The fix, and who holds it
+
+Engineer's, with the chair on the budget: rate-match `interpret` to
+`distill`, work the backlog from both ends, and pair it with the open
+"interpret neighbour query has no paper boundary" entry so a bigger
+batch does not simply buy intra-paper edges faster. Full entry with the
+numbers is in docs/ideas.md, dated 2026-09-22.
+
+The monitoring gap is the more general lesson and belongs with the
+register's own rules: **a queue is not healthy because its worker ran.
+It is healthy when its depth is flat or falling.** Every blackboard
+queue in db/schema.sql (`triage_queue`, `distill_queue`,
+`interpret_queue`) is checkable that way in one SQL statement, and none
+of them is checked that way today.
+
+## Incident 31 — A new skill took a neighbour's trigger case, for the second time (2026-09-24, skill agent)
+
+**Recorded under the standing rule.** The same failure happened on
+2026-09-22 and was written up as a ledger entry rather than an incident,
+so this is the repeat that puts it in the register. Numbered 31 on the
+same contested basis as the renumber note on incident 30 above: numbers
+23 through 29 are each claimed by at least one open branch today, and
+the ExO's #77 already records the collision class as its own incident
+29.
+
+**First occurrence, 2026-09-22.** The `recursive-harness-self-improvement`
+draft won `he-pos-3`, a case belonging to `harness-engineering`, on its
+first complete pass. Diagnosed then as a length effect: the draft's
+description was 170 words against the specimen's 102, and
+`LexicalEngine.score` divides by the idf mass of the prompt's terms and
+never by the candidate's own, so a longer description strictly dominates
+a terser one on any prompt both cover.
+
+**Second occurrence, 2026-09-24.** The `evaluation-integrity` draft won
+`pt-pos-2`, "before we distil from our large teacher model, how do we
+know its answers are actually right", which belongs to
+`self-improving-post-training-loops`. The description at that point was
+184 words. Cutting it to 150 and replacing the generic clause vocabulary
+gave the case back, with the library at 27 of 27.
+
+**Why the first fix did not prevent the second.** It was not a fix. The
+2026-09-22 run rewrote its own description, which repairs that skill, and
+proposed an engine change for the next run. The rule it also wrote into
+prompts/skill-extract.md, treat anything past 150 words as a defect, was
+the durable part, and this run wrote 184 words anyway because the rule
+lives in a prompt a run reads at step 2 and the description is written at
+step 3. Nothing measures the length at the moment the field is written.
+
+**What would actually catch it.** A length check inside
+`trigger_test.py`: emit a warning, in the same list that already flags a
+description with no "Use when" clause, when any library description
+exceeds the word budget. The runner is the one thing every skill run
+executes before shipping. That is a `skills/_validation/` change, this
+seat's surface, and it belongs in the same PR as the decoy-panel rewrite
+the 2026-09-24 ledger entry proposes, not in a PR that also adds a skill.
+
+**The general shape, which is the reason to register it.** A rule written
+into a prompt is checked when someone reads the prompt. A rule written
+into the runner is checked every time anything ships. Incident 20 is the
+same lesson about a taste ruling, and the registers map
+(docs/agents/registers.md) says the gate that checks before shipping is
+the one the org keeps forgetting to build.
+
+## 2026-09-21 — Two gaps found while building the prose benchmark (ADR-29)
+
+Engineer seat, sprint 2026-09-21 item 2. Recorded here rather than only
+in the ledger because ADR-29 says every detected gap is an
+incident-register entry with its class named, however small. Neither of
+these lost a run. Both were invisible until a piece of work happened to
+walk into them, which is the part worth recording.
+
+Titled by date rather than by number on purpose. PR #60, this seat's
+previous run and still open, is taking incident 23.
+
+### Gap 1: the comped friends list is a category, not a roster
+
+**Class: awareness.** The org planned around an asset it never created.
+
+Sprint item 2 says to have "the comped friends list score both blind".
+The grading packet is built and there is nobody to send it to. The word
+`comped` appears in docs/sales/first-customers.md as a pricing tier, in
+the launch calendar as the audience for the final pre-launch digest, and
+in the roadmap. No file in the repository names one person on it, one
+email address, or even a count.
+
+Three planning documents and one sprint item depend on that list. The
+sprint's own "Notes for the engineer" says items 2 through 4 need "only
+the corpus, the sent issue(s), and the comped friends list", which reads
+as a statement that all three were in hand. Two were.
+
+The fix is the owner's, because it is her friends and their addresses,
+and because where personal contact details live is a decision before it
+is a file. Filed in docs/ideas.md the same day.
+
+### Gap 2: the prose ban list cannot be cited by number
+
+**Class: enforcement.** A register that cannot be addressed cannot be
+checked at the artifact.
+
+docs/voice/ban-list.md has two entries numbered 26, two numbered 27, and
+no 30 or 31. This surfaced while writing docs/evals/ documentation that
+cites the list by number, because "ban-list entry 26" points at two
+different rules, one about a label that moved down a level and one about
+the club sentence.
+
+This is incident 20 one level down. Incident 20 was a ruling recorded in
+the right register and never opened before the next artifact shipped.
+This is a register that is opened, and then cannot be quoted back
+precisely enough for anyone to argue about whether an artifact passed.
+Stable ids that are never reused would close it. The file is the writer
+seat's surface, so the proposal is in docs/ideas.md rather than applied
+here.
+
+### Not recorded as a gap, and why
+
+This is the third consecutive engineer run unable to settle the two
+`urgent` ledger entries about the archive count and the uncited 23.9%
+claim, because both need database access this workflow does not carry.
+That is not a gap under ADR-29. The fix is written down, it is
+accurate, and it sits at `proposed` awaiting the owner's decision, which
+is the system working rather than failing. It is named in the PR so the
+wait is visible, and the ledger entry filed today asks for a `Blocked
+by:` line so a pending decision of this shape stops being retold as
+prose in three PR descriptions.
+
+## 2026-09-23 — The same urgent question has been unanswerable for four runs (engineer seat)
+
+Unnumbered on purpose. Open PRs at this moment carry entries up to 26 and
+numbering them from a branch is how the file ended up with two incident
+20s and two incident 22s. The ExO can give this one its number on the
+next read.
+
+**The repeat.** The ledger entry "Verify the archive: the press may have
+printed once, not four times" (docs/ideas.md, 2026-09-19) is marked
+`urgent` and asks for one query: `select week, created_at, model,
+prompt_sha from digests order by week`. It decides whether the newsletter
+has a fixed bug or an eleven-day outage with subscribers on the other end
+of it. Four engineer runs have now recorded that they could not run it.
+
+- 2026-09-19 filed it urgent, with the reason: the engineer workflow has
+  no database credentials.
+- PR #60 (2026-09-20) reports the same blocker for the Modal half.
+- PR #69 (2026-09-22) reports it again, naming `NEON_RO_URL` directly.
+- This run confirmed it at the source rather than by assumption.
+  `.github/workflows/agent-engineer.yml` passes exactly two values into
+  the container, `GH_TOKEN` and `PROJECTS_TOKEN`, and `modal` is not
+  installed in the agent image. `NEON_RO_URL` is wired into the research
+  and skill workflows only.
+
+**Why it is an incident and not a ledger entry.** It already is a ledger
+entry, twice, and the ledger is the wrong instrument for it. A proposal
+waits for a verdict. This is a seat that cannot perform a duty its own
+charter's Observe step assigns it, so every run rediscovers the same wall
+and writes the same paragraph. The standing rule at the top of this file
+covers exactly that: an issue that occurs more than once is recorded here
+at the moment it repeats.
+
+**What would close it.** One line in `agent-engineer.yml` adding
+`NEON_RO_URL` to the job's env from the existing secret, which is the
+same secret the research and skill workflows already read. That edit is a
+runtime change (docs/agents/runtime-changes.md), so it is not this seat's
+to make. It is filed for the owner or the chair, and until it lands, the
+engineer's charter step 3 ("pipeline health") and every ledger item that
+needs the database of record are unperformable by design rather than by
+accident.
+
+**The cost so far.** Five days on the archive question, which is a
+question about whether people who subscribed have been receiving
+anything.
+
+## Incident 31 — The rejected sentence was the generator's own instruction, one day after the same defect was named in another file (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap. A rule was written, in the right
+register, by the right seat, and the file that produces the artifact was
+never checked against it.
+
+**Recorded because the standing rule says so.** This is the second
+occurrence in twenty-four hours, in two different generators.
+
+**Numbering.** `origin/main`'s tail is still incident 24 and its
+continuations. Entries 25 through 30 are on the writer chain, unmerged.
+31 and 32 follow them, per the rule incident 30 left behind.
+
+### What happened
+
+The owner read issue 2026-W39 and struck its opening sentence: "You
+spent last week watching agents get faster by doing less at test time."
+Her ruling, verbatim: "dont assume readers read each issue." It is now
+canon law 13.
+
+The sentence was not the model's invention. `prompts/digest.md`, the
+generator this seat owns, contained this in its opening spec:
+
+> Some weeks the honest move is continuity: name what the last issue
+> flagged as unresolved and say what changed, which orients and
+> interprets in one move.
+
+The rejected sentence is that instruction carried out correctly.
+
+### Why it is a repeat
+
+Ban list entry 44 was added to `docs/voice/ban-list.md` on 2026-09-24,
+hours earlier, and says exactly this: "A tell a model reaches for by
+habit shows up in some issues. A tell its instruction requires shows up
+in all of them, and no amount of rereading the output catches it,
+because the writer is obeying." Entry 44 closes with the instruction to
+"read every generator, not the one this seat happens to own."
+
+The entry was written from `prompts/daily.md`, a generator in another
+seat's pull request. The same defect was sitting in `prompts/digest.md`
+at the time, and the sweep that found it in the unfamiliar file did not
+turn around and run over the familiar one. The seat looked everywhere
+except at itself on the day it wrote the rule about looking.
+
+### The fix, applied
+
+`prompts/digest.md` changed in six places in this pull request. The
+continuity shape is replaced by the running thread stated whole, the
+greeting is told that its "you" may name what the reader builds and
+never what they have read, and a hard gate before output names four
+shapes of the failure. Canon law 13 carries her specimen and the
+repaired opening.
+
+### The rule that would have caught it
+
+When a ban list entry is added from reading one generator, the same
+read runs over every other generator in the repo before the entry is
+committed. The sweep is the entry's cost of admission, not a follow-up.
+There are two generator files today and the seat owns one of them.
+
+## Incident 32 — The pre-send quality gate returns a pass on the issue the owner rejected (2026-09-24, writer seat)
+
+**Class, per ADR-29.** Enforcement gap, in its sharpest form: the
+instrument ran, found nothing, and its silence was available to be read
+as approval.
+
+**Recorded because the standing rule says so.** This is the same defect
+as ban list entry 36 and incidents 26 and 27, now in a third artifact.
+A gate that enumerates instead of asking has failed once in the
+generator's heading rule, once in its ASCII rule, and now in the tool.
+
+### What happened
+
+Issue 2026-W39 shipped with ten em dashes, seven semicolon joins, twelve
+non-ASCII characters, and at least nine papers discussed in prose with
+no link to any of them. Four rules of `prompts/digest.md`, each stated
+in the version of the file that wrote the issue, some of them three
+times over.
+
+`tools/check_digest_quality.py` exists to catch exactly this before an
+issue sends. It has been written, tested and open in engineer PR #60
+since 2026-09-20. Run read-only against W39 during this editorial run,
+it reports:
+
+```
+2026-W39.md: 0 blocking, 4 warnings.
+  [warn] empty-intensifier (2x, ban list 5)
+  [warn] bare-number (2x, ban list 24)
+```
+
+Zero blocking findings. Two of the four warnings are false.
+
+### Three causes, all in the tool
+
+1. **It parses zero items.** `parse_items` returns an empty list for
+   W39, whose first and third sections are flowing prose rather than
+   bold-led items. Every per-item rule then ran over an empty list and
+   reported nothing: `citation-per-item`, `ends-on-citation`,
+   `uniform-rhythm`, `uniform-length`. The gate never said it had found
+   no items. A checker that cannot parse its input must fail loudly,
+   because a green light on an unread file is worse than no light.
+2. **The em dash is not in its character list.** `TYPESETTER` holds four
+   entries: the non-breaking hyphen, two space variants, and the
+   multiplication sign. The em dash is banned by canon law 1 and by the
+   generator three times and is not among them. Neither is the Greek
+   tau that W39 prints twice. The generator learned this exact lesson on
+   2026-09-21 and its ASCII rule now asks whether every character is
+   ASCII. The tool still lists offenders.
+3. **`INTENSIFIERS` matches substrings.** It looks for `"very "` inside
+   the lowercased line, so it fires on "every screen" and "every team".
+   Both intensifier warnings on W39 are false, and a gate that cries
+   wolf on "every" is a gate whose warnings get skimmed.
+
+### Not patched here
+
+`tools/` and `pipeline/` are outside the writer seat's writable surface.
+Filed to the engineer in `docs/ideas.md` with the evidence above, which
+is charter step 4: the third prompt edit is the wrong instrument when the
+rule is mechanically checkable.
+
+### The rule that would have caught it
+
+Every gate is tested against an artifact known to fail it before the
+gate is trusted. PR #60's tests assert that the checker finds the
+defects it was written to find. Nothing asserted that it finds them in a
+real issue, and the first real issue it met was one it passed.
+=======
+*Renumbering note (2026-09-24, frontend run). These two entries were written
+on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
+carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
+They are re-identified here under the date-scoped scheme the ExO run shipped
+the same day, rather than allocated new numbers, because that scheme is the
+fix for exactly this collision.*
+
+
 ---
 
 ## INC-2026-09-24-email-template-never-opened — the designed email shipped for five days without ever being rendered (2026-09-24, owner-reported)

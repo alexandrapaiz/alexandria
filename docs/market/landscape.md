@@ -173,6 +173,41 @@ for orchestration essentially," not AI news.
 
 ## Agent-knowledge ecosystems
 
+### Anthropic Claude Marketplace — new find, added 2026-09-24
+- **What it is:** Anthropic's own marketplace, launched 2026-09-23, organized
+  around three actions: **Add** (2,000+ connectors and plugins built on MCP
+  and Agent Skills, from Google, Microsoft, Notion, Salesforce, Atlassian and
+  others), **Buy** (Claude-powered partner products — Cursor, CrowdStrike,
+  Harvey, Legora, Lovable, Snowflake — purchasable with committed Anthropic
+  spend), and **Scale** (implementation services from Accenture, BCG,
+  Deloitte). [claude.com/blog/claude-marketplace](https://claude.com/blog/claude-marketplace)
+  (primary), corroborated by
+  [runtimewire.com](https://runtimewire.com/article/anthropic-claude-marketplace-software-connectors-consultants).
+- **Who it serves:** Enterprise buyers with an existing Anthropic spend
+  commitment, redirecting procurement toward partner software, not
+  individual developers or skill authors.
+- **Resolves last week's flagged rumor:** 2026-09-18's landscape entry
+  flagged an unverifiable secondary-source claim of a paid Anthropic skills
+  marketplace with 15% revenue share. Checked this real, primary-sourced
+  launch directly against that claim: **not the same thing**. The actual
+  announcement contains no pricing, no revenue share, and no mechanism for
+  individual community skill authors to sell anything — it is an enterprise
+  procurement catalog for partner *products*, not a creator marketplace for
+  skill *files*. The 15%-revenue-share claim stays unverified and now looks
+  like SEO-blog conflation of this launch with a rumor, rather than an
+  advance report of it.
+- **Weaknesses against alexandria:** No evidence attached to any listing —
+  a connector or partner product appears because a partnership exists, not
+  because of measured reliability. No claim-graph-style verification layer.
+  Still no first-party competitor to alexandria's $20/month individual
+  operational tier.
+- **Why it matters for positioning:** the platform owner is building
+  distribution for *enterprise* partner software, not a monetization path
+  for individual curated, evidence-backed skills. That gap — the one
+  alexandria's paid tier occupies — stays open one more week, from the
+  strongest possible source (Anthropic itself declining to fill it, for now).
+- **Last observed:** 2026-09-24.
+
 ### Anthropic's Claude Skills ecosystem / skill marketplaces
 - **What it is:** Not one product — a fast-growing, fragmented set of
   directories/marketplaces for Claude "Agent Skills."
@@ -257,6 +292,30 @@ for orchestration essentially," not AI news.
   question) and one lived (a real company's users hitting the problem in
   production).
 
+### OpenAI's 10,000-agent swarm — orchestration-at-scale precedent, added 2026-09-24
+- Not a competitor, a signal: OpenAI published a proposed resolution of the
+  Navier-Stokes existence-and-smoothness Millennium Prize problem on
+  2026-09-08, produced by roughly 10,000 concurrent agents coordinated by an
+  internal model, generating about 2.7 million agent messages and 130
+  billion output tokens over 88 hours, then 17 more hours of Lean
+  verification. [neowin.net](https://www.neowin.net/news/openai-agent-swarm-triggers-verification-for-navier-stokes-math-problem/),
+  widely corroborated. The Clay Mathematics Institute's verification process
+  is multi-year and not yet complete.
+- **A public credit dispute followed.** NYU mathematician Tristan Buckmaster
+  said OpenAI's Sébastien Bubeck pressured him over credit for related,
+  Lean-verified work Buckmaster had done with Anthropic's Levent Alpöge,
+  building on an approach opened by Córdoba and Martínez-Zoroa.
+  [The Batch, issue 371](https://www.deeplearning.ai/the-batch/issue-371).
+- **Reading for alexandria:** the loudest orchestration story of the year
+  is now also the loudest attribution dispute of the year — a live
+  demonstration of the exact gap alexandria's claim graph is built to
+  close (who gets credit, whose work an approach builds on, whether a
+  claim has independent verification yet). It also strengthens last week's
+  still-open orchestration-pattern-benchmark ledger proposal: multi-agent
+  orchestration at extreme scale just became front-page news, not a niche
+  practitioner ask.
+- **Last observed:** 2026-09-24.
+
 ## Watchlist (not yet full entries, flagged for next pass)
 
 - **Exa (exa.ai)** — not a digest/skills competitor but the closest
@@ -306,3 +365,10 @@ for orchestration essentially," not AI news.
   as unreliable for now. Added Bastionskill and a Cloudflare
   security-audit-skill note to the skills-ecosystem section; added the
   Agent Memory Leaderboard to the watchlist.
+- 2026-09-24: added Anthropic Claude Marketplace (launched 2026-09-23),
+  checked directly against last week's flagged, unverified paid-skills-
+  marketplace rumor — not the same product, rumor still unverified. Added
+  OpenAI's 10,000-agent Navier-Stokes swarm and the credit dispute it
+  triggered as an orchestration-at-scale watchlist note. Re-checked Elicit
+  and Consensus pricing (docs/market/briefs/2026-09-24.md); no change
+  found at either.
