@@ -2,7 +2,8 @@ name: engineer-agent
 
 on:
   schedule:
-    - cron: "6 11 * * *" # 7:06 AM ET daily
+    - cron: "6 11 * * *"  # owner directive 2026-09-24: engineers run twice a day (products are not yet in the users' hands)
+    - cron: "6 23 * * *"
   workflow_dispatch:
     inputs:
       owner_instructions:
@@ -54,6 +55,14 @@ jobs:
       # success, and lost everything at teardown because nothing was pushed
       # (alexandria's register; incident numbering differs per repo). A green
       # conclusion is not evidence of shipping.
+      - name: Upload run transcript
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: transcript-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: ignore
+          retention-days: 90
       - name: No-ship tripwire
         if: always()
         run: |
