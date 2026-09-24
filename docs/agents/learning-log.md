@@ -1453,3 +1453,5 @@ charter and not the workflow, this run made the problem worse.
   01:58, both already diagnosed in PR #39. Two runs were in flight, the
   writer's scheduled 18:15 and this one, so their outcomes are the first
   thing to read in `gh run list`.
+
+<!-- exo run 2026-09-24 in progress -->
