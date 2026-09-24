@@ -3004,3 +3004,276 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   reachable by an agent over MCP, so the difference is not the interface.
   It is that one serves a search box and the other serves a graph that
   knows when it has changed its mind.
+
+### 2026-09-20 — The masthead is about to be hardened into two constants (writer seat)
+- Trigger: the editorial run of 2026-09-20, structure watch. This is a
+  second filing on the line already filed on 2026-09-19 ("The masthead is
+  the recipe, and it is in code"), which is still `proposed`. It is filed
+  again rather than edited because the facts changed.
+- What changed: PR #35 turns `MASTHEAD` into `MASTHEAD[kind]`, gives the
+  daily its own standing line, and adds three tests that assert each kind
+  gets its masthead under the title. The unresolved editorial defect is
+  therefore about to acquire a second copy and a test suite holding both
+  in place.
+- Why it still cannot be fixed in the prompt: `add_masthead()` in
+  `pipeline/weekly.py` injects the line after the model has finished, so
+  no change to prompts/digest.md can reach the second-most-read line of
+  the issue. The generator now writes a contents line inside its opening
+  (ban list 23), which means a reader meets a fixed description of the
+  product and then a written list of the day's items, two lines apart,
+  doing overlapping jobs.
+- Three specific problems with the words themselves, beyond law 3. It
+  says "distilled weekly", which stops being true the day PR #35 merges.
+  It recites the framework's three slots in order, which is canon law 12
+  one level above the heading gate. And it would fit any issue on any
+  day, which is the test ban list 17 and 20 both apply.
+- What to do, smallest first: delete `MASTHEAD` and `add_masthead()` and
+  let the finding land first, which is this seat's recommendation and was
+  the recommendation on 2026-09-19. If the owner wants a standing line
+  under the title, the house already has its best sentence and it is the
+  close, so promote "You read to decide. Your agents load to act." and
+  let it carry both ends.
+- If neither happens before PR #35 merges, the daily masthead should at
+  least lose the cadence claim, because "what changed in the last 24
+  hours" is true of the daily and the weekly line beside it is not.
+- Cost: deleting one constant, one helper, one call site, and the three
+  tests that cover them.
+- Whose call: the owner's on the words, the engineer's on the code. This
+  seat does not write pipeline code.
+- Status: proposed
+
+### 2026-09-20 — The heading gate should compare against the last issue, not against a list (writer seat, structure watch)
+- Trigger: the second editorial run of 2026-09-20, charter step 4. The
+  rule says that when the same structural fix fails twice through prompt
+  changes alone, the pipeline change gets proposed here instead of
+  tinkered a third time. This one has failed four times: ban list 19
+  (the category heading), 20 (the slot label printed, her second
+  flag, incident 20), 30 (the same word in bold one level down), 33
+  (the same word in italics over a list). Each fix added the newly seen
+  string to a list, and the next occurrence wore a disguise the list did
+  not hold. Incident 26.
+- What is wrong with the gate we have: `skeleton-heading` in
+  `tools/check_digest_quality.py` (PR #60) blocks when a heading matches
+  one of the known slot labels. That is the right rule and the wrong
+  shape. It can only ever catch a label that has already shipped once,
+  and docs/standards/digest-quality.md states the real test on its own
+  page, "a heading, an opening or an item that would fit tomorrow's
+  issue unchanged is furniture", then files it under what only a person
+  can check, after publication.
+- What: a machine can check a strong proxy for that test without any
+  judgment, because "would fit tomorrow's issue" has an observable
+  shadow, "fitted yesterday's". Add a rule that reads the headings of
+  the last N issues out of the `digests` table and blocks when today's
+  issue repeats one of them. No list of forbidden words, no new
+  vocabulary to maintain, and it catches labels nobody has invented yet,
+  which is the entire class the four ban list entries above are
+  instances of. It also catches the softer failure the string list
+  cannot see at all: a heading that is freshly written, passes every
+  blacklist, and is the third issue running to say a version of the same
+  thing.
+- What it does not catch, stated honestly: the first appearance of a new
+  label. A label ships once and is caught on its repeat. That is a real
+  limit and still strictly better than a list that catches it on the
+  second, third and fourth appearance only after a person files an entry.
+  The two rules are complements, so keep `skeleton-heading` as it is.
+- First step: the engineer, on top of PR #60, since the gate and its
+  tests are that PR's. One query for the previous issues' `##` lines,
+  one set comparison, one blocking finding, and a fixture issue that
+  reuses last week's heading. The writer seat owns the rule's wording
+  and has put the class test into prompts/digest.md this run; the code
+  is the engineer's.
+- Cost: $0, one query per send.
+- Status: proposed
+
+### 2026-09-21 — A ruling can land with nothing scheduled to read it
+- Trigger: writer run 2026-09-21. `docs/voice/taste.md` gained two commits
+  on 2026-09-20 evening, `bbae4a0` and `29b2901`, carrying her verdicts on
+  eight rounds of site copy. Both landed after every open writer pull
+  request was already created, so no editorial run had read them, and
+  `prompts/digest.md` contained nothing from them until this one. Today's
+  run caught it by luck of the calendar rather than by design.
+- The gap, stated as a rule rather than as this instance: the only thing
+  in the org that carries a taste ruling into the generator is a writer
+  run, and a writer run is triggered by the clock and by an issue. A
+  ruling is triggered by her. The two are unconnected, so the interval
+  between a ruling and the first run that reads it is unbounded, and on
+  a week when the press does not print it can be days.
+- Why the existing gate does not cover it. Incident 20's fix was the
+  taste gate in every seat's charter, which is a check the writer runs
+  against an artifact. It fires when something ships. Nothing fires when
+  a ruling arrives, which is the other half of the same problem and the
+  half docs/agents/registers.md already says the org keeps forgetting.
+- What: one deterministic check, no judgment in it. Compare the commit
+  date of `docs/voice/taste.md` against the newest file in
+  `docs/voice/reviews/`. When taste.md is newer, say so and name the
+  commits, because that is exactly the state "a ruling exists that no
+  editorial run has read". It belongs beside the budget check that
+  already runs on pull requests touching a generator prompt.
+- What it does not catch, honestly: a ruling recorded somewhere other
+  than taste.md, and a run that opens the file and then ignores it. The
+  first is a register problem for the ExO and the second is why the
+  charter gate stays.
+- First step: the engineer, in `.github/workflows-pending/checks.yml`,
+  which already exists and is already waiting on a hand to move it. Two
+  `git log -1 --format=%cI` calls and a comparison.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-22 — The archive serves a text the press never wrote (writer seat, structure watch)
+- Trigger: writer run 2026-09-22, the cold read. The newest row in
+  `digests` and the file the site publishes for the same issue are two
+  different texts. The row is `2026-W37`, model `openai/gpt-oss-120b`,
+  prompt `83a0aa3be13c`, written 2026-09-14 15:00 UTC, 8,602 characters,
+  titled "Richer feedback boosts long-horizon agents [September 7-13,
+  2026]". The file `site/content/issues/2026-W37.md` was committed
+  2026-09-18 in `ac9698f` and titled "alexandria digest — 2026-W37". They
+  disagree on 170 lines, including the title, the whole opening, several
+  item bodies, and the pipeline counts at the foot, where one says 3,558
+  papers and the other 3,431.
+- Why it is this seat's to file rather than to fix: the words are the
+  writer's custody and the two files are not. `site/content/` is the
+  frontend's and the press is the engineer's.
+- What is wrong: `site/lib/content.js` reads markdown fixtures from
+  `site/content/issues/` and its own comment says "in production this
+  module swaps to a Neon lookup with the same interface". No such swap
+  exists. The word Neon appears in that file once, in that comment, on
+  every one of the eighteen remote branches. `site/app/library/[week]/page.jsx`
+  calls `generateStaticParams()` over the same directory, so the archive is
+  built from whatever markdown happens to be committed.
+- The editorial consequence, which is the reason this is filed at all:
+  nine editorial runs have graded the database row. No reader can reach
+  it. Every finding this seat has produced since 2026-09-14, and every
+  patch to `prompts/digest.md` that came out of one, was derived from a
+  text the product does not publish. An instrument pointed at the wrong
+  artifact is worse than no instrument, because it reports confidently.
+- A second consequence for accuracy: the accuracy audit of 2026-09-19
+  (`docs/evals/2026-09-19-digest-accuracy-audit.md`) corrected three
+  factual errors, and `c30d4fa` applied them to the file. The database row
+  still says GPT-3.5-Turbo where the paper says GPT-5.4. Whichever text a
+  future reader path reaches, one of the two is uncorrected.
+- What: make the archive read the press. One module, the interface
+  `listIssues()`/`getIssue()` already fixed, reading `week`, `body` and
+  `created_at` from `digests`. The markdown fixtures stay as local
+  development data and stop being the published artifact. The engineer's
+  sanitizer in PR #69 sits on the same path and should land first or
+  together, because a database body rendered by `marked` is the exact
+  surface that pull request is closing.
+- What it does not solve: the row is one per week and the upsert
+  overwrites, which the engineer's entry of 2026-09-19 already filed
+  ("Keep every digest body, not one row per week"). That entry becomes a
+  prerequisite rather than a nice-to-have once the site reads the table.
+- First step: the engineer, on top of PR #69. One query, one interface,
+  one fixture test that fails when the archive and the table disagree.
+- Cost: $0, one query per build.
+- Status: proposed
+
+### 2026-09-22 — Every open ruling should name who it is waiting on (writer seat)
+- Trigger: incident 28, this run. Two rulings of 2026-09-19 were still
+  unexecuted on 2026-09-22. One is blocked, because no approved copy
+  exists to replace the rejected library headline and rounds two to eight
+  were all rejected. One is blocked by nothing, because removing
+  `site/content/issues/2026-W37.md` from the archive is one `git rm` and
+  needs no copy, no design and no round trip with the owner.
+- The gap: `docs/voice/taste.md` records rulings and never records what a
+  ruling is waiting on. From outside, a ruling waiting on her and a ruling
+  waiting on nobody look the same, so a seat reading the register cannot
+  tell which entries it could close this morning. The unblocked one hides
+  behind the blocked one.
+- Why this is not the 2026-09-21 entry: that one detects a ruling no run
+  has read. This one is about a ruling that has been read, by several runs,
+  and is still open because nothing says whose move it is.
+- What: one line per open ruling, in whichever register the chair and the
+  PM keep it, naming the seat that can act and the thing it is waiting on.
+  "Waiting on her, copy round nine" and "waiting on frontend, unblocked"
+  are different states and should not be written the same way. Where that
+  line belongs is the chair's and the PM's call, not this seat's, because
+  `taste.md` is hers and the writer seat never edits it.
+- Cost: $0, one line per ruling.
+- Status: proposed
+
+### 2026-09-23 — Normalize the payload's typography once, in gather() (writer seat)
+- Trigger: the first read of a live payload by this seat. It carries 286
+  non-ASCII characters across 42 of its 48 claim strings, 188 of them the
+  non-breaking hyphen inside ordinary words ("on-policy", "inference-time").
+- The gap: ban list entry 13 has been written twice as a prohibition on the
+  writer, on 2026-09-19 and again on 2026-09-21 as incident 27. The writer
+  never typed those characters. The claim text is machine-extracted from
+  PDFs and arrives that way, so both recordings fixed the wrong end.
+- What: a transliteration pass over the string fields in `gather()`, before
+  the payload is serialized. Straight quotes, ordinary hyphens, ordinary
+  spaces, "x" for the multiplication sign, ">=" for the relation, with the
+  exception the ban list already names for a person's or institution's name.
+  The tests in `tests/` already assert this property for the blind
+  benchmark's specimens (PR #66), so the assertion exists and is unused here.
+- Why code and not prompt: this run patched the prompt, which is the correct
+  first move and is charter step 3. It is also asking a 120B model to
+  remember a character class across an 11,000-token instruction on every
+  string it copies. A deterministic replace costs nothing and cannot forget.
+  Charter step 4 says that if the prompt patch fails once more, it stops
+  being a prose problem, and this entry is that finding filed in advance.
+- Blocked by: nothing. `gather()` is `pipeline/weekly.py` and the writer
+  seat never touches pipeline code.
+- Cost: $0, no new service, no model call.
+- Status: proposed
+
+### 2026-09-23 — The queries return claims and the issue prints items (writer seat)
+- Trigger: the same payload read. `new_claims` returns 22 rows that are 5
+  distinct papers, four of them contributing 5 claims each. The traction
+  query returns 12 rows that are 10 papers. `deep_reads` returns 3 papers of
+  which 2 are already in `new_claims`.
+- The gap: nothing in the pipeline or the prompt converts between the two
+  units. The `limit 22` in the new-claims query is a limit on claims, and the
+  section it feeds is measured in items. A writer that takes one row as one
+  item prints 22 items about 5 papers, which is ban list 16, 21 and 29 at
+  once, without inventing a word. 2026-W37's "several teams" over two papers
+  was read for nine runs as the model's dishonesty. It is the query's shape.
+- What: group by paper in SQL and return papers with their claims nested,
+  or add a per-paper cap and select distinct papers up to the limit. Either
+  makes the unit the section is written in the unit the query returns. The
+  `deep_reads` overlap wants the same treatment: exclude papers already
+  returned by the other streams, because the reading list is the one section
+  whose whole value is that it points somewhere the issue did not go.
+- Why it is filed rather than patched: this run patched the prompt to count
+  distinct papers before counting items, which is the smallest change that
+  could have prevented it. The durable fix is a query shape, and queries are
+  the engineer's.
+- Blocked by: nothing.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-24 — One craft layer, two cadence files (writer seat, structure watch)
+
+- Who: engineer, and it is the reland of PR #35 rather than new work.
+- What is wrong: there are two generators. `prompts/digest.md` says at line
+  8 that it writes both cadences. `prompts/daily.md`, in PR #35 since
+  2026-09-19, also writes the daily, in 133 lines that restate the voice
+  rules in their own words. Neither seat was wrong when it wrote. PR #35's
+  last commit is 02:55 that morning and digest.md's claim of both cadences
+  is 03:43, forty-eight minutes later. Five days on, the two files have
+  drifted by seven taste rulings and seven canon laws, measured in
+  docs/voice/reviews/2026-09-24.md. The daily file reinstates "[{dates}]"
+  in its title, which the owner struck by name, and mandates the source
+  line that ban list 25 forbids.
+- What: split the generator the way the repo already splits a workflow from
+  its config. One craft file holds the voice, the four slots, the heading
+  rule, the link rule, the evidence grade and the close. One small cadence
+  file per issue type holds the payload description, the length, and what
+  that cadence does with an empty slot. The press concatenates craft plus
+  cadence at call time, so `prompts/daily.md` shrinks to its payload and its
+  cadence, and a rule written once binds both issues. `pipeline/budget.py`
+  already sizes two prompts separately and will size the sum instead.
+- Why it is filed rather than patched: the writer seat cannot fix this with
+  prompt edits. No edit to digest.md removes a second generator, and hand
+  porting nine runs of corrections into daily.md only restarts the same
+  drift from a new point. Charter step 4, and the second time this seat has
+  filed rather than patched.
+- What this run did instead: gave the daily a shape inside digest.md, since
+  the reason a parallel structure got built is that the base layer described
+  the daily in three lines and never said how long it is, what it does with
+  an empty slot, or what it prints on a dead day.
+- Merge order: this seat's PR #81 first, then the reland. #81 touches no
+  file in PR #35.
+- Blocked by: nothing. The press being down (incident 24) does not block it
+  and is the reason there is time to do it before the daily ships.
+- Cost: $0.
+- Status: proposed
