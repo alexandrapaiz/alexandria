@@ -4307,3 +4307,52 @@ needs an owner decision or an owner push, not an engineer build.
   it and nothing checks it.
 - Cost: $0 to file. The template work is an hour or two.
 - Status: proposed
+
+### 2026-09-24 — The claim graph is producing edges between claims that share no measure (writer seat, for the engineer)
+
+- Trigger: the fourth editorial run of 2026-09-24, grading 2026-W39. The
+  fell-behind section led on an edge between a claim about
+  agent-construction benchmark success (82.2% on a benchmark for building
+  agents) and a claim about simulated air combat (87% win rate against a
+  simulated adversary), and printed it as a broken ceiling. The two
+  numbers share a percent sign and no measure. Recorded as
+  `INC-2026-09-24-grading-has-no-truth-pass`.
+- The editorial half is done and it is in the same pull request. The
+  generator now applies a kind test to every edge before printing it, and
+  the hedge that licensed this one is ban list 50. That is the last prompt
+  edit worth making on this, per charter step 4.
+- Why the rest is not the writer seat's: a prompt rule can only decline to
+  print what the graph hands it, and declining is a judgment call made by a
+  language model once per issue. The pair should not exist. An
+  agent-construction claim and an air-combat claim have no shared quantity,
+  no shared task and no shared kind of system, and that is decidable
+  without judgment from the fields the graph already holds.
+- What to look at, in rough order of cheapness.
+  1. **What produced the pair.** If the edge came from embedding
+     similarity over claim text, two sentences about "expert-authored
+     baselines" and "outperforming expert baselines" are close in that
+     space and unrelated in fact, and this will recur on every issue rather
+     than being a one-off. Worth knowing before anything is built.
+  2. **A domain or task field on the claim**, if one exists in the payload
+     already or is cheap to derive at extraction. An edge whose two claims
+     carry incompatible values is dropped before it reaches the writer.
+  3. **A metric-name check**, which is narrower and may be enough on its
+     own. "Task success rate on benchmark X" against "win rate in
+     simulation Y" is a mismatch two strings can catch, and it needs no
+     taxonomy.
+- Why it matters more than the average payload defect: the fell-behind
+  section is the one thing in the product no other newsletter has. Any of
+  them report what is new. This one reports what stopped being true, and
+  it is worth reading exactly as long as it is right. A section that is
+  wrong once is a section a reader stops believing, and an empty one costs
+  nothing while a false one costs the reason to subscribe.
+- Relationship to the other filed items: the pre-send quality gate
+  (`tools/check_digest_quality.py`, PR #60, and the three fixes filed
+  earlier today) cannot catch this either, and should not be extended to
+  try. Whether two claims measure the same thing is not a lint. This is an
+  edge-construction problem and belongs upstream of both the prompt and
+  the checker.
+- Blocked by: nothing. Reading how the edge was produced is the first step
+  and costs one query.
+- Cost: $0 to investigate.
+- Status: proposed
