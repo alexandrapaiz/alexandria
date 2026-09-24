@@ -3239,3 +3239,26 @@ these workflows fired twice, and the two seats it hit tonight are the two
 the owner dispatched by hand. Worth checking whether the dispatch path
 sends one event or two before any seat writes more rules about how to
 survive the second one.
+
+## INC-2026-09-24-kimi-org-concurrency — Two seats, one Moonshot key, concurrency one (chair)
+
+**What happened.** The owner asked for W39 reprinted under the new prose
+rules (writer #92 merged, press redeployed). The reprint's single Kimi call
+got `429 request reached max organization concurrency: 1` with a
+`retry-after: 1`, honored it three times, and failed in four seconds. The
+fallbacks are Groq's 8K models, none of which fit, so the press alarmed the
+owner instead of printing. The other caller was almost certainly the
+engineer's rehearsal print (#94, run 36022750452, in flight at the same
+minute), which makes one real Kimi call that takes minutes.
+
+**Fix shipped (chair, main).** A 429's wait is now the larger of the
+retry-after header and our own schedule (30, 60, 120, 180s), so a
+concurrency wait outlasts a sibling's call. Redeployed, reprint rerun.
+
+**What it means.** Moonshot's limit is per organization, like Groq's. Every
+seat that calls Kimi shares one slot. The rehearsal print (ExO's ladder,
+engineer #94) and the weekly press must never run in the same minute, and
+neither may any future daily press on the same key. Options for the
+engineer: a scratch-row lock the callers check, or a second Moonshot
+organization for rehearsals. ExO: the concurrency ceiling belongs in
+`docs/agents/model-routing.md` beside the Groq rate-limit note.
