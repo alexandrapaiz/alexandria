@@ -1225,7 +1225,7 @@ def rehearse() -> str:
             raise PressCannotPrint(
                 "there is no press_rehearsals table in this database, so a "
                 "rehearsal has nowhere to write its receipt. It is in "
-                "db/schema.sql; apply it with:\n"
+                "db/schema.sql, and this command applies it:\n"
                 "    modal run pipeline/db_setup.py::apply_schema\n"
                 "Nothing was spent."
             )
@@ -1275,11 +1275,12 @@ def rehearse() -> str:
     # the wrong thing is still evidence and deleting it would be deleting the
     # finding. What is conditional is calling the run a success.
     expected = (FALLBACK_MODELS[0], sha)
-    if tuple(receipt) != expected:
+    got = tuple(receipt) if receipt else (None, None)
+    if got != expected:
         raise PressCannotPrint(
             "the rehearsal wrote a row, but not a receipt for what is about "
             "to be deployed.\n"
-            f"  row {row_id}: model {receipt[0]!r}, prompt_sha {receipt[1]!r}\n"
+            f"  row {row_id}: model {got[0]!r}, prompt_sha {got[1]!r}\n"
             f"  deploying:   model {expected[0]!r}, prompt_sha {expected[1]!r}\n"
             "A receipt from a different model, or from a different prompt, is "
             "not a receipt. If the head of FALLBACK_MODELS could not write "
