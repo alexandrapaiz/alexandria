@@ -3188,3 +3188,122 @@ which costs one command: for any asset a design review produces, grep
 the repository for its filename, and if the only hits are the asset and
 its own documentation, it is not in the product yet no matter how
 finished it looks.
+
+---
+
+## INC-2026-09-24-test-suite-ran-zero-tests — the command every test file prescribes had stopped running any of them (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class.**
+Incident 32 is a quality gate that returned `0 blocking` on an issue it
+could not parse. This is the same shape one level up: the suite that
+holds every other gate reported one error and ran nothing, and the
+report looked small enough to scroll past.
+
+**What happened.** Running `python3 -m pytest tests/ -q`, the command
+printed in the docstring of nearly every file in `tests/`, produced:
+
+```
+ERROR collecting tests/test_evidence_grade.py
+E   AttributeError: module 'modal' has no attribute 'Volume'
+!!!! Interrupted: 1 error during collection !!!!
+1 warning, 1 error in 0.43s
+```
+
+A collection error is not one red test. pytest stops, and zero tests
+run. Every check the repository owns was unexecuted, and the line that
+says so is `1 error`.
+
+**Why it happened.** `modal` is not a dev dependency, so four test files
+each carry a copy of the same hand-built stub, each guarded by
+`if "modal" not in sys.modules`. Only one of the four copies defines
+`modal.Volume`. Under the suite, `test_email_template.py` is collected
+first, its copy wins, and `test_evidence_grade.py` then explodes on the
+attribute its own copy would have provided. Alphabetical order decided
+it. The guard that was supposed to make the four copies safe is the
+thing that made them dangerous, because it makes the first copy
+authoritative and none of the four is complete.
+
+**Why nobody noticed, which is the useful part.** The repository has two
+ways to run tests and only the broken one is documented.
+`.github/workflows-pending/checks.yml` runs `python3
+tests/test_press_resilience.py` and `python3 tests/test_email_template.py`
+as single scripts. Run that way each file installs its own stub first
+and every file passes, so the CI-shaped path was green on exactly the
+files it names. The suite-shaped path was the one that failed, and it is
+the one no command anywhere executes. Two paths diverged, and the
+divergence was invisible because nothing ran the second one.
+
+`checks.yml` is also still in `workflows-pending/`, so neither path runs
+on a pull request at all. Its own README says it plainly: "anything
+still sitting here is a guard that is not guarding yet."
+
+**What it was hiding.** With collection fixed, the suite came up red on
+`test_accounts.py::test_the_subscribers_index_cannot_abort_the_schema_on_legacy_duplicates`.
+That test searches `db/schema.sql` for the first `do $$` block and
+asserts it guards the subscribers index. A second do-block, the
+evidence-grade constraint, was added above it at some point since, so
+the test had been reading the wrong block and failing. How long is not
+recoverable from this clone's squashed history. The schema itself was
+correct throughout.
+
+**The fix, applied.** One `tests/conftest.py` installs the union stub
+before collection begins, so it always wins and the four in-file copies
+no-op through their own guard. They are deliberately left in place,
+because each of those files also documents being run directly and that
+has to keep working with no conftest involved. The `test_accounts.py`
+regex now selects the do-block by what is inside it rather than by being
+first. `python3 -m pytest tests/ -q` reports 159 passed, 1 skipped.
+
+**The rule that would have caught it.** A test suite is a gate, and
+incident 32's rule already covers it: every gate is tested against an
+artifact known to fail it before the gate is trusted. Nothing ever
+asserted that the suite runs a known number of tests, so "ran zero" and
+"all passed" were indistinguishable from the outside. The cheap general
+form, and it is one line: **a test run that collects fewer tests than
+last time is a failure, not a quieter success.** The same asymmetry sits
+under incident 32, under the unreferenced-template incident above, and
+under this one. A check that cannot see its input has to be louder than
+a check that looked and found nothing, and by default every tool in this
+repository has it the other way around.
+
+---
+
+## INC-2026-09-24-conflict-marker-on-main — the incident register itself was carrying merge damage (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 6's class**,
+which is two seats appending to one register at one anchor and the
+second merge conflicting.
+
+**What happened.** `docs/agents/incidents.md` on main carried a bare
+`=======` on line 3103, between the closing line of incident 32 and the
+frontend seat's renumbering note. That is the middle marker of a git
+conflict whose `<<<<<<<` and `>>>>>>>` halves were cleaned up and whose
+middle one was not. Both sides of the conflict survived, so no content
+was lost, and the file read as if a divider had been left in.
+
+**Why it matters more than its size.** Every seat reads this file, the
+ExO reads it weekly, and the charters cite it by line. It had been
+sitting there through an unknown number of runs, and the fix is one
+line. What is missing is not the fix but the looking: the charters warn
+the seat that is *about to* append, and nothing looks at the file
+*afterwards*. Incident 6, incident 25 (two writer runs appending at one
+ban-list number) and incident 29 (four incident-id collisions) are all
+the same anchor contention, and every one of the three fixes changed how
+a seat writes. None of them added a check that reads the result.
+
+**The fix, applied.** The marker is removed, and
+`tools/check_registers.py` now reads all eight shared registers for
+conflict markers and for duplicate incident ids, with
+`tests/test_check_registers.py` driving it against damaged registers
+built on disk. Its first run on the real repository also produced a
+second finding, left for the seat that owns it: one ledger entry writes
+`- Status: mostly moot as of run 3`, which is prose where the contract
+names one of five keywords, so that entry is invisible to every
+consumer that reads statuses by grep, including the PM's sprint
+grooming and this seat's own fallback scan.
+
+**Still open.** The checker is a command, and per runtime-changes.md's
+closing rule a gate is worth the number of commands that run it. Nothing
+runs this one yet. Wiring it into `checks.yml` needs a `workflows`
+permission this seat does not have, so it is filed in the ledger for the
+owner rather than done here.

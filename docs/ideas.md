@@ -4250,3 +4250,144 @@ needs an owner decision or an owner push, not an engineer build.
   been shipped and never used.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-24 — The test suite has no gate, and the two ways of running it disagree (engineer agent)
+
+- Trigger: this run ran `python3 -m pytest tests/ -q`, the command printed in
+  the docstring of nearly every file in `tests/`, and it executed zero tests.
+  A stub collision aborted collection and pytest reported it as `1 error`.
+  Recorded as INC-2026-09-24-test-suite-ran-zero-tests.
+- What: the collection bug is fixed in this PR, but the reason it survived is
+  not. `.github/workflows-pending/checks.yml` runs two test files directly,
+  `test_press_resilience.py` and `test_email_template.py`, as single scripts.
+  Run that way each file installs its own Modal stub and passes, so the path
+  CI would take was green on the two files it names while the suite was dark.
+  Every test file added since that workflow was written is unguarded, which
+  now includes `test_oauth_redirect_uri.py`, `test_authorize_throttle.py`,
+  `test_check_registers.py`, `test_accounts.py`, `test_prose_benchmark.py`,
+  `test_triage_planner.py` and `test_markdown.py`. Naming files in a workflow
+  is the same defect as ban-list 36: a check written from the last failure
+  catches the last failure and nothing after it.
+- The pattern is live, not historical. PR #94, this seat's own second run of
+  the same day, adds `tests/test_press_rehearsal.py` to that workflow as a
+  fourth named step and a fourth named path. It is the right thing to do given
+  how the workflow is built, and it is the fourth time someone has had to do
+  it, which is the argument. One `pytest tests/` step would have covered that
+  file the moment it was written, and would cover the next one too.
+- The second half, and it is the larger one: `checks.yml` is still in
+  `workflows-pending/`. Its own README says anything sitting there is a guard
+  that is not guarding yet. So neither path runs on a pull request today.
+- First step, owner-sized because this seat has no `workflows` permission:
+
+      git mv .github/workflows-pending/checks.yml .github/workflows/checks.yml
+
+  and replace the two named-file steps with the suite plus the register check,
+  both of which are green on this branch:
+
+      - run: pip install -r requirements-dev.txt
+      - run: python3 -m pytest tests/ -q
+      - run: python3 tools/check_registers.py
+
+  The `paths:` filter should widen to `tests/**` and `tools/**` at the same
+  time, or the workflow will keep ignoring changes to its own subject. Read
+  this against whichever version of `checks.yml` is on main when it is picked
+  up: PR #94 edits the same file and should merge first.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — The throttle's ceiling is the passphrase's entropy, and no file knows what that is (engineer agent)
+
+- Trigger: building the `POST /authorize` limiter this run. It cuts a guesser
+  from unbounded to sixty attempts an hour, and whether sixty an hour is safe
+  depends entirely on one secret. This seat may not read it, and nothing in
+  the repository records its shape.
+- What: `MCP_PASSPHRASE` is the whole gate on the MCP server, and behind it
+  are the corpus through `sql_query`, a GitHub token that opens pull requests
+  through `propose_skill` and `propose_change`, and a 180-day refresh token.
+  A rate limit changes the arithmetic of guessing it and changes nothing
+  about how strong it is. Three things are unrecorded anywhere: how the
+  passphrase was generated, how long it is, and when it was last rotated.
+  A twelve-character phrase a human chose and a five-word diceware string
+  differ by a factor no limiter can make up.
+- The related gap, worth naming in the same entry: the refresh token lives
+  180 days, so rotating the passphrase does not end a session minted before
+  the rotation. A compromise outlives its own fix.
+- First step: one file, `docs/security/secret-shapes.md`, a line per secret
+  NAME giving generator, length and rotation date, and no values. The owner
+  fills it because only she can see them. If the answer for this one is "I
+  picked it", the second step is a rotation to a generated phrase, which
+  costs nothing and is the single highest-value change available to this
+  surface.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — A ledger entry can hide from every consumer by writing its status as a sentence (engineer agent)
+
+- Trigger: `tools/check_registers.py`, built this run, found
+  `- Status: mostly moot as of run 3` at docs/ideas.md:1640. This run's own
+  first observation step was `grep "Status: accepted" docs/ideas.md`, which
+  would have skipped that entry entirely.
+- What: the ledger contract at the bottom of every charter names five
+  statuses, and the file is read by grep in at least three places: the PM
+  grooms `accepted` entries into sprints, the engineer's fallback order looks
+  for `accepted` entries no sprint has picked up, and every seat scans for
+  `urgent`. An entry whose status line is prose is not rejected by any of
+  them. It is silently absent, which is the failure mode that leaves no
+  trace. One entry carries it today out of roughly two hundred, and nothing
+  has ever checked, so the direction of travel is the only thing known.
+- The checker warns rather than blocks, deliberately: the entry belongs to
+  another seat and no charter lets this one rewrite a status. So the warning
+  will sit there being ignored, which is what warnings do.
+- First step: the owner or the writer seat corrects that one line to a
+  keyword and moves the prose into the body where it belongs. Once the count
+  is zero, the checker's status rule moves from warning to blocking in one
+  edit, and the contract is enforced by a command instead of by a paragraph.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — Craft scan: Consensus (consensus.app)
+
+Rotated to Consensus because it is the one academic-tools entry in
+docs/market/landscape.md that no craft scan has ever opened. Elicit was
+scanned 2026-09-22, Undermind and The Batch earlier today, TLDR AI on the
+21st and again today, AINews on the 23rd. The landscape's Consensus entry is
+still search-snippet confidence from 2026-09-18. Fetched the product and its
+blog index this run.
+
+**Worth stealing: a derived view where every cell opens onto the sentence
+that put it there.** Their newest feature, shipped 2026-09-22, is a Research
+Gaps Matrix, and the line they lead with is "open any cell to see which
+papers are in it, and the exact quote that put them there." The matrix is the
+interesting half only because the drill-down exists. A grid of gaps with no
+path back to the text is a claim about the literature that the reader has to
+take on faith, and they clearly knew that, because the quote is in the
+headline rather than in the feature list.
+
+This corroborates an open ledger entry rather than being a new idea, and the
+corroboration is the point: "Cite the sentence, not the item" has been
+`proposed` since 2026-09-22. A competitor in the same category has now
+shipped exactly it and led their announcement with it. That moves the entry
+from a craft preference to a category expectation, and the PM should weigh it
+that way on Monday.
+
+**Also worth noting, on distribution.** Their 2026-09-14 post is titled
+"Consensus Everywhere: wherever you work, research is within reach," and the
+substance is that Consensus runs inside ChatGPT, Claude and Microsoft 365
+Copilot. They are treating the connector as the distribution channel rather
+than as an integration checkbox. alexandria already has that surface, in
+`mcp/server.py`, and this run spent itself on the lock at its front door. The
+observation to carry: the MCP server is not a developer convenience, it is
+the same channel a funded competitor is building its distribution strategy
+on, and it should be resourced and judged as a product surface.
+
+**What alexandria does better: the claim that gets overturned.** Consensus
+answers the question you bring it. Every one of its surfaces, the search, the
+gaps matrix, the partnerships with AAAS and De Gruyter Brill, is built to
+make a corpus answer a query well. Nothing in it tracks what it told you last
+month against what the field decided since. alexandria's `claim_links` table
+and its `deprecated_claims` view exist precisely to say "the thing we sent you
+in week 37 has since been contradicted," and a weekly issue is the format
+that can deliver that sentence to someone who never asked. A search product
+structurally cannot, because it has no standing relationship with a reader
+and no memory of what it has already asserted to them. That is the axis worth
+defending, and it is worth more than matching their matrix.
