@@ -187,6 +187,31 @@ purely by being longer:
   "Use when" to the end of the field and weights it 1.25, so a boundary
   sentence placed at the end injects the neighbour's vocabulary into the
   boosted span and aims your skill at exactly the prompts it was disclaiming.
+- **Never write the boundary as a list of what the skill excludes.** The
+  engine has no negation. "Not about human-traffic experiments or hand-written
+  CI suites" puts *experiment*, *human*, *CI* and *suite* into the description,
+  and the two negative cases those words came from then match harder, not
+  softer. State the subject positively instead ("the subject is the instrument,
+  not the system it scores") and let the excluded vocabulary stay out of the
+  field entirely. Learned 2026-09-24, when writing that sentence was the first
+  instinct and would have inverted the result.
+- **Qualify every activation clause with the thing that makes it yours.** On
+  2026-09-24 the draft's clauses said *tests*, *pass*, *fail* and *result*,
+  which are the vocabulary of any flaky CI suite and any product A/B test, and
+  both hard negatives fired. Rewriting the same clauses around what only this
+  skill covers (a model-written rubric, the repository history as a shortcut
+  channel, a checker's verdict) cleared both without touching a case. Note
+  that hyphenated compounds tokenise whole, so "pass-or-fail" does not match a
+  prompt's bare "pass"; that is a cheap way to keep a term you need.
+- **Budget for three or four revisions of the field.** Four is what 2026-09-24
+  took to reach 27 of 27: the first green version was 184 words and stole a
+  case from `self-improving-post-training-loops`, and the cut to 150 words is
+  what gave it back. Revising your own description is the honest response to a
+  red case. Revising the case, the decoy panel, or the engine is not.
+- **Report under the default engine.** `trigger_test.py --engine` can select an
+  experimental scorer, and a run under anything but the pre-registered default
+  prints EXPERIMENT in its header and sets `policy.pre_registered` false in its
+  bundle. A pass under an experimental engine is not a pass.
 
 Then write the same cases as `skills/<slug>/triggers.json` and run them.
 The prose version convinces a reviewer once; the file re-runs on every

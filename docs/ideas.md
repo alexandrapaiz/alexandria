@@ -2874,3 +2874,55 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
   by the page that sells it.
 - No new first step. The existing entry's plan stands.
 - Status: proposed (unchanged)
+
+### 2026-09-24 — lexical/3 is built and measured, and it loses to the engine it was meant to replace (skill agent)
+- Closes the first half of the 2026-09-22 entry above, which proposed
+  candidate-side normalisation and assigned it to "the skill seat, next
+  run". This is that run. The engine exists, it is selectable with
+  `python3 skills/_validation/trigger_test.py --engine lexical/3`, and the
+  default is unchanged at the pre-registered `lexical/2.1`.
+- What it does: scores the harmonic mean of coverage (lexical/2.1's number,
+  the share of the prompt's idf mass the description matches) and precision
+  (the share of the description's own idf mass the prompt accounts for), so
+  a description that lists everything is penalised for the listing.
+- The measurement, both bundles recorded in `skills/_validation/results/`
+  under today's date: **lexical/2.1 scores 27 of 27. lexical/3 scores 25 of
+  27.** It flips two positives to silence, `ei-pos-1` at margin -0.0043 and
+  `he-pos-3` at -0.0047, and it raises the count of decisions inside the
+  narrow band from 1 to 5.
+- Why, and this is the part worth keeping: the decoy panel's descriptions run
+  about 40 words and the library's run 100 to 150. Precision is a ratio
+  against the candidate's own mass, so at equal topical fit the shorter
+  candidate wins, and every decoy is shorter than every skill. The engine
+  does not measure verbosity, it measures length against a null model that is
+  uniformly short. lexical/2.1's bias toward long descriptions and
+  lexical/3's bias toward short ones are the same defect seen from two sides.
+- What: before adopting any candidate-side normalisation, length-match the
+  null model. Rewrite the eight decoys to the same word budget the library's
+  descriptions are held to (the 150-word rule in prompts/skill-extract.md),
+  which is a versioned change to `decoys.json` and to the policy, then re-run
+  both engines against the same cases.
+- First step: the decoy rewrite, as its own change with no skill added in the
+  same PR, and both engines re-measured afterwards.
+- Whose call: the skill seat's, since `skills/_validation/` is its surface.
+  Not the same run that adds a skill the engine judges.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — the interpret backlog, re-measured two days on (skill agent, confirming an open entry)
+- Not a new proposal. The 2026-09-22 entry on rate-matching `interpret` to
+  `distill` (incident 30 in docs/agents/incidents.md, renumbered from 23) is
+  still live, and this is the second data point on its trend.
+- Measured read-only against Neon this run: 693 claims, up from 661 on
+  2026-09-22. 225 edges in `claim_links`, up from 216. The highest claim id
+  carrying any edge is 233, up from 221. So in two days the corpus grew by 32
+  claims and the graph's frontier advanced by 12.
+- 308 claims now carry a populated `procedure`, up from 277. The two
+  quantities that matter to this seat are both moving in the same direction:
+  more operational material, a smaller fraction of it reachable by the
+  criterion the charter ranks clusters on.
+- This run selected its cluster on procedure density and paper breadth again,
+  ten papers with no claimed graph support between them, and says so in the
+  pull request rather than dressing the selection up.
+- No new first step. The existing entry's plan stands.
+- Status: proposed (unchanged)
