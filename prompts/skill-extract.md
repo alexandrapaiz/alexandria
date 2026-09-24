@@ -59,6 +59,30 @@ under- or over-groups). Score each candidate cluster:
   promotions where status = 'approved'` so the run never re-extracts a
   cluster the library already carries.
 
+Before you rank anything on `supports` edges, measure whether that criterion
+can be applied at all:
+
+```sql
+select count(*) filter (where interpreted_at is null) as waiting,
+       count(*) as total,
+       (select max(greatest(from_claim, to_claim)) from claim_links) as max_edged_id
+from claims;
+```
+
+`interpret` drains in strict id order and has run behind `distill` since at
+least 2026-09-22, when 439 of 661 claims were waiting and no claim above id
+221 carried a single edge (incident 23, docs/agents/incidents.md). The
+`procedure` column was added to the schema after `interpret` had passed that
+region, so the edged claims and the procedure-rich claims are today almost
+disjoint sets: 15 claims carry both, 262 carry procedure and no edges.
+
+When the two criteria cannot both be satisfied, procedure-rich wins and
+cross-paper breadth is satisfied by topic and embedding grouping instead. Say
+so at the top of the pull request, name the numbers you measured, and do not
+quietly downgrade a topic cluster into an "edge-supported cluster" in the
+prose. A skill drawn from six papers that agree is still well-evidenced; it
+is the claim that the graph verified the agreement that would be false.
+
 If the strongest available cluster still fails the procedure-rich test,
 that is the run's finding, not a license to draft anyway. Record it in
 docs/ideas.md (status `proposed`, one line: which topic is thin and why)
@@ -144,6 +168,50 @@ in one pass:
 A trigger test that only tests obviously-on and obviously-off prompts
 proves nothing. The two negatives should be the prompts most likely to
 false-positive on a lazy description, not softballs.
+
+Two structural rules about the `description` field itself, learned the hard
+way on 2026-09-22 when a draft took two cases away from `harness-engineering`
+purely by being longer:
+
+- **Keep it short, and treat anything past 150 words as a defect.** The
+  existing library sits at 102 and 120 words; the 2026-09-22 draft reached
+  170 before it was cut back to 141. The runner scores idf-weighted overlap
+  with no normalisation for the candidate's own length, so a description that
+  mentions more things wins more prompts, including prompts that belong to a
+  neighbour. Verbosity reads as relevance to the instrument and as vagueness
+  to a router. One clause per section of the body is the working test: if two
+  clauses point at the same section, delete one. The engine fix is a ledger
+  entry (2026-09-22); until it lands, the discipline is yours.
+- **Put the "distinct from X" boundary sentence before the "Use when" clause,
+  never after it.** `activation_clause()` takes everything from the first
+  "Use when" to the end of the field and weights it 1.25, so a boundary
+  sentence placed at the end injects the neighbour's vocabulary into the
+  boosted span and aims your skill at exactly the prompts it was disclaiming.
+- **Never write the boundary as a list of what the skill excludes.** The
+  engine has no negation. "Not about human-traffic experiments or hand-written
+  CI suites" puts *experiment*, *human*, *CI* and *suite* into the description,
+  and the two negative cases those words came from then match harder, not
+  softer. State the subject positively instead ("the subject is the instrument,
+  not the system it scores") and let the excluded vocabulary stay out of the
+  field entirely. Learned 2026-09-24, when writing that sentence was the first
+  instinct and would have inverted the result.
+- **Qualify every activation clause with the thing that makes it yours.** On
+  2026-09-24 the draft's clauses said *tests*, *pass*, *fail* and *result*,
+  which are the vocabulary of any flaky CI suite and any product A/B test, and
+  both hard negatives fired. Rewriting the same clauses around what only this
+  skill covers (a model-written rubric, the repository history as a shortcut
+  channel, a checker's verdict) cleared both without touching a case. Note
+  that hyphenated compounds tokenise whole, so "pass-or-fail" does not match a
+  prompt's bare "pass"; that is a cheap way to keep a term you need.
+- **Budget for three or four revisions of the field.** Four is what 2026-09-24
+  took to reach 27 of 27: the first green version was 184 words and stole a
+  case from `self-improving-post-training-loops`, and the cut to 150 words is
+  what gave it back. Revising your own description is the honest response to a
+  red case. Revising the case, the decoy panel, or the engine is not.
+- **Report under the default engine.** `trigger_test.py --engine` can select an
+  experimental scorer, and a run under anything but the pre-registered default
+  prints EXPERIMENT in its header and sets `policy.pre_registered` false in its
+  bundle. A pass under an experimental engine is not a pass.
 
 Then write the same cases as `skills/<slug>/triggers.json` and run them.
 The prose version convinces a reviewer once; the file re-runs on every

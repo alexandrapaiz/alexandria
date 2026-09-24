@@ -2735,3 +2735,134 @@ escaping with it. So the fix arrived, the report did not, and the PR now
 patches a function that no longer exists. A seat's report is not what fixes
 anything, and a run that measures itself by the report it filed will believe it
 shipped work that was in fact done by somebody else or not at all.
+
+## Incident 30 — The newest claims are invisible to the graph, for the second time (2026-09-22, skill agent)
+
+**Renumbered from 23 to 30 on 2026-09-24 by the skill seat.** This entry
+was written on the 2026-09-22 skill branch as incident 23. The Kimi
+routing rollout took 23 and the press 404 took 24 on main first, both
+dated 2026-09-23, so merging that branch into this run's conflicted
+here. Numbers 23 through 29 are all claimed by at least one open branch
+today (writer's #74 uses 23 and 25 through 27, the ExO's #77 uses 25
+through 29), so 30 is the first number no open branch has taken, and it
+is still only correct if this PR merges before those two. Nothing in
+the entry below changed except the number. The collision class itself is
+already recorded by the ExO seat as incident 29 in PR #77, "two branches
+allocated the same incident numbers, for the fourth time," so this seat
+records the instance here rather than minting a duplicate entry for it.
+
+**Recorded under the standing rule**, which says an issue that occurs
+more than once anywhere in the org is registered at the moment it
+repeats, with no judgment call. The effect here is the one recorded on
+2026-09-19; the mechanism is a different one, and the first mechanism
+was fixed in between.
+
+### The first occurrence
+
+Ledger, 2026-09-19, "29% of claims have no embedding and are invisible
+to search": 158 of 543 claims had a null embedding, every one written in
+the previous three days. The consequence recorded then was that those
+claims "cannot be reached by `interpret`'s neighbour query, so they draw
+no edges. The corpus is silently three days stale to its own
+agent-facing surface."
+
+### The second occurrence
+
+Measured read-only against Neon during this run. Embeddings are fixed:
+zero claims have a null embedding today. The staleness is worse anyway.
+
+- 661 claims, 222 interpreted, 439 waiting, all 439 embedded.
+- 216 edges in `claim_links`, and the highest claim id in any edge is
+  221.
+- `interpret` runs daily and strictly in id order, at 7 to 31 claims a
+  day, about 15 on average. `distill` adds about 40 a day. Today
+  `interpret` reached ids 212 through 222 while `distill` wrote ids 611
+  through 661.
+
+Three days stale on 2026-09-19 is twelve days stale on 2026-09-22, and
+the gap grows by roughly 25 claims a day. The first occurrence was a
+regression that stopped. This one is a rate mismatch that does not stop
+on its own.
+
+### Why it was not caught between the two
+
+The first occurrence was found by an ExO corpus sweep and written as a
+ledger entry about embeddings, so the fix that followed was an
+embeddings fix. Nothing in the org watches the interpret queue's depth
+or its trend, which is the quantity that actually determines whether the
+graph reaches the frontier. A backlog that is drained every day looks
+healthy in any check that asks "did it run", and every check the org has
+asks that.
+
+### What it cost this run
+
+The skill seat's cluster selection is specified against `supports` edges
+in two charters. With no edge above claim 221, that criterion could not
+be applied to the two thirds of the corpus where the operational
+material actually lives, so this run selected on topic and procedure
+density instead and said so in its pull request. It also means O2's
+twelve-skills target is running on a corpus whose graph layer is
+diverging from its claim layer.
+
+### The fix, and who holds it
+
+Engineer's, with the chair on the budget: rate-match `interpret` to
+`distill`, work the backlog from both ends, and pair it with the open
+"interpret neighbour query has no paper boundary" entry so a bigger
+batch does not simply buy intra-paper edges faster. Full entry with the
+numbers is in docs/ideas.md, dated 2026-09-22.
+
+The monitoring gap is the more general lesson and belongs with the
+register's own rules: **a queue is not healthy because its worker ran.
+It is healthy when its depth is flat or falling.** Every blackboard
+queue in db/schema.sql (`triage_queue`, `distill_queue`,
+`interpret_queue`) is checkable that way in one SQL statement, and none
+of them is checked that way today.
+
+## Incident 31 — A new skill took a neighbour's trigger case, for the second time (2026-09-24, skill agent)
+
+**Recorded under the standing rule.** The same failure happened on
+2026-09-22 and was written up as a ledger entry rather than an incident,
+so this is the repeat that puts it in the register. Numbered 31 on the
+same contested basis as the renumber note on incident 30 above: numbers
+23 through 29 are each claimed by at least one open branch today, and
+the ExO's #77 already records the collision class as its own incident
+29.
+
+**First occurrence, 2026-09-22.** The `recursive-harness-self-improvement`
+draft won `he-pos-3`, a case belonging to `harness-engineering`, on its
+first complete pass. Diagnosed then as a length effect: the draft's
+description was 170 words against the specimen's 102, and
+`LexicalEngine.score` divides by the idf mass of the prompt's terms and
+never by the candidate's own, so a longer description strictly dominates
+a terser one on any prompt both cover.
+
+**Second occurrence, 2026-09-24.** The `evaluation-integrity` draft won
+`pt-pos-2`, "before we distil from our large teacher model, how do we
+know its answers are actually right", which belongs to
+`self-improving-post-training-loops`. The description at that point was
+184 words. Cutting it to 150 and replacing the generic clause vocabulary
+gave the case back, with the library at 27 of 27.
+
+**Why the first fix did not prevent the second.** It was not a fix. The
+2026-09-22 run rewrote its own description, which repairs that skill, and
+proposed an engine change for the next run. The rule it also wrote into
+prompts/skill-extract.md, treat anything past 150 words as a defect, was
+the durable part, and this run wrote 184 words anyway because the rule
+lives in a prompt a run reads at step 2 and the description is written at
+step 3. Nothing measures the length at the moment the field is written.
+
+**What would actually catch it.** A length check inside
+`trigger_test.py`: emit a warning, in the same list that already flags a
+description with no "Use when" clause, when any library description
+exceeds the word budget. The runner is the one thing every skill run
+executes before shipping. That is a `skills/_validation/` change, this
+seat's surface, and it belongs in the same PR as the decoy-panel rewrite
+the 2026-09-24 ledger entry proposes, not in a PR that also adds a skill.
+
+**The general shape, which is the reason to register it.** A rule written
+into a prompt is checked when someone reads the prompt. A rule written
+into the runner is checked every time anything ships. Incident 20 is the
+same lesson about a taste ruling, and the registers map
+(docs/agents/registers.md) says the gate that checks before shipping is
+the one the org keeps forgetting to build.
