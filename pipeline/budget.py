@@ -710,31 +710,66 @@ def synthesis_models() -> list[str]:
     return models
 
 
+def model_problems(where: str, model: str,
+                   available: set[str] | None = None) -> list[str]:
+    """The three questions any caller of a model has to be able to answer.
+
+    Does the id have a row here, has its provider withdrawn it, and does that
+    provider still list it for this key. The press asks a fourth one, whether the
+    request fits, and that needs a payload to measure. These three need nothing
+    but the id, which is why every runtime that calls a model can be checked by
+    the same command whether or not it has a payload.
+    """
+    if model in DECOMMISSIONED:
+        return [f"{where} is {model}, withdrawn by its provider: "
+                f"{DECOMMISSIONED[model]}"]
+    if model not in MODELS:
+        return [f"{where} ({model}) has no entry in budget.MODELS, so there is "
+                "no provider to send it to"]
+    if available is not None and model not in available:
+        return [f"{where} ({model}) is not listed by {MODELS[model]['provider']} "
+                "for this key; a request to it would 404"]
+    return []
+
+
 def check_synthesis(available: set[str] | None = None) -> list[str]:
     """Every model rag_answer can reach for has published limits and still exists.
 
     Returns problems, the way `check_drift` does. The MCP server does not size a
     payload against a ceiling, because a synthesis request is a short answer over
-    retrieved context rather than a whole issue, so this asks the two questions
-    that are left: does the id have a row here, and has it been withdrawn.
+    retrieved context rather than a whole issue.
     """
     problems = []
     for rank, model in enumerate(synthesis_models(), start=1):
-        if model in DECOMMISSIONED:
-            problems.append(
-                f"rag_answer fallback {rank} is {model}, withdrawn by its "
-                f"provider: {DECOMMISSIONED[model]}")
-            continue
-        if model not in MODELS:
-            problems.append(
-                f"rag_answer fallback {rank} ({model}) has no entry in "
-                "budget.MODELS, so there is no provider to send it to")
-            continue
-        if available is not None and model not in available:
-            problems.append(
-                f"rag_answer fallback {rank} ({model}) is not listed by "
-                f"{MODELS[model]['provider']} for this key; a request to it "
-                "would 404")
+        problems += model_problems(f"rag_answer fallback {rank}", model, available)
+    return problems
+
+
+#: The scheduled jobs that call one hardcoded chat model with no fallback list.
+#: Both are Modal crons, both are runtimes under docs/agents/runtime-changes.md,
+#: and until 2026-09-25 nothing checked the id either of them calls. A withdrawal
+#: takes the corpus down quietly: triage stops judging papers and interpret stops
+#: drawing edges, and the only symptom is a red run nobody is watching.
+CRON_MODELS = {
+    "triage (pipeline/triage.py)": "pipeline/triage.py",
+    "interpret (pipeline/interpret.py)": "pipeline/interpret.py",
+}
+
+
+def cron_models() -> dict[str, str]:
+    """Each daily cron's model id, read out of the cron rather than from a copy."""
+    found = {}
+    for label, path in CRON_MODELS.items():
+        source = (ROOT / path).read_text()
+        found[label] = _literal(source, r'^MODEL = "([^"]+)"', f"{path} MODEL")
+    return found
+
+
+def check_crons(available: set[str] | None = None) -> list[str]:
+    """The daily crons' models exist, the same three questions as everything else."""
+    problems = []
+    for label, model in cron_models().items():
+        problems += model_problems(label, model, available)
     return problems
 
 
@@ -1005,6 +1040,23 @@ def main() -> int:
     except LookupError as exc:
         failures.append(str(exc))
         print(f"SYNTHESIS: {exc}")
+    print()
+
+    # The daily corpus crons. One hardcoded model each and no fallback list, so
+    # the only question worth asking here is whether that one model still exists.
+    try:
+        print("daily crons, one model each and no fallback")
+        for label, model in cron_models().items():
+            provider = MODELS.get(model, {}).get("provider", "?")
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {label}: [{provider}] {model}{flag}")
+        for problem in check_crons(available):
+            failures.append(problem)
+            print(f"  CRON: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON: {exc}")
     print()
 
     if failures:

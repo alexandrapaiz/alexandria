@@ -272,3 +272,42 @@ def test_no_key_is_a_configuration_fact_and_costs_no_calls():
         synthesis.synthesize(post, "", "S", "U")
     assert post.calls == []
     assert "GROQ_API_KEY" in str(caught.value)
+
+
+# ---------------- the daily crons, checked by the same command ----------------
+
+def test_the_guard_reads_each_crons_model_out_of_the_cron():
+    models = budget.cron_models()
+    assert set(models) == set(budget.CRON_MODELS)
+    for label, model in models.items():
+        assert model in budget.MODELS, f"{label} calls an unknown model"
+
+
+def test_the_crons_pass_today():
+    assert budget.check_crons() == []
+
+
+def test_the_guard_catches_a_cron_pointed_at_a_withdrawn_model(monkeypatch):
+    # Incident 24 in the shape it would take here: the model is retired, and
+    # the first symptom is a red cron nobody is watching.
+    monkeypatch.setattr(budget, "cron_models", lambda: {"triage": "groq/compound"})
+    problems = budget.check_crons()
+    assert len(problems) == 1
+    assert "withdrawn" in problems[0]
+
+
+def test_the_guard_catches_a_cron_model_absent_at_the_provider(monkeypatch):
+    monkeypatch.setattr(budget, "cron_models",
+                        lambda: {"interpret": "openai/gpt-oss-120b"})
+    problems = budget.check_crons(available={"qwen/qwen3.8-27b"})
+    assert len(problems) == 1
+    assert "would 404" in problems[0]
+
+
+def test_the_guard_says_where_to_fix_the_pattern_if_a_cron_moves(monkeypatch):
+    # A guard that cannot read the settings it checks is worse than no guard,
+    # so it raises with the file to edit rather than silently checking nothing.
+    monkeypatch.setitem(budget.CRON_MODELS, "invented", "pipeline/budget.py")
+    with pytest.raises(LookupError) as caught:
+        budget.cron_models()
+    assert "budget.py MODEL" in str(caught.value)
