@@ -28,7 +28,9 @@ for orchestration essentially," not AI news.
   layer, not built for agent builders.
 - **Funding signal:** ~$22M Series A, early 2025, Spark Capital and
   Footwork. [Crunchbase](https://www.crunchbase.com/organization/elicit-52a6)
-- **Last observed:** 2026-09-18.
+- **Last observed:** 2026-09-25. Re-checked pricing directly: unchanged
+  (Pro $49/mo, Scale $169/mo, same tier contents).
+  [elicit.com/pricing](https://elicit.com/pricing)
 
 ### Consensus (consensus.app)
 - **What it is:** AI search engine that surfaces consensus/claims across
@@ -48,7 +50,11 @@ for orchestration essentially," not AI news.
   no orchestration/automation product; no AI-engineer-specific framing.
 - **Note:** a same-named, unrelated B2B sales-demo tool (goconsensus.com)
   exists — do not conflate in future notes.
-- **Last observed:** 2026-09-18.
+- **Last observed:** 2026-09-25. Attempted a direct re-check; the pricing
+  page now renders its tiers through client-side JavaScript, so no plain-
+  text price came back this pass. The medium-confidence ~$20/month figure
+  above is unconfirmed but not contradicted. Flagged for another attempt
+  next month rather than repeated this week.
 
 ### Semantic Scholar (semanticscholar.org)
 - **What it is:** Free, nonprofit AI-powered academic search engine and
@@ -317,6 +323,75 @@ for orchestration essentially," not AI news.
   question) and one lived (a real company's users hitting the problem in
   production).
 
+### The skills-trust gap now has a number behind it, and two more entrants found this run — added 2026-09-25
+- **The number:** Snyk's ToxicSkills research (published 2026-02-05,
+  cited in alexandria's own docs for the first time this run) scanned
+  3,984 agent skills from ClawHub and skills.sh with its mcp-scan engine:
+  13.4% (534 skills) carried at least one critical-severity flaw, 36.82%
+  (1,467 skills) had a flaw of any severity, and human review confirmed
+  76 outright malicious payloads across eight threat categories (prompt
+  injection, malicious code, credential theft, embedded secrets, and
+  more).
+  [snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/).
+- **Two more entrants found this run, neither new this week but both new
+  to this landscape doc, and both citing that number as their reason to
+  exist.** Show HN, "Skillcop: Block malicious Claude Skills before they
+  execute" — an LLM-based security scanner run as a Claude Code hook,
+  built directly against the ToxicSkills taxonomy, posted 2026-03-20.
+  [news.ycombinator.com/item?id=47457995](https://news.ycombinator.com/item?id=47457995).
+  Show HN, "Skill Federation — private search across 87k skills for AI
+  coding agents," posted 2026-07-02.
+  [news.ycombinator.com/item?id=48760839](https://news.ycombinator.com/item?id=48760839).
+  Verified both post dates directly against Algolia's HN search API
+  after an earlier pass mistook a third-party aggregator's digest date
+  for the posts' actual dates. Worth recording precisely: the aggregator
+  resurfaces relevant older threads under a current-looking date, so any
+  future run treating one of its digests as same-week evidence needs to
+  check the item's own `created_at` first.
+- **Reading for alexandria:** counting all four, spread from March
+  through this week, four independent founders have now built trust or
+  curation infrastructure on top of raw skill distribution over about
+  six months — skillbay.sh and Bastionskill (2026-09-18, above),
+  Skillcop (2026-03-20) and Skill Federation (2026-07-02). None of the
+  four attaches
+  research-backed evidence to a skill's underlying *claims*, only to its
+  code safety or its discoverability, so alexandria's claim-graph layer
+  stays differentiated. But the market no longer needs alexandria to
+  argue that raw skill distribution has a trust problem. Four builders
+  have already spent their own time proving it, and now there is a
+  citable number behind the pattern.
+- **Last observed:** 2026-09-25.
+
+### Strands Harness (AWS) and the CMU message-passing paper — orchestration-pattern signal, added 2026-09-25
+- **What happened:** AWS's Strands Agents team shipped "Strands Harness,"
+  claiming frontier performance at 28% lower token cost.
+  [strandsagents.com/blog/introducing-strands-harness](https://strandsagents.com/blog/introducing-strands-harness/).
+  HN gave it real traction (146 points, 96 comments) and real skepticism:
+  top comments could not tell "whether it's a harness, an orchestrator,
+  or an agent framework," questioned whether Terminal-Bench 2.1 is
+  saturated enough that the gain is noise, and asked for comparison
+  against other harnesses (Pi) that nobody but the vendor has run.
+  [news.ycombinator.com/item?id=49817289](https://news.ycombinator.com/item?id=49817289),
+  2026-09-25.
+- **The same week, The Batch (issue 372, 2026-09-25) covered two more
+  harness/orchestration items:** Cognition's "Devin Fusion," a two-model
+  harness pairing a planner with a coding specialist at 36-39% lower cost
+  than single-model baselines, and a Carnegie Mellon-affiliated paper,
+  "Message Passing Language Models" (arXiv
+  [2607.01077](https://arxiv.org/abs/2607.01077), posted 2026-07-01, only
+  now picking up press attention), which lets parallel reasoning threads
+  send and receive messages directly instead of routing through a
+  coordinator.
+- **Reading for alexandria:** every one of these is a vendor or lab
+  claiming a harness-design win with no independent evaluation attached —
+  the same gap alexandria's claim graph exists to close, and the same
+  gap behind the still-open orchestration-pattern-benchmark ledger
+  proposal. Named here for the research seat's signal read: the CMU
+  paper in particular sits squarely in the harness-and-orchestration
+  vein this week's own digest issue (2026-W39, harness distillation) is
+  already mining.
+- **Last observed:** 2026-09-25.
+
 ### OpenAI's 10,000-agent swarm — orchestration-at-scale precedent, added 2026-09-24
 - Not a competitor, a signal: OpenAI published a proposed resolution of the
   Navier-Stokes existence-and-smoothness Millennium Prize problem on
@@ -403,3 +478,10 @@ for orchestration essentially," not AI news.
   figure), flagged for refresh by PR #86's "Seen and not mine." See
   docs/market/briefs/2026-09-24-b.md for the newsletter and product
   ranking this run produced.
+- 2026-09-25 (regular Friday ceremony): re-checked Elicit directly, no
+  change. Attempted to re-check Consensus; its pricing page now renders
+  client-side, no figure confirmed this pass. Added a dated skills-trust
+  entry (Snyk's ToxicSkills stat, first cited here, plus Skillcop and
+  Skill Federation, two new HN entrants this week) and a Strands
+  Harness / CMU message-passing-paper orchestration-signal entry. See
+  docs/market/briefs/2026-09-25.md for this week's full brief.
