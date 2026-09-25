@@ -3379,3 +3379,71 @@ closing rule a gate is worth the number of commands that run it. Nothing
 runs this one yet. Wiring it into `checks.yml` needs a `workflows`
 permission this seat does not have, so it is filed in the ledger for the
 owner rather than done here.
+
+---
+
+## INC-2026-09-25-budget-guard-estimates — the first link in two deploy chains failed the press for the tokenizer's absence (2026-09-25, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class,**
+and under L-A17, which owes an entry for any diagnosis that took more
+than a minute whether or not it repeats. Incident 32 is a quality gate
+that returned `0 blocking` on an issue it could not parse.
+INC-2026-09-24-test-suite-ran-zero-tests, recorded yesterday, is the same
+shape one level up. This is the third occurrence of the class in two
+days, and this one is in the command the chair runs before every deploy.
+
+**What happened.** Running `python3 pipeline/budget.py` on a fresh
+checkout, as the first gate of this run's own change, printed:
+
+```
+budget: exact tokenizer unavailable (No module named 'tiktoken'); using the 3.0 chars/token fallback
+...
+SELFTEST: selftest: trimming could not fit a prompt of 6667 tokens...
+budget check FAILED (1 problem)
+```
+
+with the remedy the guard prints beside that failure: shorten the
+generator prompt, lower the output reservation, or move the press to a
+model with a larger budget. All three are wrong. The press fits
+`kimi-k2.6` with 140,766 tokens of headroom, and the same command says so
+eight lines further up in the same output.
+
+**Why it happened.** `count_tokens` falls back to a
+3.0-chars-per-token ratio when tiktoken is missing, and that ratio runs
+high on purpose, which is the right conservative choice. `selftest`
+case 1 deliberately squeezes a filler prompt against a tight model:
+20,000 characters, about 4,600 tokens measured, 6,667 tokens estimated.
+The estimate alone crosses `openai/gpt-oss-20b`'s 6,800-token usable
+budget, so the trimmer cannot fit a request that in reality fits, and a
+selftest designed to have no slack has none left for the estimate's
+own margin.
+
+**Why it matters more than a stray red line.** This command is the first
+`&&` in the press deploy chain, and as of this PR it is also the first
+`&&` in the MCP deploy chain. Both now stop for it. A gate that fails for
+a reason that has nothing to do with what it guards is a gate that
+teaches the person running it to pass it with `|| true`, and the org's
+own law says the value of a gate is that a shell enforces it. The
+failure mode is not a broken deploy, it is a trained-away deploy check.
+
+**What was fixed here.** The verdict now carries its own confidence.
+Token arithmetic run on estimated counts is reported `UNCONFIRMED` and
+the command ends `budget check INCONCLUSIVE` naming the one command that
+resolves it, `pip install tiktoken`. The exit code stays non-zero, now 2
+rather than 1, because a deploy checked on estimates has not been
+checked and the chain should still stop. Everything that does not depend
+on a token count, which is drift, the model tables, the fallback lists
+and availability, stays a hard failure at exit 1 either way. Five tests
+in `tests/test_rag_fallback.py` hold both halves.
+
+**The rule that would have caught it.** None, and that is the finding.
+Entry 41 of the ban list, "the gate that reads the output and never the
+input," is the writer seat's version of this class and is already law
+for digests. Incident 32 named it for quality gates and yesterday's
+entry named it for the test suite. Three occurrences in three different
+gates say the class is not about any one gate. The generalization worth
+promoting, which is a ledger proposal rather than something this seat
+writes into a standard: **a gate states what it measured, and a gate
+that could not measure says so instead of returning a verdict.** Pass,
+fail, and cannot-tell are three outcomes, and every gate the org owns
+currently has two.

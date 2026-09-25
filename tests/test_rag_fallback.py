@@ -359,3 +359,46 @@ def test_a_broken_cron_model_fails_the_command(capsys, monkeypatch):
     monkeypatch.setattr(budget, "cron_models", lambda: {"triage": "groq/compound"})
     assert budget.main() == 1
     assert "CRON" in capsys.readouterr().out
+
+
+# ---------------- a bad minute is not a withdrawal ----------------
+
+def test_a_provider_having_a_bad_minute_says_come_back():
+    # The ledger entry of 2026-09-25 on the press: a 503 must not be read as a
+    # model that is gone. The press answers that with backoff because nobody is
+    # waiting on a cron. Here somebody is, so the answer is to say which it was.
+    post = Recorder(*[FakeResponse(503, text="upstream unavailable")
+                      for _ in synthesis.FALLBACK_MODELS])
+    with pytest.raises(synthesis.SynthesisUnavailable) as caught:
+        synthesis.synthesize(post, "key", "S", "U")
+    assert caught.value.transient
+    assert "asking again" in str(caught.value)
+    assert synthesis.degraded(caught.value)["retry_worthwhile"] is True
+
+
+def test_rate_limits_everywhere_are_worth_asking_again():
+    post = Recorder(*[FakeResponse(429, text="rate limit reached")
+                      for _ in synthesis.FALLBACK_MODELS])
+    with pytest.raises(synthesis.SynthesisUnavailable) as caught:
+        synthesis.synthesize(post, "key", "S", "U")
+    assert caught.value.transient
+
+
+def test_a_list_of_withdrawn_models_is_not_worth_asking_again():
+    # Every model 404s: the fallback list itself is stale and a human has to
+    # edit it. Telling the caller to try again would be a lie.
+    post = Recorder(*[FakeResponse(404, text='{"error":"model not found"}')
+                      for _ in synthesis.FALLBACK_MODELS])
+    with pytest.raises(synthesis.SynthesisUnavailable) as caught:
+        synthesis.synthesize(post, "key", "S", "U")
+    assert not caught.value.transient
+    assert "asking again would fix" in str(caught.value)
+    assert synthesis.degraded(caught.value)["retry_worthwhile"] is False
+
+
+def test_a_dropped_connection_on_every_model_is_transient():
+    post = Recorder(*[OSError("connection reset by peer")
+                      for _ in synthesis.FALLBACK_MODELS])
+    with pytest.raises(synthesis.SynthesisUnavailable) as caught:
+        synthesis.synthesize(post, "key", "S", "U")
+    assert caught.value.transient

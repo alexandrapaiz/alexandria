@@ -4584,9 +4584,123 @@ treating it as a real error. That is a well-earned piece of advice from
 an API at their scale, and reading it is what made me check what the
 press does with a 503.
 
-### 2026-09-25 — Engineer run placeholder (ship-first, will be replaced before ready)
+### 2026-09-25 — Craft scan: Undermind (undermind.ai), second run
 
-- Trigger: the ship-first org rule (charter, 2026-09-18). This entry
-  exists so the branch has a commit and the pull request opens before the
-  work starts. Today's real ideas replace it in the same file.
+- The next unscanned entry in docs/market/landscape.md's academic-tools
+  section, where it has sat since 2026-09-18 at "search-snippet
+  confidence only". Elicit was scanned 2026-09-22, Consensus 2026-09-24,
+  Semantic Scholar's API earlier today. Paperguide is the one left.
+  Fetched undermind.ai and their benchmark whitepaper's summary today.
+- **What it is.** An agentic literature search that reads full texts,
+  follows citation trails across several passes, and returns a report
+  with in-line citations. Product copy: "Trace any statement by following
+  in-line citations back to the source paper." It sells recall against
+  keyword search rather than speed.
+- **The one thing worth stealing, and it is a good one.** Undermind
+  estimates how exhaustive its own search was, and it stops on that
+  estimate rather than on a fixed result count. The mechanism is a
+  capture-rate argument: as a search continues, the rate at which it
+  turns up new relevant papers falls, and that falling rate is used to
+  estimate how much of the findable literature has been seen. A
+  production search ends on its own after about 2.9 minutes. The user is
+  told what that estimate was.
+- **Why it lands here specifically.** `semantic_search` and `rag_answer`
+  both take `k=8` and neither says anything about whether eight was the
+  right number. Eight is a constant chosen once, and for a narrow
+  question it retrieves padding while for a broad one it silently answers
+  from a fraction of what the corpus holds. The caller cannot tell which
+  happened, and the caller is usually an agent that will not ask. This is
+  the same shape as the incident registered today: a step that cannot
+  know whether it covered the question still returns a confident answer.
+  It became an idea below rather than staying a note.
+- **What alexandria does better, stated narrowly enough to defend.**
+  Undermind answers a researcher who will then read papers, and its unit
+  of evidence is a paper. alexandria's unit is a claim with typed edges
+  to other claims, and every answer comes back through an MCP tool call
+  carrying the claim ids, so a calling agent can walk from the answer to
+  the evidence and on to what supports or contradicts it without a human
+  reading a PDF in between. Their corpus is the whole literature and ours
+  is 661 claims, so this is a claim about shape and not about size.
+  Theirs is also a paid subscription and the MCP server is $0.
+
+### 2026-09-25 — Retrieval that reports how much of the question it covered
+
+- Trigger: today's craft scan of Undermind, which estimates its own
+  exhaustiveness and shows the number, read against `rag_answer`'s fixed
+  `k=8` while rewriting the synthesis path in this same run.
+- What: `_retrieve` returns the k nearest claims and already computes the
+  cosine similarity of each. That number is thrown away for everything
+  except display. The cheap version of Undermind's idea is to keep it: a
+  retrieval whose worst included claim still scores high has more
+  material the caller did not get, and one whose best claim scores low
+  has answered from nothing very relevant. Both are knowable before the
+  model is called and neither is reported today. `rag_answer` would carry
+  a coverage line saying which of the three it was, and `semantic_search`
+  would say when the k-th result was still strong, which is the signal
+  that the caller should ask for more. The expensive version is
+  Undermind's actual method, which needs iterative retrieval and a
+  capture-rate estimate, and that is a different project.
+- First step: log the similarity of the first and last retrieved claim
+  for a week's real `rag_answer` calls and look at the distribution
+  before choosing any threshold. Picking a cutoff first and measuring
+  afterwards is how a number nobody can defend ends up in a tool
+  description.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — The two daily corpus crons still call one model with no fallback
+
+- Trigger: grepping for `RAG_MODEL` while fixing it in this run.
+  `pipeline/triage.py:26` and `pipeline/interpret.py:20` each hold
+  `MODEL = "openai/gpt-oss-120b"`, hardcoded, with no fallback list and
+  no availability check. Both are Modal crons, so both are runtimes under
+  docs/agents/runtime-changes.md.
+- What: the press learned this in incident 24 and answered it with an
+  ordered walk. `rag_answer` got the same walk today. These two did not,
+  and they are the jobs that feed everything else: triage judges which
+  papers enter the corpus, interpret draws the edges between claims. Both
+  handle a 429 well, printing a line and stopping so the next run
+  resumes. Neither handles a withdrawal, which raises out of the cron,
+  and a red cron nobody is watching is the entire failure mode of
+  incident 24. The guard now catches a withdrawn id at deploy, which is
+  this run's cheap half, but catching it is not surviving it.
+- First step: lift the walk out of `mcp/synthesis.py` into something both
+  crons import, which is roughly the shape `call_model` already has in
+  `pipeline/weekly.py`, and let each cron keep its own ordered list. It
+  is one day of work and it is a runtime change, so it wants the ladder
+  and a rehearsal rather than a quiet merge.
+- Cost: $0. One related proposal that is the owner's and not the
+  engineer's: the MCP app mounts the `groq` secret and not `moonshot`,
+  so `rag_answer`'s fallback list cannot cross providers the way the
+  press's does. Adding the `moonshot` secret to the MCP app would let it,
+  at whatever those tokens cost.
+- Status: proposed
+
+### 2026-09-25 — Every gate the org owns has two outcomes and needs three
+
+- Trigger: INC-2026-09-25-budget-guard-estimates, registered in this PR.
+  `python3 pipeline/budget.py` failed the press because tiktoken was
+  absent, and printed a remedy that would have had someone shorten a
+  prompt that fits with 140,766 tokens of headroom. It is the third
+  occurrence in two days of the class incident 32 named, after yesterday's
+  test suite that ran zero tests and reported one error.
+- What: each of those three gates could not read its input and returned a
+  verdict anyway. The fix applied each time was local to the gate, which
+  is why the class keeps coming back in a new one. The generalization is
+  that a gate has three possible outcomes and the org's gates are all
+  built with two: it passed, it failed, and it could not tell. The third
+  is the only one that is never wrong, and it is the one none of them can
+  say. Ban list entry 41, "the gate that reads the output and never the
+  input", is the writer seat's version of the same law and is already
+  binding for digests, so the precedent exists in one register and has
+  not been generalized to the others.
+- First step: an inventory, not a rewrite. List every gate the repository
+  runs, which is `pipeline/budget.py`, `tools/check_registers.py`,
+  the pre-send quality gate, `skills/_validation/trigger_test.py` and
+  whatever `.github/workflows-pending/checks.yml` will run once it is
+  installed, and for each one name what it does when its input is missing
+  or unreadable. Anything that answers "it reports a pass" or "it reports
+  a failure" rather than "it says it could not tell" is the list worth
+  fixing.
+- Cost: $0.
 - Status: proposed

@@ -73,9 +73,18 @@ class SynthesisUnavailable(RuntimeError):
     Modal logs. Incident 8: judge a run by its artifacts, never by its conclusion.
     """
 
-    def __init__(self, message: str, notes: list[str] | None = None):
+    def __init__(self, message: str, notes: list[str] | None = None,
+                 transient: bool = False):
         super().__init__(message)
         self.notes = notes or []
+        #: True when at least one model failed in a way that asking again could
+        #: fix, which is a 5xx or a transport error rather than a withdrawal.
+        #: The ledger entry of 2026-09-25 about the press makes the case that a
+        #: provider having a bad minute must not be read as a model that is
+        #: gone. The press answers that with backoff, because nobody is waiting
+        #: on a cron. Here the caller is waiting, so the answer is to say which
+        #: of the two happened and let them decide whether to ask again.
+        self.transient = transient
 
 
 class UnusableAnswer(RuntimeError):
@@ -179,6 +188,7 @@ def synthesize(post, api_key: str, system: str, user: str,
         )
 
     notes: list[str] = []
+    transient = False
     for model in candidates:
         try:
             resp = post(
@@ -189,6 +199,7 @@ def synthesize(post, api_key: str, system: str, user: str,
             )
         except transport_errors() as exc:
             notes.append(f"{model}: {type(exc).__name__}: {exc}")
+            transient = True
             continue
 
         status = getattr(resp, "status_code", 0)
@@ -200,6 +211,10 @@ def synthesize(post, api_key: str, system: str, user: str,
             )
         if status >= 400:
             notes.append(f"{model}: HTTP {status}: {resp.text[:200]}")
+            # 429 included: on the free tier a rate limit clears on its own, and
+            # a caller who asks again in a minute gets an answer. A 404 does not
+            # clear, and that is the distinction this flag exists to keep.
+            transient = transient or status >= 500 or status == 429
             continue
 
         try:
@@ -212,9 +227,14 @@ def synthesize(post, api_key: str, system: str, user: str,
             continue
 
     raise SynthesisUnavailable(
-        "no synthesis model could answer. Tried, in order: "
+        ("every synthesis model is busy or unreachable right now, so this is "
+         "worth asking again in a minute. Tried, in order: "
+         if transient else
+         "no synthesis model could answer, and none of them failed in a way "
+         "that asking again would fix. Tried, in order: ")
         + ", ".join(candidates),
         notes,
+        transient,
     )
 
 
@@ -226,6 +246,7 @@ def degraded(exc: SynthesisUnavailable, models: list[str] | None = None) -> dict
     """
     return {
         "error": str(exc),
+        "retry_worthwhile": exc.transient,
         "models_tried": list(models if models is not None else FALLBACK_MODELS),
         "notes": exc.notes,
     }
