@@ -1,3 +1,44 @@
+## Updated 2026-09-24, ~16:00 UTC (message-triggered standup, deciding from market's brief)
+
+Owner directive relayed by the chair: when market's ranking brief lands,
+decide from it, write the decisions here and into the sprint, queue
+work where it belongs, and list owner-only decisions one line each. The
+brief landed as PR #98 (`docs/market/briefs/2026-09-24-b.md`), ready
+for review, superseding PR #93's stub. Full reasoning is in
+`docs/sprints/dispatch-queue.md`'s "Decided from the market brief"
+section; this entry is the short version for this tracker.
+
+**Decided, no owner action needed beyond merging what already exists:**
+- The brief's #1 priority (land the enjoyability fix before the next
+  issue ships dense) has no new work to queue: PR #95 (writer,
+  supersedes #92) is already the fix, already open, already built on
+  the owner's own ruling in `docs/voice/taste.md`. The only step left
+  is her merge.
+- The brief's #3 finding ($20/month reconfirmed, no pricing change) is
+  closed. No action owed.
+
+**Owed to you, one line each:**
+- **Merge PR #95** (writer): the enjoyability/canon-law-14 fix, the one
+  you asked for directly last night.
+- **Merge or close PR #98** (market): the finished brief; closes #93
+  once it does.
+- **Rule on the claim graph vs. the pricing page**: market's brief
+  flags that `libraryofalexandria.dev/pricing` sells the skill library
+  and routines but never mentions the claim graph, which
+  `docs/market/positioning.md` calls the core differentiator. Add it
+  before October 13, or confirm it is deliberate post-launch scope.
+  `docs/ideas.md` carries the `proposed` entry (filed on PR #98).
+- **PR #60 rebase or retirement** — already on your list from PR #97's
+  pass tonight; not repeated in full here to avoid a third copy of the
+  same ask, see that PR or the sprint file's status section below.
+
+**Nothing new queued to writer, frontend, or engineer this run.**
+Writer's relevant work is already open and blocked only on your merge.
+Engineer already carries two open PRs (#60, #94), which is a hard stop
+on a new dispatch regardless of what the brief found. Frontend has no
+ready, filed task from this brief — the claim-graph question is a
+decision, not yet a spec, so there is nothing to send until you rule.
+
 ## Updated 2026-09-24 (Thursday night standup, owner present)
 
 Owner directive for this run: standup mode, synchronous, owner present.

@@ -3262,3 +3262,153 @@ neither may any future daily press on the same key. Options for the
 engineer: a scratch-row lock the callers check, or a second Moonshot
 organization for rehearsals. ExO: the concurrency ceiling belongs in
 `docs/agents/model-routing.md` beside the Groq rate-limit note.
+
+## INC-2026-09-24-dispatch-403 — ADR-033's proof did not transfer: the PM's own dispatch call 403s
+
+The PM standup (pm/standup-2026-09-24-b, second run this day) tried to
+exercise charter §5 for the first time since ADR-033 marked it ACTIVE:
+`PM_DISPATCH_ENABLED` was `true`, the owner-present gate was clear
+(10h40m since the last `workflow_dispatch`), and two well-evidenced
+dispatch candidates were queued (market's stalled PR #93, engineer's
+conflicting PR #60). Both attempts failed identically:
+
+    gh workflow run agent-market.yml -f owner_instructions='...'
+    could not create workflow dispatch event: HTTP 403: Resource not
+    accessible by integration
+    (https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/360993730/dispatches)
+
+Reproduced directly against the REST endpoint (`gh api
+.../dispatches -X POST`), same 403, same message. This is not a typo
+or a wrong workflow id: the endpoint, the ref, and the input all
+matched `.github/workflows/agent-market.yml` exactly.
+
+**Why this contradicts ADR-033.** The decision states plainly that "a
+parent run started a child run with `GITHUB_TOKEN`" in HQ's
+`dispatch-probe` workflow, and that "no App key is needed" given
+`permissions: actions: write` on the calling workflow — which
+`.github/workflows/agent-pm.yml` already declares. Alexandria's own PM
+run, today, with that exact permission declared, could not create a
+dispatch event with the token it was given. Either the probe's result
+does not transfer from HQ's repo to this one (a different app
+installation, a different org-level Actions setting, or a
+fine-grained-PAT-vs-GITHUB_TOKEN difference nobody has isolated yet),
+or something about this specific run's token was scoped down from what
+the job's `permissions:` block requests. `gh auth status` in this run
+showed the active token authenticated as `claude[bot]` (the Claude Code
+app installation), not obviously the bare Actions-runner
+`GITHUB_TOKEN` the workflow YAML sets as `GH_TOKEN: ${{ github.token
+}}` — worth an engineer or ExO check of whether the two tokens are
+actually the same value in this harness, since if they are not, ADR-033
+was validated against a token this run never actually had.
+
+**What this run did instead of pretending it worked.** Neither
+dispatch fired. Both instructions are recorded in
+`docs/sprints/dispatch-queue.md` under "Dispatched by the PM (attempted,
+not fired)" with the exact 403 and the commands the owner or chair can
+run by hand to get the same result manually. No run URL exists for
+either because no run was created.
+
+**Standing question for the ExO or engineer, not answered here.**
+Confirm what token `github.token` actually resolves to inside a
+`claude-code-action` step (versus a plain `run:` shell step in the same
+job), and whether HQ's probe used the same execution path this seat
+uses. Until that is answered, charter §5 should be read as unproven in
+this repo specifically, not merely unproven in general.
+
+---
+
+## INC-2026-09-24-market-ranking-stub-only — a green run shipped the ship-first stub and nothing past it (2026-09-24, PM seat)
+
+**Recorded by the PM seat under the standing rule**: a repeat of
+incident 8's pattern ("run reports success, ships nothing"), so it is
+recorded at the moment it repeats rather than left for a weekly pass.
+
+**What happened.** The owner's evening dispatch (2026-09-24) asked the
+market seat to rank issue 2026-W39 against newsletters builders
+actually enjoy, rank alexandria against its $20/month competitive set,
+write both ranks into a one-page decision brief for the PM, and then
+dispatch the PM itself with the PR number once ready. Run `35958636133`
+(market-agent, `workflow_dispatch`, 05:08:31Z–05:12:25Z) recorded
+`"subtype": "success"`, `"is_error": false`, `"num_turns": 34`,
+`"total_cost_usd": 1.7275`, well inside its 160-turn budget and no
+sign of a cost or timeout cap. The branch it pushed, `market/2026-09-24-b`
+(PR #93), holds exactly one commit: the ship-first stub. The file it was
+meant to fill, `docs/market/briefs/2026-09-24-b.md`, still reads "This
+stub is the ship-first commit. The full brief... land[s] in this same
+file before the PR comes out of draft" — nothing after it ever landed.
+Step 3 of the owner's own instructions, the `gh workflow run
+agent-pm.yml` handoff, never fired: no `workflow_dispatch` run of
+`agent-pm.yml` appears anywhere after 05:08Z until this seat's own
+scheduled and message-triggered runs many hours later. Unlike incident
+8's original case, ship-first worked and nothing was lost to sandbox
+teardown; the gap is that a run reporting a clean, uncapped success
+never did the work its own dispatch described past the placeholder.
+
+**Why this belongs in the register rather than just the dispatch
+queue.** The queue this seat writes is replaced in full every run and
+is not a durable record; a pattern that has now repeated (incident 8,
+then this) needs to survive past today's queue for the ExO's weekly
+audit and for whichever seat next tunes how these runs report their own
+completion.
+
+**Not yet known.** Whether the run's 34 turns actually did the
+research and lost it before writing the file, or never did it at all —
+this seat has no transcript access beyond the job log's start and end
+markers. That distinction matters for the fix and is worth pulling from
+the uploaded `transcript-35958636133` artifact before treating this as
+closed.
+
+**No fix applied in this PR.** The PM seat's writable surface does not
+extend to the market seat's workflow or prompt.
+
+**Update, same run, before this PR came out of draft.** A separate
+market run (`alexandria-market/2026-09-24-window`, PR #98) landed
+independently in the same window and did finish the brief, superseding
+PR #93. The deliverable gap this incident names is closed in substance;
+this entry stands as the record of the pattern (a clean, uncapped
+success shipping short of its own stated deliverable), left for the
+ExO seat's weekly pattern read, the same seat that turned incident 8
+into the original ship-first-commit rule. Whether the first run's 34
+turns did the research and lost it, or never did it, is still unknown
+and still worth pulling from the `transcript-35958636133` artifact.
+
+---
+
+## INC-2026-09-24-shallow-clone-merge-base-repeat — the shallow-clone merge-base gap, twice in one window (PM seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats,
+no exceptions, regardless of how fast it was diagnosed. This is the
+second occurrence, not the first, so L-A17's one-minute leniency (which
+market's PR #98 correctly claimed for the first one) does not apply
+here — that clause covers a first occurrence, and the standing rule
+above has no such carve-out for a repeat.
+
+**What happened, first time.** PR #98 (market, this same window) hit a
+shallow clone that hid the merge base with its own prior branch
+(`market/2026-09-24-b`); `git fetch --unshallow` fixed it in under a
+minute. Judged not to clear L-A17's bar, reasonably, for a first
+occurrence fixed that fast.
+
+**What happened, second time.** This run (`alexandria-pm/2026-09-24-window`),
+building on PR #97 and PR #99 to reconcile them into one PR, hit the
+identical symptom: `git merge-base origin/main
+origin/alexandria-pm/2026-09-24-message` returned nothing, and
+`git rev-parse --is-shallow-repository` confirmed the clone was shallow.
+`git fetch --unshallow origin` fixed it in one command, and `origin/main`
+itself moved during that fetch (504cc8d landed while this run's clone
+was shallow), which is worth naming: a shallow clone in this harness
+does not just hide history, it can hide a commit that landed on main
+after the sandbox was provisioned.
+
+**What it means.** The sandbox this org's agents run in defaults to a
+shallow clone, and any run that needs `git merge-base` against a
+sibling branch (adopting a prior run's work, resolving a same-day
+collision, checking whether a branch is stale) will hit this. Two
+independent seats hit it in the same afternoon. Worth a standing fix
+rather than a per-run workaround: either the checkout step
+(`.github/workflows/*`, ExO's to change) fetches full history by
+default, or every seat's charter gets the one-line
+`git fetch --unshallow` reflex before any merge-base check. Filed for
+the ExO's weekly pattern read; not this seat's writable surface to fix
+in the workflow files.
