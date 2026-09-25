@@ -682,6 +682,62 @@ def fallback_models() -> list[str]:
     return [_literal(source, r'^MODEL = "([^"]+)"', "MODEL")]
 
 
+def synthesis_models() -> list[str]:
+    """rag_answer's ordered fallback list, read out of mcp/synthesis.py.
+
+    Same discipline as `fallback_models`: read the production list rather than
+    keeping a copy, because a guard with its own copy is a guard that verifies a
+    list nothing uses. The MCP server is a runtime under
+    docs/agents/runtime-changes.md, and until this ran, nothing checked that the
+    model it calls still exists.
+    """
+    source = (ROOT / "mcp" / "synthesis.py").read_text()
+    match = re.search(r"^FALLBACK_MODELS = (\[[^\]]*\])", source, re.M)
+    if not match:
+        raise LookupError(
+            "mcp/synthesis.py no longer defines FALLBACK_MODELS where this "
+            "guard looks for it. Fix the pattern in budget.synthesis_models(); "
+            "a guard that cannot read the settings it checks is worse than no "
+            "guard."
+        )
+    models = ast.literal_eval(match.group(1))
+    if not isinstance(models, list) or len(models) < 2:
+        raise LookupError(
+            "mcp/synthesis.py FALLBACK_MODELS must be a list of at least two "
+            f"models; found {models!r}. One model is a single point of failure, "
+            "and incident 24 is what that costs."
+        )
+    return models
+
+
+def check_synthesis(available: set[str] | None = None) -> list[str]:
+    """Every model rag_answer can reach for has published limits and still exists.
+
+    Returns problems, the way `check_drift` does. The MCP server does not size a
+    payload against a ceiling, because a synthesis request is a short answer over
+    retrieved context rather than a whole issue, so this asks the two questions
+    that are left: does the id have a row here, and has it been withdrawn.
+    """
+    problems = []
+    for rank, model in enumerate(synthesis_models(), start=1):
+        if model in DECOMMISSIONED:
+            problems.append(
+                f"rag_answer fallback {rank} is {model}, withdrawn by its "
+                f"provider: {DECOMMISSIONED[model]}")
+            continue
+        if model not in MODELS:
+            problems.append(
+                f"rag_answer fallback {rank} ({model}) has no entry in "
+                "budget.MODELS, so there is no provider to send it to")
+            continue
+        if available is not None and model not in available:
+            problems.append(
+                f"rag_answer fallback {rank} ({model}) is not listed by "
+                f"{MODELS[model]['provider']} for this key; a request to it "
+                "would 404")
+    return problems
+
+
 def presses() -> list[Press]:
     """Read the press settings out of weekly.py rather than restating them.
 
@@ -931,6 +987,25 @@ def main() -> int:
                   f"{count_tokens(prompt) + press.max_completion} tokens, "
                   "before a single row of payload.")
         print()
+
+    # The MCP server's synthesis list. It is not a press and has no payload to
+    # size, but it is a runtime that calls a model, and nothing checked it until
+    # 2026-09-25. Same command, so the same `&&` covers it.
+    try:
+        models = synthesis_models()
+        print(f"rag_answer (mcp/synthesis.py, {len(models)} models in order)")
+        for rank, model in enumerate(models, start=1):
+            provider = MODELS.get(model, {}).get("provider", "?")
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {rank}. [{provider}] {model}{flag}")
+        for problem in check_synthesis(available):
+            failures.append(problem)
+            print(f"  SYNTHESIS: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"SYNTHESIS: {exc}")
+    print()
 
     if failures:
         print(f"budget check FAILED ({len(failures)} problem"
