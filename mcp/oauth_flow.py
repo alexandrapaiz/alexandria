@@ -37,6 +37,7 @@ import hmac
 import html
 import json
 import time
+import uuid
 from urllib.parse import urlencode, urlsplit
 
 #: Registrations do not expire on their own. A client that registered a year ago
@@ -325,6 +326,143 @@ class Throttle:
         self._with_store(lambda store: store.reset(scope))
 
 
+# ---------------- single-use authorization codes ----------------
+
+#: How long a freshly minted code is good for. It was 600 seconds, which is ten
+#: minutes in which a leaked code could be spent. A real exchange takes well
+#: under a second, because the client redirects straight from `/authorize` to
+#: `/token`, so this is generous already and shrinks the leaked-code window
+#: tenfold. It is the cheap half of the fix; the ledger below is the real half.
+CODE_TTL = 60
+
+
+class MemoryCodeLedgerStore:
+    """Spent codes in process memory. Correct, and forgetful.
+
+    Same role the memory attempt store plays for the throttle: the tests use it,
+    and it is what the ledger degrades to when Postgres cannot be reached. On
+    Modal it is not enough on its own, for the same reason. A container that
+    scales to zero forgets which codes it has seen, and a second replica never
+    knew.
+    """
+
+    def __init__(self):
+        self._rows: dict[str, bool] = {}
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        if jti in self._rows:
+            return False
+        self._rows[jti] = False
+        return True
+
+    def revoke(self, jti: str) -> None:
+        if jti in self._rows:
+            self._rows[jti] = True
+
+    def is_revoked(self, jti: str) -> bool:
+        return self._rows.get(jti, False)
+
+
+class PostgresCodeLedgerStore:
+    """Spent codes in the `consumed_codes` table, so they survive a cold start.
+
+    Takes a zero-argument `connect` callable for the same reason the attempt
+    store does: the MCP server opens a connection per call and nothing here
+    should hold one open between requests.
+
+    `CONSUME` is the whole single-use guarantee and it is one statement on
+    purpose. `on conflict do nothing returning jti` returns a row only when this
+    insert was the one that created it, so two replicas racing on the same code
+    cannot both be told they were first. A read-then-write would have that race;
+    this does not.
+
+    A row is not a spent code, it is a session: `expires_at` is set to the death
+    of the longest-lived token the exchange hands out, not to the code's own
+    60-second expiry. If it were the latter, the row would be purged a minute
+    after login and there would be nothing left to mark revoked for the 180 days
+    the refresh token still works.
+    """
+
+    CONSUME = """
+        insert into consumed_codes (jti, expires_at) values (%s, to_timestamp(%s))
+        on conflict (jti) do nothing
+        returning jti
+    """
+    REVOKE = "update consumed_codes set revoked = true where jti = %s"
+    IS_REVOKED = "select revoked from consumed_codes where jti = %s"
+    PURGE = "delete from consumed_codes where expires_at < now()"
+
+    def __init__(self, connect):
+        self._connect = connect
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        with self._connect() as conn:
+            row = conn.execute(self.CONSUME, (jti, expires_at)).fetchone()
+            # Opportunistic, in the same transaction as the insert that pays for
+            # the connection. Exchanges happen once per login, so this is a rare
+            # statement against a table with one row per login.
+            conn.execute(self.PURGE)
+            conn.commit()
+        return row is not None
+
+    def revoke(self, jti: str) -> None:
+        with self._connect() as conn:
+            conn.execute(self.REVOKE, (jti,))
+            conn.commit()
+
+    def is_revoked(self, jti: str) -> bool:
+        with self._connect() as conn:
+            row = conn.execute(self.IS_REVOKED, (jti,)).fetchone()
+        return bool(row[0]) if row else False
+
+
+class CodeLedger:
+    """Which authorization codes have been spent, and which sessions are dead.
+
+    Two jobs, both required by OAuth 2.1 section 4.1.2: a code may be exchanged
+    once, and a code exchanged twice revokes the tokens already issued from it.
+
+    The degraded path matches the throttle's, and for the same stated reason. If
+    Postgres cannot be reached this falls back to an in-process ledger rather
+    than refusing every exchange. That choice is fail-open and it is deliberate:
+    a Neon outage should cost this check its memory, not cost the owner the only
+    way into her own connector. An attacker who wants the weaker behaviour has
+    to take the database down to get it, and the throttle is still in front of
+    the passphrase while they try.
+    """
+
+    def __init__(self, store=None, *, fallback=None, on_error=None):
+        self.store = store if store is not None else MemoryCodeLedgerStore()
+        self.fallback = fallback if fallback is not None else MemoryCodeLedgerStore()
+        self.on_error = on_error
+
+    def _with_store(self, call):
+        try:
+            return call(self.store)
+        except Exception as exc:  # noqa: BLE001 - any driver error degrades the same way
+            if self.on_error is not None:
+                self.on_error(exc)
+            return call(self.fallback)
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        """True if this is the code's first exchange. False means a replay."""
+        return self._with_store(lambda store: store.consume(jti, expires_at))
+
+    def revoke(self, jti: str) -> None:
+        """Kill every token issued from this code.
+
+        Called when a code is presented twice. The server cannot tell which of
+        the two callers was the attacker, so the spec's answer is to trust
+        neither, and this follows it. The owner's cost is that she authorizes
+        again, which the passphrase still lets her do at any time. Revoking
+        cannot lock her out, it can only log her out.
+        """
+        self._with_store(lambda store: store.revoke(jti))
+
+    def is_revoked(self, jti: str) -> bool:
+        return self._with_store(lambda store: store.is_revoked(jti))
+
+
 # ---------------- the endpoints themselves ----------------
 #
 # They live here rather than inside serve() so that a test can mount the real
@@ -369,16 +507,17 @@ AUTH_PARAMS = ["response_type", "client_id", "redirect_uri", "state",
 
 def install_oauth(api, *, jwt_secret: str, passphrase: str,
                   access_ttl: int = ACCESS_TTL, refresh_ttl: int = REFRESH_TTL,
-                  throttle=None):
+                  throttle=None, code_ledger=None):
     """Mount the OAuth 2.1 endpoints on `api`, and return `read_access_token`.
 
     FastAPI and PyJWT are imported here rather than at module scope so the
     registration helpers above stay importable with nothing but the standard
     library.
 
-    `throttle` defaults to an in-process one. The deployed server passes a
-    Postgres-backed one, because a Modal container that scales to zero forgets
-    an in-process count the moment it stops.
+    `throttle` and `code_ledger` both default to in-process ones. The deployed
+    server passes Postgres-backed ones, because a Modal container that scales to
+    zero forgets an in-process count, or an in-process list of spent codes, the
+    moment it stops.
     """
     import jwt
     from fastapi import Form, Request
@@ -386,6 +525,8 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
 
     if throttle is None:
         throttle = Throttle()
+    if code_ledger is None:
+        code_ledger = CodeLedger()
 
     def base_url(request) -> str:
         # `.get`, not `[...]`: a request without a Host header is malformed
@@ -496,8 +637,11 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
             return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase, try again.", hidden=hidden),
                                 status_code=401)
         throttle.record_success()
+        # `jti` is what makes the code single-use: it is the name the ledger
+        # records when the code is spent, and the name every token minted from
+        # this code carries so the whole session can be revoked together.
         code = mint({"typ": "code", "cid": client_id, "ru": redirect_uri,
-                     "cc": code_challenge}, ttl=600)
+                     "cc": code_challenge, "jti": uuid.uuid4().hex}, ttl=CODE_TTL)
         # `state` is the client's opaque round-trip value and it arrives from a
         # form field, so it is encoded rather than pasted in. Pasted raw, a
         # state of "a&scope=admin" adds a parameter to the client's callback
@@ -525,17 +669,43 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
             if not hmac.compare_digest(challenge, claims.get("cc", "")):
                 return JSONResponse({"error": "invalid_grant", "error_description": "pkce"},
                                     status_code=400)
+            # Spending the code is the last check, deliberately. Every cheaper
+            # reason to refuse has already run, so a request that fails one of
+            # them does not burn a code the honest client is about to present.
+            session = claims.get("jti") or ""
+            if not session:
+                # A code this server minted always carries one. Missing means a
+                # code from before this check existed, and those are already
+                # dead: the old TTL was ten minutes and this shipped long after.
+                return JSONResponse({"error": "invalid_grant"}, status_code=400)
+            if not code_ledger.consume(session, time.time() + refresh_ttl):
+                # OAuth 2.1 section 4.1.2: a code presented twice revokes what
+                # the first exchange issued. Neither caller can be trusted now.
+                code_ledger.revoke(session)
+                return JSONResponse({"error": "invalid_grant",
+                                     "error_description": "replay"}, status_code=400)
         elif grant_type == "refresh_token":
             claims = read_token(refresh_token or "", "refresh")
             if not claims:
                 return JSONResponse({"error": "invalid_grant"}, status_code=400)
+            # A refresh token from a revoked session is dead, and this is where
+            # revocation is actually enforced. `sid` missing means a token minted
+            # before sessions existed: allowed, so that merging this does not log
+            # the owner out of a connector she authorized months ago.
+            session = claims.get("sid") or ""
+            if session and code_ledger.is_revoked(session):
+                return JSONResponse({"error": "invalid_grant",
+                                     "error_description": "revoked"}, status_code=400)
         else:
             return JSONResponse({"error": "unsupported_grant_type"}, status_code=400)
+        # Both grants carry the session forward, so a refresh chain stays
+        # revocable for as long as it lives rather than only at its first link.
+        session = claims.get("jti") or claims.get("sid") or ""
         return {
-            "access_token": mint({"typ": "access"}, access_ttl),
+            "access_token": mint({"typ": "access", "sid": session}, access_ttl),
             "token_type": "Bearer",
             "expires_in": access_ttl,
-            "refresh_token": mint({"typ": "refresh"}, refresh_ttl),
+            "refresh_token": mint({"typ": "refresh", "sid": session}, refresh_ttl),
         }
 
     def read_access_token(token_str: str) -> dict | None:

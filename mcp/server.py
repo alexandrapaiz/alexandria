@@ -494,10 +494,21 @@ def serve():
                                    f"counting in memory this container only: {exc!r}"),
     )
 
+    # Which authorization codes have been spent. In Postgres for the same
+    # reason the throttle is: a code is single-use only if every replica agrees
+    # it has been used, and a container that scales to zero agrees with nobody.
+    # It degrades to memory on a database error rather than refusing every
+    # exchange, because failing closed here would cost the owner her connector.
+    code_ledger = oauth_clients.CodeLedger(
+        oauth_clients.PostgresCodeLedgerStore(db),
+        on_error=lambda exc: print(f"[oauth] consumed_codes unreachable, tracking "
+                                   f"spent codes in memory this container only: {exc!r}"),
+    )
+
     read_access_token = oauth_clients.install_oauth(
         api, jwt_secret=JWT_SECRET, passphrase=PASSPHRASE,
         access_ttl=ACCESS_TTL, refresh_ttl=REFRESH_TTL,
-        throttle=authorize_throttle,
+        throttle=authorize_throttle, code_ledger=code_ledger,
     )
 
     # ---------------- bearer guard on /mcp, then mount ----------------
