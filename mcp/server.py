@@ -25,11 +25,33 @@ Consecutive wrong answers on POST /authorize buy a growing wait, counted in the
 `auth_attempts` table so a cold start does not forget them. The wait is capped
 at a minute and never becomes a lockout: the owner has no other way in.
 
+An authorization code is spent once. The code names a session, every token
+minted from it carries that name, and the exchange records the name in the
+`consumed_codes` table, whose primary key is the single-use check itself. A
+code presented twice revokes the session, which is what OAuth 2.1 section 4.1.2
+asks for. Before this, one code exchanged three times returned three valid
+token pairs.
+
 Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `JWT`
 (AUTH_JWT_SECRET — long random signing string), `MCP` (MCP_PASSPHRASE — the
 login passphrase typed on the authorize page).
 
     modal deploy mcp/server.py    # serve at https://<workspace>--alexandria-mcp-serve.modal.run
+
+Deploying is two commands and the `&&` is the point, the same way it is in
+pipeline/weekly.py. Both auth tables live in db/schema.sql, and both stores
+degrade to process memory when a table is missing rather than refusing to
+serve. That is the right behaviour on a Neon outage and the wrong thing to
+discover after a deploy, because the server keeps working and quietly stops
+being able to keep a promise across replicas. A rule enforced by a link in a
+command runs at the reliability of a shell; the same rule written here only
+runs at the reliability of whoever reads it.
+
+    modal run pipeline/db_setup.py::apply_schema \
+      && modal deploy mcp/server.py
+
+`apply_schema` is idempotent, so running it on every deploy costs a few
+seconds and nothing else.
 """
 
 import modal
