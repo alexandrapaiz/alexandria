@@ -4447,3 +4447,139 @@ that can deliver that sentence to someone who never asked. A search product
 structurally cannot, because it has no standing relationship with a reader
 and no memory of what it has already asserted to them. That is the axis worth
 defending, and it is worth more than matching their matrix.
+
+## Engineer run, 2026-09-25
+
+Appended as one section at the tail on purpose, the same way the
+2026-09-24 security batch was: five other open pull requests (#101, #98,
+#95, #60, and this seat's own #94) also write into this file, and a new
+section at the end is the cheapest conflict to resolve.
+
+### 2026-09-25 — A 5xx from the provider burns a model instead of waiting for it
+
+- Trigger: today's craft scan of Semantic Scholar's Academic Graph API,
+  below. Its own FAQ tells clients to back off on 5xx as well as 429,
+  because its rate limiting returns HTTP 500 about as often as 429. That
+  sent me to read what alexandria's press does with a 5xx, and the
+  answer is that it does not have one.
+- What: in `pipeline/weekly.py`, `call_model` handles 404 and 429 by
+  name and then catches everything else with `if resp.status_code >=
+  400`, which raises `ModelGone`. The comment above that line explains
+  it for 400, and it is right about 400: an unsupported parameter is
+  worth handing to the next model. But 500, 502, 503 and 504 fall into
+  the same branch, and `ModelGone` means the loop at line 669 abandons
+  that model for the whole run without retrying once. So a provider
+  having a bad minute is treated exactly like a model that was
+  withdrawn. The consequence is specific and it lands on the thing the
+  org has spent two weeks protecting: the head of `FALLBACK_MODELS` is
+  the model the rehearsal gate certifies, and one transient 503 on a
+  Monday demotes the issue to a model no rehearsal covered, quietly,
+  with the only evidence a line in a log nobody reads. A 429 already
+  gets `RETRIES_PER_MODEL` attempts with exponential backoff. A 503
+  deserves the same treatment and currently gets none.
+- First step: split the `>= 400` branch in two. Keep `ModelGone` for
+  4xx, and give `>= 500` the retry-and-backoff path that 429 already
+  has, reusing `BACKOFF_SECONDS` and `BACKOFF_CEILING` rather than
+  inventing a second schedule. Then a test beside the 404 and 429 cases
+  in `tests/test_press_resilience.py`, which already has the fixtures
+  for it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — A revoked MCP session keeps a working access token for a day
+
+- Trigger: building today's fix. Making a replayed authorization code
+  revoke its session meant choosing where revocation is enforced, and I
+  could only afford one of the two places.
+- What: this PR enforces revocation at `POST /token`, so a revoked
+  session cannot refresh and its 180-day chain dies immediately. It is
+  not enforced at the bearer guard in `mcp/server.py`, which is the
+  middleware every `/mcp` request passes through. So an access token
+  already issued to a revoked session keeps working until it expires on
+  its own, which is `ACCESS_TTL`, currently 24 hours. That is the honest
+  shape of what shipped: the long tail is closed and the first day is
+  not. It was not closed today because the guard runs on every single
+  request and checking the ledger there is a database round trip per
+  request, on a container that scales to zero, which is a real cost that
+  deserves its own decision rather than a quiet addition.
+- First step: decide the cost first, since that is the actual question
+  and not the code. Three options, cheapest first. Cut `ACCESS_TTL` from
+  24 hours to something closer to an hour, which costs one line and
+  shrinks the window twenty-fold without any new lookup. Or cache the
+  revoked set in the container with a short TTL, which makes the common
+  request free and bounds the staleness. Or check per request and accept
+  the round trip. The middle one is probably right, and the first one is
+  worth doing today regardless of which lands.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — Nothing runs the MCP server's security tests
+
+- Trigger: after writing `tests/test_code_single_use.py` I went looking
+  for where it would run on a pull request, and there is nowhere. The
+  suite is 176 tests and the only workflow that runs any of them is
+  `.github/workflows-pending/checks.yml`, which is scoped to the press
+  by path and is not installed anyway.
+- What: three security fixes now live in `mcp/`, each with a suite
+  written to hold it. Sprint item 1's redirect-URI check, the passphrase
+  throttle, and today's single-use codes. Every one of those suites runs
+  exactly once, in the session of the seat that wrote it, and never
+  again. Nothing re-runs them when someone else edits `mcp/server.py`,
+  which is the moment they exist for: these are the checks that hold
+  when a later change is careless, and a check that runs only on the day
+  it is written is a receipt rather than a control. The entry
+  "Incident 22's budget gate is written and still not installed" is the
+  same shape one level down; this is the general case of it.
+- First step: a `tests` job in `checks.yml` running
+  `python3 -m pytest tests/ -q` on `mcp/**`, `pipeline/**`, `db/**` and
+  `tests/**`, added in the same edit that installs that file, since both
+  are the owner's push and it is one push rather than two. One
+  implementation detail worth writing down because it cost time today:
+  on the agent image, `pip install -r requirements-dev.txt` fails with
+  PEP 668 `externally-managed-environment` and needs either a venv or
+  `--break-system-packages`. The repo's own documented command is the
+  one that fails, so whichever way CI solves it should be the way
+  `requirements-dev.txt` then documents.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — Craft scan: Semantic Scholar's Academic Graph API
+
+The next unscanned entry in `docs/market/landscape.md` (Undermind,
+Elicit, TLDR AI, AINews and Consensus are done). A craft read of the
+API rather than the search product, since the API is what an agent
+meets.
+
+**The thing worth stealing: the caller declares the shape of the
+response.** Every endpoint takes a `fields` parameter, a comma-separated
+list that can reach through relations, and you get back exactly those
+fields and nothing else. There is no default payload to trim and no
+second version of an endpoint for callers who want more, because
+wanting more is a longer string. Their tutorial makes the tradeoff
+explicit rather than hiding it, in their words: avoid including more
+fields than you need, because that can slow down the response rate. The
+same shape appears again at `/paper/batch`, which resolves up to 500
+ids in one POST and takes the same `fields` string, so the expensive
+pattern (hundreds of detail calls) and the cheap one differ by which
+endpoint you picked and nothing else. Against alexandria's MCP tools,
+which return a fixed shape per tool, this is the better design for the
+caller we actually have: an agent paying by the token for every field
+it did not ask for. It is a ledger idea rather than a diff because
+`semantic_search` and `sql_query` have different answers here,
+`sql_query` already being the general case.
+
+**The thing alexandria does better: the graph is read, not just
+indexed.** Semantic Scholar has 200M papers and 2.4B citation edges,
+and it will tell you that paper A cites paper B and even classify the
+citation's intent. It will not tell you that B's finding was overturned
+in March, because a citation edge is a fact about a document and
+alexandria's claim edges are facts about a claim. The whole left-behind
+premise depends on that difference. They have vastly more of the
+cheaper edge and none of the expensive one.
+
+**One operational note that became the first idea above.** Their rate
+limiting returns HTTP 500 about as often as 429, and their FAQ's
+instruction is to handle 5xx with exponential backoff rather than
+treating it as a real error. That is a well-earned piece of advice from
+an API at their scale, and reading it is what made me check what the
+press does with a 503.
