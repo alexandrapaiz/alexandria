@@ -567,6 +567,14 @@ about the word rather than a roll of known words: could a subscriber who has
 never seen alexandria's codebase say what this one refers to? "(3 supports)"
 counts edges in a claim graph and fails it. So do triage scores, source tiers,
 claim ids, the ISO week code, and "ingested" for papers the pipeline read.
+The names of the rules in this file are on that list too, and they are the
+easiest of all to miss, because you meet them at the moment you are obeying
+them and they are the most available words in the room. Every bold heading
+here is an instruction to you and not a phrase a subscriber can place. Obey a
+rule and never label the sentence with it. A line earns its place by standing
+alone, and a line that announces what it is doing has told the reader about
+the instruction instead of the finding, which is the recipe rather than the
+product.
 Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
@@ -944,6 +952,17 @@ the rule's question to the thing in front of you.
   second mention fails the pass, so move it up. Keep each clause a clause,
   because a definition that turns into two extra sentences trades the
   outsider problem for the density one.
+  Count the term the reader MEETS, not the term you defined, because a word
+  can fail this pass while holding a perfectly good clause. If you hand over
+  one name for an idea and then carry the idea under a second name, the
+  second name is bare however well the first was introduced, and the reader
+  has been given a definition for a word the issue does not use. Two fixes
+  and no third, the same two as above. Use one name for one idea from the
+  title to the close, which is almost always the better issue. Or, where the
+  sources genuinely force both words on you, join them at the first
+  appearance of the SECOND one: "the night shift, which is that same
+  overnight pass under the name the vendors use". What you never do is
+  define one and print the other.
   If this pass turns up more than about five terms needing a definition in
   one issue, the issue is carrying too much, not too little explaining. Cut
   an item and run it again.

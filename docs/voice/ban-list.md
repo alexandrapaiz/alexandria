@@ -7,6 +7,18 @@ the owner's word. Since her ruling of 2026-09-19 it governs site copy
 as well as issues, so a page of the site is read against these tells
 exactly as an issue is.
 
+**An entry is not finished when it is written (writer seat, 2026-09-25).**
+A tell recorded here has changed nothing by itself. That is L-A9 in
+docs/standards/lessons.md, "recording a rule is not enforcing it", and
+incident 20 in this repo's own register. So a new entry carries one of two
+endings in its own text: the change to prompts/digest.md that now enforces
+it, or the ledger entry saying why no prompt change can reach it. Entries 51
+and 54 are why this rule exists. Both were appended on 2026-09-24 by the
+grade that found them, in the same pull request that patched four other
+findings from that grade into the generator, and neither of them reached it.
+A tell that only gets written down is a tell the next issue is free to
+commit.
+
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
 The text of both is untouched, and only the numerals moved, into the
@@ -435,7 +447,10 @@ gap that the same collision had left empty (incident 25).
     of entry 46. What follows the colon is a fragment and not the standing
     sentence canon law 14 asks for. And the rule it names is the one rule the
     issue was trying hardest to follow, so the tell arrives in the shape of
-    compliance. Added 2026-09-24 from the fifth grade of W39.
+    compliance. Added 2026-09-24 from the fifth grade of W39. Enforced
+    2026-09-25: the internal-vocabulary test in prompts/digest.md now names
+    this file's own rule headings as internal vocabulary, where it had listed
+    only the codebase's.
 52. The fix by deletion. A sentence is struck, and the repair removes it
     rather than rewriting it, so the issue quietly loses the element that
     sentence was occupying. The owner struck W39's opening, "You spent last
@@ -485,4 +500,7 @@ gap that the same collision had left empty (incident 25).
     term has one, three paragraphs away, spelled differently. The test is not
     whether every term was defined. It is whether every term the reader
     actually meets was, counted in the words on the page. Added 2026-09-24
-    from the fifth grade of W39.
+    from the fifth grade of W39. Enforced 2026-09-25: the first-use pass in
+    prompts/digest.md now counts the term the reader meets rather than the
+    term the writer defined, and gives the join to write when the sources
+    force both words.
