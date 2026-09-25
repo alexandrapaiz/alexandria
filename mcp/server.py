@@ -9,7 +9,12 @@ ADR-7). All intelligence stays in the calling agent; all authority (DB
 password, GitHub token, embedding model) stays here. rag_answer is the one
 exception: synthesis has to happen somewhere, so it happens server-side,
 against a fixed prompt, over context the server itself retrieved — never
-against the open corpus or the model's own training data.
+against the open corpus or the model's own training data. That synthesis call
+walks an ordered model list (mcp/synthesis.py) rather than trusting one free-tier
+model, which is incident 24's standing fix applied to this server: a rate limit,
+a withdrawal, a timeout or an unparseable body moves to the next model, and a
+walk that ends with nothing returns the retrieved claims and says why, instead of
+raising a 500 through the tool call.
 
 Auth is OAuth 2.1 as the MCP spec standardizes it: authorization code + PKCE +
 dynamic client registration, implemented stateless with signed JWTs and a
@@ -32,13 +37,14 @@ code presented twice revokes the session, which is what OAuth 2.1 section 4.1.2
 asks for. Before this, one code exchanged three times returned three valid
 token pairs.
 
-Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `JWT`
+Secrets: `neon` (DATABASE_URL), `github` (GITHUB_TOKEN), `groq` (GROQ_API_KEY,
+which every synthesis model in mcp/synthesis.py is served by), `JWT`
 (AUTH_JWT_SECRET — long random signing string), `MCP` (MCP_PASSPHRASE — the
 login passphrase typed on the authorize page).
 
     modal deploy mcp/server.py    # serve at https://<workspace>--alexandria-mcp-serve.modal.run
 
-Deploying is two commands and the `&&` is the point, the same way it is in
+Deploying is four commands and the `&&` is the point, the same way it is in
 pipeline/weekly.py. Both auth tables live in db/schema.sql, and both stores
 degrade to process memory when a table is missing rather than refusing to
 serve. That is the right behaviour on a Neon outage and the wrong thing to
@@ -47,17 +53,29 @@ being able to keep a promise across replicas. A rule enforced by a link in a
 command runs at the reliability of a shell; the same rule written here only
 runs at the reliability of whoever reads it.
 
-    modal run pipeline/db_setup.py::apply_schema \
+    python3 pipeline/budget.py \
+      && modal run mcp/server.py::preflight \
+      && modal run pipeline/db_setup.py::apply_schema \
       && modal deploy mcp/server.py
 
 `apply_schema` is idempotent, so running it on every deploy costs a few
-seconds and nothing else.
+seconds and nothing else. The two checks in front of it are incident 24's,
+and they are in the command for the reason the paragraph above gives. The
+budget guard reads rag_answer's fallback list out of mcp/synthesis.py and
+refuses when an entry has no published limits or has been withdrawn;
+`preflight` then asks Groq which of them that key can actually reach. A
+server whose only synthesis model has been retired answers every question
+with the degraded message, and it does it quietly, because retrieval still
+works and the tool still returns 200.
 """
 
 import modal
 
 EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
-RAG_MODEL = "openai/gpt-oss-120b"  # same model as interpret.py; free-tier Groq
+# The synthesis model list, its walk and its error paths live in
+# mcp/synthesis.py, outside this container, so tests can reach them. It also
+# owns the model ids: a constant here and a list there is the drift that
+# incident 24 is made of.
 REPO = "alexandrapaiz/alexandria"
 
 image = (
@@ -77,6 +95,11 @@ image = (
     )
     .add_local_file("prompts/rag-answer.md", "/root/prompts/rag-answer.md")
     .add_local_file("mcp/oauth_flow.py", "/root/oauth_flow.py")
+    .add_local_file("mcp/synthesis.py", "/root/synthesis.py")
+    # The availability check at deploy reads its model table from the same
+    # guard the press uses, rather than keeping a second copy of every
+    # provider's published limits.
+    .add_local_file("pipeline/budget.py", "/root/budget.py")
 )
 
 app = modal.App("alexandria-mcp", image=image)
@@ -108,6 +131,7 @@ def serve():
 
     sys.path.insert(0, "/root")  # where the image put oauth_flow.py
     import oauth_flow as oauth_clients
+    import synthesis
     from fastapi import FastAPI, Request
     from fastapi.responses import JSONResponse
     from fastmcp import FastMCP
@@ -135,25 +159,9 @@ def serve():
             pass  # fall back to default resolution
         return psycopg.connect(url, **kwargs)
 
-    def call_groq(api_key: str, system: str, user: str) -> dict:
-        import json
-
-        resp = httpx.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key.strip()}"},
-            json={
-                "model": RAG_MODEL,
-                "temperature": 0.1,
-                "response_format": {"type": "json_object"},
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-            },
-            timeout=60,
-        )
-        resp.raise_for_status()
-        return json.loads(resp.json()["choices"][0]["message"]["content"])
+    def call_synthesis(api_key: str, system: str, user: str):
+        """One walk down synthesis.FALLBACK_MODELS. Raises SynthesisUnavailable."""
+        return synthesis.synthesize(httpx.post, api_key, system, user)
 
     # ---------------- MCP tools ----------------
 
@@ -217,16 +225,24 @@ def serve():
         )
         user = f"CONTEXT:\n{context}\n\nQUESTION: {question}"
         try:
-            out = call_groq(os.environ["GROQ_API_KEY"], _rag_prompt, user)
-        except httpx.HTTPStatusError as exc:
-            return {"error": f"synthesis model unavailable: {exc.response.status_code}"}
+            answered = call_synthesis(os.environ.get("GROQ_API_KEY", ""),
+                                      _rag_prompt, user)
+        except synthesis.SynthesisUnavailable as exc:
+            # Retrieval worked. Say so, and hand back the claims the walk was
+            # about to summarize, so a failed provider costs the caller a
+            # summary rather than the whole answer.
+            degraded = synthesis.degraded(exc)
+            degraded["claims"] = claims
+            return degraded
+        out = answered.data
         by_id = {c["claim_id"]: c for c in claims}
         used_ids = [cid for cid in out.get("claim_ids_used", []) if cid in by_id]
         citations = [
             {"claim_id": cid, "paper": by_id[cid]["paper"], "url": by_id[cid]["url"]}
             for cid in used_ids
         ]
-        return {"answer": out.get("answer", ""), "citations": citations}
+        return {"answer": out.get("answer", ""), "citations": citations,
+                "model": answered.model}
 
     @mcp.tool
     def sql_query(sql: str) -> dict:
@@ -552,3 +568,52 @@ def serve():
 
     api.mount("/", mcp_app)
     return api
+
+
+@app.function(secrets=[modal.Secret.from_name("groq")], timeout=120)
+def preflight():
+    """Does the synthesis list still exist at the provider? Incident 24's gate.
+
+    The third link in the MCP deploy chain, and the reason it is a link rather
+    than a sentence in a charter: a rule enforced by a command runs at the
+    reliability of a shell. This asks Groq's `/models` endpoint with the real key
+    and raises when nothing in `synthesis.FALLBACK_MODELS` is listed, which stops
+    the `&&` chain before `modal deploy` installs a server that cannot answer.
+
+    Run it by hand, never on a schedule:
+
+        modal run mcp/server.py::preflight
+
+    It costs no tokens against any ceiling, because listing models is free.
+    """
+    import os
+    import sys
+
+    sys.path.insert(0, "/root")
+    import budget
+    import synthesis
+
+    available, notes = budget.available_everywhere(
+        synthesis.FALLBACK_MODELS, os.environ)
+    for note in notes:
+        print(f"availability: {note}")
+    for name in synthesis.FALLBACK_MODELS:
+        if name not in available:
+            provider = budget.MODELS.get(name, {}).get("provider", "?")
+            print(f"AVAILABILITY: {name} is in synthesis.FALLBACK_MODELS but "
+                  f"{provider} does not list it. A request to it would 404, as "
+                  "it did in incident 24.")
+    usable = [m for m in synthesis.FALLBACK_MODELS if m in available]
+    print(f"synthesis fallbacks present: {usable or 'NONE'}")
+    if not usable:
+        raise RuntimeError(
+            "no provider lists any of rag_answer's synthesis models "
+            f"({', '.join(synthesis.FALLBACK_MODELS)}). Deploying now would "
+            "ship a server whose only answer is the degraded one. Update "
+            "mcp/synthesis.py FALLBACK_MODELS and pipeline/budget.py MODELS "
+            f"from {budget.PROVIDERS['groq']['docs']} first."
+        )
+    if usable[0] != synthesis.MODEL:
+        print(f"NOTE: the default ({synthesis.MODEL}) is absent, so every answer "
+              f"would be written by {usable[0]} until it returns.")
+    return usable
