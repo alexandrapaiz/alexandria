@@ -919,13 +919,30 @@ def main() -> int:
           f"{count_tokens(payload_json)} tokens "
           f"({'exact' if exact() else 'estimated'})\n")
 
+    # Arithmetic run on estimates is not arithmetic. `count_tokens` falls back
+    # to a chars-per-token ratio when tiktoken is missing, and that ratio is
+    # deliberately pessimistic, so a request that fits can be reported as one
+    # that does not. Everything measured below therefore carries the confidence
+    # it was measured at, and the verdict at the bottom says which it was. Before
+    # 2026-09-25 it did not: on a machine without tiktoken this command printed
+    # `budget check FAILED (1 problem)` and advised shortening a generator prompt
+    # that fits with room to spare. See INC-2026-09-25-budget-guard-estimates.
+    measured = exact()
+
     failures = check_drift()
     for problem in failures:
         print(f"DRIFT: {problem}\n")
 
+    # Only the token arithmetic is affected by the tokenizer. Drift, the model
+    # tables and availability are exact either way, so they stay failures.
+    unconfirmed = []
     for problem in selftest():
-        failures.append(problem)
-        print(f"SELFTEST: {problem}\n")
+        if measured:
+            failures.append(problem)
+            print(f"SELFTEST: {problem}\n")
+        else:
+            unconfirmed.append(problem)
+            print(f"SELFTEST (estimated counts, unconfirmed): {problem}\n")
 
     # Availability, for whichever providers have a key here. CI has none, and
     # that is fine: the deploy-time and run-time checks in weekly.py are the
@@ -1007,10 +1024,12 @@ def main() -> int:
                  for m in press.models if m in MODELS),
                 key=lambda r: -r.headroom, default=None)
             over = -best.headroom if best else 0
-            failures.append(
+            complaint = (
                 f"{press.name} does not fit ANY model in its fallback list; the "
                 f"closest is {over} tokens over")
-            print(f"  FAIL: no model in the fallback list can take this "
+            (failures if measured else unconfirmed).append(complaint)
+            print(f"  {'FAIL' if measured else 'UNCONFIRMED (estimated counts)'}: "
+                  f"no model in the fallback list can take this "
                   f"request. Closest miss is {over} tokens.")
             print("  Fix one of: shorten the generator prompt, lower the output "
                   "reservation, tighten pipeline/budget.py PAYLOAD_CAPS (and the "
@@ -1063,6 +1082,22 @@ def main() -> int:
         print(f"budget check FAILED ({len(failures)} problem"
               f"{'s' if len(failures) > 1 else ''})")
         return 1
+    if not measured:
+        # Non-zero on purpose. This command is the first link in two deploy
+        # chains, and a chain that proceeds on estimated numbers has not been
+        # checked. The exit code says stop; the message says the press is not
+        # known to be broken, which is the part the old verdict got wrong.
+        print(f"budget check INCONCLUSIVE: token counts are estimated at "
+              f"{FALLBACK_CHARS_PER_TOKEN} chars/token because tiktoken is not "
+              f"installed here, and that estimate runs high. "
+              f"{len(unconfirmed)} arithmetic check"
+              f"{'s' if len(unconfirmed) != 1 else ''} could not be confirmed"
+              + (f": {unconfirmed[0]}" if unconfirmed else "") +
+              "\nEverything that does not depend on a token count passed: "
+              "drift, the model tables, the fallback lists and availability.\n"
+              "Run `pip install tiktoken && python3 pipeline/budget.py` for the "
+              "real numbers.")
+        return 2
     print("budget check passed")
     return 0
 

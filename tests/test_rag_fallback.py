@@ -311,3 +311,51 @@ def test_the_guard_says_where_to_fix_the_pattern_if_a_cron_moves(monkeypatch):
     with pytest.raises(LookupError) as caught:
         budget.cron_models()
     assert "budget.py MODEL" in str(caught.value)
+
+
+# ---------------- the guard's verdict names its own confidence ----------------
+
+def test_the_guard_passes_when_it_can_count_exactly(capsys):
+    pytest.importorskip("tiktoken")
+    assert budget.main() == 0
+    assert "budget check passed" in capsys.readouterr().out
+
+
+def test_estimated_counts_are_inconclusive_rather_than_failed(capsys, monkeypatch):
+    # INC-2026-09-25-budget-guard-estimates: without tiktoken this command used
+    # to print FAILED and advise shortening a generator prompt that fits with
+    # 140,000 tokens of headroom. The exit code still stops a deploy chain. The
+    # message no longer blames the press for the tokenizer.
+    monkeypatch.setattr(budget, "exact", lambda: False)
+    code = budget.main()
+    out = capsys.readouterr().out
+    assert code == 2
+    assert "INCONCLUSIVE" in out
+    assert "budget check FAILED" not in out
+    assert "tiktoken" in out
+
+
+def test_a_real_problem_still_fails_even_on_estimates(capsys, monkeypatch):
+    # Drift, the model tables and availability do not depend on a token count,
+    # so they are exact either way and stay failures.
+    monkeypatch.setattr(budget, "exact", lambda: False)
+    monkeypatch.setattr(budget, "check_drift",
+                        lambda: ["PAYLOAD_CAPS disagrees with gather()"])
+    code = budget.main()
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "budget check FAILED" in out
+
+
+def test_a_broken_synthesis_list_fails_the_command(capsys, monkeypatch):
+    # The whole point of putting the check in the command: a deploy chain that
+    # would ship a server with no reachable synthesis model stops at the first &&.
+    monkeypatch.setattr(budget, "synthesis_models", lambda: ["groq/compound"])
+    assert budget.main() == 1
+    assert "SYNTHESIS" in capsys.readouterr().out
+
+
+def test_a_broken_cron_model_fails_the_command(capsys, monkeypatch):
+    monkeypatch.setattr(budget, "cron_models", lambda: {"triage": "groq/compound"})
+    assert budget.main() == 1
+    assert "CRON" in capsys.readouterr().out
