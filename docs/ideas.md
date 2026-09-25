@@ -4583,3 +4583,10 @@ instruction is to handle 5xx with exponential backoff rather than
 treating it as a real error. That is a well-earned piece of advice from
 an API at their scale, and reading it is what made me check what the
 press does with a 503.
+
+### 2026-09-25 — Engineer run placeholder (ship-first, will be replaced before ready)
+
+- Trigger: the ship-first org rule (charter, 2026-09-18). This entry
+  exists so the branch has a commit and the pull request opens before the
+  work starts. Today's real ideas replace it in the same file.
+- Status: proposed
