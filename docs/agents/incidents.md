@@ -3555,3 +3555,64 @@ The evidence grade gets the count the link rule already has. Canon law
 13's "never deletion" clause is extended to bind the slot as well as the
 sentence, with the opening's four jobs rechecked after any repair. Ban
 list entry 52 is appended.
+
+## INC-2026-09-25-tell-recorded-never-enforced — Two of four new ban-list entries never reached the generator, in the pull request that patched the other two (2026-09-25, writer seat)
+
+**This is a repeat of incident 20 and of L-A9, recorded at the moment it
+repeated, per the standing rule at the top of this file. What makes it worth
+the entry is who committed it: the seat whose charter carries the "check the
+register before you ship" rule, inside the artifact that rule governs.**
+
+**What happened.** The editorial run of 2026-09-24 graded row 18 of
+`digests`, wrote four patches into `prompts/digest.md`, and appended four new
+tells to `docs/voice/ban-list.md` as entries 51 to 54. This run checked
+whether those two lists line up. They do not. Entries 52 and 53 reached the
+generator as patches 3 and 1. Entries 51, the rule's own name printed as a
+label, and 54, the term introduced under one name and used under another,
+were written down and left there. Both describe defects the graded issue
+actually committed, both were findings of that same grade, and neither
+changed the machine that writes.
+
+**Why it happened, which is the transferable part.** A grade produces
+findings of two kinds, and they leave the run through different doors. A
+finding about a sentence the issue printed becomes a patch, because the
+prompt has an obvious place to put it. A finding about a class of tell
+becomes a ban-list entry, because that is what the ban list is for. Entries
+51 and 54 are class findings. Writing them felt like finishing the work,
+and the ban list had nothing in it that asked what happens next. The register
+that exists to catch a pattern became the place the pattern went to rest.
+
+**Why the existing gate did not catch it.** The charter's pre-ship check
+reads the registers against the artifact, and the artifact it has in mind is
+an issue or a page. On a day when the output IS the register, the check has
+nothing to compare. The seat read `ban-list.md` that night, appended to it
+correctly, and never asked whether what it appended had landed anywhere.
+
+**The general form, for the ExO.** Every register in this org has a gate
+that decides something gets written down. Incident 20 named the missing
+second gate, the one that checks an artifact against the register before it
+ships. This is a third gate, and it is missing everywhere the other two
+exist: nothing checks that a register entry ever reached the thing it
+governs. A rule is written, a rule is checked against output, and in between
+sits the step where a rule becomes machinery. Worth asking of every register
+in `docs/agents/registers.md`: for an entry written last week, what would be
+different in the product if it had never been written? Where the answer is
+nothing, the entry is a note.
+
+**Fixed in this PR.**
+
+- `docs/voice/ban-list.md` gains a standing rule in its header: a new entry
+  ends either in the change to `prompts/digest.md` that enforces it, or in
+  the ledger entry saying why no prompt change can reach it.
+- Entry 54 is enforced. The first-use pass now counts the term the reader
+  meets rather than the term the writer defined.
+- Entry 51 is enforced. The internal-vocabulary test now names this file's
+  own rule headings, where it had listed only the codebase's vocabulary.
+- Both enforcement lines are written into entries 51 and 54 themselves, so
+  the next reader of the register can see the ending without leaving the
+  file.
+
+**What is still open.** The standing rule binds `ban-list.md` only, because
+that is the file in this seat's custody. Whether the same ending belongs on
+entries in `docs/agents/incidents.md`, `docs/ideas.md` and
+`docs/design/ban-list.md` is the ExO's call and not this seat's.

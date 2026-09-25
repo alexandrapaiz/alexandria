@@ -4459,3 +4459,62 @@ needs an owner decision or an owner push, not an engineer build.
 - Blocked by: nothing.
 - Cost: under an hour.
 - Status: proposed
+
+### 2026-09-25 — The first-use pass leaves no evidence it ran, so no wording can make it fire (writer seat, for the engineer)
+
+- Trigger: the twelfth editorial run, charter step 4. Canon law 12a failed
+  on the issue written by the fully patched generator, and the rule that
+  should have caught it has now been written twice.
+- The fact: row 18 of `digests` carries nineteen terms of art standing bare
+  at first use, including "harness" thirty-eight times starting in the
+  title, and one naked acronym, `VLMs`. The first-use pass in
+  `prompts/digest.md` is marked "a hard gate, not advice", instructs the
+  model to list every term of art and check each one's first appearance,
+  and says that more than about five terms needing a definition means the
+  issue is carrying too much. Nothing in the output suggests it ran.
+- Why this is filed instead of patched, which is charter step 4. The pass
+  was written in `be88232` and rewritten in `c3b4c49` to catch the owner's
+  nicknames. Both were live in `0f642e2ce9f3`, the prompt that wrote row
+  18. A third rewrite is the memorial ban list 36 describes.
+- The mechanism, and it is the part worth building from. The same issue is
+  a controlled experiment. The link rule and the evidence-grade rule sit
+  two lines apart in that prompt, the same model read both, links came in
+  five of five and grades zero of four. The one difference is that the link
+  rule ends "Count the items. Count the links. They match, or the issue is
+  not finished." Links are countable in the finished text. A missing gloss
+  is not. A self-check whose result is invisible in the output has only the
+  model's recollection as evidence that it ran, and that evidence never
+  comes back negative. This generalizes past this rule: any gate in that
+  file whose result cannot be counted on the page is advice wearing a
+  gate's label.
+- What to build, in two pieces, smallest first.
+  1. **The mechanical slice, in the existing quality gate.** A bare acronym
+     is decidable without a language model. In `tools/check_digest_quality.py`
+     (PR #60), flag any token matching an acronym shape, two to six
+     characters with at least two capitals, on its first appearance in the
+     issue when no expansion or gloss appears within the same sentence.
+     Ban list 26 already bans it outright and `VLMs` shipped anyway. Allow a
+     short list of words a subscriber genuinely holds (`AI`, `API`, `GPU`,
+     `URL`) rather than trying to be clever, and keep the list in the
+     standard beside the check so the writer seat owns its contents.
+  2. **The judgment slice, as a second call rather than a stronger
+     paragraph.** After generation and before the row is written, one small
+     model call over the finished issue whose OUTPUT IS A TABLE and not a
+     verdict: every term of art, its first appearance, and the glossing
+     clause quoted from that sentence or the word "none". The table is the
+     artifact the prompt cannot produce, because the issue body has no room
+     for scratch work. Rows reading "none" either go back for one revision
+     pass or fail the gate, and the table goes in the run log either way, so
+     this seat can grade the pass instead of grading its absence.
+- Why the second piece is not a checker. A gate that fails the issue at
+  15:00 on press day costs the issue, which is the same argument the ASCII
+  normalizer entry makes. A revision call costs a few seconds and cannot
+  fail closed.
+- Note for whoever picks this up: the same shape decides the synonym case
+  that ban list 54 names, because a table of terms shows "scaffolding"
+  glossed once and "harness" bare thirty-eight times on adjacent rows,
+  where a paragraph of instruction has to hope the model notices.
+- Blocked by: nothing for piece 1. Piece 2 wants PR #60 merged first, since
+  it lands in the same file.
+- Cost: an hour for piece 1, half a day for piece 2.
+- Status: proposed
