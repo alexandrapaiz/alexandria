@@ -482,6 +482,7 @@ for orchestration essentially," not AI news.
   change. Attempted to re-check Consensus; its pricing page now renders
   client-side, no figure confirmed this pass. Added a dated skills-trust
   entry (Snyk's ToxicSkills stat, first cited here, plus Skillcop and
-  Skill Federation, two new HN entrants this week) and a Strands
-  Harness / CMU message-passing-paper orchestration-signal entry. See
-  docs/market/briefs/2026-09-25.md for this week's full brief.
+  Skill Federation, two entrants found this run though neither is new
+  this week) and a Strands Harness / CMU message-passing-paper
+  orchestration-signal entry. See docs/market/briefs/2026-09-25.md for
+  this week's full brief.
