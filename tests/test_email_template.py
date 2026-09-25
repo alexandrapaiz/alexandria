@@ -129,8 +129,8 @@ def test_the_issue_is_actually_in_there():
 
 def test_links_and_recipient_come_from_the_issue_and_the_row():
     html = render_one()
-    assert 'href="https://alexandr.ia/library/2026-W39"' in html
-    assert 'href="https://alexandr.ia/library"' in html
+    assert 'href="https://libraryofalexandria.dev/library/2026-W39"' in html
+    assert 'href="https://libraryofalexandria.dev/library"' in html
     assert RECIPIENT in html
     assert UNSUB in html
 
@@ -186,7 +186,7 @@ def test_edition_reads_the_cadence_off_the_key():
 def test_a_daily_key_renders_the_whole_email():
     html = er.render_issue(ISSUE, "2026-09-19", RECIPIENT, UNSUB)
     assert "Daily dispatch · September 19, 2026" in html
-    assert 'href="https://alexandr.ia/library/2026-09-19"' in html
+    assert 'href="https://libraryofalexandria.dev/library/2026-09-19"' in html
     assert not re.findall(r"{{(\w+)}}", html)
 
 
