@@ -760,3 +760,140 @@ local reading connector is chair-only. Engineer work: a reading_queue
 table or file reader in the distill priority, and the charter's cap
 re-measured.
 
+## ADR-2026-09-26: Triage and interpret write on Kimi; ADR-32's corpus clause is superseded
+
+**A dated id, not ADR-35.** Sequential ids have collided twice in this
+file (ADR-30, ADR-32), the numbering note above records the second one,
+and the ExO's standing recommendation is to move to dated ids. A seat
+writing on a branch cannot see the highest number that exists, only the
+highest number on its branch, which is exactly the condition that
+produced both collisions. So this entry takes the date. If the owner
+prefers a sequential id, renumbering one heading is a smaller edit than
+untangling a third collision.
+
+**Owner's decision, 2026-09-25, directed to the engineer seat.** ADR-32
+said "the corpus crons (triage, distill, interpret) stay on Groq's free
+tier, where their small prompts fit". The prompts do fit. The free tier
+still could not carry the work, and this is what that cost, counted in
+Neon on 2026-09-25:
+
+- 8,956 papers ingested, 4,973 of them never triaged
+- 164 papers read in full, out of 8,956
+- 746 claims, 693 of them with no evidence grade
+- 487 claims waiting to be linked, and interpret drawing 11 to 14 edges
+  a day against that queue
+
+"The prompt fits" was the wrong question. A triage batch fits inside
+Groq's 8,000 tokens per minute with room to spare, and a run still makes
+two calls before the per-minute ceiling refuses the third, then resumes
+tomorrow and does it again. The resume query made that look like patience.
+The library was not reading.
+
+**Decision.** Triage and interpret move to Moonshot's Kimi as PRIMARY,
+the same funded account ADR-32 bought for the press, with Groq's free
+tier kept behind them as a fallback list. Three things make that
+affordable and safe to leave unattended:
+
+1. **A per-run spend cap**, computed from measured token counts and
+   checked before each call, so a run stops at its allowance rather than
+   one call past it. $0.60 a run for triage, $0.30 for interpret, which
+   projects $27 a month if every cap fires every day and far less once
+   the backlogs are gone. `python3 pipeline/budget.py` prints the
+   projection and fails if the caps are raised past the ceiling
+   docs/finance/opex.md carries.
+2. **A schedule that respects organization concurrency 1.** Moonshot
+   allows this account one call at a time, so the press's band
+   (09:00-11:00 UTC, which includes the chair's manual rehearsal), triage
+   (12:00-13:00) and interpret (14:00-15:00) are declared in
+   `pipeline/llm.py` KIMI_WINDOWS and checked in CI. No cron moved; what
+   changed is that the existing slots are now load-bearing and enforced.
+3. **A rehearsal each, before the deploy.** Per
+   docs/agents/runtime-changes.md, a provider change gets three gates and
+   the third is a real call. Both jobs now have `preflight` and
+   `rehearse` functions, and both rehearsals can fail: triage's refuses a
+   model that answers for part of a batch, interpret's refuses one that
+   relates everything or nothing.
+
+**What does not move.** Distill stays on Groq, exactly as ADR-32 put it,
+because the owner's directive named triage and interpret and no more.
+Distill is the step that reads papers in full and it is the obvious next
+candidate; that is a ledger proposal (docs/ideas.md, 2026-09-26) and not
+an action taken here. The Groq fallback lists are real rather than
+decorative for these two jobs, which is the difference from the press:
+`budget.check_cron_requests` proves every Groq entry can take the job's
+own request, with 2,087 tokens of headroom on a triage batch. The press
+cannot say that and its Groq entries remain a last resort.
+
+**What ADR-32 keeps.** Everything else. The press writes on Kimi, Groq
+stays the corpus's cheap brain wherever the free tier can actually
+finish the work, and sovereign hosting is still the destination.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.**
+
+Recorded this way because L-A16 in docs/standards/lessons.md requires it:
+configured is not in effect, and a well-built fallback makes the gap
+silent. Nothing below has run against a provider. The engineer runner has
+no Modal CLI and no credentials (`modal: command not found`, verified this
+run), and docs/agents/runtime-changes.md puts the deploy in the chair's
+hands anyway, so this seat could not have activated it even with a token.
+
+Two things are therefore true at once and neither should be read as the
+other. The arithmetic is measured: `python3 pipeline/budget.py` passes and
+prints every number in this entry, and 277 Python tests and 66 Node tests
+pass. No Kimi call has been made by either job.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails:
+
+```bash
+# the schema, once: papers.fulltext_chars and nothing else is new
+modal run pipeline/db_setup.py::apply_schema
+
+# triage
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::drain \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py --max-calls 2 \
+  && modal deploy pipeline/triage.py
+
+# interpret
+python3 pipeline/budget.py \
+  && modal run pipeline/interpret.py::preflight \
+  && modal run pipeline/interpret.py::drain \
+  && modal run pipeline/interpret.py::rehearse \
+  && modal run pipeline/interpret.py --max-claims 2 \
+  && modal deploy pipeline/interpret.py
+
+# the grading backfill, one time, dry run first. Costs $0: no model call.
+modal run pipeline/backfill_grades.py::count
+modal run pipeline/backfill_grades.py::backfill
+
+# distill, redeployed so it starts writing papers.fulltext_chars
+modal deploy pipeline/distill.py
+
+# the press, redeployed so the issue carries the five counts
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+`drain` is the dry run the owner's directive asked for: it holds no model
+secret, so it cannot call anything, and it prints the queue depth, the
+runs the cap allows and the total cost before a cent is spent. `rehearse`
+is the third gate of the ladder: one real call, no database credential in
+the container, and it raises rather than passing if a fallback answered
+instead of the head of the list.
+
+**Do the Kimi steps outside 11:00-15:00 UTC.** Organization concurrency is
+1 and the corpus crons own that band once deployed. A rehearsal inside it
+collides with a live run, which is
+INC-2026-09-24-kimi-org-concurrency exactly.
+
+**Rollback** is `git revert` of the pull request and `modal deploy` of
+`pipeline/triage.py`, `pipeline/interpret.py`, `pipeline/distill.py` and
+`pipeline/weekly.py`. The schema column and the backfilled grades are
+additive and need no undo: `fulltext_chars` goes unread and the grades
+stay correct, since they were computed by the same rules the live grader
+uses.

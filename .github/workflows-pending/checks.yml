@@ -21,6 +21,8 @@ on:
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
       - "tests/test_press_rehearsal.py"
+      - "tests/test_corpus_drain.py"
+      - "tests/test_rag_fallback.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -33,6 +35,8 @@ on:
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
       - "tests/test_press_rehearsal.py"
+      - "tests/test_corpus_drain.py"
+      - "tests/test_rag_fallback.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -57,6 +61,12 @@ jobs:
       # the guard stricter, never laxer.
       - name: install the tokenizer
         run: pip install "tiktoken==0.8.0"
+
+      # The corpus tests use pytest fixtures (monkeypatch, capsys), so unlike
+      # the three files below they cannot be run as scripts. One install, and
+      # it is the same file the repo's own test command names.
+      - name: install the test dependencies
+        run: pip install -r requirements-dev.txt
 
       - name: prompt + worst-case payload + output reservation vs the limit
         run: python3 pipeline/budget.py
@@ -100,3 +110,21 @@ jobs:
       - name: the rehearsal writes to a scratch row and sends to nobody
         if: always()
         run: python3 tests/test_press_rehearsal.py
+
+      # 2026-09-26: triage and interpret moved to Moonshot's Kimi with a spend
+      # cap (ADR-2026-09-26). The same argument as the rehearsal step above
+      # applies twice over here. CI cannot run the gate, because the gate is
+      # `modal run pipeline/triage.py::rehearse` with a real key and real money.
+      # What CI holds is that the gate has teeth and that the money has a
+      # ceiling: that the cap is measured from the provider's usage block and
+      # checked before a call rather than after, that a 429 waits on our own
+      # schedule rather than the 1-second hint Moonshot's concurrency refusal
+      # sends, that the grading backfill touches only ungraded rows, and that no
+      # two Kimi jobs share a window.
+      #
+      # `budget.py` above already fails the build if a per-run cap is raised
+      # past the ceiling in docs/finance/opex.md, or if two Kimi windows
+      # overlap, or if a Groq fallback cannot take the job's own request.
+      - name: the corpus drains within its cap, and the cap has teeth
+        if: always()
+        run: python3 -m pytest tests/test_corpus_drain.py tests/test_rag_fallback.py -q

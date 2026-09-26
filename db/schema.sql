@@ -27,6 +27,19 @@ update papers set tier = 'c' where source = 'blog' and tier = 'a';
 -- alone can't mark completion because a paper may honestly yield zero claims)
 alter table papers add column if not exists distilled_at timestamptz;
 
+-- fulltext_chars: how much of the paper distill actually read, in characters, or
+-- NULL when it read the abstract only. Distill is the one step that fetches
+-- arXiv HTML, and until 2026-09-26 nothing recorded whether the fetch succeeded,
+-- so "read in full" was a number nobody could produce from the database. The
+-- weekly issue now states it (owner's directive 2026-09-25: the stats line says
+-- what happened, not "read N papers"), and a number the issue prints has to come
+-- from a column rather than from an assumption about a code path.
+--
+-- Rows distilled before this column existed stay NULL and are honestly unknown.
+-- The issue counts only the last seven days, so the gap ages out of every issue
+-- within a week of the column landing.
+alter table papers add column if not exists fulltext_chars integer;
+
 -- ============ triage log: every routing decision, with reasoning ============
 -- This table doubles as the eval set for the recursive loop: human_verdict
 -- labels each machine decision, and disagreements drive prompt proposals.

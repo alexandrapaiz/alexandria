@@ -5139,3 +5139,197 @@ press does with a 503.
   numbers.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Craft scan: Paperguide (paperguide.ai)
+
+- Trigger: today's work was the owner's finding that the corpus is not
+  being read, so the rotation went to the one product in
+  docs/market/landscape.md whose entire job is reading papers and which
+  no craft scan has covered yet. Added to the landscape 2026-09-18,
+  never scanned.
+- **One thing worth stealing: the claim lands on the sentence, not the
+  paper.** Their copy is "click any claim and land on the exact sentence
+  in the source paper it came from", and per extracted value, "every
+  value in the table cites the statement it came from, confirmed by a
+  verifier before synthesis". Alexandria already stores the evidence
+  sentence in `claims.evidence`, and as of this PR distill records
+  `papers.fulltext_chars`, which means the full HTML text is in hand at
+  the moment the evidence is written. The offset of that sentence inside
+  the text is therefore free to record and nobody is recording it. See
+  the separate entry below.
+- **One thing alexandria does better: it says which one it read.** Their
+  own description of the screening step is "pulls the relevant
+  statements from the abstract or full text". Abstract or full text. For
+  a product whose pitch is traceability that is the one place the trace
+  stops, because a reader cannot tell whether a given finding came from
+  a paper that was read or from a paragraph that was skimmed, and those
+  are different claims about the same paper. From this PR onward
+  alexandria answers it per row: `fulltext_chars` is a number or it is
+  NULL, and the weekly issue states papers read in full separately from
+  papers ingested. Depth is a fact on the row rather than a capability
+  in a marketing sentence.
+- Numbers on the page, for the landscape: 200M+ peer-reviewed papers
+  indexed across PubMed, arXiv, OpenAlex and Semantic Scholar, 974,000+
+  researchers claimed, case studies at "83% faster review across 100
+  papers". No pricing disclosed, only "start for free" and a demo
+  booking, with GDPR, SOC 2 and ISO 27001 listed as coming soon.
+- Read against alexandria's own scale honestly: 200M papers indexed
+  against 8,956 ingested. That comparison is not the one that matters,
+  which is the point of the entry above. Their 200M are indexed and
+  ours are ingested, and neither number is papers read.
+
+### 2026-09-26 — Distill is the next job on the free tier, and now it is the bottleneck
+
+- Trigger: the owner's own count, read again after today's change. 164
+  papers read in full out of 8,956 ingested. Distill is the only step
+  that fetches arXiv HTML, it is still on Groq's free tier
+  (`PRODUCTION_PROVIDER = "groq"`, `openai/gpt-oss-120b`), and
+  `FULLTEXT_MAX_PER_RUN` is 15 with a comment that says the cap exists
+  because "triage routes ~3-6 papers/day to distill, so this fits the
+  Groq budget". That premise is what today's PR ends. Triage is about to
+  judge 700 to 900 papers a day instead of 20, so the flow into
+  `distill_queue` goes up by more than an order of magnitude and hits a
+  15-paper-a-day ceiling sized for the old rate.
+- What: move distill to Kimi as primary with Groq behind it, exactly as
+  triage and interpret moved in this PR, reusing `pipeline/llm.py` so
+  there is no second client. Then raise `FULLTEXT_MAX_PER_RUN` to
+  whatever the cap and the slot allow. Distill's request is the biggest
+  of the three by far, because it sends up to `FULLTEXT_CHARS` of 24,000
+  characters of paper, which is roughly 6,000 tokens in and a few
+  thousand out, so the real arithmetic has to be done before a cap is
+  chosen rather than after. Note the constraint that decides the shape:
+  a full-text distill request does NOT fit Groq's 6,800 usable tokens,
+  so unlike triage and interpret, distill's Groq fallback can only work
+  on the abstract. That is a real fallback with a stated cost rather
+  than a fake one, and the code should say so where it falls back.
+  Distill also needs the fourth Kimi window, and 13:00 to 14:00 UTC is
+  the gap `pipeline/llm.py` KIMI_WINDOWS deliberately left empty.
+- Why it was not in this PR: the owner's directive named triage and
+  interpret and said what to do with each. Widening a funded provider
+  move past the two jobs named, on the same day, without the arithmetic,
+  is how a $27 ceiling becomes a number nobody projected.
+- First step: count the tokens in a real 24,000-character full text with
+  `tiktoken`, add a `CRON_REQUESTS` entry for distill to
+  `pipeline/budget.py`, and read the projected monthly cost off the
+  guard before writing any of the rest.
+- Cost: a proposal, not $0. Order of magnitude at 30 papers a day of
+  full text, $0.01 a call, is about $9 a month, which would take the
+  Kimi line to roughly $13 expected. The owner's call, and it needs
+  docs/finance/opex.md in the same commit.
+- Status: proposed
+
+### 2026-09-26 — Anchor each claim's evidence to its offset in the full text
+
+- Trigger: two observations that met today. Paperguide's "click any
+  claim and land on the exact sentence in the source paper it came
+  from", and the fact that this PR makes distill record how many
+  characters of full text it read. The text is already in memory in
+  `distill()` at the moment the model returns the evidence sentence, and
+  the sentence is already being stored. Only the position is thrown
+  away.
+- What: one integer column, `claims.evidence_offset`, set at distill by
+  finding the model's evidence string in the body it was given. The
+  match will often be inexact, because a model paraphrases, so the
+  honest version stores the offset only on an exact or near-exact
+  substring match and leaves it NULL otherwise, which also makes it a
+  free measurement of how often the distiller quotes rather than
+  paraphrases. That number is worth having on its own: an evidence
+  sentence that appears verbatim in the paper is a different kind of
+  evidence from one the model composed, and nothing in the corpus
+  currently distinguishes them. The payoff a reader sees is a digest
+  link that opens arXiv's HTML at the paragraph rather than at the top
+  of the paper, and the payoff the pipeline sees is a verbatim-quote
+  rate it can watch.
+- First step: add the column to db/schema.sql and compute the offset in
+  distill without using it anywhere, then run one week and report what
+  share of claims matched verbatim. Decide whether to deep-link after
+  seeing that number, not before.
+- Cost: $0. No model call, no new service; it is a `str.find` on text
+  the run already holds.
+- Status: proposed
+
+### 2026-09-26 — The site's live counter says "papers ingested", which is the flattery the issue just stopped committing
+
+- Trigger: found while changing the press's stats line. `site/lib/metrics.js`
+  reads a JSON endpoint answering `{"papers_ingested": n}` and renders it
+  as the hero's live metric. The owner's directive today was that "read N
+  papers" is the wrong stat because ingested and read differ by a factor
+  of fifty. The issue is fixed in this PR. The site's hero number is the
+  same claim in a larger font, and it faces every visitor rather than
+  only subscribers.
+- What: point the hero metric at papers read in full, or show both with
+  the relationship visible ("8,956 sifted, 164 read end to end"), which
+  is a stronger line than either number alone because the ratio is the
+  product. The column that makes this answerable, `papers.fulltext_chars`,
+  lands in this PR, so the endpoint can start returning a second number
+  as soon as the schema is applied. This is the frontend seat's surface
+  and not this seat's, which is why it is a ledger entry and not an edit.
+- First step: whoever owns the endpoint returns
+  `{"papers_ingested": n, "papers_read_in_full": m}`, then the frontend
+  seat decides the copy. The query for m is in `gather()` in
+  pipeline/weekly.py as of this PR and can be copied.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The engineer charter describes the press rehearsal as unbuilt, and it shipped two days ago
+
+- Trigger: the charter's own "Check the register before you ship" step
+  says of docs/agents/press-rehearsal.md that "it does not exist as code
+  yet, and until it does the ladder has two working links and a
+  paragraph", and instructs this seat to take building it "when the
+  sprint has room". It is built. `pipeline/weekly.py` has `rehearse()`,
+  it writes a scratch row to `press_rehearsals`, it holds a receipt
+  check against the head of the fallback list, `db/schema.sql` has the
+  table, `tests/test_press_rehearsal.py` has the tests, and the commits
+  are in main from 2026-09-24 (ad86a26, 02b8fc1, d79fef1, 81b706c,
+  e7af19c). This run read that paragraph, believed it, and spent turns
+  confirming otherwise before building the corpus jobs' rehearsals on
+  the pattern that already existed.
+- What: update that paragraph in prompts/engineer-agent.md to say the
+  press rehearsal is built and to point at `rehearse()` as the pattern a
+  new runtime's rehearsal should follow. This is a charter edit, so it is
+  the owner's merge and never this seat's PR, which is why it is here.
+- Why it matters more than a stale sentence usually does: the same
+  paragraph is what tells this seat what the third gate of the ladder is.
+  A charter that describes a built gate as unbuilt invites the next run
+  to build it a second time, and a second rehearsal implementation on the
+  same provider is exactly the collision
+  INC-2026-09-24-kimi-org-concurrency is about.
+- First step: the owner replaces the two sentences. One line.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Register conflict filed, not fixed: model-routing.md goes stale on this merge
+
+- Trigger: `docs/agents/model-routing.md` line 15 says "the entire daily
+  pipeline: triage, distill, interpret on gpt-oss-120b via Groq's free
+  tier (ADR-5)", and its routing table says the same. The moment this PR
+  merges, two thirds of that sentence is wrong. L-A10 in
+  docs/standards/lessons.md says one file has exactly one owning charter
+  and a seat in contested territory yields and files the conflict rather
+  than winning the race, and docs/agents/registers.md line 62 names the
+  ExO as that file's owner. So this seat is not editing it.
+- What makes it worth filing rather than leaving to the next Sunday read:
+  registers.md already recorded this exact failure for this exact file.
+  Its own row says routing changed in 18 hours and the file is gated
+  weekly, and that the ExO's read "found it stale on arrival". The ExO
+  runs Sundays. This merge lands Friday, so the stale window is about
+  four days, and the file that goes stale is the one a seat reads to
+  learn which provider serves which job.
+- What: the ExO's next run updates the routing table to triage and
+  interpret on kimi-k2.6 with Groq behind them, distill still on Groq,
+  and adds the line INC-2026-09-24-kimi-org-concurrency asked for in its
+  own text: Moonshot's organization concurrency is 1, and the windows are
+  in `pipeline/llm.py` KIMI_WINDOWS. The durable fix is the one
+  registers.md is already arguing for: a file whose content is derivable
+  from code should be generated from it. `budget.cron_model_lists()`,
+  `budget.cron_caps()` and `llm.KIMI_WINDOWS` between them hold every
+  fact in that table, so `python3 pipeline/budget.py` could print the
+  routing table and a check could fail when the file disagrees. That
+  turns a weekly read into a gate in a command, which is the closing
+  argument of docs/agents/runtime-changes.md.
+- First step: the ExO edits the two stale lines. The generator is a
+  second, separate day of work for this seat, and it needs the ExO's
+  agreement first because it changes who writes that file.
+- Cost: $0
+- Status: proposed
