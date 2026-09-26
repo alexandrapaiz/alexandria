@@ -5333,3 +5333,92 @@ press does with a 503.
   agreement first because it changes who writes that file.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Competitive scan: Linear, the product this board replaces
+- Linear's most copied idea is not its keyboard shortcuts, it is that the
+  issue's status set is a property of the team rather than of the issue, and
+  nobody can type a status that does not exist. Every list, filter and
+  automation downstream is total because of it. Its second idea, the one that
+  looks like a small thing, is that every issue carries a short stable
+  identifier a human says out loud, so the artifact and the conversation about
+  the artifact share a name.
+- **Worth stealing, and half of it shipped today.** The closed status set is
+  exactly the mechanism the owner asked for when she said seats cannot create
+  views: this board refuses an item whose status is not one of
+  `board/views.json`'s columns, and the refusal names the file and who can
+  change it. The half not built is the stable spoken id. Board items take an id
+  a seat types (`board-ui`), which is legible and not collision-proof, where
+  Linear would issue `ALX-214`. The board is the org's own coordination surface,
+  so two seats inventing the same slug in one night is a real case and not a
+  hypothetical.
+- **Where alexandria is better, and it is the reason we left.** Linear cannot
+  be read by the thing doing the work. Every one of our twelve seats starts in
+  a fresh sandbox with a git checkout and no browser, so a board in a vendor's
+  database is a board the workers cannot read, and the state that actually
+  drove our runs lived in markdown files, pull request descriptions and a
+  dispatch queue instead. This board is one `git archive` away from any seat and
+  one JSON file per event, so an agent reads its own history with the same
+  command a human does. That is L-E0's "agents as first-class citizens of
+  anything we build", and it is the one axis on which a $0 file store beats a
+  funded product.
+
+### 2026-09-26 — Board items need a stable id the org issues, not one a seat types
+- Trigger: today's scan of Linear, and the first two items this board holds.
+  Both were named by hand in this run (`board-store`, `board-ui`). Nothing stops
+  the next seat from choosing `board-ui` again for a different piece of work,
+  and because item events are patches folded by id, a collision does not error.
+  It silently merges two different pieces of work into one card.
+- What: issue ids from the board rather than from the caller. `board.py item`
+  with no `--id` allocates the next `ALX-<n>` by reading the highest id on the
+  ref, and `--id` stays available for a deliberate update to an existing item.
+  The allocator has the collision problem this repo has already hit four times
+  with sequential incident numbers, and the same answer applies: the allocation
+  happens against the ref at write time rather than against a branch, and the
+  write is a create that fails when the path exists, so two seats racing for the
+  same number means one of them retries with the next one. That is a real check
+  rather than a convention, unlike the incident register's numbering.
+- First step: `next_id()` in `tools/board.py` over the folded state, and the
+  create-fails-when-exists path is already the behaviour `write_event` has.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The board should fold into a snapshot the site can read in one fetch
+- Trigger: writing docs/board.md's read path for the frontend seat, which is
+  dispatched next. The honest instruction today is "fetch a tarball of the ref
+  and fold 9,000 files a year in the render path", and the whole board is 1,029
+  bytes gzipped right now, so the cost is invisible and will not stay that way.
+  The alternative the site would otherwise reach for, the trees API plus one
+  request per file, exhausts an unauthenticated 60-an-hour limit on its first
+  render.
+- What: `tools/board.py` writes `board/state.json` on the same ref after each
+  event, holding the folded state and the fold's input count. The site then
+  reads one unauthenticated file. The reason this was not built today is that it
+  is the first mutable path in an append-only store, so two seats reporting in
+  the same second can lose an update, and doing it correctly means a
+  compare-and-swap on the blob's sha with a re-fold on conflict. The event log
+  stays the source of truth and the snapshot stays derived, so a lost update is
+  repaired by the next writer rather than by a human.
+- First step: `fold_to_snapshot()` and a `--snapshot` flag on `report`, with a
+  test that a stale sha forces a re-fold instead of overwriting.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — A seat's first bullet is now a contract with two consumers and no owner
+- Trigger: the owner's two direct pushes to main tonight made the Slack run
+  report the first five bullets of a pull request description, and the board's
+  run report built today derives its one-line result from the first bullet of
+  the same description. Two independent consumers now depend on a convention no
+  charter states, which is the shape L-E6 describes and the reason incident 22
+  cost a week's issue.
+- What: state the convention where the seats read it rather than where the two
+  consumers implement it. One line in each charter's Act section, that the first
+  bullet of a pull request description is one sentence naming what the run
+  shipped, because two systems quote it. Then a check that can see it:
+  `tools/check_registers.py` already runs in front of `&&` in seat commands and
+  could warn when the head of a branch's pull request has no bullet in its first
+  screen. The charters are the owner's merge, so this is a proposal and not a
+  patch.
+- First step: the charter line, in her words, on the next charter edit she
+  makes. The check is a day's work after that and worth nothing before it.
+- Cost: $0
+- Status: proposed
