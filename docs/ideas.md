@@ -5059,3 +5059,83 @@ press does with a 503.
   it lands in the same file.
 - Cost: an hour for piece 1, half a day for piece 2.
 - Status: proposed
+
+### 2026-09-24 — Put the claim graph on the live pricing page before launch
+
+- Trigger: the owner's ranking dispatch tonight (market seat, second run
+  of the day, docs/market/briefs/2026-09-24-b.md), reading
+  libraryofalexandria.dev/pricing directly. The $20/month "Full Access"
+  tier lists the skill library, skill updates, and "routines, once they
+  ship," and does not mention the claim graph anywhere on the page.
+  docs/market/positioning.md's why-pay paragraph treats the claim graph
+  as the core differentiator against every comp observed: "a queryable
+  claim graph instead of a link list... nobody observed in this market
+  sells that combination."
+- What: either add the claim graph to the pricing page's feature list
+  before October 13, or, if it is genuinely post-launch scope, say that
+  on the page rather than leaving it unmentioned. The strongest
+  documented differentiator should not be invisible at the exact moment
+  a buyer decides.
+- Whose call: PM for the page's content, engineer seat for whatever the
+  claim graph's actual launch-day state is. This is filed for those
+  seats rather than edited, the same pattern the writer and engineer
+  seats already use between each other. Market research does not touch
+  product copy.
+- First step: confirm with the engineer seat whether the claim graph
+  ships with the October 13 launch or after it. That answer decides
+  which of the two fixes above applies.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-25 — Confirm the pipeline is billing at Opus 5.5's new, lower price (market seat, for engineer/OKR)
+
+- Trigger: this week's market ceremony found Anthropic launched Claude
+  Opus 5.5 on 2026-09-22 at $4/$20 per million input/output tokens (a
+  20% cut from Opus 5) with cache reads down 60% to $0.20/MTok
+  (docs/market/briefs/2026-09-25.md). OpenAI cut its own frontier API
+  pricing roughly 50% the same week (GPT-6 Sol and Luna, 2026-09-22),
+  so this is a market-wide move, not an Anthropic-only one.
+- What: alexandria's own charter names a $0 cost base as a structural
+  requirement (docs/vision.md §0). A market-wide frontier-model price
+  cut on the exact model family the org runs its agent seats on is free
+  margin only if the pipeline's model configuration actually points at
+  the new, cheaper model and pricing tier rather than an older pinned
+  version. Market research cannot see the pipeline's model config from
+  its own writable surface; this is filed for the engineer seat to
+  confirm, with the OKR seat as the natural place to track the resulting
+  cost-base number if it moves.
+- Whose call: engineer seat to check pipeline configuration; OKR seat if
+  a cost-base metric needs updating.
+- First step: grep the pipeline's model-selection config for a pinned
+  Opus version string and confirm it resolves to 5.5 or later.
+- Cost: $0 to check. Any savings are a pure win, not a spend.
+- Status: proposed
+
+### 2026-09-25 — Put a number on the "curation and verification" pitch in owner-facing copy (market seat, for PM/writer)
+
+- Trigger: this week's landscape watch found Snyk's ToxicSkills research
+  (published 2026-02-05, cited in alexandria's own docs for the first
+  time this run): 13.4% of 3,984 scanned skills on ClawHub and skills.sh
+  carried a critical-severity security flaw. This run also found two more
+  independent founders (Skillcop, posted 2026-03-20; Skill Federation,
+  posted 2026-07-02) who had already built trust/curation tooling against
+  that exact number, on top of skillbay.sh and Bastionskill from
+  2026-09-18 (docs/market/landscape.md, docs/market/briefs/2026-09-25.md).
+  docs/market/positioning.md's why-pay paragraph already argues curation
+  and verification are the part of a skill worth paying for, but argues
+  it in the abstract.
+- What: consider citing a concrete stat like the 13.4% figure somewhere
+  in owner-facing marketing copy (the pricing page, the digest's
+  positioning language, or a launch post), the same way the digest
+  itself treats "evidence attached, not asserted" as a product feature
+  rather than a slogan. Not a market research call — citing an external
+  stat correctly and choosing where it lives in the site is PM's and the
+  writer seat's surface.
+- Whose call: PM for whether/where this belongs in launch copy; writer
+  seat if it belongs in the digest's own voice instead.
+- First step: read the Snyk source directly
+  (https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)
+  before quoting it, since this run only skimmed it for the headline
+  numbers.
+- Cost: $0
+- Status: proposed

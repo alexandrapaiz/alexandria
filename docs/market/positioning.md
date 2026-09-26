@@ -31,7 +31,14 @@ distribution, not verification — and the clearest HN reaction to a paid skill
 marketplace this run was skepticism of paying for content an LLM could
 generate, paired with a concession that curation and verification are the
 part worth paying for. That is exactly alexandria's shape: every skill and
-claim carries the evidence that justifies it.
+claim carries the evidence that justifies it. As of 2026-09-25 that argument
+has a number behind it, not just sentiment: Snyk's ToxicSkills research
+found 13.4% of 3,984 scanned skills on ClawHub and skills.sh carried a
+critical-severity security flaw, and four independent founders (skillbay.sh,
+Bastionskill, Skillcop, and Skill Federation, spread from March through
+this week) have each spent their own time building trust or curation
+tooling on top of the open ecosystem rather than trusting it as-is
+(docs/market/landscape.md).
 
 ## The price ladder (observed, 2026-09-18)
 
@@ -41,7 +48,11 @@ from an original $10/$100 at launch), Stratechery Plus ($15/mo or
 $150/yr), Interconnects (~$15/mo or ~$150/yr, medium confidence). Lenny's
 Newsletter sits higher at $20/month or $200/year, but that price is
 inflated by a bundled "Product Pass" of partner-SaaS perks, not pure
-content value — a bundling tactic, not a content-price signal.
+content value — a bundling tactic, not a content-price signal. Ben's
+Bites' Pro tier ($150/yr, ~$12.50/mo) sits between the $15/month cluster
+and $20/month, the closest a content-only newsletter brand has come to
+alexandria's price point without selling tooling (added 2026-09-24,
+docs/market/landscape.md).
 
 Actual research *tools*, as opposed to reading material, price meaningfully
 above the essay tier: Consensus Pro at roughly $20/month, Elicit Pro at
@@ -53,6 +64,17 @@ retail. Early, low-confidence signals from AI-skill marketplaces (Agensi at
 $9/month for a skill catalog, UandAI at $0.99-$29.99 per agent) sit well
 below $20 but are selling raw, uncurated content, not a research-backed tool
 layer.
+
+The top of the ladder moved further away this week. OpenAI is reportedly
+preparing a $500/month "ChatGPT Pro Max" tier, discovered in Codex's
+public checkout configuration rather than confirmed by OpenAI directly
+(medium confidence, leak not launch), expected to be detailed at DevDay
+2026-09-29.
+[testingcatalog.com](https://www.testingcatalog.com/openai-prepares-new-500-month-pro-max-plan-for-chatgpt/),
+2026-09-24. Not a comp for alexandria's tier or shape (general-purpose
+chat/agent usage, not a research-and-skills layer), but it is more evidence
+that the market's subscription ceiling keeps rising, not falling, which
+argues against $20/month being read as expensive.
 
 **Reading the ladder for alexandria's $20/month:** it sits exactly at the
 boundary between "premium single-voice newsletter" ($15/mo cluster) and
@@ -118,3 +140,29 @@ proposal, not an evidenced conclusion.
   that "nobody sells this combination" gets stronger evidence, not weaker,
   from the platform owner's biggest move of the quarter landing somewhere
   else entirely.
+- 2026-09-24 (second run, the owner's ranking dispatch): ranked
+  alexandria's product against the full paid competitive set for the
+  PM, per docs/market/briefs/2026-09-24-b.md. Added Ben's Bites' Pro
+  tier to the price ladder above, the closest content-brand comp to
+  $20/month found yet. No change to $20/month; the new data point
+  confirms rather than contradicts it. Checked the live pricing page
+  directly: the $20/month tier is real on paper but not yet purchasable
+  (both tiers read "Launches October 13"), and its copy does not
+  mention the claim graph that this doc's why-pay paragraph treats as
+  the core differentiator. Flagged as a decision for the PM and
+  engineer seats, not resolved here.
+- 2026-09-25 (regular Friday ceremony): put a number behind the why-pay
+  paragraph's curation/verification claim for the first time (Snyk's
+  ToxicSkills stat, 13.4% of scanned skills carrying a critical flaw) and
+  named two more independent founders (Skillcop, posted 2026-03-20;
+  Skill Federation, posted 2026-07-02) building trust tooling on the
+  open ecosystem, found this run though neither is new this week, four
+  total spread across about six months. Added OpenAI's rumored
+  $500/month Pro Max tier to the price
+  ladder as a top-of-market anchor (leak, not a confirmed launch). No
+  change to $20/month; both pieces of evidence support the existing
+  price, one from below (the trust gap alexandria's tier is priced to
+  close) and one from above (the ceiling on paid AI subscriptions keeps
+  rising). Re-checked Elicit directly, unchanged; Consensus's pricing
+  page now renders client-side and returned no confirmable figure this
+  pass, unresolved rather than contradicted.
