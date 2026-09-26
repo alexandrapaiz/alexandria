@@ -5200,3 +5200,525 @@ press does with a 503.
 - First step: none needed. This is a note on the record.
 - Cost: $0
 - Status: observation
+
+### 2026-09-26 — Craft scan: Paperguide (paperguide.ai)
+
+- Trigger: today's work was the owner's finding that the corpus is not
+  being read, so the rotation went to the one product in
+  docs/market/landscape.md whose entire job is reading papers and which
+  no craft scan has covered yet. Added to the landscape 2026-09-18,
+  never scanned.
+- **One thing worth stealing: the claim lands on the sentence, not the
+  paper.** Their copy is "click any claim and land on the exact sentence
+  in the source paper it came from", and per extracted value, "every
+  value in the table cites the statement it came from, confirmed by a
+  verifier before synthesis". Alexandria already stores the evidence
+  sentence in `claims.evidence`, and as of this PR distill records
+  `papers.fulltext_chars`, which means the full HTML text is in hand at
+  the moment the evidence is written. The offset of that sentence inside
+  the text is therefore free to record and nobody is recording it. See
+  the separate entry below.
+- **One thing alexandria does better: it says which one it read.** Their
+  own description of the screening step is "pulls the relevant
+  statements from the abstract or full text". Abstract or full text. For
+  a product whose pitch is traceability that is the one place the trace
+  stops, because a reader cannot tell whether a given finding came from
+  a paper that was read or from a paragraph that was skimmed, and those
+  are different claims about the same paper. From this PR onward
+  alexandria answers it per row: `fulltext_chars` is a number or it is
+  NULL, and the weekly issue states papers read in full separately from
+  papers ingested. Depth is a fact on the row rather than a capability
+  in a marketing sentence.
+- Numbers on the page, for the landscape: 200M+ peer-reviewed papers
+  indexed across PubMed, arXiv, OpenAlex and Semantic Scholar, 974,000+
+  researchers claimed, case studies at "83% faster review across 100
+  papers". No pricing disclosed, only "start for free" and a demo
+  booking, with GDPR, SOC 2 and ISO 27001 listed as coming soon.
+- Read against alexandria's own scale honestly: 200M papers indexed
+  against 8,956 ingested. That comparison is not the one that matters,
+  which is the point of the entry above. Their 200M are indexed and
+  ours are ingested, and neither number is papers read.
+
+### 2026-09-26 — Distill is the next job on the free tier, and now it is the bottleneck
+
+- Trigger: the owner's own count, read again after today's change. 164
+  papers read in full out of 8,956 ingested. Distill is the only step
+  that fetches arXiv HTML, it is still on Groq's free tier
+  (`PRODUCTION_PROVIDER = "groq"`, `openai/gpt-oss-120b`), and
+  `FULLTEXT_MAX_PER_RUN` is 15 with a comment that says the cap exists
+  because "triage routes ~3-6 papers/day to distill, so this fits the
+  Groq budget". That premise is what today's PR ends. Triage is about to
+  judge 700 to 900 papers a day instead of 20, so the flow into
+  `distill_queue` goes up by more than an order of magnitude and hits a
+  15-paper-a-day ceiling sized for the old rate.
+- What: move distill to Kimi as primary with Groq behind it, exactly as
+  triage and interpret moved in this PR, reusing `pipeline/llm.py` so
+  there is no second client. Then raise `FULLTEXT_MAX_PER_RUN` to
+  whatever the cap and the slot allow. Distill's request is the biggest
+  of the three by far, because it sends up to `FULLTEXT_CHARS` of 24,000
+  characters of paper, which is roughly 6,000 tokens in and a few
+  thousand out, so the real arithmetic has to be done before a cap is
+  chosen rather than after. Note the constraint that decides the shape:
+  a full-text distill request does NOT fit Groq's 6,800 usable tokens,
+  so unlike triage and interpret, distill's Groq fallback can only work
+  on the abstract. That is a real fallback with a stated cost rather
+  than a fake one, and the code should say so where it falls back.
+  Distill also needs the fourth Kimi window, and 13:00 to 14:00 UTC is
+  the gap `pipeline/llm.py` KIMI_WINDOWS deliberately left empty.
+- Why it was not in this PR: the owner's directive named triage and
+  interpret and said what to do with each. Widening a funded provider
+  move past the two jobs named, on the same day, without the arithmetic,
+  is how a $27 ceiling becomes a number nobody projected.
+- First step: count the tokens in a real 24,000-character full text with
+  `tiktoken`, add a `CRON_REQUESTS` entry for distill to
+  `pipeline/budget.py`, and read the projected monthly cost off the
+  guard before writing any of the rest.
+- Cost: a proposal, not $0. Order of magnitude at 30 papers a day of
+  full text, $0.01 a call, is about $9 a month, which would take the
+  Kimi line to roughly $13 expected. The owner's call, and it needs
+  docs/finance/opex.md in the same commit.
+- Status: proposed
+
+### 2026-09-26 — Anchor each claim's evidence to its offset in the full text
+
+- Trigger: two observations that met today. Paperguide's "click any
+  claim and land on the exact sentence in the source paper it came
+  from", and the fact that this PR makes distill record how many
+  characters of full text it read. The text is already in memory in
+  `distill()` at the moment the model returns the evidence sentence, and
+  the sentence is already being stored. Only the position is thrown
+  away.
+- What: one integer column, `claims.evidence_offset`, set at distill by
+  finding the model's evidence string in the body it was given. The
+  match will often be inexact, because a model paraphrases, so the
+  honest version stores the offset only on an exact or near-exact
+  substring match and leaves it NULL otherwise, which also makes it a
+  free measurement of how often the distiller quotes rather than
+  paraphrases. That number is worth having on its own: an evidence
+  sentence that appears verbatim in the paper is a different kind of
+  evidence from one the model composed, and nothing in the corpus
+  currently distinguishes them. The payoff a reader sees is a digest
+  link that opens arXiv's HTML at the paragraph rather than at the top
+  of the paper, and the payoff the pipeline sees is a verbatim-quote
+  rate it can watch.
+- First step: add the column to db/schema.sql and compute the offset in
+  distill without using it anywhere, then run one week and report what
+  share of claims matched verbatim. Decide whether to deep-link after
+  seeing that number, not before.
+- Cost: $0. No model call, no new service; it is a `str.find` on text
+  the run already holds.
+- Status: proposed
+
+### 2026-09-26 — The site's live counter says "papers ingested", which is the flattery the issue just stopped committing
+
+- Trigger: found while changing the press's stats line. `site/lib/metrics.js`
+  reads a JSON endpoint answering `{"papers_ingested": n}` and renders it
+  as the hero's live metric. The owner's directive today was that "read N
+  papers" is the wrong stat because ingested and read differ by a factor
+  of fifty. The issue is fixed in this PR. The site's hero number is the
+  same claim in a larger font, and it faces every visitor rather than
+  only subscribers.
+- What: point the hero metric at papers read in full, or show both with
+  the relationship visible ("8,956 sifted, 164 read end to end"), which
+  is a stronger line than either number alone because the ratio is the
+  product. The column that makes this answerable, `papers.fulltext_chars`,
+  lands in this PR, so the endpoint can start returning a second number
+  as soon as the schema is applied. This is the frontend seat's surface
+  and not this seat's, which is why it is a ledger entry and not an edit.
+- First step: whoever owns the endpoint returns
+  `{"papers_ingested": n, "papers_read_in_full": m}`, then the frontend
+  seat decides the copy. The query for m is in `gather()` in
+  pipeline/weekly.py as of this PR and can be copied.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The engineer charter describes the press rehearsal as unbuilt, and it shipped two days ago
+
+- Trigger: the charter's own "Check the register before you ship" step
+  says of docs/agents/press-rehearsal.md that "it does not exist as code
+  yet, and until it does the ladder has two working links and a
+  paragraph", and instructs this seat to take building it "when the
+  sprint has room". It is built. `pipeline/weekly.py` has `rehearse()`,
+  it writes a scratch row to `press_rehearsals`, it holds a receipt
+  check against the head of the fallback list, `db/schema.sql` has the
+  table, `tests/test_press_rehearsal.py` has the tests, and the commits
+  are in main from 2026-09-24 (ad86a26, 02b8fc1, d79fef1, 81b706c,
+  e7af19c). This run read that paragraph, believed it, and spent turns
+  confirming otherwise before building the corpus jobs' rehearsals on
+  the pattern that already existed.
+- What: update that paragraph in prompts/engineer-agent.md to say the
+  press rehearsal is built and to point at `rehearse()` as the pattern a
+  new runtime's rehearsal should follow. This is a charter edit, so it is
+  the owner's merge and never this seat's PR, which is why it is here.
+- Why it matters more than a stale sentence usually does: the same
+  paragraph is what tells this seat what the third gate of the ladder is.
+  A charter that describes a built gate as unbuilt invites the next run
+  to build it a second time, and a second rehearsal implementation on the
+  same provider is exactly the collision
+  INC-2026-09-24-kimi-org-concurrency is about.
+- First step: the owner replaces the two sentences. One line.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Register conflict filed, not fixed: model-routing.md goes stale on this merge
+
+- Trigger: `docs/agents/model-routing.md` line 15 says "the entire daily
+  pipeline: triage, distill, interpret on gpt-oss-120b via Groq's free
+  tier (ADR-5)", and its routing table says the same. The moment this PR
+  merges, two thirds of that sentence is wrong. L-A10 in
+  docs/standards/lessons.md says one file has exactly one owning charter
+  and a seat in contested territory yields and files the conflict rather
+  than winning the race, and docs/agents/registers.md line 62 names the
+  ExO as that file's owner. So this seat is not editing it.
+- What makes it worth filing rather than leaving to the next Sunday read:
+  registers.md already recorded this exact failure for this exact file.
+  Its own row says routing changed in 18 hours and the file is gated
+  weekly, and that the ExO's read "found it stale on arrival". The ExO
+  runs Sundays. This merge lands Friday, so the stale window is about
+  four days, and the file that goes stale is the one a seat reads to
+  learn which provider serves which job.
+- What: the ExO's next run updates the routing table to triage and
+  interpret on kimi-k2.6 with Groq behind them, distill still on Groq,
+  and adds the line INC-2026-09-24-kimi-org-concurrency asked for in its
+  own text: Moonshot's organization concurrency is 1, and the windows are
+  in `pipeline/llm.py` KIMI_WINDOWS. The durable fix is the one
+  registers.md is already arguing for: a file whose content is derivable
+  from code should be generated from it. `budget.cron_model_lists()`,
+  `budget.cron_caps()` and `llm.KIMI_WINDOWS` between them hold every
+  fact in that table, so `python3 pipeline/budget.py` could print the
+  routing table and a check could fail when the file disagrees. That
+  turns a weekly read into a gate in a command, which is the closing
+  argument of docs/agents/runtime-changes.md.
+- First step: the ExO edits the two stale lines. The generator is a
+  second, separate day of work for this seat, and it needs the ExO's
+  agreement first because it changes who writes that file.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Competitive scan: Undermind publishes a number for the quality of its own retrieval
+
+- Trigger: this run's craft scan, rotating through docs/market/landscape.md
+  to Undermind.ai, whose entry was search-snippet confidence only. Fetched
+  the real page this run.
+- What is worth stealing: Undermind puts a measured claim about its own
+  retrieval on the product page and links the method. "Our v1 search engine
+  delivered 10x better results than Google Scholar" and "our v2 engine
+  outperforms frontier agents with web search by a wide margin", each behind
+  a "see the benchmark" link. The claim is about the machinery rather than
+  about the output, and it is the machinery a buyer cannot otherwise
+  inspect. alexandria has never published a number about its routing, and as
+  of today it owns the apparatus to produce one: the re-triage writes a
+  second decision for 47 papers already judged by the old rubric, so the
+  disagreement rate between two rubrics on one corpus is now a computable
+  fact rather than an intuition. The idea below is that number.
+- What alexandria does better: Undermind answers a question you brought.
+  Its "keep up" step is a notification on a saved interest, which means the
+  standing corpus is a feature of the search product. In alexandria the
+  standing corpus is the product and the terminal state of a paper is an
+  artifact, not an answer: a skill an agent loads without asking anything,
+  carrying claim-id provenance and an evidence grade per claim. Undermind
+  also cannot tell you what it decided not to read, and the triage log is
+  exactly that record.
+
+### 2026-09-26 — Distill misses Groq's free tier by 109 tokens, which is why 164 of 8,956 papers were read in full
+
+- Trigger: L-E6 in docs/standards/lessons.md binds this seat when a prompt
+  grows, and two prompts grew this run. `prompts/distill.md` gained the
+  `reasoning` topic's definition, and distill was the one corpus job absent
+  from `budget.CRON_REQUESTS`, so nothing measured it. It is in the table now,
+  and the arithmetic is not what was expected. Distill's full-text request is
+  **6,909 tokens against 6,800 usable** on Groq's free tier: prompt 990,
+  payload 3,887 for `FULLTEXT_CHARS` of a real paper, a 2,000-token output
+  reservation, 32 of envelope. It misses by **109 tokens**, and it has missed
+  by roughly that for the whole life of the pipeline.
+- What this explains: the job then does exactly what its code says, retries the
+  same call with `abstract[:6000]`, and writes claims from the abstract. The
+  run succeeds. Nothing fails. "164 of 8,956 papers read in full" has been the
+  visible symptom of those 109 tokens, and the library has been distilling
+  summaries while its own docstring says the procedure is the product and an
+  abstract does not contain one. `python3 pipeline/budget.py` now prints this
+  under its own heading, "reads less than it asked for (not a failure, a
+  quality ceiling)".
+- What: the cheapest fix is one number. Distill sends **no output reservation at
+  all**, so the 2,000 tokens above is this guard's assumption about a job that
+  never declared one. Declaring `max_completion_tokens` at 1,400 puts the
+  full-text request at 6,309 tokens with 491 to spare, and 1,400 is comfortably
+  above the ~1,500-token measured output only if the claims are few, so the
+  honest version of this proposal is to measure a real distill response first
+  and then set the number. The alternative, moving distill to Kimi, costs money
+  and is the second proposal, not the first.
+- Why it is not in this PR: a token reservation on a scheduled job is a runtime
+  change by name in docs/agents/runtime-changes.md, and distill has no
+  `rehearse` function, so the ladder has no third rung for it. Building one is
+  the day-sized unit of work, and it is the same shape as the two written for
+  triage and interpret on 2026-09-26.
+- First step: `modal run pipeline/distill.py::rehearse` that exists, sends one
+  real full-text request with a declared reservation, prints the finish reason
+  and the token counts, and writes nothing. Then the number is chosen from a
+  measurement instead of from this paragraph.
+- Cost: $0. Distill stays on the free tier under this proposal.
+- Status: proposed
+
+### 2026-09-26 — The 47 re-triaged papers are the first real eval set for a prompt change
+
+- Trigger: the re-triage built this run appends a second `triage_log` row per
+  paper instead of editing the first, so after the chair runs it the table
+  holds 47 pairs where two rubrics judged the same paper with everything else
+  held constant. `triage_log` has carried `human_verdict` and `human_note`
+  columns since the schema's first day, and db/schema.sql says the table
+  doubles as the eval set for the recursive loop. Nothing has ever written a
+  verdict into either column.
+- What: a disagreement report over the pairs. Every paper where the rubric
+  changed its answer, with both decisions, both reasonings, and the title, in
+  one email to the owner, ranked by how far the decision moved. Twenty
+  verdicts from her would be the first labelled data the meta-review loop has
+  ever had, and the loop's whole design (ADR-25) assumes labels it has never
+  been given. The same report is the evidence for the number the Undermind
+  scan above says the product is missing.
+- First step: a `modal run pipeline/triage.py::disagreements` that prints the
+  pairs and writes nothing, reusing the email path the press already owns
+  only once the owner says she wants it as mail rather than as output.
+- Cost: $0, no model call. It is a join over one table.
+- Status: proposed
+
+### 2026-09-26 — Title-only priority misses the survey that argued for the priority
+
+- Trigger: the new `lilianweng` feed was smoke-tested through the real
+  `ingest.fetch_feeds` this run, 53 entries, and one of them is "Why We
+  Think", the test-time-compute survey the research brief names as the piece
+  the corpus has exactly one claim about. `triage.is_priority` does not match
+  it, because the reasoning priority reads titles only and that title carries
+  no term in the list. The limit is deliberate, since half the corpus mentions
+  reasoning in an abstract and a priority that covers everything is not a
+  priority, but this is the cost of it stated concretely.
+- What: a bounded second pass. A query that finds untriaged papers whose
+  ABSTRACT matches the reasoning terms while the title does not, ranked by
+  how many distinct terms match, capped at 50 papers, and appended to the
+  drain plan rather than run as its own job. The cap is what keeps it a
+  priority: a pass that promotes 3,000 papers has promoted nothing.
+- First step: add it to `triage.py::drain`, the dry run that spends nothing,
+  and look at what the top 50 actually are before any of them is judged. If
+  the top of that list is noise, the title-only rule was right and the idea
+  closes with evidence.
+- Cost: $0 to measure, and about $0.04 to judge 50 papers if the list is good.
+### 2026-09-26 — Competitive scan: Linear, the product this board replaces
+- Linear's most copied idea is not its keyboard shortcuts, it is that the
+  issue's status set is a property of the team rather than of the issue, and
+  nobody can type a status that does not exist. Every list, filter and
+  automation downstream is total because of it. Its second idea, the one that
+  looks like a small thing, is that every issue carries a short stable
+  identifier a human says out loud, so the artifact and the conversation about
+  the artifact share a name.
+- **Worth stealing, and half of it shipped today.** The closed status set is
+  exactly the mechanism the owner asked for when she said seats cannot create
+  views: this board refuses an item whose status is not one of
+  `board/views.json`'s columns, and the refusal names the file and who can
+  change it. The half not built is the stable spoken id. Board items take an id
+  a seat types (`board-ui`), which is legible and not collision-proof, where
+  Linear would issue `ALX-214`. The board is the org's own coordination surface,
+  so two seats inventing the same slug in one night is a real case and not a
+  hypothetical.
+- **Where alexandria is better, and it is the reason we left.** Linear cannot
+  be read by the thing doing the work. Every one of our twelve seats starts in
+  a fresh sandbox with a git checkout and no browser, so a board in a vendor's
+  database is a board the workers cannot read, and the state that actually
+  drove our runs lived in markdown files, pull request descriptions and a
+  dispatch queue instead. This board is one `git archive` away from any seat and
+  one JSON file per event, so an agent reads its own history with the same
+  command a human does. That is L-E0's "agents as first-class citizens of
+  anything we build", and it is the one axis on which a $0 file store beats a
+  funded product.
+
+### 2026-09-26 — Board items need a stable id the org issues, not one a seat types
+- Trigger: today's scan of Linear, and the first two items this board holds.
+  Both were named by hand in this run (`board-store`, `board-ui`). Nothing stops
+  the next seat from choosing `board-ui` again for a different piece of work,
+  and because item events are patches folded by id, a collision does not error.
+  It silently merges two different pieces of work into one card.
+- What: issue ids from the board rather than from the caller. `board.py item`
+  with no `--id` allocates the next `ALX-<n>` by reading the highest id on the
+  ref, and `--id` stays available for a deliberate update to an existing item.
+  The allocator has the collision problem this repo has already hit four times
+  with sequential incident numbers, and the same answer applies: the allocation
+  happens against the ref at write time rather than against a branch, and the
+  write is a create that fails when the path exists, so two seats racing for the
+  same number means one of them retries with the next one. That is a real check
+  rather than a convention, unlike the incident register's numbering.
+- First step: `next_id()` in `tools/board.py` over the folded state, and the
+  create-fails-when-exists path is already the behaviour `write_event` has.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The board should fold into a snapshot the site can read in one fetch
+- Trigger: writing docs/board.md's read path for the frontend seat, which is
+  dispatched next. The honest instruction today is "fetch a tarball of the ref
+  and fold 9,000 files a year in the render path", and the whole board is 1,029
+  bytes gzipped right now, so the cost is invisible and will not stay that way.
+  The alternative the site would otherwise reach for, the trees API plus one
+  request per file, exhausts an unauthenticated 60-an-hour limit on its first
+  render.
+- What: `tools/board.py` writes `board/state.json` on the same ref after each
+  event, holding the folded state and the fold's input count. The site then
+  reads one unauthenticated file. The reason this was not built today is that it
+  is the first mutable path in an append-only store, so two seats reporting in
+  the same second can lose an update, and doing it correctly means a
+  compare-and-swap on the blob's sha with a re-fold on conflict. The event log
+  stays the source of truth and the snapshot stays derived, so a lost update is
+  repaired by the next writer rather than by a human.
+- First step: `fold_to_snapshot()` and a `--snapshot` flag on `report`, with a
+  test that a stale sha forces a re-fold instead of overwriting.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — A seat's first bullet is now a contract with two consumers and no owner
+- Trigger: the owner's two direct pushes to main tonight made the Slack run
+  report the first five bullets of a pull request description, and the board's
+  run report built today derives its one-line result from the first bullet of
+  the same description. Two independent consumers now depend on a convention no
+  charter states, which is the shape L-E6 describes and the reason incident 22
+  cost a week's issue.
+- What: state the convention where the seats read it rather than where the two
+  consumers implement it. One line in each charter's Act section, that the first
+  bullet of a pull request description is one sentence naming what the run
+  shipped, because two systems quote it. Then a check that can see it:
+  `tools/check_registers.py` already runs in front of `&&` in seat commands and
+  could warn when the head of a branch's pull request has no bullet in its first
+  screen. The charters are the owner's merge, so this is a proposal and not a
+  patch.
+- First step: the charter line, in her words, on the next charter edit she
+  makes. The check is a day's work after that and worth nothing before it.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — docs/backlog.md and the board are two boards, and the PM owns the choice
+- Trigger: building the board today and then reading README.md's layout, where
+  `docs/backlog.md`'s own first line is "the consolidated board". It is the PM's
+  file, rebuilt each Monday during grooming, and it holds the launch runway and
+  every seat's proposals in leverage order. The owner's ruling tonight was that
+  the board replaces Linear, and Linear held exactly what backlog.md holds. So
+  the org now has two boards, and the one built today is the machine-readable
+  one while the one that has been used for nine days is the narrative one.
+- What: the PM decides which survives, because the PM grooms it. The case for
+  migrating: items become folds over an append-only log, a seat can read the
+  board without parsing a 450-line markdown file, and the run reports sit beside
+  the work they were for. The case against, and it is real: the ordered narrative
+  of a week reads better as prose than as cards, and the launch runway table
+  carries dependencies the board has no field for. A reasonable middle is that
+  backlog.md stops holding item state and becomes what it is good at, the
+  week's ordered argument over items the board holds by id.
+- First step: not code. The PM's Monday grooming reads docs/board.md and rules.
+  If the ruling is to migrate, `tools/board.py item` takes the rows and the
+  first step after that is the dependency field the runway table needs.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The report step is broken in production and only a hand can fix it (engineer, run 4)
+
+- Trigger: this run's gate-0 machinery diff. The `Post run report` step added to
+  all twelve `agent-*.yml` at 01:14 and 01:23 UTC fails on every run, because
+  the step declares no `shell:` and the container's `sh` is dash, whose builtin
+  `echo` expands the escaped newlines inside the pull request body before `jq`
+  reads it. Verified against four seats' real pull requests: `dash-exit=4` on
+  every one, `exit=0` on the same command under bash.
+- What: the code half is fixed on this branch. `tools/run_report.py` replaces
+  the embedded shell, eighteen tests hold it, and one of them runs it under
+  `sh -e` so the container's shell is under test rather than in production. The
+  workflow half cannot come from a seat, because `GITHUB_TOKEN` cannot push
+  `.github/workflows/`. It is written out ready to apply as item 10 in
+  docs/agents/pending-workflow-changes.md, one line per file.
+- Why it is urgent rather than proposed: until the hand moves, every run of
+  every seat is recorded as `failure` after doing its whole job. Two runs
+  already are, #115 and #116. Run health is read off those statuses by the PM's
+  standup, by delivery-health.md and by the ExO's weekly audit, so the fleet's
+  health signal is currently inverted.
+- First step: apply item 10. It is a one-line replacement of a step body in
+  twelve identical files.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-26 — No workflow step should contain logic a test cannot reach (engineer, run 4)
+
+- Trigger: the same incident, read as a class rather than as a bug. Twenty lines
+  of shell lived in twelve YAML files. Nothing in the repository could execute
+  them, so the first execution was production, in all twelve seats at once. The
+  two-character fix (`shell: bash`) would have ended the bug and left the class
+  standing.
+- What: a rule and a check. The rule is that a workflow step is either a single
+  command or a call into `tools/`, never a script. The check is a test that
+  parses every `.github/workflows/*.yml` and fails when a `run:` block exceeds
+  a small number of lines, naming the file and the step, so the next author
+  meets the rule before a reviewer does. The remaining offender today is the
+  `No-ship tripwire`, about twenty-five lines in each of the twelve files, which
+  is untested and which already has a known sharp edge: its `exit 1` makes a run
+  red for shipping nothing, a fingerprint the ExO's own notes say is easy to
+  misread. Moving it to `tools/` would let that behaviour be tested and would
+  let the two red causes be told apart.
+- First step: `tools/noship.py` plus its tests, behaviour-identical, and the
+  parser test set to the line count that leaves it as the only thing to fix.
+  The workflow edit itself queues behind a hand like everything else.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Distill cannot read a paper in full, and the gap is 109 tokens (engineer, run 4)
+
+- Trigger: `python3 pipeline/budget.py` with tiktoken installed, run while giving
+  distill the gates it never had. Verbatim: `prompt 990 + payload 3887 + output
+  reservation 2000 + envelope 32 = 6909 tokens against 6800 usable (8000 TPM
+  less 15% margin); DOES NOT FIT, headroom -109. It falls back to
+  abstract[:6000], which fits, so the run succeeds and the paper is read from
+  its abstract instead of in full.` This is the arithmetic under the owner's
+  finding of 2026-09-25 and under the number in the press: 164 papers read in
+  full out of 8,956 ingested. The job whose entire purpose is reading in full
+  misses by 109 tokens and reports success.
+- What: three ways to close it, and they are not equivalent. Drop the assumed
+  2,000-token output reservation to something measured, since the job sends no
+  reservation at all today and 2,000 is a documented guess, which is the only
+  option that is free and might alone be enough. Shrink `FULLTEXT_CHARS` from
+  24,000, which costs coverage of the paper. Or move distill to Kimi the way
+  triage and interpret moved tonight, which removes the ceiling entirely and
+  costs money. The first is measurement, the third is a proposal.
+- First step: measure the real output size of a distill call. `modal run
+  pipeline/distill.py::rehearse` now makes exactly that call and prints the
+  claims it got back, so the reservation can be set from the provider's own
+  usage block instead of from a guess. If a measured reservation clears 109
+  tokens with margin, the fix is free and the deploy chain proves it.
+- Cost: $0 for the measurement and for the reservation change. Moving distill to
+  Kimi is the proposal, and it is the owner's call: at triage's measured rates it
+  is single-digit dollars a month against the $30 ceiling in
+  docs/finance/opex.md, but it is new spend and this seat does not create it.
+- Status: proposed
+
+### 2026-09-26 — Craft scan: Cloudflare's security-audit-skill (github.com/cloudflare/security-audit-skill)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18 as a signal rather than a competitor and no craft scan has covered
+  it, and today's work was entirely about the difference between instructions
+  that are written down and instructions something enforces, which is the axis
+  this artifact is interesting on.
+- **The thing worth stealing: the skill ships validators for its own output, and
+  the validators ship with tests.** Alongside the prose (`SKILL.md`,
+  `HUNTING.md`, `ATTACK-CLASSES.md` and ten domain guides) the repository carries
+  `report-schema.json`, `validate-findings.cjs`, `validate-coverage-ledger.cjs`,
+  and, the part that matters, `validate-findings.test.cjs` and
+  `validate-coverage-ledger.test.cjs`. Zero dependencies, so the validator runs
+  wherever the skill does. The skill's outputs are files with a schema
+  (`findings.json` with `confirmed` / `needs_validation` / `rejected` verdicts,
+  `coverage-ledger.json`, `architecture.md`), and a machine checks them rather
+  than a reader trusting the prose. Their coverage ledger is a validated file
+  where ours, docs/agents/registers.md, is a page. That is the second gate
+  incident 20 says the org keeps forgetting, shipped inside a skill.
+- **What alexandria does better: provenance.** Their attack classes are
+  hand-written expertise with nothing behind them a reader can re-verify, so a
+  stale entry looks exactly like a fresh one. Every claim in our corpus carries
+  its paper, its evidence string, its grade and its `prompt_sha`, which is how
+  this org found an interpret prompt seven days stale rather than inferring it.
+  Their own users' top complaint on the 205-point HN thread was token bloat from
+  unscoped context, which is the failure mode of shipping ten domain guides with
+  no gate on which one loads.
+- First step, as a ledger idea: every skill alexandria publishes ships a
+  validator for its own output plus a test for that validator, and the skill's
+  coverage claim becomes a file a validator checks. This seat does not write
+  into `skills/` (ADR-13), so this is a proposal to the reviewer panel and to
+  the skill seat rather than work this seat can take.
+- Cost: $0
+- Status: proposed

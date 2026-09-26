@@ -43,7 +43,7 @@ flowchart TB
 
     subgraph PIPE["The pipeline it builds: ingest to digest to skills"]
         direction TB
-        SRC["Sources, sources.yaml<br/>7 arXiv categories<br/>HF daily papers<br/>34 lab, ecosystem and practice feeds"]
+        SRC["Sources, sources.yaml<br/>7 arXiv categories<br/>HF daily papers<br/>36 lab, ecosystem and practice feeds"]
         ING["Ingest<br/>daily 11:00 UTC"]
         BR[("Bronze<br/>raw papers")]
         TRI["Triage<br/>12:00 UTC<br/>routes four ways"]
@@ -151,13 +151,15 @@ The logical diagram above survives any vendor swap. This one names the vendors.
 flowchart TB
     FEEDS["arXiv · HF daily papers · lab blog feeds"]
     NEON[("Neon: serverless Postgres + pgvector<br/>bronze · silver + claim graph · gold<br/>triage log · digests · subscribers")]
-    GROQ["Groq free tier, gpt-oss-120b<br/>every judgment call: triage, distill,<br/>interpret, and rag_answer"]
-    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's one writing call<br/>256K context, about $0.05 an issue"]
+    GROQ["Groq free tier, gpt-oss-120b<br/>distill and rag_answer<br/>plus the fallback list behind every Kimi job"]
+    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's writing call, triage, interpret<br/>256K context, one call at a time"]
 
     subgraph MODAL["Modal: scheduled jobs, scale to zero"]
         direction TB
-        DAILY["Ingest · Triage · Distill · Interpret<br/>four daily crons"]
-        WK2["Weekly job, Mondays<br/>digest · citations · newsletter send"]
+        INGEST["Ingest, 11:00 UTC"]
+        DISTILL["Distill, 11:30 UTC"]
+        DAILY["Triage 12:00 · Interpret 14:00<br/>separate slots: one Kimi call at a time"]
+        WK2["Weekly job, Mondays 09:00<br/>digest · citations · newsletter send"]
         MCP2["MCP server, OAuth 2.1"]
     end
 
@@ -165,13 +167,17 @@ flowchart TB
         SEATS["Twelve seats on cron<br/>Claude Code, the owner's subscription token<br/>two of them in a prebaked container image"]
     end
 
-    FEEDS --> DAILY
+    FEEDS --> INGEST
+    INGEST <--> NEON
+    DISTILL <--> NEON
     DAILY <--> NEON
     WK2 <--> NEON
     MCP2 <--> NEON
-    DAILY --> GROQ
+    DISTILL --> GROQ
+    DAILY --> KIMI
+    DAILY -.->|"fallback, and it fits"| GROQ
     WK2 --> KIMI
-    WK2 -.->|"last resort"| GROQ
+    WK2 -.->|"last resort, does not fit today"| GROQ
     WK2 -->|"Gmail SMTP"| SUBS["Subscribers<br/>free digest, full issues"]
     MCP2 --> CLIENTS["Claude clients<br/>semantic_search · rag_answer · sql_query<br/>get_digest · discovery_report"]
     MCP2 -->|"propose_skill · propose_change"| GH
@@ -237,6 +243,9 @@ docs/agents/              the org's memory: org chart, learning log, incidents, 
 docs/okrs/                quarterly objectives and key results
 docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
+docs/board.md             the board that replaces Linear: the store, the views, the read paths
+board/views.json          the board's columns and views, on main because only her merge adds one
+tools/board.py            the board's only writer, and `board.py show` is the read path
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
 docs/security/            audit reports from the security seat
@@ -253,7 +262,7 @@ The pipeline, built bottom-up.
 - [x] Repo scaffold, schema, ingest job
 - [x] Neon database provisioned, schema applied
 - [x] Tiered sources (sources.yaml), daily ingest cron live
-- [x] Triage job live: gpt-oss-120b via Groq, batched, rate-limit-aware
+- [x] Triage job live: batched, rate-limit-aware, tiers drained by interleaved quota
 - [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
 - [x] Distill job live: bake-off winner gpt-oss-120b + Qwen3 embeddings, daily 11:30 UTC
 - [x] First claims in silver, first edges in the claim graph
@@ -285,8 +294,32 @@ The pipeline, built bottom-up.
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21
-- [ ] Upgrade the judgment model beyond free tiers when budget allows (a bake-off decides
-      if it is needed)
+- [ ] **Triage and interpret on Kimi, written and not yet deployed**
+      (ADR-2026-09-26). Groq's free tier is why 4,973 papers were never triaged
+      and 487 claims never linked: a run makes two calls, takes a 429, and the
+      resume query makes that look like patience. Both jobs now have a fallback
+      list with Moonshot at the head, a per-run spend cap measured from the
+      provider's usage block, and preflight and rehearsal functions. Nothing is
+      live until the chair runs the three gates and deploys; the commands are in
+      each module's docstring and in the ADR. Distill stays on Groq
+      (docs/ideas.md, 2026-09-26, proposes moving it next)
+- [ ] **Reasoning-model research reaches the corpus, written and not yet
+      deployed** (ADR-2026-09-26b). 209 papers in the corpus have "reasoning" in
+      the title, 147 were never triaged, and of the 62 that were, 47 went to
+      `index` because the old rubric rewarded a construction technique and a
+      reasoning paper's contribution is usually a training recipe. The rubric and
+      the `reasoning` topic are the research seat's; the code half is a closed
+      claim taxonomy enforced where claims are written, a triage log that can
+      hold a paper's decision history, a reasoning-first drain inside each tier,
+      and a re-triage of the 47. Two reasoning feeds joined sources.yaml, which
+      is bundled at deploy, so ingest is redeployed with it
+- [ ] The 693 ungraded claims, backfilled. `pipeline/backfill_grades.py` is
+      written, costs $0 because the grader calls no model, and is a one-time
+      `modal run` the chair has not yet made
+- [x] Upgrade the judgment model beyond free tiers: decided by the owner
+      2026-09-25 rather than by a bake-off, because the free tier's failure was
+      throughput and not quality. See ADR-2026-09-26 and docs/finance/opex.md,
+      which bounds the cost at $27 a month in code
 
 The org, built after it (ADR-14 through ADR-28, all in one week of September 2026).
 

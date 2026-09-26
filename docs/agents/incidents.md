@@ -3951,3 +3951,410 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-26-deploy-workflow-no-smoke-run — a new workflow reached main and ran unattended with no smoke run behind it (2026-09-26, engineer seat)
+
+**Recorded, not fixed.** This seat cannot push a workflow file, so this is
+a finding for the owner and nothing more. It is addressed to her in the
+pull request that carries it.
+
+**What the §0 check found.** The engineer charter's daily machinery diff:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+returned `1baeb7f 2026-09-25 16:50:53 -0600 alexandrapaiz`, "Production
+deploys via a deploy hook on main; seat branches no longer create Vercel
+deployments (HQ Incident 5: the 100/day limit)". It adds
+`.github/workflows/deploy-main.yml`, 29 new lines, and
+`site/vercel.json`, 6 new lines.
+
+The two questions docs/agents/runtime-changes.md exists to ask:
+
+- **Did a merged pull request explain it?** No. `gh api
+  repos/.../commits/1baeb7f/pulls` returns empty; the commit went
+  straight to main.
+- **Was there a smoke run behind it?** No. `gh run list
+  --workflow=deploy-main.yml` holds exactly one run, at
+  2026-09-25T22:50:57Z, `event: push`, `headBranch: main`. That run IS
+  the first execution of the new machinery, which is the sentence the law
+  is written to prevent: "the next cron is never the first execution of
+  new machinery." A new workflow's first run is explicitly on the law's
+  own list of runtime changes.
+
+**It worked.** The run's conclusion is `success`, and the site deploys.
+That is why this is a register entry and not an outage. The charter is
+also explicit that the outcome does not decide whether it is recorded:
+"Any runtime change with no smoke run behind it in `gh run list` is a
+finding, recorded in the register whether or not it happened to work."
+
+**Why it is a repeat, which is what makes recording it mandatory.**
+Incident 23 is the same shape: a change to how runs execute, landing on
+main without the ladder, and working or failing on its first unattended
+execution rather than on a throwaway branch. Incident 23 failed and cost
+four production failures. This one succeeded. The standing rule at the
+top of this file covers the class and not the outcome, and the class has
+now occurred at least twice.
+
+**What is worth taking from it, blamelessly.** The gap is not that
+anybody forgot the law. It is that the law's enforcement for workflow
+files lives in a charter sentence, and the change was made by the one
+participant no charter's §0 check runs before: the chair pushes directly
+to main, so there is no PR for CI to gate and no seat's pre-flight to
+read the register. Every other runtime in the org now has its gate in a
+command rather than in prose. The press has the `&&` chain. The corpus
+crons got theirs in this pull request. `.github/` has a charter sentence
+and a Sunday audit.
+
+The shape of a fix, for the owner and the ExO rather than for this seat:
+a required check on main that fails a push touching `.github/workflows/`
+unless a run of that workflow exists on a non-main branch. That is the
+same idea as the rehearsal receipt, applied to a file instead of a model.
+It is a workflow change, so it cannot come from here.
+
+**Second and third sightings, recorded separately.** The same class recurred
+twice more the same evening, when the chair rewrote the `Post run report` step
+in all twelve `agent-*.yml` files in two direct pushes to main, nine minutes
+apart, with no pull request and no run on a branch behind either. That is
+INC-2026-09-26-slack-report-step-no-smoke-run, which has the shas and the
+arithmetic. The class is now three pushes across two evenings, all with the
+same fingerprint: a runtime change reaching main where no seat's pre-flight and
+no CI gate can see it. One id per event, so it is not repeated here.
+
+---
+
+## INC-2026-09-26-kimi-concurrency-schedule-lock — the follow-up to INC-2026-09-24-kimi-org-concurrency: the schedule is now the lock (2026-09-26, engineer seat)
+
+Its own id rather than a second heading under
+INC-2026-09-24-kimi-org-concurrency, because ids in this file have to be
+unique and `tests/test_check_registers.py` enforces it. Read it as a
+continuation of that entry: this is the answer to the question it left
+open for this seat.
+
+That entry offered two options: "a scratch-row lock the callers check, or
+a second Moonshot organization for rehearsals". The corpus move of
+2026-09-26 (ADR-2026-09-26) needed a third, because it put two more
+daily Kimi callers on the one slot and a lock between two Modal apps is
+not something a single-process client can hold.
+
+**What shipped instead.** `pipeline/llm.py` KIMI_WINDOWS declares the UTC
+window every Kimi caller owns, and `budget.check_kimi_windows()` fails
+`python3 pipeline/budget.py`, which is the first link in every deploy
+chain, if two windows overlap or if a job's real `modal.Cron` minute
+falls outside the window the table gives it. Today: the press and the
+chair's manual rehearsal own 09:00 to 11:00, triage owns 12:00 to 13:00,
+interpret owns 14:00 to 15:00, and 13:00 to 14:00 is deliberately empty
+as the margin. No cron moved. What changed is that the slots are now
+checked rather than coincidental.
+
+**Why the schedule and not the lock.** A scratch-row lock is the stronger
+mechanism and it is also the one that fails worse. A lock needs a
+timeout, and a Kimi call that reasons for minutes makes that timeout hard
+to pick: too short and the lock releases under a live call, which is the
+bug it was built to prevent; too long and one crashed run blocks the
+corpus until a human clears a row. A schedule with an hour of margin
+needs no timeout and no cleanup, and its failure mode is the 429 the
+backoff already survives.
+
+**What is still open.** The chair's rehearsal is run by hand and cannot
+be scheduled, which is why its band is two hours wide for a run that
+takes minutes. The honest statement of the remaining risk: a rehearsal
+started between 11:00 and 15:00 UTC can still collide with a corpus run,
+and nothing prevents it. The backoff makes that survivable rather than
+fatal, since both callers now wait 30 to 180 seconds rather than one.
+
+---
+
+## INC-2026-09-26-interpret-stale-third-sighting — The prompt fix for mis-typed contradictions has produced zero of the graph's 238 edges, seven days after merge, and the defect it fixes reached readers (2026-09-26, research seat)
+
+**This is a repeat of incident 25, recorded at the moment it repeated, per
+the standing rule at the top of this file. It is the third recorded sighting
+of the same pattern and the first one with a published consequence attached.**
+
+**What happened.** `prompts/interpret.md` was revised on 2026-09-19 by commit
+a94a003, titled "Meta-review: sharpen interpret.md on contradictions, anaphora
+and refines". The file at HEAD hashes to `6706ec7bffee`. Every edge in
+`claim_links` — all 238 of them, created between 2026-09-08 and 2026-09-25 —
+carries method `openai/gpt-oss-120b@fbe080261d6b`, and `fbe080261d6b` is the
+sha of `prompts/interpret.md` as it stood on 2026-09-07. The revision has
+produced no edges. It has never run.
+
+**The consequence, which is what makes this different from the first two
+sightings.** The undeployed revision sharpens the interpret layer on exactly
+the error class the old prompt kept making. On 2026-09-19, the day the
+revision was merged, the old prompt wrote edge 190 `contradicts` 188. Both
+claims come from `arxiv:2609.10522`. A paper was recorded as contradicting
+itself. Claim 188 was deprecated on the strength of that edge, and digest
+2026-W39 published the deprecation to subscribers as something the field is
+leaving behind. Two of the graph's other four `contradicts` edges are also
+mis-typed: 12 -> 11 is two systems compared on one benchmark, and 85 -> 12 is
+the same method measured on a harder subset. Three of five are wrong, and the
+prompt that was written to stop this has been sitting merged for a week.
+
+**Why the existing gate did not catch it.** The research charter's gate works
+and worked. It says to compare the deployed sha against HEAD before spending
+the week's proposal on an image-baked file, and it says that if the deployed
+sha is stale, do not propose into that file. This run ran that check, found
+the staleness, and correctly declined to propose into `interpret.md`. The gate
+protects the proposal from being wasted. Nothing in it deploys anything, and
+nothing escalates when the same file fails the check on three consecutive
+runs. A gate that only ever says "not this week" is indistinguishable from a
+gate that says "never" if no other step exists.
+
+**The general form.** Incident 25 named this as a prompt that does not reach
+production. Two runs have now found it still true at five days and at seven.
+The missing piece is not detection, it is that detection has no destination:
+the finding is written into a brief, the brief is read by whoever reads it,
+and no deploy is owned by anyone on a clock. A merge to `main` changes nothing
+in the pipeline by itself, which the charter states plainly, and the org has no
+step between "merged" and "running" that anybody is accountable for. This is
+worth the ExO's attention as a class, because the same freeze applies to
+`prompts/digest.md`, `distill.md`, `triage.md`, `rag-answer.md`,
+`skill-extract.md`, `sources.yaml`, and every file under `pipeline/`.
+
+**A second gap found while checking.** `prompts/distill.md` records no sha
+anywhere. `triage_log` has `prompt_sha`, `digests` has `prompt_sha`,
+`claim_links` has `method`, and `claims` has nothing. The charter's staleness
+gate cannot be run on the distill prompt at all. This run established its
+deploy state by inference — `evidence_grade` is non-null on every claim from
+2026-09-24 onward and null on every claim before, and that column was
+introduced by the same commit that last touched `distill.md` — which only
+worked because the change happened to be visible in the schema. The next one
+may not be.
+
+**Not fixed in this PR, and deliberately so.** The deploy is engineer lane and
+`pipeline/` is frozen for this seat this week by the owner's dispatch. Routed
+in `docs/research/briefs/2026-09-26.md` section 9, item 1, with the `claims`
+`prompt_sha` column as item 4. This run spent its proposal on
+`prompts/triage.md`, which was verified current, rather than stacking a second
+fix behind an undeployed first one.
+
+---
+
+## INC-2026-09-26-engineer-run-twice-in-one-window — two engineer runs executed at once, four minutes apart (2026-09-26, engineer seat)
+
+**Observed from inside one of them.** This entry is written by run
+36208446311 while run 36208644267 is still executing.
+
+```
+2026-09-26T01:30:18Z  engineer-agent  workflow_dispatch  main  in_progress  36208644267
+2026-09-26T01:26:48Z  engineer-agent  schedule           main  in_progress  36208446311
+```
+
+The scheduled run started first. The dispatched run started 3 minutes 30
+seconds later, which is inside the window where the first run had a branch and
+a draft pull request but nothing a reader would recognise as a claim on the
+day's work.
+
+**Why it happened, as far as this run can see it.** The PM's sync session (PR
+#113, docs/sprints/dispatch-queue.md) queued an engineer dispatch for the
+owner's priority 1 and wrote the trigger down explicitly: fire "once `gh run
+list` shows that run finished," meaning PR #110's run. That condition was
+correct and was met. What no condition covered is that this seat's own cron
+fires twice a day under HQ ADR-035, so "the last run has finished" and "no run
+is starting" are different questions, and the queue only asked the first.
+
+**Why it is a repeat, which is what makes recording it mandatory.**
+INC-2026-09-24-writer-dispatch-started-twice is the same shape, one seat with
+two live runs. Incident 14 is the same shape with the sharper ending, two runs
+of one dispatch racing on one branch, saved only by `--force-with-lease`. The
+PM's own session notes tonight name incidents 6 and 14 as the reason not to
+dispatch into a running seat, and then a queued dispatch went out to a seat
+whose next scheduled run had already started. The rule was known, written down
+the same hour, and the gap was in the condition rather than in the knowledge.
+
+**What this run did about it, since it could not stop the other one.** The
+draft pull request's description was rewritten to address run 36208644267 by
+id, to name the files this branch already holds, and to tell it to merge this
+branch rather than build a second store. That is the only channel between two
+runs of one seat: the pull request list, which every charter's pre-flight reads.
+
+**The shape of a fix, for the PM and the ExO rather than for this seat.** The
+queue's trigger is one clause short. "No run of that seat is in progress" is
+what it means, and `gh run list --workflow=agent-<seat>.yml --status in_progress`
+answers it in one command, where the current condition reads only the last
+run's conclusion. A second guard belongs in the seat's own pre-flight: a run
+that finds another run of its own seat in progress should say so in its first
+turns and take a different item, rather than discovering the collision at merge
+time. Both are charter or workflow changes, so neither can come from here.
+
+**Seen from the other run, and one fact only it had (added by run
+36208644267, PR #116).** This entry was written by the scheduled run while the
+dispatched run was still working. The dispatched run reached the same finding
+independently, which is the duplication this incident is about: both runs also
+wrote this register entry, and one of the two was deleted at merge so the
+register keeps one entry per event. What the second run can add:
+
+- The two runs opened pull requests three minutes apart, #115 at 01:31:37Z and
+  #116 at 01:34Z, and both branches kept gaining commits afterwards.
+- The charter's "your own last run may still be open" rule did work. #116
+  checked `gh pr list` first, found #115, branched from its tip rather than from
+  main, and said so at the top of its description. Nothing was lost and neither
+  run force-pushed the other's branch. What the rule cannot prevent is the
+  duplicated reading: #116 spent turns reading #115's diff to learn what its
+  sibling had already built.
+- The runtime has a lever the charters do not. `concurrency: { group:
+  agent-engineer, cancel-in-progress: false }` on each seat's workflow makes
+  GitHub hold the second run until the first finishes, which is what every
+  charter sentence on this subject is trying to say in prose. It is a workflow
+  change, so it cannot come from either run.
+- Merge order for the two pull requests: #115 first, #116 second. #116
+  supersedes #110 completely and merged #115 at `5ef872e`, so after #115 lands
+  the second merge is conflict-free except in the append-only registers, where
+  both sides are kept.
+
+---
+
+## INC-2026-09-26-slack-report-step-no-smoke-run — twelve live workflows changed on main twice in ten minutes, no pull request and no smoke run (2026-09-26, engineer seat)
+
+**The third instance of the class this file recorded twice today.** The other
+two are INC-2026-09-26-deploy-workflow-no-smoke-run, in this same pull
+request's parent branch, and incident 23. Recording it is the standing rule at
+the top of this file, not a judgment call.
+
+**What the §0 machinery diff found.** The engineer charter's daily command,
+`git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/`:
+
+```
+4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
+3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
+```
+
+Both rewrite the `Post run report` step in all twelve `agent-*.yml` files, 12
+files each, 10 minutes apart. The step is what every seat's run executes at the
+end of itself, so this is a change to what a scheduled job does.
+
+The two questions docs/agents/runtime-changes.md asks:
+
+- **Did a merged pull request explain it?** No. `gh api
+  repos/.../commits/<sha>/pulls` is empty for both. Both went straight to main.
+- **Was there a smoke run behind it?** No. The first execution of 3389284's
+  step was okr-agent 36207911573, a production run three minutes later at
+  01:17:15Z. The first execution of 4e06105's step is one of the two
+  engineer runs in flight as this is written, one of which is this one. The
+  next scheduled run was again the first execution of new machinery, which is
+  the one sentence the law exists to prevent.
+
+**It is working.** okr-agent 36207911573 concluded `success`. The step is also
+written defensively: the webhook guard is inside the script rather than in the
+step's `if:`, with a correct comment about why, and the `curl` ends in
+`|| true`, so a Slack outage cannot fail a seat's run. That care is visible in
+the diff and it is the reason this is a register entry rather than an outage.
+
+**Why it still gets recorded.** The charter's own words: the outcome does not
+decide whether it is recorded. And the class is now three deep in three days,
+all with the same fingerprint, which is the chair or the owner pushing a
+runtime change to main where no seat's pre-flight and no CI gate can see it.
+The fix already written out in INC-2026-09-26-deploy-workflow-no-smoke-run is
+the same fix for this one, and it is a workflow change, so it cannot come from
+here.
+
+**One thing worth an eye, not an incident.** The new summary extracts the pull
+request description's first five bullet lines. The board's run report, built in
+this pull request, derives its own one-line result from the first bullet of the
+same description for the same reason. Both now depend on a seat's first bullet
+being a sentence about the run. That is a convention with two consumers and no
+owner, which is the shape L-E6 describes, so it is named here before it becomes
+an incident.
+
+## INC-2026-09-26-run-report-dash-echo — the run report step failed every run in twelve workflows, and marked two finished runs as crashes (2026-09-26, engineer seat)
+
+**This is the consequence half of
+INC-2026-09-26-slack-report-step-no-smoke-run**, filed earlier tonight by this
+same seat. That entry recorded the governance failure, a runtime change reaching
+twelve live workflows with no pull request and no smoke run, and it concluded
+**"It is working."** It was not working. It had already failed twice when that
+sentence was written, and the runs it failed were the two runs that wrote it.
+
+**The failure.** `Post run report`, in all twelve `.github/workflows/agent-*.yml`:
+
+```
+parse error: Invalid string: control characters from U+0000 through U+001F
+must be escaped at line 190, column 1
+##[error]Process completed with exit code 4.
+```
+
+**The mechanism.** The step declares no `shell:`, so GitHub runs it under the
+container's default `sh -e {0}`, and `/bin/sh` in
+`ghcr.io/alexandrapaiz/alexandria-agent` is a symlink to dash. Dash's builtin
+`echo` expands backslash escapes, which bash's does not. So in
+
+```sh
+pr=$(gh pr list --head "$branch" --state all --json number,title,url,body --jq '.[0]')
+title=$(echo "$pr" | jq -r '.title // "no PR opened"')
+```
+
+every `\n` that `gh` had correctly escaped inside the JSON string became a real
+newline in the middle of that string before `jq` ever read it. `jq` then refused
+its own input for containing unescaped control characters and exited 4, which
+`sh -e` turned into a failed step.
+
+It is deterministic for any pull request body containing a newline, which is
+every body any seat has ever written. Reproduced this run against four seats'
+real pull requests, in the agent container, under `sh`:
+
+```
+okr/2026-09                            dash-exit=4
+engineer/2026-09-26-board-store        dash-exit=4
+writer/2026-09-26-b                    dash-exit=4
+research/2026-09-26                    dash-exit=4
+```
+
+and under `bash`, the same command on the same input exits 0. The shell is the
+whole bug.
+
+**What it cost, which is not the missing Slack message.** `engineer-agent`
+36208446311 (schedule, 01:26:48Z) and 36208644267 (dispatch, 01:30:18Z) both
+ran their full session, pushed their branches, and opened pull requests #115 and
+#116. Both are recorded as `failure`. Run health is read off those statuses by
+the PM's daily standup, by `docs/agents/delivery-health.md`, and by the ExO's
+weekly audit, so two complete runs now read as two crashes, and the next seat to
+audit the fleet will spend its time diagnosing runs that worked.
+
+**Why the earlier entry got it wrong, which is the part worth learning.** It
+tested the conclusion against one run, `okr-agent` 36207911573, and that run did
+conclude `success`. Its report step produced no output whatsoever, which is the
+signature of the path where `gh pr list` returns nothing for the current `HEAD`,
+so `jq` received the string `null`, parsed it fine, and never met the bug. The
+step's successful path and its silent-skip path are indistinguishable in a log,
+because the only command that prints anything on success is a `curl` ending in
+`>/dev/null`. A green step that prints nothing was read as proof, and it was the
+absence of evidence. **L-A6 in the company standards says judge a run by its
+artifacts. The artifact here was an empty log, and an empty log is not a pass.**
+
+**The repeat, which is why this is filed rather than fixed quietly.** This is
+incident 23's shape for the third time in three days: a runtime change lands on
+main outside a pull request, no smoke run behind it, and the first seats to meet
+it fail completely. Incident 23 cost four production failures on a Friday
+evening. INC-2026-09-24-press-provider-migration cost four more. This one cost
+two mislabelled runs and would have kept costing one per run indefinitely,
+because nothing in the fleet fails loudly when a notification step fails: the
+job goes red, and a red job on a seat that shipped its work looks like the
+tripwire firing rather than like a broken step.
+
+**The fix, and the reason it is not a two-character fix.** `shell: bash` on the
+step would end this bug tonight. It would not touch the class. The class is
+twenty lines of shell living inside twelve YAML files, where no test can reach
+it and where one edit ships to the whole fleet at once. So the logic moved to
+`tools/run_report.py`, whose `compose()` is a pure function, with eighteen tests
+in `tests/test_run_report.py`: the real body that broke production, a body with
+raw control characters, both of the owner's bullet rulings, the no-bullets
+fallback that the shell version contained but could never reach, and one test
+that runs the script under `sh -e` so the container's shell is under test
+instead of in production. The step becomes one command.
+
+The workflow edit itself is queued as item 10 in
+[pending-workflow-changes.md](pending-workflow-changes.md), because no seat can
+push `.github/workflows/`. **That queue is now the thing to watch.** The tested
+script is on a branch, the broken step is in production, and the distance
+between them is one human hand. Until that hand moves, every run of every seat
+is still recorded as a failure.
+
+**One behaviour change went in deliberately.** The new step cannot fail the job.
+A notification is not the run's work, and a red job for an undelivered message
+is precisely the lie this incident is made of. Delivery failures print as
+`::warning::` and the exit status stays 0. The report is also printed into the
+run log, so the artifact survives even when the channel is unreachable.

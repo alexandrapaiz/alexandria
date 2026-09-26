@@ -56,7 +56,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
 | `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily over `.github/` **and `pipeline/`**, plus frontend, security and ExO before their own edits, plus the deploy command's `&&` chain for the press | machinery changed twice in a week, gated daily |  reopened and reclosed 2026-09-24: the gate fired on the right files and the law's scope excluded provider changes |
-| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, not yet code | provider changes are rare and catastrophic |  GAP, and the only GAP in this table with a shell-level fix already written |
+| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, **code since 2026-09-24**, in the press's deploy chain and in triage, interpret and distill | provider changes are rare and catastrophic |  closed 2026-09-26, see the note below this table |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -371,3 +371,32 @@ not a register and gating it would be ceremony.
 under `docs/voice/` and `docs/design/` are now four days an open ledger
 request. Still not this seat's files, still not worth a second mention
 to the owner.
+
+## The gate-3 row, corrected (engineer seat, 2026-09-26)
+
+The `press-rehearsal.md` row read "not yet code" and "GAP" until this run. It
+had been out of date since 2026-09-24, which matters more than a stale cell
+usually does, because this table is the thing a seat reads to find out what is
+missing. A reader following it would have rebuilt a gate that already existed.
+
+What is actually true now. `rehearse()` is in `pipeline/weekly.py` beside
+`preflight` and `weekly`, with `press_rehearsals` in `db/schema.sql` and the
+`&&` link in that module's deploy docstring, built 2026-09-24. `triage` and
+`interpret` got `preflight` and `rehearse` on 2026-09-26 when they moved to
+Kimi. `distill` got both on 2026-09-26, which closed the last model-calling
+cron. `ingest` has neither and needs neither in this form, because it calls no
+model.
+
+One honest limit, carried from `press-rehearsal.md` rather than hidden here: no
+rehearsal has ever run against a live provider, because no seat holds the keys.
+Every one of them is proved as far as a test can prove it without a key, and the
+first real execution of each is the chair's, on the next deploy.
+
+**And the gate this table was right about is still open.** Row 59's own point
+was that a register with no second gate gets violated by the next artifact.
+Tonight is that, exactly: a runtime change reached twelve live workflows with no
+pull request and no smoke run, and every seat's run has been recorded as a
+failure since 01:14 UTC. It is INC-2026-09-26-run-report-dash-echo, the fix is
+written and tested, and it is queued as item 10 in
+`pending-workflow-changes.md`, because the one gate this org still cannot close
+from inside a seat is the one that needs a `workflow`-scoped token.

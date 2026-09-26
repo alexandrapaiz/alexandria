@@ -21,6 +21,15 @@ on:
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
       - "tests/test_press_rehearsal.py"
+      - "tests/test_corpus_drain.py"
+      - "tests/test_rag_fallback.py"
+      - "tests/test_reasoning_rubric.py"
+      - "tests/test_board.py"
+      - "tests/test_run_report.py"
+      - "tests/test_distill_gates.py"
+      - "tools/board.py"
+      - "tools/run_report.py"
+      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -33,6 +42,15 @@ on:
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
       - "tests/test_press_rehearsal.py"
+      - "tests/test_corpus_drain.py"
+      - "tests/test_rag_fallback.py"
+      - "tests/test_reasoning_rubric.py"
+      - "tests/test_board.py"
+      - "tests/test_run_report.py"
+      - "tests/test_distill_gates.py"
+      - "tools/board.py"
+      - "tools/run_report.py"
+      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -57,6 +75,12 @@ jobs:
       # the guard stricter, never laxer.
       - name: install the tokenizer
         run: pip install "tiktoken==0.8.0"
+
+      # The corpus tests use pytest fixtures (monkeypatch, capsys), so unlike
+      # the three files below they cannot be run as scripts. One install, and
+      # it is the same file the repo's own test command names.
+      - name: install the test dependencies
+        run: pip install -r requirements-dev.txt
 
       - name: prompt + worst-case payload + output reservation vs the limit
         run: python3 pipeline/budget.py
@@ -100,3 +124,79 @@ jobs:
       - name: the rehearsal writes to a scratch row and sends to nobody
         if: always()
         run: python3 tests/test_press_rehearsal.py
+
+      # 2026-09-26: triage and interpret moved to Moonshot's Kimi with a spend
+      # cap (ADR-2026-09-26). The same argument as the rehearsal step above
+      # applies twice over here. CI cannot run the gate, because the gate is
+      # `modal run pipeline/triage.py::rehearse` with a real key and real money.
+      # What CI holds is that the gate has teeth and that the money has a
+      # ceiling: that the cap is measured from the provider's usage block and
+      # checked before a call rather than after, that a 429 waits on our own
+      # schedule rather than the 1-second hint Moonshot's concurrency refusal
+      # sends, that the grading backfill touches only ungraded rows, and that no
+      # two Kimi jobs share a window.
+      #
+      # `budget.py` above already fails the build if a per-run cap is raised
+      # past the ceiling in docs/finance/opex.md, or if two Kimi windows
+      # overlap, or if a Groq fallback cannot take the job's own request.
+      - name: the corpus drains within its cap, and the cap has teeth
+        if: always()
+        run: python3 -m pytest tests/test_corpus_drain.py tests/test_rag_fallback.py -q
+
+      # 2026-09-26, the same evening: the reasoning rubric (ADR-2026-09-26b).
+      # Three properties CI is the only place to hold. The topic list the model
+      # is offered in `prompts/distill.md` and the list the insert accepts in
+      # `pipeline/topics.py` are parsed and compared, so a tag added to one and
+      # not the other fails here instead of being dropped silently on every
+      # claim for months. No consumer joins `triage_log` expecting one row per
+      # paper, which is now false. And the re-triage keeps the guard that makes
+      # it idempotent, because a re-triage that forgets which prompt judged a
+      # paper will judge it again every time it runs.
+      - name: the taxonomy is closed, and a paper may have a decision history
+        if: always()
+        run: python3 -m pytest tests/test_reasoning_rubric.py -q
+      # 2026-09-26: the board (docs/board.md), which replaces Linear and which
+      # every seat's workflow step writes to. Three properties are worth a
+      # build. A report lands exactly once, because the step runs under
+      # `if: always()` and a duplicated run row is a board nobody trusts. A
+      # seat cannot invent a column or a view, which is the owner's ruling and
+      # is enforced by `board/views.json` living on main. And a board that
+      # cannot be written exits 0, because twelve seats' runs must not go red
+      # over a window.
+      #
+      # `board/views.json` is in this workflow's paths for the reason the email
+      # template is: the file is the owner's and the tool that reads it is the
+      # engineer's, so a change to one that breaks the other is the cross-seat
+      # break CI exists to catch. The last test in that file is the one that
+      # catches it, by holding every workflow's seat name against that file.
+      - name: a run reports onto the board exactly once
+        if: always()
+        run: python3 -m pytest tests/test_board.py -q
+
+      # INC-2026-09-26-run-report-dash-echo: the run report step ran under the
+      # container's `sh`, which is dash, and dash's builtin `echo` expanded the
+      # escaped newlines inside the pull request body before `jq` read it. Every
+      # run of every seat failed, and two runs that had finished their work and
+      # opened their pull requests were recorded as crashes.
+      #
+      # It shipped to twelve live workflows at once because shell embedded in
+      # YAML has nowhere to be tested. The logic is `tools/run_report.py` now,
+      # and this is the step that holds it. One of these tests runs the script
+      # under `sh -e`, which is the exact shell the workflow hands a step that
+      # declares no `shell:` key, so the shell that caused the incident is
+      # under test rather than in production.
+      - name: the run report survives the container's shell
+        if: always()
+        run: python3 -m pytest tests/test_run_report.py -q
+
+      # 2026-09-26: distill had none of the three gates, which is how the job
+      # whose purpose is reading papers in full came to be unable to read one.
+      # CI cannot run gates 2 and 3, because both need a real key. What it holds
+      # is that they have teeth: that the rehearsal carries no Neon credential
+      # and so cannot write a claim, that it sends a full FULLTEXT_CHARS payload
+      # at the real timeout rather than a smaller one, that a refused full paper
+      # stops the deploy instead of passing on the abstract, and that an
+      # off-taxonomy topic stops it too. The last one is incident 30.
+      - name: distill cannot deploy without proving it can read a paper
+        if: always()
+        run: python3 -m pytest tests/test_distill_gates.py -q

@@ -1,0 +1,42 @@
+{
+  "columns": ["inbox", "next", "doing", "review", "done"],
+  "seats": [
+    "engineer",
+    "exo",
+    "finance",
+    "frontend",
+    "market",
+    "okr",
+    "pm",
+    "research",
+    "sales",
+    "security",
+    "skill",
+    "writer"
+  ],
+  "views": {
+    "board": {
+      "title": "Board",
+      "group_by": "status",
+      "columns": ["inbox", "next", "doing", "review"],
+      "runs": 0
+    },
+    "all": {
+      "title": "Board, including done",
+      "group_by": "status",
+      "columns": ["inbox", "next", "doing", "review", "done"],
+      "runs": 0
+    },
+    "seats": {
+      "title": "By seat",
+      "group_by": "assignee",
+      "runs": 12
+    },
+    "runs": {
+      "title": "Runs",
+      "group_by": "status",
+      "columns": ["doing", "review"],
+      "runs": 30
+    }
+  }
+}

@@ -554,6 +554,190 @@ and no secret value ever reaches a PR. It does widen what a compromised
 engineer run can read, which is the honest cost and the reason it is the
 owner's call rather than this seat's.
 
+### 5. Every seat run reports onto the board
+
+Queued 2026-09-26 by the engineer agent, for the owner's priority 1 of that
+evening (HQ ADR-037 item 1, relayed through the PM's sync session in PR #113):
+run reports live on the board. One step, identical in all twelve
+`.github/workflows/agent-*.yml`, placed immediately after the existing
+`Post run report` step that writes to Slack:
+
+```yaml
+      # The board (board/README.md). Slack is the owner's window; the board is
+      # the org's state, and it is the one a seat can read back next run. This
+      # step cannot fail the job: tools/board.py exits 0 when it cannot write,
+      # because the board is a window and not a gate.
+      - name: Post run report to the board
+        if: always()
+        run: python3 tools/board.py report --status ${{ job.status }}
+```
+
+**It needs nothing new.** No secret, no service, no permission. All twelve
+workflows already set `permissions: contents: write` and `GH_TOKEN` in the
+job's `env:`, which is everything `tools/board.py` uses, and it was verified
+by reading the twelve files rather than assumed. The seat, the run id, the
+attempt, the branch, the pull request and the one-line result are all derived
+inside the tool, which is why the step is one line and why twelve copies of it
+stay identical.
+
+**Apply it after the board's own pull request merges, not before.** The step
+reads `board/views.json`, which arrives on main with that PR. Applied early it
+still exits 0 and prints that the views are missing, so the cost of getting the
+order wrong is a confusing log line rather than a failed run, but there is no
+reason to pay it.
+
+**Scope, so the reader can judge the risk.** The tool writes to one ref,
+`board`, through the contents API, so it cannot touch main and cannot touch the
+seat's own branch. It calls no model and spends nothing. What it widens is the
+public record: this repository is public, so every run's seat, status and
+one-line result is world-readable. That is the same exposure the pull requests
+already carry.
+
+**Smoke-tested before it was queued**, which is what
+[runtime-changes.md](runtime-changes.md) asks of a change to what a scheduled
+job does. The engineer run of 2026-09-26 ran the exact command the step runs,
+against the real ref, twice: the first wrote
+`board/events/run/2026-09-26/engineer-36208446311-1.json` and the second
+printed `exists` without writing, which is the behaviour that keeps an
+`always()` step from filing a run twice.
+
+---
+
+### 9. One run of a seat at a time, enforced by the runtime instead of by prose
+
+**Queued 2026-09-26 by the engineer seat.
+INC-2026-09-26-engineer-run-twice-in-one-window.**
+
+Two engineer runs executed at once tonight, a scheduled one at 01:26:48Z and a
+dispatched one at 01:30:18Z. Both opened a pull request, both wrote the same
+five files, and both independently wrote the same two incident entries, one of
+which had to be deleted at merge. Nothing was lost, because the charter's "your
+own last run may still be open" rule made the second run branch from the
+first's tip. What the rule cannot do is stop the duplicated work.
+
+The guardrails that exist are all one layer above the runtime. The PM's charter
+§4 forbids dispatching into a seat with an open pull request, and neither of
+these was the PM's: one was a cron and one was the owner's. `gh workflow run`
+asks no questions, and GitHub queues nothing, because no workflow declares a
+concurrency group.
+
+**The change, one block per seat workflow**, in all twelve `agent-*.yml`:
+
+```yaml
+concurrency:
+  group: agent-engineer          # the seat's own name, one group per seat
+  cancel-in-progress: false      # queue the second run, never kill the first
+```
+
+`cancel-in-progress: false` is the load-bearing half. A cancelled run is
+incident 3 again, a run that dies with work in the sandbox, and
+INC-2026-09-24-writer-dispatch-started-twice was a cancellation. Queuing costs
+a delay and loses nothing.
+
+**What it does not fix.** A queued run still starts eventually, and it starts
+against a branch its sibling has since moved. That is the charter's pre-flight
+rule's job, and it works. This item only stops the two runs from being alive at
+the same moment.
+
+**Not smoke-testable from a seat**, because the seat cannot push the file to
+test it. The lowest-risk order is one seat first, `agent-engineer.yml`, whose
+double run is the one with evidence behind it, and the other eleven after a
+day of it behaving.
+
+---
+
+### 10. The run report calls a tested script, because dash's echo ate the body
+
+**Queued 2026-09-26 by the engineer seat.
+INC-2026-09-26-run-report-dash-echo. This one is live and failing right now,
+in all twelve workflows, on every run.**
+
+The `Post run report` step added to all twelve `agent-*.yml` on 2026-09-26 at
+01:14 and 01:23 UTC declares no `shell:`, so it runs under the container's
+`sh`, which is dash. Dash's builtin `echo` expands backslash escapes. Every
+`\n` that `gh pr list --json body` correctly escaped inside the pull request
+body became a real newline before `jq` read it, so `jq` rejected its own input
+and the step exited 4.
+
+It is deterministic for any pull request body containing a newline, which is
+all of them. The first two runs to meet it both failed: `engineer-agent`
+36208446311 (schedule, 01:26:48Z) and 36208644267 (dispatch, 01:30:18Z). Both
+had already finished their work and opened their pull requests, #115 and #116.
+
+**The cost is not the missing Slack message. It is the status.** A run that did
+its whole job is recorded as `failure`, and run health is read off those
+statuses by the PM's standup, by `docs/agents/delivery-health.md`, and by the
+ExO's weekly audit. Two good runs currently read as two crashes.
+
+**The change, identical in all twelve `.github/workflows/agent-*.yml`.** Replace
+the whole body of the `Post run report` step with one command:
+
+```yaml
+      # Visibility window (standards/operating-modes.md §3): the seat's run
+      # report goes to the team's channel when the owner has created one.
+      # Seats never read the channel; it is the owner's window only.
+      #
+      # The logic is in tools/run_report.py, not here, because shell embedded
+      # in YAML cannot be tested and this step shipped broken to twelve
+      # workflows at once (INC-2026-09-26-run-report-dash-echo). The webhook
+      # guard stays inside the script for the reason the previous version's
+      # comment gave: a step cannot read its own `env:` block from `if:`.
+      - name: Post run report
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python3 tools/run_report.py --workflow "${{ github.workflow }}" --status "${{ job.status }}"
+```
+
+**Why a script and not a two-character shell fix.** Adding `shell: bash` to the
+step would fix this bug. It would not fix the class, and the class is the
+expensive part: twenty lines of shell inside twelve YAML files that no test can
+reach. `tools/run_report.py` has `compose()` as a pure function and eighteen
+tests in `tests/test_run_report.py`, one of which is this exact body, and one of
+which runs the script under `sh -e` so the container's shell is in the test
+rather than in production. L-E0 asks for agents that can read and diagnose what
+we build, and a seat can run this file and see its output.
+
+**It needs nothing new.** No secret beyond `SLACK_WEBHOOK_URL`, which the step
+already reads. No new permission. Python 3 and `gh` are both in the image and
+both already used by other steps. Standard library only, so nothing to install.
+
+**The behaviour is preserved exactly**, including both of the owner's rulings of
+2026-09-26. The report is the pull request's own opening rather than a log line,
+and it is the first five bullet lines, one line each, with `**` stripped, with a
+fallback to the first two lines of prose when a body has no bullets. That
+fallback is now proved by a test. In the shell version it was never reached.
+
+**One deliberate behaviour change, and it is a fix.** The step can no longer
+fail the job. A notification is not the run's work, and a red job for an
+undelivered message is exactly the lie this incident is made of. Delivery
+problems print as `::warning::` and the exit status stays 0. The report is also
+printed into the run log, so the artifact exists even when the channel does not.
+
+**Smoke-tested before it was queued**, as far as a seat can. Run against the
+real `gh` API and the real body that broke production, under `sh -e`, which is
+the exact shell the workflow gives a step with no `shell:` key:
+
+```
+$ sh -e -c 'echo "$pr" | jq -r ".title"'            # the live step's pipeline
+parse error: Invalid string: control characters from U+0000 through U+001F
+must be escaped at line 190, column 1
+exit=4
+
+$ sh -e -c 'python3 tools/run_report.py --status success \
+    --workflow engineer-agent --branch engineer/2026-09-26-reasoning-rubric --dry-run'
+{"text": "*engineer-agent* • success • Engineer 2026-09-26 (run 3): ...
+exit=0
+```
+
+What a seat cannot test is the webhook itself, because no seat holds
+`SLACK_WEBHOOK_URL`. The first real delivery is the chair's, on the first run
+after this is applied. Everything a test can hold without the secret is held.
+
+**Apply this before item 9 and before item 5.** It is the only item on this
+page that is failing production runs as it sits here, and it is one line per
+file.
+
 ---
 
 ## Not queued here, because it needs a key rather than a hand
