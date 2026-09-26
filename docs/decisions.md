@@ -799,3 +799,73 @@ cannot say that and its Groq entries remain a last resort.
 **What ADR-32 keeps.** Everything else. The press writes on Kimi, Groq
 stays the corpus's cheap brain wherever the free tier can actually
 finish the work, and sovereign hosting is still the destination.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.**
+
+Recorded this way because L-A16 in docs/standards/lessons.md requires it:
+configured is not in effect, and a well-built fallback makes the gap
+silent. Nothing below has run against a provider. The engineer runner has
+no Modal CLI and no credentials (`modal: command not found`, verified this
+run), and docs/agents/runtime-changes.md puts the deploy in the chair's
+hands anyway, so this seat could not have activated it even with a token.
+
+Two things are therefore true at once and neither should be read as the
+other. The arithmetic is measured: `python3 pipeline/budget.py` passes and
+prints every number in this entry, and 277 Python tests and 66 Node tests
+pass. No Kimi call has been made by either job.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails:
+
+```bash
+# the schema, once: papers.fulltext_chars and nothing else is new
+modal run pipeline/db_setup.py::apply_schema
+
+# triage
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::drain \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py --max-calls 2 \
+  && modal deploy pipeline/triage.py
+
+# interpret
+python3 pipeline/budget.py \
+  && modal run pipeline/interpret.py::preflight \
+  && modal run pipeline/interpret.py::drain \
+  && modal run pipeline/interpret.py::rehearse \
+  && modal run pipeline/interpret.py --max-claims 2 \
+  && modal deploy pipeline/interpret.py
+
+# the grading backfill, one time, dry run first. Costs $0: no model call.
+modal run pipeline/backfill_grades.py::count
+modal run pipeline/backfill_grades.py::backfill
+
+# distill, redeployed so it starts writing papers.fulltext_chars
+modal deploy pipeline/distill.py
+
+# the press, redeployed so the issue carries the five counts
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+`drain` is the dry run the owner's directive asked for: it holds no model
+secret, so it cannot call anything, and it prints the queue depth, the
+runs the cap allows and the total cost before a cent is spent. `rehearse`
+is the third gate of the ladder: one real call, no database credential in
+the container, and it raises rather than passing if a fallback answered
+instead of the head of the list.
+
+**Do the Kimi steps outside 11:00-15:00 UTC.** Organization concurrency is
+1 and the corpus crons own that band once deployed. A rehearsal inside it
+collides with a live run, which is
+INC-2026-09-24-kimi-org-concurrency exactly.
+
+**Rollback** is `git revert` of the pull request and `modal deploy` of
+`pipeline/triage.py`, `pipeline/interpret.py`, `pipeline/distill.py` and
+`pipeline/weekly.py`. The schema column and the backfilled grades are
+additive and need no undo: `fulltext_chars` goes unread and the grades
+stay correct, since they were computed by the same rules the live grader
+uses.
