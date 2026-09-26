@@ -706,7 +706,7 @@ both already used by other steps. Standard library only, so nothing to install.
 2026-09-26. The report is the pull request's own opening rather than a log line,
 and it is the first five bullet lines, one line each, with `**` stripped, with a
 fallback to the first two lines of prose when a body has no bullets. That
-fallback is now proved by a test; in the shell version it was never reached.
+fallback is now proved by a test. In the shell version it was never reached.
 
 **One deliberate behaviour change, and it is a fix.** The step can no longer
 fail the job. A notification is not the run's work, and a red job for an
