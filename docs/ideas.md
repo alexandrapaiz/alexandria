@@ -5298,3 +5298,38 @@ press does with a 503.
 - First step: the owner replaces the two sentences. One line.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Register conflict filed, not fixed: model-routing.md goes stale on this merge
+
+- Trigger: `docs/agents/model-routing.md` line 15 says "the entire daily
+  pipeline: triage, distill, interpret on gpt-oss-120b via Groq's free
+  tier (ADR-5)", and its routing table says the same. The moment this PR
+  merges, two thirds of that sentence is wrong. L-A10 in
+  docs/standards/lessons.md says one file has exactly one owning charter
+  and a seat in contested territory yields and files the conflict rather
+  than winning the race, and docs/agents/registers.md line 62 names the
+  ExO as that file's owner. So this seat is not editing it.
+- What makes it worth filing rather than leaving to the next Sunday read:
+  registers.md already recorded this exact failure for this exact file.
+  Its own row says routing changed in 18 hours and the file is gated
+  weekly, and that the ExO's read "found it stale on arrival". The ExO
+  runs Sundays. This merge lands Friday, so the stale window is about
+  four days, and the file that goes stale is the one a seat reads to
+  learn which provider serves which job.
+- What: the ExO's next run updates the routing table to triage and
+  interpret on kimi-k2.6 with Groq behind them, distill still on Groq,
+  and adds the line INC-2026-09-24-kimi-org-concurrency asked for in its
+  own text: Moonshot's organization concurrency is 1, and the windows are
+  in `pipeline/llm.py` KIMI_WINDOWS. The durable fix is the one
+  registers.md is already arguing for: a file whose content is derivable
+  from code should be generated from it. `budget.cron_model_lists()`,
+  `budget.cron_caps()` and `llm.KIMI_WINDOWS` between them hold every
+  fact in that table, so `python3 pipeline/budget.py` could print the
+  routing table and a check could fail when the file disagrees. That
+  turns a weekly read into a gate in a command, which is the closing
+  argument of docs/agents/runtime-changes.md.
+- First step: the ExO edits the two stale lines. The generator is a
+  second, separate day of work for this seat, and it needs the ExO's
+  agreement first because it changes who writes that file.
+- Cost: $0
+- Status: proposed
