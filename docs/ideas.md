@@ -5611,3 +5611,114 @@ press does with a 503.
   first step after that is the dependency field the runway table needs.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — The report step is broken in production and only a hand can fix it (engineer, run 4)
+
+- Trigger: this run's gate-0 machinery diff. The `Post run report` step added to
+  all twelve `agent-*.yml` at 01:14 and 01:23 UTC fails on every run, because
+  the step declares no `shell:` and the container's `sh` is dash, whose builtin
+  `echo` expands the escaped newlines inside the pull request body before `jq`
+  reads it. Verified against four seats' real pull requests: `dash-exit=4` on
+  every one, `exit=0` on the same command under bash.
+- What: the code half is fixed on this branch. `tools/run_report.py` replaces
+  the embedded shell, eighteen tests hold it, and one of them runs it under
+  `sh -e` so the container's shell is under test rather than in production. The
+  workflow half cannot come from a seat, because `GITHUB_TOKEN` cannot push
+  `.github/workflows/`. It is written out ready to apply as item 10 in
+  docs/agents/pending-workflow-changes.md, one line per file.
+- Why it is urgent rather than proposed: until the hand moves, every run of
+  every seat is recorded as `failure` after doing its whole job. Two runs
+  already are, #115 and #116. Run health is read off those statuses by the PM's
+  standup, by delivery-health.md and by the ExO's weekly audit, so the fleet's
+  health signal is currently inverted.
+- First step: apply item 10. It is a one-line replacement of a step body in
+  twelve identical files.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-26 — No workflow step should contain logic a test cannot reach (engineer, run 4)
+
+- Trigger: the same incident, read as a class rather than as a bug. Twenty lines
+  of shell lived in twelve YAML files. Nothing in the repository could execute
+  them, so the first execution was production, in all twelve seats at once. The
+  two-character fix (`shell: bash`) would have ended the bug and left the class
+  standing.
+- What: a rule and a check. The rule is that a workflow step is either a single
+  command or a call into `tools/`, never a script. The check is a test that
+  parses every `.github/workflows/*.yml` and fails when a `run:` block exceeds
+  a small number of lines, naming the file and the step, so the next author
+  meets the rule before a reviewer does. The remaining offender today is the
+  `No-ship tripwire`, about twenty-five lines in each of the twelve files, which
+  is untested and which already has a known sharp edge: its `exit 1` makes a run
+  red for shipping nothing, a fingerprint the ExO's own notes say is easy to
+  misread. Moving it to `tools/` would let that behaviour be tested and would
+  let the two red causes be told apart.
+- First step: `tools/noship.py` plus its tests, behaviour-identical, and the
+  parser test set to the line count that leaves it as the only thing to fix.
+  The workflow edit itself queues behind a hand like everything else.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Distill cannot read a paper in full, and the gap is 109 tokens (engineer, run 4)
+
+- Trigger: `python3 pipeline/budget.py` with tiktoken installed, run while giving
+  distill the gates it never had. Verbatim: `prompt 990 + payload 3887 + output
+  reservation 2000 + envelope 32 = 6909 tokens against 6800 usable (8000 TPM
+  less 15% margin); DOES NOT FIT, headroom -109. It falls back to
+  abstract[:6000], which fits, so the run succeeds and the paper is read from
+  its abstract instead of in full.` This is the arithmetic under the owner's
+  finding of 2026-09-25 and under the number in the press: 164 papers read in
+  full out of 8,956 ingested. The job whose entire purpose is reading in full
+  misses by 109 tokens and reports success.
+- What: three ways to close it, and they are not equivalent. Drop the assumed
+  2,000-token output reservation to something measured, since the job sends no
+  reservation at all today and 2,000 is a documented guess, which is the only
+  option that is free and might alone be enough. Shrink `FULLTEXT_CHARS` from
+  24,000, which costs coverage of the paper. Or move distill to Kimi the way
+  triage and interpret moved tonight, which removes the ceiling entirely and
+  costs money. The first is measurement, the third is a proposal.
+- First step: measure the real output size of a distill call. `modal run
+  pipeline/distill.py::rehearse` now makes exactly that call and prints the
+  claims it got back, so the reservation can be set from the provider's own
+  usage block instead of from a guess. If a measured reservation clears 109
+  tokens with margin, the fix is free and the deploy chain proves it.
+- Cost: $0 for the measurement and for the reservation change. Moving distill to
+  Kimi is the proposal, and it is the owner's call: at triage's measured rates it
+  is single-digit dollars a month against the $30 ceiling in
+  docs/finance/opex.md, but it is new spend and this seat does not create it.
+- Status: proposed
+
+### 2026-09-26 — Craft scan: Cloudflare's security-audit-skill (github.com/cloudflare/security-audit-skill)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18 as a signal rather than a competitor and no craft scan has covered
+  it, and today's work was entirely about the difference between instructions
+  that are written down and instructions something enforces, which is the axis
+  this artifact is interesting on.
+- **The thing worth stealing: the skill ships validators for its own output, and
+  the validators ship with tests.** Alongside the prose (`SKILL.md`,
+  `HUNTING.md`, `ATTACK-CLASSES.md` and ten domain guides) the repository carries
+  `report-schema.json`, `validate-findings.cjs`, `validate-coverage-ledger.cjs`,
+  and, the part that matters, `validate-findings.test.cjs` and
+  `validate-coverage-ledger.test.cjs`. Zero dependencies, so the validator runs
+  wherever the skill does. The skill's outputs are files with a schema
+  (`findings.json` with `confirmed` / `needs_validation` / `rejected` verdicts,
+  `coverage-ledger.json`, `architecture.md`), and a machine checks them rather
+  than a reader trusting the prose. Their coverage ledger is a validated file
+  where ours, docs/agents/registers.md, is a page. That is the second gate
+  incident 20 says the org keeps forgetting, shipped inside a skill.
+- **What alexandria does better: provenance.** Their attack classes are
+  hand-written expertise with nothing behind them a reader can re-verify, so a
+  stale entry looks exactly like a fresh one. Every claim in our corpus carries
+  its paper, its evidence string, its grade and its `prompt_sha`, which is how
+  this org found an interpret prompt seven days stale rather than inferring it.
+  Their own users' top complaint on the 205-point HN thread was token bloat from
+  unscoped context, which is the failure mode of shipping ten domain guides with
+  no gate on which one loads.
+- First step, as a ledger idea: every skill alexandria publishes ships a
+  validator for its own output plus a test for that validator, and the skill's
+  coverage claim becomes a file a validator checks. This seat does not write
+  into `skills/` (ADR-13), so this is a proposal to the reviewer panel and to
+  the skill seat rather than work this seat can take.
+- Cost: $0
+- Status: proposed
