@@ -79,6 +79,23 @@ def evidence():
     return module
 
 
+def has_column(conn, table: str, column: str) -> bool:
+    """Whether db/schema.sql has been applied since `column` landed.
+
+    The column ships in the same PR as the code that writes it, and the schema
+    is applied by hand (`modal run pipeline/db_setup.py`). Asking the database
+    rather than assuming means a deploy that lands before the schema run
+    distills normally instead of failing every insert.
+    """
+    return conn.execute(
+        """
+        select 1 from information_schema.columns
+        where table_name = %s and column_name = %s
+        """,
+        (table, column),
+    ).fetchone() is not None
+
+
 def has_evidence_grade(conn) -> bool:
     """Whether db/schema.sql has been applied since evidence_grade landed.
 
@@ -219,13 +236,18 @@ def distill(max_papers: int = 30):
         if not papers:
             return 0
 
+        marking_fulltext = has_column(conn, "papers", "fulltext_chars")
+        if not marking_fulltext:
+            print("papers.fulltext_chars is missing, so the weekly issue cannot "
+                  "say how much was read in full; run db/schema.sql")
         grading = has_evidence_grade(conn)
         grader = evidence() if grading else None
         if not grading:
             print("claims.evidence_grade is missing; run db/schema.sql to start grading")
 
         wrote_any = False
-        fulltexts_used = 0
+        fulltexts_used = 0     # the fetch budget: how many HTML pulls were tried
+        read_in_full = 0       # how many papers' claims actually came from one
         graded: dict[str, int] = {}
         for pid, title, abstract, decision, source in papers:
             body = None
@@ -234,6 +256,7 @@ def distill(max_papers: int = 30):
                 if body:
                     fulltexts_used += 1
                     print(f"  full text ({len(body)} chars): {title[:50]}")
+            used_fulltext = body is not None
             if body is None:
                 body = (abstract or "")[:6000]
             try:
@@ -243,8 +266,12 @@ def distill(max_papers: int = 30):
                     print("rate limited by Groq; stopping — next run resumes")
                     break
                 if body is not None and len(body) > 6000:
-                    # full text too large for the provider — fall back to abstract
+                    # full text too large for the provider — fall back to abstract.
+                    # The claims then came from the abstract, so this paper was
+                    # NOT read in full and the marker has to say so: a stat the
+                    # issue prints cannot be generous about what was read.
                     print(f"  provider rejected full text ({exc.response.status_code}); retrying with abstract")
+                    used_fulltext = False
                     out = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
                 else:
                     raise
@@ -280,11 +307,25 @@ def distill(max_papers: int = 30):
                         row,
                     )
                 wrote_any = True
-            conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
+            # fulltext_chars is how the weekly issue knows how much was read in
+            # full. NULL means the abstract, which is the honest answer when
+            # arXiv served no HTML.
+            if used_fulltext:
+                read_in_full += 1
+            if marking_fulltext:
+                conn.execute(
+                    "update papers set distilled_at = now(), fulltext_chars = %s "
+                    "where id = %s",
+                    (len(body) if used_fulltext else None, pid),
+                )
+            else:
+                conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
             conn.commit()
             print(f"  {len(claims)} claims <- {title[:60]}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
 
+        print(f"read {read_in_full} papers in full, "
+              f"{len(papers) - read_in_full} from the abstract alone")
         if graded:
             tally = ", ".join(f"{g} {n}" for g, n in sorted(graded.items()))
             print(f"evidence grades this run: {tally}")
