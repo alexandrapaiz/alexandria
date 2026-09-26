@@ -12,6 +12,9 @@ secrets.
     modal run pipeline/triage.py --max-calls 40    # bigger manual run
     modal run pipeline/triage.py::drain            # plan the drain, spend nothing
 
+    modal run pipeline/triage.py::retriage_plan    # the re-triage, dry. $0.
+    modal run pipeline/triage.py::retriage         # then, and only then, judge
+
 ## Why this file changed on 2026-09-26
 
 The owner's count, from Neon: 8,956 papers ingested and 4,973 of them never
@@ -25,6 +28,28 @@ the press, with Groq's free tier kept behind it as the fallback. The ceiling
 that binds is no longer money or tokens. It is Moonshot's tier-0 3 requests a
 minute, and the arithmetic is printed every run: one call every 20 seconds,
 BATCH papers a call, inside a one-hour slot.
+
+## Why this file changed again the same day
+
+The owner's directive of 2026-09-25: research on reasoning models has to reach
+the corpus. 209 papers in it have "reasoning" in the title, 147 were never
+triaged, and of the 62 that were, 47 went to `index` against 14 to `distill`,
+because the prompt rewarded a "construction technique" and a reasoning paper's
+contribution is usually a training recipe. `prompts/triage.md` now carries the
+research seat's rubric that says so in as many words.
+
+Two things follow for this file, and neither is the prompt.
+
+- **The priority is served inside the tier, never ahead of it.** Reasoning
+  papers sort first within every tier and `plan_batches` is untouched, so the
+  interleaved quota that fixed the firehose starvation still decides which tier
+  is served next. A priority implemented as a global sort would have rebuilt
+  that bug with a new favourite.
+- **A revised rubric has to re-judge the papers it was written for.** `retriage`
+  is that, and it appends rather than edits: a paper ends with two rows, and
+  `latest_triage` is the newest one. The disagreement between two rubrics about
+  one paper is the most valuable row in an eval set, and an UPDATE would delete
+  it. ADR-2026-09-26b has the alternatives.
 
 ## Design notes
 

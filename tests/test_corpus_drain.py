@@ -497,3 +497,57 @@ def test_neither_preflight_computes_a_price_by_bare_division():
         source = (ROOT / "pipeline" / path).read_text()
         assert "CAP_USD / est" not in source, path
         assert "calls_within" in source, path
+
+
+# ---------------- distill, the job the guard could not see ----------------
+
+def test_the_guard_reads_distills_models_out_of_distills_own_table():
+    # Distill never moved to pipeline/llm.py, so it has PROVIDERS instead of
+    # MODELS and cron_model_lists cannot read it. That difference is exactly why
+    # it went unchecked, so the reader has to be real rather than a copy.
+    models = budget.distill_models()
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    assert models[0] == "openai/gpt-oss-120b", models
+    for model in models:
+        assert f'"model": "{model}"' in source
+        assert model in budget.MODELS, f"{model} has no limits in budget.MODELS"
+
+
+def test_every_corpus_job_is_in_the_request_table():
+    # L-E6: a prompt that grows is measured against the runtime budget. A job
+    # missing from this table is a prompt nothing measures.
+    labels = " ".join(budget.CRON_REQUESTS)
+    for job in ("triage", "interpret", "distill"):
+        assert job in labels, job
+
+
+def test_a_full_paper_does_not_fit_distills_free_tier_and_the_guard_says_so():
+    # Measured 2026-09-26: prompt 990 + payload 3,887 + a 2,000-token output
+    # reservation is 6,909 tokens against 6,800 usable, so it misses by 109.
+    # This is the arithmetic behind "164 of 8,956 papers read in full".
+    notes = budget.cron_degradations()
+    assert notes, "the full-text path fits now; update this test and opex.md"
+    assert all("distill" in note for note in notes)
+    assert "cannot take a full paper" in notes[0]
+    assert "read from its abstract instead of in full" in notes[0]
+
+
+def test_a_degradable_job_is_a_quality_ceiling_and_not_a_failed_gate():
+    # The chair's deploy chains start with this command. Failing them all on a
+    # condition that predates the change would stop the press deploying over a
+    # distill quality ceiling, so the finding is printed and the gate passes.
+    assert budget.cron_degradations()
+    problems = [p for p in budget.check_cron_requests() if "distill" in p]
+    assert problems == []
+
+
+def test_a_job_with_nowhere_left_to_go_is_still_a_failure(monkeypatch):
+    # The degradation path must not become a way for any request to pass. If the
+    # smaller retry does not fit either, the job cannot write a claim at all.
+    spec = dict(budget.CRON_REQUESTS["distill (pipeline/distill.py)"])
+    spec["degrades_to_chars"] = 400_000
+    monkeypatch.setitem(budget.CRON_REQUESTS, "distill (pipeline/distill.py)", spec)
+    problems = [p for p in budget.check_cron_requests() if "distill" in p]
+    assert problems, "a retry that does not fit either has to fail the gate"
+    assert budget.cron_degradations()[0].endswith(
+        "does NOT fit either, so the run cannot write a claim at all.")

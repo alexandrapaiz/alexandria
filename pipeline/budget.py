@@ -812,6 +812,34 @@ def cron_models() -> dict[str, str]:
     return {label: models[0] for label, models in cron_model_lists().items()}
 
 
+def distill_models() -> list[str]:
+    """Distill's models, production first, read out of its PROVIDERS table.
+
+    Distill is the one corpus job that never moved to `pipeline/llm.py`, so it
+    has a PROVIDERS dict instead of a MODELS list and `cron_model_lists` cannot
+    read it. That difference is why it went unchecked, which is the whole reason
+    this function exists rather than a copy of the two model ids.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    tree = ast.parse(source)
+    providers = production = None
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        name = getattr(node.targets[0], "id", "")
+        if name == "PROVIDERS":
+            providers = ast.literal_eval(node.value)
+        elif name == "PRODUCTION_PROVIDER":
+            production = ast.literal_eval(node.value)
+    if not providers or production not in providers:
+        raise LookupError(
+            "pipeline/distill.py no longer defines PROVIDERS and "
+            "PRODUCTION_PROVIDER where this guard looks for them. A guard that "
+            "cannot read the settings it checks is worse than no guard.")
+    order = [production] + [k for k in providers if k != production]
+    return [providers[k]["model"] for k in order]
+
+
 def cron_caps() -> dict[str, float]:
     """Each corpus cron's per-run spend cap, read out of the cron."""
     found: dict[str, float] = {}
@@ -872,7 +900,58 @@ CRON_REQUESTS = {
         # a few hundred characters; 400 each is generous.
         "payload_chars": 6 * 400,
     },
+    # Distill was missing from this table until 2026-09-26 and it is the job
+    # with the largest request in the pipeline by an order of magnitude: the
+    # skills are the product and abstracts do not contain procedures, so every
+    # arXiv paper in a run gets its HTML full text, FULLTEXT_CHARS of it.
+    # L-E6 in docs/standards/lessons.md is why it is here now. Two prompts grew
+    # on 2026-09-26 with the reasoning rubric, and a quality law that inflates a
+    # runtime input is measured against the runtime budget rather than assumed
+    # to fit.
+    "distill (pipeline/distill.py)": {
+        "path": "pipeline/distill.py",
+        "prompt": "prompts/distill.md",
+        # The job sends no output reservation at all, so there is no literal to
+        # read. 1 to 5 claims, each with evidence and a numbered procedure,
+        # measures around 1,500 tokens; 2,000 is the generous version of that.
+        # The absence is itself worth seeing, which is why this is a separate key
+        # rather than a number quietly written into the other one.
+        "reservation_assumed": 2_000,
+        "payload_chars": "FULLTEXT_CHARS",
+        # What the job does when the provider refuses the full text: retries the
+        # same call with abstract[:6000]. So the full-text request failing to fit
+        # is a degradation rather than an outage, and the request that MUST fit is
+        # this one.
+        "degrades_to_chars": 6_000,
+        "models": "distill",
+    },
 }
+
+
+def request_models(label: str, spec: dict) -> list[str]:
+    """The ordered model list for one CRON_REQUESTS entry."""
+    return distill_models() if spec.get("models") == "distill" \
+        else cron_model_lists()[label]
+
+
+def request_reservation(spec) -> tuple[int, str]:
+    """(tokens, how we know). Read out of the job, or the documented assumption."""
+    if "reservation" in spec:
+        source = (ROOT / spec["path"]).read_text()
+        literal = _literal(source, rf"^{spec['reservation']} = ([\d_]+)",
+                           f"{spec['path']} {spec['reservation']}")
+        return int(literal.replace("_", "")), ""
+    return spec["reservation_assumed"], " (assumed: the job sends none)"
+
+
+def request_payload_chars(spec) -> int:
+    """The largest user message the job builds, as a number or a name to read."""
+    chars = spec["payload_chars"]
+    if isinstance(chars, int):
+        return chars
+    source = (ROOT / spec["path"]).read_text()
+    return int(_literal(source, rf"^{chars} = ([\d_]+)",
+                        f"{spec['path']} {chars}").replace("_", ""))
 
 
 def check_cron_requests() -> list[str]:
@@ -889,24 +968,71 @@ def check_cron_requests() -> list[str]:
             problems.append(f"{label}: {spec['prompt']} is missing, so no "
                             "request can be sized for it")
             continue
-        source = (ROOT / spec["path"]).read_text()
-        reservation = int(_literal(
-            source, rf"^{spec['reservation']} = ([\d_]+)",
-            f"{spec['path']} {spec['reservation']}").replace("_", ""))
-        user = _filler(spec["payload_chars"])
-        for rank, model in enumerate(cron_model_lists()[label], start=1):
+        reservation, _ = request_reservation(spec)
+        user = _filler(request_payload_chars(spec))
+        degraded = (_filler(spec["degrades_to_chars"])
+                    if "degrades_to_chars" in spec else None)
+        for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue        # check_crons already reports this
             report = check_request(prompt_path.read_text(), user, reservation,
                                    model)
-            if not report.fits:
-                problems.append(
-                    f"{label} fallback {rank} ({model}) cannot take the job's "
-                    f"own request. {report.summary()}. A fallback that does not "
-                    "fit is not a fallback: either lower the reservation, "
-                    "shrink the batch, or take the model off the list so the "
-                    "run stops pretending it has somewhere to go.")
+            if report.fits:
+                continue
+            if degraded is not None:
+                # The job has a measured smaller request it retries with, so the
+                # big one not fitting costs quality rather than the run. What
+                # must fit is the retry, and if that does not fit either then the
+                # job has nowhere left to go and this is a real problem.
+                fallback = check_request(prompt_path.read_text(), degraded,
+                                         reservation, model)
+                if fallback.fits:
+                    continue
+            problems.append(
+                f"{label} fallback {rank} ({model}) cannot take the job's "
+                f"own request. {report.summary()}. A fallback that does not "
+                "fit is not a fallback: either lower the reservation, "
+                "shrink the batch, or take the model off the list so the "
+                "run stops pretending it has somewhere to go.")
     return problems
+
+
+def cron_degradations() -> list[str]:
+    """Jobs whose big request does not fit, and that quietly send a smaller one.
+
+    This is not a failure and it is not nothing. Distill fetches a paper's full
+    text because the procedure is the product and an abstract has no procedure in
+    it, then retries with the abstract when the provider refuses. The run
+    succeeds, the claim is written, and the library read a summary. 164 of 8,956
+    papers have ever been read in full, and this is the arithmetic behind that
+    number rather than a theory about it.
+    """
+    notes = []
+    for label, spec in CRON_REQUESTS.items():
+        if "degrades_to_chars" not in spec:
+            continue
+        prompt_path = ROOT / spec["prompt"]
+        if not prompt_path.exists():
+            continue
+        reservation, _ = request_reservation(spec)
+        big = _filler(request_payload_chars(spec))
+        small = _filler(spec["degrades_to_chars"])
+        for rank, model in enumerate(request_models(label, spec), start=1):
+            if model not in MODELS:
+                continue
+            full = check_request(prompt_path.read_text(), big, reservation, model)
+            if full.fits:
+                continue
+            short = check_request(prompt_path.read_text(), small, reservation, model)
+            notes.append(
+                f"{label} rank {rank} ({model}) cannot take a full paper: "
+                f"{full.summary()}. It falls back to abstract[:"
+                f"{spec['degrades_to_chars']}], which "
+                + ("fits, so the run succeeds and the paper is read from its "
+                   "abstract instead of in full."
+                   if short.fits else
+                   "does NOT fit either, so the run cannot write a claim at all."))
+    return notes
 
 
 def cron_request_report() -> list[str]:
@@ -917,13 +1043,10 @@ def cron_request_report() -> list[str]:
         if not prompt_path.exists():
             lines.append(f"  {label}: {spec['prompt']} missing")
             continue
-        source = (ROOT / spec["path"]).read_text()
-        reservation = int(_literal(
-            source, rf"^{spec['reservation']} = ([\d_]+)",
-            f"{spec['path']} {spec['reservation']}").replace("_", ""))
-        user = _filler(spec["payload_chars"])
-        lines.append(f"  {label}, worst request, reservation {reservation}")
-        for rank, model in enumerate(cron_model_lists()[label], start=1):
+        reservation, how = request_reservation(spec)
+        user = _filler(request_payload_chars(spec))
+        lines.append(f"  {label}, worst request, reservation {reservation}{how}")
+        for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue
             report = check_request(prompt_path.read_text(), user, reservation,
@@ -1338,6 +1461,21 @@ def main() -> int:
     except LookupError as exc:
         failures.append(str(exc))
         print(f"CRON REQUEST: {exc}")
+
+    # A job that shrinks its own request rather than failing is not a failure and
+    # must not be silence either. This is where "read in full" quietly becomes
+    # "read the abstract", and it is printed under its own heading so nobody has
+    # to notice it inside a table of fits and headrooms.
+    try:
+        degraded = cron_degradations()
+        if degraded:
+            print("\n  reads less than it asked for (not a failure, a quality "
+                  "ceiling):")
+            for note in degraded:
+                print(f"    {note}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON DEGRADATION: {exc}")
     print()
 
     # What the corpus costs, at the caps the jobs actually carry. This is the

@@ -5359,27 +5359,43 @@ press does with a 503.
   also cannot tell you what it decided not to read, and the triage log is
   exactly that record.
 
-### 2026-09-26 — Distill is the one corpus job the budget guard cannot see
+### 2026-09-26 — Distill misses Groq's free tier by 109 tokens, which is why 164 of 8,956 papers were read in full
 
-- Trigger: `python3 pipeline/budget.py` was run twice this run, as gate 1 of
-  the ladder. It checks the press, triage and interpret, and prints nothing
-  about distill. Distill sends up to 24,000 characters of full text
-  (`FULLTEXT_CHARS`) on Groq's free tier at 8,000 tokens a minute, which is
-  roughly 6,000 payload tokens plus the prompt, and `prompts/distill.md`
-  grew today with the `reasoning` topic's definition. Nothing anywhere
-  checks that a distill request fits, and distill's 429 handler stops the
-  run, which is the failure that made triage look patient for four months.
-- What: add distill to `budget.check_cron_requests` with its real worst case,
-  which is one full-text paper at `FULLTEXT_CHARS` and the model's own output
-  reservation, the same treatment triage and interpret got on 2026-09-26. The
-  check may well report that distill does not fit its own provider, in which
-  case the finding is the value: it would explain why only 164 of 8,956
-  papers have ever been read in full, and it turns "move distill to Kimi"
-  from a preference into arithmetic.
-- First step: one entry in the guard's job table plus the worst-case payload
-  builder, and read what it prints. No deploy and no provider call.
-- Cost: $0 to measure. Moving distill to Kimi if the arithmetic says so is a
-  separate proposal with the opex table attached.
+- Trigger: L-E6 in docs/standards/lessons.md binds this seat when a prompt
+  grows, and two prompts grew this run. `prompts/distill.md` gained the
+  `reasoning` topic's definition, and distill was the one corpus job absent
+  from `budget.CRON_REQUESTS`, so nothing measured it. It is in the table now,
+  and the arithmetic is not what was expected. Distill's full-text request is
+  **6,909 tokens against 6,800 usable** on Groq's free tier: prompt 990,
+  payload 3,887 for `FULLTEXT_CHARS` of a real paper, a 2,000-token output
+  reservation, 32 of envelope. It misses by **109 tokens**, and it has missed
+  by roughly that for the whole life of the pipeline.
+- What this explains: the job then does exactly what its code says, retries the
+  same call with `abstract[:6000]`, and writes claims from the abstract. The
+  run succeeds. Nothing fails. "164 of 8,956 papers read in full" has been the
+  visible symptom of those 109 tokens, and the library has been distilling
+  summaries while its own docstring says the procedure is the product and an
+  abstract does not contain one. `python3 pipeline/budget.py` now prints this
+  under its own heading, "reads less than it asked for (not a failure, a
+  quality ceiling)".
+- What: the cheapest fix is one number. Distill sends **no output reservation at
+  all**, so the 2,000 tokens above is this guard's assumption about a job that
+  never declared one. Declaring `max_completion_tokens` at 1,400 puts the
+  full-text request at 6,309 tokens with 491 to spare, and 1,400 is comfortably
+  above the ~1,500-token measured output only if the claims are few, so the
+  honest version of this proposal is to measure a real distill response first
+  and then set the number. The alternative, moving distill to Kimi, costs money
+  and is the second proposal, not the first.
+- Why it is not in this PR: a token reservation on a scheduled job is a runtime
+  change by name in docs/agents/runtime-changes.md, and distill has no
+  `rehearse` function, so the ladder has no third rung for it. Building one is
+  the day-sized unit of work, and it is the same shape as the two written for
+  triage and interpret on 2026-09-26.
+- First step: `modal run pipeline/distill.py::rehearse` that exists, sends one
+  real full-text request with a declared reservation, prints the finish reason
+  and the token counts, and writes nothing. Then the number is chosen from a
+  measurement instead of from this paragraph.
+- Cost: $0. Distill stays on the free tier under this proposal.
 - Status: proposed
 
 ### 2026-09-26 — The 47 re-triaged papers are the first real eval set for a prompt change

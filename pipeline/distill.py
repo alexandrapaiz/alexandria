@@ -12,6 +12,31 @@ processes yesterday's triage output.
     modal run pipeline/distill.py --max-papers 5     # manual production run
     modal deploy pipeline/distill.py                 # install the daily schedule
     modal run pipeline/distill.py::bake_off          # rerun the model bake-off
+
+## What changed on 2026-09-26
+
+Two things, both about the claim being findable after it is written.
+
+The topic list in `prompts/distill.md` has always called itself closed and
+nothing enforced it, so tags went into `claims.topics` exactly as the model
+returned them: 3.9% off the list, 18 claims tagged with a non-breaking-hyphen
+twin of a real topic and invisible to every query the product runs, 22 tags
+invented outright. `pipeline/topics.py` is now the only place that decides what
+a topic is, it is enforced here at the one place claims are written, and the
+off-list rate is printed every run. `reasoning` joined that list by the owner's
+directive of 2026-09-26, and a brand new tag whose adoption cannot be counted
+is a tag nobody can show is working.
+
+Every claim now carries `prompt_sha`, the 12 hex the press and triage have
+always recorded. Before this, the deploy state of this prompt was knowable only
+by inference from the shape of the output, which is how the interpret prompt
+went seven days stale unnoticed while its output reached readers
+(INC-2026-09-26-interpret-stale-third-sighting).
+
+One number worth knowing while reading this file: a full-text request does not
+fit Groq's free tier, by 109 tokens, so the retry below that falls back to the
+abstract is not an edge case but the common path. `python3 pipeline/budget.py`
+prints the arithmetic and docs/ideas.md 2026-09-26 has the proposal.
 """
 
 import hashlib

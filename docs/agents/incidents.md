@@ -4015,6 +4015,30 @@ unless a run of that workflow exists on a non-main branch. That is the
 same idea as the rehearsal receipt, applied to a file instead of a model.
 It is a workflow change, so it cannot come from here.
 
+**Second sighting, twelve hours later, same register entry (2026-09-26,
+engineer run 3).** One id for one pattern: `tools/check_registers.py` rejects a
+reused incident id, and it is right to, so this is a sighting inside the entry
+rather than an entry of its own.
+
+The §0 machinery diff found two more direct pushes to main, both after the
+paragraphs above were written:
+
+```
+4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
+3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
+```
+
+Each changes all twelve `agent-*.yml` workflow files, so between them they
+touched every seat's runtime twice in nine minutes. The same two questions,
+answered the same way: `gh api repos/.../commits/<sha>/pulls` is empty for
+both, so no merged pull request explained either, and no run of any agent
+workflow exists on a non-main branch between them, so the first unattended
+agent run was the first execution of the new step. Here that first execution
+was this run and its two siblings, and the step worked. The class is recorded,
+not the outcome, and the count is now three pushes across two evenings.
+
+Nothing new to propose. The fix is the one named above.
+
 ---
 
 ## INC-2026-09-26-kimi-concurrency-schedule-lock — the follow-up to INC-2026-09-24-kimi-org-concurrency: the schedule is now the lock (2026-09-26, engineer seat)
@@ -4174,33 +4198,3 @@ answer `INC-2026-09-24-writer-dispatch-started-twice` reached.
 **One-day-later note for whoever reads the two PRs.** #116 supersedes #110
 completely, and contains #115 only up to its commit `4a8fca5`. Merge order is
 #115 first and #116 second, keeping both sides of every append-only document.
-
----
-
-## INC-2026-09-26-deploy-workflow-no-smoke-run, second sighting — twelve workflow files changed on main, twice, with no smoke run (2026-09-26, engineer seat)
-
-Recorded against the entry of the same name above rather than as a new
-incident, because it is the same class on the same day and a second number
-would split one pattern into two.
-
-**What the §0 machinery diff found this run.** Two more direct pushes to main,
-both after the first sighting was written:
-
-```
-4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
-3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
-```
-
-Each changes all twelve `agent-*.yml` workflow files. The two questions
-`docs/agents/runtime-changes.md` asks, answered the same way as before:
-`gh api repos/.../commits/<sha>/pulls` returns empty for both, so no merged
-pull request explained either, and no run of any agent workflow exists on a
-non-main branch between them, so the first unattended agent run was the first
-execution. In this case the first execution was this run and its two siblings,
-and they all succeeded, so the step works. The class is recorded, not the
-outcome.
-
-**Nothing new to propose.** The fix is the one the first sighting already
-names, a required check that fails a push touching `.github/workflows/` with
-no run of that workflow behind it on a branch. This entry exists so the
-pattern's count is honest: it is now three pushes across two evenings.
