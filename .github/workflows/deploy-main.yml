@@ -1,0 +1,29 @@
+name: deploy-main
+# Production deploys happen here, not from Vercel's Git integration.
+# Why (HQ Incident 5, 2026-09-24): every seat branch push created a Vercel
+# preview deployment, and the Hobby plan allows 100 deployments a day; the
+# merge queue plus a day of seat runs hit it, and production builds were
+# refused for 24 hours. site/vercel.json now sets git.deploymentEnabled=false
+# (no branch auto-deploys); this workflow fires the project's deploy hook
+# for main when the site changes. The hook URL is the secret
+# VERCEL_DEPLOY_HOOK (name only here; created by the chair via the Vercel API).
+on:
+  push:
+    branches: [main]
+    paths: ["site/**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger the production deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          [ -n "$HOOK" ] || { echo "::error::VERCEL_DEPLOY_HOOK is not set"; exit 1; }
+          code=$(curl -s -o /tmp/r.json -w "%{http_code}" -X POST "$HOOK")
+          echo "deploy hook -> HTTP $code"; head -c 300 /tmp/r.json; echo
+          [ "$code" = 200 ] || [ "$code" = 201 ]

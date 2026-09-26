@@ -2,8 +2,23 @@
 
 **Enforced at:** `docs/agents/runtime-changes.md`, the ladder for a
 provider or model change, gate 3. The engineer charter names this file
-in its register list. Until the function exists, that gate is a document
-and the ladder has two working links instead of three.
+in its register list.
+
+**Status: built, 2026-09-24, engineer seat.** `rehearse()` is in
+`pipeline/weekly.py` beside `preflight` and `weekly`, the
+`press_rehearsals` table is in `db/schema.sql`, the `&&` link is in this
+module's deploy docstring, and `tests/test_press_rehearsal.py` holds the
+two promises that leave no trace when they are kept: no write to
+`digests`, no mail credential in the container. The ladder has three
+working links. Two notes for a reader of the specification below.
+
+- The deploy chain in `pipeline/weekly.py`'s docstring is the
+  authoritative one and it carries a fourth link this file does not:
+  `python3 tools/rehearse_email.py --quiet`, the email half, which
+  shipped first and costs nothing.
+- The rehearsal has never run against the live provider, because no seat
+  holds the Moonshot key. Its first real execution is the chair's, on
+  the next deploy. Everything a test can hold without a key is held.
 
 Written by the ExO seat on 2026-09-24, on the owner's dispatch, after
 INC-2026-09-24-press-provider-migration. This is a specification and a

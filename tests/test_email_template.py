@@ -48,6 +48,21 @@ from pipeline import email_render as er  # noqa: E402
 from pipeline import weekly  # noqa: E402
 
 ISSUE = (ROOT / "site" / "content" / "issues" / "2026-W39.md").read_text()
+
+# Read out of the issue rather than copied out of it. This fixture is a live
+# editorial artifact that the writer seat rewrites whenever the owner rules on
+# voice, and a literal copied from it here turns every legitimate rewrite into
+# a red build in the engineer's tests. That is not hypothetical: the W39
+# reprint under canon law 14 (2026-09-24) changed the title and added a fifth
+# section, and three tests in this file failed on prose they had memorized.
+# What these tests are for is the seam, so they assert that the parser and the
+# send agree with the source, never that the source still says what it said.
+# `er.plain` strips markdown so an emphasized headline still compares equal.
+# The extraction itself stays independent of `parse_issue`, which is the thing
+# under test here.
+ISSUE_TITLE = er.plain(
+    next(line[2:].strip() for line in ISSUE.splitlines() if line.startswith("# ")))
+ISSUE_SECTIONS = sum(1 for line in ISSUE.splitlines() if line.startswith("## "))
 RECIPIENT = "reader@example.com"
 UNSUB = "mailto:hello@alexandr.ia?subject=Unsubscribe"
 
@@ -105,7 +120,8 @@ def test_the_issue_is_actually_in_there():
     html = render_one()
     issue = er.parse_issue(ISSUE)
     assert issue["title"] in html
-    assert len(issue["sections"]) == 4
+    assert len(issue["sections"]) == ISSUE_SECTIONS, \
+        "the parser found a different number of sections than the markdown declares"
     for section in issue["sections"]:
         assert section["items"], f"section {section['title']!r} rendered empty"
         assert section["title"] in html
@@ -113,8 +129,8 @@ def test_the_issue_is_actually_in_there():
 
 def test_links_and_recipient_come_from_the_issue_and_the_row():
     html = render_one()
-    assert 'href="https://alexandr.ia/library/2026-W39"' in html
-    assert 'href="https://alexandr.ia/library"' in html
+    assert 'href="https://libraryofalexandria.dev/library/2026-W39"' in html
+    assert 'href="https://libraryofalexandria.dev/library"' in html
     assert RECIPIENT in html
     assert UNSUB in html
 
@@ -170,7 +186,7 @@ def test_edition_reads_the_cadence_off_the_key():
 def test_a_daily_key_renders_the_whole_email():
     html = er.render_issue(ISSUE, "2026-09-19", RECIPIENT, UNSUB)
     assert "Daily dispatch · September 19, 2026" in html
-    assert 'href="https://alexandr.ia/library/2026-09-19"' in html
+    assert 'href="https://libraryofalexandria.dev/library/2026-09-19"' in html
     assert not re.findall(r"{{(\w+)}}", html)
 
 
@@ -192,7 +208,7 @@ def test_the_plain_text_part_survives():
 
 def test_the_subject_is_the_editorial_title():
     msgs = weekly.build_messages("2026-W39", ISSUE, [(RECIPIENT, None)], "me@x.com")
-    assert msgs[0][1] == "Harness distillation without the harness at runtime"
+    assert msgs[0][1] == ISSUE_TITLE, "the subject must be the issue's own headline"
     assert "2026-W39" not in msgs[0][1], "the W code is an internal id"
     assert weekly.email_render().subject_for("no heading here").startswith("This week")
 
@@ -216,7 +232,7 @@ def test_a_render_failure_still_delivers_the_issue():
         mod.template_text = saved
     assert len(msgs) == 2
     assert all(m[3] for m in msgs), "a failed render must still produce an email"
-    assert msgs[0][1] == "Harness distillation without the harness at runtime"
+    assert msgs[0][1] == ISSUE_TITLE, "the subject survives a template failure"
     assert msgs[0][2] == ISSUE
 
 

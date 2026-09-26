@@ -3100,7 +3100,6 @@ Every gate is tested against an artifact known to fail it before the
 gate is trusted. PR #60's tests assert that the checker finds the
 defects it was written to find. Nothing asserted that it finds them in a
 real issue, and the first real issue it met was one it passed.
-=======
 *Renumbering note (2026-09-24, frontend run). These two entries were written
 on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
 carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
@@ -3189,3 +3188,616 @@ which costs one command: for any asset a design review produces, grep
 the repository for its filename, and if the only hits are the asset and
 its own documentation, it is not in the product yet no matter how
 finished it looks.
+
+## INC-2026-09-24-writer-dispatch-started-twice
+
+**A second writer run of one dispatch started 27 seconds after the first,
+and the first was cancelled mid-run with a draft PR already open.** This is
+a repeat of incident 14, recorded at the moment it repeated, per the
+standing rule at the top of this file.
+
+**What happened.** The owner dispatched one editorial run tonight.
+`gh run list` shows `writer-agent` 35958638663 created 05:08:33Z and
+`writer-agent` 35958671490 created 05:09:00Z. The first pushed a
+placeholder commit to `writer/2026-09-24-c`, opened PR #92 as a draft at
+05:09:39Z, and was cancelled at 05:10:09Z. The second, this run, was
+already past its charter read by then. The market seat's dispatch shows
+the same pattern in the same minute: `market/2026-09-24-b` and PR #93,
+opened 05:10:31Z by a run created 05:08:31Z.
+
+**Why it did not cost anything this time.** Ship-first is why. The
+cancelled run had pushed and opened its PR in its first ninety seconds, so
+what it had done was visible on the remote rather than lost inside a dead
+container. This run found `writer/2026-09-24-c` when `git push` was
+rejected as non-fast-forward, checked the other run's conclusion before
+touching the branch, and adopted it: reset onto `origin/writer/2026-09-24-c`,
+merged main to pick up the taste ruling the placeholder's base predated,
+and continued in the same PR. One dispatch, one PR, no force push and no
+second branch.
+
+**What is different from incident 14, and what is not.** Incident 14's two
+runs were both alive and both writing, and the lease was the only thing
+that saved the work. Here the first run was cancelled, so the collision was
+cheap. The *cause* is identical and unaddressed: one owner dispatch starts
+two workflow runs seconds apart, and neither run knows the other exists.
+Incident 14 produced rules for surviving the collision. Nothing yet
+prevents it.
+
+**The check this run used, worth stating as a rule for any seat.** A
+non-fast-forward push to a branch name you just created is not a git
+problem to be forced through. It means another run of your seat exists.
+Run `gh run list` for your own workflow and read the sibling's conclusion
+before you touch its branch. A cancelled or failed sibling is a branch to
+adopt. A live one is a collision to report and step around, and the
+charter's "your own last run may still be open" rule already covers
+adopting, it just assumes the other run was yesterday rather than
+twenty-seven seconds ago.
+
+**For the ExO.** The fix is upstream of every seat: whatever dispatches
+these workflows fired twice, and the two seats it hit tonight are the two
+the owner dispatched by hand. Worth checking whether the dispatch path
+sends one event or two before any seat writes more rules about how to
+survive the second one.
+
+## INC-2026-09-24-kimi-org-concurrency — Two seats, one Moonshot key, concurrency one (chair)
+
+**What happened.** The owner asked for W39 reprinted under the new prose
+rules (writer #92 merged, press redeployed). The reprint's single Kimi call
+got `429 request reached max organization concurrency: 1` with a
+`retry-after: 1`, honored it three times, and failed in four seconds. The
+fallbacks are Groq's 8K models, none of which fit, so the press alarmed the
+owner instead of printing. The other caller was almost certainly the
+engineer's rehearsal print (#94, run 36022750452, in flight at the same
+minute), which makes one real Kimi call that takes minutes.
+
+**Fix shipped (chair, main).** A 429's wait is now the larger of the
+retry-after header and our own schedule (30, 60, 120, 180s), so a
+concurrency wait outlasts a sibling's call. Redeployed, reprint rerun.
+
+**What it means.** Moonshot's limit is per organization, like Groq's. Every
+seat that calls Kimi shares one slot. The rehearsal print (ExO's ladder,
+engineer #94) and the weekly press must never run in the same minute, and
+neither may any future daily press on the same key. Options for the
+engineer: a scratch-row lock the callers check, or a second Moonshot
+organization for rehearsals. ExO: the concurrency ceiling belongs in
+`docs/agents/model-routing.md` beside the Groq rate-limit note.
+---
+
+## INC-2026-09-24-test-suite-ran-zero-tests — the command every test file prescribes had stopped running any of them (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class.**
+Incident 32 is a quality gate that returned `0 blocking` on an issue it
+could not parse. This is the same shape one level up: the suite that
+holds every other gate reported one error and ran nothing, and the
+report looked small enough to scroll past.
+
+**What happened.** Running `python3 -m pytest tests/ -q`, the command
+printed in the docstring of nearly every file in `tests/`, produced:
+
+```
+ERROR collecting tests/test_evidence_grade.py
+E   AttributeError: module 'modal' has no attribute 'Volume'
+!!!! Interrupted: 1 error during collection !!!!
+1 warning, 1 error in 0.43s
+```
+
+A collection error is not one red test. pytest stops, and zero tests
+run. Every check the repository owns was unexecuted, and the line that
+says so is `1 error`.
+
+**Why it happened.** `modal` is not a dev dependency, so four test files
+each carry a copy of the same hand-built stub, each guarded by
+`if "modal" not in sys.modules`. Only one of the four copies defines
+`modal.Volume`. Under the suite, `test_email_template.py` is collected
+first, its copy wins, and `test_evidence_grade.py` then explodes on the
+attribute its own copy would have provided. Alphabetical order decided
+it. The guard that was supposed to make the four copies safe is the
+thing that made them dangerous, because it makes the first copy
+authoritative and none of the four is complete.
+
+**Why nobody noticed, which is the useful part.** The repository has two
+ways to run tests and only the broken one is documented.
+`.github/workflows-pending/checks.yml` runs `python3
+tests/test_press_resilience.py` and `python3 tests/test_email_template.py`
+as single scripts. Run that way each file installs its own stub first
+and every file passes, so the CI-shaped path was green on exactly the
+files it names. The suite-shaped path was the one that failed, and it is
+the one no command anywhere executes. Two paths diverged, and the
+divergence was invisible because nothing ran the second one.
+
+`checks.yml` is also still in `workflows-pending/`, so neither path runs
+on a pull request at all. Its own README says it plainly: "anything
+still sitting here is a guard that is not guarding yet."
+
+**What it was hiding.** With collection fixed, the suite came up red on
+`test_accounts.py::test_the_subscribers_index_cannot_abort_the_schema_on_legacy_duplicates`.
+That test searches `db/schema.sql` for the first `do $$` block and
+asserts it guards the subscribers index. A second do-block, the
+evidence-grade constraint, was added above it at some point since, so
+the test had been reading the wrong block and failing. How long is not
+recoverable from this clone's squashed history. The schema itself was
+correct throughout.
+
+**The fix, applied.** One `tests/conftest.py` installs the union stub
+before collection begins, so it always wins and the four in-file copies
+no-op through their own guard. They are deliberately left in place,
+because each of those files also documents being run directly and that
+has to keep working with no conftest involved. The `test_accounts.py`
+regex now selects the do-block by what is inside it rather than by being
+first. `python3 -m pytest tests/ -q` reports 159 passed, 1 skipped.
+
+**The rule that would have caught it.** A test suite is a gate, and
+incident 32's rule already covers it: every gate is tested against an
+artifact known to fail it before the gate is trusted. Nothing ever
+asserted that the suite runs a known number of tests, so "ran zero" and
+"all passed" were indistinguishable from the outside. The cheap general
+form, and it is one line: **a test run that collects fewer tests than
+last time is a failure, not a quieter success.** The same asymmetry sits
+under incident 32, under the unreferenced-template incident above, and
+under this one. A check that cannot see its input has to be louder than
+a check that looked and found nothing, and by default every tool in this
+repository has it the other way around.
+
+---
+
+## INC-2026-09-24-conflict-marker-on-main — the incident register itself was carrying merge damage (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 6's class**,
+which is two seats appending to one register at one anchor and the
+second merge conflicting.
+
+**What happened.** `docs/agents/incidents.md` on main carried a bare
+`=======` on line 3103, between the closing line of incident 32 and the
+frontend seat's renumbering note. That is the middle marker of a git
+conflict whose `<<<<<<<` and `>>>>>>>` halves were cleaned up and whose
+middle one was not. Both sides of the conflict survived, so no content
+was lost, and the file read as if a divider had been left in.
+
+**Why it matters more than its size.** Every seat reads this file, the
+ExO reads it weekly, and the charters cite it by line. It had been
+sitting there through an unknown number of runs, and the fix is one
+line. What is missing is not the fix but the looking: the charters warn
+the seat that is *about to* append, and nothing looks at the file
+*afterwards*. Incident 6, incident 25 (two writer runs appending at one
+ban-list number) and incident 29 (four incident-id collisions) are all
+the same anchor contention, and every one of the three fixes changed how
+a seat writes. None of them added a check that reads the result.
+
+**The fix, applied.** The marker is removed, and
+`tools/check_registers.py` now reads all eight shared registers for
+conflict markers and for duplicate incident ids, with
+`tests/test_check_registers.py` driving it against damaged registers
+built on disk. Its first run on the real repository also produced a
+second finding, left for the seat that owns it: one ledger entry writes
+`- Status: mostly moot as of run 3`, which is prose where the contract
+names one of five keywords, so that entry is invisible to every
+consumer that reads statuses by grep, including the PM's sprint
+grooming and this seat's own fallback scan.
+
+**Still open.** The checker is a command, and per runtime-changes.md's
+closing rule a gate is worth the number of commands that run it. Nothing
+runs this one yet. Wiring it into `checks.yml` needs a `workflows`
+permission this seat does not have, so it is filed in the ledger for the
+owner rather than done here.
+
+---
+
+## INC-2026-09-25-budget-guard-estimates — the first link in two deploy chains failed the press for the tokenizer's absence (2026-09-25, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class,**
+and under L-A17, which owes an entry for any diagnosis that took more
+than a minute whether or not it repeats. Incident 32 is a quality gate
+that returned `0 blocking` on an issue it could not parse.
+INC-2026-09-24-test-suite-ran-zero-tests, recorded yesterday, is the same
+shape one level up. This is the third occurrence of the class in two
+days, and this one is in the command the chair runs before every deploy.
+
+**What happened.** Running `python3 pipeline/budget.py` on a fresh
+checkout, as the first gate of this run's own change, printed:
+
+```
+budget: exact tokenizer unavailable (No module named 'tiktoken'); using the 3.0 chars/token fallback
+...
+SELFTEST: selftest: trimming could not fit a prompt of 6667 tokens...
+budget check FAILED (1 problem)
+```
+
+with the remedy the guard prints beside that failure: shorten the
+generator prompt, lower the output reservation, or move the press to a
+model with a larger budget. All three are wrong. The press fits
+`kimi-k2.6` with 140,766 tokens of headroom, and the same command says so
+eight lines further up in the same output.
+
+**Why it happened.** `count_tokens` falls back to a
+3.0-chars-per-token ratio when tiktoken is missing, and that ratio runs
+high on purpose, which is the right conservative choice. `selftest`
+case 1 deliberately squeezes a filler prompt against a tight model:
+20,000 characters, about 4,600 tokens measured, 6,667 tokens estimated.
+The estimate alone crosses `openai/gpt-oss-20b`'s 6,800-token usable
+budget, so the trimmer cannot fit a request that in reality fits, and a
+selftest designed to have no slack has none left for the estimate's
+own margin.
+
+**Why it matters more than a stray red line.** This command is the first
+`&&` in the press deploy chain, and as of this PR it is also the first
+`&&` in the MCP deploy chain. Both now stop for it. A gate that fails for
+a reason that has nothing to do with what it guards is a gate that
+teaches the person running it to pass it with `|| true`, and the org's
+own law says the value of a gate is that a shell enforces it. The
+failure mode is not a broken deploy, it is a trained-away deploy check.
+
+**What was fixed here.** The verdict now carries its own confidence.
+Token arithmetic run on estimated counts is reported `UNCONFIRMED` and
+the command ends `budget check INCONCLUSIVE` naming the one command that
+resolves it, `pip install tiktoken`. The exit code stays non-zero, now 2
+rather than 1, because a deploy checked on estimates has not been
+checked and the chain should still stop. Everything that does not depend
+on a token count, which is drift, the model tables, the fallback lists
+and availability, stays a hard failure at exit 1 either way. Five tests
+in `tests/test_rag_fallback.py` hold both halves.
+
+**The rule that would have caught it.** None, and that is the finding.
+Entry 41 of the ban list, "the gate that reads the output and never the
+input," is the writer seat's version of this class and is already law
+for digests. Incident 32 named it for quality gates and yesterday's
+entry named it for the test suite. Three occurrences in three different
+gates say the class is not about any one gate. The generalization worth
+promoting, which is a ledger proposal rather than something this seat
+writes into a standard: **a gate states what it measured, and a gate
+that could not measure says so instead of returning a verdict.** Pass,
+fail, and cannot-tell are three outcomes, and every gate the org owns
+currently has two.
+
+## INC-2026-09-24-grading-has-no-truth-pass — The editorial instrument grades prose and cannot see a false claim (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file. Not a sequential number, and nothing here is renumbered.
+
+### What happened
+
+Issue 2026-W39 opened its fell-behind section on this:
+
+> Start with the number that turned out to be wrong. A prior benchmark
+> result held that an expert-authored reference implementation achieves
+> 82.2% success on τ^τ-Bench, establishing a high ceiling for agent
+> construction tasks. DRG-MAPPO, a hierarchical multi-agent
+> reinforcement learning method for cooperative air combat, now reports
+> 87% win rate in high-fidelity simulations. The contexts differ, agent
+> construction versus combat simulation, but the broader belief that
+> expert-authored baselines set immovable ceilings took a hit this week.
+
+82.2% is a task success rate on a benchmark for building agents. 87% is a
+win rate for simulated fighter aircraft against a simulated adversary.
+They are not measurements of the same thing, so no belief about
+agent-construction ceilings is touched by the second number. Nothing
+fell. The section whose entire job is to report what stopped being true
+led with something that did not stop being true.
+
+Four editorial passes ran over this issue on 2026-09-24 and none of them
+found it. Three separate writer runs graded it, one of them rewrote the
+passage in full, and the rewrite kept the claim and shortened the hedge:
+
+> The domains are different and the comparison is loose. What broke is
+> the belief that an expert-written baseline is a wall.
+
+### Why the instrument could not see it
+
+The canon's grading procedure ran four passes, in this order: the
+outsider read, the taste gate, the laws, the ban list. Every one of them
+asks how the issue is written. Not one of them asks whether what it says
+is so.
+
+That is not an oversight in any single pass. It is the shape of the whole
+instrument. The writer seat was created to own the words as a craft, and
+its grading procedure was built entirely out of craft questions, so a
+claim that is false and well made scores clean on all four. The better
+the prose, the more invisible the defect, which is why the rewrite made
+it worse rather than catching it.
+
+The hedge is how it survived contact with four careful readers. "The
+contexts differ" is correct, it is honest, and it reads as exactly the
+instrument honesty the owner ruled is part of the product. A reader
+checking for honesty finds honesty and stops. Nobody asked what the
+honest clause was doing there, which was licensing the claim behind it.
+
+### Why this is a repeat and not a new finding
+
+Third occurrence in two days of one shape: **a check passed something it
+had no way to fail.**
+
+1. **Incident 26.** The ASCII rule stated the class and the pre-output
+   gate enforced a narrower form of it, so four of eight non-ASCII
+   characters walked through a gate written to stop them.
+2. **Incident 32.** `tools/check_digest_quality.py` returned `0
+   blocking` on the issue the owner rejected, because `parse_items`
+   read zero items out of it and every per-item rule then ran over
+   nothing and reported nothing.
+3. **This one.** The grading canon returns four clean passes on a false
+   claim, because none of the four is a claim check.
+
+The general form is worth stating for the ExO's pattern reading, because
+incident 26 already produced one and this is its sharper version.
+Incident 26 asked: when a fix enumerates, what is it an instance of?
+This one asks the question one level up. **When a check passes, ask what
+result it is capable of returning.** A gate whose possible outputs do
+not include the defect in front of you has not examined it, and a green
+light from such a gate is not evidence. Incident 32 named this about a
+script. It is true of a procedure written in prose in exactly the same
+way, and the procedure is the one nobody thought to audit because it
+lives in a canon rather than in code.
+
+### The fix, in this pull request
+
+- **`docs/voice/canon.md`**: a fifth grading pass, the claims pass. It
+  takes every comparison and every fallen belief in the issue and asks
+  whether the two things measure the same quantity. It runs last, it is
+  procedure rather than law, and it enforces laws 6 and 7, which already
+  required the evidence grade to be aimed at the risk that is actually
+  there.
+- **`prompts/digest.md`**: the edge rule gains a second test. It had one,
+  for strength, covering the `contradicts` edge that is really a scope
+  limit. It now has one for kind, and the rule is that where two claims
+  do not measure the same thing there is no edge at any strength.
+  Alongside it, the hedge rule: if you find yourself writing the
+  concession, you do not have the finding.
+- **`docs/voice/ban-list.md` entry 50**: the hedge that licenses the
+  claim it qualifies, with the W39 sentence as the specimen.
+
+### What is still open, and it is not the writer seat's
+
+The prompt can only refuse to print an edge the claim graph hands it.
+The graph should not have produced this pair at all, because an
+agent-construction benchmark claim and an air-combat simulation claim
+share no measure and the edge between them is not a judgment call that
+needs a language model. Filed in `docs/ideas.md` for the engineer.
+Charter step 4 applies: the editorial half is in this pull request and
+it is the last prompt edit worth making on this one.
+
+### The second thing this run found, recorded because it is the same shape
+
+`docs/voice/value.md` was specified on 2026-09-21 as phase zero of the
+copy pipeline and did not exist on 2026-09-24. The writer charter says
+plainly that while it is missing, drafting copy is the wrong work and
+writing that page is the right work. Four writer runs happened in the
+twenty-four hours before this one. All four graded the same unchanged
+issue and none opened the file.
+
+The cost was already paid before the file was specified: eight rounds of
+site copy, all eight rejected, and the chair's own reading of them found
+that every one described the issue or the mechanism and none described
+the library. Incident 25 named the missing artifact. Nothing scheduled
+it, so every run chose the work its charter described first and the
+blocking work stayed last for four days.
+
+The shape is the same as the one above. A seat that grades its own output
+every run will find defects in its output every run, and will never find
+the work it has not started. Drafted in this pull request and awaiting
+her approval.
+
+## INC-2026-09-24-prohibition-supplies-the-string — A rule recorded in five places was broken by one of the recordings (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file. Not a sequential number, and nothing here is renumbered.
+
+### What happened
+
+2026-W39 was reprinted at 16:04 on 2026-09-24 under the new prose rules.
+The reprint is headed, over its reading list:
+
+> ## Read these yourself
+
+That is one of the four internal framework names, printed verbatim at
+the top of a section a subscriber reads. It is the violation the owner
+has flagged twice, the second time in the word "AGAIN", and incident 20
+exists because the first recording did not prevent the second
+occurrence. This is the third occurrence.
+
+Two things make it worse than a recurrence.
+
+**It is a regression.** The stale 2026-09-19 generator, writing the same
+slot from the same material eleven hours earlier, produced "## The hour
+you should spend", which is the craft the ruling asks for. The patched
+generator replaced a heading written from the day's news with the
+skeleton's own label.
+
+**The generator that did it was the fully patched one.** The digests row
+carries `prompt_sha` `0f642e2ce9f3`, which is the sha of
+`prompts/digest.md` on `origin/main`. Nine editorial runs had merged.
+This is the first issue written by the current generator, so the defect
+cannot be assigned to an unmerged fix.
+
+### Why five recordings did not stop it
+
+The rule was written down in five places before the issue was
+generated. The owner's ruling in `docs/voice/taste.md`, given twice.
+Canon law 12. Ban list entry 20. The heading slot in
+`prompts/digest.md`. And the heading gate at the end of the same file,
+which asks the correct class question and would have failed the line.
+
+One of those five caused the failure. The heading slot read, in full:
+
+> `## {The heading for the reading list, written fresh and never the
+> words "Read these yourself". ...}`
+
+The curly braces are the one position in the template the model is told
+to replace with its own writing. The nearest quoted English at that
+position is the forbidden phrase. The model wrote what was there.
+
+All four heading slots were built this way, each quoting its own
+forbidden name. Three more of them were still loaded when this incident
+was written.
+
+The same mechanism produced two more leaks in the same issue, both from
+worked examples in the same file. The plain-meaning example and the
+number-line example were drawn from W39's own material, because W39 is
+the issue whose grade produced canon law 14, and both shipped nearly
+verbatim when the generator was pointed at W39 again.
+
+### The general form, for the ExO
+
+**Recording count is not enforcement strength.** L-A9 says recording a
+rule is not enforcing it, and L-A4 says a repeated correction is a
+register defect. Both are right and neither predicts this, because both
+are about rules that were written somewhere and not checked. This rule
+was checked, by a gate that asks the right question, and it still
+shipped, because a sixth recording was working against the other five.
+
+So the question to put to any register, prompt or charter is not how
+many places the rule appears in. It is: **read the instruction from the
+position of the person who obeys it. If the nearest quoted example at
+that position is the thing being banned, the prohibition is a supply.**
+Hold specimens where output is read, never where it is written.
+
+This generalizes past prompts. Any checklist, charter or standard that
+quotes a rejected specimen next to the blank where the work goes has the
+same defect, and this org quotes rejected specimens constantly and on
+purpose, because the preference data is the product of eight rejected
+copy rounds. The specimens are worth keeping. Where they sit is now a
+question worth asking.
+
+### Fixed in this PR
+
+All four heading slots state their rule positively and quote nothing.
+The four names move to the heading gate at the end of the file, run
+after the class question and never instead of it, per ban list 36. The
+two leaked examples are rewritten from a subject no payload can contain,
+and the invariant that already forbade example leakage now carries the
+evidence that it failed. Ban list entries 51, 53 and 54 are appended.
+
+## INC-2026-09-24-fix-by-deletion — Three house-law elements left the issue while it was being repaired (2026-09-24, writer seat)
+
+**The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
+file.
+
+### What happened
+
+The 2026-W39 reprint did what the previous grade asked. It is
+measurably less dense: the longest paragraph fell from 191 words to 98,
+paragraphs over 100 words from five to zero, numbers in the heaviest
+paragraph from ten to zero. The false ceiling comparison that ban list
+50 was written from is gone.
+
+It paid for that with three things that were already house law.
+
+- **The greeting.** The owner struck "You spent last week watching
+  agents get faster by doing less at test time" for assuming a returning
+  reader. The reprint has no greeting at all. It cleared canon law 13's
+  gate, because an absent greeting assumes nothing, and the greeting is
+  an element she asked for by name.
+- **The evidence grades.** Four in the pre-reprint, zero in the reprint,
+  in an issue whose four items all carry numbers. Law 6 calls the grade
+  "product, not weakness" and the canon calls it "the difference between
+  this and a press release".
+- **The traction evidence.** "three independent papers building on it"
+  in the pre-reprint, nothing of the kind in the reprint. Law 5 requires
+  the ranking to say what earned each slot.
+
+Each one is a clause. Every compression pass reaches for clauses.
+
+### Why the links survived and the grades did not
+
+This issue is close to a controlled experiment, which is why it is worth
+the register's space. The link rule and the evidence-grade rule are
+adjacent in `prompts/digest.md`, at lines 788 and 790 of the generator that
+wrote the issue. The same model read both in the same pass. Links shipped five
+out of five. Grades shipped zero out of four.
+
+The only difference between the two rules is one sentence, which the
+link rule has and the grade rule did not:
+
+> Count the items. Count the links. They match, or the issue is not
+> finished.
+
+**A rule survives a compression pass only if something counts it
+afterwards.** Prose describing a requirement is removed by the same
+edit that removes anything else made of prose.
+
+### The general form, for the ExO
+
+This is a near neighbour of INC-2026-09-24-grading-has-no-truth-pass,
+recorded earlier the same day, and the pair is more useful than either
+alone. That one says: when a check passes, ask what result it was
+capable of returning. This one says: when a rule is stated, ask what
+counts it. Both are the same underlying question asked at different
+ends, which is whether the mechanism can register the failure at all.
+
+The second question has an answer that is cheap to act on anywhere in
+the org. Any requirement that can be expressed as "there should be N of
+these" gets a count beside it, and the count is the rule rather than a
+reminder of it. Requirements expressed only as prose survive exactly as
+long as nobody is editing for length.
+
+The subtler half is the deletion itself, and it is ban list 52. A ruling
+against how an element was written is never a ruling against the
+element. Canon law 13 already says the repair "is never deletion", and
+it said that about threads, so the generator deleted a greeting instead.
+Every gate that names a fix should say what must still be there when the
+fix is done.
+
+### Fixed in this PR
+
+The evidence grade gets the count the link rule already has. Canon law
+13's "never deletion" clause is extended to bind the slot as well as the
+sentence, with the opening's four jobs rechecked after any repair. Ban
+list entry 52 is appended.
+
+## INC-2026-09-25-tell-recorded-never-enforced — Two of four new ban-list entries never reached the generator, in the pull request that patched the other two (2026-09-25, writer seat)
+
+**This is a repeat of incident 20 and of L-A9, recorded at the moment it
+repeated, per the standing rule at the top of this file. What makes it worth
+the entry is who committed it: the seat whose charter carries the "check the
+register before you ship" rule, inside the artifact that rule governs.**
+
+**What happened.** The editorial run of 2026-09-24 graded row 18 of
+`digests`, wrote four patches into `prompts/digest.md`, and appended four new
+tells to `docs/voice/ban-list.md` as entries 51 to 54. This run checked
+whether those two lists line up. They do not. Entries 52 and 53 reached the
+generator as patches 3 and 1. Entries 51, the rule's own name printed as a
+label, and 54, the term introduced under one name and used under another,
+were written down and left there. Both describe defects the graded issue
+actually committed, both were findings of that same grade, and neither
+changed the machine that writes.
+
+**Why it happened, which is the transferable part.** A grade produces
+findings of two kinds, and they leave the run through different doors. A
+finding about a sentence the issue printed becomes a patch, because the
+prompt has an obvious place to put it. A finding about a class of tell
+becomes a ban-list entry, because that is what the ban list is for. Entries
+51 and 54 are class findings. Writing them felt like finishing the work,
+and the ban list had nothing in it that asked what happens next. The register
+that exists to catch a pattern became the place the pattern went to rest.
+
+**Why the existing gate did not catch it.** The charter's pre-ship check
+reads the registers against the artifact, and the artifact it has in mind is
+an issue or a page. On a day when the output IS the register, the check has
+nothing to compare. The seat read `ban-list.md` that night, appended to it
+correctly, and never asked whether what it appended had landed anywhere.
+
+**The general form, for the ExO.** Every register in this org has a gate
+that decides something gets written down. Incident 20 named the missing
+second gate, the one that checks an artifact against the register before it
+ships. This is a third gate, and it is missing everywhere the other two
+exist: nothing checks that a register entry ever reached the thing it
+governs. A rule is written, a rule is checked against output, and in between
+sits the step where a rule becomes machinery. Worth asking of every register
+in `docs/agents/registers.md`: for an entry written last week, what would be
+different in the product if it had never been written? Where the answer is
+nothing, the entry is a note.
+
+**Fixed in this PR.**
+
+- `docs/voice/ban-list.md` gains a standing rule in its header: a new entry
+  ends either in the change to `prompts/digest.md` that enforces it, or in
+  the ledger entry saying why no prompt change can reach it.
+- Entry 54 is enforced. The first-use pass now counts the term the reader
+  meets rather than the term the writer defined.
+- Entry 51 is enforced. The internal-vocabulary test now names this file's
+  own rule headings, where it had listed only the codebase's vocabulary.
+- Both enforcement lines are written into entries 51 and 54 themselves, so
+  the next reader of the register can see the ending without leaving the
+  file.
+
+**What is still open.** The standing rule binds `ban-list.md` only, because
+that is the file in this seat's custody. Whether the same ending belongs on
+entries in `docs/agents/incidents.md`, `docs/ideas.md` and
+`docs/design/ban-list.md` is the ExO's call and not this seat's.

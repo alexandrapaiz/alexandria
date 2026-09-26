@@ -7,6 +7,18 @@ the owner's word. Since her ruling of 2026-09-19 it governs site copy
 as well as issues, so a page of the site is read against these tells
 exactly as an issue is.
 
+**An entry is not finished when it is written (writer seat, 2026-09-25).**
+A tell recorded here has changed nothing by itself. That is L-A9 in
+docs/standards/lessons.md, "recording a rule is not enforcing it", and
+incident 20 in this repo's own register. So a new entry carries one of two
+endings in its own text: the change to prompts/digest.md that now enforces
+it, or the ledger entry saying why no prompt change can reach it. Entries 51
+and 54 are why this rule exists. Both were appended on 2026-09-24 by the
+grade that found them, in the same pull request that patched four other
+findings from that grade into the generator, and neither of them reached it.
+A tell that only gets written down is a tell the next issue is free to
+commit.
+
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
 The text of both is untouched, and only the numerals moved, into the
@@ -370,3 +382,125 @@ gap that the same collision had left empty (incident 25).
     specimen from the same issue is the aphoristic version, "Three labs,
     one bet:", where the colon props up a snap summary that the paragraph
     it closes has already earned. Added 2026-09-24 from the W39 grade.
+47. The paragraph that reports and never lands. A result stated with its
+    number, its baseline and its evidence grade, and then the next result
+    starting in the same paragraph, so the reader is handed the arithmetic
+    and left to work out what it means. 2026-W39 does it six times:
+    "beating even the 41.7% achieved when the specialized harness stays
+    attached at runtime" is the week's most surprising fact and no sentence
+    anywhere says what it means for a builder. Entry 7 is the summary that
+    restates the headline. This is its opposite, a paragraph that adds
+    nothing but more facts. The fix is one sentence with no number in it,
+    under every result, saying what the number makes true. Added 2026-09-24
+    from her ruling that the issue must be enjoyable.
+48. The line that is entirely bold, standing alone. It looks like emphasis
+    in the markdown and it is a heading in every other sense: it announces
+    the block under it, the eye reads it as furniture, and the heading gate
+    at the end of prompts/digest.md already collects it. Two things make it
+    worth its own entry now. The owner has asked for a one-line pull for the
+    number that matters, which is exactly the shape that reaches for this.
+    And the email template sets a bold line standing alone as a grey
+    uppercase group label, verified against `pipeline/email_render.py` on
+    2026-09-24, so the pull arrives in the inbox looking like the taxonomy
+    label canon law 12 bans. Bold inside the sentence. Never the whole line.
+    Added 2026-09-24 from the formatting ruling.
+49. One shape for a whole issue. Not a sentence tell and not a word tell, a
+    page tell, and it is the one the owner named when she said an issue was
+    "a hassle to read". 2026-W39 is twenty-one paragraphs and nothing else:
+    no list, no line standing on its own, no change of texture from the
+    title to the close, in a week whose material included four replacements
+    that were four of a kind and three constraints that were three of a
+    kind. The tell is visible before a word is read, which is why it can be
+    checked before the prose is. Count the shapes on the page. One is the
+    finding. The cure is not decoration: it is noticing which of the day's
+    material is parallel and setting that part as a list, per canon law 14.
+    Added 2026-09-24 from the W39 shape read.
+50. The hedge that licenses the claim it qualifies. The shape is a true
+    concession, a comma, and then the assertion the concession should have
+    stopped. 2026-W39: "The contexts differ, agent construction versus
+    combat simulation, but the broader belief that expert-authored
+    baselines set immovable ceilings took a hit this week." Every clause
+    before the "but" is correct and honest, and the sentence uses that
+    honesty as permission. This is not hedging in the usual sense and the
+    usual cure makes it worse: deleting the qualifier leaves a bare false
+    claim, and keeping it leaves a false claim that sounds careful. The
+    test is which way the sentence would go without the hedge. A real
+    qualifier narrows a claim that still stands. This one is load-bearing,
+    and a claim that cannot stand without being apologized for is a claim
+    to drop. Related to entry 47, the result that never lands, and its
+    opposite in a way worth seeing: 47 is a finding with no meaning
+    attached, this is a meaning with no finding under it. Added 2026-09-24
+    from the fourth grade of W39, which is where four prose passes had
+    missed it, because it is not a prose defect.
+51. The rule's own name printed as a label. 2026-W39's reprint prints "**The
+    number that matters:** 44.3% with the harness gone, up from 23.3%." There
+    is no such phrase in the research. It is the name of a formatting rule in
+    prompts/digest.md, line 169, and the generator printed the name of the
+    rule it was obeying at the top of the line where it obeyed it. Entry 14
+    asks whether a subscriber who has never seen the codebase could say what a
+    word refers to, and it was written about the pipeline's vocabulary, the
+    claim graph's and the ISO week's. This is the fourth vocabulary in the
+    building and the only one the writer seat owns: every rule name in the
+    generator is internal vocabulary by entry 14's own question. The specimen
+    fails three other ways at once, which is what makes it worth its own
+    entry rather than a cross-reference. It is the label welded to a sentence
+    of entry 46. What follows the colon is a fragment and not the standing
+    sentence canon law 14 asks for. And the rule it names is the one rule the
+    issue was trying hardest to follow, so the tell arrives in the shape of
+    compliance. Added 2026-09-24 from the fifth grade of W39. Enforced
+    2026-09-25: the internal-vocabulary test in prompts/digest.md now names
+    this file's own rule headings as internal vocabulary, where it had listed
+    only the codebase's.
+52. The fix by deletion. A sentence is struck, and the repair removes it
+    rather than rewriting it, so the issue quietly loses the element that
+    sentence was occupying. The owner struck W39's opening, "You spent last
+    week watching agents get faster by doing less at test time", for assuming
+    a returning reader. The reprint has no greeting at all. It cleared the
+    gate, because a greeting that is absent cannot assume anything, and the
+    greeting is house law she asked for back by name. The same move took the
+    evidence grades out under the density ruling: the grade is a clause,
+    compression cuts clauses, and four of them went. This is the cheapest
+    failure in the register to commit, because it passes every check written
+    for the defect and leaves nothing on the page to catch. Canon law 13
+    already says of the thread that "the fix is always the same and it is
+    never deletion", and that sentence needs to be read as binding the slot
+    and not only the sentence in it. A ruling against how an element was
+    written is never a ruling against the element. Added 2026-09-24 from the
+    fifth grade of W39.
+53. The prohibition that supplies the string. Entry 44 is the tell an
+    instruction requires. This is the tell an instruction QUOTES. The reading
+    list's heading slot in prompts/digest.md read, in full, `## {The heading
+    for the reading list, written fresh and never the words "Read these
+    yourself"...}`, and the issue printed "## Read these yourself". All four
+    heading slots were written that way and each one carried its own forbidden
+    name inside the braces the model was told to replace with its own writing.
+    Two more of the file's sentences shipped in the same issue, both worked
+    examples: the plain-meaning line and the number line, which were drawn
+    from W39's own material because W39 is the issue that produced the ruling
+    they illustrate. An exemplar written from the material the generator will
+    be handed is not an illustration of the answer. It is the answer. The
+    general test, and it applies to any prompt and any register, not only to
+    this one: read the instruction from the position the writer occupies when
+    they obey it. If the nearest quoted English at that position is the thing
+    being banned, the sentence around it is not doing the work its author
+    thinks. Hold specimens where the output is read, never where it is
+    written. Added 2026-09-24 from the fifth grade of W39, where the
+    invariant "no sentence quoted from this file as an example survives into
+    the issue" had been standing in the same file the whole time.
+54. The term introduced under one name and used under another. Entry 26 is the
+    term of art standing bare, with no clause beside it. This is the term of
+    art that got its clause, under a synonym, and is then used for the rest of
+    the issue under the word that never got one. W39's reprint opens on
+    "scaffolding: the extra instructions and tooling that make frontier models
+    reliable on real tasks", which is the correct gloss correctly placed. It
+    then uses "scaffolding" twice and "harness" thirty-eight times, beginning
+    in the title, and nowhere says the two are the same thing. The outsider is
+    handed a definition for the word the issue does not use. This survives the
+    first-use pass because the pass looks for terms without clauses and this
+    term has one, three paragraphs away, spelled differently. The test is not
+    whether every term was defined. It is whether every term the reader
+    actually meets was, counted in the words on the page. Added 2026-09-24
+    from the fifth grade of W39. Enforced 2026-09-25: the first-use pass in
+    prompts/digest.md now counts the term the reader meets rather than the
+    term the writer defined, and gives the join to write when the sources
+    force both words.

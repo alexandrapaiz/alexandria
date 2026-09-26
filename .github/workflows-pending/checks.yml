@@ -20,6 +20,8 @@ on:
       - "pipeline/**"
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
+      - "tests/test_press_rehearsal.py"
+      - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
   push:
@@ -30,6 +32,8 @@ on:
       - "pipeline/**"
       - "tests/test_press_resilience.py"
       - "tests/test_email_template.py"
+      - "tests/test_press_rehearsal.py"
+      - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
   workflow_dispatch:
@@ -83,3 +87,16 @@ jobs:
       - name: the press sends the designed email
         if: always()
         run: python3 tests/test_email_template.py
+
+      # INC-2026-09-24-press-provider-migration: four failures in one evening,
+      # every one of them an integration property that only a real call
+      # reveals. `rehearse()` is that call, and it is the third gate in
+      # docs/agents/runtime-changes.md's ladder. CI cannot run the gate, since
+      # a real call needs a real key and real money. What CI can hold is that
+      # the gate still has its teeth: that a rehearsal never writes to
+      # `digests`, never mounts a mail credential, never holds a connection
+      # open across the model call, prints all three subject lines, and
+      # refuses a receipt that names a different model or a different prompt.
+      - name: the rehearsal writes to a scratch row and sends to nobody
+        if: always()
+        run: python3 tests/test_press_rehearsal.py
