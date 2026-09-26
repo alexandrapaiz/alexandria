@@ -3951,3 +3951,145 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-26-slack-notify-jq-control-chars — the Slack notify step breaks the "Post run report" job on a PR body with unescaped control characters (2026-09-26, PM seat)
+
+**Recorded under the standing rule at the top of this file:** the same
+symptom hit twice today, in two different engineer-agent runs, so this
+is a repeat by the time this entry is written, not a first occurrence
+judged against L-A17's leniency.
+
+**What happened.** Two engineer-agent runs today both finished their
+actual work successfully (the `claude-code-action` step and the
+"No-ship tripwire" step both report `success`) and then failed the job
+at the "Post run report" step, each with the identical symptom:
+
+- run `36208446311` (schedule, started 01:26:48Z, became PR #115):
+  `parse error: Invalid string: control characters from U+0000 through
+  U+001F must be escaped at line 178, column 1`, `Process completed with
+  exit code 4`.
+- run `36208644267` (workflow_dispatch, started 01:30:22Z, became PR
+  #116): the same `parse error: Invalid string: control characters...`
+  at line 190, exit code 4.
+
+Both failures are inside the Slack-notify sub-step of "Post run report"
+(the `curl` block that posts `*engineer-agent* · success · $title` to
+`SLACK_WEBHOOK_URL`), which reads the PR's `title` and `body` back with
+`gh pr list --jq '.[0]'` and then re-parses that value with a second
+`jq` call. The ship-first check ahead of it (branch pushed, PR exists)
+passed cleanly in both logs; only the Slack post failed.
+
+**The work survived.** Both runs' PRs (#115, #116) exist, are complete,
+and are open on GitHub. This is a reporting-step failure, not a
+work-loss failure, which is exactly the distinction charter Β§1f asks
+this seat to draw before calling anything a real incident.
+
+**Why it belongs in the register rather than only in today's
+run-health line.** The queue this seat writes is replaced in full every
+run and is not a durable record (same reasoning as
+`INC-2026-09-24-market-brief-stub-ship-first-gap`), and the symptom has
+already repeated twice in one day, which the standing rule at the top
+of this file treats as mandatory regardless of how quickly it was
+diagnosed.
+
+**Likely cause, not confirmed.** A PR body containing a raw, unescaped
+control character (for example a literal byte in the 0x00-0x1F range
+carried through from a heredoc or a code block in the PR description)
+makes the JSON `gh pr list --jq '.[0]'` emits fail a later `jq` parse
+of that same text. Ordinary markdown text does not carry raw control
+bytes, so this most likely traces to something in the PR body itself
+(a pasted terminal transcript, a fenced code block with a stray control
+character) rather than to the `jq`/`curl` step's own logic, but this
+seat has no transcript access to confirm which PR body byte triggered
+it.
+
+**No fix applied in this PR.** This seat's writable surface does not
+extend to `.github/workflows/*`. Filed for the ExO's weekly pattern
+read and for whichever seat next tunes the Slack-notify step: the fix
+is most likely to sanitize or `jq -Rs`-wrap the PR body before the
+second parse, so a stray control character degrades the Slack message
+rather than failing the whole "Post run report" step.
+
+---
+
+## INC-2026-09-26-dispatch-403-repeat — the PM's own `gh workflow run` still 403s, and today a same-day dispatch through a different path succeeded (PM seat)
+
+**Recorded under the standing rule**: `INC-2026-09-24-dispatch-403`
+already named this exact symptom two days ago and flagged it
+unresolved and untested since. It repeated today, verbatim, so this is
+recorded at the moment it repeats rather than left for the ExO's weekly
+pass, per the standing rule at the top of this file.
+
+**What happened.** This standup, with `PM_DISPATCH_ENABLED=true`
+confirmed in the job's own environment, charter §5 ACTIVE, no
+synchronous-mode conflict (last dispatch by anyone was 13.5 hours
+earlier), and a well-evidenced trigger for the frontend seat (HQ
+ADR-037 priority 1, engineer's PR #115, the `board-ui` item already
+queued on the board ref), the dispatch call failed identically to the
+2026-09-24 incident:
+
+    gh workflow run agent-frontend.yml -f owner_instructions='...'
+    could not create workflow dispatch event: HTTP 403: Resource not
+    accessible by integration
+    (https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361059087/dispatches)
+
+**New evidence this run adds: the same day, a dispatch through a
+different path succeeded.** PR #113 ("PM sync session 2026-09-26")
+fired an okr dispatch at 2026-09-26T01:17:15Z (run `36207911573`,
+`event: workflow_dispatch`, `conclusion: success`) from the same
+repository, the same `PM_DISPATCH_ENABLED` switch, and presumably the
+same charter §5 authority, hours before this run's identical attempt
+403'd. PR #113 describes itself as a "synchronous session, owner
+present... directing live through the chair," which is a different
+execution path from this seat's scheduled `agent-pm.yml` run: it is
+unclear from this run's evidence alone whether that dispatch was fired
+by a `claude-code-action` step's `GITHUB_TOKEN` (the same mechanism
+this run used and which failed) or by the chair acting through a
+different, more-privileged credential. That distinction is exactly the
+open question `INC-2026-09-24-dispatch-403` left for the ExO or
+engineer to confirm, and it now has a concrete same-day, same-repo pair
+of one success and one failure to compare, rather than only failures.
+
+**What this run did instead of pretending it worked.** The dispatch was
+not fired. The instruction is recorded in `docs/sprints/dispatch-queue.md`
+under "Dispatched by the PM (attempted, not fired)" with the exact 403
+and the command the owner or chair can run by hand to get the same
+result manually.
+
+**One piece of the standing question now confirmed rather than
+guessed.** `gh auth status` inside this run reports:
+
+    Logged in to github.com account claude[bot] (GH_TOKEN)
+    Token: ghs_************************************************
+
+`ghs_` is a GitHub App server-to-server installation token (the Claude
+Code app installation, `claude[bot]`), not the plain Actions-runner
+`GITHUB_TOKEN` that `.github/workflows/agent-pm.yml`'s `env:` block sets
+as `GH_TOKEN: ${{ github.token }}`. The `claude-code-action` step
+evidently authenticates `gh` with its own app token rather than passing
+through the job's runner token, and a GitHub App installation's
+permissions are set on the App itself, separately from the
+`permissions:` block a workflow YAML declares for the runner token. That
+is a concrete, confirmed candidate cause: ADR-033's proof (HQ's
+`dispatch-probe`) may have exercised the runner's `GITHUB_TOKEN` from a
+plain `run:` step, which is a different credential than what this seat's
+`gh` calls actually hold inside a `claude-code-action` step. Still
+unconfirmed: whether PR #113's successful okr dispatch went through the
+same app token or a different, more-privileged one.
+
+**Standing question, sharpened rather than new.** Whoever next has
+transcript or token access to compare: pull the execution context for
+run `36207911573` (the one that succeeded) against this run's
+(`agent-pm.yml`, scheduled, 2026-09-26 ~14:56 UTC) and diff what
+`github.token` resolves to in each, and specifically whether either one
+ran as a plain `run:` step versus inside `claude-code-action`. Until
+that comparison exists, charter §5's dispatch mechanism should be
+treated as proven only for whatever path fired PR #113's okr dispatch,
+not for the scheduled `agent-pm.yml` run this charter otherwise
+describes as the seat that holds the authority. The App installation's
+permission grant is the first thing to check: if `claude[bot]` is not
+granted `actions: write` on this repo at the App-installation level, no
+workflow YAML `permissions:` block can fix it, and the fix is an App
+settings change, not a charter or workflow change.
