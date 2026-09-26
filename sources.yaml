@@ -60,6 +60,29 @@ feeds:
   - {name: raschka-ahead-of-ai, url: "https://magazine.sebastianraschka.com/feed", tier: d}
   - {name: raschka-blog, url: "https://sebastianraschka.com/rss_feed.xml", tier: d}
   - {name: langchain, url: "https://www.langchain.com/blog/rss.xml", tier: d}
+  # ---- reasoning models (owner's directive 2026-09-26; Layer 3a). The corpus
+  # holds 209 reasoning-titled papers and 48 claims that mention reasoning, and
+  # only 3 of those claims touch verifiable reward and 1 touches test-time
+  # compute. The two people the charter names as radar, Lambert and Raschka,
+  # were already ingested (interconnects, raschka-*, above), so the reach gap is
+  # institutional, not personal. These two close the named half of it. Both
+  # verified 2026-09-26 by fetching the URL: 200 with parseable entries.
+  #
+  # Ai2 is the institutional home of the RLVR line — the term was coined in the
+  # Tulu 3 work and the Olmo post-training stack is the open reference recipe —
+  # and it is where Lambert's former team publishes the method behind what he
+  # writes about. Tier c, an open-lab owned channel, which is what the legend
+  # above defines that tier for. Feed carries 25 items including "What a
+  # crowdsourced game revealed about steering Olmo 3" and "How Goodfire used
+  # Ai2's open post-training stack to trace unwanted model behavior".
+  - {name: ai2, url: "https://allenai.org/rss.xml", tier: c}
+  # Lil'Log is the long-form reference writing on exactly this layer: "Why We
+  # Think" is the test-time-compute survey the corpus has one claim about, and
+  # "Reward Hacking in Reinforcement Learning" is the reward-design piece the
+  # charter's standing question asks for. Low volume, 53 entries over years, so
+  # it costs the triage budget almost nothing. Tier d, a trusted practitioner,
+  # the same tier as the other two named individuals.
+  - {name: lilianweng, url: "https://lilianweng.github.io/index.xml", tier: d}
   - {name: langchain-blog, url: "https://blog.langchain.com/rss/", tier: d}
   # ---- tools & software: GitHub release feeds (releases.atom, all verified 200) ----
   # The unit here is a release, not a paper: triage routes major capability
