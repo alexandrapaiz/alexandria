@@ -55,9 +55,13 @@ under- or over-groups). Score each candidate cluster:
   (docs/sprints/, newest file) or the current quarter's OKRs
   (docs/okrs/, newest file) — a skill the business needs this month beats
   one that is merely available.
-- **Not already gold.** Check `skills/` on disk and `select path from
-  promotions where status = 'approved'` so the run never re-extracts a
-  cluster the library already carries.
+- **Not already gold.** Check `skills/` on disk, reading each existing
+  SKILL.md's `provenance.claims` list, and exclude every id it names. The
+  `promotions` table is the intended index for this and is empty: it
+  returned zero rows on 2026-09-26 against four skills on disk, because
+  nothing has ever written to it (ledger, 2026-09-26). Query it if you
+  like, but the disk is the authority until the ADR-13 panel starts
+  writing verdict rows.
 
 Before you rank anything on `supports` edges, measure whether that criterion
 can be applied at all:
@@ -87,6 +91,57 @@ If the strongest available cluster still fails the procedure-rich test,
 that is the run's finding, not a license to draft anyway. Record it in
 docs/ideas.md (status `proposed`, one line: which topic is thin and why)
 and stop step 2 for this run.
+
+## 1b. Reading the papers (ADR-35, owner's ruling 2026-09-25)
+
+A skill written from claim rows alone is a summary of a summary, so the run
+does not proceed to drafting until the cluster's papers have been read. This
+section is the method; the ruling itself is in prompts/skill-agent.md.
+
+Fetch each paper's full text yourself. arXiv HTML works and is cheap:
+
+```bash
+curl -sS -L --max-time 45 "https://arxiv.org/html/<id>" -o /tmp/<id>.html
+```
+
+A tag-stripping pass in python turns that into readable text; the five papers
+of the 2026-09-26 cluster came to roughly 50,000 words in total, which is one
+comfortable read, so budget for the whole cluster rather than for excerpts.
+`tools/read_paper.py` does not exist yet and may when you run; check first.
+Fall back to the abstract page (`/abs/`) when there is no HTML rendering, and
+record that fallback as a paper you could not read in full.
+
+Read for four things, in this order, because they are what the claim rows
+cannot carry:
+
+1. **The setup.** How many tasks, which models, which harness. Almost every
+   overstatement this method catches is a number reported without its n.
+2. **The ablation table.** A row that says a component helps rarely says how
+   much it helps relative to the paper's other components. The 2026-09-26 run
+   found a structural finding that was real, cited approvingly in our claim
+   row, and the smallest of its own paper's three ablations.
+3. **The baseline the comparison rests on.** Check that the baseline was
+   measured the same way at the same cutoff. One claim row in that run
+   reported large gains that came from a cutoff at which the baseline's
+   released output was truncated, which the paper said plainly and the row
+   did not.
+4. **Limitations and negative results.** These are where the skill's caveats
+   section comes from, and they are almost never distilled into claims.
+
+Two rules fall out of this.
+
+- **The paper wins.** Where the full text narrows or contradicts a claim row,
+  say so in the skill in its own section, and file the row for revision in
+  docs/ideas.md. Do not quietly write the narrower version and leave the row
+  standing.
+- **Read the references too.** Every paper this cluster is measured against
+  and the library has not read goes to docs/research/reading-queue.md, with
+  its arXiv id taken from the reference list of the paper you just read. The
+  2026-09-26 run found that all twelve works its cluster built on were absent
+  from the corpus, which no amount of querying silver would have revealed.
+
+Say in the pull request, paper by paper, whether you read it in full or could
+not, and where the reading changed what you would have written from the rows.
 
 ## 2. Drafting the skill
 
