@@ -188,4 +188,12 @@ notes for the turn, not as edits to the committed KRs. Cite this session
 (alexandria-pm/2026-09-26-window) as the source.
 ```
 
-**Run URL.** Recorded below once the dispatch call returns.
+**Run URL.** https://github.com/alexandrapaiz/alexandria/actions/runs/36207911573
+
+**Note.** `INC-2026-09-24-dispatch-403` recorded this exact call 403ing
+on 2026-09-24 despite every documented condition met. It did not repeat
+tonight: the call above returned a run URL on the first attempt. Worth
+the ExO's eye on whether something changed (a token, an app
+installation, an org setting) or whether the earlier failure was
+transient - recording the data point here rather than closing the
+incident myself, since I did not diagnose the cause.
