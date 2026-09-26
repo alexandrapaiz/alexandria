@@ -3189,3 +3189,76 @@ which costs one command: for any asset a design review produces, grep
 the repository for its filename, and if the only hits are the asset and
 its own documentation, it is not in the product yet no matter how
 finished it looks.
+
+## INC-2026-09-24-writer-dispatch-started-twice
+
+**A second writer run of one dispatch started 27 seconds after the first,
+and the first was cancelled mid-run with a draft PR already open.** This is
+a repeat of incident 14, recorded at the moment it repeated, per the
+standing rule at the top of this file.
+
+**What happened.** The owner dispatched one editorial run tonight.
+`gh run list` shows `writer-agent` 35958638663 created 05:08:33Z and
+`writer-agent` 35958671490 created 05:09:00Z. The first pushed a
+placeholder commit to `writer/2026-09-24-c`, opened PR #92 as a draft at
+05:09:39Z, and was cancelled at 05:10:09Z. The second, this run, was
+already past its charter read by then. The market seat's dispatch shows
+the same pattern in the same minute: `market/2026-09-24-b` and PR #93,
+opened 05:10:31Z by a run created 05:08:31Z.
+
+**Why it did not cost anything this time.** Ship-first is why. The
+cancelled run had pushed and opened its PR in its first ninety seconds, so
+what it had done was visible on the remote rather than lost inside a dead
+container. This run found `writer/2026-09-24-c` when `git push` was
+rejected as non-fast-forward, checked the other run's conclusion before
+touching the branch, and adopted it: reset onto `origin/writer/2026-09-24-c`,
+merged main to pick up the taste ruling the placeholder's base predated,
+and continued in the same PR. One dispatch, one PR, no force push and no
+second branch.
+
+**What is different from incident 14, and what is not.** Incident 14's two
+runs were both alive and both writing, and the lease was the only thing
+that saved the work. Here the first run was cancelled, so the collision was
+cheap. The *cause* is identical and unaddressed: one owner dispatch starts
+two workflow runs seconds apart, and neither run knows the other exists.
+Incident 14 produced rules for surviving the collision. Nothing yet
+prevents it.
+
+**The check this run used, worth stating as a rule for any seat.** A
+non-fast-forward push to a branch name you just created is not a git
+problem to be forced through. It means another run of your seat exists.
+Run `gh run list` for your own workflow and read the sibling's conclusion
+before you touch its branch. A cancelled or failed sibling is a branch to
+adopt. A live one is a collision to report and step around, and the
+charter's "your own last run may still be open" rule already covers
+adopting, it just assumes the other run was yesterday rather than
+twenty-seven seconds ago.
+
+**For the ExO.** The fix is upstream of every seat: whatever dispatches
+these workflows fired twice, and the two seats it hit tonight are the two
+the owner dispatched by hand. Worth checking whether the dispatch path
+sends one event or two before any seat writes more rules about how to
+survive the second one.
+
+## INC-2026-09-24-kimi-org-concurrency — Two seats, one Moonshot key, concurrency one (chair)
+
+**What happened.** The owner asked for W39 reprinted under the new prose
+rules (writer #92 merged, press redeployed). The reprint's single Kimi call
+got `429 request reached max organization concurrency: 1` with a
+`retry-after: 1`, honored it three times, and failed in four seconds. The
+fallbacks are Groq's 8K models, none of which fit, so the press alarmed the
+owner instead of printing. The other caller was almost certainly the
+engineer's rehearsal print (#94, run 36022750452, in flight at the same
+minute), which makes one real Kimi call that takes minutes.
+
+**Fix shipped (chair, main).** A 429's wait is now the larger of the
+retry-after header and our own schedule (30, 60, 120, 180s), so a
+concurrency wait outlasts a sibling's call. Redeployed, reprint rerun.
+
+**What it means.** Moonshot's limit is per organization, like Groq's. Every
+seat that calls Kimi shares one slot. The rehearsal print (ExO's ladder,
+engineer #94) and the weekly press must never run in the same minute, and
+neither may any future daily press on the same key. Options for the
+engineer: a scratch-row lock the callers check, or a second Moonshot
+organization for rehearsals. ExO: the concurrency ceiling belongs in
+`docs/agents/model-routing.md` beside the Groq rate-limit note.

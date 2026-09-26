@@ -288,7 +288,10 @@ def render(issue: dict, meta: dict) -> str:
 def site_base() -> str:
     """Where an issue lives on the web. Overridable so a rehearsal can point
     at a preview deploy without editing code."""
-    return os.environ.get("SITE_URL", "https://alexandr.ia").rstrip("/")
+    # The default is the live site. "alexandr.ia" was a placeholder that shipped
+    # in every link of the first templated sends on 2026-09-24; a reader clicked
+    # "Read on the web" and got "site can't be reached".
+    return os.environ.get("SITE_URL", "https://libraryofalexandria.dev").rstrip("/")
 
 
 def week_dates(year: int, week: int) -> str:
