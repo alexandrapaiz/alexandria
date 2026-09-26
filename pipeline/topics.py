@@ -4,8 +4,8 @@
 that, so the model's tags went into `claims.topics` exactly as they came back,
 and the research seat's census of 2026-09-26 found what that cost:
 
-- 18 claims carry a **non-breaking hyphen** twin of a real topic: `post‑training`
-  (11), `harness‑engineering` (4), `loop‑engineering` (2), `context‑engineering`
+- 18 claims carry a **non-breaking hyphen** twin of a real topic: `post\u2011training`
+  (11), `harness\u2011engineering` (4), `loop\u2011engineering` (2), `context\u2011engineering`
   (1). Every one of them is invisible to `topics @> '{post-training}'`, which is
   how the digest, the graph page and the skill agent all read the column.
 - 22 more tags were invented outright: `training` (8), `analysis` (5), `safety`
@@ -24,7 +24,7 @@ what it dropped, which turns a silent 3.9% into a number in the run log.
 ## What the fold does, and what it refuses to do
 
 It fixes spelling, never meaning. Case, Unicode dashes, non-breaking spaces and
-space-for-hyphen spellings are all typography, so `Post‑Training` and
+space-for-hyphen spellings are all typography, so `Post\u2011Training` and
 `post training` both land on `post-training`. Three aliases go further and they
 are all licensed by the prompt's own words: the rubric names chain-of-thought
 and test-time compute as `reasoning` in the text the model is given, so a model
@@ -86,16 +86,16 @@ ALIASES = {
 # polices these same characters in the weekly issue, and they were entering the
 # database unchecked the whole time.
 DASHES = {
-    "‐": "-",   # hyphen
-    "‑": "-",   # non-breaking hyphen, the one that cost 18 claims
-    "‒": "-",   # figure dash
-    "–": "-",   # en dash
-    "—": "-",   # em dash
-    "―": "-",   # horizontal bar
-    "−": "-",   # minus sign
+    "\u2010": "-",   # hyphen
+    "\u2011": "-",   # non-breaking hyphen, the one that cost 18 claims
+    "\u2012": "-",   # figure dash
+    "\u2013": "-",   # en dash
+    "\u2014": "-",   # em dash
+    "\u2015": "-",   # horizontal bar
+    "\u2212": "-",   # minus sign
     "_": "-",
 }
-SPACES = (" ", " ", " ", "　")
+SPACES = ("\u00a0", "\u2007", "\u202f", "\u3000")
 
 # How many tags one claim may carry. The prompt asks for a handful; a model that
 # returns twenty has stopped classifying and started listing, and the digest
@@ -125,7 +125,7 @@ def normalize(tags) -> tuple[list[str], list[str]]:
 
     Kept tags are on TOPICS, deduplicated, in the order the model gave them, and
     capped at MAX_PER_CLAIM. Dropped tags are returned in their ORIGINAL
-    spelling, because "we dropped `post‑training`" is a report the owner can act
+    spelling, because "we dropped `post\u2011training`" is a report the owner can act
     on and "we dropped `post-training`" reads like a bug in this function.
 
     An empty result is FALLBACK rather than nothing, so no claim is written

@@ -4,8 +4,8 @@
     modal run pipeline/backfill_topics.py::backfill   # then, and only then, write
 
 The research seat's census of 2026-09-26 found 18 claims tagged with a
-non-breaking-hyphen twin of a real topic: `post‑training` (11),
-`harness‑engineering` (4), `loop‑engineering` (2), `context‑engineering` (1).
+non-breaking-hyphen twin of a real topic: `post\u2011training` (11),
+`harness\u2011engineering` (4), `loop\u2011engineering` (2), `context\u2011engineering` (1).
 Those claims are invisible to every query the product runs, because the digest,
 the graph page and the skill agent all filter with the correct spelling. The
 claims are good, the tag is a typo, and the fix costs nothing.
@@ -15,7 +15,7 @@ insert, so no new claim can arrive this way. This job is the history.
 
 ## What it repairs, and what it refuses to touch
 
-It repairs a tag **only** when the fold lands it on the closed list. `post‑training`
+It repairs a tag **only** when the fold lands it on the closed list. `post\u2011training`
 becomes `post-training`. `Multi Agent` becomes `multi-agent`.
 
 It leaves a tag that folds to nothing on the list exactly where it is, and

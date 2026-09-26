@@ -100,9 +100,23 @@ from the code without CI saying so.
 
 | Job | Per call, expected | Per call, ceiling | Per-run cap | Monthly at the cap |
 |---|---|---|---|---|
-| Triage (10 papers a call) | $0.0062 | $0.00814 | $0.60 | $18.00 |
+| Triage (10 papers a call) | $0.0066 | $0.00852 | $0.60 | $18.00 |
 | Interpret (1 claim a call) | $0.0018 | $0.00364 | $0.30 | $9.00 |
-| **Total** | | | **$0.90/run** | **$27.00** |
+| Re-triage, one-time (10 papers a call) | $0.0066 | $0.00852 | $0.10 | one run, ~$0.04 |
+| **Total, the daily jobs** | | | **$0.90/run** | **$27.00** |
+
+Triage's per-call figures rose on 2026-09-26, from $0.0062 expected and
+$0.00814 at the ceiling. The reasoning rubric made `prompts/triage.md`
+1,133 tokens instead of 728, so the $0.60 cap buys 70 calls in the worst
+case instead of 73: 700 papers a run instead of 730. The monthly ceiling
+does not move, because the cap did not move. This is what a prompt change
+costs and it is cheap, but it is not free, and a rubric that grows every
+month would eventually buy fewer papers than the queue receives.
+
+The re-triage (`modal run pipeline/triage.py::retriage`) is a one-time job
+with a cap of its own: 47 reasoning papers judged again under the new
+rubric, five calls, about four cents. It has no schedule, so it adds
+nothing to the monthly ceiling.
 
 "Ceiling" charges the whole output reservation whether the model uses it
 or not, which is how the provider's own per-request accounting works and

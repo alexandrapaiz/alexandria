@@ -58,7 +58,7 @@ def test_the_prompts_list_and_the_enforced_list_are_the_same_list():
 def test_the_non_breaking_hyphen_twin_folds_onto_the_real_topic():
     # 18 claims in the corpus carry one of these and are invisible to every query
     # the product runs. U+2011 looks identical to a hyphen in every editor.
-    kept, dropped = topics.normalize(["post‑training", "harness‑engineering"])
+    kept, dropped = topics.normalize(["post\u2011training", "harness\u2011engineering"])
     assert kept == ["post-training", "harness-engineering"]
     assert dropped == []
 
@@ -335,18 +335,18 @@ def test_the_weekly_triaged_count_is_papers_and_not_decisions():
 
 def test_the_repair_fixes_a_misspelling_and_leaves_an_invention_alone():
     fixed, untouched = backfill_topics.repair(
-        ["post‑training", "reward-design"], topics)
+        ["post\u2011training", "reward-design"], topics)
     assert fixed == ["post-training", "reward-design"]
     assert untouched == ["reward-design"]
 
 
 def test_the_repair_collapses_two_spellings_of_one_tag():
-    fixed, _ = backfill_topics.repair(["post‑training", "post-training"], topics)
+    fixed, _ = backfill_topics.repair(["post\u2011training", "post-training"], topics)
     assert fixed == ["post-training"]
 
 
 def test_the_repair_is_a_fixed_point_which_is_what_makes_it_idempotent():
-    once, _ = backfill_topics.repair(["Post‑Training", "memory", "training"], topics)
+    once, _ = backfill_topics.repair(["Post\u2011Training", "memory", "training"], topics)
     twice, _ = backfill_topics.repair(once, topics)
     assert once == twice
 

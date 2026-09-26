@@ -943,8 +943,8 @@ non-breaking-hyphen twin of a real topic and are invisible to every query
 the product runs, and 22 tags were invented outright. `pipeline/topics.py`
 is now the only place that decides what a topic is.
 
-It folds spelling and refuses to fold meaning. `Post‑Training` becomes
-`post-training` because that is typography. `training` is dropped rather
+It folds spelling and refuses to fold meaning. `Post-Training` spelled with a
+U+2011 becomes plain `post-training`, because that is typography. `training` is dropped rather
 than promoted to `post-training`, because a fold that guesses would write
 tags the distiller never chose and the column would stop being evidence.
 Dropped tags are counted and printed, which turns a silent 3.9% into a

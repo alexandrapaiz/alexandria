@@ -43,7 +43,7 @@ flowchart TB
 
     subgraph PIPE["The pipeline it builds: ingest to digest to skills"]
         direction TB
-        SRC["Sources, sources.yaml<br/>7 arXiv categories<br/>HF daily papers<br/>34 lab, ecosystem and practice feeds"]
+        SRC["Sources, sources.yaml<br/>7 arXiv categories<br/>HF daily papers<br/>36 lab, ecosystem and practice feeds"]
         ING["Ingest<br/>daily 11:00 UTC"]
         BR[("Bronze<br/>raw papers")]
         TRI["Triage<br/>12:00 UTC<br/>routes four ways"]
@@ -300,6 +300,16 @@ The pipeline, built bottom-up.
       live until the chair runs the three gates and deploys; the commands are in
       each module's docstring and in the ADR. Distill stays on Groq
       (docs/ideas.md, 2026-09-26, proposes moving it next)
+- [ ] **Reasoning-model research reaches the corpus, written and not yet
+      deployed** (ADR-2026-09-26b). 209 papers in the corpus have "reasoning" in
+      the title, 147 were never triaged, and of the 62 that were, 47 went to
+      `index` because the old rubric rewarded a construction technique and a
+      reasoning paper's contribution is usually a training recipe. The rubric and
+      the `reasoning` topic are the research seat's; the code half is a closed
+      claim taxonomy enforced where claims are written, a triage log that can
+      hold a paper's decision history, a reasoning-first drain inside each tier,
+      and a re-triage of the 47. Two reasoning feeds joined sources.yaml, which
+      is bundled at deploy, so ingest is redeployed with it
 - [ ] The 693 ungraded claims, backfilled. `pipeline/backfill_grades.py` is
       written, costs $0 because the grader calls no model, and is a one-time
       `modal run` the chair has not yet made
