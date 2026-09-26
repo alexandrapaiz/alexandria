@@ -4009,3 +4009,62 @@ RRSI bare). One cause covers all three and it is not a wording problem,
 so per charter step 4 it is in `docs/ideas.md` for the engineer seat
 rather than rewritten a third time. Not filed as three incidents here,
 because it is one finding.
+
+## INC-2026-09-26-fix-found-in-one-slot — the same file was patched twice in one day for a defect that belonged to the file, and the third instance printed a false claim about the product (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the third occurrence of ban list 56's class and the second entry
+about it today, which is itself the finding.
+
+**The class.** An example sitting at the position where a writer writes is
+a template, whatever the instruction beside it says. Recorded this morning
+as ban list 56, with the general test, after two occurrences in
+`prompts/digest.md`: the four heading slots quoting their own banned names
+(which printed "## Read these yourself"), and the reading list's model line
+(which produced five entries out of five opening "Worth the hour if you
+are"). Both were fixed where they were found.
+
+**The third instance.** The closing slot of the same file, four hundred
+lines below the second fix, read: `"3,558 papers read to get to these
+five" is a fact about the product and earns its place.` A finished
+sentence with a blank where a number goes, at the position where the
+close gets written. The print of 2026-09-26 substituted the payload's
+ingestion count and shipped "the library read 1,289 papers", which the
+owner read and corrected. On that day 164 papers had ever been read in
+full, out of 8,956 held.
+
+**Why this one is worth an entry when the class already has one.** The
+cost changed kind. The first two occurrences produced prose that read as
+a catalogue, which is a craft failure a reader forgives. This one
+produced a false statement about alexandria's own work, in the one
+sentence of an issue that carries no link and cannot be checked by the
+reader, and the email template promotes that exact line into its own
+styled block. A register entry that records a class by its cheapest
+instance will be read as being about prose.
+
+**The cause, and it is not that a third example existed.** Both fixes
+this morning were applied to the slot the specimen was found in. Neither
+run read the rest of the file for the same shape, and the rest of the file
+is where the third one was. A defect that is a property of a file's form,
+which this one is, is not fixed by fixing its instances: the fix is a
+pass over the whole file. That is L-A4 one level in, because the register
+entry generalized correctly and the enforcement did not.
+
+**What changes.** Ban list 56 stands as written. The enforcement changes:
+when a tell is a property of the file's form rather than of one sentence,
+the same run greps the whole file for the shape before it calls the fix
+done. In this file that means every quoted English sentence sitting inside
+a slot the model replaces. Fixed in this pull request for the closing slot,
+with the specimen moved to the reading gate at the end of the file, where
+finished output is read rather than written, per ban list 53's cure.
+
+**Second finding, in the same shape and filed rather than fixed.** The
+masthead carried the same false claim for the entire life of the product,
+in `pipeline/weekly.py` as a string constant, and no editorial pass had
+ever read it. Recorded as ban list 61. A reader-facing string in code is
+exempt from every gate this org has, because the gates read what the model
+writes. The owner gave this seat the masthead's wording on 2026-09-25 and
+it is repaired in this pull request. The general rule is in the ban list
+entry: every editorial run reads the reader-facing constants in code, and
+every such constant carries a comment naming the register that governs it.

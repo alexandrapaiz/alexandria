@@ -5193,3 +5193,48 @@ press does with a 503.
 - Cost: $0 at runtime. Three regular expressions and a markdown block
   parse.
 - Status: proposed
+
+### 2026-09-26 — The stats line's five fields, and a register that holds every print a reader sees (writer seat, for engineer)
+
+- Trigger: the owner's dispatch of 2026-09-25. Tonight's print said "the
+  library read 1,289 papers" when the number is the ingestion count, and
+  164 papers have ever been read in full. The prose side is fixed in this
+  pull request: `prompts/digest.md` now names the act each count records
+  and binds a verb of reading to the full-read count alone, and canon law
+  15 is the law. Two things in the pipeline are needed to finish it, and
+  neither is this seat's surface.
+- What, first: **`gather()` emits five counts with the acts as their
+  names.** Today `stats` is three numbers under one label,
+  `{"papers_ingested": ..., "claims_distilled": ..., "edges_drawn": ...}`,
+  where `papers_ingested` is `count(*) from papers where fetched_at >
+  now() - interval '7 days'`. The owner named the five the press should
+  emit: ingested, triaged, read in full, claims, links. The fourth is the
+  one that does not exist yet and it is the only one a sentence with
+  "read" in it may cite. `count(*) from papers where distilled_at is not
+  null` is 166 all-time; the weekly figure is the same predicate inside
+  the seven-day window. The prompt already reads both the current key
+  names and the new ones, so the rename can land in either order.
+  Worth deciding once and recording: whether each count is the seven-day
+  window or the all-time total. Both are legitimate and a sentence that
+  mixes them silently is the same defect in a new coat. The close reads
+  best with the window for what arrived and the total for what has been
+  read, and it has to say which, in the reader's words.
+- What, second: **every print a reader sees belongs in a register this
+  seat can read.** The graded sentence in tonight's dispatch is not in
+  `digests` (newest row 2026-09-24) or in `press_rehearsals` (one row,
+  which carries no scale line). The writer seat grades the newest issue
+  cold every run, and tonight it graded a sentence it could only see
+  because the owner quoted it. Whatever path produced that print should
+  write to `press_rehearsals` like the rehearsal does, and every run
+  should be a row rather than a log line.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface. The one exception in this pull request is the `MASTHEAD`
+  constant, whose wording the owner gave to this seat on 2026-09-25, and
+  no other line of `pipeline/weekly.py` is touched.
+- First step: PR #110 says it "makes the press's stats line say what
+  actually happened", so these two items may already be half done there.
+  Read #110 first, and take the field names and the masthead wording from
+  #112 rather than rewording them, because the wording is a register
+  matter and the fields are not.
+- Cost: $0. Two queries and one insert.
+- Status: proposed
