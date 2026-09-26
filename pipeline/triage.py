@@ -70,6 +70,43 @@ BATCH = 10
 BACKFILL_DAYS = 60
 DECISIONS = {"discard", "index", "distill", "deep_read"}
 
+# Reasoning-model research is a standing priority of this pipeline (the owner's
+# order of 2026-09-23, and her directive of 2026-09-25 that put it at the front
+# of this queue). prompts/triage.md now carries the rubric that says how to judge
+# it; this list says which papers meet that rubric first.
+#
+# The count that produced it, from Neon: 209 papers with "reasoning" in the
+# title, 147 of them never triaged at all. Matching is on the TITLE only, and
+# that is a deliberate limit rather than an oversight. Half the corpus mentions
+# reasoning somewhere in an abstract, so an abstract match would promote
+# thousands of papers and a priority that covers everything is not a priority.
+# The terms beyond "reasoning" are the named methods the rubric routes to
+# `distill`, so a paper whose title says GRPO and never says reasoning is still
+# reasoning work and still goes first.
+PRIORITY_TERMS = (
+    "reasoning",
+    "chain-of-thought",
+    "chain of thought",
+    "rlvr",
+    "grpo",
+    "verifiable reward",
+    "test-time compute",
+    "test time compute",
+    "inference-time compute",
+    "process reward",
+    "long cot",
+)
+# The same predicate twice, in the two languages that need it. Both derive from
+# the tuple above, so they cannot drift: `%term%` for Postgres `ilike any`, and a
+# substring test for the planner's own report and for the tests.
+PRIORITY_PATTERNS = [f"%{term}%" for term in PRIORITY_TERMS]
+
+
+def is_priority(title: str) -> bool:
+    """Is this paper reasoning-model research by its title? Mirrors the SQL."""
+    low = (title or "").lower()
+    return any(term in low for term in PRIORITY_TERMS)
+
 # Output reservation for one batch. Ten results of {i, decision, score,
 # reasoning} measured at ~55 tokens each, doubled, so a verbose run is not
 # truncated into invalid JSON.
@@ -239,6 +276,16 @@ def queue_report(conn) -> tuple[int, dict[str, int]]:
     ).fetchall():
         depths[tier or "unknown"] = depth
         print(f"  queue: tier {tier or 'unknown'}: {depth} waiting, oldest {oldest}")
+    # The owner's number, printed every run so the drain on the priority is as
+    # visible as the drain on the whole queue: 147 untriaged reasoning papers on
+    # 2026-09-26. When this reaches zero the standing priority is satisfied and
+    # the only reasoning papers left are the ones that arrived today.
+    waiting = conn.execute(
+        "select count(*) from triage_queue where title ilike any(%s)",
+        (PRIORITY_PATTERNS,),
+    ).fetchone()[0]
+    print(f"  queue: {waiting} of those are reasoning-model research by title, "
+          "and they are drained first inside every tier")
     return sum(depths.values()), depths
 
 
@@ -286,13 +333,14 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         backfilled = conn.execute(
             """
-            insert into triage_log (paper_id, decision, reasoning, model, prompt_sha)
-            select p.id, 'index', 'backfill: predates pipeline, auto-indexed by rule', 'rule:backfill', %s
+            insert into triage_log (paper_id, decision, reasoning, model, prompt_sha, method)
+            select p.id, 'index', 'backfill: predates pipeline, auto-indexed by rule',
+                   'rule:backfill', %s, 'rule:backfill@' || %s
             from papers p left join triage_log t on t.paper_id = p.id
             where t.id is null
               and (p.published_at is null or p.published_at < current_date - %s)
             """,
-            (sha, BACKFILL_DAYS),
+            (sha, sha, BACKFILL_DAYS),
         ).rowcount
         conn.commit()
         print(f"backfilled {backfilled} old papers as index")
@@ -306,19 +354,29 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
             select id, title, abstract, tier from (
                 select id, title, abstract, tier,
                        row_number() over (
-                           partition by tier order by published_at desc nulls last
+                           partition by tier
+                           order by case when title ilike any(%s) then 0 else 1 end,
+                                    published_at desc nulls last
                        ) as rn
                 from triage_queue
             ) ranked
             where rn <= %s
             """,
-            (BATCH * max_calls,),
+            (PRIORITY_PATTERNS, BATCH * max_calls),
         ).fetchall()
 
         plan = plan_batches(rows, max_calls)
         planned: dict[str, int] = {}
         for chunk in plan:
             planned[chunk[0][3]] = planned.get(chunk[0][3], 0) + len(chunk)
+        # Reasoning papers sort first inside every tier, so tier fairness is
+        # untouched and the queue is still drained by interleaved quota. This
+        # line is how anybody can tell the priority is actually being served.
+        priority_planned = sum(1 for chunk in plan for row in chunk
+                               if is_priority(row[1]))
+        print(f"reasoning-first: {priority_planned} of "
+              f"{sum(len(c) for c in plan)} planned papers are "
+              "reasoning-model research by title")
         pause = client.pace(MODEL)
         print(f"{sum(len(c) for c in plan)} papers planned across {len(plan)} calls: "
               + ", ".join(f"{t}={n}" for t, n in sorted(planned.items())))
@@ -352,10 +410,12 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
                     continue
                 conn.execute(
                     """
-                    insert into triage_log (paper_id, decision, score, reasoning, model, prompt_sha)
-                    values (%s, %s, %s, %s, %s, %s)
+                    insert into triage_log
+                        (paper_id, decision, score, reasoning, model, prompt_sha, method)
+                    values (%s, %s, %s, %s, %s, %s, %s)
                     """,
-                    (paper_id, r["decision"], r.get("score"), r.get("reasoning"), model, sha),
+                    (paper_id, r["decision"], r.get("score"), r.get("reasoning"),
+                     model, sha, f"{model}@{sha}"),
                 )
                 judged += 1
                 per_tier[chunk[i][3]] = per_tier.get(chunk[i][3], 0) + 1
@@ -480,6 +540,190 @@ def rehearse() -> str:
             "tomorrow's cron meets it first.")
     return (f"rehearsal ok: {model} judged {len(good)} papers at prompt {sha} "
             f"in {elapsed:.1f}s for ${cap.spent:.5f}, wrote nothing")
+
+
+# What one re-triage run may spend. 47 papers is 5 calls at BATCH=10, so the
+# whole job is about $0.04 at the measured ceiling. The cap is set an order of
+# magnitude above that rather than at it, because a re-triage set grows as the
+# corpus grows, and a job that stops on its cap on the day the set doubles is a
+# job that looks broken. It is still one fifteenth of the daily drain's cap.
+RETRIAGE_CAP_USD = 0.10
+
+# The SQL both re-triage functions select with, written once. A paper qualifies
+# when its NEWEST decision is `index`, its title is reasoning-model research, and
+# that decision was not already made under the prompt now on disk.
+#
+# The last clause is the whole idempotence story, and it is a guard rather than a
+# cursor: a paper re-judged today is excluded tomorrow because its newest row
+# carries today's sha, so a killed run is resumed by running it again and a
+# finished run is a no-op. It also means the job re-runs itself automatically the
+# next time the rubric changes, which is exactly what should happen.
+RETRIAGE_CANDIDATES = """
+    select p.id, p.title, p.abstract, p.tier, t.score, t.created_at
+    from papers p
+    join latest_triage t on t.paper_id = p.id
+    where t.decision = 'index'
+      and t.model != 'rule:backfill'
+      and coalesce(t.prompt_sha, '') != %s
+      and p.title ilike any(%s)
+      and p.distilled_at is null
+    order by t.created_at
+    limit %s
+"""
+
+
+@app.function(
+    secrets=[modal.Secret.from_name("neon")],
+    timeout=300,
+)
+def retriage_plan(max_papers: int = 200) -> str:
+    """The dry run for the re-triage. Reads, prints, spends nothing.
+
+        modal run pipeline/triage.py::retriage_plan
+
+    No provider secret in this container, so it cannot call a model even by
+    mistake, and no write path, so it cannot record a decision. It answers the
+    question the owner asked before any money is spent: which papers does the new
+    rubric get a second look at, and what does that cost.
+    """
+    import os
+
+    import psycopg
+
+    client = llm()
+    guard = client.budget()
+    _, sha = load_prompt()
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        rows = conn.execute(RETRIAGE_CANDIDATES, (sha, PRIORITY_PATTERNS,
+                                                  max_papers)).fetchall()
+        already = conn.execute(
+            "select count(*) from latest_triage t join papers p on p.id = t.paper_id "
+            "where t.decision = 'index' and p.title ilike any(%s) "
+            "and coalesce(t.prompt_sha, '') = %s",
+            (PRIORITY_PATTERNS, sha),
+        ).fetchone()[0]
+
+    calls = -(-len(rows) // BATCH)
+    cost = calls * guard.cost_usd(3_500, MAX_COMPLETION_TOKENS, MODELS[0])
+    lines = [
+        f"re-triage at prompt {sha}: {len(rows)} reasoning papers sit at 'index' "
+        f"and have not been judged by this rubric",
+        f"{already} have already been re-judged at this prompt and are skipped",
+        f"{calls} calls of {BATCH}, about ${cost:.4f} at the measured ceiling, "
+        f"cap ${RETRIAGE_CAP_USD:.2f}",
+    ]
+    for pid, title, _, tier, score, when in rows[:15]:
+        lines.append(f"  {pid} tier={tier} score={score} indexed {when:%Y-%m-%d}: "
+                     f"{title[:70]}")
+    print("\n".join(lines))
+    print("wrote nothing, called nothing")
+    return lines[0]
+
+
+@app.function(
+    secrets=[modal.Secret.from_name("neon"),
+             modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
+    timeout=3600,
+)
+def retriage(max_papers: int = 200, cap_usd: float = RETRIAGE_CAP_USD) -> str:
+    """Judge the reasoning papers at `index` again, under the new rubric.
+
+        modal run pipeline/triage.py::retriage_plan     # first. Spends nothing.
+        modal run pipeline/triage.py::retriage          # then, and only then
+
+    The owner's directive of 2026-09-25: of 62 triaged reasoning papers, 47 went
+    to `index` and 14 to `distill`, because the old prompt rewarded a
+    "construction technique" and a reasoning paper's contribution is usually a
+    training recipe. `prompts/triage.md` now says that in as many words. A rubric
+    change that only applies to tomorrow's papers leaves the papers it was written
+    for sitting exactly where the old rubric put them, so this is the half of the
+    change that reaches the corpus.
+
+    **It appends; it never edits.** A re-judged paper ends with two rows in
+    `triage_log`, the September decision and this one, and `latest_triage` is what
+    every consumer reads. That is not bookkeeping. The table is also the eval set
+    for the recursive loop (db/schema.sql says so), and two rubrics disagreeing
+    about one paper is the most valuable row in it. An UPDATE would delete the
+    disagreement and keep only the answer.
+
+    **A paper that stays at `index` is still written.** The new rubric agreeing
+    with the old one is a result, and the row is also what stops this job from
+    asking the same question forever.
+
+    Run it inside triage's own 12:00-13:00 window or in the 13:00-14:00 margin
+    that `pipeline/llm.py` KIMI_WINDOWS deliberately keeps empty. Moonshot's
+    organization concurrency is 1, and a manual run is the one caller no cron
+    table can schedule around.
+    """
+    import os
+
+    import psycopg
+
+    client = llm()
+    prompt, sha = load_prompt()
+    system = prompt + BATCH_INSTRUCTIONS
+    cap = client.Cap(cap_usd, label="re-triage")
+    available, notes = client.usable_models(MODELS, os.environ)
+    for note in notes:
+        print(f"availability: {note}")
+
+    moved: dict[str, int] = {}
+    judged = 0
+    stopped = "plan exhausted"
+    with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        rows = conn.execute(RETRIAGE_CANDIDATES,
+                            (sha, PRIORITY_PATTERNS, max_papers)).fetchall()
+        print(f"{len(rows)} reasoning papers at 'index' to re-judge at prompt {sha}")
+        pause = client.pace(MODEL)
+        for start in range(0, len(rows), BATCH):
+            chunk = [(pid, title, abstract, tier)
+                     for pid, title, abstract, tier, _, _ in rows[start:start + BATCH]]
+            try:
+                out, model = client.ask_json(
+                    MODELS, system, render_batch(chunk), os.environ, cap,
+                    max_completion=MAX_COMPLETION_TOKENS, temperature=0.2,
+                    available=available)
+            except client.CapReached as exc:
+                print(exc)
+                stopped = "spend cap"
+                break
+            except (client.RateLimited, client.NoModelAnswered) as exc:
+                print(f"no model could judge this batch ({exc}); stopping — "
+                      "the next run picks up the same papers")
+                stopped = "rate limited"
+                break
+            results = {r.get("i"): r for r in out.get("results", []) if isinstance(r, dict)}
+            for i, (paper_id, _, _, _) in enumerate(chunk):
+                r = results.get(i)
+                if r is None or r.get("decision") not in DECISIONS:
+                    print(f"  no valid decision for {paper_id}; leaving it at index")
+                    continue
+                decision = r["decision"]
+                conn.execute(
+                    """
+                    insert into triage_log
+                        (paper_id, decision, score, reasoning, model, prompt_sha, method)
+                    values (%s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (paper_id, decision, r.get("score"),
+                     f"re-triage under the reasoning rubric: {r.get('reasoning')}",
+                     model, sha, f"{model}@{sha}"),
+                )
+                moved[f"index -> {decision}"] = moved.get(f"index -> {decision}", 0) + 1
+                judged += 1
+            conn.commit()
+            time.sleep(pause)
+
+        # The movement matrix is the evidence the rubric changed something. If
+        # every paper stays at index, the prompt did not do what it says.
+        split = ", ".join(f"{k}: {n}" for k, n in sorted(moved.items())) or "none"
+        promoted = sum(n for k, n in moved.items()
+                       if k.endswith("distill") or k.endswith("deep_read"))
+        print(f"re-judged {judged} papers ({split}), stopped on: {stopped}")
+        print(f"{promoted} of them now route to distill or deep_read, so they "
+              "enter distill_queue on the next distill run")
+        print(cap.line())
+    return f"re-judged {judged} papers at prompt {sha}, {promoted} promoted"
 
 
 @app.function(

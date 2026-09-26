@@ -14,6 +14,7 @@ processes yesterday's triage output.
     modal run pipeline/distill.py::bake_off          # rerun the model bake-off
 """
 
+import hashlib
 import json
 import pathlib
 import time
@@ -53,6 +54,9 @@ image = (
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "sentence-transformers")
     .add_local_file("prompts/distill.md", "/root/prompts/distill.md")
     .add_local_file("pipeline/evidence.py", "/root/evidence.py")
+    # The taxonomy travels with the job, so the list the tests check is the list
+    # the insert enforces.
+    .add_local_file("pipeline/topics.py", "/root/topics.py")
 )
 
 app = modal.App("alexandria-distill", image=image)
@@ -77,6 +81,38 @@ def evidence():
     import evidence as module
 
     return module
+
+
+def topics():
+    """pipeline/topics.py, wherever this is running from. The same two-path trick.
+
+    The taxonomy has to be one object shared by the insert and the tests. A
+    second copy of the list is how `prompts/distill.md` came to offer tags the
+    database never accepted.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import topics as module
+
+    return module
+
+
+def load_prompt() -> tuple[str, str]:
+    """The distill prompt and the first 12 hex of its sha256.
+
+    Written onto every claim as `claims.prompt_sha`, the way triage writes it
+    onto every decision and the press writes it onto every issue. Until this
+    landed, the deploy state of `prompts/distill.md` was unverifiable except by
+    inference from the shape of the output: the research seat's brief of
+    2026-09-26 found the interpret prompt seven days stale that way, after the
+    stale prompt's output had already reached readers.
+    """
+    text = open("/root/prompts/distill.md").read()
+    return text, hashlib.sha256(text.encode()).hexdigest()[:12]
 
 
 def has_column(conn, table: str, column: str) -> bool:
@@ -144,7 +180,7 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
     import httpx
 
     p = PROVIDERS[provider]
-    prompt = open("/root/prompts/distill.md").read()
+    prompt, _ = load_prompt()
     for attempt in range(4):
         resp = httpx.post(
             p["url"],
@@ -244,6 +280,14 @@ def distill(max_papers: int = 30):
         grader = evidence() if grading else None
         if not grading:
             print("claims.evidence_grade is missing; run db/schema.sql to start grading")
+        stamping = has_column(conn, "claims", "prompt_sha")
+        if not stamping:
+            print("claims.prompt_sha is missing, so nothing records which distill "
+                  "prompt wrote a claim; run db/schema.sql")
+        taxonomy = topics()
+        _, sha = load_prompt()
+        print(f"prompt_sha {sha} ({len(taxonomy.TOPICS)} topics accepted)")
+        off_list: dict[str, int] = {}
 
         wrote_any = False
         fulltexts_used = 0     # the fetch budget: how many HTML pulls were tried
@@ -286,26 +330,34 @@ def distill(max_papers: int = 30):
                 text = (c.get("claim") or "").strip()
                 if not text:
                     continue
-                row = (pid, text, c.get("evidence"), c.get("topics") or [], c.get("procedure"))
+                # The taxonomy is enforced here, at the only place claims are
+                # written. Tags are folded onto the closed list and anything
+                # still unknown is dropped and counted, never stored: a tag that
+                # no query can match is worse than no tag, because it looks like
+                # coverage. pipeline/topics.py explains what the fold will and
+                # will not do.
+                tags, dropped = taxonomy.normalize(c.get("topics"))
+                for tag in dropped:
+                    off_list[tag] = off_list.get(tag, 0) + 1
+                # Columns are assembled rather than branched because two optional
+                # columns is four INSERTs, and the next one is eight. Every name
+                # here is a literal from this file, so nothing user-supplied ever
+                # reaches the statement text.
+                cols = ["paper_id", "claim", "evidence", "topics", "procedure"]
+                vals = [pid, text, c.get("evidence"), tags, c.get("procedure")]
                 if grading:
                     row_grade = grader.grade(pid, c.get("evidence"), c.get("measured"), source)
                     graded[row_grade] = graded.get(row_grade, 0) + 1
-                    conn.execute(
-                        """
-                        insert into claims
-                            (paper_id, claim, evidence, topics, procedure, evidence_grade)
-                        values (%s, %s, %s, %s, %s, %s)
-                        """,
-                        row + (row_grade,),
-                    )
-                else:
-                    conn.execute(
-                        """
-                        insert into claims (paper_id, claim, evidence, topics, procedure)
-                        values (%s, %s, %s, %s, %s)
-                        """,
-                        row,
-                    )
+                    cols.append("evidence_grade")
+                    vals.append(row_grade)
+                if stamping:
+                    cols.append("prompt_sha")
+                    vals.append(sha)
+                conn.execute(
+                    f"insert into claims ({', '.join(cols)}) "
+                    f"values ({', '.join(['%s'] * len(cols))})",
+                    tuple(vals),
+                )
                 wrote_any = True
             # fulltext_chars is how the weekly issue knows how much was read in
             # full. NULL means the abstract, which is the honest answer when
@@ -329,6 +381,14 @@ def distill(max_papers: int = 30):
         if graded:
             tally = ", ".join(f"{g} {n}" for g, n in sorted(graded.items()))
             print(f"evidence grades this run: {tally}")
+        # The off-list rate, printed every run. It was 3.9% for the pipeline's
+        # whole life and nobody could have known, because nothing counted it.
+        if off_list:
+            worst = sorted(off_list.items(), key=lambda kv: (-kv[1], kv[0]))[:8]
+            print("tags dropped as off-list: "
+                  + ", ".join(f"{t!r} x{n}" for t, n in worst))
+            print("  a tag dropped often is a proposal for prompts/distill.md, "
+                  "which belongs to the research seat (ADR-12 whitelist)")
 
         # Embedding is blackboard work: sweep every unembedded claim and paper,
         # not just this run's, so any crash or missed backfill heals next run.

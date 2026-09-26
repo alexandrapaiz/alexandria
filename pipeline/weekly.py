@@ -213,7 +213,9 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
         """
         select p.id
         from papers p
-        join triage_log t on t.paper_id = p.id
+        -- latest_triage, not triage_log: a re-triaged paper has two rows there
+        -- and would be checked for citations twice in one run.
+        join latest_triage t on t.paper_id = p.id
             and t.decision in ('index', 'distill', 'deep_read')
         left join lateral (
             select max(checked_at) as last_check
@@ -287,9 +289,18 @@ def gather(conn) -> dict:
         select
           (select count(*) from papers
             where fetched_at > now() - interval '7 days'),
-          (select count(*) from triage_log
-            where created_at > now() - interval '7 days'
-              and model != 'rule:backfill'),
+          -- Papers judged for the FIRST time this week, not decisions written.
+          -- Re-triage under a revised rubric appends a second row per paper, and
+          -- counting rows would let the issue say it triaged 47 papers it had
+          -- already triaged in September. The issue never claims work it did not
+          -- do (writer's law 13).
+          (select count(*) from triage_log t
+            where t.created_at > now() - interval '7 days'
+              and t.model != 'rule:backfill'
+              and not exists (select 1 from triage_log e
+                               where e.paper_id = t.paper_id
+                                 and (e.created_at < t.created_at
+                                      or (e.created_at = t.created_at and e.id < t.id)))),
           (select count(*) from papers
             where distilled_at > now() - interval '7 days'
               and fulltext_chars is not null),
@@ -309,7 +320,10 @@ def gather(conn) -> dict:
                c.evidence, c.procedure, p.authors[1:3], p.institutions
         from claims c
         join papers p on p.id = c.paper_id
-        left join triage_log t on t.paper_id = c.paper_id
+        -- latest_triage: joining triage_log here would return a claim once per
+        -- decision its paper has ever had, so one re-triaged paper would put the
+        -- same claim in the digest payload twice.
+        left join latest_triage t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
