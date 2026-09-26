@@ -90,9 +90,14 @@ def test_the_subscribers_index_cannot_abort_the_schema_on_legacy_duplicates():
     variants, so the unique index can legitimately fail on existing rows.
     It degrades to a non-unique index with a warning instead of taking the
     rest of the file down with it."""
-    block = re.search(r"do \$\$(.*?)\$\$;", SCHEMA, re.S | re.I)
-    assert block, "the subscribers index is not guarded"
-    guard = block.group(1)
+    # Pick the block by what is in it, not by being the first one. schema.sql
+    # has grown a second do-block since this was written (the evidence-grade
+    # constraint, added above subscribers), and a non-greedy search for the
+    # first one had been reading that block and failing on it ever since.
+    blocks = re.findall(r"do \$\$(.*?)\$\$;", SCHEMA, re.S | re.I)
+    guards = [b for b in blocks if "subscribers_email_lower_idx" in b]
+    assert guards, "the subscribers index is not guarded"
+    guard = guards[0]
     assert "raise warning" in guard.lower()
     assert "create index if not exists subscribers_email_lower_idx" in guard
     assert "create unique index if not exists subscribers_email_lower_idx" in guard

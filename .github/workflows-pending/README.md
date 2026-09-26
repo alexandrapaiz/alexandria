@@ -24,3 +24,19 @@ before it spends anything, and the digest run itself refuses to call Groq when
 the sums do not work. What is missing without the workflow is the early
 warning, at the moment an editorial merge is proposed rather than the next
 time the press tries to print.
+
+The same workflow has since grown three more steps, each `always()` so a
+red budget step cannot hide them: the press's bad-day paths
+(`tests/test_press_resilience.py`, incident 24), the designed email
+(`tests/test_email_template.py`, the owner's 2026-09-24 ruling), and the
+rehearsal print (`tests/test_press_rehearsal.py`,
+INC-2026-09-24-press-provider-migration). None of them needs a key, a
+network or a database.
+
+The rehearsal step is worth one sentence of its own, because it is the
+only one that guards a gate CI cannot run. The gate itself is `modal run
+pipeline/weekly.py::rehearse`, a real call with a real key that costs
+real money, and it belongs to the chair's deploy command
+(docs/agents/runtime-changes.md). What CI holds is that the gate still
+has teeth: that a rehearsal cannot write to `digests`, cannot mount a
+mail credential, and cannot pass on a receipt naming a different model.
