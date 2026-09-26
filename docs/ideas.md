@@ -5333,3 +5333,95 @@ press does with a 503.
   agreement first because it changes who writes that file.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Competitive scan: Undermind publishes a number for the quality of its own retrieval
+
+- Trigger: this run's craft scan, rotating through docs/market/landscape.md
+  to Undermind.ai, whose entry was search-snippet confidence only. Fetched
+  the real page this run.
+- What is worth stealing: Undermind puts a measured claim about its own
+  retrieval on the product page and links the method. "Our v1 search engine
+  delivered 10x better results than Google Scholar" and "our v2 engine
+  outperforms frontier agents with web search by a wide margin", each behind
+  a "see the benchmark" link. The claim is about the machinery rather than
+  about the output, and it is the machinery a buyer cannot otherwise
+  inspect. alexandria has never published a number about its routing, and as
+  of today it owns the apparatus to produce one: the re-triage writes a
+  second decision for 47 papers already judged by the old rubric, so the
+  disagreement rate between two rubrics on one corpus is now a computable
+  fact rather than an intuition. The idea below is that number.
+- What alexandria does better: Undermind answers a question you brought.
+  Its "keep up" step is a notification on a saved interest, which means the
+  standing corpus is a feature of the search product. In alexandria the
+  standing corpus is the product and the terminal state of a paper is an
+  artifact, not an answer: a skill an agent loads without asking anything,
+  carrying claim-id provenance and an evidence grade per claim. Undermind
+  also cannot tell you what it decided not to read, and the triage log is
+  exactly that record.
+
+### 2026-09-26 — Distill is the one corpus job the budget guard cannot see
+
+- Trigger: `python3 pipeline/budget.py` was run twice this run, as gate 1 of
+  the ladder. It checks the press, triage and interpret, and prints nothing
+  about distill. Distill sends up to 24,000 characters of full text
+  (`FULLTEXT_CHARS`) on Groq's free tier at 8,000 tokens a minute, which is
+  roughly 6,000 payload tokens plus the prompt, and `prompts/distill.md`
+  grew today with the `reasoning` topic's definition. Nothing anywhere
+  checks that a distill request fits, and distill's 429 handler stops the
+  run, which is the failure that made triage look patient for four months.
+- What: add distill to `budget.check_cron_requests` with its real worst case,
+  which is one full-text paper at `FULLTEXT_CHARS` and the model's own output
+  reservation, the same treatment triage and interpret got on 2026-09-26. The
+  check may well report that distill does not fit its own provider, in which
+  case the finding is the value: it would explain why only 164 of 8,956
+  papers have ever been read in full, and it turns "move distill to Kimi"
+  from a preference into arithmetic.
+- First step: one entry in the guard's job table plus the worst-case payload
+  builder, and read what it prints. No deploy and no provider call.
+- Cost: $0 to measure. Moving distill to Kimi if the arithmetic says so is a
+  separate proposal with the opex table attached.
+- Status: proposed
+
+### 2026-09-26 — The 47 re-triaged papers are the first real eval set for a prompt change
+
+- Trigger: the re-triage built this run appends a second `triage_log` row per
+  paper instead of editing the first, so after the chair runs it the table
+  holds 47 pairs where two rubrics judged the same paper with everything else
+  held constant. `triage_log` has carried `human_verdict` and `human_note`
+  columns since the schema's first day, and db/schema.sql says the table
+  doubles as the eval set for the recursive loop. Nothing has ever written a
+  verdict into either column.
+- What: a disagreement report over the pairs. Every paper where the rubric
+  changed its answer, with both decisions, both reasonings, and the title, in
+  one email to the owner, ranked by how far the decision moved. Twenty
+  verdicts from her would be the first labelled data the meta-review loop has
+  ever had, and the loop's whole design (ADR-25) assumes labels it has never
+  been given. The same report is the evidence for the number the Undermind
+  scan above says the product is missing.
+- First step: a `modal run pipeline/triage.py::disagreements` that prints the
+  pairs and writes nothing, reusing the email path the press already owns
+  only once the owner says she wants it as mail rather than as output.
+- Cost: $0, no model call. It is a join over one table.
+- Status: proposed
+
+### 2026-09-26 — Title-only priority misses the survey that argued for the priority
+
+- Trigger: the new `lilianweng` feed was smoke-tested through the real
+  `ingest.fetch_feeds` this run, 53 entries, and one of them is "Why We
+  Think", the test-time-compute survey the research brief names as the piece
+  the corpus has exactly one claim about. `triage.is_priority` does not match
+  it, because the reasoning priority reads titles only and that title carries
+  no term in the list. The limit is deliberate, since half the corpus mentions
+  reasoning in an abstract and a priority that covers everything is not a
+  priority, but this is the cost of it stated concretely.
+- What: a bounded second pass. A query that finds untriaged papers whose
+  ABSTRACT matches the reasoning terms while the title does not, ranked by
+  how many distinct terms match, capped at 50 papers, and appended to the
+  drain plan rather than run as its own job. The cap is what keeps it a
+  priority: a pass that promotes 3,000 papers has promoted nothing.
+- First step: add it to `triage.py::drain`, the dry run that spends nothing,
+  and look at what the top 50 actually are before any of them is judged. If
+  the top of that list is noise, the title-only rule was right and the idea
+  closes with evidence.
+- Cost: $0 to measure, and about $0.04 to judge 50 papers if the list is good.
+- Status: proposed
