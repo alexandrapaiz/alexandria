@@ -732,6 +732,34 @@ now ADR-34, which nothing outside this file cited. Sequential ids have
 now collided twice (ADR-30 before, ADR-32 now); ExO's standing
 recommendation to move to dated ids stays on the chair's list.
 
+## ADR-35: Skill creation requires reading
+
+**Status.** Accepted 2026-09-25, owner-directed. "Skill creation
+actually requires reading. The agent can survey the graph, read the
+papers, and also queue further readings/research."
+
+**Decision.** A skill is written from the papers, not from claim rows.
+The skill seat's run is now: survey the claim graph including the
+cluster's refines and contradicts neighborhood; fetch and read the
+cited papers in full from arXiv; write the skill from what was read,
+with the paper overriding a claim row where they disagree; append what
+it could not read and what the reading raised to
+docs/research/reading-queue.md. The research seat drains that queue
+every run. The engineer feeds queued arXiv ids to distill ahead of the
+daily intake, so a skill's reading debt is paid by the pipeline, not
+carried.
+
+**Why.** Tonight's numbers: 8,956 papers ingested, 164 read in full,
+746 claims. A skill written from claim rows alone inherits distill's
+reading, which is two percent of the library. Reading at skill time
+puts the deepest reading where the product is.
+
+**Consequences.** Skill runs take longer and read more; the cap is
+measured on the next run. Seats cite arXiv links only; the owner's
+local reading connector is chair-only. Engineer work: a reading_queue
+table or file reader in the distill priority, and the charter's cap
+re-measured.
+
 ## ADR-2026-09-26: Triage and interpret write on Kimi; ADR-32's corpus clause is superseded
 
 **A dated id, not ADR-35.** Sequential ids have collided twice in this
