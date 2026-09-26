@@ -321,3 +321,65 @@ def usable_models(models: list[str], env) -> tuple[set[str] | None, list[str]]:
     except Exception as exc:                       # noqa: BLE001 - never fatal
         return None, [f"could not read provider catalogs ({exc}); "
                       "trusting budget.MODELS and letting a 404 move the walk on"]
+
+# ---------------- pacing, and the one-at-a-time band ----------------
+
+# Moonshot's tier-0 ceiling for kimi-k2.6 is 3 requests per minute, which is the
+# floor a $1 recharge buys. That number, not the token budget, is what decides
+# how fast a backlog can drain: 3 RPM is one call every 20 seconds, so an hour
+# of wall clock is at most 180 calls no matter how much money the cap allows.
+#
+# Derived from budget.MODELS rather than hardcoded, so the day the account moves
+# up a tier the drain speeds up by editing one number in the table that already
+# has to be edited anyway.
+PACE_FLOOR_SECONDS = 1.0
+
+
+def pace(model: str) -> float:
+    """Seconds to wait between calls to `model`, from its published RPM."""
+    rpm = budget().MODELS.get(model, {}).get("rpm") or 0
+    if rpm <= 0:
+        return 3.0          # no published RPM: the old Groq pause, unchanged
+    return max(60.0 / rpm, PACE_FLOOR_SECONDS)
+
+
+# Moonshot applies organization concurrency at the ACCOUNT level, and this
+# account's limit is 1. Nothing in code can serialize two Modal apps, so the
+# schedule is the enforcement and this table is the schedule, in one place, in
+# UTC. Every job that can call Kimi appears here with the window it owns:
+# its cron minute plus its Modal timeout.
+#
+#   09:00-11:00  the press (weekly.py, Mon 09:00, timeout 1800) and the chair's
+#                manual rehearsal. Reserved, wider than the press needs, because
+#                a rehearsal is run by hand and cannot be scheduled.
+#   11:00-11:30  ingest. Calls no model.
+#   11:30-12:00  distill. Still on Groq (its own key, its own ceiling), so it
+#                does not contend for Kimi at all.
+#   12:00-13:00  triage.
+#   13:00-14:00  unclaimed. The gap is the margin.
+#   14:00-15:00  interpret.
+#
+# `budget.check_kimi_windows()` reads this table and the crons themselves and
+# fails CI if two windows overlap. That is the gate in the command rather than
+# in a comment: docs/agents/runtime-changes.md's own closing argument.
+KIMI_WINDOWS = {
+    "press (pipeline/weekly.py)": (9 * 60, 11 * 60),
+    "triage (pipeline/triage.py)": (12 * 60, 13 * 60),
+    "interpret (pipeline/interpret.py)": (14 * 60, 15 * 60),
+}
+
+
+def window_overlaps() -> list[str]:
+    """Pairs of jobs whose Kimi windows collide. Empty is the healthy answer."""
+    problems = []
+    items = sorted(KIMI_WINDOWS.items(), key=lambda kv: kv[1])
+    for (a, (a0, a1)), (b, (b0, b1)) in zip(items, items[1:]):
+        if b0 < a1:
+            problems.append(
+                f"{a} holds {a0 // 60:02d}:{a0 % 60:02d}-{a1 // 60:02d}:"
+                f"{a1 % 60:02d} UTC and {b} starts at {b0 // 60:02d}:"
+                f"{b0 % 60:02d}. Moonshot's organization concurrency is 1, so "
+                "the second call gets a 429 and the run that meets it loses "
+                "its slot (failure 2 of INC-2026-09-24-press-provider-migration)."
+            )
+    return problems
