@@ -4259,3 +4259,102 @@ same description for the same reason. Both now depend on a seat's first bullet
 being a sentence about the run. That is a convention with two consumers and no
 owner, which is the shape L-E6 describes, so it is named here before it becomes
 an incident.
+
+## INC-2026-09-26-run-report-dash-echo — the run report step failed every run in twelve workflows, and marked two finished runs as crashes (2026-09-26, engineer seat)
+
+**This is the consequence half of
+INC-2026-09-26-slack-report-step-no-smoke-run**, filed earlier tonight by this
+same seat. That entry recorded the governance failure, a runtime change reaching
+twelve live workflows with no pull request and no smoke run, and it concluded
+**"It is working."** It was not working. It had already failed twice when that
+sentence was written, and the runs it failed were the two runs that wrote it.
+
+**The failure.** `Post run report`, in all twelve `.github/workflows/agent-*.yml`:
+
+```
+parse error: Invalid string: control characters from U+0000 through U+001F
+must be escaped at line 190, column 1
+##[error]Process completed with exit code 4.
+```
+
+**The mechanism.** The step declares no `shell:`, so GitHub runs it under the
+container's default `sh -e {0}`, and `/bin/sh` in
+`ghcr.io/alexandrapaiz/alexandria-agent` is a symlink to dash. Dash's builtin
+`echo` expands backslash escapes, which bash's does not. So in
+
+```sh
+pr=$(gh pr list --head "$branch" --state all --json number,title,url,body --jq '.[0]')
+title=$(echo "$pr" | jq -r '.title // "no PR opened"')
+```
+
+every `\n` that `gh` had correctly escaped inside the JSON string became a real
+newline in the middle of that string before `jq` ever read it. `jq` then refused
+its own input for containing unescaped control characters and exited 4, which
+`sh -e` turned into a failed step.
+
+It is deterministic for any pull request body containing a newline, which is
+every body any seat has ever written. Reproduced this run against four seats'
+real pull requests, in the agent container, under `sh`:
+
+```
+okr/2026-09                            dash-exit=4
+engineer/2026-09-26-board-store        dash-exit=4
+writer/2026-09-26-b                    dash-exit=4
+research/2026-09-26                    dash-exit=4
+```
+
+and under `bash`, the same command on the same input exits 0. The shell is the
+whole bug.
+
+**What it cost, which is not the missing Slack message.** `engineer-agent`
+36208446311 (schedule, 01:26:48Z) and 36208644267 (dispatch, 01:30:18Z) both
+ran their full session, pushed their branches, and opened pull requests #115 and
+#116. Both are recorded as `failure`. Run health is read off those statuses by
+the PM's daily standup, by `docs/agents/delivery-health.md`, and by the ExO's
+weekly audit, so two complete runs now read as two crashes, and the next seat to
+audit the fleet will spend its time diagnosing runs that worked.
+
+**Why the earlier entry got it wrong, which is the part worth learning.** It
+tested the conclusion against one run, `okr-agent` 36207911573, and that run did
+conclude `success`. Its report step produced no output whatsoever, which is the
+signature of the path where `gh pr list` returns nothing for the current `HEAD`,
+so `jq` received the string `null`, parsed it fine, and never met the bug. The
+step's successful path and its silent-skip path are indistinguishable in a log,
+because the only command that prints anything on success is a `curl` ending in
+`>/dev/null`. A green step that prints nothing was read as proof, and it was the
+absence of evidence. **L-A6 in the company standards says judge a run by its
+artifacts. The artifact here was an empty log, and an empty log is not a pass.**
+
+**The repeat, which is why this is filed rather than fixed quietly.** This is
+incident 23's shape for the third time in three days: a runtime change lands on
+main outside a pull request, no smoke run behind it, and the first seats to meet
+it fail completely. Incident 23 cost four production failures on a Friday
+evening. INC-2026-09-24-press-provider-migration cost four more. This one cost
+two mislabelled runs and would have kept costing one per run indefinitely,
+because nothing in the fleet fails loudly when a notification step fails: the
+job goes red, and a red job on a seat that shipped its work looks like the
+tripwire firing rather than like a broken step.
+
+**The fix, and the reason it is not a two-character fix.** `shell: bash` on the
+step would end this bug tonight. It would not touch the class. The class is
+twenty lines of shell living inside twelve YAML files, where no test can reach
+it and where one edit ships to the whole fleet at once. So the logic moved to
+`tools/run_report.py`, whose `compose()` is a pure function, with eighteen tests
+in `tests/test_run_report.py`: the real body that broke production, a body with
+raw control characters, both of the owner's bullet rulings, the no-bullets
+fallback that the shell version contained but could never reach, and one test
+that runs the script under `sh -e` so the container's shell is under test
+instead of in production. The step becomes one command.
+
+The workflow edit itself is queued as item 10 in
+[pending-workflow-changes.md](pending-workflow-changes.md), because no seat can
+push `.github/workflows/`. **That queue is now the thing to watch.** The tested
+script is on a branch, the broken step is in production, and the distance
+between them is one human hand. Until that hand moves, every run of every seat
+is still recorded as a failure.
+
+**One behaviour change went in deliberately.** The new step cannot fail the job.
+A notification is not the run's work, and a red job for an undelivered message
+is precisely the lie this incident is made of. Delivery failures print as
+`::warning::` and the exit status stays 0. The report is also printed into the
+run log, so the artifact survives even when the channel is unreachable.

@@ -646,6 +646,100 @@ day of it behaving.
 
 ---
 
+### 10. The run report calls a tested script, because dash's echo ate the body
+
+**Queued 2026-09-26 by the engineer seat.
+INC-2026-09-26-run-report-dash-echo. This one is live and failing right now,
+in all twelve workflows, on every run.**
+
+The `Post run report` step added to all twelve `agent-*.yml` on 2026-09-26 at
+01:14 and 01:23 UTC declares no `shell:`, so it runs under the container's
+`sh`, which is dash. Dash's builtin `echo` expands backslash escapes. Every
+`\n` that `gh pr list --json body` correctly escaped inside the pull request
+body became a real newline before `jq` read it, so `jq` rejected its own input
+and the step exited 4.
+
+It is deterministic for any pull request body containing a newline, which is
+all of them. The first two runs to meet it both failed: `engineer-agent`
+36208446311 (schedule, 01:26:48Z) and 36208644267 (dispatch, 01:30:18Z). Both
+had already finished their work and opened their pull requests, #115 and #116.
+
+**The cost is not the missing Slack message. It is the status.** A run that did
+its whole job is recorded as `failure`, and run health is read off those
+statuses by the PM's standup, by `docs/agents/delivery-health.md`, and by the
+ExO's weekly audit. Two good runs currently read as two crashes.
+
+**The change, identical in all twelve `.github/workflows/agent-*.yml`.** Replace
+the whole body of the `Post run report` step with one command:
+
+```yaml
+      # Visibility window (standards/operating-modes.md §3): the seat's run
+      # report goes to the team's channel when the owner has created one.
+      # Seats never read the channel; it is the owner's window only.
+      #
+      # The logic is in tools/run_report.py, not here, because shell embedded
+      # in YAML cannot be tested and this step shipped broken to twelve
+      # workflows at once (INC-2026-09-26-run-report-dash-echo). The webhook
+      # guard stays inside the script for the reason the previous version's
+      # comment gave: a step cannot read its own `env:` block from `if:`.
+      - name: Post run report
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python3 tools/run_report.py --workflow "${{ github.workflow }}" --status "${{ job.status }}"
+```
+
+**Why a script and not a two-character shell fix.** Adding `shell: bash` to the
+step would fix this bug. It would not fix the class, and the class is the
+expensive part: twenty lines of shell inside twelve YAML files that no test can
+reach. `tools/run_report.py` has `compose()` as a pure function and eighteen
+tests in `tests/test_run_report.py`, one of which is this exact body, and one of
+which runs the script under `sh -e` so the container's shell is in the test
+rather than in production. L-E0 asks for agents that can read and diagnose what
+we build, and a seat can run this file and see its output.
+
+**It needs nothing new.** No secret beyond `SLACK_WEBHOOK_URL`, which the step
+already reads. No new permission. Python 3 and `gh` are both in the image and
+both already used by other steps. Standard library only, so nothing to install.
+
+**The behaviour is preserved exactly**, including both of the owner's rulings of
+2026-09-26. The report is the pull request's own opening rather than a log line,
+and it is the first five bullet lines, one line each, with `**` stripped, with a
+fallback to the first two lines of prose when a body has no bullets. That
+fallback is now proved by a test; in the shell version it was never reached.
+
+**One deliberate behaviour change, and it is a fix.** The step can no longer
+fail the job. A notification is not the run's work, and a red job for an
+undelivered message is exactly the lie this incident is made of. Delivery
+problems print as `::warning::` and the exit status stays 0. The report is also
+printed into the run log, so the artifact exists even when the channel does not.
+
+**Smoke-tested before it was queued**, as far as a seat can. Run against the
+real `gh` API and the real body that broke production, under `sh -e`, which is
+the exact shell the workflow gives a step with no `shell:` key:
+
+```
+$ sh -e -c 'echo "$pr" | jq -r ".title"'            # the live step's pipeline
+parse error: Invalid string: control characters from U+0000 through U+001F
+must be escaped at line 190, column 1
+exit=4
+
+$ sh -e -c 'python3 tools/run_report.py --status success \
+    --workflow engineer-agent --branch engineer/2026-09-26-reasoning-rubric --dry-run'
+{"text": "*engineer-agent* • success • Engineer 2026-09-26 (run 3): ...
+exit=0
+```
+
+What a seat cannot test is the webhook itself, because no seat holds
+`SLACK_WEBHOOK_URL`. The first real delivery is the chair's, on the first run
+after this is applied. Everything a test can hold without the secret is held.
+
+**Apply this before item 9 and before item 5.** It is the only item on this
+page that is failing production runs as it sits here, and it is one line per
+file.
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
