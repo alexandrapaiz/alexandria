@@ -5,6 +5,15 @@
   --line: #e8e8e8;
   --radius: 10px;
 
+  /* The one semantic red, and the only colour on this site. The owner
+     approved it by name in her dispatch of 2026-09-25 for `contradicts` edges
+     in the claim graph: a contradiction is the one relation a reader must not
+     misread as agreement, and four monochrome line treatments do not separate
+     far enough at a 1px hairline. It is used on exactly two things, the edge
+     and its legend swatch, and it enters nothing else. The colour law stands
+     otherwise. Ledger 2026-09-26. */
+  --contra: #c8102e;
+
   /* The micro-interaction system, from this run's benchmark. Read off the
      live sites rather than remembered: Linear runs its ENTIRE surface on one
      curve, cubic-bezier(0.25, 0.46, 0.45, 0.94), with two clocks — 100ms for
@@ -1536,62 +1545,425 @@ a {
 
 /* ---------- graph ---------- */
 
+/* The claim graph explorer. Built 2026-09-26 on the owner's dispatch, against
+   the site's own tokens: --ink, --paper, --gray, --line, radius 10, hairline
+   borders, Helvetica Neue from body, one curve and two clocks from :root.
+   The single exception to the colour law is --contra, the one semantic red she
+   approved for `contradicts` in that dispatch, and it is used on exactly one
+   thing. Ledger entry filed the same day. */
+
 .graph-page {
-  max-width: 1040px;
+  /* wider than the 680px reading column, because this page is a workspace and
+     not an article: a canvas and a panel side by side need the room */
+  max-width: 1280px;
 }
 
-.graph-stage {
-  position: relative;
-  margin-top: 56px;
+.graph-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 48px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.graph-counts dt {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+
+.graph-counts dd {
+  /* real numbers, read off the database, so they live in monospace: the
+     canon's positive test asks for data to look like data */
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin-top: 4px;
+}
+
+.graph-unavailable {
+  margin-top: 48px;
+  padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.graph-canvas {
-  width: 100%;
-  height: 64vh;
-  min-height: 420px;
-  display: block;
+  font-size: 17px;
+  color: var(--gray);
+  max-width: 540px;
 }
 
 .graph-gate {
-  position: absolute;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  margin-top: 48px;
   border: 1px solid var(--ink);
   border-radius: var(--radius);
-  padding: 26px 30px;
-  text-align: center;
-  max-width: 420px;
-  width: calc(100% - 48px);
+  padding: 32px;
+  max-width: 480px;
 }
 
-.graph-gate h3 {
-  font-size: 19px;
+.graph-gate h2 {
+  font-size: 21px;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
 .graph-gate p {
+  font-size: 17px;
+  color: var(--gray);
+  margin: 12px 0 24px;
+}
+
+/* ---------- graph explorer ---------- */
+
+.gx {
+  margin-top: 32px;
+}
+
+.gx-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.gx-input,
+.gx-select {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  height: 44px;
+  transition: border-color var(--fast) var(--ease);
+}
+
+.gx-input {
+  width: 260px;
+  max-width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.gx-input::placeholder {
+  color: var(--gray);
+}
+
+.gx-input:hover,
+.gx-select:hover {
+  border-color: var(--gray);
+}
+
+.gx-select {
+  /* the UA select on a hairline page is ban-list entry 26 exactly: a browser
+     default standing where the house has a rule for everything around it */
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 34px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position: right 16px center, right 11px center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.gx-count {
   font-size: 14px;
   color: var(--gray);
-  margin: 8px 0 18px;
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.gx-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.gx-stage {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  height: 620px;
+}
+
+.gx-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: manipulation;
+}
+
+.gx-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--gray);
+  pointer-events: none;
+}
+
+.gx-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px;
+  height: 620px;
+  overflow-y: auto;
+}
+
+.gx-hint {
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.gx-panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gx-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--gray);
+}
+
+.gx-close {
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--gray);
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: -4px;
+  cursor: pointer;
+  transition: color var(--fast) var(--ease);
+}
+
+.gx-close:hover {
+  color: var(--ink);
+}
+
+.gx-claim {
+  margin-top: 12px;
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.022em;
+}
+
+.gx-meta {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px 12px;
+  font-size: 14px;
+}
+
+.gx-meta dt {
+  color: var(--gray);
+}
+
+.gx-meta dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.gx-paper {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--line);
+  transition: text-decoration-color var(--fast) var(--ease);
+}
+
+.gx-paper:hover {
+  text-decoration-color: var(--ink);
+}
+
+.gx-sub {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gray);
+}
+
+.gx-neighbours {
+  list-style: none;
+  margin-top: 12px;
+}
+
+.gx-neighbours button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 0 -8px;
+  cursor: pointer;
+  transition: background-color var(--fast) var(--ease);
+}
+
+.gx-neighbours button:hover {
+  background: #f5f5f5;
+}
+
+.gx-rel {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--gray);
+  margin-bottom: 2px;
+}
+
+.gx-rel-contradicts {
+  color: var(--contra);
+}
+
+.gx-neighbour-text {
+  display: block;
+  font-size: 14px;
   line-height: 1.5;
 }
 
-.graph-legend {
+/* ---------- graph legend, which is also the edge filter ---------- */
+
+.gx-legend {
+  list-style: none;
   display: flex;
-  gap: 26px;
-  justify-content: center;
-  margin-top: 18px;
-  font-size: 13px;
-  color: var(--gray);
   flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.gx-legend-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 14px;
+  height: 44px;
+  cursor: pointer;
+  transition: border-color var(--fast) var(--ease), opacity var(--fast) var(--ease);
+}
+
+.gx-legend-btn:hover {
+  border-color: var(--gray);
+}
+
+/* Refinement 2, 2026-09-26. The off state was a blanket opacity of 0.4, which
+   put the label at roughly 2.9:1 against paper and the count near 1.5:1, so
+   the control that says which edges are hidden was the least readable thing on
+   the page. Opacity on a control dims its text along with everything else. The
+   off state is designed instead: the swatch drops to the hairline, the label
+   drops to grey, and both stay legible. Benchmarked against Consensus, which
+   moves colour and nothing else, on one clock. */
+.gx-legend-btn.is-off .gx-legend-label {
+  color: var(--gray);
+}
+
+/* two classes deep, so this beats .gx-swatch-contradicts on specificity
+   without reaching for !important */
+.gx-legend-btn.is-off .gx-swatch {
+  border-top-color: var(--line);
+}
+
+.gx-legend-label {
+  transition: color var(--fast) var(--ease);
+}
+
+.gx-legend-n {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: var(--gray);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the swatch draws the line the canvas draws, so the legend is a key and not
+   a set of labels that have to be trusted */
+.gx-swatch {
+  width: 22px;
+  height: 0;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--ink);
+  transition: border-top-color var(--fast) var(--ease);
+}
+
+.gx-swatch-supports {
+  border-top-style: solid;
+  border-top-color: var(--ink);
+}
+
+.gx-swatch-refines {
+  border-top-style: dashed;
+  border-top-color: var(--gray);
+}
+
+.gx-swatch-contradicts {
+  border-top-width: 2px;
+  border-top-style: solid;
+  border-top-color: var(--contra);
+}
+
+.gx-swatch-duplicates {
+  border-top-style: dotted;
+  border-top-width: 2px;
+  border-top-color: var(--gray);
+}
+
+@media (max-width: 900px) {
+  .gx-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gx-stage {
+    /* the canvas keeps a usable square on a phone rather than a letterbox */
+    height: 58svh;
+    min-height: 360px;
+  }
+
+  .gx-panel {
+    height: auto;
+    min-height: 140px;
+    max-height: none;
+  }
+
+  .gx-count {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .graph-counts {
+    gap: 24px 32px;
+    margin-top: 32px;
+  }
+
+  .graph-counts dd {
+    font-size: 24px;
+  }
 }
 
 /* ---------- mission / coming soon ---------- */

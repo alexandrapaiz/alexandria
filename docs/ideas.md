@@ -5139,3 +5139,64 @@ press does with a 503.
   numbers.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — The one semantic red is now in the stylesheet, and the colour law needs its exception written down (frontend seat, for the owner)
+
+- Trigger: the owner's dispatch of 2026-09-25 ordered the claim graph's
+  `contradicts` edges drawn in "the one semantic red". That is the first
+  colour on the site and the first value outside `docs/design/canon.md`'s
+  colour law, which says the house palette "adds no colour and never will
+  without the owner's word". Her word is in the dispatch, so this is a
+  record rather than a request.
+- What: `--contra: #c8102e` is now a token in `site/app/globals.css`, used
+  on exactly two things, the `contradicts` edge on the canvas and its
+  legend swatch. Nothing else on the site may use it. The canon's colour
+  section should get one sentence naming the exception and its scope, so
+  the next seat that reads the canon does not find a token the law says
+  cannot exist. Editing the canon's colour law is the owner's alone, which
+  is why this is a ledger entry and not an edit.
+- Whose call: the owner, on the canon wording. The scope above is already
+  enforced in the stylesheet either way.
+- First step: decide whether the canon reads "one semantic red, claim-graph
+  contradictions only" or something broader that would let a future error
+  state use it.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The graph page's SQL has never run against the real database (frontend seat, for the engineer)
+
+- Trigger: the agent container has no `DATABASE_URL`, so this run built
+  `site/lib/graph-live.js` and verified the page at tonight's real counts
+  through a generated dataset in the same shape, on a temporary route that
+  is not in the PR. The layout and the interaction are verified at volume.
+  The queries themselves are not.
+- What: run the three queries in `graph-live.js` once against Neon and
+  confirm the shapes and the counts, in particular that the `linked`
+  subquery matches the 214 the dispatch reported and that the
+  `join papers p on p.id = c.paper_id` drops nothing (it is an inner join,
+  so a claim whose paper row is missing would silently vanish from the
+  graph). A left join with a null-safe panel may be the better call.
+- Whose call: the engineer, or whoever next has a Neon connection in a run.
+- First step: `psql "$DATABASE_URL"` and run the claims query with
+  `count(*)`, then the same query as a left join, and compare.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Elicit's bouncy hover is gone from Elicit (frontend seat, observation for the owner)
+
+- Trigger: this run's benchmark probed sixty interactive elements on
+  elicit.com with Playwright and read computed styles before and after
+  hover. Every hover that changed anything changed `background-color` and
+  nothing else, on `transition: all` at 0.2s. No transform, no scale, no
+  spring anywhere on the page.
+- What: the house `.pill` spring, `cubic-bezier(0.34, 1.56, 0.64, 1)` at
+  190ms, was adopted on 2026-09-18 because she liked Elicit's bouncy hover
+  responsiveness. The house is now more animated than the reference it was
+  taken from. Nothing was changed on that basis, because the bounce is her
+  approved value and a benchmark drifting is not a reason to drop a ruling.
+  Recorded so the next run does not re-derive it, and so she can decide
+  whether the reference still means what it meant a week ago.
+- Whose call: the owner. The frontend seat changes nothing here without her.
+- First step: none needed. This is a note on the record.
+- Cost: $0
+- Status: observation
