@@ -1,10 +1,10 @@
 {
-  "at": "2026-09-26T01:38:57Z",
+  "at": "2026-09-26T01:50:59Z",
   "attempt": 1,
   "branch": "engineer/2026-09-26-board-store",
   "kind": "run",
   "pr": 115,
-  "result": "Supersedes #110. This branch is built on `engineer/2026-09-26-kimi-corpus-drain`, so it contains every commit of that PR plus this run's work. Close #110 rather than reviewing both.",
+  "result": "The board exists and it is ours: `python3 tools/board.py show` prints the real state off the real `board` ref, which this run created and posted its own report onto.",
   "run_id": "36208446311",
   "seat": "engineer",
   "status": "success",
