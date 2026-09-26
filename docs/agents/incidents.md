@@ -4056,3 +4056,68 @@ takes minutes. The honest statement of the remaining risk: a rehearsal
 started between 11:00 and 15:00 UTC can still collide with a corpus run,
 and nothing prevents it. The backoff makes that survivable rather than
 fatal, since both callers now wait 30 to 180 seconds rather than one.
+---
+
+## INC-2026-09-26-interpret-stale-third-sighting — The prompt fix for mis-typed contradictions has produced zero of the graph's 238 edges, seven days after merge, and the defect it fixes reached readers (2026-09-26, research seat)
+
+**This is a repeat of incident 25, recorded at the moment it repeated, per
+the standing rule at the top of this file. It is the third recorded sighting
+of the same pattern and the first one with a published consequence attached.**
+
+**What happened.** `prompts/interpret.md` was revised on 2026-09-19 by commit
+a94a003, titled "Meta-review: sharpen interpret.md on contradictions, anaphora
+and refines". The file at HEAD hashes to `6706ec7bffee`. Every edge in
+`claim_links` — all 238 of them, created between 2026-09-08 and 2026-09-25 —
+carries method `openai/gpt-oss-120b@fbe080261d6b`, and `fbe080261d6b` is the
+sha of `prompts/interpret.md` as it stood on 2026-09-07. The revision has
+produced no edges. It has never run.
+
+**The consequence, which is what makes this different from the first two
+sightings.** The undeployed revision sharpens the interpret layer on exactly
+the error class the old prompt kept making. On 2026-09-19, the day the
+revision was merged, the old prompt wrote edge 190 `contradicts` 188. Both
+claims come from `arxiv:2609.10522`. A paper was recorded as contradicting
+itself. Claim 188 was deprecated on the strength of that edge, and digest
+2026-W39 published the deprecation to subscribers as something the field is
+leaving behind. Two of the graph's other four `contradicts` edges are also
+mis-typed: 12 -> 11 is two systems compared on one benchmark, and 85 -> 12 is
+the same method measured on a harder subset. Three of five are wrong, and the
+prompt that was written to stop this has been sitting merged for a week.
+
+**Why the existing gate did not catch it.** The research charter's gate works
+and worked. It says to compare the deployed sha against HEAD before spending
+the week's proposal on an image-baked file, and it says that if the deployed
+sha is stale, do not propose into that file. This run ran that check, found
+the staleness, and correctly declined to propose into `interpret.md`. The gate
+protects the proposal from being wasted. Nothing in it deploys anything, and
+nothing escalates when the same file fails the check on three consecutive
+runs. A gate that only ever says "not this week" is indistinguishable from a
+gate that says "never" if no other step exists.
+
+**The general form.** Incident 25 named this as a prompt that does not reach
+production. Two runs have now found it still true at five days and at seven.
+The missing piece is not detection, it is that detection has no destination:
+the finding is written into a brief, the brief is read by whoever reads it,
+and no deploy is owned by anyone on a clock. A merge to `main` changes nothing
+in the pipeline by itself, which the charter states plainly, and the org has no
+step between "merged" and "running" that anybody is accountable for. This is
+worth the ExO's attention as a class, because the same freeze applies to
+`prompts/digest.md`, `distill.md`, `triage.md`, `rag-answer.md`,
+`skill-extract.md`, `sources.yaml`, and every file under `pipeline/`.
+
+**A second gap found while checking.** `prompts/distill.md` records no sha
+anywhere. `triage_log` has `prompt_sha`, `digests` has `prompt_sha`,
+`claim_links` has `method`, and `claims` has nothing. The charter's staleness
+gate cannot be run on the distill prompt at all. This run established its
+deploy state by inference — `evidence_grade` is non-null on every claim from
+2026-09-24 onward and null on every claim before, and that column was
+introduced by the same commit that last touched `distill.md` — which only
+worked because the change happened to be visible in the schema. The next one
+may not be.
+
+**Not fixed in this PR, and deliberately so.** The deploy is engineer lane and
+`pipeline/` is frozen for this seat this week by the owner's dispatch. Routed
+in `docs/research/briefs/2026-09-26.md` section 9, item 1, with the `claims`
+`prompt_sha` column as item 4. This run spent its proposal on
+`prompts/triage.md`, which was verified current, rather than stacking a second
+fix behind an undeployed first one.
