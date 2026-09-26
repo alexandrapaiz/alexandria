@@ -307,6 +307,26 @@ def ask_json(models: list[str], system: str, user: str, env, cap: Cap,
         "every model failed:\n  " + "\n  ".join(tried))
 
 
+def calls_within(cap_usd: float, prompt_tokens: int, completion_tokens: int,
+                 model: str) -> str:
+    """How many calls `cap_usd` buys on `model`, as a printable phrase.
+
+    Its own function because the obvious one-liner, `int(cap / cost)`, raises
+    ZeroDivisionError on every Groq model: the free tier is priced at $0.00 per
+    million in budget.MODELS, which is correct and makes the division undefined.
+    Both preflights hit that the moment Kimi is absent at the provider and a
+    free-tier fallback is the only usable model, which is precisely the
+    situation a preflight exists to report legibly rather than crash in.
+    """
+    per_call = budget().cost_usd(prompt_tokens, completion_tokens, model)
+    if per_call <= 0:
+        return (f"${0.00:.2f} a call on {model}, so the ${cap_usd:.2f} cap "
+                "cannot bind: this model is free and the only ceiling on it is "
+                "its provider's rate limit")
+    return (f"${per_call:.5f} a call on {model}, about "
+            f"{int(cap_usd / per_call)} calls inside the ${cap_usd:.2f} cap")
+
+
 def usable_models(models: list[str], env) -> tuple[set[str] | None, list[str]]:
     """Which of `models` the providers list for these keys, or None if unknown.
 

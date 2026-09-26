@@ -268,9 +268,12 @@ def preflight() -> str:
             "preflight: no model in interpret's list is listed by its provider "
             "for these keys, so no edge can be drawn. Fix "
             "pipeline/interpret.py MODELS and pipeline/budget.py MODELS together.")
-    est = guard.cost_usd(1_050, 150, usable[0])
-    print(f"cost at list price: ${est:.5f} a claim, about "
-          f"{int(CAP_USD / est)} claims inside the ${CAP_USD:.2f} cap")
+    print("cost at list price: "
+          + client.calls_within(CAP_USD, 1_050, 150, usable[0]))
+    if usable[0] != MODELS[0]:
+        print(f"  NOTE: {MODELS[0]} is not usable here, so the run would fall "
+              f"back to {usable[0]} and the graph grows at the free tier's pace "
+              "again until the head of the list comes back.")
     return f"preflight ok: {usable[0]} would judge the shortlist"
 
 

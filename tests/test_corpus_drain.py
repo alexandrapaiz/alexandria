@@ -474,3 +474,26 @@ def test_the_writer_is_told_which_number_means_read():
     prompt = (ROOT / "prompts" / "digest.md").read_text()
     assert "papers_read_in_full" in prompt
     assert "the only" in prompt.split("papers_read_in_full")[1][:400]
+
+
+# ---------------- the free tier is priced at zero, which is a division ----------------
+
+def test_the_cap_phrase_does_not_divide_by_a_free_models_price():
+    # Found by self-review, not by a failure: `int(cap / cost)` raises
+    # ZeroDivisionError on every Groq model, because the free tier is priced at
+    # $0.00/M in budget.MODELS and that is the correct price. Both preflights
+    # hit it the moment Kimi is absent at the provider and a free-tier fallback
+    # is the only usable model, which is exactly the case a preflight exists to
+    # report legibly rather than crash in.
+    paid = llm.calls_within(0.60, 3_500, 700, "kimi-k2.6")
+    assert "97 calls" in paid and "$0.60 cap" in paid
+    free = llm.calls_within(0.60, 3_500, 700, "openai/gpt-oss-120b")
+    assert "cannot bind" in free
+    assert budget.MODELS["openai/gpt-oss-120b"]["price_in"] == 0.0
+
+
+def test_neither_preflight_computes_a_price_by_bare_division():
+    for path in ("triage.py", "interpret.py"):
+        source = (ROOT / "pipeline" / path).read_text()
+        assert "CAP_USD / est" not in source, path
+        assert "calls_within" in source, path

@@ -402,8 +402,13 @@ def preflight() -> str:
             "for these keys, so triage cannot judge a single paper. Fix "
             "pipeline/triage.py MODELS and pipeline/budget.py MODELS together.")
     est = guard.cost_usd(3_500, 700, usable[0])
-    print(f"cost at list price: ${est:.5f} a call, ${est / BATCH:.6f} a paper, "
-          f"about {int(CAP_USD / est)} calls inside the ${CAP_USD:.2f} cap")
+    print(f"cost at list price: {client.calls_within(CAP_USD, 3_500, 700, usable[0])}"
+          + (f", ${est / BATCH:.6f} a paper" if est else ""))
+    if usable[0] != MODELS[0]:
+        print(f"  NOTE: {MODELS[0]} is not usable here, so the run would fall "
+              f"back to {usable[0]}. It can judge a batch, and it will stop on "
+              "a 429 long before the cap. The corpus drains at the free tier's "
+              "pace again until the head of the list comes back.")
     return f"preflight ok: {usable[0]} would judge the batch"
 
 
