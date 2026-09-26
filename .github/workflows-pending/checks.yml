@@ -26,6 +26,7 @@ on:
       - "tests/test_reasoning_rubric.py"
       - "tests/test_board.py"
       - "tests/test_run_report.py"
+      - "tests/test_distill_gates.py"
       - "tools/board.py"
       - "tools/run_report.py"
       - "board/views.json"
@@ -46,6 +47,7 @@ on:
       - "tests/test_reasoning_rubric.py"
       - "tests/test_board.py"
       - "tests/test_run_report.py"
+      - "tests/test_distill_gates.py"
       - "tools/board.py"
       - "tools/run_report.py"
       - "board/views.json"
@@ -186,3 +188,15 @@ jobs:
       - name: the run report survives the container's shell
         if: always()
         run: python3 -m pytest tests/test_run_report.py -q
+
+      # 2026-09-26: distill had none of the three gates, which is how the job
+      # whose purpose is reading papers in full came to be unable to read one.
+      # CI cannot run gates 2 and 3, because both need a real key. What it holds
+      # is that they have teeth: that the rehearsal carries no Neon credential
+      # and so cannot write a claim, that it sends a full FULLTEXT_CHARS payload
+      # at the real timeout rather than a smaller one, that a refused full paper
+      # stops the deploy instead of passing on the abstract, and that an
+      # off-taxonomy topic stops it too. The last one is incident 30.
+      - name: distill cannot deploy without proving it can read a paper
+        if: always()
+        run: python3 -m pytest tests/test_distill_gates.py -q

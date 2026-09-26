@@ -9,8 +9,12 @@ Scheduled at 11:30 UTC, BEFORE triage's 12:00 run: both share Groq's daily token
 budget, and distill is the higher-value-per-token job, so it spends first and
 processes yesterday's triage output.
 
+    python3 pipeline/budget.py                       # gate 1: does it fit
+    modal run pipeline/distill.py::preflight         # gate 2: does the model exist
+    modal run pipeline/distill.py::rehearse          # gate 3: one real call, no write
+    modal deploy pipeline/distill.py                 # then, and only then, deploy
+
     modal run pipeline/distill.py --max-papers 5     # manual production run
-    modal deploy pipeline/distill.py                 # install the daily schedule
     modal run pipeline/distill.py::bake_off          # rerun the model bake-off
 
 ## What changed on 2026-09-26
@@ -230,6 +234,199 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
         out = json.loads(resp.json()["choices"][0]["message"]["content"])
         return out
     raise RuntimeError(f"{provider}: exhausted retries")
+
+
+# One paragraph of real paper prose, repeated to FULLTEXT_CHARS by the rehearsal.
+# The payload is a fixed sample carried in this file, the way triage's rehearsal
+# batch is, so the gate needs no database. What must be real is its SIZE, because
+# the question this gate answers is whether a full paper fits, and the answer
+# depends on the length and nothing else.
+REHEARSAL_SAMPLE = (
+    "We introduce a two-stage procedure for aligning a reward model to human "
+    "preference pairs. In the first stage the policy is trained with supervised "
+    "fine-tuning on 12,400 demonstrations. In the second stage we distil the "
+    "reward model into the policy with a KL penalty of 0.02, which we ablate in "
+    "Table 4. On the held-out split the aligned policy reaches 71.3% pairwise "
+    "win rate against the SFT baseline, measured by three annotators with "
+    "Krippendorff alpha 0.81. Training used 64 A100-hours. "
+)
+
+REHEARSAL_TITLE = "A two-stage procedure for distilling reward models into policies"
+
+
+@app.function(
+    secrets=[modal.Secret.from_name("groq")],
+    timeout=300,
+)
+def preflight() -> str:
+    """Gate 2: do the models exist? Run before every deploy.
+
+        modal run pipeline/distill.py::preflight
+
+    `modal deploy` runs no entrypoint, so without this nothing asks the provider
+    between one day's cron and the next. Incident 24 is the reason the press has
+    this and it applies here unchanged: a model can be retired under a running
+    schedule and the first thing that notices is a cron with nobody watching.
+
+    It asks the provider's `/models` endpoint and nothing else. Whether the
+    request FITS is gate 1's question, `python3 pipeline/budget.py`, and that
+    separation is deliberate: three gates that each ask one question can each
+    fail for one reason.
+
+    It raises, so a failure stops the chair's `&&` chain before the deploy.
+    """
+    import os
+
+    import httpx
+
+    wanted = {name: PROVIDERS[name]["model"] for name in PROVIDERS}
+    key = os.environ.get("GROQ_API_KEY", "").strip()
+    if not key:
+        raise RuntimeError(
+            "preflight: GROQ_API_KEY is absent, so nothing can be asked. "
+            "Set it with `modal secret create groq GROQ_API_KEY=...`.")
+
+    resp = httpx.get("https://api.groq.com/openai/v1/models",
+                     headers={"Authorization": f"Bearer {key}"}, timeout=30)
+    resp.raise_for_status()
+    listed = {m["id"] for m in resp.json().get("data", [])}
+
+    print("distill preflight:")
+    missing = []
+    for name, model in wanted.items():
+        mark = "ok" if model in listed else "MISSING"
+        note = "  (production)" if name == PRODUCTION_PROVIDER else ""
+        print(f"  [{name}] {model}: {mark}{note}")
+        if model not in listed:
+            missing.append(f"{name} -> {model}")
+
+    production = PROVIDERS[PRODUCTION_PROVIDER]["model"]
+    if production not in listed:
+        raise RuntimeError(
+            f"preflight: {production} is not listed by Groq for this key, so "
+            f"distill cannot read a single paper. It is PRODUCTION_PROVIDER in "
+            "pipeline/distill.py, and the bake-off that chose it is "
+            "docs/evals/2026-09-07-distill-bakeoff.json. Nothing was deployed.")
+    if missing:
+        print(f"  NOTE: {len(missing)} non-production model absent ({', '.join(missing)}). "
+              "The daily run never reaches it, and the bake-off would fail.")
+    print("  fit is gate 1's question: python3 pipeline/budget.py")
+    return f"preflight ok: {production} is listed and would read the paper"
+
+
+@app.function(
+    # Neon is deliberately absent. A rehearsal must not be able to write a claim,
+    # and the strongest form of that promise is a missing credential rather than
+    # a missing function call. This is the shape pipeline/triage.py::rehearse
+    # established and the reason is the same.
+    secrets=[modal.Secret.from_name("groq")],
+    timeout=900,
+)
+def rehearse(allow_abstract_only: bool = False) -> str:
+    """Gate 3: one real call on the real prompt, writing nothing.
+
+        modal run pipeline/distill.py::rehearse
+        modal run pipeline/distill.py::rehearse --allow-abstract-only
+
+    The first two gates ask questions about the request. This one exercises the
+    provider, and every one of the four failures of
+    INC-2026-09-24-press-provider-migration was on this question. The prompt, the
+    provider, the key, the temperature, the `response_format` and the 180-second
+    timeout are the real ones, because it calls `extract_claims` rather than
+    reimplementing it. What is fake is the paper, and what is absent is the
+    database.
+
+    **It asks distill's own question, which no other gate asks: can this job
+    read a paper in full?** `python3 pipeline/budget.py` says today that it
+    cannot, on either model, and it misses by 109 tokens: prompt 990 + payload
+    3,887 + reservation 2,000 + envelope 32 = 6,909 against 6,800 usable. The
+    run then degrades to `abstract[:6000]` and succeeds. A job that succeeds while doing
+    the lesser thing is the shape of the owner's finding of 2026-09-25, that the
+    corpus is not being read: 164 papers read in full out of 8,956 ingested. So
+    a rehearsal that got claims out of an abstract and called itself green would
+    be the same defect in a smaller box.
+
+    It therefore raises when the full-text request does not survive, and
+    `--allow-abstract-only` is the escape hatch for the day the chair is
+    deploying an unrelated fix and knows the payload still does not fit. The
+    hatch prints what it is forgiving, so the receipt says which of the two
+    things was proved.
+    """
+    import os
+
+    import httpx
+
+    prompt, sha = load_prompt()
+    taxonomy = topics()
+
+    # The worst case by construction: exactly what the daily run sends when
+    # fetch_fulltext succeeds, which is the request that must fit.
+    body = (REHEARSAL_SAMPLE * (FULLTEXT_CHARS // len(REHEARSAL_SAMPLE) + 1))[:FULLTEXT_CHARS]
+
+    print("distill rehearsal:")
+    print(f"  model: {PROVIDERS[PRODUCTION_PROVIDER]['model']}   prompt_sha: {sha}   "
+          f"payload: {len(body)} chars (FULLTEXT_CHARS)   timeout: 180s")
+
+    read_in_full = True
+    started = time.monotonic()
+    try:
+        out = extract_claims(PRODUCTION_PROVIDER, REHEARSAL_TITLE, body)
+    except httpx.HTTPStatusError as exc:
+        status = exc.response.status_code
+        print(f"  the full-text request was refused: HTTP {status}")
+        if not allow_abstract_only:
+            raise RuntimeError(
+                f"the rehearsal's full-paper request was refused with HTTP "
+                f"{status}, so a deploy today installs a job that reads "
+                "abstracts and reports papers. That is the finding of "
+                "2026-09-25 rather than a surprise: `python3 "
+                "pipeline/budget.py` already says this request does not fit. "
+                "Shrink FULLTEXT_CHARS, lower the reservation, or move the job "
+                "to a provider with room. Pass --allow-abstract-only to deploy "
+                "anyway, knowingly. Nothing was deployed."
+            ) from exc
+        read_in_full = False
+        print("  --allow-abstract-only: retrying at abstract size, as the run does")
+        out = extract_claims(PRODUCTION_PROVIDER, REHEARSAL_TITLE, body[:6000])
+    elapsed = time.monotonic() - started
+
+    claims = [c for c in out.get("claims", []) if isinstance(c, dict)]
+    with_text = [c for c in claims if (c.get("claim") or "").strip()]
+    kept, dropped = 0, {}
+    for c in claims:
+        tags, off = taxonomy.normalize(c.get("topics"))
+        kept += len(tags)
+        for tag in off:
+            dropped[tag] = dropped.get(tag, 0) + 1
+
+    print(f"  {len(claims)} claims back, {len(with_text)} with text, in {elapsed:.1f}s")
+    print(f"  read in full: {read_in_full}")
+    print(f"  topics: {kept} on the closed list, {sum(dropped.values())} dropped "
+          f"{sorted(dropped) if dropped else ''}")
+    for c in with_text[:3]:
+        print(f"    - {(c.get('claim') or '')[:110]}")
+        print(f"      evidence: {str(c.get('evidence'))[:90]}")
+    print(f"  institutions: {out.get('institutions')}")
+    print("  wrote nothing: this container has no database credential")
+
+    if not with_text:
+        raise RuntimeError(
+            "the rehearsal got no claim with text back. A distill run that "
+            "answers with an empty claims list writes nothing and logs nothing "
+            "unusual, so the paper is marked processed and never revisited. "
+            "Nothing was deployed.")
+    if dropped:
+        raise RuntimeError(
+            f"the model tagged claims with {sum(dropped.values())} topics off "
+            f"the closed list ({sorted(dropped)}), which pipeline/topics.py "
+            "drops. Dropped tags mean claims no query can match, which is "
+            "incident 30 and the 18 invisible claims of 2026-09-26. Fix "
+            "prompts/distill.md and pipeline/topics.py together. Nothing was "
+            "deployed.")
+
+    verdict = "in full" if read_in_full else "from an abstract only"
+    return (f"rehearsal ok: {len(with_text)} claims read {verdict} at prompt "
+            f"{sha} in {elapsed:.1f}s, wrote nothing")
 
 
 @app.function(
