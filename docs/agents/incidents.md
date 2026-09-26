@@ -3951,3 +3951,108 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-26-deploy-workflow-no-smoke-run — a new workflow reached main and ran unattended with no smoke run behind it (2026-09-26, engineer seat)
+
+**Recorded, not fixed.** This seat cannot push a workflow file, so this is
+a finding for the owner and nothing more. It is addressed to her in the
+pull request that carries it.
+
+**What the §0 check found.** The engineer charter's daily machinery diff:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/
+```
+
+returned `1baeb7f 2026-09-25 16:50:53 -0600 alexandrapaiz`, "Production
+deploys via a deploy hook on main; seat branches no longer create Vercel
+deployments (HQ Incident 5: the 100/day limit)". It adds
+`.github/workflows/deploy-main.yml`, 29 new lines, and
+`site/vercel.json`, 6 new lines.
+
+The two questions docs/agents/runtime-changes.md exists to ask:
+
+- **Did a merged pull request explain it?** No. `gh api
+  repos/.../commits/1baeb7f/pulls` returns empty; the commit went
+  straight to main.
+- **Was there a smoke run behind it?** No. `gh run list
+  --workflow=deploy-main.yml` holds exactly one run, at
+  2026-09-25T22:50:57Z, `event: push`, `headBranch: main`. That run IS
+  the first execution of the new machinery, which is the sentence the law
+  is written to prevent: "the next cron is never the first execution of
+  new machinery." A new workflow's first run is explicitly on the law's
+  own list of runtime changes.
+
+**It worked.** The run's conclusion is `success`, and the site deploys.
+That is why this is a register entry and not an outage. The charter is
+also explicit that the outcome does not decide whether it is recorded:
+"Any runtime change with no smoke run behind it in `gh run list` is a
+finding, recorded in the register whether or not it happened to work."
+
+**Why it is a repeat, which is what makes recording it mandatory.**
+Incident 23 is the same shape: a change to how runs execute, landing on
+main without the ladder, and working or failing on its first unattended
+execution rather than on a throwaway branch. Incident 23 failed and cost
+four production failures. This one succeeded. The standing rule at the
+top of this file covers the class and not the outcome, and the class has
+now occurred at least twice.
+
+**What is worth taking from it, blamelessly.** The gap is not that
+anybody forgot the law. It is that the law's enforcement for workflow
+files lives in a charter sentence, and the change was made by the one
+participant no charter's §0 check runs before: the chair pushes directly
+to main, so there is no PR for CI to gate and no seat's pre-flight to
+read the register. Every other runtime in the org now has its gate in a
+command rather than in prose. The press has the `&&` chain. The corpus
+crons got theirs in this pull request. `.github/` has a charter sentence
+and a Sunday audit.
+
+The shape of a fix, for the owner and the ExO rather than for this seat:
+a required check on main that fails a push touching `.github/workflows/`
+unless a run of that workflow exists on a non-main branch. That is the
+same idea as the rehearsal receipt, applied to a file instead of a model.
+It is a workflow change, so it cannot come from here.
+
+---
+
+## INC-2026-09-26-kimi-concurrency-schedule-lock — the follow-up to INC-2026-09-24-kimi-org-concurrency: the schedule is now the lock (2026-09-26, engineer seat)
+
+Its own id rather than a second heading under
+INC-2026-09-24-kimi-org-concurrency, because ids in this file have to be
+unique and `tests/test_check_registers.py` enforces it. Read it as a
+continuation of that entry: this is the answer to the question it left
+open for this seat.
+
+That entry offered two options: "a scratch-row lock the callers check, or
+a second Moonshot organization for rehearsals". The corpus move of
+2026-09-26 (ADR-2026-09-26) needed a third, because it put two more
+daily Kimi callers on the one slot and a lock between two Modal apps is
+not something a single-process client can hold.
+
+**What shipped instead.** `pipeline/llm.py` KIMI_WINDOWS declares the UTC
+window every Kimi caller owns, and `budget.check_kimi_windows()` fails
+`python3 pipeline/budget.py`, which is the first link in every deploy
+chain, if two windows overlap or if a job's real `modal.Cron` minute
+falls outside the window the table gives it. Today: the press and the
+chair's manual rehearsal own 09:00 to 11:00, triage owns 12:00 to 13:00,
+interpret owns 14:00 to 15:00, and 13:00 to 14:00 is deliberately empty
+as the margin. No cron moved. What changed is that the slots are now
+checked rather than coincidental.
+
+**Why the schedule and not the lock.** A scratch-row lock is the stronger
+mechanism and it is also the one that fails worse. A lock needs a
+timeout, and a Kimi call that reasons for minutes makes that timeout hard
+to pick: too short and the lock releases under a live call, which is the
+bug it was built to prevent; too long and one crashed run blocks the
+corpus until a human clears a row. A schedule with an hour of margin
+needs no timeout and no cleanup, and its failure mode is the 429 the
+backoff already survives.
+
+**What is still open.** The chair's rehearsal is run by hand and cannot
+be scheduled, which is why its band is two hours wide for a run that
+takes minutes. The honest statement of the remaining risk: a rehearsal
+started between 11:00 and 15:00 UTC can still collide with a corpus run,
+and nothing prevents it. The backoff makes that survivable rather than
+fatal, since both callers now wait 30 to 180 seconds rather than one.
