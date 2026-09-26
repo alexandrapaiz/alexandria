@@ -5139,3 +5139,102 @@ press does with a 503.
   numbers.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Three self-checks in the generator cannot prove they ran, and three of them are regular expressions (writer seat, for engineer)
+
+- Trigger: the rehearsal print (`press_rehearsals` id 1, `prompt_sha`
+  `ea2d678d86e9`, 2026-09-26) was written by a prompt that contained all
+  three of these checks, each already strengthened once, and broke all
+  three. The ASCII gate, patched 2026-09-21 in `51400c1` to ask the class
+  question rather than name three characters, produced five em dashes.
+  The evidence-grade rule, patched 2026-09-24 in `68cea4c` to carry a
+  count, produced zero grades on three items that print numbers. The
+  first-use pass, patched 2026-09-25 in `ff61b26` to count the term the
+  reader meets, produced `NQ`, `SFT`, `VLMs` and `RRSI` bare. Run 12
+  filed the first-use pass alone on this reasoning. This entry supersedes
+  that one by generalizing it, because the cause is the same for all
+  three and one of them is now on its third rewrite.
+- What: the cause is where the check lives, not how it is worded. Nothing
+  in the finished text distinguishes an issue whose self-check ran from
+  one whose did not, so the model's only evidence that it ran the pass is
+  its recollection of intending to, and that evidence always comes back
+  positive. The contrast is inside the same prompt and it is decisive:
+  the link rule and the grade rule sit two lines apart, the same model
+  read both, and links came in at seven of seven while grades came in at
+  zero of three. Links are countable in the output by something other
+  than the writer. Grades are not.
+  So move the countable slice out of the prompt and into the pipeline, as
+  a post-generation check that fails loudly before the issue is written
+  to `digests` or sent. Three slices are decidable with no language model
+  at all:
+  1. **Non-ASCII characters.** `[^\x00-\x7F]` over the body, with the one
+     exception the prompt already names, which is a person's or an
+     institution's name as the payload spells it. Five em dashes shipped
+     through a hard gate that asks for plain ASCII.
+  2. **Bare capitalised acronyms.** A token of two or more capitals with
+     no expansion within the same sentence. Ban list 26 bans these
+     outright, and four shipped.
+  3. **Shapes on the page.** A parse of the block kinds in the markdown,
+     which are paragraphs, bulleted lists, lines standing alone and
+     headings. Canon law 14 as tightened on 2026-09-26 makes one kind a
+     failing issue, and both prints of 2026-W39 are at one and two. This
+     is the owner's enjoyability ruling and it is the one part of it a
+     machine can decide.
+  The fourth, whether every item carrying a number carries a grade, needs
+  judgment about what counts as a grade and is left in the prompt.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface and this is a specification rather than a patch. Worth checking
+  against PR #60, the pre-send quality gate, which has been open since
+  2026-09-20 and may be the right place for all three rather than a new
+  module.
+- First step: read PR #60 and say whether these three belong in it. If
+  they do, this entry is a list of three assertions to add rather than a
+  new piece of work.
+- Cost: $0 at runtime. Three regular expressions and a markdown block
+  parse.
+- Status: proposed
+
+### 2026-09-26 — The stats line's five fields, and a register that holds every print a reader sees (writer seat, for engineer)
+
+- Trigger: the owner's dispatch of 2026-09-25. Tonight's print said "the
+  library read 1,289 papers" when the number is the ingestion count, and
+  164 papers have ever been read in full. The prose side is fixed in this
+  pull request: `prompts/digest.md` now names the act each count records
+  and binds a verb of reading to the full-read count alone, and canon law
+  15 is the law. Two things in the pipeline are needed to finish it, and
+  neither is this seat's surface.
+- What, first: **`gather()` emits five counts with the acts as their
+  names.** Today `stats` is three numbers under one label,
+  `{"papers_ingested": ..., "claims_distilled": ..., "edges_drawn": ...}`,
+  where `papers_ingested` is `count(*) from papers where fetched_at >
+  now() - interval '7 days'`. The owner named the five the press should
+  emit: ingested, triaged, read in full, claims, links. The fourth is the
+  one that does not exist yet and it is the only one a sentence with
+  "read" in it may cite. `count(*) from papers where distilled_at is not
+  null` is 166 all-time, and the weekly figure is the same predicate
+  inside the seven-day window. The prompt already reads both the current key
+  names and the new ones, so the rename can land in either order.
+  Worth deciding once and recording: whether each count is the seven-day
+  window or the all-time total. Both are legitimate and a sentence that
+  mixes them silently is the same defect in a new coat. The close reads
+  best with the window for what arrived and the total for what has been
+  read, and it has to say which, in the reader's words.
+- What, second: **every print a reader sees belongs in a register this
+  seat can read.** The graded sentence in tonight's dispatch is not in
+  `digests` (newest row 2026-09-24) or in `press_rehearsals` (one row,
+  which carries no scale line). The writer seat grades the newest issue
+  cold every run, and tonight it graded a sentence it could only see
+  because the owner quoted it. Whatever path produced that print should
+  write to `press_rehearsals` like the rehearsal does, and every run
+  should be a row rather than a log line.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface. The one exception in this pull request is the `MASTHEAD`
+  constant, whose wording the owner gave to this seat on 2026-09-25, and
+  no other line of `pipeline/weekly.py` is touched.
+- First step: PR #110 says it "makes the press's stats line say what
+  actually happened", so these two items may already be half done there.
+  Read #110 first, and take the field names and the masthead wording from
+  #112 rather than rewording them, because the wording is a register
+  matter and the fields are not.
+- Cost: $0. Two queries and one insert.
+- Status: proposed

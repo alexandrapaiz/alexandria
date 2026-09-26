@@ -3951,3 +3951,120 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-26-example-supplies-the-frame — a banned specimen's class recurred one day after the register recorded it and the generator enforced it (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the second occurrence of ban list 53's class, and the first
+occurrence was itself recorded and patched, which is what makes this
+worth an entry rather than a line in a review.
+
+**What happened, first time.** On 2026-09-24 the writer seat found that
+`prompts/digest.md` quoted the phrases it banned at the exact positions
+where the model writes. All four heading slots carried their own
+forbidden name inside the braces the model was told to replace, and the
+issue printed "## Read these yourself". Recorded as ban list 53 with a
+general test: read the instruction from the position the writer occupies
+when they obey it, and if the nearest quoted English at that position is
+the thing being banned, the sentence around it is not doing its job.
+Enforced on 2026-09-25 in the four heading slots. **The enforcement
+worked**, and the rehearsal print of 2026-09-26 prints none of the four
+framework names.
+
+**What happened, second time.** The same file's reading-list section
+offered "Worth the hour if you are choosing between one agent and a
+planner plus a separate verifier" as the model line, two sentences above
+its own instruction to "let no two entries take the same shape". Across
+the two prints of 2026-W39, five reading-list entries out of five open
+with "Worth the hour if you are", and one completes it as "choosing
+between shipping a complex harness or teaching its structure to the
+model". The section became a catalogue, which is the one thing the
+section's own rule says judgment was supposed to buy.
+
+**Why the first fix did not reach the second case, which is the part
+worth learning.** Entry 53 was written about a prohibition that quotes
+the banned STRING, and the fix was to move the string. This specimen
+copies no string. It copies the SHAPE, and every cure written for the
+first form leaves the shape intact: moving the example, changing its
+subject, or rewording it all preserve the frame. A register entry
+generalized to the level of its specimen rather than to the level of its
+cause, which is L-A4's shape one layer up.
+
+**What it means.** An example sitting at a writing position is a template
+whatever the instruction beside it says, so an example there earns its
+place only when repeating it would be obviously absurd. That is the
+general rule, it is now ban list 56, and it is enforced in this pull
+request: the reading list's line names the frame as spent, refuses three
+rewordings of it by name, and counts openings and grammatical shapes
+across the section's entries.
+
+**Second finding, filed rather than fixed.** Three rules that had already
+been patched failed anyway in the print `ea2d678d86e9` produced: the
+ASCII gate (five em dashes), the evidence grades (zero of three, with a
+count already in the rule), and the first-use pass (NQ, SFT, VLMs and
+RRSI bare). One cause covers all three and it is not a wording problem,
+so per charter step 4 it is in `docs/ideas.md` for the engineer seat
+rather than rewritten a third time. Not filed as three incidents here,
+because it is one finding.
+
+## INC-2026-09-26-fix-found-in-one-slot — the same file was patched twice in one day for a defect that belonged to the file, and the third instance printed a false claim about the product (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the third occurrence of ban list 56's class and the second entry
+about it today, which is itself the finding.
+
+**The class.** An example sitting at the position where a writer writes is
+a template, whatever the instruction beside it says. Recorded this morning
+as ban list 56, with the general test, after two occurrences in
+`prompts/digest.md`: the four heading slots quoting their own banned names
+(which printed "## Read these yourself"), and the reading list's model line
+(which produced five entries out of five opening "Worth the hour if you
+are"). Both were fixed where they were found.
+
+**The third instance.** The closing slot of the same file, four hundred
+lines below the second fix, read: `"3,558 papers read to get to these
+five" is a fact about the product and earns its place.` A finished
+sentence with a blank where a number goes, at the position where the
+close gets written. The print of 2026-09-26 substituted the payload's
+ingestion count and shipped "the library read 1,289 papers", which the
+owner read and corrected. On that day 164 papers had ever been read in
+full, out of 8,956 held.
+
+**Why this one is worth an entry when the class already has one.** The
+cost changed kind. The first two occurrences produced prose that read as
+a catalogue, which is a craft failure a reader forgives. This one
+produced a false statement about alexandria's own work, in the one
+sentence of an issue that carries no link and cannot be checked by the
+reader, and the email template promotes that exact line into its own
+styled block. A register entry that records a class by its cheapest
+instance will be read as being about prose.
+
+**The cause, and it is not that a third example existed.** Both fixes
+this morning were applied to the slot the specimen was found in. Neither
+run read the rest of the file for the same shape, and the rest of the file
+is where the third one was. A defect that is a property of a file's form,
+which this one is, is not fixed by fixing its instances: the fix is a
+pass over the whole file. That is L-A4 one level in, because the register
+entry generalized correctly and the enforcement did not.
+
+**What changes.** Ban list 56 stands as written. The enforcement changes:
+when a tell is a property of the file's form rather than of one sentence,
+the same run greps the whole file for the shape before it calls the fix
+done. In this file that means every quoted English sentence sitting inside
+a slot the model replaces. Fixed in this pull request for the closing slot,
+with the specimen moved to the reading gate at the end of the file, where
+finished output is read rather than written, per ban list 53's cure.
+
+**Second finding, in the same shape and filed rather than fixed.** The
+masthead carried the same false claim for the entire life of the product,
+in `pipeline/weekly.py` as a string constant, and no editorial pass had
+ever read it. Recorded as ban list 61. A reader-facing string in code is
+exempt from every gate this org has, because the gates read what the model
+writes. The owner gave this seat the masthead's wording on 2026-09-25 and
+it is repaired in this pull request. The general rule is in the ban list
+entry: every editorial run reads the reader-facing constants in code, and
+every such constant carries a comment naming the register that governs it.

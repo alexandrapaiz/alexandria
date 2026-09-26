@@ -135,6 +135,34 @@ Study decisions, never copy sentences.
     the corpus thread of law 5. Saying what the field used to believe
     is the product. Saying what alexandria printed about it is the
     violation.
+    **The law binds the reader as well as the archive (owner's
+    dispatch, 2026-09-25).** The first version of this law caught the
+    sentence that points at a previous issue, and an opening can point
+    at nothing and still charge the reader for something they did not
+    do. The rehearsal print of 2026-09-26, written by the generator
+    with every rule above already in it, opened "You have spent the
+    week watching the field argue about whether agents need a heavy
+    harness at deployment or whether the thing can be baked in." It
+    names no issue. It says no "last week". It still tells a stranger
+    what their week was, and only a returning reader could check it.
+    That print passed the letter of this law and failed its spirit, and
+    the owner's words on it are that law 13 and law 14 are "not yet
+    strong enough".
+    So the line moves from the reference to the grammar, where it can
+    be checked in one pass. **The opening never says what the reader
+    has done, read, watched, noticed or felt.** What the FIELD has been
+    doing is the issue's whole job and stays, in the third person where
+    it belongs. Second person belongs to the present and the future,
+    because that is the part a reader can verify from their own chair:
+    what they build, what this changes for them, what they should stop
+    trusting from today. "You ship agents with a pile of code wrapped
+    around the model to keep it honest" is right. "You have spent the
+    week watching" is the violation, and so is every tense of it.
+    The shape is a subject and a verb and nothing subtler: "you" with a
+    past-tense verb, anywhere in the opening. There is no version of it
+    this law allows and no material that earns an exception, because the
+    sentence is unverifiable for most of the people reading it however
+    true it happens to be for some.
 14. The issue is enjoyable to read, and formatting is how it gets
     there (owner's rulings, 2026-09-24). Her verdict on 2026-W39,
     after the stands-alone repair landed and the prose was right:
@@ -167,6 +195,56 @@ Study decisions, never copy sentences.
     - Every result is followed by a line of plain meaning. What the
       number makes true for a builder, in words with no number in
       them.
+
+    **Six rules were read as five, and the count is how (owner's
+    dispatch, 2026-09-25, "ENJOYABILITY, again").** Five of the six
+    above are measured inside a paragraph: its length, its results, its
+    numbers, its plain-meaning line, and the number standing on a line.
+    One is measured on the whole page, which is how many shapes are on
+    it. A pass that splits long paragraphs satisfies all five and cannot
+    reach the sixth, so the cheapest way to obey this law is also the
+    way that leaves the reader's experience untouched.
+    That is not a hypothetical. The reprint of 2026-W39, set on the site
+    and sent to inboxes under this law, cut its longest paragraph from
+    191 words to 98 and left nothing over 100. It is twenty-four
+    paragraphs, no list, no subheading inside any section, one shape
+    from the title to the close. Every count in this law passed and the
+    owner read it and said enjoyability is still not fixed. A law whose
+    measurable half can be satisfied while its point is missed is a law
+    stated in the wrong order.
+    **So the page count comes first.** Read the shape before the prose,
+    every issue, and if the answer is one shape the issue is not
+    finished, whatever the paragraph lengths say. Splitting paragraphs is
+    the floor of this law and was never its content.
+    **Three devices, now required rather than available.** They are the
+    three that separate alexandria from the newsletters builders
+    actually enjoy, named in the market seat's ranking of 2026-09-24
+    (docs/market/briefs/2026-09-24-b.md), which put Latent Space,
+    Interconnects and Ahead of AI at the top and alexandria last on
+    enjoyability while first on rigor. Its finding, and it is the one to
+    act on: "this is a formatting and craft gap, not a substance gap."
+    - **A subheading inside a section that runs long.** Past about four
+      paragraphs, a section carries a written turn, and that turn may be
+      a third-level heading drawn from that section's own material. It
+      is governed by law 12 exactly as a section heading is, so it says
+      what this day's material shows and it would be false for
+      yesterday's issue. "Why the stages fight each other" is a turn.
+      "Analysis" is a label and canon law 12 already bans it.
+    - **Shorter units, which is not the same as shorter paragraphs.** A
+      unit is what the eye takes in before it rests: a paragraph, a
+      bullet, a line standing alone, a subheading. An issue of
+      twenty-four units all of one kind reads as long whatever each one
+      weighs. Vary the kind, not only the size.
+    - **A person on the page.** The top three all read as written by
+      somebody, and the ranking names it: Interconnects "signals a
+      person on the page, not a report." In this issue that person
+      appears in one place and it is enough, which is the opening's
+      first line. It greets the reader in the present tense under law
+      13, in a voice, and it is one clear sentence a stranger enjoys
+      before they know anything about the field. An issue with no such
+      line is a report, and a report is what the field already has for
+      free.
+
     The negative example is the densest paragraph in 2026-W39, 191
     words, seven sentences, seven numbers, no break, quoted whole
     because the failure is the block and not any line in it:
@@ -238,6 +316,163 @@ Study decisions, never copy sentences.
     went up. The work the reader does went down. That trade is the
     law.
 
+    **The second positive example, and it is about the page rather than
+    the paragraph (owner's dispatch, 2026-09-25).** The one above shows
+    a block being broken up, which is the five rules this law's own
+    reprint satisfied while missing the point. This one shows the three
+    devices, and it is the reprinted 2026-W39's opening and one of its
+    sections, same facts, same numbers, nothing invented and nothing
+    dropped.
+
+    One warning rides with it and it is not optional. This example is
+    written from the material the generator gets handed, which is
+    exactly what ban list 53 bans, and the transmission path is on the
+    record: the first positive example above carried the sentence
+    "Teaching the structure in beat leaving it attached, which is the
+    part nobody expected" and the reprint printed "Teaching the
+    structure beats leaving it attached, which is the part nobody
+    expected." This file is not sent to the model, so that sentence did
+    not leak through the pipeline. It leaked through a person reading
+    this file and setting a page. **So no sentence below is ever copied
+    into prompts/digest.md, into an issue, or into a page.** It is held
+    here because the owner asked for the comparison in the register the
+    writer seat reads, and a worked example in the register the
+    generator reads is the answer rather than an illustration of it.
+
+    The opening as reprinted opens on the field in the third person,
+    with no greeting at all, and glosses its key term behind a colon:
+    "The agent-building world has spent the week arguing about
+    scaffolding: the extra instructions and tooling that make frontier
+    models reliable on real tasks." Then a second paragraph beginning
+    "Today:" lists the same three findings the first one just named. No
+    person, one shape, and the term the issue then uses thirty-eight
+    times is not the term that got the gloss. Under law 13 as tightened
+    above and the three devices:
+
+    > If you ship agents, you also ship a pile of code wrapped around
+    > the model to keep it honest. This week three labs tried to throw
+    > that pile away.
+    >
+    > The pile is called scaffolding, and it is the checklists, the
+    > retry rules and the step where something checks the answer before
+    > it counts. It works. It also runs again on every single request,
+    > which is most of what a reliable agent costs.
+    >
+    > A team from Peking University, Google and HKUST taught the
+    > checklists to the model, deleted them, and scored higher with them
+    > gone than with them attached. A group at Google Cloud, Stanford
+    > and Washington University in St. Louis stopped the tuning of that
+    > structure from behaving like a lottery. And a study that trained
+    > one agent through four stages back to back found each stage
+    > erasing the one before it.
+    >
+    > One belief also fell, and it was about how much retraining a small
+    > model needs before it can drive a robot.
+
+    The first line is one sentence, it is about what the reader builds
+    rather than what they did, and a stranger who has never heard of any
+    of this can enjoy it before the second sentence arrives. The
+    greeting and the news share a paragraph, so nothing clears its
+    throat. One name, scaffolding, carries the idea from here to the
+    close.
+
+    The section as reprinted is four paragraphs of even prose under the
+    heading "What happens when you train agents in stages", which names
+    a topic rather than a finding, and its second paragraph carries four
+    results and six numbers with a stylistic em dash in it. The same
+    material with a written heading, an inventory set as an inventory,
+    the number on a line, a turn inside the section, and the evidence
+    graded where the numbers are:
+
+    > ## Training an agent one skill at a time undoes the skill before it
+    >
+    > Teams build a capable agent in stages. Teach it to search, then
+    > teach it maths, then teach it to shop, then teach it to follow
+    > instructions. Each stage is another round of training stacked on
+    > the last one.
+    >
+    > A team led by Haixin Wang ran exactly that sequence and measured
+    > the agent after every stage. The later stages did not add to the
+    > earlier ones.
+    >
+    > Search scores fell from **45.2 to 14.6** once the shopping stage
+    > was done.
+    >
+    > - **One-step search**, meaning a question answered from a single
+    >   lookup, fell 45.2 to 14.6.
+    > - **Multi-step search**, where the agent has to chain lookups to
+    >   get there, fell 37.4 to 9.4.
+    > - **The last stage healed some of it.** One-step search came back
+    >   to 33.5 and multi-step to 25.0, both still far under where they
+    >   started.
+    >
+    > ### Why the stages fight each other
+    >
+    > Nothing was forgotten in the ordinary sense. Each round of
+    > training pulls the model's settings toward being good at one task,
+    > the four tasks pull in directions that do not agree, and the last
+    > one to pull wins.
+    >
+    > What this costs a builder is the plan rather than the result. An
+    > agent that needs search and maths and tool use cannot be taught
+    > them one after another and keep all three, so they are trained
+    > together or measured after every stage. This is one team's own
+    > experiment on one agent, nobody outside the group has run it
+    > again, and it does not test whether a larger model holds up
+    > better.
+    >
+    > *ACLArena: Agent Continue Learning in Multi-stage Post-training* -
+    > [full text](https://arxiv.org/html/2609.23989)
+
+    Four shapes where the reprint had one: paragraphs, a line standing
+    alone, a list, and a subheading written from the section's own
+    material. The heading states the finding and is false for any other
+    day. "Post-training", "single-hop", "multi-hop", "oracle" and
+    "parameter space" are gone rather than glossed, because the plain
+    words were shorter than the definitions would have been. The
+    evidence grade names what the work did not measure, which is the
+    half that makes it a grade instead of a compliment. The em dash is
+    gone. Nothing the reprint said is missing.
+15. The library never claims to have read what it only ingested
+    (owner's ruling, 2026-09-25). Every paper in the corpus arrives as a
+    title and an abstract. A much smaller number have had their full text
+    read. Those are two different acts, the counts are far apart, and the
+    gap is permanent, so a sentence that gives the arriving count a verb
+    of reading is false about the product.
+    The evidence is the print of 2026-09-26 and the masthead that ran
+    above it. The issue said "the library read 1,289 papers" on a day when
+    1,289 papers had been ingested that week and 164 had ever been read in
+    full. The masthead said "read in full and distilled weekly" on every
+    issue ever sent, against 166 full reads out of 8,956 papers held.
+    Neither line misread a paper or invented a number. Both took a count
+    and attached the neighbouring count's verb.
+    This law is worth its own number rather than a note under law 6
+    because of who the claim is about. An overstated result belongs to a
+    lab, is printed with a link, and a reader who cares can check it. A
+    claim about alexandria's own work has no link and no way to be
+    checked, so the reader either trusts it or stops trusting the issue.
+    The words, fixed, so following this law is copying rather than
+    composing. Papers **come in**, **arrive**, or **land**: that is
+    ingestion, a title and an abstract. Papers are **sorted** or
+    **ranked**: that is triage. Papers are **read in full** or **read
+    closely**: that is the only act the word "read" may name, and it
+    cites the full-read count and no other. Findings are **taken out of**
+    the papers that were read. The scale sentence a close may carry is
+    both numbers together, what arrived and what was read closely out of
+    it, because the pair is true and either number alone invites the
+    reader to assume the other.
+    The repair is to drop the claim, never to soften it, which is the
+    claims pass's standing rule applied to the one subject the pass had
+    not been pointed at. "Read or reviewed", "read at some depth",
+    "surveyed" and "processed" are hedges on a false sentence and each
+    one is ban list 50 with a different coat on. An issue that says
+    nothing about its own scale has lost nothing a reader came for.
+    This binds every surface, not only the issue: the masthead, the
+    email, the site, and any line of copy drafted under this canon.
+    Standing copy fixed in code is where it hid for the whole life of the
+    product, because a string that never changes is never graded (ban
+    list 61), so a reader-facing sentence is graded wherever it lives.
+
 ## How an issue is graded
 
 The daily review runs four passes, in this order, and the first one
@@ -283,10 +518,20 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    A qualifier that the claim has to survive before it can land is
    the writer noticing the comparison fails and continuing, which is
    ban list 50. The fix is to drop the claim, never to soften it.
+   The third question is about alexandria, added 2026-09-26 with law 15
+   after a print claimed the library had read a count of papers it had
+   only ingested. Take every sentence whose subject is the library, the
+   issue or the newsletter, and ask which pipeline count it is about and
+   whether its verb is the act that count records. There is usually one
+   such sentence, in the close, and it is the only sentence in an issue
+   the reader cannot check against a linked paper. Grade the standing
+   lines too, meaning the masthead and anything else fixed in code or set
+   on a page, because those never come up for review on their own.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at
-   the wrong risk satisfies neither.
+   the wrong risk satisfies neither. With the third question it also
+   enforces law 15.
 
 ## Maintenance
 
