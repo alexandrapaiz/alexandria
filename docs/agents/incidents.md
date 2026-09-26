@@ -3100,7 +3100,6 @@ Every gate is tested against an artifact known to fail it before the
 gate is trusted. PR #60's tests assert that the checker finds the
 defects it was written to find. Nothing asserted that it finds them in a
 real issue, and the first real issue it met was one it passed.
-=======
 *Renumbering note (2026-09-24, frontend run). These two entries were written
 on branch `fe/2026-09-23-visual-sweep` as incidents 23 and 24, before main
 carried incidents 23 and 24 for the Kimi routing rollout and the press 404.
@@ -3240,6 +3239,215 @@ the owner dispatched by hand. Worth checking whether the dispatch path
 sends one event or two before any seat writes more rules about how to
 survive the second one.
 
+## INC-2026-09-24-kimi-org-concurrency — Two seats, one Moonshot key, concurrency one (chair)
+
+**What happened.** The owner asked for W39 reprinted under the new prose
+rules (writer #92 merged, press redeployed). The reprint's single Kimi call
+got `429 request reached max organization concurrency: 1` with a
+`retry-after: 1`, honored it three times, and failed in four seconds. The
+fallbacks are Groq's 8K models, none of which fit, so the press alarmed the
+owner instead of printing. The other caller was almost certainly the
+engineer's rehearsal print (#94, run 36022750452, in flight at the same
+minute), which makes one real Kimi call that takes minutes.
+
+**Fix shipped (chair, main).** A 429's wait is now the larger of the
+retry-after header and our own schedule (30, 60, 120, 180s), so a
+concurrency wait outlasts a sibling's call. Redeployed, reprint rerun.
+
+**What it means.** Moonshot's limit is per organization, like Groq's. Every
+seat that calls Kimi shares one slot. The rehearsal print (ExO's ladder,
+engineer #94) and the weekly press must never run in the same minute, and
+neither may any future daily press on the same key. Options for the
+engineer: a scratch-row lock the callers check, or a second Moonshot
+organization for rehearsals. ExO: the concurrency ceiling belongs in
+`docs/agents/model-routing.md` beside the Groq rate-limit note.
+---
+
+## INC-2026-09-24-test-suite-ran-zero-tests — the command every test file prescribes had stopped running any of them (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class.**
+Incident 32 is a quality gate that returned `0 blocking` on an issue it
+could not parse. This is the same shape one level up: the suite that
+holds every other gate reported one error and ran nothing, and the
+report looked small enough to scroll past.
+
+**What happened.** Running `python3 -m pytest tests/ -q`, the command
+printed in the docstring of nearly every file in `tests/`, produced:
+
+```
+ERROR collecting tests/test_evidence_grade.py
+E   AttributeError: module 'modal' has no attribute 'Volume'
+!!!! Interrupted: 1 error during collection !!!!
+1 warning, 1 error in 0.43s
+```
+
+A collection error is not one red test. pytest stops, and zero tests
+run. Every check the repository owns was unexecuted, and the line that
+says so is `1 error`.
+
+**Why it happened.** `modal` is not a dev dependency, so four test files
+each carry a copy of the same hand-built stub, each guarded by
+`if "modal" not in sys.modules`. Only one of the four copies defines
+`modal.Volume`. Under the suite, `test_email_template.py` is collected
+first, its copy wins, and `test_evidence_grade.py` then explodes on the
+attribute its own copy would have provided. Alphabetical order decided
+it. The guard that was supposed to make the four copies safe is the
+thing that made them dangerous, because it makes the first copy
+authoritative and none of the four is complete.
+
+**Why nobody noticed, which is the useful part.** The repository has two
+ways to run tests and only the broken one is documented.
+`.github/workflows-pending/checks.yml` runs `python3
+tests/test_press_resilience.py` and `python3 tests/test_email_template.py`
+as single scripts. Run that way each file installs its own stub first
+and every file passes, so the CI-shaped path was green on exactly the
+files it names. The suite-shaped path was the one that failed, and it is
+the one no command anywhere executes. Two paths diverged, and the
+divergence was invisible because nothing ran the second one.
+
+`checks.yml` is also still in `workflows-pending/`, so neither path runs
+on a pull request at all. Its own README says it plainly: "anything
+still sitting here is a guard that is not guarding yet."
+
+**What it was hiding.** With collection fixed, the suite came up red on
+`test_accounts.py::test_the_subscribers_index_cannot_abort_the_schema_on_legacy_duplicates`.
+That test searches `db/schema.sql` for the first `do $$` block and
+asserts it guards the subscribers index. A second do-block, the
+evidence-grade constraint, was added above it at some point since, so
+the test had been reading the wrong block and failing. How long is not
+recoverable from this clone's squashed history. The schema itself was
+correct throughout.
+
+**The fix, applied.** One `tests/conftest.py` installs the union stub
+before collection begins, so it always wins and the four in-file copies
+no-op through their own guard. They are deliberately left in place,
+because each of those files also documents being run directly and that
+has to keep working with no conftest involved. The `test_accounts.py`
+regex now selects the do-block by what is inside it rather than by being
+first. `python3 -m pytest tests/ -q` reports 159 passed, 1 skipped.
+
+**The rule that would have caught it.** A test suite is a gate, and
+incident 32's rule already covers it: every gate is tested against an
+artifact known to fail it before the gate is trusted. Nothing ever
+asserted that the suite runs a known number of tests, so "ran zero" and
+"all passed" were indistinguishable from the outside. The cheap general
+form, and it is one line: **a test run that collects fewer tests than
+last time is a failure, not a quieter success.** The same asymmetry sits
+under incident 32, under the unreferenced-template incident above, and
+under this one. A check that cannot see its input has to be louder than
+a check that looked and found nothing, and by default every tool in this
+repository has it the other way around.
+
+---
+
+## INC-2026-09-24-conflict-marker-on-main — the incident register itself was carrying merge damage (2026-09-24, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 6's class**,
+which is two seats appending to one register at one anchor and the
+second merge conflicting.
+
+**What happened.** `docs/agents/incidents.md` on main carried a bare
+`=======` on line 3103, between the closing line of incident 32 and the
+frontend seat's renumbering note. That is the middle marker of a git
+conflict whose `<<<<<<<` and `>>>>>>>` halves were cleaned up and whose
+middle one was not. Both sides of the conflict survived, so no content
+was lost, and the file read as if a divider had been left in.
+
+**Why it matters more than its size.** Every seat reads this file, the
+ExO reads it weekly, and the charters cite it by line. It had been
+sitting there through an unknown number of runs, and the fix is one
+line. What is missing is not the fix but the looking: the charters warn
+the seat that is *about to* append, and nothing looks at the file
+*afterwards*. Incident 6, incident 25 (two writer runs appending at one
+ban-list number) and incident 29 (four incident-id collisions) are all
+the same anchor contention, and every one of the three fixes changed how
+a seat writes. None of them added a check that reads the result.
+
+**The fix, applied.** The marker is removed, and
+`tools/check_registers.py` now reads all eight shared registers for
+conflict markers and for duplicate incident ids, with
+`tests/test_check_registers.py` driving it against damaged registers
+built on disk. Its first run on the real repository also produced a
+second finding, left for the seat that owns it: one ledger entry writes
+`- Status: mostly moot as of run 3`, which is prose where the contract
+names one of five keywords, so that entry is invisible to every
+consumer that reads statuses by grep, including the PM's sprint
+grooming and this seat's own fallback scan.
+
+**Still open.** The checker is a command, and per runtime-changes.md's
+closing rule a gate is worth the number of commands that run it. Nothing
+runs this one yet. Wiring it into `checks.yml` needs a `workflows`
+permission this seat does not have, so it is filed in the ledger for the
+owner rather than done here.
+
+---
+
+## INC-2026-09-25-budget-guard-estimates — the first link in two deploy chains failed the press for the tokenizer's absence (2026-09-25, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 32's class,**
+and under L-A17, which owes an entry for any diagnosis that took more
+than a minute whether or not it repeats. Incident 32 is a quality gate
+that returned `0 blocking` on an issue it could not parse.
+INC-2026-09-24-test-suite-ran-zero-tests, recorded yesterday, is the same
+shape one level up. This is the third occurrence of the class in two
+days, and this one is in the command the chair runs before every deploy.
+
+**What happened.** Running `python3 pipeline/budget.py` on a fresh
+checkout, as the first gate of this run's own change, printed:
+
+```
+budget: exact tokenizer unavailable (No module named 'tiktoken'); using the 3.0 chars/token fallback
+...
+SELFTEST: selftest: trimming could not fit a prompt of 6667 tokens...
+budget check FAILED (1 problem)
+```
+
+with the remedy the guard prints beside that failure: shorten the
+generator prompt, lower the output reservation, or move the press to a
+model with a larger budget. All three are wrong. The press fits
+`kimi-k2.6` with 140,766 tokens of headroom, and the same command says so
+eight lines further up in the same output.
+
+**Why it happened.** `count_tokens` falls back to a
+3.0-chars-per-token ratio when tiktoken is missing, and that ratio runs
+high on purpose, which is the right conservative choice. `selftest`
+case 1 deliberately squeezes a filler prompt against a tight model:
+20,000 characters, about 4,600 tokens measured, 6,667 tokens estimated.
+The estimate alone crosses `openai/gpt-oss-20b`'s 6,800-token usable
+budget, so the trimmer cannot fit a request that in reality fits, and a
+selftest designed to have no slack has none left for the estimate's
+own margin.
+
+**Why it matters more than a stray red line.** This command is the first
+`&&` in the press deploy chain, and as of this PR it is also the first
+`&&` in the MCP deploy chain. Both now stop for it. A gate that fails for
+a reason that has nothing to do with what it guards is a gate that
+teaches the person running it to pass it with `|| true`, and the org's
+own law says the value of a gate is that a shell enforces it. The
+failure mode is not a broken deploy, it is a trained-away deploy check.
+
+**What was fixed here.** The verdict now carries its own confidence.
+Token arithmetic run on estimated counts is reported `UNCONFIRMED` and
+the command ends `budget check INCONCLUSIVE` naming the one command that
+resolves it, `pip install tiktoken`. The exit code stays non-zero, now 2
+rather than 1, because a deploy checked on estimates has not been
+checked and the chain should still stop. Everything that does not depend
+on a token count, which is drift, the model tables, the fallback lists
+and availability, stays a hard failure at exit 1 either way. Five tests
+in `tests/test_rag_fallback.py` hold both halves.
+
+**The rule that would have caught it.** None, and that is the finding.
+Entry 41 of the ban list, "the gate that reads the output and never the
+input," is the writer seat's version of this class and is already law
+for digests. Incident 32 named it for quality gates and yesterday's
+entry named it for the test suite. Three occurrences in three different
+gates say the class is not about any one gate. The generalization worth
+promoting, which is a ledger proposal rather than something this seat
+writes into a standard: **a gate states what it measured, and a gate
+that could not measure says so instead of returning a verdict.** Pass,
+fail, and cannot-tell are three outcomes, and every gate the org owns
+currently has two.
+
 ## INC-2026-09-24-grading-has-no-truth-pass — The editorial instrument grades prose and cannot see a false claim (2026-09-24, writer seat)
 
 **The number.** `INC-YYYY-MM-DD-slug` per the rule at the top of this
@@ -3365,29 +3573,6 @@ The shape is the same as the one above. A seat that grades its own output
 every run will find defects in its output every run, and will never find
 the work it has not started. Drafted in this pull request and awaiting
 her approval.
-
-## INC-2026-09-24-kimi-org-concurrency — Two seats, one Moonshot key, concurrency one (chair)
-
-**What happened.** The owner asked for W39 reprinted under the new prose
-rules (writer #92 merged, press redeployed). The reprint's single Kimi call
-got `429 request reached max organization concurrency: 1` with a
-`retry-after: 1`, honored it three times, and failed in four seconds. The
-fallbacks are Groq's 8K models, none of which fit, so the press alarmed the
-owner instead of printing. The other caller was almost certainly the
-engineer's rehearsal print (#94, run 36022750452, in flight at the same
-minute), which makes one real Kimi call that takes minutes.
-
-**Fix shipped (chair, main).** A 429's wait is now the larger of the
-retry-after header and our own schedule (30, 60, 120, 180s), so a
-concurrency wait outlasts a sibling's call. Redeployed, reprint rerun.
-
-**What it means.** Moonshot's limit is per organization, like Groq's. Every
-seat that calls Kimi shares one slot. The rehearsal print (ExO's ladder,
-engineer #94) and the weekly press must never run in the same minute, and
-neither may any future daily press on the same key. Options for the
-engineer: a scratch-row lock the callers check, or a second Moonshot
-organization for rehearsals. ExO: the concurrency ceiling belongs in
-`docs/agents/model-routing.md` beside the Groq rate-limit note.
 
 ## INC-2026-09-24-prohibition-supplies-the-string — A rule recorded in five places was broken by one of the recordings (2026-09-24, writer seat)
 

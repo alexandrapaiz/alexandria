@@ -682,6 +682,97 @@ def fallback_models() -> list[str]:
     return [_literal(source, r'^MODEL = "([^"]+)"', "MODEL")]
 
 
+def synthesis_models() -> list[str]:
+    """rag_answer's ordered fallback list, read out of mcp/synthesis.py.
+
+    Same discipline as `fallback_models`: read the production list rather than
+    keeping a copy, because a guard with its own copy is a guard that verifies a
+    list nothing uses. The MCP server is a runtime under
+    docs/agents/runtime-changes.md, and until this ran, nothing checked that the
+    model it calls still exists.
+    """
+    source = (ROOT / "mcp" / "synthesis.py").read_text()
+    match = re.search(r"^FALLBACK_MODELS = (\[[^\]]*\])", source, re.M)
+    if not match:
+        raise LookupError(
+            "mcp/synthesis.py no longer defines FALLBACK_MODELS where this "
+            "guard looks for it. Fix the pattern in budget.synthesis_models(); "
+            "a guard that cannot read the settings it checks is worse than no "
+            "guard."
+        )
+    models = ast.literal_eval(match.group(1))
+    if not isinstance(models, list) or len(models) < 2:
+        raise LookupError(
+            "mcp/synthesis.py FALLBACK_MODELS must be a list of at least two "
+            f"models; found {models!r}. One model is a single point of failure, "
+            "and incident 24 is what that costs."
+        )
+    return models
+
+
+def model_problems(where: str, model: str,
+                   available: set[str] | None = None) -> list[str]:
+    """The three questions any caller of a model has to be able to answer.
+
+    Does the id have a row here, has its provider withdrawn it, and does that
+    provider still list it for this key. The press asks a fourth one, whether the
+    request fits, and that needs a payload to measure. These three need nothing
+    but the id, which is why every runtime that calls a model can be checked by
+    the same command whether or not it has a payload.
+    """
+    if model in DECOMMISSIONED:
+        return [f"{where} is {model}, withdrawn by its provider: "
+                f"{DECOMMISSIONED[model]}"]
+    if model not in MODELS:
+        return [f"{where} ({model}) has no entry in budget.MODELS, so there is "
+                "no provider to send it to"]
+    if available is not None and model not in available:
+        return [f"{where} ({model}) is not listed by {MODELS[model]['provider']} "
+                "for this key; a request to it would 404"]
+    return []
+
+
+def check_synthesis(available: set[str] | None = None) -> list[str]:
+    """Every model rag_answer can reach for has published limits and still exists.
+
+    Returns problems, the way `check_drift` does. The MCP server does not size a
+    payload against a ceiling, because a synthesis request is a short answer over
+    retrieved context rather than a whole issue.
+    """
+    problems = []
+    for rank, model in enumerate(synthesis_models(), start=1):
+        problems += model_problems(f"rag_answer fallback {rank}", model, available)
+    return problems
+
+
+#: The scheduled jobs that call one hardcoded chat model with no fallback list.
+#: Both are Modal crons, both are runtimes under docs/agents/runtime-changes.md,
+#: and until 2026-09-25 nothing checked the id either of them calls. A withdrawal
+#: takes the corpus down quietly: triage stops judging papers and interpret stops
+#: drawing edges, and the only symptom is a red run nobody is watching.
+CRON_MODELS = {
+    "triage (pipeline/triage.py)": "pipeline/triage.py",
+    "interpret (pipeline/interpret.py)": "pipeline/interpret.py",
+}
+
+
+def cron_models() -> dict[str, str]:
+    """Each daily cron's model id, read out of the cron rather than from a copy."""
+    found = {}
+    for label, path in CRON_MODELS.items():
+        source = (ROOT / path).read_text()
+        found[label] = _literal(source, r'^MODEL = "([^"]+)"', f"{path} MODEL")
+    return found
+
+
+def check_crons(available: set[str] | None = None) -> list[str]:
+    """The daily crons' models exist, the same three questions as everything else."""
+    problems = []
+    for label, model in cron_models().items():
+        problems += model_problems(label, model, available)
+    return problems
+
+
 def presses() -> list[Press]:
     """Read the press settings out of weekly.py rather than restating them.
 
@@ -828,13 +919,30 @@ def main() -> int:
           f"{count_tokens(payload_json)} tokens "
           f"({'exact' if exact() else 'estimated'})\n")
 
+    # Arithmetic run on estimates is not arithmetic. `count_tokens` falls back
+    # to a chars-per-token ratio when tiktoken is missing, and that ratio is
+    # deliberately pessimistic, so a request that fits can be reported as one
+    # that does not. Everything measured below therefore carries the confidence
+    # it was measured at, and the verdict at the bottom says which it was. Before
+    # 2026-09-25 it did not: on a machine without tiktoken this command printed
+    # `budget check FAILED (1 problem)` and advised shortening a generator prompt
+    # that fits with room to spare. See INC-2026-09-25-budget-guard-estimates.
+    measured = exact()
+
     failures = check_drift()
     for problem in failures:
         print(f"DRIFT: {problem}\n")
 
+    # Only the token arithmetic is affected by the tokenizer. Drift, the model
+    # tables and availability are exact either way, so they stay failures.
+    unconfirmed = []
     for problem in selftest():
-        failures.append(problem)
-        print(f"SELFTEST: {problem}\n")
+        if measured:
+            failures.append(problem)
+            print(f"SELFTEST: {problem}\n")
+        else:
+            unconfirmed.append(problem)
+            print(f"SELFTEST (estimated counts, unconfirmed): {problem}\n")
 
     # Availability, for whichever providers have a key here. CI has none, and
     # that is fine: the deploy-time and run-time checks in weekly.py are the
@@ -916,10 +1024,12 @@ def main() -> int:
                  for m in press.models if m in MODELS),
                 key=lambda r: -r.headroom, default=None)
             over = -best.headroom if best else 0
-            failures.append(
+            complaint = (
                 f"{press.name} does not fit ANY model in its fallback list; the "
                 f"closest is {over} tokens over")
-            print(f"  FAIL: no model in the fallback list can take this "
+            (failures if measured else unconfirmed).append(complaint)
+            print(f"  {'FAIL' if measured else 'UNCONFIRMED (estimated counts)'}: "
+                  f"no model in the fallback list can take this "
                   f"request. Closest miss is {over} tokens.")
             print("  Fix one of: shorten the generator prompt, lower the output "
                   "reservation, tighten pipeline/budget.py PAYLOAD_CAPS (and the "
@@ -932,10 +1042,62 @@ def main() -> int:
                   "before a single row of payload.")
         print()
 
+    # The MCP server's synthesis list. It is not a press and has no payload to
+    # size, but it is a runtime that calls a model, and nothing checked it until
+    # 2026-09-25. Same command, so the same `&&` covers it.
+    try:
+        models = synthesis_models()
+        print(f"rag_answer (mcp/synthesis.py, {len(models)} models in order)")
+        for rank, model in enumerate(models, start=1):
+            provider = MODELS.get(model, {}).get("provider", "?")
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {rank}. [{provider}] {model}{flag}")
+        for problem in check_synthesis(available):
+            failures.append(problem)
+            print(f"  SYNTHESIS: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"SYNTHESIS: {exc}")
+    print()
+
+    # The daily corpus crons. One hardcoded model each and no fallback list, so
+    # the only question worth asking here is whether that one model still exists.
+    try:
+        print("daily crons, one model each and no fallback")
+        for label, model in cron_models().items():
+            provider = MODELS.get(model, {}).get("provider", "?")
+            flag = "" if available is None else (
+                " [at provider]" if model in available else " [ABSENT AT PROVIDER]")
+            print(f"  {label}: [{provider}] {model}{flag}")
+        for problem in check_crons(available):
+            failures.append(problem)
+            print(f"  CRON: {problem}")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"CRON: {exc}")
+    print()
+
     if failures:
         print(f"budget check FAILED ({len(failures)} problem"
               f"{'s' if len(failures) > 1 else ''})")
         return 1
+    if not measured:
+        # Non-zero on purpose. This command is the first link in two deploy
+        # chains, and a chain that proceeds on estimated numbers has not been
+        # checked. The exit code says stop; the message says the press is not
+        # known to be broken, which is the part the old verdict got wrong.
+        print(f"budget check INCONCLUSIVE: token counts are estimated at "
+              f"{FALLBACK_CHARS_PER_TOKEN} chars/token because tiktoken is not "
+              f"installed here, and that estimate runs high. "
+              f"{len(unconfirmed)} arithmetic check"
+              f"{'s' if len(unconfirmed) != 1 else ''} could not be confirmed"
+              + (f": {unconfirmed[0]}" if unconfirmed else "") +
+              "\nEverything that does not depend on a token count passed: "
+              "drift, the model tables, the fallback lists and availability.\n"
+              "Run `pip install tiktoken && python3 pipeline/budget.py` for the "
+              "real numbers.")
+        return 2
     print("budget check passed")
     return 0
 

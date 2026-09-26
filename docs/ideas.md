@@ -4308,6 +4308,547 @@ needs an owner decision or an owner push, not an engineer build.
 - Cost: $0 to file. The template work is an hour or two.
 - Status: proposed
 
+### 2026-09-24 — The daily corpus crons have no availability check and no rehearsal
+
+- Trigger: building `rehearse()` today (docs/agents/press-rehearsal.md).
+  That specification's last section names this gap in one paragraph and
+  leaves it for a separate trigger. Writing the function supplied the
+  trigger. The press now has three gates before a deploy, and `ingest`,
+  `distill`, `triage` and `interpret` have none of the three. Verified on
+  this branch rather than assumed: `grep -l check_availability pipeline/`
+  returns `pipeline/weekly.py` and nothing else.
+- Why it is not academic. The press was moved off Groq by ADR-32 because
+  the free tier moved under it three times in five days. The daily crons
+  were not moved. They still run on the provider whose catalog produced
+  incident 24, and they run four times a day instead of once a week, so
+  the same withdrawal that cost the press one issue would cost the corpus
+  twenty-eight runs before a Monday made it visible. The press learned to
+  ask "does the model exist" at deploy and again at run start. The corpus
+  still finds out by failing.
+- What: lift `check_availability()` and the `FALLBACK_MODELS` walk out of
+  `pipeline/weekly.py` into something the daily functions call too, then
+  give the daily side its own `preflight`. The rehearsal half is a
+  separate question and probably a smaller one, because a corpus run
+  writes rows rather than prose and a scratch schema is a heavier ask
+  than a scratch table.
+- First step: the shared availability check, as one function in a module
+  both sides import, with the press's existing tests moved onto it so the
+  lift is proved rather than asserted. One session. The daily `preflight`
+  is a second session and the rehearsal is a third.
+- Cost: $0. The availability call spends no tokens against any ceiling,
+  which is the reason the press can afford to make it twice.
+- Status: proposed
+
+### 2026-09-24 — The first gate in the ladder refuses to open without a tokenizer
+
+- Trigger: today's run, twice, with both exit codes recorded. On this
+  sandbox `python3 pipeline/budget.py` exits 1 with `budget check FAILED
+  (1 problem)`. The problem is not the press. It is the guard's own
+  SELFTEST, which asks whether payload trimming can rescue a 6,667-token
+  prompt on `openai/gpt-oss-20b` and concludes it cannot. After
+  `pip install tiktoken==0.8.0` the same command on the same commit exits
+  0 with `budget check passed`. Confirmed identical on `main`, so this
+  branch did not cause it.
+- Why it matters more than a sandbox annoyance. `python3
+  pipeline/budget.py` is link one of the chair's deploy chain, and the
+  chain is `&&`. A machine without `tiktoken` therefore cannot deploy the
+  press at all, for a reason that has nothing to do with whether the
+  press can print. The comment in `.github/workflows-pending/checks.yml`
+  says a failure to install the tokenizer "would make the guard stricter,
+  never laxer", and that is true of the real arithmetic. It is not true
+  of the selftest, where stricter becomes refuses, and a gate that
+  refuses for the wrong reason is a gate people learn to step around.
+  That is the class named in docs/agents/registers.md.
+- What: the selftest should either run against the exact tokenizer or say
+  plainly that it was skipped, the way the same file already says "no
+  provider key here, so model existence is not checked". Estimating a
+  ceiling pessimistically is right for a real request, because the cost
+  of being wrong is a 413. Estimating pessimistically inside a selftest
+  only tests the estimator.
+- First step: make the selftest read `budget.exact_tokenizer_available()`
+  and print `SELFTEST skipped: no exact tokenizer` instead of failing,
+  then add the tokenizer to `requirements-dev.txt` so a developer machine
+  gets the real check. Under an hour.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — Validation receipts keyed to a content hash, so a badge cannot outlive its evidence
+
+- Trigger: today's craft scan, below, read against today's build. The
+  rehearsal's receipt rule is that a row proves nothing unless it carries
+  the model id and the prompt hash about to be deployed, and a receipt
+  from a different prompt is not a receipt. Anthropic's plugin
+  marketplace applies the same idea to bytes: an archive source may
+  declare `sha256`, and a mismatch refuses the install with `Plugin
+  archive integrity check failed`. The skill library has no equivalent.
+  Sprint 2026-09-28 carries "render validation receipts on skill pages",
+  and a receipt rendered next to a file that has since changed is worse
+  than no receipt, because it is a claim.
+- What: when the validation harness records a passing result for a skill,
+  it records the sha256 of the `SKILL.md` it validated alongside the
+  result. The skill page reads both, and shows the badge only when the
+  hash still matches the file being served. When it does not, the page
+  says the skill changed after its last validation and names the date,
+  which is honest and costs the reader nothing to understand. The same
+  field makes "which skills need revalidating" a query instead of a
+  memory.
+- Why this is the axis alexandria wins on. The marketplace's own
+  documentation is unusually candid: there is no code signing and no
+  attestation, and trust derives from the repository source. It verifies
+  that the bytes you downloaded are the bytes advertised. It does not and
+  cannot say whether the skill works, because nobody ran it. alexandria
+  does run them. Adding the hash is what stops that evidence from drifting
+  quietly away from the file it was evidence about.
+- First step: one column on the validation results table and one line in
+  the harness that hashes the file it just read. The page-rendering half
+  belongs to the frontend seat and to the sprint item that already exists,
+  so this entry is the data half only.
+- Cost: $0
+- Status: proposed
+
+### Craft scan — Anthropic's Claude Code plugin marketplaces (code.claude.com, fetched 2026-09-24)
+
+The engineer seat's daily craft scan, next unscanned entry in
+docs/market/landscape.md. The market seat added the Claude Marketplace
+entry this morning and covered the positioning question, which is whether
+the platform owner is about to occupy alexandria's paid tier. This is the
+craft half and a different question: how the thing is built, and what is
+worth taking.
+
+**One thing worth stealing: the version is a hash when there is nothing
+better.** The install mechanics resolve a plugin's version in a fixed
+order, and the interesting part is the bottom of that order. A declared
+`version` wins. Failing that, `plugin.json`'s version. Failing that, for a
+git source, the resolved commit sha. For an archive, the sha256. For a
+`command` source, a hash of the output the command produced. There is
+always an answer, and the answer always changes when the content changes.
+alexandria has the same problem in three places and solves it in one:
+today's rehearsal receipt compares a `prompt_sha`, while a validated skill
+and a published digest both carry a date and no fingerprint. A date says
+when somebody looked. A hash says what they looked at. The ledger entry
+above takes this for the skill library.
+
+**One thing alexandria does better: the marketplace verifies integrity and
+alexandria verifies evidence.** Anthropic's documentation says plainly
+that `claude plugin validate .` checks JSON structure, that there is no
+built-in code signing or attestation, and that trust derives from the
+repository source. So a plugin is listed because somebody with commit
+access listed it, and the strongest promise available to a user before
+install is that the zip matches its digest. That is a real guarantee and
+it is a guarantee about transport. Whether the skill does what it claims
+is left to the reader, and for 2,000 listings the reader has no way to
+find out except by installing. alexandria's skill library runs its skills
+and keeps the results, which is the harder claim and the only one a buyer
+of an operational tier is actually paying for. The gap is not oversight on
+Anthropic's part. Attestation at catalog scale is expensive, and a
+two-skill library that executes every one of them is not a smaller version
+of that catalog. It is a different product.
+
+**The one to watch.** `defaultEnabled: false` lets a marketplace ship a
+plugin that installs disabled until the user opts in. If a future version
+of that flag carries a reason string, the catalog gains a place to put
+exactly the kind of caveat alexandria's validation results produce, and
+the distance between the two products narrows from the direction nobody
+is watching.
+
+### 2026-09-24 — The test suite has no gate, and the two ways of running it disagree (engineer agent)
+
+- Trigger: this run ran `python3 -m pytest tests/ -q`, the command printed in
+  the docstring of nearly every file in `tests/`, and it executed zero tests.
+  A stub collision aborted collection and pytest reported it as `1 error`.
+  Recorded as INC-2026-09-24-test-suite-ran-zero-tests.
+- What: the collection bug is fixed in this PR, but the reason it survived is
+  not. `.github/workflows-pending/checks.yml` runs two test files directly,
+  `test_press_resilience.py` and `test_email_template.py`, as single scripts.
+  Run that way each file installs its own Modal stub and passes, so the path
+  CI would take was green on the two files it names while the suite was dark.
+  Every test file added since that workflow was written is unguarded, which
+  now includes `test_oauth_redirect_uri.py`, `test_authorize_throttle.py`,
+  `test_check_registers.py`, `test_accounts.py`, `test_prose_benchmark.py`,
+  `test_triage_planner.py` and `test_markdown.py`. Naming files in a workflow
+  is the same defect as ban-list 36: a check written from the last failure
+  catches the last failure and nothing after it.
+- The pattern is live, not historical. PR #94, this seat's own second run of
+  the same day, adds `tests/test_press_rehearsal.py` to that workflow as a
+  fourth named step and a fourth named path. It is the right thing to do given
+  how the workflow is built, and it is the fourth time someone has had to do
+  it, which is the argument. One `pytest tests/` step would have covered that
+  file the moment it was written, and would cover the next one too.
+- The second half, and it is the larger one: `checks.yml` is still in
+  `workflows-pending/`. Its own README says anything sitting there is a guard
+  that is not guarding yet. So neither path runs on a pull request today.
+- First step, owner-sized because this seat has no `workflows` permission:
+
+      git mv .github/workflows-pending/checks.yml .github/workflows/checks.yml
+
+  and replace the two named-file steps with the suite plus the register check,
+  both of which are green on this branch:
+
+      - run: pip install -r requirements-dev.txt
+      - run: python3 -m pytest tests/ -q
+      - run: python3 tools/check_registers.py
+
+  The `paths:` filter should widen to `tests/**` and `tools/**` at the same
+  time, or the workflow will keep ignoring changes to its own subject. Read
+  this against whichever version of `checks.yml` is on main when it is picked
+  up: PR #94 edits the same file and should merge first.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — The throttle's ceiling is the passphrase's entropy, and no file knows what that is (engineer agent)
+
+- Trigger: building the `POST /authorize` limiter this run. It cuts a guesser
+  from unbounded to sixty attempts an hour, and whether sixty an hour is safe
+  depends entirely on one secret. This seat may not read it, and nothing in
+  the repository records its shape.
+- What: `MCP_PASSPHRASE` is the whole gate on the MCP server, and behind it
+  are the corpus through `sql_query`, a GitHub token that opens pull requests
+  through `propose_skill` and `propose_change`, and a 180-day refresh token.
+  A rate limit changes the arithmetic of guessing it and changes nothing
+  about how strong it is. Three things are unrecorded anywhere: how the
+  passphrase was generated, how long it is, and when it was last rotated.
+  A twelve-character phrase a human chose and a five-word diceware string
+  differ by a factor no limiter can make up.
+- The related gap, worth naming in the same entry: the refresh token lives
+  180 days, so rotating the passphrase does not end a session minted before
+  the rotation. A compromise outlives its own fix.
+- First step: one file, `docs/security/secret-shapes.md`, a line per secret
+  NAME giving generator, length and rotation date, and no values. The owner
+  fills it because only she can see them. If the answer for this one is "I
+  picked it", the second step is a rotation to a generated phrase, which
+  costs nothing and is the single highest-value change available to this
+  surface.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — A ledger entry can hide from every consumer by writing its status as a sentence (engineer agent)
+
+- Trigger: `tools/check_registers.py`, built this run, found
+  `- Status: mostly moot as of run 3` at docs/ideas.md:1640. This run's own
+  first observation step was `grep "Status: accepted" docs/ideas.md`, which
+  would have skipped that entry entirely.
+- What: the ledger contract at the bottom of every charter names five
+  statuses, and the file is read by grep in at least three places: the PM
+  grooms `accepted` entries into sprints, the engineer's fallback order looks
+  for `accepted` entries no sprint has picked up, and every seat scans for
+  `urgent`. An entry whose status line is prose is not rejected by any of
+  them. It is silently absent, which is the failure mode that leaves no
+  trace. One entry carries it today out of roughly two hundred, and nothing
+  has ever checked, so the direction of travel is the only thing known.
+- The checker warns rather than blocks, deliberately: the entry belongs to
+  another seat and no charter lets this one rewrite a status. So the warning
+  will sit there being ignored, which is what warnings do.
+- First step: the owner or the writer seat corrects that one line to a
+  keyword and moves the prose into the body where it belongs. Once the count
+  is zero, the checker's status rule moves from warning to blocking in one
+  edit, and the contract is enforced by a command instead of by a paragraph.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — Craft scan: Consensus (consensus.app)
+
+Rotated to Consensus because it is the one academic-tools entry in
+docs/market/landscape.md that no craft scan has ever opened. Elicit was
+scanned 2026-09-22, Undermind and The Batch earlier today, TLDR AI on the
+21st and again today, AINews on the 23rd. The landscape's Consensus entry is
+still search-snippet confidence from 2026-09-18. Fetched the product and its
+blog index this run.
+
+**Worth stealing: a derived view where every cell opens onto the sentence
+that put it there.** Their newest feature, shipped 2026-09-22, is a Research
+Gaps Matrix, and the line they lead with is "open any cell to see which
+papers are in it, and the exact quote that put them there." The matrix is the
+interesting half only because the drill-down exists. A grid of gaps with no
+path back to the text is a claim about the literature that the reader has to
+take on faith, and they clearly knew that, because the quote is in the
+headline rather than in the feature list.
+
+This corroborates an open ledger entry rather than being a new idea, and the
+corroboration is the point: "Cite the sentence, not the item" has been
+`proposed` since 2026-09-22. A competitor in the same category has now
+shipped exactly it and led their announcement with it. That moves the entry
+from a craft preference to a category expectation, and the PM should weigh it
+that way on Monday.
+
+**Also worth noting, on distribution.** Their 2026-09-14 post is titled
+"Consensus Everywhere: wherever you work, research is within reach," and the
+substance is that Consensus runs inside ChatGPT, Claude and Microsoft 365
+Copilot. They are treating the connector as the distribution channel rather
+than as an integration checkbox. alexandria already has that surface, in
+`mcp/server.py`, and this run spent itself on the lock at its front door. The
+observation to carry: the MCP server is not a developer convenience, it is
+the same channel a funded competitor is building its distribution strategy
+on, and it should be resourced and judged as a product surface.
+
+**What alexandria does better: the claim that gets overturned.** Consensus
+answers the question you bring it. Every one of its surfaces, the search, the
+gaps matrix, the partnerships with AAAS and De Gruyter Brill, is built to
+make a corpus answer a query well. Nothing in it tracks what it told you last
+month against what the field decided since. alexandria's `claim_links` table
+and its `deprecated_claims` view exist precisely to say "the thing we sent you
+in week 37 has since been contradicted," and a weekly issue is the format
+that can deliver that sentence to someone who never asked. A search product
+structurally cannot, because it has no standing relationship with a reader
+and no memory of what it has already asserted to them. That is the axis worth
+defending, and it is worth more than matching their matrix.
+
+## Engineer run, 2026-09-25
+
+Appended as one section at the tail on purpose, the same way the
+2026-09-24 security batch was: five other open pull requests (#101, #98,
+#95, #60, and this seat's own #94) also write into this file, and a new
+section at the end is the cheapest conflict to resolve.
+
+### 2026-09-25 — A 5xx from the provider burns a model instead of waiting for it
+
+- Trigger: today's craft scan of Semantic Scholar's Academic Graph API,
+  below. Its own FAQ tells clients to back off on 5xx as well as 429,
+  because its rate limiting returns HTTP 500 about as often as 429. That
+  sent me to read what alexandria's press does with a 5xx, and the
+  answer is that it does not have one.
+- What: in `pipeline/weekly.py`, `call_model` handles 404 and 429 by
+  name and then catches everything else with `if resp.status_code >=
+  400`, which raises `ModelGone`. The comment above that line explains
+  it for 400, and it is right about 400: an unsupported parameter is
+  worth handing to the next model. But 500, 502, 503 and 504 fall into
+  the same branch, and `ModelGone` means the loop at line 669 abandons
+  that model for the whole run without retrying once. So a provider
+  having a bad minute is treated exactly like a model that was
+  withdrawn. The consequence is specific and it lands on the thing the
+  org has spent two weeks protecting: the head of `FALLBACK_MODELS` is
+  the model the rehearsal gate certifies, and one transient 503 on a
+  Monday demotes the issue to a model no rehearsal covered, quietly,
+  with the only evidence a line in a log nobody reads. A 429 already
+  gets `RETRIES_PER_MODEL` attempts with exponential backoff. A 503
+  deserves the same treatment and currently gets none.
+- First step: split the `>= 400` branch in two. Keep `ModelGone` for
+  4xx, and give `>= 500` the retry-and-backoff path that 429 already
+  has, reusing `BACKOFF_SECONDS` and `BACKOFF_CEILING` rather than
+  inventing a second schedule. Then a test beside the 404 and 429 cases
+  in `tests/test_press_resilience.py`, which already has the fixtures
+  for it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — A revoked MCP session keeps a working access token for a day
+
+- Trigger: building today's fix. Making a replayed authorization code
+  revoke its session meant choosing where revocation is enforced, and I
+  could only afford one of the two places.
+- What: this PR enforces revocation at `POST /token`, so a revoked
+  session cannot refresh and its 180-day chain dies immediately. It is
+  not enforced at the bearer guard in `mcp/server.py`, which is the
+  middleware every `/mcp` request passes through. So an access token
+  already issued to a revoked session keeps working until it expires on
+  its own, which is `ACCESS_TTL`, currently 24 hours. That is the honest
+  shape of what shipped: the long tail is closed and the first day is
+  not. It was not closed today because the guard runs on every single
+  request and checking the ledger there is a database round trip per
+  request, on a container that scales to zero, which is a real cost that
+  deserves its own decision rather than a quiet addition.
+- First step: decide the cost first, since that is the actual question
+  and not the code. Three options, cheapest first. Cut `ACCESS_TTL` from
+  24 hours to something closer to an hour, which costs one line and
+  shrinks the window twenty-fold without any new lookup. Or cache the
+  revoked set in the container with a short TTL, which makes the common
+  request free and bounds the staleness. Or check per request and accept
+  the round trip. The middle one is probably right, and the first one is
+  worth doing today regardless of which lands.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — Nothing runs the MCP server's security tests
+
+- Trigger: after writing `tests/test_code_single_use.py` I went looking
+  for where it would run on a pull request, and there is nowhere. The
+  suite is 176 tests and the only workflow that runs any of them is
+  `.github/workflows-pending/checks.yml`, which is scoped to the press
+  by path and is not installed anyway.
+- What: three security fixes now live in `mcp/`, each with a suite
+  written to hold it. Sprint item 1's redirect-URI check, the passphrase
+  throttle, and today's single-use codes. Every one of those suites runs
+  exactly once, in the session of the seat that wrote it, and never
+  again. Nothing re-runs them when someone else edits `mcp/server.py`,
+  which is the moment they exist for: these are the checks that hold
+  when a later change is careless, and a check that runs only on the day
+  it is written is a receipt rather than a control. The entry
+  "Incident 22's budget gate is written and still not installed" is the
+  same shape one level down; this is the general case of it.
+- First step: a `tests` job in `checks.yml` running
+  `python3 -m pytest tests/ -q` on `mcp/**`, `pipeline/**`, `db/**` and
+  `tests/**`, added in the same edit that installs that file, since both
+  are the owner's push and it is one push rather than two. One
+  implementation detail worth writing down because it cost time today:
+  on the agent image, `pip install -r requirements-dev.txt` fails with
+  PEP 668 `externally-managed-environment` and needs either a venv or
+  `--break-system-packages`. The repo's own documented command is the
+  one that fails, so whichever way CI solves it should be the way
+  `requirements-dev.txt` then documents.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — Craft scan: Semantic Scholar's Academic Graph API
+
+The next unscanned entry in `docs/market/landscape.md` (Undermind,
+Elicit, TLDR AI, AINews and Consensus are done). A craft read of the
+API rather than the search product, since the API is what an agent
+meets.
+
+**The thing worth stealing: the caller declares the shape of the
+response.** Every endpoint takes a `fields` parameter, a comma-separated
+list that can reach through relations, and you get back exactly those
+fields and nothing else. There is no default payload to trim and no
+second version of an endpoint for callers who want more, because
+wanting more is a longer string. Their tutorial makes the tradeoff
+explicit rather than hiding it, in their words: avoid including more
+fields than you need, because that can slow down the response rate. The
+same shape appears again at `/paper/batch`, which resolves up to 500
+ids in one POST and takes the same `fields` string, so the expensive
+pattern (hundreds of detail calls) and the cheap one differ by which
+endpoint you picked and nothing else. Against alexandria's MCP tools,
+which return a fixed shape per tool, this is the better design for the
+caller we actually have: an agent paying by the token for every field
+it did not ask for. It is a ledger idea rather than a diff because
+`semantic_search` and `sql_query` have different answers here,
+`sql_query` already being the general case.
+
+**The thing alexandria does better: the graph is read, not just
+indexed.** Semantic Scholar has 200M papers and 2.4B citation edges,
+and it will tell you that paper A cites paper B and even classify the
+citation's intent. It will not tell you that B's finding was overturned
+in March, because a citation edge is a fact about a document and
+alexandria's claim edges are facts about a claim. The whole left-behind
+premise depends on that difference. They have vastly more of the
+cheaper edge and none of the expensive one.
+
+**One operational note that became the first idea above.** Their rate
+limiting returns HTTP 500 about as often as 429, and their FAQ's
+instruction is to handle 5xx with exponential backoff rather than
+treating it as a real error. That is a well-earned piece of advice from
+an API at their scale, and reading it is what made me check what the
+press does with a 503.
+
+### 2026-09-25 — Craft scan: Undermind (undermind.ai), second run
+
+- The next unscanned entry in docs/market/landscape.md's academic-tools
+  section, where it has sat since 2026-09-18 at "search-snippet
+  confidence only". Elicit was scanned 2026-09-22, Consensus 2026-09-24,
+  Semantic Scholar's API earlier today. Paperguide is the one left.
+  Fetched undermind.ai and their benchmark whitepaper's summary today.
+- **What it is.** An agentic literature search that reads full texts,
+  follows citation trails across several passes, and returns a report
+  with in-line citations. Product copy: "Trace any statement by following
+  in-line citations back to the source paper." It sells recall against
+  keyword search rather than speed.
+- **The one thing worth stealing, and it is a good one.** Undermind
+  estimates how exhaustive its own search was, and it stops on that
+  estimate rather than on a fixed result count. The mechanism is a
+  capture-rate argument: as a search continues, the rate at which it
+  turns up new relevant papers falls, and that falling rate is used to
+  estimate how much of the findable literature has been seen. A
+  production search ends on its own after about 2.9 minutes. The user is
+  told what that estimate was.
+- **Why it lands here specifically.** `semantic_search` and `rag_answer`
+  both take `k=8` and neither says anything about whether eight was the
+  right number. Eight is a constant chosen once, and for a narrow
+  question it retrieves padding while for a broad one it silently answers
+  from a fraction of what the corpus holds. The caller cannot tell which
+  happened, and the caller is usually an agent that will not ask. This is
+  the same shape as the incident registered today: a step that cannot
+  know whether it covered the question still returns a confident answer.
+  It became an idea below rather than staying a note.
+- **What alexandria does better, stated narrowly enough to defend.**
+  Undermind answers a researcher who will then read papers, and its unit
+  of evidence is a paper. alexandria's unit is a claim with typed edges
+  to other claims, and every answer comes back through an MCP tool call
+  carrying the claim ids, so a calling agent can walk from the answer to
+  the evidence and on to what supports or contradicts it without a human
+  reading a PDF in between. Their corpus is the whole literature and ours
+  is 661 claims, so this is a claim about shape and not about size.
+  Theirs is also a paid subscription and the MCP server is $0.
+
+### 2026-09-25 — Retrieval that reports how much of the question it covered
+
+- Trigger: today's craft scan of Undermind, which estimates its own
+  exhaustiveness and shows the number, read against `rag_answer`'s fixed
+  `k=8` while rewriting the synthesis path in this same run.
+- What: `_retrieve` returns the k nearest claims and already computes the
+  cosine similarity of each. That number is thrown away for everything
+  except display. The cheap version of Undermind's idea is to keep it: a
+  retrieval whose worst included claim still scores high has more
+  material the caller did not get, and one whose best claim scores low
+  has answered from nothing very relevant. Both are knowable before the
+  model is called and neither is reported today. `rag_answer` would carry
+  a coverage line saying which of the three it was, and `semantic_search`
+  would say when the k-th result was still strong, which is the signal
+  that the caller should ask for more. The expensive version is
+  Undermind's actual method, which needs iterative retrieval and a
+  capture-rate estimate, and that is a different project.
+- First step: log the similarity of the first and last retrieved claim
+  for a week's real `rag_answer` calls and look at the distribution
+  before choosing any threshold. Picking a cutoff first and measuring
+  afterwards is how a number nobody can defend ends up in a tool
+  description.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-25 — The two daily corpus crons still call one model with no fallback
+
+- Trigger: grepping for `RAG_MODEL` while fixing it in this run.
+  `pipeline/triage.py:26` and `pipeline/interpret.py:20` each hold
+  `MODEL = "openai/gpt-oss-120b"`, hardcoded, with no fallback list and
+  no availability check. Both are Modal crons, so both are runtimes under
+  docs/agents/runtime-changes.md.
+- What: the press learned this in incident 24 and answered it with an
+  ordered walk. `rag_answer` got the same walk today. These two did not,
+  and they are the jobs that feed everything else: triage judges which
+  papers enter the corpus, interpret draws the edges between claims. Both
+  handle a 429 well, printing a line and stopping so the next run
+  resumes. Neither handles a withdrawal, which raises out of the cron,
+  and a red cron nobody is watching is the entire failure mode of
+  incident 24. The guard now catches a withdrawn id at deploy, which is
+  this run's cheap half, but catching it is not surviving it.
+- First step: lift the walk out of `mcp/synthesis.py` into something both
+  crons import, which is roughly the shape `call_model` already has in
+  `pipeline/weekly.py`, and let each cron keep its own ordered list. It
+  is one day of work and it is a runtime change, so it wants the ladder
+  and a rehearsal rather than a quiet merge.
+- Cost: $0. One related proposal that is the owner's and not the
+  engineer's: the MCP app mounts the `groq` secret and not `moonshot`,
+  so `rag_answer`'s fallback list cannot cross providers the way the
+  press's does. Adding the `moonshot` secret to the MCP app would let it,
+  at whatever those tokens cost.
+- Status: proposed
+
+### 2026-09-25 — Every gate the org owns has two outcomes and needs three
+
+- Trigger: INC-2026-09-25-budget-guard-estimates, registered in this PR.
+  `python3 pipeline/budget.py` failed the press because tiktoken was
+  absent, and printed a remedy that would have had someone shorten a
+  prompt that fits with 140,766 tokens of headroom. It is the third
+  occurrence in two days of the class incident 32 named, after yesterday's
+  test suite that ran zero tests and reported one error.
+- What: each of those three gates could not read its input and returned a
+  verdict anyway. The fix applied each time was local to the gate, which
+  is why the class keeps coming back in a new one. The generalization is
+  that a gate has three possible outcomes and the org's gates are all
+  built with two: it passed, it failed, and it could not tell. The third
+  is the only one that is never wrong, and it is the one none of them can
+  say. Ban list entry 41, "the gate that reads the output and never the
+  input", is the writer seat's version of the same law and is already
+  binding for digests, so the precedent exists in one register and has
+  not been generalized to the others.
+- First step: an inventory, not a rewrite. List every gate the repository
+  runs, which is `pipeline/budget.py`, `tools/check_registers.py`,
+  the pre-send quality gate, `skills/_validation/trigger_test.py` and
+  whatever `.github/workflows-pending/checks.yml` will run once it is
+  installed, and for each one name what it does when its input is missing
+  or unreadable. Anything that answers "it reports a pass" or "it reports
+  a failure" rather than "it says it could not tell" is the list worth
+  fixing.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-09-24 — The claim graph is producing edges between claims that share no measure (writer seat, for the engineer)
 
 - Trigger: the fourth editorial run of 2026-09-24, grading 2026-W39. The

@@ -20,6 +20,15 @@ stored them nowhere, and `/authorize` minted a code against whatever
 `redirect_uri` the request carried. A crafted link on the real domain plus the
 real passphrase handed an attacker a working token pair. PKCE does not close that
 gap, since whoever crafts the link also holds the matching `code_verifier`.
+
+The second half of this module is the attempt throttle on `POST /authorize`. The
+redirect-URI check above decides *where* a token may be sent. The throttle
+decides *how often* someone may guess the one passphrase that decides whether a
+token is minted at all. Registration is open by design, so an attacker registers
+their own client, reaches the form legitimately, and meets the passphrase with
+the redirect-URI check already satisfied. Before the throttle, being wrong cost
+nothing: forty consecutive wrong passphrases returned forty 401s with no delay,
+no counter, and no ceiling.
 """
 
 import base64
@@ -28,6 +37,7 @@ import hmac
 import html
 import json
 import time
+import uuid
 from urllib.parse import urlencode, urlsplit
 
 #: Registrations do not expire on their own. A client that registered a year ago
@@ -153,6 +163,306 @@ def check_redirect_uri(client_id: str, redirect_uri: str, secret: str) -> bool:
     return any(redirect_uri_matches(uri, redirect_uri) for uri in registered)
 
 
+# ---------------- the attempt throttle on the passphrase ----------------
+
+#: Wrong passphrases that cost nothing. The owner mistypes, and three free
+#: attempts mean she never meets this machinery at all in normal use.
+FREE_ATTEMPTS = 3
+
+#: The ceiling on the required wait, in seconds. It is deliberately low. The
+#: brief this was built from says the limiter must back off rather than bar,
+#: because the passphrase behind it is the owner's only way into her own
+#: connector. A minute is the longest an attacker can make her wait, and it
+#: still cuts a guesser from unbounded to sixty attempts an hour.
+MAX_BACKOFF = 60
+
+#: A run of failures this old is not the same run of failures. Without a decay
+#: the counter only ever climbs, and an owner who mistyped six times last March
+#: would pay the ceiling forever.
+ATTEMPT_DECAY = 3600
+
+#: One passphrase, one user, one gate, so one counter. Per-IP scoping was
+#: considered and dropped: behind Modal's proxy the client address comes from a
+#: forwarded header, and both ways of getting that wrong are bad. Trust the
+#: header and an attacker rotates it for free. Do not trust it and every caller
+#: collapses to the proxy's own address, which turns a per-IP limit into a
+#: second global limit that an attacker can hold down on the owner. A global
+#: counter cannot be escaped by rotating addresses and cannot be aimed at one
+#: victim, because there is only one account to aim at.
+GLOBAL_SCOPE = "mcp-authorize"
+
+
+def backoff_seconds(fails: int) -> int:
+    """Seconds that must pass before the next attempt, given `fails` already recorded.
+
+    Zero until the free allowance is spent, so FREE_ATTEMPTS wrong passphrases
+    in a row cost nothing at all. Then doubling, then flat at MAX_BACKOFF.
+    """
+    if fails < FREE_ATTEMPTS:
+        return 0
+    return min(2 ** (fails - FREE_ATTEMPTS), MAX_BACKOFF)
+
+
+class MemoryAttemptStore:
+    """Attempt counts in process memory. Correct, and forgetful.
+
+    This is what the throttle falls back to when the database cannot be
+    reached, and what the tests use. On Modal it is not enough on its own: the
+    container scales to zero, so the count dies with it, and a second replica
+    keeps its own. That is the reason the real store below is in Postgres.
+    """
+
+    def __init__(self):
+        self._rows: dict[str, tuple[int, float]] = {}
+
+    def read(self, scope: str) -> tuple[int, float] | None:
+        row = self._rows.get(scope)
+        if row is None:
+            return None
+        fails, last = row
+        return fails, time.time() - last
+
+    def record_failure(self, scope: str, decay: int) -> int:
+        fails, last = self._rows.get(scope, (0, 0.0))
+        fails = 1 if time.time() - last > decay else fails + 1
+        self._rows[scope] = (fails, time.time())
+        return fails
+
+    def reset(self, scope: str) -> None:
+        self._rows.pop(scope, None)
+
+
+class PostgresAttemptStore:
+    """Attempt counts in the `auth_attempts` table, so they survive a cold start.
+
+    Takes a zero-argument `connect` callable rather than a connection, because
+    the MCP server opens a connection per call and the throttle should not hold
+    one open between requests. Every statement is a single round trip.
+    """
+
+    READ = "select fails, extract(epoch from (now() - last_fail)) from auth_attempts where scope = %s"
+    RECORD = """
+        insert into auth_attempts (scope, fails, last_fail) values (%s, 1, now())
+        on conflict (scope) do update
+           set fails = case when auth_attempts.last_fail < now() - make_interval(secs => %s)
+                            then 1 else auth_attempts.fails + 1 end,
+               last_fail = now()
+        returning fails
+    """
+    RESET = "delete from auth_attempts where scope = %s"
+
+    def __init__(self, connect):
+        self._connect = connect
+
+    def read(self, scope: str) -> tuple[int, float] | None:
+        with self._connect() as conn:
+            row = conn.execute(self.READ, (scope,)).fetchone()
+        return (int(row[0]), float(row[1])) if row else None
+
+    def record_failure(self, scope: str, decay: int) -> int:
+        with self._connect() as conn:
+            row = conn.execute(self.RECORD, (scope, decay)).fetchone()
+            conn.commit()
+        return int(row[0])
+
+    def reset(self, scope: str) -> None:
+        with self._connect() as conn:
+            conn.execute(self.RESET, (scope,))
+            conn.commit()
+
+
+class Throttle:
+    """How long the next passphrase attempt has to wait, and why.
+
+    The store is pluggable and the degraded path is deliberate. If Postgres
+    cannot be reached, this falls back to an in-process counter rather than
+    either barring the owner or dropping the limit entirely. A database outage
+    should cost the throttle its memory, not cost the owner her connector, and
+    an attacker who wants the weaker limit has to take Neon down to get it.
+    """
+
+    def __init__(self, store=None, *, fallback=None, on_error=None,
+                 free=FREE_ATTEMPTS, cap=MAX_BACKOFF, decay=ATTEMPT_DECAY):
+        self.store = store if store is not None else MemoryAttemptStore()
+        self.fallback = fallback if fallback is not None else MemoryAttemptStore()
+        self.on_error = on_error
+        self.free, self.cap, self.decay = free, cap, decay
+
+    def _wait(self, fails: int) -> int:
+        if fails < self.free:
+            return 0
+        return min(2 ** (fails - self.free), self.cap)
+
+    def _with_store(self, call):
+        """Run `call(store)` against Postgres, and against memory if that fails."""
+        try:
+            return call(self.store)
+        except Exception as exc:  # noqa: BLE001 - any driver error degrades the same way
+            if self.on_error is not None:
+                self.on_error(exc)
+            return call(self.fallback)
+
+    def retry_after(self, scope: str = GLOBAL_SCOPE) -> int:
+        """Seconds the caller must still wait, or 0 if the attempt may proceed.
+
+        Read-only on purpose. A blocked attempt does not count as a failure,
+        so hammering the endpoint while blocked cannot push the wait out
+        further. The wait is always measured from the last *counted* failure.
+        """
+        row = self._with_store(lambda store: store.read(scope))
+        if row is None:
+            return 0
+        fails, since = row
+        if since > self.decay:
+            return 0
+        return max(0, self._wait(fails) - int(since))
+
+    def record_failure(self, scope: str = GLOBAL_SCOPE) -> int:
+        """Count one wrong passphrase. Returns the new failure count."""
+        return self._with_store(lambda store: store.record_failure(scope, self.decay))
+
+    def record_success(self, scope: str = GLOBAL_SCOPE) -> None:
+        """The right passphrase clears the slate."""
+        self._with_store(lambda store: store.reset(scope))
+
+
+# ---------------- single-use authorization codes ----------------
+
+#: How long a freshly minted code is good for. It was 600 seconds, which is ten
+#: minutes in which a leaked code could be spent. A real exchange takes well
+#: under a second, because the client redirects straight from `/authorize` to
+#: `/token`, so this is generous already and shrinks the leaked-code window
+#: tenfold. It is the cheap half of the fix; the ledger below is the real half.
+CODE_TTL = 60
+
+
+class MemoryCodeLedgerStore:
+    """Spent codes in process memory. Correct, and forgetful.
+
+    Same role the memory attempt store plays for the throttle: the tests use it,
+    and it is what the ledger degrades to when Postgres cannot be reached. On
+    Modal it is not enough on its own, for the same reason. A container that
+    scales to zero forgets which codes it has seen, and a second replica never
+    knew.
+    """
+
+    def __init__(self):
+        self._rows: dict[str, bool] = {}
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        if jti in self._rows:
+            return False
+        self._rows[jti] = False
+        return True
+
+    def revoke(self, jti: str) -> None:
+        if jti in self._rows:
+            self._rows[jti] = True
+
+    def is_revoked(self, jti: str) -> bool:
+        return self._rows.get(jti, False)
+
+
+class PostgresCodeLedgerStore:
+    """Spent codes in the `consumed_codes` table, so they survive a cold start.
+
+    Takes a zero-argument `connect` callable for the same reason the attempt
+    store does: the MCP server opens a connection per call and nothing here
+    should hold one open between requests.
+
+    `CONSUME` is the whole single-use guarantee and it is one statement on
+    purpose. `on conflict do nothing returning jti` returns a row only when this
+    insert was the one that created it, so two replicas racing on the same code
+    cannot both be told they were first. A read-then-write would have that race;
+    this does not.
+
+    A row is not a spent code, it is a session: `expires_at` is set to the death
+    of the longest-lived token the exchange hands out, not to the code's own
+    60-second expiry. If it were the latter, the row would be purged a minute
+    after login and there would be nothing left to mark revoked for the 180 days
+    the refresh token still works.
+    """
+
+    CONSUME = """
+        insert into consumed_codes (jti, expires_at) values (%s, to_timestamp(%s))
+        on conflict (jti) do nothing
+        returning jti
+    """
+    REVOKE = "update consumed_codes set revoked = true where jti = %s"
+    IS_REVOKED = "select revoked from consumed_codes where jti = %s"
+    PURGE = "delete from consumed_codes where expires_at < now()"
+
+    def __init__(self, connect):
+        self._connect = connect
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        with self._connect() as conn:
+            row = conn.execute(self.CONSUME, (jti, expires_at)).fetchone()
+            # Opportunistic, in the same transaction as the insert that pays for
+            # the connection. Exchanges happen once per login, so this is a rare
+            # statement against a table with one row per login.
+            conn.execute(self.PURGE)
+            conn.commit()
+        return row is not None
+
+    def revoke(self, jti: str) -> None:
+        with self._connect() as conn:
+            conn.execute(self.REVOKE, (jti,))
+            conn.commit()
+
+    def is_revoked(self, jti: str) -> bool:
+        with self._connect() as conn:
+            row = conn.execute(self.IS_REVOKED, (jti,)).fetchone()
+        return bool(row[0]) if row else False
+
+
+class CodeLedger:
+    """Which authorization codes have been spent, and which sessions are dead.
+
+    Two jobs, both required by OAuth 2.1 section 4.1.2: a code may be exchanged
+    once, and a code exchanged twice revokes the tokens already issued from it.
+
+    The degraded path matches the throttle's, and for the same stated reason. If
+    Postgres cannot be reached this falls back to an in-process ledger rather
+    than refusing every exchange. That choice is fail-open and it is deliberate:
+    a Neon outage should cost this check its memory, not cost the owner the only
+    way into her own connector. An attacker who wants the weaker behaviour has
+    to take the database down to get it, and the throttle is still in front of
+    the passphrase while they try.
+    """
+
+    def __init__(self, store=None, *, fallback=None, on_error=None):
+        self.store = store if store is not None else MemoryCodeLedgerStore()
+        self.fallback = fallback if fallback is not None else MemoryCodeLedgerStore()
+        self.on_error = on_error
+
+    def _with_store(self, call):
+        try:
+            return call(self.store)
+        except Exception as exc:  # noqa: BLE001 - any driver error degrades the same way
+            if self.on_error is not None:
+                self.on_error(exc)
+            return call(self.fallback)
+
+    def consume(self, jti: str, expires_at: float) -> bool:
+        """True if this is the code's first exchange. False means a replay."""
+        return self._with_store(lambda store: store.consume(jti, expires_at))
+
+    def revoke(self, jti: str) -> None:
+        """Kill every token issued from this code.
+
+        Called when a code is presented twice. The server cannot tell which of
+        the two callers was the attacker, so the spec's answer is to trust
+        neither, and this follows it. The owner's cost is that she authorizes
+        again, which the passphrase still lets her do at any time. Revoking
+        cannot lock her out, it can only log her out.
+        """
+        self._with_store(lambda store: store.revoke(jti))
+
+    def is_revoked(self, jti: str) -> bool:
+        return self._with_store(lambda store: store.is_revoked(jti))
+
+
 # ---------------- the endpoints themselves ----------------
 #
 # They live here rather than inside serve() so that a test can mount the real
@@ -179,21 +489,44 @@ BAD_REDIRECT = """<!doctype html><title>alexandria</title>
 Nothing was authorized. If you followed a link from an email or a message, close
 this page.</p></body>"""
 
+TOO_MANY = """<!doctype html><title>alexandria</title>
+<body style="font-family:system-ui;max-width:26rem;margin:15vh auto">
+<h2>alexandria</h2>
+<p>Too many wrong passphrases. Wait {wait} and try again. Nothing is locked.
+If this was not you, someone is guessing. The wait is what stops them.</p>
+<form method="post" action="/authorize">
+{hidden}
+<input type="password" name="passphrase" placeholder="passphrase"
+       style="width:100%;padding:.5rem;font-size:1rem">
+<button style="margin-top:.75rem;padding:.5rem 1.25rem;font-size:1rem">Authorize</button>
+</form></body>"""
+
 AUTH_PARAMS = ["response_type", "client_id", "redirect_uri", "state",
                "code_challenge", "code_challenge_method"]
 
 
 def install_oauth(api, *, jwt_secret: str, passphrase: str,
-                  access_ttl: int = ACCESS_TTL, refresh_ttl: int = REFRESH_TTL):
+                  access_ttl: int = ACCESS_TTL, refresh_ttl: int = REFRESH_TTL,
+                  throttle=None, code_ledger=None):
     """Mount the OAuth 2.1 endpoints on `api`, and return `read_access_token`.
 
     FastAPI and PyJWT are imported here rather than at module scope so the
     registration helpers above stay importable with nothing but the standard
     library.
+
+    `throttle` and `code_ledger` both default to in-process ones. The deployed
+    server passes Postgres-backed ones, because a Modal container that scales to
+    zero forgets an in-process count, or an in-process list of spent codes, the
+    moment it stops.
     """
     import jwt
     from fastapi import Form, Request
     from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+
+    if throttle is None:
+        throttle = Throttle()
+    if code_ledger is None:
+        code_ledger = CodeLedger()
 
     def base_url(request) -> str:
         # `.get`, not `[...]`: a request without a Host header is malformed
@@ -284,18 +617,31 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
         # artifact and its hidden fields are the attacker's to rewrite.
         if not registered(client_id, redirect_uri):
             return HTMLResponse(BAD_REDIRECT, status_code=400)
+        hidden = "".join(
+            f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
+            for p, v in [("response_type", response_type), ("client_id", client_id),
+                         ("redirect_uri", redirect_uri), ("state", state),
+                         ("code_challenge", code_challenge),
+                         ("code_challenge_method", code_challenge_method)]
+        )
+        # Asked after the registration check, so junk that never had a client_id
+        # cannot run the counter up, and before the comparison, so a blocked
+        # attempt learns nothing at all about the passphrase.
+        wait = throttle.retry_after()
+        if wait > 0:
+            plural = "1 second" if wait == 1 else f"{wait} seconds"
+            return HTMLResponse(TOO_MANY.format(wait=plural, hidden=hidden),
+                                status_code=429, headers={"Retry-After": str(wait)})
         if not hmac.compare_digest(passphrase_field, passphrase):
-            hidden = "".join(
-                f'<input type="hidden" name="{p}" value="{html.escape(v, quote=True)}">'
-                for p, v in [("response_type", response_type), ("client_id", client_id),
-                             ("redirect_uri", redirect_uri), ("state", state),
-                             ("code_challenge", code_challenge),
-                             ("code_challenge_method", code_challenge_method)]
-            )
-            return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase — try again.", hidden=hidden),
+            throttle.record_failure()
+            return HTMLResponse(LOGIN_FORM.format(msg="Wrong passphrase, try again.", hidden=hidden),
                                 status_code=401)
+        throttle.record_success()
+        # `jti` is what makes the code single-use: it is the name the ledger
+        # records when the code is spent, and the name every token minted from
+        # this code carries so the whole session can be revoked together.
         code = mint({"typ": "code", "cid": client_id, "ru": redirect_uri,
-                     "cc": code_challenge}, ttl=600)
+                     "cc": code_challenge, "jti": uuid.uuid4().hex}, ttl=CODE_TTL)
         # `state` is the client's opaque round-trip value and it arrives from a
         # form field, so it is encoded rather than pasted in. Pasted raw, a
         # state of "a&scope=admin" adds a parameter to the client's callback
@@ -323,17 +669,43 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
             if not hmac.compare_digest(challenge, claims.get("cc", "")):
                 return JSONResponse({"error": "invalid_grant", "error_description": "pkce"},
                                     status_code=400)
+            # Spending the code is the last check, deliberately. Every cheaper
+            # reason to refuse has already run, so a request that fails one of
+            # them does not burn a code the honest client is about to present.
+            session = claims.get("jti") or ""
+            if not session:
+                # A code this server minted always carries one. Missing means a
+                # code from before this check existed, and those are already
+                # dead: the old TTL was ten minutes and this shipped long after.
+                return JSONResponse({"error": "invalid_grant"}, status_code=400)
+            if not code_ledger.consume(session, time.time() + refresh_ttl):
+                # OAuth 2.1 section 4.1.2: a code presented twice revokes what
+                # the first exchange issued. Neither caller can be trusted now.
+                code_ledger.revoke(session)
+                return JSONResponse({"error": "invalid_grant",
+                                     "error_description": "replay"}, status_code=400)
         elif grant_type == "refresh_token":
             claims = read_token(refresh_token or "", "refresh")
             if not claims:
                 return JSONResponse({"error": "invalid_grant"}, status_code=400)
+            # A refresh token from a revoked session is dead, and this is where
+            # revocation is actually enforced. `sid` missing means a token minted
+            # before sessions existed: allowed, so that merging this does not log
+            # the owner out of a connector she authorized months ago.
+            session = claims.get("sid") or ""
+            if session and code_ledger.is_revoked(session):
+                return JSONResponse({"error": "invalid_grant",
+                                     "error_description": "revoked"}, status_code=400)
         else:
             return JSONResponse({"error": "unsupported_grant_type"}, status_code=400)
+        # Both grants carry the session forward, so a refresh chain stays
+        # revocable for as long as it lives rather than only at its first link.
+        session = claims.get("jti") or claims.get("sid") or ""
         return {
-            "access_token": mint({"typ": "access"}, access_ttl),
+            "access_token": mint({"typ": "access", "sid": session}, access_ttl),
             "token_type": "Bearer",
             "expires_in": access_ttl,
-            "refresh_token": mint({"typ": "refresh"}, refresh_ttl),
+            "refresh_token": mint({"typ": "refresh", "sid": session}, refresh_ttl),
         }
 
     def read_access_token(token_str: str) -> dict | None:
