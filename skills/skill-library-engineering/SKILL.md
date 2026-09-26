@@ -64,7 +64,7 @@ Two of these papers build elaborate optimizers over skill text, and both
 report how much that machinery adds beyond a grounded skill. Removing the
 bandit that allocates evaluations cost 2.2 points and removing the population
 evolution cost 2.4, against gains of 13.1 to 26.9 points over no-skill for the
-method as a whole; a Best-of-30 baseline that simply generated thirty grounded
+method as a whole. A Best-of-30 baseline that simply generated thirty grounded
 candidates and kept the best observed one came within 2.5 points of the full
 system (COBRA-Skills). The other paper's optimizer beat its strongest
 optimizing baseline by 4.01 percent on a small model and 1.76 percent on a
@@ -73,7 +73,7 @@ large one (GraphSkillEvo), again small next to the distance from no skill.
 The practical reading for a small library (ours, not the paper's): write a few
 grounded candidates, measure them on a held-out set, keep the best, and do not
 build a search loop until you have exhausted the grounding. The ordering is
-what the numbers support; the papers themselves are arguing for their
+what the numbers support. The papers themselves are arguing for their
 optimizers.
 
 Two details are worth taking even at small scale. Optimization cost is
@@ -93,7 +93,7 @@ separate files, raised success from 66.67 to 69.52 percent against a single
 monolithic file (Reflect, Revise, Reuse). Representing a skill as an explicit
 graph of execution steps with condition-dependent transitions, rather than a
 flat instruction list, gave clearer workflow guidance and less duplication
-(GraphSkillEvo); stripping that structure back out of already-optimized
+(GraphSkillEvo). Stripping that structure back out of already-optimized
 skills, while keeping every instruction, cost 0.75 to 4.52 points across five
 benchmarks (GraphSkillEvo). It also shrank the search space enough to make
 later optimization more efficient (GraphSkillEvo).
@@ -142,7 +142,7 @@ skill applies, in the vocabulary a requester would actually use.
 An ill-suited skill leaves a task worse off than no skill at all (The Router
 Within), and the retrieval-threshold sweep puts a number on it. Lowering the
 reuse threshold from 0.6 to 0.4, so that more stored skills matched, dropped
-success from 69.5 to 55.2 percent; raising it to 0.8, so that fewer did,
+success from 69.5 to 55.2 percent. Raising it to 0.8, so that fewer did,
 dropped it only to 66.7 (Reflect, Revise, Reuse). Loose matching was more than
 twice as costly as strict matching. The same paper's error analysis found
 skill guidance adding unnecessary steps on tasks that had a direct solution
@@ -203,7 +203,7 @@ sees only the instruction and the trajectory, not the skill text and not the
 runner's reasoning, so its diagnosis cannot inherit the mistaken plan it is
 supposed to find.
 
-Rounds saturate fast. Three rounds bought 12.4 points on one model; a fourth
+Rounds saturate fast. Three rounds bought 12.4 points on one model. A fourth
 and fifth together added 0.9 (Reflect, Revise, Reuse). Three rounds also beat
 three independent retries of the same task, 69.5 percent against 62.8, on a
 slightly smaller token budget, which is the evidence that the gain comes from
@@ -249,7 +249,7 @@ the paper wins.
 - The native router's win over frontier models (The Router Within) is against
   open models running in Codex, with their numbers quoted from the benchmark's
   own paper, and the router itself runs in a different harness. Our row names
-  Claude Code as a compared system; the paper's table does not.
+  Claude Code as a compared system. The paper's table does not.
 - The bandit optimizer's first-place finish (COBRA-Skills) is a 2.2 to 2.5
   point margin over its own ablations, inside a method whose total gain over
   no-skill is 13 to 27 points. Reading the row alone attributes the gain to

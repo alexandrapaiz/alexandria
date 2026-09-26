@@ -29,7 +29,7 @@
     },
     "skill-library-engineering": {
       "path": "skills/skill-library-engineering/SKILL.md",
-      "sha256": "f859d6419287648d"
+      "sha256": "29d07a2d4a513fd2"
     }
   },
   "warnings": [],
@@ -923,7 +923,7 @@
     {
       "skill": "skill-library-engineering",
       "source": "skills/skill-library-engineering/triggers.json",
-      "skill_sha256": "f859d6419287648d",
+      "skill_sha256": "29d07a2d4a513fd2",
       "suite_version": 1,
       "cases": [
         {
