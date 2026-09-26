@@ -5211,8 +5211,8 @@ press does with a 503.
   emit: ingested, triaged, read in full, claims, links. The fourth is the
   one that does not exist yet and it is the only one a sentence with
   "read" in it may cite. `count(*) from papers where distilled_at is not
-  null` is 166 all-time; the weekly figure is the same predicate inside
-  the seven-day window. The prompt already reads both the current key
+  null` is 166 all-time, and the weekly figure is the same predicate
+  inside the seven-day window. The prompt already reads both the current key
   names and the new ones, so the rename can land in either order.
   Worth deciding once and recording: whether each count is the seven-day
   window or the all-time total. Both are legitimate and a sentence that

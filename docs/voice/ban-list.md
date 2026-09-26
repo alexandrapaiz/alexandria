@@ -628,7 +628,7 @@ gap that the same collision had left empty (incident 25).
     read "The latest in AI research, read in full and distilled weekly" from
     the day it was written until 2026-09-26, and it printed above every issue
     ever sent, against 166 full reads out of 8,956 papers. Entry 60 is the
-    false sentence; this entry is why it lived so long. A string constant is
+    false sentence, and this entry is why it lived so long. A string constant is
     exempt from every gate this register has, because the gates run on what
     the model writes and this line is deliberately not written by the model,
     which was the good reason it was put in code. The comment above it said
