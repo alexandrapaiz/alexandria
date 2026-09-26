@@ -79,16 +79,21 @@ MAX_COMPLETION_TOKENS = 1_200
 # never estimated. The arithmetic, from real token counts at kimi-k2.6's list
 # price ($0.95 per million in, $4.00 per million out):
 #
-#   system  prompts/triage.md + BATCH_INSTRUCTIONS   ~820 tokens
-#   user    10 papers, title + abstract[:1500]     ~2,680 tokens
-#   output  10 decisions with reasoning              ~700 tokens
-#   per call  3,500 * 0.95/1e6 + 700 * 4.00/1e6  =  $0.0062
-#   per paper                                     =  $0.00062
+#   system  prompts/triage.md + BATCH_INSTRUCTIONS      728 tokens
+#   user    10 papers, title + abstract[:1500]        2,753 tokens
+#   output  10 decisions with reasoning, measured      ~700 tokens
 #
-# $0.60 is therefore about 96 calls, or 960 papers, which is close to what the
-# one-hour slot allows at 3 RPM anyway: the cap and the clock bind in the same
-# place, which is how a cap should be set. The 4,973-paper backlog clears in
-# about six runs and costs about $3.10 in total. See docs/finance/opex.md.
+# Two numbers fall out and both matter. The EXPECTED cost of a call is
+# 3,513 * 0.95/1e6 + 700 * 4.00/1e6 = $0.0062, or $0.00062 a paper. The CEILING,
+# which `python3 pipeline/budget.py` prints because it charges the whole output
+# reservation whether the model uses it or not, is $0.00814 a call.
+#
+# The cap has to be set against the ceiling, so $0.60 buys 73 calls in the worst
+# case and about 96 in practice: 730 to 960 papers a run. That is close to what
+# the one-hour slot allows at 3 requests a minute anyway, so the cap and the
+# clock bind in roughly the same place, which is how a cap should be set. The
+# 4,973-paper backlog clears in 6 or 7 runs and costs $3.10 to $4.05 in total.
+# See docs/finance/opex.md.
 CAP_USD = 0.60
 
 # Enough calls that the clock and the cap are what stop the run, not this

@@ -59,15 +59,19 @@ MAX_COMPLETION_TOKENS = 600
 # never estimated. The arithmetic, from real token counts at kimi-k2.6's list
 # price ($0.95 per million in, $4.00 per million out):
 #
-#   system  prompts/interpret.md                     ~883 tokens
-#   user    one claim plus five neighbors            ~160 tokens
-#   output  up to five relations with confidences    ~150 tokens
-#   per claim  1,050 * 0.95/1e6 + 150 * 4.00/1e6  =  $0.0016
+#   system  prompts/interpret.md                      880 tokens
+#   user    one claim plus five neighbors             ~390 tokens worst case
+#   output  up to five relations with confidences     ~150 tokens measured
 #
-# $0.30 is therefore about 185 claims, which is more than a one-hour slot can
-# reach at 3 requests a minute, so the clock is what actually binds and the cap
-# is the guard behind it. The 487-claim backlog clears in about three runs and
-# costs about $0.79 in total. See docs/finance/opex.md.
+# Expected cost of a call: 1,270 * 0.95/1e6 + 150 * 4.00/1e6 = $0.0018. The
+# ceiling `python3 pipeline/budget.py` prints, which charges the whole 600-token
+# reservation whether the model uses it or not, is $0.00364.
+#
+# The cap is set against the ceiling, so $0.30 buys 82 claims in the worst case
+# and about 165 in practice. At 3 requests a minute the clock is what binds
+# first either way, and the cap is the guard behind it. The 487-claim backlog
+# clears in 3 to 6 runs and costs $0.88 to $1.77 in total. See
+# docs/finance/opex.md.
 CAP_USD = 0.30
 
 # Enough claims that the clock and the cap stop the run rather than this number.
