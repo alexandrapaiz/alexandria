@@ -23,6 +23,7 @@ on:
       - "tests/test_press_rehearsal.py"
       - "tests/test_corpus_drain.py"
       - "tests/test_rag_fallback.py"
+      - "tests/test_reasoning_rubric.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -37,6 +38,7 @@ on:
       - "tests/test_press_rehearsal.py"
       - "tests/test_corpus_drain.py"
       - "tests/test_rag_fallback.py"
+      - "tests/test_reasoning_rubric.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -128,3 +130,16 @@ jobs:
       - name: the corpus drains within its cap, and the cap has teeth
         if: always()
         run: python3 -m pytest tests/test_corpus_drain.py tests/test_rag_fallback.py -q
+
+      # 2026-09-26, the same evening: the reasoning rubric (ADR-2026-09-26b).
+      # Three properties CI is the only place to hold. The topic list the model
+      # is offered in `prompts/distill.md` and the list the insert accepts in
+      # `pipeline/topics.py` are parsed and compared, so a tag added to one and
+      # not the other fails here instead of being dropped silently on every
+      # claim for months. No consumer joins `triage_log` expecting one row per
+      # paper, which is now false. And the re-triage keeps the guard that makes
+      # it idempotent, because a re-triage that forgets which prompt judged a
+      # paper will judge it again every time it runs.
+      - name: the taxonomy is closed, and a paper may have a decision history
+        if: always()
+        run: python3 -m pytest tests/test_reasoning_rubric.py -q
