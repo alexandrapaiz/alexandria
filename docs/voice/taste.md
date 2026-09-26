@@ -201,3 +201,11 @@ the chair and the PM record her rulings.
   parallel, a short bold lead per item, a one-line pull for the
   number that matters, white space between sections. Prose stays
   for the argument; lists carry the inventory.
+- 2026-09-25 — Graph page copy. "A graph that never forgets." (the
+  parked graph page's title) and its intro ("...only ever appended to")
+  are REJECTED as cheesy. Ruling applied on the chair's graph page and
+  binding on the site's /graph: heading is the bare noun "Claim graph";
+  intro is one plain sentence ("Each claim the library distilled, and
+  the claims that support, refine, or contradict it."); hints are
+  instructions, not invitations ("Click a claim to read it."). No
+  personification of the graph, no slogans on tool pages.
