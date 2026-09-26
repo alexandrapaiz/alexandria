@@ -475,7 +475,7 @@ Study decisions, never copy sentences.
 
 ## How an issue is graded
 
-The daily review runs four passes, in this order, and the first one
+The daily review runs five passes, in this order, and the first one
 is not optional (law 12a, the owner's ruling of 2026-09-19).
 
 1. **The outsider read.** Read the issue once, start to finish, at
@@ -498,7 +498,17 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    against the issue and against the generator (incident 20:
    recording a ruling is not enforcing it).
 3. **The laws**, one verdict each, every verdict carrying a quoted
-   line.
+   line. A pass carries evidence too, wherever the law can produce it,
+   because a wrong pass is indistinguishable from a right one and that
+   is how a violation printed on three artifacts was graded clear
+   (2026-09-26, `INC-2026-09-26-grade-cleared-a-printed-violation`).
+   Law 12 is the case where this costs nothing: the four framework
+   names are a closed set of exact strings, so the verdict is a grep of
+   the artifact for "Trailblazing", "Gaining traction", "Left behind"
+   and "Read these yourself", and the grade records the command and its
+   output rather than the word "pass". Grade one artifact per verdict.
+   Two artifacts sharing a verdict line is where an attribution error
+   becomes invisible.
 4. **The ban list**, including new tells to append.
 5. **The claims pass**, added 2026-09-24 after the fourth grade of
    2026-W39 found a false comparison that the four passes above had
@@ -527,6 +537,21 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    the reader cannot check against a linked paper. Grade the standing
    lines too, meaning the masthead and anything else fixed in code or set
    on a page, because those never come up for review on their own.
+   The fourth question is about the issue's own numbers and was added
+   2026-09-26, after a print gave one method two scores on one measure. The
+   first two questions compare a number in the issue against a number
+   somewhere else. This one compares the issue against itself. Group every
+   figure by the system it describes, and inside a group two numbers on the
+   same named measure are either the same number or two setups the issue has
+   told the reader apart where the second one appears. The specimen is the
+   rehearsal print of 2026-09-26, which said a distilled model "hits 44.3%"
+   on a macro-average and four sentences later said the supervision method
+   that produced it "produces 30%" on the same macro-average, with nothing on
+   the page to tell them apart. Neither figure was invented. The reader is
+   the one who has to reconcile them, and a reader who cannot stops trusting
+   both. The repair is to name the setup or to print one number, and the
+   worked example under law 14 carries this defect too, in the pair 44.3 and
+   30, which is reported to the owner rather than edited here.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at

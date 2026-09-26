@@ -817,10 +817,22 @@ pipeline talking. If BOTH kinds are empty, the section does not run and its
 heading does not print, per the length rule above.}
 
 ## {The heading for the reading list, written from the picks that are actually
-underneath it. It can name what the day's picks have in common or simply hand
-the reader the hour, but it is a written line like every other heading. The
-slot's internal name is not a candidate and is not repeated here, because a
-forbidden phrase quoted inside the slot the model writes into is not a
+underneath it. This slot fails more often than the other three and the reason
+is structural, so it gets more instruction rather than another prohibition.
+The first three sections are named after the day's news. This one is named
+after something the issue does every time it runs, so a generic line is always
+available here, and it reads as warm writing rather than as taxonomy, which is
+how it walks past a check that asks whether a line is a label.
+Build the heading from the papers underneath it and never from the act of
+recommending them. Two forms work. Name what these particular picks have in
+common, in the day's own terms. Or name the reader who should give up the
+hour, in terms today's papers make specific. "Three papers for anyone still
+hand-tuning a harness" is written, and it would be false over a different
+day's list, which is the test. A heading that announces the issue is now
+recommending things is the act describing itself, and it would have fitted
+every issue ever sent.
+The slot's internal name is not a candidate and is not repeated here, because
+a forbidden phrase quoted inside the slot the model writes into is not a
 prohibition. It is the nearest available draft. The heading gate at the end of
 this file holds the four names.}
 
@@ -1211,6 +1223,27 @@ the rule's question to the thing in front of you.
   legitimate and there is no third. Cite the count that makes the sentence
   true, or cut the sentence and say nothing about scale at all. An issue with
   no scale line has lost nothing the reader came for.
+- **Then check the issue's numbers against each other. A hard gate (canon
+  laws 6 and 7, the claims pass's fourth question).** Every gate above reads
+  sentences. This one reads only the figures, and it catches what a careful
+  reader catches first, which is one system carrying two different numbers on
+  what the issue calls the same measure.
+  Collect every number in the issue and group them by the system they
+  describe. Inside a group, two numbers on the same named measure have to be
+  the same number, or two setups the issue has told the reader apart in the
+  sentence where the second one appears.
+  The specimen, from the print of 2026-09-26. An item said a distilled model
+  "hits 44.3%" on a macro-average across three kinds of task, and four
+  sentences later said the supervision method that produced it "produces 30%"
+  on the same macro-average. Both figures were in the payload and neither was
+  wrong. The page made them contradict, because the second one came from a
+  smaller ablation the issue never named as one, so a reader is left holding
+  two scores for one method and no way to choose.
+  Two repairs and there is no third. Say in that sentence what makes the
+  second number a different setup, in plain words. Or print one number and
+  drop the other, which is usually the better issue, because an ablation is
+  evidence that the method is what did the work rather than a second score
+  for the method.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic

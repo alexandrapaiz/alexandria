@@ -4068,3 +4068,100 @@ writes. The owner gave this seat the masthead's wording on 2026-09-25 and
 it is repaired in this pull request. The general rule is in the ban list
 entry: every editorial run reads the reader-facing constants in code, and
 every such constant carries a comment naming the register that governs it.
+
+## INC-2026-09-26-grade-cleared-a-printed-violation — the editorial grade recorded a pass on a law the artifact visibly broke (2026-09-26, writer seat)
+
+**What happened.** The rehearsal print of 2026-09-26, `press_rehearsals` id
+1, carries `## Read these yourself` as its fourth heading. That string is one
+of the four internal framework names, and printing one is the violation the
+owner has flagged twice, in her words the second time "AGAIN", which is
+incident 20 and canon law 12. The published 2026-W39 issue in the `digests`
+table and the site reprint at `site/content/issues/2026-W39.md` both carry the
+same heading on their own line 54.
+
+Writer run 13 graded that print against all fourteen laws the same night. Its
+verdict on law 12 reads "Fail, reprint. Pass, rehearsal, and the patch is
+why." The rehearsal's heading is in the text. The grade cleared it.
+
+**Why it matters more than the heading does.** The heading is a repeat of a
+known violation and it is bad. The grade is worse, because the grade is the
+instrument the owner is relying on so she does not have to be the editor. A
+pass on a violation that is present in the artifact does not merely miss the
+defect. It reports that the fix for that defect worked, which is the signal
+that stops anyone looking again. Run 13's own words, "and the patch is why",
+are a claim about a patch's effect derived from a misread of the output.
+
+**Two causes, and the second is the reusable one.**
+
+First, the run held two artifacts at once, the rehearsal print and the site
+reprint, and graded the laws against both in one line each. A law with two
+verdicts in one sentence is a law where an attribution error is invisible,
+because both halves read as considered. Every other law that run graded
+"Fail, both" or "Pass, both" was right.
+
+Second, and this is the general form, no verdict in that review is checkable
+without rereading the artifact. "Pass" is a word. The five counts in the
+outsider pass were checkable, were checked, and were correct. The laws were
+not, because a law's verdict carries a quoted line only when it fails. A pass
+carries nothing, so a wrong pass looks exactly like a right one.
+
+**Why this is a repeat.** Incident 32 records the pre-send quality gate
+returning a pass on the issue the owner rejected. That was a tool and this is
+a seat, and the shape is identical: a gate reporting a pass on an artifact
+that fails, with nothing downstream able to tell the difference. L-A6 in
+`docs/standards/lessons.md` says judge a run by its artifacts and never its
+conclusion, and a grade is a conclusion.
+
+**The fix, in this pull request.** A pass on a law that names a closed set of
+strings cites the strings it checked and where it looked, the same way a fail
+cites the line that failed. Applied to canon law 12 in the grading procedure:
+the four names are grepped in the artifact and the grep is recorded, because
+this is the one law in the canon that can be decided without judgment. Run
+15's own grade of the same print does that and overturns the verdict.
+
+**What is still open, and it belongs to the engineer.** The heading tripwire
+naming those four strings was in the prompt that wrote the print. The slot
+the heading is written into had already been cleared of the phrase. Both
+in-model checks were correct, present and ineffective, so the string check
+moves out of the model, and the ledger entry in this pull request specifies
+it. The writer seat does not patch that gate a third time, per its charter's
+structure watch.
+
+## INC-2026-09-26-law-15-fixed-on-one-surface — the new law was applied to the sentence that produced it and left live on the home page (2026-09-26, writer seat)
+
+**What happened.** Canon law 15 was written on 2026-09-26 from a print that
+said "the library read 1,289 papers" over the ingestion count. The law says in
+its own text that it binds every surface, naming the masthead, the email, the
+site and any line of copy drafted under the canon. Writer run 14 repaired the
+masthead the same night and filed the site's archived 2026-W39 line for the
+frontend seat.
+
+`site/app/page.jsx` line 49 prints `**{papersThisWeek}** papers read this
+week`, and `weeklyIngestCount()` in `site/lib/metrics.js` reads the
+`papers_ingested` field. Read at 2026-09-26 that is 4,243 papers arrived in
+seven days, against 174 read in full in the life of the corpus and 55 read in
+full this week. It is the same false sentence as the one the law was written
+from, on the first screen a stranger sees, and it was live while the law was
+being written.
+
+**Why this is a repeat.** `INC-2026-09-26-fix-found-in-one-slot`, filed
+earlier the same day, records a defect fixed twice in the slot where each
+instance was found while a third instance sat elsewhere in the same file. This
+is that incident one level out. The unit was a file then and it is a surface
+now. Both times the run that generalized the defect correctly in the register
+enforced it only where it had been standing.
+
+**The cause.** A grep for the defect's own words would have found it in
+seconds, and run 14 ran no such grep. The law's scope sentence names four
+surfaces and the run read one of them, because the surface in front of it was
+the one the dispatch was about. There is no charter step that turns a new law
+into a sweep of the surfaces the law claims to bind.
+
+**The fix, in this pull request.** Two parts. The repaired line is drafted in
+`docs/voice/home-metric-line-2026-09-26.md` for the frontend seat to set, with
+the count it needs specified in the ledger. And the general step: when a
+writer run adds a law or a ban list entry, that run greps every reader-facing
+surface for the defect's own words before it calls the fix done, which is
+`pipeline/`, `site/` and the email templates, and reports what it found. A law
+written from one sentence is not enforced until the surfaces it names have
+been read. This run did that grep and this entry is what it returned.

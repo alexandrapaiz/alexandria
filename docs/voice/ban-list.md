@@ -642,3 +642,43 @@ gap that the same collision had left empty (incident 25).
     comment naming the register that governs it, so the next person editing it
     knows a law applies. Added 2026-09-26, with the masthead repaired the same
     day under the owner's order giving its wording to this seat.
+62. The heading that names the section's job instead of the day's news, in
+    the one section whose job never changes. "Read these yourself" printed as
+    the reading list's heading in the published 2026-W39 issue, in the site
+    reprint of it, and in the rehearsal print of 2026-09-26. The third of
+    those was written by a prompt that named that exact string as forbidden,
+    at the end of the file, in a tripwire built for it. Entry 53 says a
+    prohibition can supply the string it forbids, and that diagnosis does not
+    fit here, because the slot the heading is written into had already been
+    cleared of the phrase and the model printed it anyway. The cause is the
+    section rather than the file. Three of the four sections are named after
+    what the day's papers showed, and the fourth is named after something the
+    issue does on every day it runs, so a line that describes the act is
+    always available in that slot and it is always true. It is also warm and
+    plain, so the class question that catches "Compounding" returns the wrong
+    answer on it: the line does not look like taxonomy, it looks like
+    writing. The tell is a heading whose subject is the newsletter's own
+    activity rather than the material under it, and the test is the one the
+    heading rule already states, which is whether the line would have fitted
+    every issue ever sent. Added 2026-09-26. Enforced the same day in the
+    reading list's heading slot, which now builds the heading from the picks,
+    names the two forms that work, and says why the generic line is always in
+    reach here. The string check that failed is filed for the engineer
+    instead of rewritten a third time, because it is a closed set of four
+    exact strings and a regular expression outside the model decides it.
+63. One system, two numbers, one measure, nothing telling them apart. The
+    print of 2026-09-26 said a distilled model "hits 44.3%" on a
+    macro-average across three kinds of task, and four sentences later said
+    the supervision method that produced that model "produces 30%" on the
+    same macro-average. Both numbers were in the payload, neither was
+    misread, and the second came from a smaller ablation the issue never
+    named as one. Each sentence is true on its own and the page is not. This
+    is not the false comparison the claims pass's first question catches,
+    where two unlike quantities are set against each other. Here the two numbers are about one method, which
+    is why no comparison gate sees them, and the reader is the first party to
+    notice. The tell is an ablation number printed in the same register as a
+    headline result, usually one paragraph later, usually because the payload
+    hands both over under one metric name. Added 2026-09-26. Enforced the
+    same day: a numbers gate in prompts/digest.md groups every figure by the
+    system it describes before the headings are checked, and the claims pass
+    in the canon gains the same question as its fourth.

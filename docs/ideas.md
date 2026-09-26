@@ -5238,3 +5238,59 @@ press does with a 503.
   matter and the fields are not.
 - Cost: $0. Two queries and one insert.
 - Status: proposed
+
+### 2026-09-26 — Four exact strings the press can refuse to send (writer seat, for engineer)
+
+- Trigger: `## Read these yourself` printed as the reading list's heading in
+  the published 2026-W39 issue, in its site reprint, and in the rehearsal
+  print of `press_rehearsals` id 1. That string is one of the four internal
+  framework names, and the owner has flagged printing one twice, the second
+  time in the word "AGAIN" (docs/voice/taste.md 2026-09-19, incident 20,
+  canon law 12).
+- Why this is not another prompt patch: the prompt that wrote the rehearsal
+  already carried both defences. The heading slot had been cleared of the
+  phrase on 2026-09-24 so it could not be copied from the writing position,
+  and a tripwire at the end of the file named all four strings and told the
+  model to check its own headings against them. Both were present, correct
+  and ineffective. The writer charter's structure watch says a structural fix
+  that has failed twice through prompt changes goes to the engineer instead
+  of being written a third time.
+- What: one assertion on the finished markdown, before it is stored or sent.
+  No heading line, meaning any line matching `^#{1,3}\s`, equals any of
+  "Trailblazing", "Gaining traction", "Left behind" or "Read these yourself",
+  compared case-insensitively and ignoring trailing punctuation. This is a
+  closed set of four literals and it needs no model and no judgment.
+- Where: the same place as the three checks filed on 2026-09-26 above, which
+  is PR #60's pre-send quality gate if that is where they land. This is a
+  fourth assertion in the same list and not a new piece of work.
+- What it should do on a hit: refuse the send and report, rather than repair.
+  A heading is written from the day's items and the press cannot write one.
+- Cost: $0. One regular expression over the body.
+- Status: proposed
+
+### 2026-09-26 — The home page's weekly full-read count (writer seat, for engineer and frontend)
+
+- Trigger: `site/app/page.jsx` line 49 prints "**4,243** papers read this
+  week" from `weeklyIngestCount()`, which reads `papers_ingested`. That field
+  counts rows that arrived in seven days, and a row is a title and an
+  abstract. Canon law 15 and ban list 60: the count is the ingestion count and
+  the verb is the act performed on a far smaller set. Read at 2026-09-26,
+  8,999 papers held, 4,243 in the last seven days, 174 ever read in full, 55
+  read in full this week. The masthead carrying the same defect was repaired
+  on 2026-09-26 and this surface was not, which is
+  `INC-2026-09-26-law-15-fixed-on-one-surface`.
+- What: expose the weekly full-read count wherever `INGEST_COUNT_URL` is
+  served, beside `papers_ingested`, as `read_in_full` with the same seven-day
+  window: `count(*) from papers where distilled_at > now() - interval '7
+  days'`. The field name matches the one the stats-line entry above asks the
+  press to emit, so the prose and both surfaces agree on one vocabulary.
+- Then, frontend seat: the repaired line is drafted in
+  `docs/voice/home-metric-line-2026-09-26.md`, with the fallback for the case
+  where the second count is not yet served. `site/` is not the writer seat's
+  surface and no line of it is touched in that pull request.
+- Whose call: engineer for the field, frontend for the line. Both after the
+  owner rules on the wording.
+- First step: check whether PR #110's stats work already emits this count
+  under another name, and reuse rather than add.
+- Cost: $0. One query added to an endpoint that already runs one.
+- Status: proposed
