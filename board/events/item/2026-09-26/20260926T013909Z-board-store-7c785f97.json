@@ -1,0 +1,10 @@
+{
+  "assignee": "engineer",
+  "at": "2026-09-26T01:39:09Z",
+  "by": "engineer",
+  "id": "board-store",
+  "kind": "item",
+  "pr": 115,
+  "status": "review",
+  "title": "The board's own store, write path and read path"
+}
