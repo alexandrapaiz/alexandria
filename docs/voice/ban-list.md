@@ -504,3 +504,103 @@ gap that the same collision had left empty (incident 25).
     prompts/digest.md now counts the term the reader meets rather than the
     term the writer defined, and gives the join to write when the sources
     force both words.
+55. The greeting that narrates the reader's week. Entry 45 is the opening
+    billed to a reader who was not there, and its tell is a pointer at a
+    previous issue. This is the same charge with the pointer removed. The
+    rehearsal print of 2026-09-26 opened "You have spent the week watching the
+    field argue about whether agents need a heavy harness at deployment", and
+    it is the first specimen in this register written by a generator that
+    already held the rule against it. It names no issue. It contains no "last
+    week" in entry 45's sense. It still tells a stranger what their week was,
+    and only a returning reader can check it. What made the earlier line wrong
+    was never the reference, it was the tense, and the register had recorded
+    the reference because that is what the struck sentence happened to
+    contain. The test is grammar and it comes back yes or no: is the subject
+    "you", and is the verb in any past tense? Present perfect counts, which is
+    the form that got through. The opposite failure sits beside it and the same
+    reading catches both, because the reprint's "The agent-building world has
+    spent the week arguing about scaffolding" removed the person rather than
+    the tense, which is entry 52 again. Added 2026-09-26 from the owner's
+    dispatch of 2026-09-25. Enforced the same day: the opening slot in
+    prompts/digest.md now carries a written safe form rather than a
+    prohibition, and the stands-alone gate carries the tense check with both
+    specimens held at the position where finished output is read.
+56. The example that supplies the frame rather than the string. Entry 53 is
+    the prohibition that quotes the thing it bans, and its test is the nearest
+    quoted English at the position where the writer stands. This is the
+    survivor of that test: an example whose words are not copied and whose
+    SHAPE is, every time. prompts/digest.md offered "Worth the hour if you are
+    choosing between one agent and a planner plus a separate verifier" as the
+    model reading-list line. Across the two prints of 2026-W39, five entries
+    out of five open "Worth the hour if you are", and one of them completes it
+    as "choosing between shipping a complex harness or teaching its structure
+    to the model". Nothing was plagiarised and the section became a catalogue
+    anyway. Entry 53's cure does not reach this, because moving the specimen
+    or changing its subject leaves the frame intact, and a rule that says "let
+    no two entries take the same shape" was already sitting two sentences
+    below it. Two things have to happen together: the frame is named as spent
+    and refused by its variants, and the repetition is counted where it is
+    visible. The general form, for any slot in any register: an example at a
+    writing position is a template even when the instruction beside it forbids
+    templates, so an example there earns its place only if repeating it would
+    be obviously absurd. Added 2026-09-26 from the fifth and sixth grades of
+    W39. Enforced the same day: the reading list's line in prompts/digest.md
+    names the frame as spent, refuses three rewordings of it by name, and
+    counts openings and grammatical shapes across the section's entries.
+57. The payload's field describing itself inside a sentence about the
+    research. "New work from ACLArena, flagged for deep reading, measures what
+    multi-stage post-training does to a model's capabilities", from the
+    2026-09-26 print. Entry 14 asks whether a subscriber who has never seen
+    the codebase could say what a word refers to, and the words it was written
+    about are nouns, which are claim ids and support counts and the ISO week.
+    This is the same failure in a participial phrase, and the phrase reads as
+    provenance rather than as vocabulary, which is why it survives a pass
+    looking for internal words. Put entry 14's question to the clause instead
+    of to the word and it collapses at once: flagged by whom? The answer is
+    this pipeline, and the reader has just been told a fact about alexandria's
+    triage in the middle of a sentence about somebody's paper. The class is
+    every reason a paper is in front of the writer rather than a reason it
+    matters to the reader: "distilled this week", "scored highly in triage",
+    "carries a procedure", "drawn from the traction stream". The payload
+    explains itself to the generator and never to the subscriber. Added
+    2026-09-26. Enforced the same day: the internal-vocabulary rule in
+    prompts/digest.md now names the payload's own field semantics as the third
+    vocabulary on its list, with the reader-facing form to write instead.
+58. The rule obeyed where it counts and missed where it means. Not a sentence
+    tell and not a page tell but a compliance tell, and it is the reason the
+    owner has asked for enjoyability three times. Canon law 14 carries six
+    rules. Five are measured inside a paragraph, which are its length, its
+    results, its numbers, its plain-meaning line and its number on a line. One
+    is measured on the page, which is how many shapes are on it. The reprint
+    of 2026-W39 cut its longest paragraph from 191 words to 98, left nothing
+    over 100, and shipped twenty-four paragraphs with no list, no subheading
+    and no line standing alone. Every count in the law passed. The page has
+    one shape, which is entry 49, and she read it and said enjoyability is
+    still not fixed. The tell is visible in the diff rather than in the issue:
+    a fix that moved only the countable numbers is a fix aimed at the
+    measurement. Related to entry 51, where the generator printed the name of
+    the rule it was obeying, and this is the structural version of the same
+    thing, which is an artifact shaped around the check instead of the reader.
+    Whoever writes a rule with a measurable half and a meant half orders them
+    so the meant half is checked first, because the measurable one will always
+    be cheaper. Added 2026-09-26 from the owner's dispatch of 2026-09-25.
+    Enforced the same day: the shape gate in prompts/digest.md counts the
+    shapes on the page before any of the word counts, and one kind of block
+    fails an issue on its own whatever the other four counts say.
+59. The system name promoted to an author. "New work from ACLArena" and "The
+    Show-Harness work shows", both from the 2026-09-26 print, attribute
+    findings to the titles of the papers that report them. The attribution law
+    allows two forms, the institution from the payload and the named author as
+    its fallback, and this is a third one invented at the moment both were
+    unavailable, which is the moment it will always be invented. It reads as
+    correct because the payload hands over benchmarks, pipelines, methods and
+    datasets as capitalised proper nouns, and a proper noun in the subject
+    slot of "found" or "shows" looks like a group of people. None of them is
+    anybody. Related to entry 14 in an inverted way worth noticing: entry 14
+    catches internal vocabulary reaching the reader, and this one is the
+    payload's vocabulary reaching the reader disguised as a research group, so
+    the word is fine and the grammar is the lie. The fix where the payload has
+    no institution and no author is to write the finding with no attributive
+    phrase at all. Added 2026-09-26. Enforced the same day: the attribution
+    rule in prompts/digest.md now says there is no third fallback and names
+    the four kinds of payload noun that arrive looking like one.
