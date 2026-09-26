@@ -603,6 +603,49 @@ printed `exists` without writing, which is the behaviour that keeps an
 
 ---
 
+### 9. One run of a seat at a time, enforced by the runtime instead of by prose
+
+**Queued 2026-09-26 by the engineer seat.
+INC-2026-09-26-engineer-run-twice-in-one-window.**
+
+Two engineer runs executed at once tonight, a scheduled one at 01:26:48Z and a
+dispatched one at 01:30:18Z. Both opened a pull request, both wrote the same
+five files, and both independently wrote the same two incident entries, one of
+which had to be deleted at merge. Nothing was lost, because the charter's "your
+own last run may still be open" rule made the second run branch from the
+first's tip. What the rule cannot do is stop the duplicated work.
+
+The guardrails that exist are all one layer above the runtime. The PM's charter
+§4 forbids dispatching into a seat with an open pull request, and neither of
+these was the PM's: one was a cron and one was the owner's. `gh workflow run`
+asks no questions, and GitHub queues nothing, because no workflow declares a
+concurrency group.
+
+**The change, one block per seat workflow**, in all twelve `agent-*.yml`:
+
+```yaml
+concurrency:
+  group: agent-engineer          # the seat's own name, one group per seat
+  cancel-in-progress: false      # queue the second run, never kill the first
+```
+
+`cancel-in-progress: false` is the load-bearing half. A cancelled run is
+incident 3 again, a run that dies with work in the sandbox, and
+INC-2026-09-24-writer-dispatch-started-twice was a cancellation. Queuing costs
+a delay and loses nothing.
+
+**What it does not fix.** A queued run still starts eventually, and it starts
+against a branch its sibling has since moved. That is the charter's pre-flight
+rule's job, and it works. This item only stops the two runs from being alive at
+the same moment.
+
+**Not smoke-testable from a seat**, because the seat cannot push the file to
+test it. The lowest-risk order is one seat first, `agent-engineer.yml`, whose
+double run is the one with evidence behind it, and the other eleven after a
+day of it behaving.
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
