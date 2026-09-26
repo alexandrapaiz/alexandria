@@ -3951,3 +3951,61 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-26-example-supplies-the-frame — a banned specimen's class recurred one day after the register recorded it and the generator enforced it (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the second occurrence of ban list 53's class, and the first
+occurrence was itself recorded and patched, which is what makes this
+worth an entry rather than a line in a review.
+
+**What happened, first time.** On 2026-09-24 the writer seat found that
+`prompts/digest.md` quoted the phrases it banned at the exact positions
+where the model writes. All four heading slots carried their own
+forbidden name inside the braces the model was told to replace, and the
+issue printed "## Read these yourself". Recorded as ban list 53 with a
+general test: read the instruction from the position the writer occupies
+when they obey it, and if the nearest quoted English at that position is
+the thing being banned, the sentence around it is not doing its job.
+Enforced on 2026-09-25 in the four heading slots. **The enforcement
+worked**, and the rehearsal print of 2026-09-26 prints none of the four
+framework names.
+
+**What happened, second time.** The same file's reading-list section
+offered "Worth the hour if you are choosing between one agent and a
+planner plus a separate verifier" as the model line, two sentences above
+its own instruction to "let no two entries take the same shape". Across
+the two prints of 2026-W39, five reading-list entries out of five open
+with "Worth the hour if you are", and one completes it as "choosing
+between shipping a complex harness or teaching its structure to the
+model". The section became a catalogue, which is the one thing the
+section's own rule says judgment was supposed to buy.
+
+**Why the first fix did not reach the second case, which is the part
+worth learning.** Entry 53 was written about a prohibition that quotes
+the banned STRING, and the fix was to move the string. This specimen
+copies no string. It copies the SHAPE, and every cure written for the
+first form leaves the shape intact: moving the example, changing its
+subject, or rewording it all preserve the frame. A register entry
+generalized to the level of its specimen rather than to the level of its
+cause, which is L-A4's shape one layer up.
+
+**What it means.** An example sitting at a writing position is a template
+whatever the instruction beside it says, so an example there earns its
+place only when repeating it would be obviously absurd. That is the
+general rule, it is now ban list 56, and it is enforced in this pull
+request: the reading list's line names the frame as spent, refuses three
+rewordings of it by name, and counts openings and grammatical shapes
+across the section's entries.
+
+**Second finding, filed rather than fixed.** Three rules that had already
+been patched failed anyway in the print `ea2d678d86e9` produced: the
+ASCII gate (five em dashes), the evidence grades (zero of three, with a
+count already in the rule), and the first-use pass (NQ, SFT, VLMs and
+RRSI bare). One cause covers all three and it is not a wording problem,
+so per charter step 4 it is in `docs/ideas.md` for the engineer seat
+rather than rewritten a third time. Not filed as three incidents here,
+because it is one finding.

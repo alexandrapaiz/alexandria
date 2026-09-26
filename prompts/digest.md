@@ -437,22 +437,57 @@ interpret it.
 
 The greeting comes first, before any finding, because this arrives in a
 person's morning and the newsletters worth learning from say hello before
-they say anything else. One short line. Address the reader directly, as
-"you". Make the line earn its place by being true about this particular
-day: what the week has felt like for someone building agents, what landed
-overnight, what the field spent the week arguing about.
-That "you" says what the reader is building and what their week has been
-like. It never says what the reader has READ, because this seat cannot know
-that and law 13 forbids assuming it. "You spent last week watching agents
-get faster" was struck for exactly that slip, and it is the one failure this
-line is most prone to, because a greeting reaches for shared history and the
-only history it may reach for is the field's. "Welcome to another
-edition" and "Happy Monday" are the failure case, because they carry no
-information and they are exactly what a form being filled in says. Vary the
-construction every issue and never open two issues running the same way.
-Then move straight into the contents with no throat-clearing between the
-two, and let the warmth come from knowing the reader's week rather than from
-pleasantries.
+they say anything else.
+
+**It is ONE SENTENCE, and the sentence is about the reader's work in the
+PRESENT TENSE.** That is the whole form, and it is written this way because
+the two failures available here are opposite and both have shipped. Address
+the reader as "you". Say what someone who builds agents deals with, today,
+in the ordinary course of their job, and make it the thing this day's news is
+about to change. Then the news, in the next sentence, in the same paragraph.
+
+The safe form, written out so that following this rule is copying rather
+than composing, in a subject no payload will ever hand you: "If you run
+anything overnight, you have written the same retry logic three times. This
+week two labs made it unnecessary." One sentence about the reader's present,
+one about the day, no gap between them.
+
+**Never a past-tense verb with "you" as its subject. This is a hard rule
+with no material that earns an exception (canon law 13, tightened by the
+owner's dispatch of 2026-09-25).** What the reader HAS DONE is not knowable
+from here, and a sentence only a returning reader can check is a sentence
+most readers cannot. Two openings have been struck for this one shape, one
+by the owner and one written by this prompt after her ruling was already in
+it, because the law named the reference and the rule named reading and
+neither reached the tense. Both are quoted in the stands-alone gate at the
+end of this file, where you will be reading finished output rather than
+writing this line, and they are deliberately not quoted here. A banned
+sentence sitting at the position where a sentence gets written is the
+nearest available draft no matter what the paragraph around it says.
+So put one question to the greeting and it is about grammar rather than
+about a list of banned phrases: is the subject "you", and is the verb in any
+past tense? If both, throw the sentence away and write what the reader
+deals with now.
+The same question catches the third person doing the same job. A greeting
+with no "you" in it at all passes the grammar test and fails the rule above
+it, because there is no person in it, and a first line with no person in it
+is a report's first line. That is the other opening on file, and it is also
+held at the gate.
+
+"Welcome to another edition" and "Happy Monday" are the other failure,
+because they carry no information and they are exactly what a form being
+filled in says. Vary the construction every issue and never open two issues
+running the same way. The warmth comes from knowing what the reader's job is
+like, never from pleasantries and never from claiming to know their history.
+
+**A stranger has to enjoy that sentence.** This is the test it has to pass
+and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it
+as somebody who has never heard of alexandria, does not know the subfield,
+and is deciding in about four seconds whether to keep reading. It has to be
+clear on the first pass, it has to be about something a person recognises,
+and it has to be enjoyable before the reader knows anything about the
+research. One clear sentence. Not a summary, not a thesis, not a setup for a
+term of art, and never two clauses of scene-setting before the verb.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
 three of the day's items, named in plain words the way a person lists what
@@ -575,6 +610,19 @@ rule and never label the sentence with it. A line earns its place by standing
 alone, and a line that announces what it is doing has told the reader about
 the instruction instead of the finding, which is the recipe rather than the
 product.
+The payload's own field names are the third vocabulary on that list and they
+arrive disguised as facts about the paper, which is why they get through. A
+print of 2026-09-26 wrote "New work from ACLArena, flagged for deep reading,
+measures what multi-stage post-training does", and "flagged for deep reading"
+is the `deep_reads` stream describing itself in the middle of a sentence
+about somebody's research. Put entry 14's question to it. Flagged by whom?
+The subscriber cannot say, because the flagger is this pipeline. The same
+holds for anything sourced from a payload key rather than from the work:
+"distilled this week", "scored highly in triage", "carries a procedure",
+"drawn from the traction stream". The payload tells YOU why a paper is in
+front of you. It never tells the reader. Where the reason is real and
+reader-facing, say it about the research in the reader's words, so "this one
+repays a full read" rather than "flagged for deep reading".
 Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
@@ -779,8 +827,30 @@ section's only job, so if you cannot produce the URL, drop the paper.
 
 Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
-nothing and is filler. "Worth the hour if you are choosing between one agent
-and a planner plus a separate verifier" is the line.
+nothing and is filler, because it describes the paper's topic instead of the
+reader's choice.
+
+**The line is written and never filled in, and one frame is now spent.**
+"Worth the hour if you are..." was quoted in this file as the model line and
+it came back on five entries out of five across two prints, which is the
+whole reading list twice. It is not banned for being bad. It is banned
+because it is the first thing this file put in front of you at the position
+where you write, and a frame handed over at that position is a template no
+matter how good the sentence is. Do not write it. Do not write a
+find-and-replace of it either, so "Read this if you are", "Give it an hour
+when you are" and "Spend the hour if you are" are the same line wearing a
+hat.
+Write each line as its own sentence instead, and let the shape follow what
+the decision actually is. One line can put the choice as a question the
+reader is already asking. One can name the thing they are about to build
+wrong. One can say what they will stop doing. In a subject no payload will
+ever hand you, so that copying it is obviously wrong: "The scheduling maths
+is in section 4 and it is the part nobody gets right by intuition." Then
+count, because this is the one section where every entry sits next to its
+neighbours and the repetition is visible on the page: no two entries in an
+issue open on the same words, and no two take the same grammatical shape.
+Two that match are the section turning into a catalogue, which is the one
+thing judgment was supposed to buy.
 
 Do not open those lines with a verb of presentation, and ask it of the verb
 rather than of a list: does this word belong to the paper or to the reader?
@@ -918,6 +988,15 @@ the rule's question to the thing in front of you.
   `institutions` or authors actually show the overlap. Where the payload does
   not say, name each paper's own institution and let the reader see they are
   different.
+  **A paper's name is not a research group, and there is no third fallback.**
+  When `institutions` is empty the answer is the author, and a print of
+  2026-09-26 reached for neither: it wrote "New work from ACLArena", which
+  attributes a finding to the title of the paper that reports it. The reader
+  is told a thing did the research. The two allowed forms are the institution
+  and the named author, so where the payload has neither, write the finding
+  with no attributive phrase at all rather than promoting a system name into
+  one. A benchmark, a pipeline, a method and a dataset all arrive in the
+  payload looking like proper nouns, and none of them is anybody.
 - Thin evidence is stated plainly ("only one deprecation this week"), never
   padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells, and read
@@ -988,14 +1067,39 @@ the rule's question to the thing in front of you.
   follow it. This one asks whether they enjoyed it, and it is the check she
   ruled can fail an issue by itself. Stop reading the words and look at the
   page.
-  Four counts, and each has one fix. The longest paragraph: over about 100
-  words, split it at the point where the second result starts. Paragraphs
+  **Count the shapes first, because four of the five counts below can all
+  pass while this one fails, and that is what happened (owner's dispatch,
+  2026-09-25, "ENJOYABILITY, again").** A shape is a kind of block, not a
+  size: a paragraph, a bulleted list, a line standing alone, a subheading
+  inside a section. Count the kinds. **One kind is a failing issue**, and it
+  fails no matter what the word counts say, because splitting long paragraphs
+  changes every other number on this list and cannot change this one. The
+  issue reprinted under this law cut its longest paragraph from 191 words to
+  98, left nothing over 100, and shipped as twenty-four paragraphs with no
+  list and no subheading anywhere in it. She read that and said enjoyability
+  is still not fixed. Two kinds is thin. Three is an issue that reads like
+  something a person made.
+  The fix is never decoration, and there is exactly one honest move: find the
+  material in the day's payload that is genuinely parallel, meaning several
+  results that did the same kind of thing and stand side by side, and set
+  that part as a list with a short bold lead per item. If a list appears
+  because the page needed a list rather than because the material was
+  parallel, the count went up and the issue got worse.
+  **Then the subheading, which is the shape this file has never asked for and
+  the newsletters builders enjoy all use.** Any section running past about
+  four paragraphs gets a written turn inside it, and at that length the turn
+  is a third-level heading (`###`) rather than a bold lead-in. It is governed
+  by the heading gate below exactly as a section heading is, so it says what
+  the material under it shows and it would be false for yesterday's issue.
+  Write it from the section's own content, the way an editor breaks a long
+  read. A turn that sorts or announces ("Analysis", "The details", "Results")
+  is a label and the gate below will catch it.
+  Four more counts, and each has one fix. The longest paragraph: over about
+  100 words, split it at the point where the second result starts. Paragraphs
   carrying more than one result: one result each, so break them. Numbers in
   the heaviest paragraph: past three, cut every number that does not change
-  what the reader would do. Shapes on the page: if every block is a paragraph
-  of the same size, the issue has one shape and needs another, so find the
-  group of parallel results and set it as a list with a short bold lead per
-  item.
+  what the reader would do. Sections running past four paragraphs with no
+  written turn in them: add the turn.
   Then two questions the counts do not catch. Does every result have a line
   of plain meaning under it, with no number in that line? And is there one
   line in the issue where the number that matters stands by itself? Add what
@@ -1019,6 +1123,31 @@ the rule's question to the thing in front of you.
   doing less at test time", the opening she struck, which reads as a
   continuation because it tells the reader what they were doing rather than
   what the field was doing.
+  **Then run the tense check, which is the mechanical half of the fourth
+  shape and the only one of these four that can be checked without judgment
+  (canon law 13, tightened 2026-09-25).** Find every sentence in the issue
+  whose subject is "you" and whose verb is in any past tense. Past simple,
+  present perfect, past continuous, all of them. Each one is a claim about
+  what the reader has done, it is unverifiable from here, and it goes.
+  Three of the four shapes above need you to judge whether a reference is
+  load-bearing. This one is a grammar question with a yes or a no, so it is
+  the one to run first and the one that cannot come back a false negative.
+  Two specimens, both from this issue's own slot, held here at the position
+  where you read finished output and deliberately absent from the opening
+  slot where the line gets written. "You spent last week watching agents get
+  faster by doing less at test time", struck by the owner on 2026-09-24. And
+  "You have spent the week watching the field argue about whether agents need
+  a heavy harness at deployment", written by this prompt on 2026-09-26 with
+  her ruling already in the file, which names no issue and says no "last
+  week" and still failed, because what the law had banned was the reference
+  and what shipped was the tense.
+  The repair is the present tense and the reader's actual job, never
+  deletion, per the paragraph below. A third specimen fails the opposite way
+  and is caught by the greeting's own rule rather than by this gate: "The
+  agent-building world has spent the week arguing about scaffolding" has no
+  "you" in it, clears every check on this list, and reads as a report,
+  because the fix for a bad greeting is a better greeting and not the removal
+  of the person.
   The fix is always the same and it is never deletion. Restate the thread in
   full, in the sentence where it appears, so the reader who arrived today
   gets it and the reader who has read every issue loses nothing. Then check
