@@ -521,7 +521,10 @@ def worst_case_payload() -> dict:
         ]
 
     return {
-        "stats": {"papers_ingested": 9999, "claims_distilled": 9999, "edges_drawn": 9999},
+        # five counts since 2026-09-26, one per pipeline step; see gather()
+        "stats": {"papers_ingested": 9999, "papers_triaged": 9999,
+                  "papers_read_in_full": 9999, "claims_distilled": 9999,
+                  "links_drawn": 9999},
         "new_claims": rows("new_claims"),
         "superseded": rows("superseded"),
         "traction": {

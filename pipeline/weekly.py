@@ -262,12 +262,41 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
 
 def gather(conn) -> dict:
     """Fixed queries; the model never chooses what to retrieve."""
+    # The five numbers the pipeline can honestly account for, one per step.
+    #
+    # Owner's directive 2026-09-25: "the stats line in the issue says 'read N
+    # papers'; make the press's stats say what happened: ingested, triaged, read
+    # in full, claims, links". Three numbers could not do that. `papers_ingested`
+    # was being read as "papers read", which flattered the pipeline by a factor
+    # of fifty: 8,956 papers had been ingested and 164 had been read in full.
+    # Ingesting a title is not reading a paper, and an issue that says otherwise
+    # is making a claim about the product that the database contradicts.
+    #
+    # `read_in_full` counts papers.fulltext_chars, which distill writes when it
+    # actually used arXiv's HTML and leaves NULL when it fell back to the
+    # abstract. Rows distilled before that column existed are NULL, so the number
+    # undercounts for the first week after this ships and is exact afterwards.
+    # Undercounting what was read is the right direction for a number the issue
+    # prints.
+    #
+    # `papers_triaged` excludes rule:backfill, because a paper auto-indexed by
+    # date rule was never judged by anything and counting it as triaged would be
+    # the same flattery one step along.
     stats = conn.execute(
         """
         select
-          (select count(*) from papers where fetched_at > now() - interval '7 days'),
-          (select count(*) from claims where created_at > now() - interval '7 days'),
-          (select count(*) from claim_links where created_at > now() - interval '7 days')
+          (select count(*) from papers
+            where fetched_at > now() - interval '7 days'),
+          (select count(*) from triage_log
+            where created_at > now() - interval '7 days'
+              and model != 'rule:backfill'),
+          (select count(*) from papers
+            where distilled_at > now() - interval '7 days'
+              and fulltext_chars is not null),
+          (select count(*) from claims
+            where created_at > now() - interval '7 days'),
+          (select count(*) from claim_links
+            where created_at > now() - interval '7 days')
         """
     ).fetchone()
 
@@ -366,7 +395,13 @@ def gather(conn) -> dict:
     ).fetchall()
 
     return {
-        "stats": {"papers_ingested": stats[0], "claims_distilled": stats[1], "edges_drawn": stats[2]},
+        "stats": {
+            "papers_ingested": stats[0],
+            "papers_triaged": stats[1],
+            "papers_read_in_full": stats[2],
+            "claims_distilled": stats[3],
+            "links_drawn": stats[4],
+        },
         "new_claims": [
             {
                 "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
