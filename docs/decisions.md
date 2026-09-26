@@ -731,3 +731,71 @@ tests, README and the sprint files cite it. The accounts decision is
 now ADR-34, which nothing outside this file cited. Sequential ids have
 now collided twice (ADR-30 before, ADR-32 now); ExO's standing
 recommendation to move to dated ids stays on the chair's list.
+
+## ADR-2026-09-26: Triage and interpret write on Kimi; ADR-32's corpus clause is superseded
+
+**A dated id, not ADR-35.** Sequential ids have collided twice in this
+file (ADR-30, ADR-32), the numbering note above records the second one,
+and the ExO's standing recommendation is to move to dated ids. A seat
+writing on a branch cannot see the highest number that exists, only the
+highest number on its branch, which is exactly the condition that
+produced both collisions. So this entry takes the date. If the owner
+prefers a sequential id, renumbering one heading is a smaller edit than
+untangling a third collision.
+
+**Owner's decision, 2026-09-25, directed to the engineer seat.** ADR-32
+said "the corpus crons (triage, distill, interpret) stay on Groq's free
+tier, where their small prompts fit". The prompts do fit. The free tier
+still could not carry the work, and this is what that cost, counted in
+Neon on 2026-09-25:
+
+- 8,956 papers ingested, 4,973 of them never triaged
+- 164 papers read in full, out of 8,956
+- 746 claims, 693 of them with no evidence grade
+- 487 claims waiting to be linked, and interpret drawing 11 to 14 edges
+  a day against that queue
+
+"The prompt fits" was the wrong question. A triage batch fits inside
+Groq's 8,000 tokens per minute with room to spare, and a run still makes
+two calls before the per-minute ceiling refuses the third, then resumes
+tomorrow and does it again. The resume query made that look like patience.
+The library was not reading.
+
+**Decision.** Triage and interpret move to Moonshot's Kimi as PRIMARY,
+the same funded account ADR-32 bought for the press, with Groq's free
+tier kept behind them as a fallback list. Three things make that
+affordable and safe to leave unattended:
+
+1. **A per-run spend cap**, computed from measured token counts and
+   checked before each call, so a run stops at its allowance rather than
+   one call past it. $0.60 a run for triage, $0.30 for interpret, which
+   projects $27 a month if every cap fires every day and far less once
+   the backlogs are gone. `python3 pipeline/budget.py` prints the
+   projection and fails if the caps are raised past the ceiling
+   docs/finance/opex.md carries.
+2. **A schedule that respects organization concurrency 1.** Moonshot
+   allows this account one call at a time, so the press's band
+   (09:00-11:00 UTC, which includes the chair's manual rehearsal), triage
+   (12:00-13:00) and interpret (14:00-15:00) are declared in
+   `pipeline/llm.py` KIMI_WINDOWS and checked in CI. No cron moved; what
+   changed is that the existing slots are now load-bearing and enforced.
+3. **A rehearsal each, before the deploy.** Per
+   docs/agents/runtime-changes.md, a provider change gets three gates and
+   the third is a real call. Both jobs now have `preflight` and
+   `rehearse` functions, and both rehearsals can fail: triage's refuses a
+   model that answers for part of a batch, interpret's refuses one that
+   relates everything or nothing.
+
+**What does not move.** Distill stays on Groq, exactly as ADR-32 put it,
+because the owner's directive named triage and interpret and no more.
+Distill is the step that reads papers in full and it is the obvious next
+candidate; that is a ledger proposal (docs/ideas.md, 2026-09-26) and not
+an action taken here. The Groq fallback lists are real rather than
+decorative for these two jobs, which is the difference from the press:
+`budget.check_cron_requests` proves every Groq entry can take the job's
+own request, with 2,087 tokens of headroom on a triage batch. The press
+cannot say that and its Groq entries remain a last resort.
+
+**What ADR-32 keeps.** Everything else. The press writes on Kimi, Groq
+stays the corpus's cheap brain wherever the free tier can actually
+finish the work, and sovereign hosting is still the destination.
