@@ -4056,3 +4056,106 @@ takes minutes. The honest statement of the remaining risk: a rehearsal
 started between 11:00 and 15:00 UTC can still collide with a corpus run,
 and nothing prevents it. The backoff makes that survivable rather than
 fatal, since both callers now wait 30 to 180 seconds rather than one.
+
+---
+
+## INC-2026-09-26-engineer-run-twice-in-one-window — two engineer runs executed at once, four minutes apart (2026-09-26, engineer seat)
+
+**Observed from inside one of them.** This entry is written by run
+36208446311 while run 36208644267 is still executing.
+
+```
+2026-09-26T01:30:18Z  engineer-agent  workflow_dispatch  main  in_progress  36208644267
+2026-09-26T01:26:48Z  engineer-agent  schedule           main  in_progress  36208446311
+```
+
+The scheduled run started first. The dispatched run started 3 minutes 30
+seconds later, which is inside the window where the first run had a branch and
+a draft pull request but nothing a reader would recognise as a claim on the
+day's work.
+
+**Why it happened, as far as this run can see it.** The PM's sync session (PR
+#113, docs/sprints/dispatch-queue.md) queued an engineer dispatch for the
+owner's priority 1 and wrote the trigger down explicitly: fire "once `gh run
+list` shows that run finished," meaning PR #110's run. That condition was
+correct and was met. What no condition covered is that this seat's own cron
+fires twice a day under HQ ADR-035, so "the last run has finished" and "no run
+is starting" are different questions, and the queue only asked the first.
+
+**Why it is a repeat, which is what makes recording it mandatory.**
+INC-2026-09-24-writer-dispatch-started-twice is the same shape, one seat with
+two live runs. Incident 14 is the same shape with the sharper ending, two runs
+of one dispatch racing on one branch, saved only by `--force-with-lease`. The
+PM's own session notes tonight name incidents 6 and 14 as the reason not to
+dispatch into a running seat, and then a queued dispatch went out to a seat
+whose next scheduled run had already started. The rule was known, written down
+the same hour, and the gap was in the condition rather than in the knowledge.
+
+**What this run did about it, since it could not stop the other one.** The
+draft pull request's description was rewritten to address run 36208644267 by
+id, to name the files this branch already holds, and to tell it to merge this
+branch rather than build a second store. That is the only channel between two
+runs of one seat: the pull request list, which every charter's pre-flight reads.
+
+**The shape of a fix, for the PM and the ExO rather than for this seat.** The
+queue's trigger is one clause short. "No run of that seat is in progress" is
+what it means, and `gh run list --workflow=agent-<seat>.yml --status in_progress`
+answers it in one command, where the current condition reads only the last
+run's conclusion. A second guard belongs in the seat's own pre-flight: a run
+that finds another run of its own seat in progress should say so in its first
+turns and take a different item, rather than discovering the collision at merge
+time. Both are charter or workflow changes, so neither can come from here.
+
+---
+
+## INC-2026-09-26-slack-report-step-no-smoke-run — twelve live workflows changed on main twice in ten minutes, no pull request and no smoke run (2026-09-26, engineer seat)
+
+**The third instance of the class this file recorded twice today.** The other
+two are INC-2026-09-26-deploy-workflow-no-smoke-run, in this same pull
+request's parent branch, and incident 23. Recording it is the standing rule at
+the top of this file, not a judgment call.
+
+**What the §0 machinery diff found.** The engineer charter's daily command,
+`git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/`:
+
+```
+4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
+3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
+```
+
+Both rewrite the `Post run report` step in all twelve `agent-*.yml` files, 12
+files each, 10 minutes apart. The step is what every seat's run executes at the
+end of itself, so this is a change to what a scheduled job does.
+
+The two questions docs/agents/runtime-changes.md asks:
+
+- **Did a merged pull request explain it?** No. `gh api
+  repos/.../commits/<sha>/pulls` is empty for both. Both went straight to main.
+- **Was there a smoke run behind it?** No. The first execution of 3389284's
+  step was okr-agent 36207911573, a production run three minutes later at
+  01:17:15Z. The first execution of 4e06105's step is one of the two
+  engineer runs in flight as this is written, one of which is this one. The
+  next scheduled run was again the first execution of new machinery, which is
+  the one sentence the law exists to prevent.
+
+**It is working.** okr-agent 36207911573 concluded `success`. The step is also
+written defensively: the webhook guard is inside the script rather than in the
+step's `if:`, with a correct comment about why, and the `curl` ends in
+`|| true`, so a Slack outage cannot fail a seat's run. That care is visible in
+the diff and it is the reason this is a register entry rather than an outage.
+
+**Why it still gets recorded.** The charter's own words: the outcome does not
+decide whether it is recorded. And the class is now three deep in three days,
+all with the same fingerprint, which is the chair or the owner pushing a
+runtime change to main where no seat's pre-flight and no CI gate can see it.
+The fix already written out in INC-2026-09-26-deploy-workflow-no-smoke-run is
+the same fix for this one, and it is a workflow change, so it cannot come from
+here.
+
+**One thing worth an eye, not an incident.** The new summary extracts the pull
+request description's first five bullet lines. The board's run report, built in
+this pull request, derives its own one-line result from the first bullet of the
+same description for the same reason. Both now depend on a seat's first bullet
+being a sentence about the run. That is a convention with two consumers and no
+owner, which is the shape L-E6 describes, so it is named here before it becomes
+an incident.
