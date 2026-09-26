@@ -4848,3 +4848,214 @@ press does with a 503.
   fixing.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-24 — The claim graph is producing edges between claims that share no measure (writer seat, for the engineer)
+
+- Trigger: the fourth editorial run of 2026-09-24, grading 2026-W39. The
+  fell-behind section led on an edge between a claim about
+  agent-construction benchmark success (82.2% on a benchmark for building
+  agents) and a claim about simulated air combat (87% win rate against a
+  simulated adversary), and printed it as a broken ceiling. The two
+  numbers share a percent sign and no measure. Recorded as
+  `INC-2026-09-24-grading-has-no-truth-pass`.
+- The editorial half is done and it is in the same pull request. The
+  generator now applies a kind test to every edge before printing it, and
+  the hedge that licensed this one is ban list 50. That is the last prompt
+  edit worth making on this, per charter step 4.
+- Why the rest is not the writer seat's: a prompt rule can only decline to
+  print what the graph hands it, and declining is a judgment call made by a
+  language model once per issue. The pair should not exist. An
+  agent-construction claim and an air-combat claim have no shared quantity,
+  no shared task and no shared kind of system, and that is decidable
+  without judgment from the fields the graph already holds.
+- What to look at, in rough order of cheapness.
+  1. **What produced the pair.** If the edge came from embedding
+     similarity over claim text, two sentences about "expert-authored
+     baselines" and "outperforming expert baselines" are close in that
+     space and unrelated in fact, and this will recur on every issue rather
+     than being a one-off. Worth knowing before anything is built.
+  2. **A domain or task field on the claim**, if one exists in the payload
+     already or is cheap to derive at extraction. An edge whose two claims
+     carry incompatible values is dropped before it reaches the writer.
+  3. **A metric-name check**, which is narrower and may be enough on its
+     own. "Task success rate on benchmark X" against "win rate in
+     simulation Y" is a mismatch two strings can catch, and it needs no
+     taxonomy.
+- Why it matters more than the average payload defect: the fell-behind
+  section is the one thing in the product no other newsletter has. Any of
+  them report what is new. This one reports what stopped being true, and
+  it is worth reading exactly as long as it is right. A section that is
+  wrong once is a section a reader stops believing, and an empty one costs
+  nothing while a false one costs the reason to subscribe.
+- Relationship to the other filed items: the pre-send quality gate
+  (`tools/check_digest_quality.py`, PR #60, and the three fixes filed
+  earlier today) cannot catch this either, and should not be extended to
+  try. Whether two claims measure the same thing is not a lint. This is an
+  edge-construction problem and belongs upstream of both the prompt and
+  the checker.
+- Blocked by: nothing. Reading how the edge was produced is the first step
+  and costs one query.
+- Cost: $0 to investigate.
+- Status: proposed
+
+### 2026-09-24 — Nine runs of prompt fixes HAVE now reached the press (writer seat, closing an open entry)
+
+- Trigger: the fifth editorial run, establishing which generator wrote the
+  W39 reprint before grading it.
+- The fact: the `digests` row for 2026-W39, id 18, written 16:04 UTC today,
+  carries `prompt_sha` `0f642e2ce9f3`. That is the sha256 prefix of
+  `prompts/digest.md` on `origin/main` as of this run. The earlier entry
+  filed this morning, "Nine runs of prompt fixes have never reached the
+  press", reported that main's generator was still the 2026-09-19 one at
+  c3b4c49 and that seven editorial pull requests were waiting. The owner
+  merged them. #81, #89 and #92 are in, the press redeployed, and the
+  reprint was written by the current generator.
+- Why this is filed rather than left implicit: every grade from 2026-09-20
+  onward has carried the caveat that W39's defects might belong to a stale
+  generator. That caveat is now spent, and no future grade may use it. The
+  four failures in `docs/voice/reviews/2026-09-24-e.md` are failures of the
+  generator as it stands on main tonight.
+- What it bought, measured on the same issue: longest paragraph 191 words
+  to 98, paragraphs over 100 words 5 to 0, numbers in the heaviest
+  paragraph 10 to 0, canon law 13 clean, ban list 50's false comparison
+  gone. What it cost is in the same review and in
+  INC-2026-09-24-fix-by-deletion.
+- Status: closed, no action. Recorded so the next run does not re-derive it.
+- Cost: $0.
+
+### 2026-09-24 — The masthead is still the recipe, five days and three grades on (writer seat, confirming an open entry)
+
+- Trigger: the fifth editorial run. Law 3 failed again on the same line.
+- Confirms: "2026-09-19 — The masthead is the recipe, and it is in code
+  (writer seat)", filed on the first editorial run. Unchanged since. The
+  constant has moved from `pipeline/weekly.py:311` to
+  `pipeline/weekly.py:685` and its text is identical.
+- What it prints, as the second line of every issue: "*The latest in AI
+  research, read in full and distilled weekly: what's new, what's gaining
+  acceptance, and what newer evidence has overturned.*"
+- The new evidence, and it raises this above a law 3 nuisance. That line
+  does not only describe the method. Its three clauses are the internal
+  framework, in order: what is new is the new-work slot, what is gaining
+  acceptance is the traction slot, what newer evidence has overturned is
+  the fell-behind slot. Canon law 12 says the framework never prints. The
+  generator was patched four times to stop printing it in headings and
+  today's incident records the third time it printed one anyway. Meanwhile
+  a hardcoded string has been printing the whole framework, in reader
+  position, above the fold, in every issue, for the entire time. No prompt
+  change can reach it and no heading gate can see it, because it is not in
+  the model's output at all.
+- Three grades have now failed it: 2026-09-19, 2026-09-20 and 2026-09-24-e.
+  The structure-watch rule fired on run one. This is run five.
+- What to put there instead is unchanged from the original entry and is a
+  decision for the owner, not a patch for this seat: a line that sells the
+  product and does not enumerate the sections. Whatever replaces it, the
+  enumeration goes.
+- Whose call: the engineer writes it, the owner rules on the words, and
+  this seat drafts them the moment `docs/voice/value.md` is approved,
+  because it is reader-facing copy and the copy pipeline's phase zero is
+  still open.
+- Cost: minutes, one constant.
+- Status: proposed, third confirmation
+
+### 2026-09-24 — Three rewrites of the ASCII rule and six em dashes still shipped (writer seat, for the engineer)
+
+- Trigger: the fifth editorial run. Canon law 1 failed on the issue written
+  by the fully patched generator.
+- The fact: the W39 reprint contains six U+2014 em dashes and no other
+  non-ASCII character. Specimens: "hits **44.3%** — higher than the model
+  that still carries the full scaffolding", "it collapses to 14.6 — a
+  **30.6 point drop**", and a parenthetical pair around "— direct
+  stronger-model trajectories, ... —".
+- Why this is filed instead of patched, which is charter step 4. The ASCII
+  rule in `prompts/digest.md` has been rewritten three times by this seat:
+  51400c1 on 2026-09-21 made it ask the class question, f9530fa on
+  2026-09-22 rewrote six rules as class questions, 4d50060 on 2026-09-23
+  added that the payload arrives dirty. Incident 27 is the same defect. A
+  fourth paragraph in a prompt that already spends nine lines on this is
+  not a fix, it is the memorial ban list 36 describes.
+- What to build, and it is small: normalize the model's output to ASCII in
+  the pipeline, after generation and before the row is written. The mapping
+  needed is a handful of pairs, em dash and en dash to a spaced hyphen or a
+  full stop, curly quotes to straight, the multiplication sign to "x",
+  non-breaking hyphen and narrow no-break space to their plain forms. The
+  exception the ban list already names is a person's or an institution's
+  name as the source spells it, which in practice means the substitution
+  runs on punctuation and separators only and never on letters.
+- Why the pipeline and not the prompt: this class of defect is decidable
+  without a language model, which is the same argument that carried the
+  claim-graph entry filed earlier today. A rule asking a model to notice
+  every character it emits competes with every other rule in a 1000-line
+  file. A codepoint check does not compete with anything.
+- Where it goes: alongside the existing pre-send quality gate
+  (`tools/check_digest_quality.py`, PR #60), but as a normalizer rather
+  than a checker. A gate that fails the issue at 16:00 on press day costs
+  the issue. A normalizer that fixes six characters costs nothing and
+  cannot fail closed.
+- One thing to check while in there: `pipeline/weekly.py:971` builds the
+  `dates` string with an en dash, "September 7-13" written with U+2013, and
+  hands it to the prompt. The generator is separately instructed to
+  normalize it. The pipeline should not be emitting what the prompt is told
+  to clean up, which is ban list 41 in the one place the writer seat cannot
+  reach.
+- Blocked by: nothing.
+- Cost: under an hour.
+- Status: proposed
+
+### 2026-09-25 — The first-use pass leaves no evidence it ran, so no wording can make it fire (writer seat, for the engineer)
+
+- Trigger: the twelfth editorial run, charter step 4. Canon law 12a failed
+  on the issue written by the fully patched generator, and the rule that
+  should have caught it has now been written twice.
+- The fact: row 18 of `digests` carries nineteen terms of art standing bare
+  at first use, including "harness" thirty-eight times starting in the
+  title, and one naked acronym, `VLMs`. The first-use pass in
+  `prompts/digest.md` is marked "a hard gate, not advice", instructs the
+  model to list every term of art and check each one's first appearance,
+  and says that more than about five terms needing a definition means the
+  issue is carrying too much. Nothing in the output suggests it ran.
+- Why this is filed instead of patched, which is charter step 4. The pass
+  was written in `be88232` and rewritten in `c3b4c49` to catch the owner's
+  nicknames. Both were live in `0f642e2ce9f3`, the prompt that wrote row
+  18. A third rewrite is the memorial ban list 36 describes.
+- The mechanism, and it is the part worth building from. The same issue is
+  a controlled experiment. The link rule and the evidence-grade rule sit
+  two lines apart in that prompt, the same model read both, links came in
+  five of five and grades zero of four. The one difference is that the link
+  rule ends "Count the items. Count the links. They match, or the issue is
+  not finished." Links are countable in the finished text. A missing gloss
+  is not. A self-check whose result is invisible in the output has only the
+  model's recollection as evidence that it ran, and that evidence never
+  comes back negative. This generalizes past this rule: any gate in that
+  file whose result cannot be counted on the page is advice wearing a
+  gate's label.
+- What to build, in two pieces, smallest first.
+  1. **The mechanical slice, in the existing quality gate.** A bare acronym
+     is decidable without a language model. In `tools/check_digest_quality.py`
+     (PR #60), flag any token matching an acronym shape, two to six
+     characters with at least two capitals, on its first appearance in the
+     issue when no expansion or gloss appears within the same sentence.
+     Ban list 26 already bans it outright and `VLMs` shipped anyway. Allow a
+     short list of words a subscriber genuinely holds (`AI`, `API`, `GPU`,
+     `URL`) rather than trying to be clever, and keep the list in the
+     standard beside the check so the writer seat owns its contents.
+  2. **The judgment slice, as a second call rather than a stronger
+     paragraph.** After generation and before the row is written, one small
+     model call over the finished issue whose OUTPUT IS A TABLE and not a
+     verdict: every term of art, its first appearance, and the glossing
+     clause quoted from that sentence or the word "none". The table is the
+     artifact the prompt cannot produce, because the issue body has no room
+     for scratch work. Rows reading "none" either go back for one revision
+     pass or fail the gate, and the table goes in the run log either way, so
+     this seat can grade the pass instead of grading its absence.
+- Why the second piece is not a checker. A gate that fails the issue at
+  15:00 on press day costs the issue, which is the same argument the ASCII
+  normalizer entry makes. A revision call costs a few seconds and cannot
+  fail closed.
+- Note for whoever picks this up: the same shape decides the synonym case
+  that ban list 54 names, because a table of terms shows "scaffolding"
+  glossed once and "harness" bare thirty-eight times on adjacent rows,
+  where a paragraph of instruction has to hope the model notices.
+- Blocked by: nothing for piece 1. Piece 2 wants PR #60 merged first, since
+  it lands in the same file.
+- Cost: an hour for piece 1, half a day for piece 2.
+- Status: proposed
