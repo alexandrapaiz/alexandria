@@ -5139,3 +5139,110 @@ press does with a 503.
   numbers.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Four claim rows overstate their papers; file for revision (skill seat)
+
+- Trigger: the first run under ADR-35 read all five papers of the
+  skill-library cluster in full (arXiv HTML) before drafting
+  skills/skill-library-engineering. Four of the twenty rows it cited read
+  stronger than the paper behind them. The skill says so in its own
+  "Where the full text narrows what our claim rows say" section, which is
+  what ADR-35 asks for, but the rows themselves are still in silver as
+  written.
+- What: revise or annotate these four claims. (a) Claim 566, structured
+  multi-file skill packages outperform monolithic files, is 2.85 points
+  and the smallest of that paper's three ablations; the row carries no
+  magnitude. (b) Claim 328, diversity-aware routing improves recall and
+  full coverage with larger gains on multi-skill queries, is 1.4 and 1.3
+  points at the only cutoff where both systems were actually compared,
+  and ties plain embedding retrieval exactly on single-skill queries; the
+  large numbers come from a cutoff at which the baseline's released output
+  is truncated, which the paper states outright. (c) Claim 400 names
+  Claude Code as a system the native router beat. The paper's table does
+  not contain Claude Code. It lists four open models running in Codex,
+  with their numbers quoted from the benchmark's own paper, and the router
+  runs in a different harness. This one is a misattribution, not a
+  magnitude problem. (d) Claim 320, strongest average performance among
+  compared methods, is a 2.2 to 2.5 point margin over its own ablations
+  inside a method whose gain over no-skill is 13 to 27 points; the row
+  invites crediting the search rather than the grounding.
+- Whose call: research seat to re-read and rewrite, or the engineer if
+  the fix belongs in prompts/distill.md's instructions about hedges.
+  ADR-10 makes the claim graph append-only, so this is a re-judgment, not
+  an edit, and the mechanism for that is the part that needs deciding.
+- First step: decide whether a narrowed claim is a new row with a
+  `refines` edge to the old one, or an annotation column. Nothing in the
+  schema answers this today, which is why this entry exists rather than a
+  patch.
+- Cost: $0 beyond the re-read.
+- Status: proposed
+
+### 2026-09-26 — harness-engineering fires on tool-registry routing prompts (skill seat)
+
+- Trigger: case `sle-neg-2` in skills/skill-library-engineering/triggers.json
+  fails. The prompt is about picking the wrong tool from thirty registered
+  on an MCP server, and skills/harness-engineering wins it at 0.1638
+  against a decoy panel, so a skill fires on a request it does not cover.
+- What: verified this is not the new draft stealing a case. Removing
+  skills/skill-library-engineering from the tree entirely and re-running
+  the same prompt still fires harness-engineering, at margin +0.027
+  against the null panel rather than +0.037. The draft ranks second and
+  is not the cause. Left failing per prompts/skill-extract.md, which says
+  a validated skill is not the extracting run's to edit.
+- Whose call: skill seat, on a run whose artifact is not also being judged
+  by the same instrument. The fix is one clause of
+  skills/harness-engineering's description, not a body change.
+- First step: harness-engineering's description says "the scaffold around
+  a model - tools, prompts, loop structure, feedback", and "tools" there
+  means the interface an agent acts through, not a registry the agent
+  selects from. Qualify that clause and re-run the suite.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The skill literature's foundational papers are absent from the corpus (skill seat)
+
+- Trigger: every one of the twelve works the five read papers build on is
+  missing from the `papers` table. Checked by id, not inferred: a select
+  over the twelve arXiv ids returns zero rows.
+- What: the corpus holds the 2026 results of the agent-skill cluster and
+  none of the work those results are measured against. Concretely,
+  alexandria now asserts in a shipped skill that an ill-suited skill
+  leaves a task worse off than no skill at all, on the say-so of three
+  papers that all cite SkillsBench (arxiv:2602.12670) for it, which the
+  library has never read. The same holds for SkillRouter
+  (arxiv:2603.22455), the routing benchmark two of the five use as their
+  baseline, and for SkillOpt (arxiv:2605.23904), the optimizing baseline
+  every "+4.01 percent" in the corpus is relative to. All twelve, with
+  reasons, are queued in docs/research/reading-queue.md under this run's
+  heading.
+- Whose call: engineer, since ADR-35 gives the engineer the job of feeding
+  queued arXiv ids to distill ahead of the daily intake. Research seat
+  drains the rest.
+- First step: the twelve ids are 2602.12670, 2603.22455, 2608.04828,
+  2605.23904, 2602.12430, 2603.25158, 2605.05726, 2604.24594, 2604.01687,
+  2606.03056, 2607.25853, 2603.02766. They are all cs.AI or cs.LG arXiv
+  preprints from 2026, so the normal ingest path reaches them.
+- Cost: twelve distill runs.
+- Status: proposed
+
+### 2026-09-26 — prompts/skill-extract.md's already-gold check reads an empty table (skill seat)
+
+- Trigger: the extract prompt tells the seat to check `select path from
+  promotions where status = 'approved'` so a run never re-extracts a
+  cluster the library already carries. That table has zero rows, against
+  four skills on disk.
+- What: the `promotions` table has never been written to. The only guard
+  against re-extracting a cluster is reading `skills/` on disk and the
+  provenance blocks in it, which is what this run actually did. This is
+  not urgent while the library is four skills and one seat writes them.
+  It is load-bearing the moment the ADR-13 panel exists, because the panel
+  writes its verdicts as `promotions` rows and the OKR file counts on that
+  path. Filed rather than patched in the prompt, because the right fix is
+  to start writing the rows, not to delete the check.
+- Whose call: engineer, alongside the reviewer panel (ADR-13, O3 KR1).
+  This run patched prompts/skill-extract.md to say the check is currently
+  dead and to read the disk instead, which is a note, not a fix.
+- First step: decide whether a merged skill PR writes its own `promotions`
+  row, or whether the panel does it at verdict time.
+- Cost: $0
+- Status: proposed
