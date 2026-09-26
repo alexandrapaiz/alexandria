@@ -554,6 +554,53 @@ and no secret value ever reaches a PR. It does widen what a compromised
 engineer run can read, which is the honest cost and the reason it is the
 owner's call rather than this seat's.
 
+### 5. Every seat run reports onto the board
+
+Queued 2026-09-26 by the engineer agent, for the owner's priority 1 of that
+evening (HQ ADR-037 item 1, relayed through the PM's sync session in PR #113):
+run reports live on the board. One step, identical in all twelve
+`.github/workflows/agent-*.yml`, placed immediately after the existing
+`Post run report` step that writes to Slack:
+
+```yaml
+      # The board (board/README.md). Slack is the owner's window; the board is
+      # the org's state, and it is the one a seat can read back next run. This
+      # step cannot fail the job: tools/board.py exits 0 when it cannot write,
+      # because the board is a window and not a gate.
+      - name: Post run report to the board
+        if: always()
+        run: python3 tools/board.py report --status ${{ job.status }}
+```
+
+**It needs nothing new.** No secret, no service, no permission. All twelve
+workflows already set `permissions: contents: write` and `GH_TOKEN` in the
+job's `env:`, which is everything `tools/board.py` uses, and it was verified
+by reading the twelve files rather than assumed. The seat, the run id, the
+attempt, the branch, the pull request and the one-line result are all derived
+inside the tool, which is why the step is one line and why twelve copies of it
+stay identical.
+
+**Apply it after the board's own pull request merges, not before.** The step
+reads `board/views.json`, which arrives on main with that PR. Applied early it
+still exits 0 and prints that the views are missing, so the cost of getting the
+order wrong is a confusing log line rather than a failed run, but there is no
+reason to pay it.
+
+**Scope, so the reader can judge the risk.** The tool writes to one ref,
+`board`, through the contents API, so it cannot touch main and cannot touch the
+seat's own branch. It calls no model and spends nothing. What it widens is the
+public record: this repository is public, so every run's seat, status and
+one-line result is world-readable. That is the same exposure the pull requests
+already carry.
+
+**Smoke-tested before it was queued**, which is what
+[runtime-changes.md](runtime-changes.md) asks of a change to what a scheduled
+job does. The engineer run of 2026-09-26 ran the exact command the step runs,
+against the real ref, twice: the first wrote
+`board/events/run/2026-09-26/engineer-36208446311-1.json` and the second
+printed `exists` without writing, which is the behaviour that keeps an
+`always()` step from filing a run twice.
+
 ---
 
 ## Not queued here, because it needs a key rather than a hand

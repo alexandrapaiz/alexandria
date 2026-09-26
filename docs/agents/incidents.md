@@ -4015,29 +4015,14 @@ unless a run of that workflow exists on a non-main branch. That is the
 same idea as the rehearsal receipt, applied to a file instead of a model.
 It is a workflow change, so it cannot come from here.
 
-**Second sighting, twelve hours later, same register entry (2026-09-26,
-engineer run 3).** One id for one pattern: `tools/check_registers.py` rejects a
-reused incident id, and it is right to, so this is a sighting inside the entry
-rather than an entry of its own.
-
-The §0 machinery diff found two more direct pushes to main, both after the
-paragraphs above were written:
-
-```
-4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
-3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
-```
-
-Each changes all twelve `agent-*.yml` workflow files, so between them they
-touched every seat's runtime twice in nine minutes. The same two questions,
-answered the same way: `gh api repos/.../commits/<sha>/pulls` is empty for
-both, so no merged pull request explained either, and no run of any agent
-workflow exists on a non-main branch between them, so the first unattended
-agent run was the first execution of the new step. Here that first execution
-was this run and its two siblings, and the step worked. The class is recorded,
-not the outcome, and the count is now three pushes across two evenings.
-
-Nothing new to propose. The fix is the one named above.
+**Second and third sightings, recorded separately.** The same class recurred
+twice more the same evening, when the chair rewrote the `Post run report` step
+in all twelve `agent-*.yml` files in two direct pushes to main, nine minutes
+apart, with no pull request and no run on a branch behind either. That is
+INC-2026-09-26-slack-report-step-no-smoke-run, which has the shas and the
+arithmetic. The class is now three pushes across two evenings, all with the
+same fingerprint: a runtime change reaching main where no seat's pre-flight and
+no CI gate can see it. One id per event, so it is not repeated here.
 
 ---
 
@@ -4080,6 +4065,7 @@ takes minutes. The honest statement of the remaining risk: a rehearsal
 started between 11:00 and 15:00 UTC can still collide with a corpus run,
 and nothing prevents it. The backoff makes that survivable rather than
 fatal, since both callers now wait 30 to 180 seconds rather than one.
+
 ---
 
 ## INC-2026-09-26-interpret-stale-third-sighting — The prompt fix for mis-typed contradictions has produced zero of the graph's 238 edges, seven days after merge, and the defect it fixes reached readers (2026-09-26, research seat)
@@ -4148,53 +4134,128 @@ fix behind an undeployed first one.
 
 ---
 
-## INC-2026-09-26-two-engineer-runs-one-window — the engineer seat's scheduled run and a dispatched run worked the same files at the same time (2026-09-26, engineer seat)
+## INC-2026-09-26-engineer-run-twice-in-one-window — two engineer runs executed at once, four minutes apart (2026-09-26, engineer seat)
 
-**A repeat, recorded at the moment it repeated, per the standing rule at the
-top of this file.** It is the same class as incident 14 (two runs of one
-dispatch racing on one branch, saved only by `--force-with-lease`) and
-`INC-2026-09-24-writer-dispatch-started-twice`. This is the first sighting
-where the two runs were a *scheduled* run and a *dispatched* run rather than
-two copies of one dispatch, which matters because nothing in the dispatch
-path can see a cron that has already started.
-
-**What happened, from `gh run list --workflow=agent-engineer.yml`:**
+**Observed from inside one of them.** This entry is written by run
+36208446311 while run 36208644267 is still executing.
 
 ```
-36208644267  2026-09-26T01:30:18Z  workflow_dispatch  in_progress
-36208446311  2026-09-26T01:26:48Z  schedule           in_progress
-36206420676  2026-09-26T00:52:17Z  workflow_dispatch  completed
+2026-09-26T01:30:18Z  engineer-agent  workflow_dispatch  main  in_progress  36208644267
+2026-09-26T01:26:48Z  engineer-agent  schedule           main  in_progress  36208446311
 ```
 
-Three engineer runs inside forty minutes, two of them alive at once. They
-opened two pull requests three minutes apart, #115 at 01:31:37Z and #116 at
-01:34Z, and at 01:51Z both branches were still gaining commits. The two runs
-wrote into the same files: `docs/ideas.md`, `docs/agents/incidents.md`,
-`db/schema.sql`, `pipeline/distill.py` and `pipeline/triage.py`.
+The scheduled run started first. The dispatched run started 3 minutes 30
+seconds later, which is inside the window where the first run had a branch and
+a draft pull request but nothing a reader would recognise as a claim on the
+day's work.
 
-**What kept it from being an outage.** The charter's "your own last run may
-still be open" rule made this run check `gh pr list` before branching, so it
-found #115, branched from #115's tip rather than from main, and said so at the
-top of #116. Nothing was lost and neither run force-pushed the other's branch.
-What the rule could not do is prevent the duplicated work: this run read #115's
-diff to find out what its predecessor had already built, which is the cost,
-and #115 gained three commits afterwards that #116 does not contain.
+**Why it happened, as far as this run can see it.** The PM's sync session (PR
+#113, docs/sprints/dispatch-queue.md) queued an engineer dispatch for the
+owner's priority 1 and wrote the trigger down explicitly: fire "once `gh run
+list` shows that run finished," meaning PR #110's run. That condition was
+correct and was met. What no condition covered is that this seat's own cron
+fires twice a day under HQ ADR-035, so "the last run has finished" and "no run
+is starting" are different questions, and the queue only asked the first.
 
-**Why the existing guardrails did not fire.** The PM's charter §4 has the hard
-rule, "never propose a dispatch for a seat whose last pull request is still
-open", and it holds for dispatches the PM proposes. Neither of these was the
-PM's. One was the schedule and one was the owner's, and `agent-engineer.yml`
-has no `concurrency:` block, so GitHub had no reason to queue the second
-behind the first. The charter rule is the org's only protection and it lives
-one layer above the runtime that could actually enforce it.
+**Why it is a repeat, which is what makes recording it mandatory.**
+INC-2026-09-24-writer-dispatch-started-twice is the same shape, one seat with
+two live runs. Incident 14 is the same shape with the sharper ending, two runs
+of one dispatch racing on one branch, saved only by `--force-with-lease`. The
+PM's own session notes tonight name incidents 6 and 14 as the reason not to
+dispatch into a running seat, and then a queued dispatch went out to a seat
+whose next scheduled run had already started. The rule was known, written down
+the same hour, and the gap was in the condition rather than in the knowledge.
 
-**The shape of a fix, for the owner and the ExO rather than for this seat.**
-A `concurrency: { group: agent-engineer, cancel-in-progress: false }` block on
-each seat's workflow makes the runtime hold the second run until the first
-finishes, which is what every charter sentence on this subject is trying to
-say. It is a workflow change, so it cannot come from here, and it is the same
-answer `INC-2026-09-24-writer-dispatch-started-twice` reached.
+**What this run did about it, since it could not stop the other one.** The
+draft pull request's description was rewritten to address run 36208644267 by
+id, to name the files this branch already holds, and to tell it to merge this
+branch rather than build a second store. That is the only channel between two
+runs of one seat: the pull request list, which every charter's pre-flight reads.
 
-**One-day-later note for whoever reads the two PRs.** #116 supersedes #110
-completely, and contains #115 only up to its commit `4a8fca5`. Merge order is
-#115 first and #116 second, keeping both sides of every append-only document.
+**The shape of a fix, for the PM and the ExO rather than for this seat.** The
+queue's trigger is one clause short. "No run of that seat is in progress" is
+what it means, and `gh run list --workflow=agent-<seat>.yml --status in_progress`
+answers it in one command, where the current condition reads only the last
+run's conclusion. A second guard belongs in the seat's own pre-flight: a run
+that finds another run of its own seat in progress should say so in its first
+turns and take a different item, rather than discovering the collision at merge
+time. Both are charter or workflow changes, so neither can come from here.
+
+**Seen from the other run, and one fact only it had (added by run
+36208644267, PR #116).** This entry was written by the scheduled run while the
+dispatched run was still working. The dispatched run reached the same finding
+independently, which is the duplication this incident is about: both runs also
+wrote this register entry, and one of the two was deleted at merge so the
+register keeps one entry per event. What the second run can add:
+
+- The two runs opened pull requests three minutes apart, #115 at 01:31:37Z and
+  #116 at 01:34Z, and both branches kept gaining commits afterwards.
+- The charter's "your own last run may still be open" rule did work. #116
+  checked `gh pr list` first, found #115, branched from its tip rather than from
+  main, and said so at the top of its description. Nothing was lost and neither
+  run force-pushed the other's branch. What the rule cannot prevent is the
+  duplicated reading: #116 spent turns reading #115's diff to learn what its
+  sibling had already built.
+- The runtime has a lever the charters do not. `concurrency: { group:
+  agent-engineer, cancel-in-progress: false }` on each seat's workflow makes
+  GitHub hold the second run until the first finishes, which is what every
+  charter sentence on this subject is trying to say in prose. It is a workflow
+  change, so it cannot come from either run.
+- Merge order for the two pull requests: #115 first, #116 second. #116
+  supersedes #110 completely and merged #115 at `5ef872e`, so after #115 lands
+  the second merge is conflict-free except in the append-only registers, where
+  both sides are kept.
+
+---
+
+## INC-2026-09-26-slack-report-step-no-smoke-run — twelve live workflows changed on main twice in ten minutes, no pull request and no smoke run (2026-09-26, engineer seat)
+
+**The third instance of the class this file recorded twice today.** The other
+two are INC-2026-09-26-deploy-workflow-no-smoke-run, in this same pull
+request's parent branch, and incident 23. Recording it is the standing rule at
+the top of this file, not a judgment call.
+
+**What the §0 machinery diff found.** The engineer charter's daily command,
+`git log --since="36 hours ago" --format='%h %ci %an %s' -- .github/ pipeline/`:
+
+```
+4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
+3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
+```
+
+Both rewrite the `Post run report` step in all twelve `agent-*.yml` files, 12
+files each, 10 minutes apart. The step is what every seat's run executes at the
+end of itself, so this is a change to what a scheduled job does.
+
+The two questions docs/agents/runtime-changes.md asks:
+
+- **Did a merged pull request explain it?** No. `gh api
+  repos/.../commits/<sha>/pulls` is empty for both. Both went straight to main.
+- **Was there a smoke run behind it?** No. The first execution of 3389284's
+  step was okr-agent 36207911573, a production run three minutes later at
+  01:17:15Z. The first execution of 4e06105's step is one of the two
+  engineer runs in flight as this is written, one of which is this one. The
+  next scheduled run was again the first execution of new machinery, which is
+  the one sentence the law exists to prevent.
+
+**It is working.** okr-agent 36207911573 concluded `success`. The step is also
+written defensively: the webhook guard is inside the script rather than in the
+step's `if:`, with a correct comment about why, and the `curl` ends in
+`|| true`, so a Slack outage cannot fail a seat's run. That care is visible in
+the diff and it is the reason this is a register entry rather than an outage.
+
+**Why it still gets recorded.** The charter's own words: the outcome does not
+decide whether it is recorded. And the class is now three deep in three days,
+all with the same fingerprint, which is the chair or the owner pushing a
+runtime change to main where no seat's pre-flight and no CI gate can see it.
+The fix already written out in INC-2026-09-26-deploy-workflow-no-smoke-run is
+the same fix for this one, and it is a workflow change, so it cannot come from
+here.
+
+**One thing worth an eye, not an incident.** The new summary extracts the pull
+request description's first five bullet lines. The board's run report, built in
+this pull request, derives its own one-line result from the first bullet of the
+same description for the same reason. Both now depend on a seat's first bullet
+being a sentence about the run. That is a convention with two consumers and no
+owner, which is the shape L-E6 describes, so it is named here before it becomes
+an incident.

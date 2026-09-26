@@ -1028,3 +1028,71 @@ revert does not undo is the re-triage rows, and it should not: they are a
 record of a judgment that was made. Reverting the rubric without reverting
 them leaves papers in `distill_queue` that the old rubric would not have
 sent there, which is a deliberate outcome rather than a leak.
+## ADR-2026-09-26-board: The board is a ref in this repository, not a table and not a vendor
+
+**A dated id with a slug, not ADR-36.** Sequential ids have collided twice in
+this file, and this branch already carries `ADR-2026-09-26` for the corpus
+decision, so a bare date can collide too. The slug settles it.
+
+**Status.** Accepted 2026-09-26, owner-directed. HQ ADR-037 item 1, relayed
+live through the PM's sync session (PR #113): "the task manager/board that
+replaces Linear: own store, seats cannot create views, run reports live on the
+board."
+
+**Decision.** The board's state is an append-only log of JSON events on a
+dedicated ref named `board`, one file per event under `board/events/`, written
+only by `tools/board.py`. Its views are a separate file, `board/views.json`, on
+`main`. The current board is a fold over the log, and `python3 tools/board.py
+show` is the read path.
+
+**Why not Neon, which is the database of record.** The only database credential
+a seat's run holds is `NEON_RO_URL`, read-only on purpose. A Postgres board
+means minting a writable URL and handing it to all twelve seats, so the price
+of a board would be that every agent run can write the corpus. That is an
+authority change rather than a storage choice, and it belongs with the
+`workflow`-scoped token question on
+docs/agents/pending-workflow-changes.md rather than inside a storage decision.
+
+**Why not `main`.** A seat may not push to main, so a report would travel by
+pull request and land only after a merge, which is the moment a board stops
+being worth reading. And since 2026-09-25 a push to main runs
+`deploy-main.yml`; twelve seats reporting twice a day would spend 24 production
+deploys a day against the 100-a-day limit that HQ incident 5 already cost a day
+of production builds.
+
+**What the ref buys.** Conflicts are impossible rather than handled, because a
+run report's path carries the run id and the attempt and an item patch's path
+carries a hash of itself, so two writers never address one path. A second post
+of the same run attempt writes nothing, which is what an `if: always()` step
+firing twice should cost. The history is the audit, since nothing is
+overwritten. And it is free.
+
+**The cost, stated.** Reading the board folds every event, so the read grows
+with the log. Twelve seats reporting twice a day is about 9,000 files a year,
+which `git archive` hands over in one subprocess, and the whole board today is
+one 1,029-byte request. When that stops being true the fix is a rolled-up
+snapshot on the same ref, which is in the ledger as an idea rather than in the
+code.
+
+**How "seats cannot create views" is enforced.** The views are on main, so a
+seat can edit them on its own branch and see the result inside its own run, and
+cannot show that view to anyone else. `tools/board.py` has no command that
+writes a view, and an item whose status is not one of the declared columns is
+refused before it is written, with the refusal naming the file. Items
+themselves stay open to every seat, with `by` recorded on each event. That last
+part is a reading of the ruling rather than a quotation of it, and it is one
+check away from the stricter reading if the owner meant items too.
+
+**Consequences.** ADR-9's blackboard now has a second instance: the pipeline's
+workers coordinate through the schema, and the seats coordinate through this
+ref. The board is a window and not a gate, so `tools/board.py report` exits 0
+when it cannot write and no seat's run goes red over a report. The frontend
+seat's read-only view is the next slice and reads the ref directly, with both
+unauthenticated paths written out in docs/board.md. The workflow step that
+posts the report is queued in pending-workflow-changes.md item 5, because no
+seat can push `.github/workflows/`, so until a hand applies it the board holds
+only what a seat writes by hand.
+
+**Rollback.** `git revert` the pull request and `git push origin --delete
+board`. Nothing reads the ref except the tool, nothing deploys from it, and
+nothing on main depends on it.
