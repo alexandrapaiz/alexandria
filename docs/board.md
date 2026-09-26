@@ -199,6 +199,28 @@ an event carrying a status and nothing else:
 free text, and `ITEM_FIELDS` in `tools/board.py` is the list, so carrying a new
 one is one entry there and one line here.
 
+## How it relates to the three surfaces that already exist
+
+The org already coordinates through files, and this one does not delete any of
+them. What it changes is which of them holds state that a seat can fold.
+
+- **`docs/ideas.md`**, the ledger. Unchanged, and still the proposal surface
+  where agents append and only the owner writes verdicts. The board holds work
+  that has been decided, the ledger holds work that has not.
+- **`docs/backlog.md`**, which its own first line calls the consolidated board.
+  This is the PM's file, rebuilt each Monday during grooming, and it is a
+  leverage-ordered read of every seat's proposals. It overlaps this board on
+  purpose for now, because migrating it is the PM's call and not this seat's.
+  The ledger carries the proposal.
+- **`docs/sprints/dispatch-queue.md`**, the PM's queue of who to dispatch next.
+  Also unchanged, and also a candidate to become board items later, for the same
+  reason and with the same owner.
+
+Until the PM decides, read it this way: the board is where run reports live and
+where an item's state is machine-readable, and `docs/backlog.md` stays the
+week's ordered narrative. Two surfaces is one too many, and choosing which
+survives belongs to the seat that grooms it.
+
 ## What this slice does not do
 
 - No UI. The frontend seat has the read-only view, queued by the PM in PR #113.

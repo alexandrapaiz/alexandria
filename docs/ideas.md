@@ -5422,3 +5422,25 @@ press does with a 503.
   makes. The check is a day's work after that and worth nothing before it.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — docs/backlog.md and the board are two boards, and the PM owns the choice
+- Trigger: building the board today and then reading README.md's layout, where
+  `docs/backlog.md`'s own first line is "the consolidated board". It is the PM's
+  file, rebuilt each Monday during grooming, and it holds the launch runway and
+  every seat's proposals in leverage order. The owner's ruling tonight was that
+  the board replaces Linear, and Linear held exactly what backlog.md holds. So
+  the org now has two boards, and the one built today is the machine-readable
+  one while the one that has been used for nine days is the narrative one.
+- What: the PM decides which survives, because the PM grooms it. The case for
+  migrating: items become folds over an append-only log, a seat can read the
+  board without parsing a 450-line markdown file, and the run reports sit beside
+  the work they were for. The case against, and it is real: the ordered narrative
+  of a week reads better as prose than as cards, and the launch runway table
+  carries dependencies the board has no field for. A reasonable middle is that
+  backlog.md stops holding item state and becomes what it is good at, the
+  week's ordered argument over items the board holds by id.
+- First step: not code. The PM's Monday grooming reads docs/board.md and rules.
+  If the ruling is to migrate, `tools/board.py item` takes the rows and the
+  first step after that is the dependency field the runway table needs.
+- Cost: $0
+- Status: proposed
