@@ -4121,3 +4121,86 @@ in `docs/research/briefs/2026-09-26.md` section 9, item 1, with the `claims`
 `prompt_sha` column as item 4. This run spent its proposal on
 `prompts/triage.md`, which was verified current, rather than stacking a second
 fix behind an undeployed first one.
+
+---
+
+## INC-2026-09-26-two-engineer-runs-one-window — the engineer seat's scheduled run and a dispatched run worked the same files at the same time (2026-09-26, engineer seat)
+
+**A repeat, recorded at the moment it repeated, per the standing rule at the
+top of this file.** It is the same class as incident 14 (two runs of one
+dispatch racing on one branch, saved only by `--force-with-lease`) and
+`INC-2026-09-24-writer-dispatch-started-twice`. This is the first sighting
+where the two runs were a *scheduled* run and a *dispatched* run rather than
+two copies of one dispatch, which matters because nothing in the dispatch
+path can see a cron that has already started.
+
+**What happened, from `gh run list --workflow=agent-engineer.yml`:**
+
+```
+36208644267  2026-09-26T01:30:18Z  workflow_dispatch  in_progress
+36208446311  2026-09-26T01:26:48Z  schedule           in_progress
+36206420676  2026-09-26T00:52:17Z  workflow_dispatch  completed
+```
+
+Three engineer runs inside forty minutes, two of them alive at once. They
+opened two pull requests three minutes apart, #115 at 01:31:37Z and #116 at
+01:34Z, and at 01:51Z both branches were still gaining commits. The two runs
+wrote into the same files: `docs/ideas.md`, `docs/agents/incidents.md`,
+`db/schema.sql`, `pipeline/distill.py` and `pipeline/triage.py`.
+
+**What kept it from being an outage.** The charter's "your own last run may
+still be open" rule made this run check `gh pr list` before branching, so it
+found #115, branched from #115's tip rather than from main, and said so at the
+top of #116. Nothing was lost and neither run force-pushed the other's branch.
+What the rule could not do is prevent the duplicated work: this run read #115's
+diff to find out what its predecessor had already built, which is the cost,
+and #115 gained three commits afterwards that #116 does not contain.
+
+**Why the existing guardrails did not fire.** The PM's charter §4 has the hard
+rule, "never propose a dispatch for a seat whose last pull request is still
+open", and it holds for dispatches the PM proposes. Neither of these was the
+PM's. One was the schedule and one was the owner's, and `agent-engineer.yml`
+has no `concurrency:` block, so GitHub had no reason to queue the second
+behind the first. The charter rule is the org's only protection and it lives
+one layer above the runtime that could actually enforce it.
+
+**The shape of a fix, for the owner and the ExO rather than for this seat.**
+A `concurrency: { group: agent-engineer, cancel-in-progress: false }` block on
+each seat's workflow makes the runtime hold the second run until the first
+finishes, which is what every charter sentence on this subject is trying to
+say. It is a workflow change, so it cannot come from here, and it is the same
+answer `INC-2026-09-24-writer-dispatch-started-twice` reached.
+
+**One-day-later note for whoever reads the two PRs.** #116 supersedes #110
+completely, and contains #115 only up to its commit `4a8fca5`. Merge order is
+#115 first and #116 second, keeping both sides of every append-only document.
+
+---
+
+## INC-2026-09-26-deploy-workflow-no-smoke-run, second sighting — twelve workflow files changed on main, twice, with no smoke run (2026-09-26, engineer seat)
+
+Recorded against the entry of the same name above rather than as a new
+incident, because it is the same class on the same day and a second number
+would split one pattern into two.
+
+**What the §0 machinery diff found this run.** Two more direct pushes to main,
+both after the first sighting was written:
+
+```
+4e06105 2026-09-25 19:23:27 -0600 alexandrapaiz  Slack run reports: five bullets, one line each
+3389284 2026-09-25 19:14:48 -0600 alexandrapaiz  Run reports post prose to Slack
+```
+
+Each changes all twelve `agent-*.yml` workflow files. The two questions
+`docs/agents/runtime-changes.md` asks, answered the same way as before:
+`gh api repos/.../commits/<sha>/pulls` returns empty for both, so no merged
+pull request explained either, and no run of any agent workflow exists on a
+non-main branch between them, so the first unattended agent run was the first
+execution. In this case the first execution was this run and its two siblings,
+and they all succeeded, so the step works. The class is recorded, not the
+outcome.
+
+**Nothing new to propose.** The fix is the one the first sighting already
+names, a required check that fails a push touching `.github/workflows/` with
+no run of that workflow behind it on a branch. This entry exists so the
+pattern's count is honest: it is now three pushes across two evenings.
