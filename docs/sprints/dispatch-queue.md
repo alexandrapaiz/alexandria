@@ -88,3 +88,5 @@ dispatch: `INC-2026-09-24-dispatch-403` recorded that the PM's own
 condition being met, and no follow-up in this file or in
 `docs/decisions.md` shows that resolved. Untested again this run since
 there was nothing to test it with.
+
+<!-- pm-standup-2026-09-26: draft in progress -->
