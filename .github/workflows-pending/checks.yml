@@ -25,7 +25,9 @@ on:
       - "tests/test_rag_fallback.py"
       - "tests/test_reasoning_rubric.py"
       - "tests/test_board.py"
+      - "tests/test_run_report.py"
       - "tools/board.py"
+      - "tools/run_report.py"
       - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
@@ -43,7 +45,9 @@ on:
       - "tests/test_rag_fallback.py"
       - "tests/test_reasoning_rubric.py"
       - "tests/test_board.py"
+      - "tests/test_run_report.py"
       - "tools/board.py"
+      - "tools/run_report.py"
       - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
@@ -166,3 +170,19 @@ jobs:
       - name: a run reports onto the board exactly once
         if: always()
         run: python3 -m pytest tests/test_board.py -q
+
+      # INC-2026-09-26-run-report-dash-echo: the run report step ran under the
+      # container's `sh`, which is dash, and dash's builtin `echo` expanded the
+      # escaped newlines inside the pull request body before `jq` read it. Every
+      # run of every seat failed, and two runs that had finished their work and
+      # opened their pull requests were recorded as crashes.
+      #
+      # It shipped to twelve live workflows at once because shell embedded in
+      # YAML has nowhere to be tested. The logic is `tools/run_report.py` now,
+      # and this is the step that holds it. One of these tests runs the script
+      # under `sh -e`, which is the exact shell the workflow hands a step that
+      # declares no `shell:` key, so the shell that caused the incident is
+      # under test rather than in production.
+      - name: the run report survives the container's shell
+        if: always()
+        run: python3 -m pytest tests/test_run_report.py -q
