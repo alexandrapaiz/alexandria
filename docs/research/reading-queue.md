@@ -7,3 +7,5 @@ line with date and PR) and by the engineer, who feeds queued arXiv ids
 to distill ahead of the daily intake (ADR-35).
 
 Format: `- [ ] arxiv:<id> — why — asked by skills/<slug> — YYYY-MM-DD`
+
+<!-- skill seat run 2026-09-26: entries appended below as the run reads -->
