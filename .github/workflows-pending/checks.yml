@@ -23,6 +23,9 @@ on:
       - "tests/test_press_rehearsal.py"
       - "tests/test_corpus_drain.py"
       - "tests/test_rag_fallback.py"
+      - "tests/test_board.py"
+      - "tools/board.py"
+      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -37,6 +40,9 @@ on:
       - "tests/test_press_rehearsal.py"
       - "tests/test_corpus_drain.py"
       - "tests/test_rag_fallback.py"
+      - "tests/test_board.py"
+      - "tools/board.py"
+      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -128,3 +134,21 @@ jobs:
       - name: the corpus drains within its cap, and the cap has teeth
         if: always()
         run: python3 -m pytest tests/test_corpus_drain.py tests/test_rag_fallback.py -q
+
+      # 2026-09-26: the board (docs/board.md), which replaces Linear and which
+      # every seat's workflow step writes to. Three properties are worth a
+      # build. A report lands exactly once, because the step runs under
+      # `if: always()` and a duplicated run row is a board nobody trusts. A
+      # seat cannot invent a column or a view, which is the owner's ruling and
+      # is enforced by `board/views.json` living on main. And a board that
+      # cannot be written exits 0, because twelve seats' runs must not go red
+      # over a window.
+      #
+      # `board/views.json` is in this workflow's paths for the reason the email
+      # template is: the file is the owner's and the tool that reads it is the
+      # engineer's, so a change to one that breaks the other is the cross-seat
+      # break CI exists to catch. The last test in that file is the one that
+      # catches it, by holding every workflow's seat name against that file.
+      - name: a run reports onto the board exactly once
+        if: always()
+        run: python3 -m pytest tests/test_board.py -q

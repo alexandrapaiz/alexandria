@@ -81,6 +81,11 @@ RUN_STATUSES = ("success", "failure", "cancelled", "skipped")
 
 SLUG = re.compile(r"[^a-z0-9]+")
 
+#: A markdown bullet, including the one Slack renders. Written as an escape
+#: rather than as the character, so every file in this repository stays plain
+#: ASCII (ban-list entry 13).
+BULLET_LINE = "^\\s*[-*\u2022] "
+
 
 # --------------------------------------------------------------------------
 # The pure core. No network, no git, no clock: everything below is a function
@@ -264,8 +269,8 @@ def result_line(pr_body, pr_title, limit=200):
     invent. A description with no bullets falls back to its title.
     """
     for line in (pr_body or "").splitlines():
-        if re.match(r"^\s*[-*•] ", line):
-            text = re.sub(r"^\s*[-*•] +", "", line).replace("**", "").strip()
+        if re.match(BULLET_LINE, line):
+            text = re.sub(BULLET_LINE + " *", "", line).replace("**", "").strip()
             if text:
                 return text[:limit]
     return (pr_title or "").strip()[:limit]

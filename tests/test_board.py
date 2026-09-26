@@ -462,3 +462,19 @@ def test_plural():
     assert board.plural(0, "run") == "0 runs"
     assert board.plural(1, "run") == "1 run"
     assert board.plural(2, "item") == "2 items"
+
+
+def test_every_agent_workflow_maps_to_a_declared_seat():
+    """The step is `board.py report --status ...` in all twelve workflows, and
+    the seat it records is the workflow's name minus `-agent`. If a thirteenth
+    seat arrives, this fails until board/views.json knows the name, rather than
+    that seat's runs landing under a name no view groups by."""
+    import re
+
+    workflows = sorted((REPO / ".github" / "workflows").glob("agent-*.yml"))
+    assert len(workflows) == 12, "twelve seats, or this test's premise moved"
+    derived = set()
+    for path in workflows:
+        name = re.search(r"^name:\s*(\S+)", path.read_text(), re.M).group(1)
+        derived.add(re.sub(r"-agent$", "", name))
+    assert derived == set(board.load_views()["seats"])
