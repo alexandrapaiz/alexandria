@@ -300,3 +300,44 @@ create or replace view user_accounts as
            s.comp    as digest_comp
     from users u
     left join subscribers s on lower(s.email) = lower(u.email);
+
+-- ============ auth_attempts: the passphrase throttle (mcp/oauth_flow.py) ============
+-- One row, keyed 'mcp-authorize', counting consecutive wrong passphrases on
+-- POST /authorize. It lives in Postgres rather than in the server's memory for
+-- one reason: the MCP container scales to zero, so an in-process counter is
+-- reset by every cold start and kept separately by every replica, which is the
+-- same as no counter at all to anyone patient enough to notice.
+--
+-- The right passphrase deletes the row. A row whose last_fail is older than the
+-- decay window is treated as a finished run of failures, not a continuing one.
+create table if not exists auth_attempts (
+    scope      text primary key,
+    fails      integer not null default 0,
+    last_fail  timestamptz not null default now()
+);
+
+
+-- ============ consumed_codes: single-use authorization codes (mcp/oauth_flow.py) ============
+-- One row per successful OAuth login. The row's name is the `jti` claim of the
+-- authorization code that was spent, and every access and refresh token issued
+-- from that code carries the same name in its `sid` claim. So the row is really
+-- the session, which is why two things are true about it.
+--
+-- The insert is the single-use check itself: `on conflict do nothing returning`
+-- hands a row back only to the caller that created it, so a code presented
+-- twice is refused even if the two attempts land on different replicas. A
+-- read-then-write would race here. This does not.
+--
+-- And `expires_at` is when the longest-lived token from that login dies, not
+-- when the 60-second code did. Purging on the code's own expiry would drop the
+-- row a minute after login and leave nothing to mark revoked for the 180 days
+-- the refresh token still works. Rows past expires_at are deleted opportunist-
+-- ically by the same statement that spends the next code.
+create table if not exists consumed_codes (
+    jti         text primary key,
+    consumed_at timestamptz not null default now(),
+    expires_at  timestamptz not null,
+    revoked     boolean not null default false
+);
+
+create index if not exists consumed_codes_expires_idx on consumed_codes (expires_at);
