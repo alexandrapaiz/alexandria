@@ -897,3 +897,134 @@ INC-2026-09-24-kimi-org-concurrency exactly.
 additive and need no undo: `fulltext_chars` goes unread and the grades
 stay correct, since they were computed by the same rules the live grader
 uses.
+
+## ADR-2026-09-26b: Triage is a log with a history, and the claim taxonomy is closed
+
+**A dated id again, with a letter.** The entry above explains why this file
+moved to dated ids. Two entries on one day need one character to separate
+them, which is still cheaper than a third sequential collision.
+
+**Owner's directive, 2026-09-25, to the engineer seat.** Research on
+reasoning models has to reach the corpus. 209 papers in the corpus have
+"reasoning" in the title, 147 were never triaged, and of the 62 that were,
+47 went to `index` against 14 to `distill`, because `prompts/triage.md`
+rewarded a "construction technique" and a reasoning paper's contribution is
+usually a training recipe. The research seat wrote the rubric and the
+`reasoning` topic (PR #109). Three decisions were needed to apply them.
+
+**1. A revised rubric re-judges the papers it was written for, and the
+re-judgment is an append.** A paper may now hold more than one row in
+`triage_log`. `latest_triage`, a new view, is the newest decision per paper
+and the only row anything downstream reads.
+
+Alternatives weighed. *UPDATE the existing row*: the smallest diff, and it
+destroys the thing the table is for. `db/schema.sql` says the log doubles
+as the eval set for the recursive loop, and two rubrics disagreeing about
+one paper is the most valuable row in that set. *Delete the row and let the
+paper fall back into `triage_queue`*: the resume query would then be
+telling the truth about a queue and lying about history, and the count of
+papers ever judged would go down over time. *A separate `retriage_log`
+table*: every consumer would have to know about both, and the one that
+forgot would be wrong silently.
+
+The cost of appending is that a consumer joining `triage_log` for "this
+paper's decision" gets one row per decision the paper has ever had. That is
+not theoretical and it is why this change touches five files that have
+nothing to do with reasoning: a claim would have entered the digest payload
+twice, a paper would have been read in full twice in one distill run, an
+author's paper count in the MCP server would have inflated without them
+writing anything, and the weekly issue would have said it triaged 47 papers
+it triaged in September.
+
+**2. The claim taxonomy is closed and enforced where claims are written.**
+`prompts/distill.md` has always called its topic list closed and nothing
+checked, so 3.9% of tag applications were off it: 18 claims carry a
+non-breaking-hyphen twin of a real topic and are invisible to every query
+the product runs, and 22 tags were invented outright. `pipeline/topics.py`
+is now the only place that decides what a topic is.
+
+It folds spelling and refuses to fold meaning. `Post‑Training` becomes
+`post-training` because that is typography. `training` is dropped rather
+than promoted to `post-training`, because a fold that guesses would write
+tags the distiller never chose and the column would stop being evidence.
+Dropped tags are counted and printed, which turns a silent 3.9% into a
+number in the run log and a proposal for the seat that owns the prompt.
+
+Alternatives weighed. *A CHECK constraint or an enum on `claims.topics`*:
+the database would reject the whole insert over one bad tag, so a good
+claim would be lost to a typo, and the list lives in a prompt the research
+seat owns under ADR-12, which must be able to change without a migration.
+*Accept everything and clean up in a query later*: that is the status quo,
+and the cleanup never came. *Normalize at read time in each consumer*:
+three consumers, three copies, one of them wrong.
+
+**3. The reasoning priority sorts inside each tier, never ahead of the
+tiers.** Reasoning papers are drained first within every tier, and the
+interleaved tier quota that fixed the firehose starvation (`TIER_WEIGHTS`,
+2,445 unread papers) is untouched. A priority implemented as a global sort
+would have re-created that bug with a different favourite. Matching is on
+the title alone: half the corpus mentions reasoning in an abstract, and a
+priority that covers everything is not a priority.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.** Same
+reason as the entry above, and L-A16 requires it said plainly: this runner
+has no Modal CLI (`modal: command not found`, verified again this run) and
+no credentials, and the deploy is the chair's under
+docs/agents/runtime-changes.md. 307 Python tests pass and
+`python3 pipeline/budget.py` passes with real tiktoken counts. The rubric
+has judged no paper.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails. Do the Kimi steps outside 11:00-15:00 UTC, or inside the
+13:00-14:00 margin `pipeline/llm.py` keeps empty: organization concurrency
+is 1.
+
+```bash
+# the schema: claims.prompt_sha, triage_log.method, the latest_triage view
+modal run pipeline/db_setup.py::apply_schema
+
+# ingest, redeployed because sources.yaml is bundled into the image and two
+# reasoning feeds were added to it (ai2, lilianweng)
+modal deploy pipeline/ingest.py
+
+# triage, on the new rubric. The reasoning-first drain comes with it.
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py::drain \
+  && modal deploy pipeline/triage.py
+
+# the 47 reasoning papers at index, judged again. Dry run first.
+modal run pipeline/triage.py::retriage_plan
+modal run pipeline/triage.py::retriage
+
+# distill, which now enforces the taxonomy and stamps claims.prompt_sha
+modal deploy pipeline/distill.py
+
+# the 18 invisible claims, repaired. Costs $0: no model, no provider secret.
+modal run pipeline/backfill_topics.py::count
+modal run pipeline/backfill_topics.py::backfill
+
+# the press, redeployed for the latest_triage joins and the honest triaged count
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+**What it costs.** The rubric makes the triage prompt 1133 tokens instead
+of 728, so a call is $0.00852 at the ceiling instead of $0.00814 and the
+$0.60 cap buys 70 calls instead of 73. The re-triage is about $0.04 once,
+under a $0.10 cap of its own. The two new feeds add 78 items to the triage
+queue on their first run and a handful a month after that. Nothing here
+changes the $27.00 monthly ceiling in docs/finance/opex.md.
+
+**Rollback.** `git revert` of the pull request, then `modal deploy` of
+`pipeline/triage.py`, `pipeline/distill.py`, `pipeline/weekly.py` and
+`pipeline/ingest.py`. The schema is additive and needs no undo: a dropped
+`latest_triage` view leaves `triage_log` exactly as it was, and
+`claims.prompt_sha` and `triage_log.method` go unread. The one thing a
+revert does not undo is the re-triage rows, and it should not: they are a
+record of a judgment that was made. Reverting the rubric without reverting
+them leaves papers in `distill_queue` that the old rubric would not have
+sent there, which is a deliberate outcome rather than a leak.
