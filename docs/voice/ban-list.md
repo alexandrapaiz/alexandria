@@ -604,3 +604,41 @@ gap that the same collision had left empty (incident 25).
     phrase at all. Added 2026-09-26. Enforced the same day: the attribution
     rule in prompts/digest.md now says there is no third fallback and names
     the four kinds of payload noun that arrive looking like one.
+60. A count printed with the neighbouring count's verb. "The library read
+    1,289 papers", from the print of 2026-09-26, on a day when 1,289 papers
+    had been ingested that week and 164 had ever been read in full. This is
+    not the slop lexicon and not a shape tell. It is a true number in a false
+    sentence, and it survives every pass in the grading procedure because all
+    five of them read the prose and this defect is in the arithmetic behind
+    one word. The class is any sentence that takes one pipeline count and
+    attaches an act the pipeline performed on a different, smaller set:
+    "read" for ingested, "studied" for triaged, "verified" for linked,
+    "distilled" for anything that was not distilled. The tell in the draft is
+    a verb of effort standing next to the largest number available, because
+    the largest number is always the cheapest act and the one a scale sentence
+    reaches for. The test is one question and it is arithmetic rather than
+    taste: which field is this number, and is the verb the act that field
+    records? Added 2026-09-26 from the owner's dispatch of 2026-09-25.
+    Enforced the same day: `prompts/digest.md` names the act each count
+    records where the payload is described, the closing slot binds a verb of
+    reading to the full-read count alone, and a reading gate at the end of the
+    file collects every sentence whose subject is the library and puts the
+    arithmetic question to each. Canon law 15 is the law this produced.
+61. Standing copy, fixed in code, that no pass has ever graded. The masthead
+    read "The latest in AI research, read in full and distilled weekly" from
+    the day it was written until 2026-09-26, and it printed above every issue
+    ever sent, against 166 full reads out of 8,956 papers. Entry 60 is the
+    false sentence; this entry is why it lived so long. A string constant is
+    exempt from every gate this register has, because the gates run on what
+    the model writes and this line is deliberately not written by the model,
+    which was the good reason it was put in code. The comment above it said
+    the point was that the brand line "never drifts", and a line that cannot
+    drift also never comes up for review. The class is wider than the
+    masthead: the preheader, the edition label, the footer, the standing
+    close, subject prefixes, every string in `pipeline/` and `site/` that a
+    subscriber reads. Two rules fall out. Every editorial run reads the
+    reader-facing constants once, in code, and grades them as it grades a
+    sentence in the issue. And a reader-facing string kept in code carries a
+    comment naming the register that governs it, so the next person editing it
+    knows a law applies. Added 2026-09-26, with the masthead repaired the same
+    day under the owner's order giving its wording to this seat.

@@ -433,6 +433,45 @@ Study decisions, never copy sentences.
     evidence grade names what the work did not measure, which is the
     half that makes it a grade instead of a compliment. The em dash is
     gone. Nothing the reprint said is missing.
+15. The library never claims to have read what it only ingested
+    (owner's ruling, 2026-09-25). Every paper in the corpus arrives as a
+    title and an abstract. A much smaller number have had their full text
+    read. Those are two different acts, the counts are far apart, and the
+    gap is permanent, so a sentence that gives the arriving count a verb
+    of reading is false about the product.
+    The evidence is the print of 2026-09-26 and the masthead that ran
+    above it. The issue said "the library read 1,289 papers" on a day when
+    1,289 papers had been ingested that week and 164 had ever been read in
+    full. The masthead said "read in full and distilled weekly" on every
+    issue ever sent, against 166 full reads out of 8,956 papers held.
+    Neither line misread a paper or invented a number. Both took a count
+    and attached the neighbouring count's verb.
+    This law is worth its own number rather than a note under law 6
+    because of who the claim is about. An overstated result belongs to a
+    lab, is printed with a link, and a reader who cares can check it. A
+    claim about alexandria's own work has no link and no way to be
+    checked, so the reader either trusts it or stops trusting the issue.
+    The words, fixed, so following this law is copying rather than
+    composing. Papers **come in**, **arrive**, or **land**: that is
+    ingestion, a title and an abstract. Papers are **sorted** or
+    **ranked**: that is triage. Papers are **read in full** or **read
+    closely**: that is the only act the word "read" may name, and it
+    cites the full-read count and no other. Findings are **taken out of**
+    the papers that were read. The scale sentence a close may carry is
+    both numbers together, what arrived and what was read closely out of
+    it, because the pair is true and either number alone invites the
+    reader to assume the other.
+    The repair is to drop the claim, never to soften it, which is the
+    claims pass's standing rule applied to the one subject the pass had
+    not been pointed at. "Read or reviewed", "read at some depth",
+    "surveyed" and "processed" are hedges on a false sentence and each
+    one is ban list 50 with a different coat on. An issue that says
+    nothing about its own scale has lost nothing a reader came for.
+    This binds every surface, not only the issue: the masthead, the
+    email, the site, and any line of copy drafted under this canon.
+    Standing copy fixed in code is where it hid for the whole life of the
+    product, because a string that never changes is never graded (ban
+    list 61), so a reader-facing sentence is graded wherever it lives.
 
 ## How an issue is graded
 
@@ -479,10 +518,20 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    A qualifier that the claim has to survive before it can land is
    the writer noticing the comparison fails and continuing, which is
    ban list 50. The fix is to drop the claim, never to soften it.
+   The third question is about alexandria, added 2026-09-26 with law 15
+   after a print claimed the library had read a count of papers it had
+   only ingested. Take every sentence whose subject is the library, the
+   issue or the newsletter, and ask which pipeline count it is about and
+   whether its verb is the act that count records. There is usually one
+   such sentence, in the close, and it is the only sentence in an issue
+   the reader cannot check against a linked paper. Grade the standing
+   lines too, meaning the masthead and anything else fixed in code or set
+   on a page, because those never come up for review on their own.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at
-   the wrong risk satisfies neither.
+   the wrong risk satisfies neither. With the third question it also
+   enforces law 15.
 
 ## Maintenance
 

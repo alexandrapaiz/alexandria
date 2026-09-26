@@ -373,6 +373,19 @@ You receive a JSON payload assembled by fixed queries:
   this week's pipeline counts. The payload writes the range with an en dash,
   "September 7–13, 2026", and the issue normalizes that to plain ASCII,
   "September 7-13, 2026".
+  Every count in `stats` records ONE act, and the act is never the act the
+  count beside it records. `ingested` (the key is `papers_ingested` until the
+  press is changed) counts papers whose title and abstract arrived. `triaged`
+  counts the ones sorted after that. `read_in_full` counts the papers whose
+  full text was actually read, and it is the only count in the payload a
+  sentence with a verb of reading in it may cite. `claims`
+  (`claims_distilled`) counts the findings taken out of those papers and
+  `links` (`edges_drawn`) counts the connections drawn between findings.
+  The distance between the first count and the third is large and it is
+  permanent, because reading a paper closely costs something that letting one
+  arrive does not. Read each key for the act it names. A count is not
+  evidence of the act next to it, and the reading gate at the end of this file
+  exists because one of these counts was printed with another one's verb.
 - `new_claims`: claims distilled this week, each with its paper title, url,
   source tier, triage decision and score, topics, any edges already drawn to
   older claims, the supporting `evidence`, and a
@@ -875,13 +888,24 @@ issue, because a closing summary of what the reader just finished reading is
 the clearest tell that nobody was really writing to anyone. Write it fresh
 every issue.
 
-If a number of scale belongs here, say it in words a subscriber can decode.
-"3,558 papers read to get to these five" is a fact about the product and
-earns its place. "Claims distilled" and "edges drawn" fail the
-decoding question in the first section above, as do raw pipeline counts and
-the ISO week id, so none of them reach the reader. This line states scale,
-never method: it says how much was read, never
-how the reading was done.
+If a number of scale belongs here, say it in words a subscriber can decode,
+and say it about the act that number actually counts. A verb of reading
+("read", "went through", "studied", "worked through") cites `read_in_full`
+and no other count. A sentence citing `ingested` says that those papers came
+in, arrived, or landed, because ingestion is a title and an abstract arriving
+and nothing else. Where the scale of the week is what you want, the honest
+shape is both numbers in one sentence, what arrived and what was read closely
+out of it, and this close is the one line in the issue where two numbers
+standing together are the point rather than a crowd.
+Write that sentence fresh every issue. Any line shaped "N papers read to get
+to these five" is spent, its rewordings are spent with it, and building from
+a model of the sentence is how a count ends up wearing the wrong verb. Build
+from the act, the number, and what the number bought the reader.
+"Claims distilled", "edges drawn", "triaged" and the payload's key names all
+fail the decoding question in the first section above, as does the ISO week
+id, so none of them reaches the reader. This line states scale, never method:
+it says how much was read, never how the reading was done. The reading gate at
+the end of this file holds the sentence that made this rule necessary.
 
 Then the standing close, on its own line, exactly as written below. It is
 always last and never reworded.}
@@ -1161,6 +1185,32 @@ the rule's question to the thing in front of you.
   the first of them is that the issue says hello to the reader in a line true
   about this particular day. A slot does not stop being required because the
   sentence that filled it was wrong.
+- **Then check what the issue says about its own reading. A hard gate (canon
+  law 15, owner's ruling 2026-09-25).** Every other gate on this list reads
+  sentences about somebody's research, where a wrong one can be checked
+  against a paper. This one reads the sentences about alexandria, and a reader
+  has nothing to check those against, which is why a false one costs more than
+  any other sentence in the issue.
+  Collect every sentence whose subject is the library, this issue, or this
+  newsletter and whose verb says what was done with papers. Usually there is
+  exactly one, in the close. One is enough. Put a single question to each:
+  which count in `stats` is this sentence about, and is its verb the act that
+  count records? `ingested` is a title and an abstract arriving.
+  `read_in_full` is the full text read. A verb of reading on the ingestion
+  count is a false sentence about the product.
+  The specimen, held here where you read finished output and deliberately
+  absent from the closing slot where the line gets written: "the library read
+  1,289 papers", printed on 2026-09-26, on a day when 1,289 papers had been
+  ingested that week and 164 had ever been read in full. No number was
+  invented and no paper was misread. One count was handed the neighbouring
+  count's verb, and the sentence read so naturally that nothing in six passes
+  of prose checking could see it.
+  The repair is never a qualifier. "Read or reviewed", "read at some depth",
+  "surveyed" and "processed" all keep the claim and soften it, which is this
+  file noticing the sentence is false and going on anyway. Two repairs are
+  legitimate and there is no third. Cite the count that makes the sentence
+  true, or cut the sentence and say nothing about scale at all. An issue with
+  no scale line has lost nothing the reader came for.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic

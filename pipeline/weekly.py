@@ -732,10 +732,17 @@ def write_digest(payload: dict, prompt: str,
 
 # The standing introduction under the title. Fixed in code, not written by the
 # model, so the brand line never drifts issue to issue.
+#
+# It said "read in full and distilled weekly" until 2026-09-26. Every paper in
+# the corpus arrives as a title and an abstract, and 166 of 8,956 have ever had
+# their full text read. A line fixed in code prints on every issue and is graded
+# by nothing, so the claim outlived every pass that would have caught it in the
+# prose. Canon law 15: the library never claims to have read what it only
+# ingested, and the repair is to drop the claim rather than qualify it. Reader
+# facing wording here is the writer seat's custody (owner's order 2026-09-25).
 MASTHEAD = (
-    "*The latest in AI research, read in full and distilled weekly: "
-    "what's new, what's gaining acceptance, and what newer evidence has "
-    "overturned.*"
+    "*What's new in AI research, what's gaining acceptance, and what newer "
+    "evidence has overturned.*"
 )
 
 
