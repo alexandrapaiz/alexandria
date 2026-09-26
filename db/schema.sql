@@ -136,6 +136,27 @@ create table if not exists digests (
     created_at timestamptz not null default now()
 );
 
+-- ============ press_rehearsals: the scratch print ============
+-- A rehearsal is a full press run that writes here instead of to digests and
+-- mails nobody (docs/agents/press-rehearsal.md). The separation is the whole
+-- point: a rehearsal must never be able to overwrite a published week, so it
+-- gets its own table with no unique constraint on week. Many rehearsals of one
+-- week are expected, and the newest row is the receipt the deploy chain reads.
+create table if not exists press_rehearsals (
+    id               bigserial primary key,
+    week             text not null,           -- e.g. '2026-W39', not unique
+    body             text not null,           -- the digest markdown, unsent
+    model            text,                    -- the model that actually answered
+    prompt_sha       text,                    -- sha256 of the prompt it was given
+    elapsed_seconds  numeric,                 -- wall clock of the model call
+    finish_reason    text,                    -- 'stop', 'length', whatever came back
+    payload_stats    jsonb,                   -- the same counts weekly() prints
+    created_at       timestamptz not null default now()
+);
+
+create index if not exists press_rehearsals_recent_idx
+    on press_rehearsals (created_at desc);
+
 -- ============ subscribers: the newsletter list ============
 -- Source of truth for who receives the digest. Friends-and-family phase sends
 -- via Gmail SMTP; past ~20 subscribers this graduates to SES + a real domain

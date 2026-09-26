@@ -4307,6 +4307,150 @@ needs an owner decision or an owner push, not an engineer build.
   it and nothing checks it.
 - Cost: $0 to file. The template work is an hour or two.
 - Status: proposed
+
+### 2026-09-24 — The daily corpus crons have no availability check and no rehearsal
+
+- Trigger: building `rehearse()` today (docs/agents/press-rehearsal.md).
+  That specification's last section names this gap in one paragraph and
+  leaves it for a separate trigger. Writing the function supplied the
+  trigger. The press now has three gates before a deploy, and `ingest`,
+  `distill`, `triage` and `interpret` have none of the three. Verified on
+  this branch rather than assumed: `grep -l check_availability pipeline/`
+  returns `pipeline/weekly.py` and nothing else.
+- Why it is not academic. The press was moved off Groq by ADR-32 because
+  the free tier moved under it three times in five days. The daily crons
+  were not moved. They still run on the provider whose catalog produced
+  incident 24, and they run four times a day instead of once a week, so
+  the same withdrawal that cost the press one issue would cost the corpus
+  twenty-eight runs before a Monday made it visible. The press learned to
+  ask "does the model exist" at deploy and again at run start. The corpus
+  still finds out by failing.
+- What: lift `check_availability()` and the `FALLBACK_MODELS` walk out of
+  `pipeline/weekly.py` into something the daily functions call too, then
+  give the daily side its own `preflight`. The rehearsal half is a
+  separate question and probably a smaller one, because a corpus run
+  writes rows rather than prose and a scratch schema is a heavier ask
+  than a scratch table.
+- First step: the shared availability check, as one function in a module
+  both sides import, with the press's existing tests moved onto it so the
+  lift is proved rather than asserted. One session. The daily `preflight`
+  is a second session and the rehearsal is a third.
+- Cost: $0. The availability call spends no tokens against any ceiling,
+  which is the reason the press can afford to make it twice.
+- Status: proposed
+
+### 2026-09-24 — The first gate in the ladder refuses to open without a tokenizer
+
+- Trigger: today's run, twice, with both exit codes recorded. On this
+  sandbox `python3 pipeline/budget.py` exits 1 with `budget check FAILED
+  (1 problem)`. The problem is not the press. It is the guard's own
+  SELFTEST, which asks whether payload trimming can rescue a 6,667-token
+  prompt on `openai/gpt-oss-20b` and concludes it cannot. After
+  `pip install tiktoken==0.8.0` the same command on the same commit exits
+  0 with `budget check passed`. Confirmed identical on `main`, so this
+  branch did not cause it.
+- Why it matters more than a sandbox annoyance. `python3
+  pipeline/budget.py` is link one of the chair's deploy chain, and the
+  chain is `&&`. A machine without `tiktoken` therefore cannot deploy the
+  press at all, for a reason that has nothing to do with whether the
+  press can print. The comment in `.github/workflows-pending/checks.yml`
+  says a failure to install the tokenizer "would make the guard stricter,
+  never laxer", and that is true of the real arithmetic. It is not true
+  of the selftest, where stricter becomes refuses, and a gate that
+  refuses for the wrong reason is a gate people learn to step around.
+  That is the class named in docs/agents/registers.md.
+- What: the selftest should either run against the exact tokenizer or say
+  plainly that it was skipped, the way the same file already says "no
+  provider key here, so model existence is not checked". Estimating a
+  ceiling pessimistically is right for a real request, because the cost
+  of being wrong is a 413. Estimating pessimistically inside a selftest
+  only tests the estimator.
+- First step: make the selftest read `budget.exact_tokenizer_available()`
+  and print `SELFTEST skipped: no exact tokenizer` instead of failing,
+  then add the tokenizer to `requirements-dev.txt` so a developer machine
+  gets the real check. Under an hour.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-24 — Validation receipts keyed to a content hash, so a badge cannot outlive its evidence
+
+- Trigger: today's craft scan, below, read against today's build. The
+  rehearsal's receipt rule is that a row proves nothing unless it carries
+  the model id and the prompt hash about to be deployed, and a receipt
+  from a different prompt is not a receipt. Anthropic's plugin
+  marketplace applies the same idea to bytes: an archive source may
+  declare `sha256`, and a mismatch refuses the install with `Plugin
+  archive integrity check failed`. The skill library has no equivalent.
+  Sprint 2026-09-28 carries "render validation receipts on skill pages",
+  and a receipt rendered next to a file that has since changed is worse
+  than no receipt, because it is a claim.
+- What: when the validation harness records a passing result for a skill,
+  it records the sha256 of the `SKILL.md` it validated alongside the
+  result. The skill page reads both, and shows the badge only when the
+  hash still matches the file being served. When it does not, the page
+  says the skill changed after its last validation and names the date,
+  which is honest and costs the reader nothing to understand. The same
+  field makes "which skills need revalidating" a query instead of a
+  memory.
+- Why this is the axis alexandria wins on. The marketplace's own
+  documentation is unusually candid: there is no code signing and no
+  attestation, and trust derives from the repository source. It verifies
+  that the bytes you downloaded are the bytes advertised. It does not and
+  cannot say whether the skill works, because nobody ran it. alexandria
+  does run them. Adding the hash is what stops that evidence from drifting
+  quietly away from the file it was evidence about.
+- First step: one column on the validation results table and one line in
+  the harness that hashes the file it just read. The page-rendering half
+  belongs to the frontend seat and to the sprint item that already exists,
+  so this entry is the data half only.
+- Cost: $0
+- Status: proposed
+
+### Craft scan — Anthropic's Claude Code plugin marketplaces (code.claude.com, fetched 2026-09-24)
+
+The engineer seat's daily craft scan, next unscanned entry in
+docs/market/landscape.md. The market seat added the Claude Marketplace
+entry this morning and covered the positioning question, which is whether
+the platform owner is about to occupy alexandria's paid tier. This is the
+craft half and a different question: how the thing is built, and what is
+worth taking.
+
+**One thing worth stealing: the version is a hash when there is nothing
+better.** The install mechanics resolve a plugin's version in a fixed
+order, and the interesting part is the bottom of that order. A declared
+`version` wins. Failing that, `plugin.json`'s version. Failing that, for a
+git source, the resolved commit sha. For an archive, the sha256. For a
+`command` source, a hash of the output the command produced. There is
+always an answer, and the answer always changes when the content changes.
+alexandria has the same problem in three places and solves it in one:
+today's rehearsal receipt compares a `prompt_sha`, while a validated skill
+and a published digest both carry a date and no fingerprint. A date says
+when somebody looked. A hash says what they looked at. The ledger entry
+above takes this for the skill library.
+
+**One thing alexandria does better: the marketplace verifies integrity and
+alexandria verifies evidence.** Anthropic's documentation says plainly
+that `claude plugin validate .` checks JSON structure, that there is no
+built-in code signing or attestation, and that trust derives from the
+repository source. So a plugin is listed because somebody with commit
+access listed it, and the strongest promise available to a user before
+install is that the zip matches its digest. That is a real guarantee and
+it is a guarantee about transport. Whether the skill does what it claims
+is left to the reader, and for 2,000 listings the reader has no way to
+find out except by installing. alexandria's skill library runs its skills
+and keeps the results, which is the harder claim and the only one a buyer
+of an operational tier is actually paying for. The gap is not oversight on
+Anthropic's part. Attestation at catalog scale is expensive, and a
+two-skill library that executes every one of them is not a smaller version
+of that catalog. It is a different product.
+
+**The one to watch.** `defaultEnabled: false` lets a marketplace ship a
+plugin that installs disabled until the user opts in. If a future version
+of that flag carries a reason string, the catalog gains a place to put
+exactly the kind of caveat alexandria's validation results produce, and
+the distance between the two products narrows from the direction nobody
+is watching.
+
 ### 2026-09-24 — The test suite has no gate, and the two ways of running it disagree (engineer agent)
 
 - Trigger: this run ran `python3 -m pytest tests/ -q`, the command printed in
