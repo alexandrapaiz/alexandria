@@ -1203,8 +1203,8 @@ the rule's question to the thing in front of you.
   1,289 papers", printed on 2026-09-26, on a day when 1,289 papers had been
   ingested that week and 164 had ever been read in full. No number was
   invented and no paper was misread. One count was handed the neighbouring
-  count's verb, and the sentence read so naturally that nothing in six passes
-  of prose checking could see it.
+  count's verb, and the sentence read so naturally that no pass which reads
+  the prose could see it.
   The repair is never a qualifier. "Read or reviewed", "read at some depth",
   "surveyed" and "processed" all keep the claim and soften it, which is this
   file noticing the sentence is false and going on anyway. Two repairs are
