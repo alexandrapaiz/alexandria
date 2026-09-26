@@ -249,13 +249,19 @@ export default function GraphExplorer({ claims, edges, topics, counts }) {
       ctx.clearRect(0, 0, w, h);
       const m = matchesRef.current;
       const hiddenRels = offRef.current;
-      const focus = selRef.current ?? hovRef.current;
-      const focusIdx = focus == null ? -1 : index.get(focus);
+      // Refinement 1, 2026-09-26. Hover and selection were one code path, so
+      // moving the cursor over a single claim greyed out the other 213. That
+      // is the heaviest response in the component fired by its lightest input,
+      // and it reverses Freiberg's order: feedback the instant the input
+      // starts, the committed state only past a threshold. Hover now emphasises
+      // locally and dims nothing; selection is still the heavy state.
+      const selIdx = selRef.current == null ? -1 : index.get(selRef.current);
+      const hovIdx = hovRef.current == null ? -1 : index.get(hovRef.current);
       const adj = new Set();
-      if (focusIdx >= 0) {
+      if (selIdx >= 0) {
         for (const l of links) {
-          if (l.a === focusIdx) adj.add(l.b);
-          if (l.b === focusIdx) adj.add(l.a);
+          if (l.a === selIdx) adj.add(l.b);
+          if (l.b === selIdx) adj.add(l.a);
         }
       }
       const filtering = m.size !== N;
@@ -265,15 +271,16 @@ export default function GraphExplorer({ claims, edges, topics, counts }) {
         const st = REL_STYLE[l.rel] || REL_STYLE.supports;
         const [ax, ay] = toPx(nodes[l.a]);
         const [bx, by] = toPx(nodes[l.b]);
-        const onFocus = focusIdx >= 0 && (l.a === focusIdx || l.b === focusIdx);
+        const onSel = selIdx >= 0 && (l.a === selIdx || l.b === selIdx);
+        const onHov = hovIdx >= 0 && (l.a === hovIdx || l.b === hovIdx);
         const lit = !filtering || (m.has(claims[l.a].id) && m.has(claims[l.b].id));
         let alpha = lit ? 1 : 0.12;
-        if (focusIdx >= 0) alpha *= onFocus ? 1 : 0.22;
+        if (selIdx >= 0) alpha *= onSel ? 1 : 0.22;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.beginPath();
         ctx.setLineDash(st.dash.map((d) => d * dpr));
-        ctx.lineWidth = (onFocus ? st.width + 0.5 : st.width) * dpr;
+        ctx.lineWidth = (onSel || onHov ? st.width + 0.6 : st.width) * dpr;
         ctx.strokeStyle = st.stroke;
         ctx.moveTo(ax, ay);
         ctx.lineTo(bx, by);
@@ -285,20 +292,24 @@ export default function GraphExplorer({ claims, edges, topics, counts }) {
       for (let i = 0; i < N; i++) {
         const id = claims[i].id;
         const lit = !filtering || m.has(id);
-        const isFocus = i === focusIdx;
+        const isSel = i === selIdx;
+        const isHov = i === hovIdx;
         const isAdj = adj.has(i);
         let alpha = lit ? 1 : 0.14;
-        if (focusIdx >= 0 && !isFocus && !isAdj) alpha *= 0.35;
+        if (selIdx >= 0 && !isSel && !isAdj) alpha *= 0.35;
         const [px, py] = toPx(nodes[i]);
-        const r = (2.4 + Math.min(nodes[i].deg, 8) * 0.22 + (isFocus ? 2 : 0)) * dpr;
+        const grow = isSel ? 2 : isHov ? 1.6 : 0;
+        const r = (2.4 + Math.min(nodes[i].deg, 8) * 0.22 + grow) * dpr;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.beginPath();
         ctx.arc(px, py, r, 0, Math.PI * 2);
         ctx.fillStyle = "#000000";
         ctx.fill();
-        if (isFocus) {
-          // paper gap, then ink: the node reads as picked up, not just bigger
+        if (isSel) {
+          // paper gap, then ink: the node reads as picked up, not just bigger.
+          // The ring is selection's alone; hover gets size and edge weight, so
+          // the two states never read as the same commitment.
           ctx.beginPath();
           ctx.arc(px, py, r + 3.5 * dpr, 0, Math.PI * 2);
           ctx.lineWidth = 1 * dpr;

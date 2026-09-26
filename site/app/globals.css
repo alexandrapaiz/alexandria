@@ -1873,8 +1873,25 @@ a {
   border-color: var(--gray);
 }
 
-.gx-legend-btn.is-off {
-  opacity: 0.4;
+/* Refinement 2, 2026-09-26. The off state was a blanket opacity of 0.4, which
+   put the label at roughly 2.9:1 against paper and the count near 1.5:1, so
+   the control that says which edges are hidden was the least readable thing on
+   the page. Opacity on a control dims its text along with everything else. The
+   off state is designed instead: the swatch drops to the hairline, the label
+   drops to grey, and both stay legible. Benchmarked against Consensus, which
+   moves colour and nothing else, on one clock. */
+.gx-legend-btn.is-off .gx-legend-label {
+  color: var(--gray);
+}
+
+/* two classes deep, so this beats .gx-swatch-contradicts on specificity
+   without reaching for !important */
+.gx-legend-btn.is-off .gx-swatch {
+  border-top-color: var(--line);
+}
+
+.gx-legend-label {
+  transition: color var(--fast) var(--ease);
 }
 
 .gx-legend-n {
@@ -1892,6 +1909,7 @@ a {
   border-top-width: 1px;
   border-top-style: solid;
   border-top-color: var(--ink);
+  transition: border-top-color var(--fast) var(--ease);
 }
 
 .gx-swatch-supports {
