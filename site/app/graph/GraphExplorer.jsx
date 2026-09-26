@@ -524,7 +524,7 @@ export default function GraphExplorer({ claims, edges, topics, counts }) {
               </ul>
             </>
           ) : (
-            <p className="gx-hint">Select a claim to read it with its links.</p>
+            <p className="gx-hint">Select a claim.</p>
           )}
         </aside>
       </div>

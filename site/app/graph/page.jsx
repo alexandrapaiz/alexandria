@@ -14,7 +14,7 @@ import { loadGraph } from "../../lib/graph-live";
 // the graph is serialised into a response they receive. Her words on the
 // ruling were "no preview, no teaser rendering".
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Graph — library of alexandr.ia" };
+export const metadata = { title: "Claim graph — library of alexandr.ia" };
 
 export default async function Graph() {
   const entitled = await hasSpine();
@@ -23,13 +23,10 @@ export default async function Graph() {
   return (
     <main className="page graph-page">
       <p className="page-kicker">Graph</p>
-      <h1 className="page-title">A graph that never forgets.</h1>
+      <h1 className="page-title">Claim graph</h1>
       <p className="page-intro">
-        Every claim the library has distilled, with the links between them.
-        You can see which findings support each other, which refine each
-        other, and which contradict each other. The graph is only ever
-        appended to, so it keeps a record of what the field believed and when
-        it changed its mind.
+        Each claim the library distilled, and the claims that support,
+        refine, or contradict it.
       </p>
 
       {!entitled ? (
@@ -45,8 +42,7 @@ export default async function Graph() {
         </div>
       ) : graph === null ? (
         <p className="graph-unavailable">
-          The graph is not readable right now. Nothing has been lost, and this
-          page will show it again as soon as the database answers.
+          The graph is unavailable right now. Try again in a minute.
         </p>
       ) : (
         <>
