@@ -1268,11 +1268,16 @@ the rule's question to the thing in front of you.
   this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
-  Ask it of every such line, because this failure has now arrived four times
-  in four disguises, and each one walked past the check written for the one
+  Ask it of every line and every fragment you collected, because this failure
+  has now arrived six times
+  in six disguises, and each one walked past the check written for the one
   before: a section heading ("Gaining traction"), a taxonomy word
   ("Compounding"), a bold word over a group inside a section
-  ("**Replaced**"), and an italic word over a numbered list ("*Procedure*").
+  ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
+  bolded label welded to a sentence ("**The number that matters:**"), and a
+  plain one that is not bolded at all ("For builders:"). The first four are
+  lines and the last two are fragments, which is why the collection step above
+  now has two halves.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
