@@ -1,6 +1,6 @@
 {
-  "events": 4,
-  "generated": "2026-09-27T16:01:30Z",
+  "events": 5,
+  "generated": "2026-09-27T16:03:17Z",
   "items": {
     "ALX-1": {
       "assignee": "engineer",
@@ -35,15 +35,15 @@
   },
   "latest_run": {
     "engineer": {
-      "at": "2026-09-26T01:50:59Z",
+      "at": "2026-09-27T16:03:15Z",
       "attempt": 1,
-      "branch": "engineer/2026-09-26-board-store",
-      "pr": 115,
-      "result": "The board exists and it is ours: `python3 tools/board.py show` prints the real state off the real `board` ref, which this run created and posted its own report onto.",
-      "run_id": "36208446311",
+      "branch": "engineer/2026-09-27-board-ids-and-snapshot",
+      "pr": 122,
+      "result": "The board issues its own item ids and folds itself into one file the site fetches in a single unauthenticated request, so the frontend seat's next slice reads `board/state.json` instead of untarring t",
+      "run_id": "36330209631",
       "seat": "engineer",
       "status": "success",
-      "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36208446311"
+      "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36330209631"
     }
   },
   "runs": [
@@ -57,9 +57,20 @@
       "seat": "engineer",
       "status": "success",
       "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36208446311"
+    },
+    {
+      "at": "2026-09-27T16:03:15Z",
+      "attempt": 1,
+      "branch": "engineer/2026-09-27-board-ids-and-snapshot",
+      "pr": 122,
+      "result": "The board issues its own item ids and folds itself into one file the site fetches in a single unauthenticated request, so the frontend seat's next slice reads `board/state.json` instead of untarring t",
+      "run_id": "36330209631",
+      "seat": "engineer",
+      "status": "success",
+      "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36330209631"
     }
   ],
-  "runs_kept": 1,
-  "runs_total": 1,
+  "runs_kept": 2,
+  "runs_total": 2,
   "source": "derived: folded from board/events on the board ref by tools/board.py. The log is the source of truth, and this file is a read cache that a writer finding it stale replaces."
 }
