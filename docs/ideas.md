@@ -5422,6 +5422,16 @@ press does with a 503.
 
 ### 2026-09-26 — Distill misses Groq's free tier by 109 tokens, which is why 164 of 8,956 papers were read in full
 
+**CORRECTED 2026-09-27, and left standing rather than edited.** The 109 is
+wrong by a factor of seventeen: the budget guard was sizing an arXiv paper
+with a prose filler, so the real miss was about 1,900 tokens
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). The finding this
+entry records is right and was larger than it knew. Its proposed fix is
+not: dropping the reservation to 1,400 leaves the request short by roughly
+1,300. Closed by the 2026-09-27 run, which set `FULLTEXT_CHARS` to 12,000
+and declared the reservation. Read the 2026-09-27 entries below before
+acting on anything in this one.
+
 - Trigger: L-E6 in docs/standards/lessons.md binds this seat when a prompt
   grows, and two prompts grew this run. `prompts/distill.md` gained the
   `reasoning` topic's definition, and distill was the one corpus job absent
@@ -5661,6 +5671,16 @@ press does with a 503.
 
 ### 2026-09-26 — Distill cannot read a paper in full, and the gap is 109 tokens (engineer, run 4)
 
+**CORRECTED 2026-09-27, and left standing rather than edited.** The 109 is
+wrong by a factor of seventeen: the budget guard was sizing an arXiv paper
+with a prose filler, so the real miss was about 1,900 tokens
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). The finding this
+entry records is right and was larger than it knew. Its proposed fix is
+not: dropping the reservation to 1,400 leaves the request short by roughly
+1,300. Closed by the 2026-09-27 run, which set `FULLTEXT_CHARS` to 12,000
+and declared the reservation. Read the 2026-09-27 entries below before
+acting on anything in this one.
+
 - Trigger: `python3 pipeline/budget.py` with tiktoken installed, run while giving
   distill the gates it never had. Verbatim: `prompt 990 + payload 3887 + output
   reservation 2000 + envelope 32 = 6909 tokens against 6800 usable (8000 TPM
@@ -5720,5 +5740,133 @@ press does with a 503.
   coverage claim becomes a file a validator checks. This seat does not write
   into `skills/` (ADR-13), so this is a proposal to the reviewer panel and to
   the skill seat rather than work this seat can take.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Every assumed number in the guard gets a provenance line and a way to re-measure it (engineer, run 5)
+
+- Trigger: `INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper`. The budget
+  guard reported distill's request as missing Groq's free tier by 109 tokens.
+  The real miss was about 1,900, because the guard sized an arXiv paper with a
+  filler made of English prose. Nothing was careless: the filler was chosen
+  deliberately, its docstring warns against exactly this failure mode in its
+  crudest form, and no mechanism existed that would ever compare it to a real
+  payload. The number was then quoted, correctly, by four documents.
+- What: `pipeline/budget.py` carries a dozen numbers that are assumptions
+  rather than measurements, and they do not look different from the measured
+  ones when you read them. `MARGIN = 0.15`. `ENVELOPE_TOKENS = 32`, "measured
+  generously". `FALLBACK_CHARS_PER_TOKEN = 3.0`. Every `floor` in
+  `PAYLOAD_CAPS`, which the file itself calls "editorial judgment, not
+  arithmetic". Each should carry two things the new
+  `FULLTEXT_CHARS_PER_TOKEN` carries: one line saying how it was derived, and
+  the name of the command that re-derives it. Where no such command can exist,
+  say that too, because "this is a judgment" is a provenance line and a good
+  one. The org already grades the evidence behind every claim it publishes; it
+  does not grade the evidence behind the numbers it runs on.
+- First step: a table at the top of `budget.py` listing each constant, its
+  provenance in one phrase, and either the command that re-measures it or the
+  word `judgment`. Then one test asserting every module-level numeric constant
+  appears in the table, so a new number cannot be added without saying where it
+  came from. `tools/fulltext_density.py` is the shape the re-measuring commands
+  take.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — A whole paper costs four cents, and the free tier will never read one (engineer, run 5)
+
+- Trigger: measuring 14 real papers for today's fix
+  (docs/evals/2026-09-27-fulltext-token-density.json). Their cleaned full texts
+  run 26,796 to 367,520 characters, median 122,738. Groq's free tier leaves
+  distill 3,778 tokens of payload, which is about 12,000 characters. So the
+  free tier reads the first 10% of a median paper, and no amount of tuning
+  changes the order of magnitude. Today's change took that from 6,000
+  characters of abstract to 12,000 characters of the paper's body, which is
+  real and is not the same as reading it.
+- What: distill moves to Kimi the way triage and interpret did on 2026-09-26,
+  and sends the whole paper. A median paper is about 36,638 tokens of payload;
+  at kimi-k2.6's list price with a 2,000-token reservation that is **$0.0438 a
+  call**. Triage routes 3 to 6 papers a day, so **$3.94 to $7.88 a month**, and
+  the 15-paper backlog cap would be $19.70 in a month where it fired every day.
+  Kimi's 262,144-token context takes every one of the 14 papers whole, so the
+  truncation disappears rather than moving.
+- The part that makes this the owner's call and not this seat's: the corpus
+  already projects **$27.00 a month against the $30.00 ceiling** in
+  docs/finance/opex.md. Adding distill breaches it at any of those rates. The
+  decision is not "is four cents cheap", it is "which of triage's cap,
+  interpret's cap and the ceiling itself moves", and all three are the owner's.
+- First step: nothing is built until that call is made. When it is, the work is
+  the shape `pipeline/triage.py` already established and is under a day: the
+  `llm.py` client, a spend cap, the three gates, and `FULLTEXT_CHARS` raised
+  with `tools/fulltext_density.py` re-run at the new window.
+- Cost: $3.94 to $7.88 a month at the current routing rate, against a ceiling
+  that is already $27.00 of $30.00. A proposal, never an action.
+- Status: proposed
+
+### 2026-09-27 — "Read in full" is now a claim the database can contradict (engineer, run 5)
+
+- Trigger: today's change writes `papers.fulltext_chars = 12000` for a paper
+  whose cleaned text is 122,738 characters. `pipeline/weekly.py` counts
+  `papers_read_in_full` as rows where that column is not null, and the digest's
+  own standing line is "The latest in AI research, read in full and distilled
+  weekly". Before today the number was smaller and the overstatement was
+  larger, at 24,000 characters attempted and 6,000 actually read, so this is
+  not a new problem. It is a problem that just became easy to measure, which is
+  the only reason it is worth raising now.
+- What: the fix is arithmetic the database can already do. `fulltext_chars`
+  holds what was read per paper; nothing holds how long the paper was, so the
+  fraction cannot be computed. One column, `paper_chars`, written by
+  `fetch_fulltext` from `len(text)` before it truncates, makes
+  "read 12,000 of 122,738 characters" a fact the issue could print instead of a
+  binary it has to round. Then the writer and the owner decide what the line
+  says. PR #112 is the writer seat making exactly this kind of correction, that
+  the library never claims to have read what it only ingested, and this is the
+  same claim one level down.
+- Why it is not in today's PR: the column is a schema change and a pipeline
+  change, both of which this seat can make, but the sentence on the front of
+  the product is the writer's surface and the owner's call, and shipping the
+  measurement without the ruling would leave a number nobody had agreed to
+  print. It is flagged in today's pull request for that ruling.
+- First step: `alter table papers add column if not exists paper_chars integer`
+  in db/schema.sql, one assignment in `fetch_fulltext`, and one line in
+  `gather()`'s stats block. Under an hour once the wording is decided.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Craft scan: AlphaSignal (alphasignal.ai)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18, last observed the same day, and no craft scan has covered it. It
+  is also the closest thing in the comparison set to what alexandria's digest
+  would look like if the digest published continuously instead of weekly, which
+  makes its item format the interesting part rather than its business.
+- **The thing worth stealing: the headline is the finding, with the number in
+  it.** Every item on the front page states a result and a comparison rather
+  than a subject. Verbatim from today's fetch: "StarDoc-AI's TeleOCR Beats
+  Gemini 3 Pro at Document Parsing With 1.2B Parameters." "TypeLLM Forces LLMs
+  to Return Valid JSON Every Time, 5.8x Faster." "Exa's Agent Ultra Beats
+  OpenAI and Anthropic at Web Research for 54% Less." "Alibaba Shrinks
+  Qwen3-32B to Fit on a 24GB Consumer GPU." Not one is a paper title and not
+  one is a topic. A reader who reads only the headlines has still learned
+  twelve things, and the cost of that is a sentence per item.
+  alexandria already extracts exactly this object and calls it a claim, with an
+  evidence grade and an edge to the paper that supports it, and then leads its
+  digest items with something closer to a title. The steal is one line in
+  `prompts/digest.md`: the item's heading is its strongest graded claim, stated
+  with its number, and the paper title moves to the attribution.
+- **A second, cheaper one:** every item carries a topic from what is visibly a
+  closed list (Open Source, Llms, Image, Agents, Benchmarks, Retrieval, Audio)
+  and an upvote count. alexandria closed its own topic list on 2026-09-26 in
+  `pipeline/topics.py`, so the first half is already done. The second half is a
+  reader signal the library has none of, and it is free: no measurement of
+  whether an item landed exists anywhere in this product.
+- **What alexandria does better: the evidence is reachable.** "Beats Gemini 3
+  Pro at Document Parsing" is a strong claim with nothing on the page that
+  supports it, and roughly half the items are attributed to AlphaSignal itself
+  rather than to a paper or a lab, so the claim's origin is the newsletter.
+  Most are also Pro-gated, so the reader who wants the basis pays before seeing
+  whether there is one. alexandria's equivalent claim carries an evidence grade
+  and an edge to a cited paper, and `semantic_search` and `sql_query` will
+  answer "what supports this" for anyone who asks. That is the difference
+  between a feed and a library, and it is the whole of the positioning.
 - Cost: $0
 - Status: proposed
