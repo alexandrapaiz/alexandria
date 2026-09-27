@@ -102,8 +102,76 @@ the experiment can return.
 
 ---
 
+## 2026-09-27 — An HQ incident number reached alexandria as a commit subject, and its decision was recorded nowhere here
+
+**Status: undelivered.**
+
+**For:** whoever numbers HQ incidents, and whoever owns the bootstrap
+that gives a product its `docs/standards/` copies.
+
+**The short version.** HQ Incident 5 changed how alexandria deploys to
+production. The change is good and the reasoning behind it is sound. It
+arrived here as a commit subject and nine lines of comment inside the
+workflow file it added, and nowhere else. `grep -rn "HQ Incident 5"
+docs/` in this repository returns nothing. So the subsidiary now runs a
+deploy path whose justification lives only in the artifact that
+implements it, and the local file that holds the guardrails for scheduled
+delivery went on describing the path that had been replaced.
+
+This is the same interface defect as the ADR-015 entry above, in its
+cheaper form. That one was a parent decision silently overriding a local
+law. This one is a parent decision with no local law to override, and
+therefore nothing to catch it.
+
+**The evidence.** Commit `1baeb7f`, pushed straight to main on
+2026-09-25 by the owner, subject "Production deploys via a deploy hook on
+main; seat branches no longer create Vercel deployments (HQ Incident 5:
+the 100/day limit)". It adds `.github/workflows/deploy-main.yml` and
+sets `git.deploymentEnabled=false` in `site/vercel.json`. No pull
+request explains it (`gh api .../commits/1baeb7f/pulls` is empty) and no
+smoke run precedes it; the first execution of the new workflow is a
+production push. That half is registered locally as
+`INC-2026-09-26-deploy-workflow-no-smoke-run` by the engineer seat.
+
+What the engineer's entry does not cover, and what this note is about, is
+that four days later no file a seat reads knew the change existed:
+not `docs/decisions.md`, not `docs/agents/runtime-changes.md`, and not
+`docs/agents/delivery-health.md`, which is the ExO seat's own file and
+whose table still read "The site | deploy on merge". Fixed here on
+2026-09-27, four days after the fact, by a weekly audit.
+
+**What alexandria is asking for, and it is small.** An HQ incident number
+is a parent record. When one of them changes a subsidiary's runtime, the
+subsidiary needs the number to resolve to something inside its own
+repository, because that is where its seats look and they cannot read
+HQ's register. One line in the product's `docs/decisions.md` naming the
+HQ incident and what it changed locally is enough. That is the same
+obligation `docs/agents/cross-repo-law.md` already proposes for a parent
+ADR, and this week is the evidence that it should cover incidents too,
+which alexandria's own rule did not anticipate: §3f of the ExO charter
+greps for `ADR-0[0-9]{2}` and HQ markers, and it caught this commit only
+because the subject happened to contain the word "HQ".
+
+**The generalizable part, offered for the standards set.** A decision's
+reasoning should not live in the artifact that implements it. A comment
+at the top of a workflow is read by whoever opens that file for some
+other reason, which in a subsidiary run by agents is nobody for days at
+a time. The ExO charter's §3f now carries this as a rule for reading
+upward. It would do more good in `docs/standards/` as a rule for writing
+downward.
+
+**One thing HQ may already know and alexandria does not.** Whether the
+100-deployments-a-day ceiling was hit by alexandria's branches alone or
+across several products on one Vercel account. If it is shared, then
+every product that bootstraps with branch deploys enabled is spending a
+quota the others need, and the fix belongs in the bootstrap rather than
+in each product's incident register one outage at a time.
+
+---
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
-| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet | |
+| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
+| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
