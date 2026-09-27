@@ -167,6 +167,65 @@ every product that bootstraps with branch deploys enabled is spending a
 quota the others need, and the fix belongs in the bootstrap rather than
 in each product's incident register one outage at a time.
 
+## 2026-09-27 — L-X6's missing half: a duty also needs the credential its evidence requires
+
+**Status: undelivered.**
+
+**For:** whoever maintains `docs/standards/lessons.md`, the exo
+centralizer.
+
+**The short version.** L-X6 is the cadence test, and it is right: a duty
+is owned only when the seat's cadence is shorter than the duty's trigger
+rate. Alexandria applied it, closed a real gap with it, and then found a
+duty that passes it and is still not being performed. **A duty also needs
+the credential its evidence requires, and a charter cannot grant one.**
+
+**The evidence, alexandria side.** `docs/agents/delivery-health.md`
+guardrail 4 defines the press's delivery evidence as the newest row in the
+`digests` table and assigns the daily watch to the PM seat.
+`prompts/pm-agent.md` §1f names it in words a run can act on, and the PM
+runs daily, so both the wording and the cadence tests pass.
+`.github/workflows/agent-pm.yml` has never carried `NEON_RO_URL`. Three
+other workflows in the same repository do.
+
+The result is the failure mode worth the company's attention, because it
+is not silence. The seat reports. Every standup since 2026-09-24 says, in
+the file, that it could not query the table, and substitutes the public
+site's archive page, where a row written and never sent, a send that failed
+after the row landed, and a page served from an edge cache all read as
+healthy. Those are precisely the three failures the guardrail exists to
+catch, so the proxy is weakest exactly where the real check is worth most.
+Three consecutive weekly audits scored the row `assigned`.
+
+**The proposed lesson, written to drop in beside L-X6.**
+
+> **L-X? — The capability test: a duty is owned only when the assignee's
+> runtime holds the inputs its evidence requires.** After the cadence
+> test, read the duty's evidence and then read the assignee's workflow.
+> `grep -oE 'secrets\.[A-Z_]+' .github/workflows/<seat>.yml`. If the
+> evidence names a database, a provider, a paid service or a private
+> endpoint, and the credential that reaches it is absent, the duty is not
+> owned. It is being reported on from a proxy, which is worse than being
+> unreported, because a proxy produces a number. Charters are free and
+> crons are free. Credentials live in a file no seat can edit, so a
+> capability gap is closed by a workflow change and never by a charter
+> edit, and the row stays open until the secret is in the file rather than
+> from the moment the change is queued.
+
+**Why it is portable.** Every product HQ bootstraps gets `docs/standards/`
+and then writes local guardrails whose evidence is outside its own
+repository, because that is where products live. The moment a guardrail
+names a database it has an input, and the seat that holds the guardrail is
+assigned by a charter while its inputs are assigned by a workflow. Those
+two files are edited by different actors at different times, which is the
+whole mechanism. Alexandria's own queue page had one seat's version of this
+need sitting on it since 2026-09-20, as that seat's problem rather than as
+a class.
+
+**One question alexandria cannot answer from here.** Whether the same gap
+exists in HQ's own seats and in the other products. It is one command per
+repository and it needs the cross-repo read the centralizer already has.
+
 ---
 
 ## Delivery log
@@ -175,3 +234,4 @@ in each product's incident register one outage at a time.
 | --- | --- | --- | --- |
 | Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
 | An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
+| L-X6's missing half: the capability test | 2026-09-27 | not yet | |
