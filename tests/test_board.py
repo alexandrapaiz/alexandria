@@ -478,3 +478,275 @@ def test_every_agent_workflow_maps_to_a_declared_seat():
         name = re.search(r"^name:\s*(\S+)", path.read_text(), re.M).group(1)
         derived.add(re.sub(r"-agent$", "", name))
     assert derived == set(board.load_views()["seats"])
+
+
+# --- Ids come from the board, and a collision fails instead of merging ----
+
+
+def test_the_numbering_starts_at_one_and_steps_past_hand_named_items():
+    assert board.next_id([]) == "ALX-1"
+    assert board.next_id(["board-store", "board-ui"]) == "ALX-1"
+    assert board.next_id(["ALX-1", "board-ui", "ALX-9"]) == "ALX-10"
+
+
+def test_the_numbering_ignores_things_that_only_look_like_an_id():
+    assert board.next_id(["ALX-7x", "xALX-7", "alx-12", "ALX-", "ALX7"]) == "ALX-1"
+
+
+def test_two_patches_of_one_id_share_a_claim_but_not_an_event_path():
+    """The reason the claim file exists at all, stated as a test.
+
+    Every patch is its own event, so two seats picking one id write two paths
+    and neither write fails. The claim's path is the id alone, so the second
+    one meets a path that is already there."""
+    doing = item_event(id="ALX-4", status="doing")
+    review = item_event(id="ALX-4", status="review")
+    assert board.event_path(doing) != board.event_path(review)
+    assert board.claim_path("ALX-4") == board.claim_path("ALX-4")
+    assert board.claim_path("ALX-4") != board.claim_path("ALX-5")
+    assert board.claim_path("ALX-4") == "board/ids/ALX-4.json"
+
+
+def test_issuing_an_id_writes_one_file_named_by_the_id(monkeypatch):
+    seen = {}
+
+    def fake_put(repo, path, payload):
+        seen["path"], seen["payload"] = path, payload
+        return types.SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(board, "ensure_ref", lambda repo, **kw: False)
+    monkeypatch.setattr(board, "_contents_put", fake_put)
+    outcome, record = board.claim_id("o/r", "ALX-4", by="engineer", at="2026-09-27T12:00:00Z")
+    assert outcome == "claimed"
+    assert seen["path"] == "board/ids/ALX-4.json"
+    assert seen["payload"]["branch"] == "board", "a claim must never reach main"
+    assert json.loads(base64.b64decode(seen["payload"]["content"])) == {
+        "id": "ALX-4",
+        "by": "engineer",
+        "at": "2026-09-27T12:00:00Z",
+    }
+    assert record["by"] == "engineer"
+
+
+def test_an_id_that_is_taken_is_answered_not_retried(monkeypatch):
+    puts = []
+    held = {"id": "ALX-7", "by": "frontend", "at": "2026-09-26T09:00:00Z"}
+
+    def fake_put(repo, path, payload):
+        puts.append(path)
+        return types.SimpleNamespace(returncode=1, stdout="", stderr='422 "sha" wasn\'t supplied')
+
+    monkeypatch.setattr(board, "ensure_ref", lambda repo, **kw: False)
+    monkeypatch.setattr(board, "_contents_put", fake_put)
+    monkeypatch.setattr(
+        board,
+        "_blob",
+        lambda repo, path: {"sha": "abc", "content": base64.b64encode(json.dumps(held).encode()).decode()},
+    )
+    outcome, found = board.claim_id("o/r", "ALX-7", by="engineer")
+    assert outcome == "exists"
+    assert found["by"] == "frontend", "the claim says which seat holds the id"
+    assert len(puts) == 1, "a taken id is an answer, not a race to retry"
+
+
+def test_a_claim_blob_nobody_can_read_still_names_its_id(monkeypatch):
+    monkeypatch.setattr(board, "ensure_ref", lambda repo, **kw: False)
+    monkeypatch.setattr(
+        board, "_contents_put", lambda *a: types.SimpleNamespace(returncode=1, stdout="", stderr="422")
+    )
+    monkeypatch.setattr(board, "_blob", lambda repo, path: {"sha": "abc", "content": "not base64 json"})
+    outcome, found = board.claim_id("o/r", "ALX-7")
+    assert (outcome, found["id"]) == ("exists", "ALX-7")
+
+
+def test_the_issued_ids_come_from_the_ref_not_from_the_fold(monkeypatch):
+    listing = [{"name": "ALX-1.json"}, {"name": "ALX-2.json"}, {"name": "README.md"}]
+    monkeypatch.setattr(board, "gh_api", lambda *a, **kw: listing)
+    assert board.list_claimed_ids("o/r") == ["ALX-1", "ALX-2"]
+    monkeypatch.setattr(board, "gh_api", lambda *a, **kw: None)
+    assert board.list_claimed_ids("o/r") == [], "no ids directory yet is an empty board"
+
+
+def test_the_allocator_starts_above_the_highest_id_the_ref_holds(monkeypatch):
+    tried = []
+    monkeypatch.setattr(board, "list_claimed_ids", lambda repo: ["ALX-2", "ALX-11", "board-ui"])
+    monkeypatch.setattr(
+        board,
+        "claim_id",
+        lambda repo, item_id, **kw: (tried.append(item_id), ("claimed", {"id": item_id}))[1],
+    )
+    assert board.allocate_id("o/r")[0] == "ALX-12"
+    assert tried == ["ALX-12"], "one listing and one create, not a walk up from one"
+
+
+def test_the_allocator_steps_past_an_id_another_writer_took_first(monkeypatch):
+    taken = {"ALX-1", "ALX-2"}
+    tried = []
+
+    def fake_claim(repo, item_id, by="seat", **kw):
+        tried.append(item_id)
+        if item_id in taken:
+            return "exists", {"id": item_id, "by": "frontend"}
+        return "claimed", {"id": item_id, "by": by}
+
+    monkeypatch.setattr(board, "list_claimed_ids", lambda repo: [])
+    monkeypatch.setattr(board, "claim_id", fake_claim)
+    item_id, record = board.allocate_id("o/r", by="engineer")
+    assert item_id == "ALX-3"
+    assert tried == ["ALX-1", "ALX-2", "ALX-3"]
+    assert record["by"] == "engineer"
+
+
+def test_the_allocator_gives_up_loudly_rather_than_reusing_an_id(monkeypatch):
+    monkeypatch.setattr(board, "list_claimed_ids", lambda repo: [])
+    monkeypatch.setattr(board, "claim_id", lambda repo, item_id, **kw: ("exists", {"id": item_id}))
+    with pytest.raises(RuntimeError) as exc:
+        board.allocate_id("o/r", attempts=3)
+    assert "ALX-3" in str(exc.value) and "board/ids" in str(exc.value)
+
+
+def test_an_id_that_would_escape_the_ids_directory_is_refused():
+    for bad in ("../../etc/passwd", "a/b", "ALX 7", "-leading", "x" * 65):
+        assert board.validate(item_event(id=bad), VIEWS), f"{bad!r} must be refused"
+    assert "board/ids" in board.validate(item_event(id="a/b"), VIEWS)[0]
+    assert board.validate(item_event(id="ALX-7"), VIEWS) == []
+    assert board.validate(item_event(id="board-ui"), VIEWS) == [], "the hand-named items still work"
+
+
+def test_an_item_with_no_id_gets_one_from_the_board(monkeypatch, capsys):
+    written = {}
+    monkeypatch.setattr(board, "load_views", lambda *a, **kw: VIEWS)
+    monkeypatch.setattr(board, "repo_slug", lambda: "o/r")
+    monkeypatch.setattr(board, "allocate_id", lambda repo, by="seat", **kw: ("ALX-9", {"id": "ALX-9"}))
+    monkeypatch.setattr(board, "write_event", lambda event, views, **kw: written.update(event) or "written")
+    monkeypatch.setattr(board, "refresh_snapshot", lambda *a, **kw: None)
+    assert board.main(["item", "--title", "Read-only board view", "--status", "next"]) == 0
+    assert written["id"] == "ALX-9"
+    assert "issued ALX-9" in capsys.readouterr().out
+
+
+def test_a_hand_typed_id_another_seat_issued_says_so(monkeypatch, capsys):
+    monkeypatch.setattr(board, "load_views", lambda *a, **kw: VIEWS)
+    monkeypatch.setattr(board, "repo_slug", lambda: "o/r")
+    monkeypatch.setattr(
+        board,
+        "claim_id",
+        lambda repo, item_id, by="seat", **kw: ("exists", {"id": item_id, "by": "frontend", "at": "2026-09-26T09:00:00Z"}),
+    )
+    monkeypatch.setattr(board, "write_event", lambda *a, **kw: "written")
+    monkeypatch.setattr(board, "refresh_snapshot", lambda *a, **kw: None)
+    assert board.main(["item", "--id", "ALX-4", "--status", "doing", "--by", "engineer"]) == 0
+    err = capsys.readouterr().err
+    assert "issued by frontend" in err and "patches that item" in err
+
+
+def test_a_dry_run_cannot_issue_an_id(monkeypatch):
+    monkeypatch.setattr(board, "load_views", lambda *a, **kw: VIEWS)
+    with pytest.raises(SystemExit) as exc:
+        board.main(["item", "--dry-run", "--title", "something"])
+    assert "cannot issue an id" in str(exc.value)
+
+
+# --- The snapshot the site reads, and the swap that keeps it honest -------
+
+
+def test_the_snapshot_carries_the_count_it_was_folded_from():
+    events = [run_event(run_id="1"), item_event(id="ALX-1", status="doing")]
+    snap = board.snapshot(board.fold(events), len(events), at="2026-09-27T12:00:00Z")
+    assert snap["events"] == 2
+    assert snap["items"]["ALX-1"]["status"] == "doing"
+    assert snap["latest_run"]["engineer"]["run_id"] == "1"
+    assert snap["generated"] == "2026-09-27T12:00:00Z"
+    assert "source of truth" in snap["source"], "the file says what it is"
+
+
+def test_the_snapshot_keeps_the_newest_runs_and_counts_the_rest():
+    events = [run_event(run_id=str(n), at=f"2026-09-26T02:00:0{n}Z") for n in range(1, 6)]
+    snap = board.snapshot(board.fold(events), len(events), runs=2)
+    assert [r["run_id"] for r in snap["runs"]] == ["4", "5"], "the newest, in the log's order"
+    assert (snap["runs_kept"], snap["runs_total"]) == (2, 5)
+
+
+def test_the_first_snapshot_is_written_without_a_sha(monkeypatch):
+    seen = {}
+
+    def fake_put(repo, path, payload):
+        seen["path"], seen["payload"] = path, payload
+        return types.SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(board, "read_events", lambda **kw: [run_event()])
+    monkeypatch.setattr(board, "_blob", lambda repo, path: None)
+    monkeypatch.setattr(board, "_contents_put", fake_put)
+    assert board.write_snapshot(repo="o/r") == {"events": 1, "runs": 1, "folds": 1}
+    assert seen["path"] == "board/state.json"
+    assert "sha" not in seen["payload"], "nothing to compare against on the first write"
+    assert seen["payload"]["branch"] == "board", "the snapshot must never reach main"
+
+
+def test_a_stale_sha_forces_a_refold_instead_of_an_overwrite(monkeypatch):
+    """The one property that makes a mutable file safe in an append-only store.
+
+    A writer that read the log before another writer appended to it is refused
+    by the sha it carried, and it answers the refusal by reading the log again.
+    So the event that beat it is in the snapshot it finally writes, rather than
+    being dropped by it."""
+    log = [run_event(run_id="1")]
+    shas = iter(["stale", "fresh"])
+    reads, puts = [], []
+
+    def fake_read_events(**kw):
+        reads.append(1)
+        return list(log)
+
+    def fake_put(repo, path, payload):
+        puts.append(payload)
+        if len(puts) == 1:
+            log.append(run_event(seat="frontend", run_id="2"))
+            return types.SimpleNamespace(returncode=1, stdout="", stderr="409 sha does not match")
+        return types.SimpleNamespace(returncode=0, stdout="{}", stderr="")
+
+    monkeypatch.setattr(board, "read_events", fake_read_events)
+    monkeypatch.setattr(board, "_blob", lambda repo, path: {"sha": next(shas)})
+    monkeypatch.setattr(board, "_contents_put", fake_put)
+    result = board.write_snapshot(repo="o/r", sleep=lambda s: None)
+    assert len(reads) == 2, "the retry folded the log again rather than resending its body"
+    assert [p["sha"] for p in puts] == ["stale", "fresh"]
+    first = json.loads(base64.b64decode(puts[0]["content"]))
+    second = json.loads(base64.b64decode(puts[1]["content"]))
+    assert (first["events"], second["events"]) == (1, 2)
+    assert "frontend" in second["latest_run"], "the event that beat us survived our write"
+    assert result == {"events": 2, "runs": 2, "folds": 2}
+
+
+def test_a_snapshot_that_will_not_write_raises_after_its_attempts(monkeypatch):
+    monkeypatch.setattr(board, "read_events", lambda **kw: [run_event()])
+    monkeypatch.setattr(board, "_blob", lambda repo, path: {"sha": "abc"})
+    monkeypatch.setattr(
+        board, "_contents_put", lambda *a: types.SimpleNamespace(returncode=1, stdout="", stderr="409")
+    )
+    with pytest.raises(RuntimeError) as exc:
+        board.write_snapshot(repo="o/r", attempts=2, sleep=lambda s: None)
+    assert "board/state.json" in str(exc.value)
+
+
+def test_a_snapshot_that_cannot_be_written_leaves_the_event_standing(monkeypatch, capsys):
+    monkeypatch.setattr(
+        board, "write_snapshot", lambda **kw: (_ for _ in ()).throw(RuntimeError("no network"))
+    )
+    assert board.refresh_snapshot() is None
+    err = capsys.readouterr().err
+    assert "not refreshed" in err and "source of truth" in err
+    with pytest.raises(RuntimeError):
+        board.refresh_snapshot(strict=True)
+
+
+def test_report_refreshes_the_snapshot_and_no_snapshot_leaves_it(monkeypatch):
+    calls = []
+    monkeypatch.setattr(board, "load_views", lambda *a, **kw: VIEWS)
+    monkeypatch.setattr(board, "env_report", lambda *a, **kw: run_event())
+    monkeypatch.setattr(board, "write_event", lambda *a, **kw: "written")
+    monkeypatch.setattr(board, "refresh_snapshot", lambda **kw: calls.append(kw))
+    board.main(["report", "--status", "success"])
+    assert len(calls) == 1, "a report that lands refreshes the file the site reads"
+    board.main(["report", "--status", "success", "--no-snapshot"])
+    assert len(calls) == 1, "--no-snapshot leaves the file to the next writer"

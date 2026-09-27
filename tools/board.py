@@ -47,6 +47,27 @@ view, and it refuses an item whose status is not one of the columns that file
 declares, so a seat cannot invent a column either. What a seat can still do is
 edit `board/views.json` on its own branch and see the result inside its own
 run. It cannot show that view to anybody else.
+
+## The two things run 6 added, and the reason each needed a check
+
+**Ids come from the board.** The first two items here were named by hand, and
+nothing stopped the next seat from choosing the same name for different work.
+Item events are patches folded by id, so a collision does not error; it merges
+two pieces of work into one card silently. `allocate_id` issues `ALX-<n>` by
+reserving one file per id under `board/ids/`, whose path is the id and nothing
+else, with a create that fails when the path exists. Two seats racing for
+`ALX-7` means one of them gets `ALX-8`. That is a check, unlike the incident
+register's sequential numbering, which is a convention and has collided four
+times.
+
+**The log folds itself into `board/state.json`.** The site would otherwise
+fetch a tarball of the whole ref and fold it in its render path, which is
+invisible at 1,029 bytes and will not stay that way. The snapshot is derived
+and the log stays the source of truth, so it is written with a compare-and-swap
+on the blob's sha and a re-fold when that sha is stale: a writer working from a
+stale read is refused rather than allowed to drop another writer's event, and
+it answers the refusal by reading the log again. A snapshot that cannot be
+written is not an error, because the next writer repairs it.
 """
 
 import argparse
@@ -69,6 +90,29 @@ ROOT = Path(__file__).resolve().parents[1]
 BOARD_REF = "board"
 EVENTS_DIR = "board/events"
 VIEWS_FILE = "board/views.json"
+
+#: Where an issued id is reserved. One file per id, named by the id alone,
+#: which is the whole point: see `claim_id`.
+IDS_DIR = "board/ids"
+
+#: The folded state, written on the same ref so the site reads one file
+#: instead of folding the whole log in its render path. Derived, never a
+#: source of truth, and the only mutable path in the store.
+SNAPSHOT_FILE = "board/state.json"
+
+#: How many run reports the snapshot keeps. The fleet posts about
+#: twenty-four a day, and a file the site fetches on every render does not
+#: get to grow without a bound. `runs_total` in the snapshot says how many
+#: the log actually holds, so a reader can tell a window from a whole.
+SNAPSHOT_RUNS = 200
+
+#: The prefix on an id the board issues. `ALX-7` reads as a name in a
+#: sentence, which is what an id is for.
+ID_PREFIX = "ALX"
+ID_NUMBER = re.compile(rf"{ID_PREFIX}-(\d+)")
+
+#: An id is a path component on the ref, so it may not contain one.
+ID_SAFE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 
 #: The fields an `item` event may set. A fold is a last-write-wins patch over
 #: these, so adding a field here is the only thing needed to carry a new one.
@@ -153,8 +197,16 @@ def validate(event, views):
         if "\n" in str(event.get("result", "")):
             problems.append("result is one line")
     if kind == "item":
-        if not str(event.get("id", "")).strip():
+        item_id = str(event.get("id", "")).strip()
+        if not item_id:
             problems.append("an item event needs an id")
+        elif not ID_SAFE.fullmatch(item_id):
+            problems.append(
+                f"id {item_id!r} is not a name the ref can hold. An id becomes a "
+                f"path under {IDS_DIR}, so it is letters, digits, dot, dash and "
+                "underscore, up to 64 characters. Leave --id off and the board "
+                "issues one."
+            )
         columns = views.get("columns", [])
         status = event.get("status")
         if status is not None and status not in columns:
@@ -274,6 +326,52 @@ def result_line(pr_body, pr_title, limit=200):
             if text:
                 return text[:limit]
     return (pr_title or "").strip()[:limit]
+
+
+def next_id(ids):
+    """The next id the board issues, which is one past the highest it holds.
+
+    Only ids of the board's own shape count. The first two items this store
+    ever held were named by hand (`board-store`, `board-ui`) and they keep
+    their names, so the numbering starts at one and steps over them rather
+    than trying to read a number out of a word.
+    """
+    highest = 0
+    for value in ids:
+        if match := ID_NUMBER.fullmatch(str(value).strip()):
+            highest = max(highest, int(match.group(1)))
+    return f"{ID_PREFIX}-{highest + 1}"
+
+
+def claim_path(item_id):
+    """Where an id is reserved. Derived from the id and from nothing else."""
+    return f"{IDS_DIR}/{item_id}.json"
+
+
+def snapshot(state, event_count, at=None, runs=SNAPSHOT_RUNS):
+    """The fold, shaped as the one file a reader fetches instead of folding.
+
+    It carries the number of events it was folded from, so a reader can tell a
+    stale snapshot from a current one by comparing that count with the ref
+    rather than by trusting a timestamp. It keeps the newest run reports in the
+    log's own order, because the site's renderer applies the same fold rules to
+    this file that it would apply to the log.
+    """
+    kept = state["runs"][-runs:] if runs else list(state["runs"])
+    return {
+        "generated": at or now_iso(),
+        "events": event_count,
+        "items": state["items"],
+        "latest_run": state["latest_run"],
+        "runs": kept,
+        "runs_kept": len(kept),
+        "runs_total": len(state["runs"]),
+        "source": (
+            f"derived: folded from {EVENTS_DIR} on the {BOARD_REF} ref by "
+            "tools/board.py. The log is the source of truth; this file is a "
+            "read cache and a writer that finds it stale replaces it."
+        ),
+    }
 
 
 # --------------------------------------------------------------------------
@@ -407,6 +505,172 @@ def write_event(event, views, repo=None, attempts=4, sleep=time.sleep, update=Fa
     return "written"  # pragma: no cover - the loop returns or raises
 
 
+def _contents_put(repo, path, payload):
+    """One Contents API PUT, through the same subprocess call `write_event` uses.
+
+    A function rather than a fourth copy of the same six lines, and it keeps
+    every write on this ref going through one place that the tests can watch.
+    """
+    return subprocess.run(
+        ["gh", "api", "--method", "PUT", f"repos/{repo}/contents/{path}", "--input", "-"],
+        capture_output=True,
+        text=True,
+        input=json.dumps(payload),
+    )
+
+
+def _blob(repo, path):
+    """The blob at a path on the board ref, or None. Never raises."""
+    return gh_api(f"repos/{repo}/contents/{path}?ref={BOARD_REF}", check=False) or None
+
+
+def list_claimed_ids(repo):
+    """Every id the board has issued, read from the reservation directory.
+
+    One API call, and the honest normal path for the allocator: it sees ids
+    that have been issued but whose item event has not landed yet, which the
+    folded log by definition cannot. An unreachable ref or a board with no ids
+    yet is an empty list rather than an error, because the claim itself is the
+    check and a bad guess only costs the allocator one more attempt.
+
+    The listing stops at a thousand entries, the API's page size. Past that the
+    guess is low and the allocator walks up to the real next id, which is
+    correct and slow. The board is 3 events old; the day this matters, the fix
+    is one `?page=` loop here.
+    """
+    listing = gh_api(f"repos/{repo}/contents/{IDS_DIR}?ref={BOARD_REF}", check=False)
+    if not isinstance(listing, list):
+        return []
+    return [entry["name"][:-5] for entry in listing if str(entry.get("name", "")).endswith(".json")]
+
+
+def claim_id(repo, item_id, by="seat", at=None, attempts=3, sleep=time.sleep):
+    """Reserve one id on the ref. Returns ("claimed", record) or ("exists", record).
+
+    **This is the only real check under the allocator, and an item event cannot
+    be it.** An item event's path carries a timestamp and a hash of its
+    payload, so two seats that pick the same id in the same second write two
+    different paths, both succeed, and the fold merges two pieces of work into
+    one card without anything failing. A claim's path is derived from the id
+    alone, so the second writer's create meets a path that already exists. That
+    turns a silent merge into a refusal the caller can act on, which is the
+    difference between a check and a convention.
+    """
+    ensure_ref(repo)
+    path = claim_path(item_id)
+    record = {"id": item_id, "by": by, "at": at or now_iso()}
+    payload = {
+        "message": f"board: issue {item_id}",
+        "content": base64.b64encode((json.dumps(record, indent=2, sort_keys=True) + "\n").encode()).decode(),
+        "branch": BOARD_REF,
+    }
+    for attempt in range(1, attempts + 1):
+        proc = _contents_put(repo, path, payload)
+        if proc.returncode == 0:
+            return "claimed", record
+        # The same question `write_event` asks: did this fail because the path
+        # is taken, or because the ref moved under us? A taken path is the
+        # collision this function exists to find, and it is an answer rather
+        # than a retry. A moved ref is a race worth one more try.
+        if existing := _blob(repo, path):
+            if existing.get("sha"):
+                return "exists", _decode_claim(existing, item_id)
+        if attempt == attempts:
+            raise RuntimeError(f"board: could not issue {item_id}: {proc.stderr.strip()[:400]}")
+        sleep(min(2 ** attempt, 8))
+    return "exists", {"id": item_id}  # pragma: no cover - the loop returns or raises
+
+
+def _decode_claim(blob, item_id):
+    """The record inside a claim blob, or enough of one to name the id."""
+    try:
+        return json.loads(base64.b64decode(blob.get("content", "")))
+    except (ValueError, TypeError):
+        return {"id": item_id}
+
+
+def allocate_id(repo, known=(), by="seat", at=None, attempts=12, sleep=time.sleep):
+    """Issue the next id, stepping past any that another writer took first.
+
+    The incident register's numbering has collided four times because it
+    allocates against a branch and calls the result the next number. This
+    allocates against the ref, at write time, with a create that fails when the
+    path exists, so two seats racing for `ALX-7` means one of them gets `ALX-8`
+    and neither of them has to notice.
+    """
+    ids = set(known) | set(list_claimed_ids(repo))
+    candidate = None
+    for _ in range(attempts):
+        candidate = next_id(ids)
+        outcome, record = claim_id(repo, candidate, by=by, at=at, sleep=sleep)
+        if outcome == "claimed":
+            return candidate, record
+        ids.add(candidate)
+    raise RuntimeError(
+        f"board: could not issue an id in {attempts} attempts; every one up to "
+        f"{candidate} was already taken. Read {IDS_DIR} on the {BOARD_REF} ref."
+    )
+
+
+def write_snapshot(repo=None, attempts=4, sleep=time.sleep, root=ROOT, runs=SNAPSHOT_RUNS):
+    """Refresh `board/state.json`. Compare and swap, and re-fold on conflict.
+
+    This is the first mutable path in an append-only store, so it is the only
+    place in the board where two writers can lose each other's work. The
+    Contents API takes the existing blob's sha as the writer's proof of what it
+    believed it was replacing, so a writer working from a stale read is
+    refused instead of overwriting. The refusal is answered by folding the log
+    again rather than by re-sending the same body, because the writer that beat
+    us to it had read events we had not.
+
+    A failure here is not an error the caller needs to survive: the log is the
+    source of truth, a stale snapshot is repaired by the next writer, and the
+    callers all treat it that way.
+    """
+    repo = repo or repo_slug()
+    for attempt in range(1, attempts + 1):
+        events = read_events(root=root, fetch=True)
+        state = fold(events)
+        body = json.dumps(snapshot(state, len(events), runs=runs), indent=2, sort_keys=True) + "\n"
+        payload = {
+            "message": f"board: snapshot of {plural(len(events), 'event')}",
+            "content": base64.b64encode(body.encode()).decode(),
+            "branch": BOARD_REF,
+        }
+        if (existing := _blob(repo, SNAPSHOT_FILE)) and existing.get("sha"):
+            payload["sha"] = existing["sha"]
+        proc = _contents_put(repo, SNAPSHOT_FILE, payload)
+        if proc.returncode == 0:
+            return {"events": len(events), "runs": len(state["runs"]), "folds": attempt}
+        if attempt == attempts:
+            raise RuntimeError(f"board: could not write {SNAPSHOT_FILE}: {proc.stderr.strip()[:400]}")
+        sleep(min(2 ** attempt, 8))
+    return {}  # pragma: no cover - the loop returns or raises
+
+
+def refresh_snapshot(repo=None, strict=False, root=ROOT):
+    """Write the snapshot, and say so. Swallows failure unless asked not to.
+
+    The event is already on the ref by the time this runs, so a snapshot that
+    cannot be written must not turn a landed event into a failed command. It
+    prints what happened and leaves the repair to the next writer.
+    """
+    try:
+        result = write_snapshot(repo=repo, root=root)
+    except (RuntimeError, OSError, ValueError) as exc:
+        if strict:
+            raise
+        print(
+            f"board: {SNAPSHOT_FILE} not refreshed ({exc}). The event landed and the "
+            "log is the source of truth, so the next writer repairs this.",
+            file=sys.stderr,
+        )
+        return None
+    folds = "" if result["folds"] == 1 else f", after {result['folds']} folds"
+    print(f"board: {SNAPSHOT_FILE} holds {plural(result['events'], 'event')}{folds}")
+    return result
+
+
 def read_events(ref=None, root=ROOT, fetch=True):
     """Every event on the board ref, read with git rather than the API.
 
@@ -518,12 +782,38 @@ def cmd_report(args):
         return 0
     outcome = write_event(event, views, update=args.update)
     print(f"board: {outcome} {event_path(event)}")
+    if not args.no_snapshot:
+        refresh_snapshot(strict=args.strict)
     return 0
 
 
 def cmd_item(args):
     views = load_views()
-    event = {"kind": "item", "at": now_iso(), "id": args.id, "by": args.by}
+    repo = repo_slug() if not args.dry_run else None
+    item_id, issued = args.id, None
+    if item_id is None:
+        if args.dry_run:
+            raise SystemExit(
+                "board: --dry-run cannot issue an id, because issuing one is a write "
+                "to the ref. Pass --id to see what an event would look like."
+            )
+        item_id, issued = allocate_id(repo, by=args.by)
+        print(f"board: issued {item_id}")
+    elif not args.dry_run:
+        outcome, claim = claim_id(repo, item_id, by=args.by)
+        if outcome == "claimed":
+            print(f"board: {item_id} was not on the board, so it was issued to {args.by}")
+        elif claim.get("by") and claim["by"] != args.by:
+            # Not refused: naming an existing id is how you move a card, and
+            # the other seat's card is usually exactly the one you meant. But
+            # the two-seats-one-id case is silent otherwise, so it gets a line.
+            print(
+                f"board: {item_id} was issued by {claim['by']} on {claim.get('at', 'an unknown date')}; "
+                "this event patches that item rather than starting a new one.",
+                file=sys.stderr,
+            )
+
+    event = {"kind": "item", "at": now_iso(), "id": item_id, "by": args.by}
     for field in ITEM_FIELDS:
         if (value := getattr(args, field, None)) is not None:
             event[field] = int(value) if field == "pr" else value
@@ -531,8 +821,20 @@ def cmd_item(args):
         print(json.dumps(event, indent=2, sort_keys=True))
         print(f"would write {event_path(event)} on {BOARD_REF}")
         return 0
-    print(f"board: {write_event(event, views)} {event_path(event)}")
+    print(f"board: {write_event(event, views, repo=repo)} {event_path(event)}")
+    if not args.no_snapshot:
+        refresh_snapshot(repo=repo)
     return 0
+
+
+def cmd_snapshot(args):
+    """Refresh the snapshot on its own, for a repair or a first write."""
+    if args.dry_run:
+        events = read_events(fetch=not args.no_fetch)
+        print(json.dumps(snapshot(fold(events), len(events)), indent=2, sort_keys=True))
+        print(f"would write {SNAPSHOT_FILE} on {BOARD_REF}")
+        return 0
+    return 0 if refresh_snapshot(strict=True) else 1
 
 
 def cmd_init(args):
@@ -569,6 +871,11 @@ def build_parser():
         "for a report written before the pull request description was final",
     )
     report.add_argument(
+        "--no-snapshot",
+        action="store_true",
+        help=f"leave {SNAPSHOT_FILE} alone; the next writer refreshes it",
+    )
+    report.add_argument(
         "--strict",
         action="store_true",
         help="fail the caller when the board cannot be written; off by default, "
@@ -577,7 +884,13 @@ def build_parser():
     report.set_defaults(func=cmd_report)
 
     item = sub.add_parser("item", help="create or update one board item")
-    item.add_argument("--id", required=True)
+    item.add_argument(
+        "--id",
+        help="an existing item to patch. Leave it off and the board issues the "
+        f"next {ID_PREFIX}-<n>, which is the normal path: an id a caller types "
+        "can collide with another seat's, and a fold merges a collision into "
+        "one card without complaining.",
+    )
     item.add_argument("--title")
     item.add_argument("--status")
     item.add_argument("--assignee")
@@ -586,7 +899,19 @@ def build_parser():
     item.add_argument("--due")
     item.add_argument("--by", default=os.environ.get("BOARD_ACTOR", "seat"))
     item.add_argument("--dry-run", action="store_true")
+    item.add_argument(
+        "--no-snapshot",
+        action="store_true",
+        help=f"leave {SNAPSHOT_FILE} alone; the next writer refreshes it",
+    )
     item.set_defaults(func=cmd_item)
+
+    snap = sub.add_parser(
+        "snapshot", help=f"fold the log into {SNAPSHOT_FILE} on the {BOARD_REF} ref"
+    )
+    snap.add_argument("--dry-run", action="store_true", help="print the snapshot, write nothing")
+    snap.add_argument("--no-fetch", action="store_true", help="read the ref already fetched")
+    snap.set_defaults(func=cmd_snapshot)
 
     init = sub.add_parser("init", help="create the board ref if it does not exist")
     init.set_defaults(func=cmd_init)
