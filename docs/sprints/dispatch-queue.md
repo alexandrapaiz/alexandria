@@ -3,49 +3,35 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-09-26 (Saturday standup)
+## 2026-09-27 (Sunday standup)
 
-**PR #113 note.** `alexandria-pm/2026-09-26-window` (PR #113, draft,
-authored by the owner's account, "PM sync session 2026-09-26") is a
-synchronous session from earlier today, last active 2026-09-26T01:25Z
-(about 13.5 hours before this run). It also writes this file. It was not
-built on: its content is stale by design (a queue is replaced in full
-each run) and the session itself ended hours ago with no dispatch
-currently in flight, so there is nothing to merge forward except its
-"Dispatched by the PM" record (okr, PR #114), which is preserved
-permanently in that PR's own description and in `gh run list`, not in
-this file. Recommended order: merge #113 first (it is the record of
-today's ADR-037 relay and the okr dispatch), then this PR, since this
-file's content fully replaces #113's version of the same file either
-way.
+**Builds on and supersedes #117** (`pm/standup-2026-09-26`, still open):
+this run started from its two commits rather than from main, since both
+touch this file and `docs/agents/incidents.md`. Close #117 once this PR
+merges rather than reviewing both; nothing in it is lost, it is all on
+this branch.
 
-### 1. frontend — the board's read-only view, queued and ready
+**Today is Sunday, not Monday.** The current sprint file
+(`sprint-2026-09-21.md`) covers through today; tomorrow's run is the
+ceremony (retro, grooming, the new sprint file), per charter §0. This
+run is §4 alone.
 
-**Trigger.** HQ ADR-037 priority 1 (relayed live in PR #113). Engineer
-built the store in open PR #115 ("the board's own store, and every run
-reports onto it"), shipped `docs/board.md` as an explicit spec for this
-seat ("written so the frontend seat can build the next slice from it
-without asking"), and already queued item `board-ui` on the `board` ref
-itself: `status: next, assignee: frontend, note: "queued by the PM in
-#113; reads the board ref, see docs/board.md"`. Frontend's own last PR
+### 1. frontend — the board's read-only view, re-attempted, still 403s
+
+**Trigger.** Unchanged from yesterday: HQ ADR-037 priority 1 (relayed in
+PR #113). Engineer's open PR #115 ships `docs/board.md` as the spec and
+already queued item `board-ui` on the board ref (`status: next,
+assignee: frontend`, unchanged since 2026-09-26). Frontend's own last PR
 (#108) is merged, so the hard stop against dispatching a seat with an
 open PR does not apply.
 
-**Cost of skipping it today.** The store exists and nobody reads it. The
-owner's stated requirement ("every run reports live on the board")
-stays half-true: runs report, nothing shows them.
-
-**Status: attempted, not fired — see the 403 below.** This is not a
-"proposed, copy this" entry; it is the record of a real attempt that
-`INC-2026-09-26-dispatch-403-repeat` documents. The exact command, for
-the owner or chair to run by hand:
+**Status: attempted again, not fired.** Same command as yesterday
+(building on `engineer/2026-09-26-board-store` per PR #115 still being
+open), same result:
 
 ```bash
-gh workflow run agent-frontend.yml -f owner_instructions='Build the read-only board view on the site. Trigger: HQ ADR-037 priority 1 (relayed live in PR #113, "PM sync session 2026-09-26"), which the engineer seat then built in open PR #115 ("the board'"'"'s own store, and every run reports onto it"). PR #115 ships docs/board.md as your spec and already queued item `board-ui` on the board ref (status: next, assignee: frontend, note: "queued by the PM in #113; reads the board ref, see docs/board.md"). PR #115 is still open, so branch from engineer/2026-09-26-board-store, not main: tools/board.py, board/views.json, and docs/board.md only exist on that branch today. Per docs/board.md'"'"'s own "Reading it from the site" section: fetch the whole board with one request, GET https://codeload.github.com/alexandrapaiz/alexandria/tar.gz/refs/heads/board (1,029 bytes gzipped as of 2026-09-26), untar server-side, keep files under board/events/, and fold them with the same rules tools/board.py fold uses (items are last-write-wins per field ordered by `at`; runs keep the latest per seat and the whole list in order). Do not use the GitHub trees API plus one request per file — unauthenticated GitHub API calls are capped at 60/hour, which a fold of a thousand events exhausts on first render. Read the view columns from board/views.json rather than inventing your own. This slice is read-only: no view-creation UI (only the owner'"'"'s merge to board/views.json on main may add a view, per docs/board.md), no workflow step, no item dependencies/labels/comments/due-date alarms. Move item `board-ui` to `doing` via `python3 tools/board.py item --id board-ui --status doing --assignee frontend` when you start, and to `review` when your PR is open.'
+gh workflow run agent-frontend.yml -f owner_instructions='Build the read-only board view on the site. Trigger: HQ ADR-037 priority 1 (relayed live in PR #113, "PM sync session 2026-09-26"), which the engineer seat then built in open PR #115 ("the board'"'"'s own store, and every run reports onto it"). PR #115 ships docs/board.md as your spec and already queued item `board-ui` on the board ref (status: next, assignee: frontend, note: "queued by the PM in #113; reads the board ref, see docs/board.md"). PR #115 is still open, so branch from engineer/2026-09-26-board-store, not main: tools/board.py, board/views.json, and docs/board.md only exist on that branch today. Per docs/board.md'"'"'s own "Reading it from the site" section: fetch the whole board with one request, GET https://codeload.github.com/alexandrapaiz/alexandria/tar.gz/refs/heads/board, untar server-side, keep files under board/events/, and fold them with the same rules tools/board.py fold uses. Do not use the GitHub trees API plus one request per file. Read the view columns from board/views.json rather than inventing your own. This slice is read-only: no view-creation UI, no workflow step, no item dependencies/labels/comments/due-date alarms. Move item board-ui to doing via `python3 tools/board.py item --id board-ui --status doing --assignee frontend` when you start, and to review when your PR is open.'
 ```
-
-Both `gh workflow run` and the direct `gh api .../dispatches -X POST`
-form failed identically:
 
 ```
 could not create workflow dispatch event: HTTP 403: Resource not
@@ -53,107 +39,102 @@ accessible by integration
 (https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361059087/dispatches)
 ```
 
-Full diagnosis, including a confirmed new lead (the active token is a
-GitHub App installation token, `ghs_...`, authenticated as `claude[bot]`,
-not the plain Actions `GITHUB_TOKEN`), in
-`INC-2026-09-26-dispatch-403-repeat`.
+**This is the third occurrence** (2026-09-24, 2026-09-26, 2026-09-27),
+all from this seat's scheduled run, all the same `ghs_` app-installation
+token. Escalated to the ExO in `docs/agents/incidents.md`
+(`INC-2026-09-24-dispatch-403`, third-occurrence note appended this
+run), because a third identical failure with an unanswered diagnosis is
+past the point where re-filing helps. The command above is exact and
+ready for the owner or chair to run by hand.
 
 ### Why nothing else is in the queue
 
 **engineer, writer, research, skill, and okr are all disqualified** by
-the hard rule ("never propose a dispatch for a seat whose last pull
-request is still open"): engineer has #60, #110, #115, #116 open;
-writer has #107, #112 open; research has #109 open; skill has #111
-open; okr has #114 open.
+the hard rule (last PR still open): engineer has #60, #110, #115, #116,
+#118, #120; writer has #107, #112, #119; research has #109; skill has
+#111; okr has #114.
 
 **market and security have no fresh, evidenced trigger.** Market's last
-PR (#103) is merged and its newest brief (2026-09-25) proposes one item,
-and it names engineer ("confirm the pipeline bills at Opus 5.5's new,
-lower price"), not market or security, so it is not a trigger for either
-seat today; it is already in `docs/ideas.md` as `proposed` for the
-ceremony run to groom. Security's last run was 2026-09-24 with no open
-PR since, and nothing in the newest decisions, the newest market or
-research brief, or `pending.md` names undone security work.
+PR (#103) is merged and its newest brief (2026-09-25) has nothing new
+since the last standup read it. Security has had no run since
+2026-09-24 and nothing in the newest decisions, market/research briefs,
+or `pending.md` names undone security work today.
 
-Only one entry this run, not three, because the queue holds evidenced
-triggers and not a quota to fill.
+One entry, not three: the queue holds evidenced triggers, not a quota.
 
 ## Run health
 
-**Fleet health, since the last PM run (2026-09-25T15:46:46Z schedule,
-success).**
+**Fleet health, since the last PM run (2026-09-26T14:56:35Z, schedule,
+success, produced PR #117).**
 
-- **Two new-class failures, work survived.** `engineer-agent` runs
-  `36208446311` (schedule, 01:26:48Z, became PR #115) and `36208644267`
-  (workflow_dispatch, 01:30:22Z, became PR #116) both finished their
-  actual work (the `claude-code-action` step and the no-ship tripwire
-  both succeeded, both PRs exist and are open) and then failed the job
-  at the Slack-notify sub-step of "Post run report," identically: `jq`
-  parse error on control characters, exit code 4. New failure class,
-  first time seen, already repeated twice today, recorded as
-  `INC-2026-09-26-slack-notify-jq-control-chars`.
-- **One cancelled run, already registered.** `writer-agent` run
-  `36206422947` (00:52:19Z, cancelled) matches
-  `INC-2026-09-24-writer-dispatch-started-twice`'s pattern, not a new
-  entry.
-- **One workflow-machinery finding, already filed by the reporting
-  seat.** PR #115 (engineer) filed `INC-2026-09-26-deploy-workflow-no-smoke-run`
-  for `deploy-main.yml` reaching main on 2026-09-25 with no smoke run
-  behind it. Not duplicated here; flagged so the owner sees it named
-  once.
-- **Everything else since the last PM run is a plain success**:
-  okr (`36207911573`), writer x2, skill, research, frontend (`36206159763`,
-  merged as PR #108), one more engineer run (`36206420676`, PR #110),
-  and this morning's scheduled writer/engineer/pm/market runs. One
-  scheduled `engineer-agent` run (`36250253554`) is still `in_progress`
-  as this PR opens; its result is not yet known.
-- **This run's own dispatch attempt 403'd.** See the queue entry above
-  and `INC-2026-09-26-dispatch-403-repeat`, a repeat of
-  `INC-2026-09-24-dispatch-403` with new diagnostic evidence.
+- **Two more occurrences of an already-open incident, work survived
+  both times.** `engineer-agent` runs `36250253554` (schedule,
+  2026-09-26T14:57:18Z, became PR #118) and `36285149176` (schedule,
+  2026-09-27T01:18:48Z, became PR #120) both finished their real work
+  (both PRs exist, complete, open) and then failed the job at the same
+  Slack-notify `jq` parse error as `INC-2026-09-26-slack-notify-jq-control-chars`
+  already named. Third and fourth occurrences of that class now,
+  appended to the same entry rather than re-filed, and escalated
+  alongside the dispatch-403 finding since a week of recurrences with no
+  attempted fix has exhausted "wait for the weekly ExO read."
+- **This run's own dispatch attempt 403'd again.** Third occurrence,
+  see the queue entry above and the incident update.
+- **Everything else since the last PM run is a plain success or
+  already-registered**: `writer-agent` schedule (18:46:28Z, success),
+  and the two engineer runs above (failed only at notify, not at work).
+  Two runs are `in_progress` as this PR opens (`engineer-agent`
+  `36330209631` and this seat's own `pm-agent` `36330174329`) — both
+  started in the same minute as this run; their results are not yet
+  known.
 
 **Delivery health.**
 
 - **The press.** No database credentials in this sandbox, so `digests`
-  itself was not queried (same limitation every standup since
-  2026-09-24 has noted). `https://libraryofalexandria.dev/library`
-  returns 200 and still lists `2026-W39` as the newest issue. No new
-  weekly issue is expected before Monday 2026-09-28 09:00 UTC, so this
-  is not a staleness finding. The daily pipeline's corpus growth was not
-  independently checked this run (no DB access); reported as unchecked,
-  not as green.
-- **The site.** `https://libraryofalexandria.dev/` returns 200, serving
-  current content.
-- **The MCP server.** Checked deeper than the last few standups' bare
-  `GET /`: `https://ap4509--alexandria-mcp-serve.modal.run/mcp` answers
-  `401` (expected, unauthenticated) rather than timing out, and
-  `/.well-known/oauth-protected-resource` returns a well-formed JSON
-  body naming the same host as its authorization server. Both confirm
-  the MCP protocol layer is actually serving requests, not only that
-  the container is alive.
+  was not queried directly (same limitation every standup since
+  2026-09-24 has noted). No new weekly issue is expected before Monday
+  2026-09-28 09:00 UTC, so this is not a staleness finding on its own;
+  reported as unchecked, not as green.
+- **The site.** Not independently re-probed this run; last confirmed
+  200 with current content on 2026-09-26's standup, nothing since has
+  named a deploy failure.
+- **The MCP server.** Not independently re-probed this run (checked
+  deeper on 2026-09-26: `/mcp` answered 401 as expected and the OAuth
+  discovery endpoint returned a well-formed body). Reported as carried
+  from yesterday's check, not re-verified today.
+- **The GitHub Projects board** (`PROJECTS_TOKEN` available): reachable
+  via GraphQL against project 4 this run; a light read of the newest
+  items showed `Done` statuses consistent with recent merges. Not a
+  full board audit, which is a ceremony-run task.
 
 ## Pending items past their date
 
-Read `docs/sprints/pending.md` (last touched 2026-09-24; not rewritten
-this run, out of scope for a standup per charter §0/§4). Three items
-flagged there are now resolved and the file does not yet say so, a
-ceremony-run job, not a standup one, but worth naming so nobody re-reads
-them as open: PR #95 (writer) merged 2026-09-26T00:22:04Z, PR #98
-(market) merged 2026-09-26T00:22:17Z, both same morning. **PR #60
-(engineer, "the pre-send quality gate") is still open since
-2026-09-20T14:44:15Z** — six days now, the oldest open PR in the repo,
-and `pending.md` has been asking for "rebase or retirement" on it since
-2026-09-24. **The Polar account setup (owner-only action) is due today,
-2026-09-26**; this run has no way to confirm it happened (no secrets
-access, by design), so it is named here rather than assumed either way.
+Read in full this run (`docs/sprints/pending.md`, last substantively
+updated 2026-09-24; not rewritten today, reconciliation is a
+ceremony-run job per charter §0/§1d). Two items worth naming a day past
+their date, with the seat or party named:
+
+- **PR #60** (engineer, "the pre-send quality gate") — open since
+  2026-09-20, now a full week, the oldest open PR in the repo. `pending.md`
+  has asked for "rebase or retirement" since 2026-09-24 with no action
+  either way.
+- **The Polar account setup** (owner-only action) was due 2026-09-26,
+  yesterday. This run has no secrets access to confirm whether it
+  happened.
+
+The current sprint file (`sprint-2026-09-21.md`) itself reads stale
+against the week's actual activity (accounts, Clerk, the board rebuild,
+HQ's ADR-037 reorder) — worth flagging for tomorrow's retro rather than
+fixing today, since rewriting sprint status is a ceremony-run task, not
+a standup one.
 
 ## Linear trial
 
-Not checked this run (no new signal since the 2026-09-19 ruling; still
-on trial).
+Not checked this run (no new signal since the 2026-09-19 ruling; PR
+#113 notes HQ's priority 1 as direction to build the replacement, not
+yet a recorded verdict to abandon Linear). Still on trial.
 
 ## Dispatched by the PM
 
-None fired. One attempted (frontend, above) and blocked by
-`INC-2026-09-26-dispatch-403-repeat`, not by a missing trigger or a
-guardrail. The instruction is recorded above for the owner or chair to
-run by hand.
+None fired. One attempted (frontend, above), third identical 403,
+escalated to the ExO in the incident register this run. The instruction
+is recorded above for the owner or chair to run by hand.

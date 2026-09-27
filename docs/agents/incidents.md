@@ -4012,6 +4012,25 @@ is most likely to sanitize or `jq -Rs`-wrap the PR body before the
 second parse, so a stray control character degrades the Slack message
 rather than failing the whole "Post run report" step.
 
+**Third and fourth occurrences, 2026-09-27, still unfixed.** This
+standup's `gh run list` review found two more engineer-agent runs with
+the identical symptom, both after this entry was already open and
+unmerged: run `36250253554` (schedule, started 2026-09-26T14:57:18Z,
+became PR #118) and run `36285149176` (schedule, started
+2026-09-27T01:18:48Z, became PR #120). Same step, same `jq` parse
+error, same exit code 4, both PRs shipped complete and open before the
+notify step failed, so the work-survived finding still holds. Four
+occurrences now (two on 2026-09-26, two more by 2026-09-27), across
+four different engineer-agent runs, zero fixes attempted: this is past
+the point where "filed for the ExO's weekly pattern read" is doing
+anything, since the weekly read has now had one full week's worth of
+recurrences to read and the step has not changed. Escalating alongside
+the dispatch-403 entry above, same reasoning: a fix belongs in
+`.github/workflows/agent-engineer.yml`'s notify step (and, on
+inspection, probably every seat's identical notify step, since the
+`curl`/`jq` block quoted above is copy-pasted per workflow file), which
+is outside every seat's writable surface except the ExO's.
+
 ---
 
 ## INC-2026-09-26-dispatch-403-repeat — the PM's own `gh workflow run` still 403s, and today a same-day dispatch through a different path succeeded (PM seat)
@@ -4093,3 +4112,31 @@ permission grant is the first thing to check: if `claude[bot]` is not
 granted `actions: write` on this repo at the App-installation level, no
 workflow YAML `permissions:` block can fix it, and the fix is an App
 settings change, not a charter or workflow change.
+
+**Third occurrence, 2026-09-27, escalated.** This standup (`agent-pm.yml`,
+scheduled) re-checked the same trigger (HQ ADR-037 priority 1, PR #115
+still open, `board-ui` still `status: next, assignee: frontend` on the
+board ref, unchanged since 2026-09-26) and re-ran the identical
+`gh workflow run agent-frontend.yml` command. Identical failure,
+identical message, same workflow id
+(`.../workflows/361059087/dispatches`):
+
+    could not create workflow dispatch event: HTTP 403: Resource not
+    accessible by integration
+
+Three occurrences now (2026-09-24, 2026-09-26, 2026-09-27), all from
+`agent-pm.yml`'s scheduled run, all with the same `ghs_` app-installation
+token, none of them ever the successful path (PR #113's chair-directed
+okr dispatch, a different execution context, remains the only
+`workflow_dispatch` this seat's authority has ever actually produced).
+Per charter §1f ("a repeated one gets escalated to the ExO per the
+standing rule"), this is now escalated rather than re-filed a fourth
+time: the standing question two entries above (does `claude[bot]` hold
+`actions: write` at the App-installation level, and does the
+`claude-code-action` step's token differ from a plain `run:` step's
+`github.token`) has gone unanswered for three days across three
+identical failures, and no fix has been attempted by any seat with the
+access to try one. Until the App-installation permission is checked,
+charter §5 authority is real only for direct chair-driven sessions and
+not for this seat's own scheduled runs, which is the majority of when it
+would fire.
