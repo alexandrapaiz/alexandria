@@ -382,6 +382,17 @@ gap that the same collision had left empty (incident 25).
     specimen from the same issue is the aphoristic version, "Three labs,
     one bet:", where the colon props up a snap summary that the paragraph
     it closes has already earned. Added 2026-09-24 from the W39 grade.
+    Enforced 2026-09-27, three days late, and the delay is the lesson. This
+    entry named the gate's collection step and named the fix in the same
+    sentence, and the gate was never changed, so two more specimens of this
+    shape stayed live on the site: "For builders:" and "The procedure is
+    extractable:", neither of them in the six above. The entry predates the
+    standing rule at the top of this file by one day, which is why nothing
+    asked whether it had landed. The gate now takes the text in front of any
+    colon as its own unit of inspection and puts the heading question to that
+    fragment rather than to the line around it, because a line whose second
+    half is real writing passes a question its first half would fail
+    (INC-2026-09-27-gate-unit-is-the-line).
 47. The paragraph that reports and never lands. A result stated with its
     number, its baseline and its evidence grade, and then the next result
     starting in the same paragraph, so the reader is handed the arithmetic
@@ -451,6 +462,15 @@ gap that the same collision had left empty (incident 25).
     2026-09-25: the internal-vocabulary test in prompts/digest.md now names
     this file's own rule headings as internal vocabulary, where it had listed
     only the codebase's.
+    That ending was true and it was not enough, corrected 2026-09-27. The
+    internal-vocabulary test sits in the traction section's guidance and is
+    advice to the writer, so it works on the line being composed and has no
+    reach over finished output. The gate that reads finished output could
+    still not see this string, for the reason entry 46 gives: the label is a
+    fragment of a line and the gate collected lines. Both entries are
+    enforced by the same change, and the general shape is worth carrying. An
+    enforcement ending has to name the gate the defect would pass through,
+    not merely a place in the file where the rule is now written down.
 52. The fix by deletion. A sentence is struck, and the repair removes it
     rather than rewriting it, so the issue quietly loses the element that
     sentence was occupying. The owner struck W39's opening, "You spent last
@@ -682,3 +702,27 @@ gap that the same collision had left empty (incident 25).
     same day: a numbers gate in prompts/digest.md groups every figure by the
     system it describes before the headings are checked, and the claims pass
     in the canon gains the same question as its fourth.
+64. The standing line corrected at its source, with every published copy
+    keeping the false version. Entry 61 is the reader-facing string in code
+    that no pass grades. This is the next failure in the same chain, and it
+    happens after that entry has been acted on. The masthead's false reading
+    claim was cut from `MASTHEAD` in `pipeline/weekly.py` on 2026-09-26. On
+    2026-09-27 the only published issue still opens on it, in its second
+    line: "The latest in AI research, read in full and distilled weekly".
+    The cause is where the string joins the artifact. `add_masthead` splices
+    the constant into the body before the body is stored, so the sentence is
+    baked into output at write time rather than composed when a page renders,
+    and `site/lib/content.js` serves the stored body whole from either the
+    markdown fixture or Neon. Changing the constant governs the next issue
+    and cannot reach one that already exists. The tell is not a phrase, it is
+    a question to ask of any reader-facing string this register condemns:
+    does the fix reach what is already published, or only what will be
+    printed next? Where the answer is the second, the entry is half done, and
+    for a claim about alexandria's own work the published half is the one a
+    stranger reads first (canon law 15). Two repairs exist and the choice is
+    the owner's: correct the stored bodies, or stop baking the line in and
+    compose it at render time, which is the one that stops this recurring.
+    Added 2026-09-27 from the grade of the published 2026-W39. Filed for the
+    engineer in docs/ideas.md rather than enforced here, because no change to
+    prompts/digest.md can reach a string the model does not write
+    (INC-2026-09-27-law-15-live-in-the-archive).
