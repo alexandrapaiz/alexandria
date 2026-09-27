@@ -105,7 +105,7 @@ the decision behind each seat in [docs/decisions.md](docs/decisions.md).
 
 | Seat | Cadence | Lane | ADR |
 |---|---|---|---|
-| engineer | daily 7:06 ET | product code and the pipeline | ADR-14 |
+| engineer | twice daily, 7:06 and 19:06 ET | product code and the pipeline | ADR-14 |
 | pm | daily 6:35 ET standup, Mon is the ceremony | sprints, backlog, board, org chart, and the daily run-health and delivery-health report | ADR-15 |
 | research | Mon 16:30 UTC | what deserves reading: digest review, curation brief, sources, meta-review | ADR-25 |
 | skill | Tue 8:00 ET | the gold production line in skills/ | ADR-22 |
@@ -127,8 +127,11 @@ seat and the model behind it is not. All twelve run on Claude today. From
 an open model through a third-party endpoint, which is
 [model routing](docs/agents/model-routing.md) lever 2. That trial is paused: it
 failed the PM seat twice and the routing secrets were removed, so the four
-seats fall back to Sonnet. The workflows still hold the routed step, and the
-conditions for turning it back on are in
+seats fall back to Sonnet. The workflows still hold the routed step, and it is
+now a real fallback rather than an either/or: since 2026-09-24 the open-routed
+step may fail without failing the job, and the Claude step runs whenever it does
+not succeed. That was the precondition for turning the trial back on, and the
+remaining conditions are in
 [the incident register](docs/agents/incidents.md) under incident 23. Two modes govern when they run:
 **asynchronous**, where the schedules are the heartbeat, and **synchronous**,
 where the owner is present and seats are dispatched into her session.
@@ -178,7 +181,8 @@ flowchart TB
     SEATS -->|"one pull request per run"| GH["GitHub repo<br/>code · prompts · charters · skills"]
     GH --> OWNER{"Owner merges"}
     OWNER ==>|"deploys the jobs"| MODAL
-    OWNER -->|"deploys the site"| SITE["Vercel, alexandr.ia<br/>digest archive · graph · skills library"]
+    OWNER -->|"merge to main under site/"| HOOK["deploy-main workflow<br/>fires the Vercel deploy hook"]
+    HOOK --> SITE["Vercel, libraryofalexandria.dev<br/>digest archive · graph · skills library"]
     OWNER -.->|"charters and workflows"| GHA
 ```
 
@@ -304,8 +308,9 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       docs/research/briefs/. The seat has now run and the first brief is in review
 - [ ] One shared GitHub App identity for the seats (ADR-27), which is what lets a seat
       fix its own machinery. `APP_ID` is set; the private key is pending
-- [ ] GitHub Projects board reconciled automatically by the PM seat, which waits on the
-      owner-created `PROJECTS_TOKEN`
+- [ ] GitHub Projects board reconciled automatically by the PM seat. `PROJECTS_TOKEN`
+      now exists and reaches every seat's run, so what remains is the reconciliation
+      itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
 
