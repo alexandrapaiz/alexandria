@@ -27,6 +27,7 @@ on:
       - "tests/test_board.py"
       - "tests/test_run_report.py"
       - "tests/test_distill_gates.py"
+      - "tests/test_distill_fulltext_budget.py"
       - "tools/board.py"
       - "tools/run_report.py"
       - "board/views.json"
@@ -48,6 +49,7 @@ on:
       - "tests/test_board.py"
       - "tests/test_run_report.py"
       - "tests/test_distill_gates.py"
+      - "tests/test_distill_fulltext_budget.py"
       - "tools/board.py"
       - "tools/run_report.py"
       - "board/views.json"
@@ -200,3 +202,18 @@ jobs:
       - name: distill cannot deploy without proving it can read a paper
         if: always()
         run: python3 -m pytest tests/test_distill_gates.py -q
+
+      # 2026-09-27, INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper. The
+      # guard above sizes distill's payload with filler, because the real
+      # payload is in a database it cannot reach, and for a year that filler was
+      # English prose at 6.17 chars/token standing in for an arXiv paper at
+      # 3.35. Everything downstream of that was wrong by up to 69%, including
+      # the "misses by 109 tokens" that four documents then quoted.
+      #
+      # This step is the check that the estimate still resembles the thing.
+      # It needs no network: `tools/fulltext_density.py` does the measuring
+      # against live arXiv when a person runs it, and writes the receipt in
+      # docs/evals/ that these tests read.
+      - name: the guard sizes a paper as a paper, and the gate is harder than the job
+        if: always()
+        run: python3 -m pytest tests/test_distill_fulltext_budget.py -q

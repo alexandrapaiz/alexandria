@@ -4358,3 +4358,81 @@ A notification is not the run's work, and a red job for an undelivered message
 is precisely the lie this incident is made of. Delivery failures print as
 `::warning::` and the exit status stays 0. The report is also printed into the
 run log, so the artifact survives even when the channel is unreachable.
+
+## INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper — a measurement calibrated against fake data, wrong by 17x, in five places within one evening (2026-09-27, engineer seat)
+
+**A repeat, which is why it is here rather than only in the ledger.** The
+class is the one `budget._filler`'s own docstring names: "Not `'x' * n`,
+which tokenizes far too cheaply and would make every estimate here look
+better than it is." The seat that wrote that sentence saw the failure
+mode exactly, guarded against its crudest form, and then shipped a
+milder version of it. It is also the class of incident 20 and of
+`registers.md`'s two-gates finding: something is written down correctly,
+and nothing between the writing and the next use ever checks it against
+the world.
+
+**What was wrong.** `pipeline/budget.py` sizes each cron's request before
+it is sent, and it has no access to the real payload, so it builds
+filler of the right length. `_FILLER` is one clean English sentence and
+runs **6.17 characters per token**. Distill's payload is not English
+prose, it is the cleaned HTML of an arXiv paper, and that runs **3.35 to
+4.93**, worst case 3.35. So every estimate of distill's request was low
+by up to 69%.
+
+The visible consequence, on 2026-09-26: the guard reported that
+distill's full-text request missed Groq's usable free tier by **109
+tokens**. The real miss, at `FULLTEXT_CHARS` of 24,000, was about
+**1,900**.
+
+**Where the wrong number went, inside about four hours.** Two entries in
+`docs/ideas.md`. `pipeline/distill.py`'s module docstring. `rehearse()`'s
+docstring. Two test files' docstrings and a test comment. The budget
+guard's own printed output, under a heading written that evening. And
+`docs/agents/press-rehearsal.md`. Every one of those was written by a
+seat acting correctly on the output of a guard, which is what a guard is
+for.
+
+**What it would have cost.** The ledger proposed a fix off the wrong
+number and priced it as free and probably sufficient: drop the assumed
+2,000-token reservation to 1,400, "which puts the full-text request at
+6,309 tokens with 491 to spare". Against real papers that request is
+about 7,500 tokens and misses by roughly 1,300. Had it shipped, the
+arithmetic would have said fixed, the job would have gone on reading
+abstracts, and the next seat would have been debugging a closed ticket.
+
+**Two things went right and are worth keeping.** The guard was honest
+about the *kind* of thing it did not know: `reservation_assumed` was a
+separate key precisely so the assumption stayed visible, and that is
+what made the audit possible. And the arithmetic was reproducible from a
+single command, so checking it cost minutes rather than a day.
+
+**The second mistake, made while fixing the first.** The corrected
+constant was measured over the first 24,000 characters of each paper and
+gave 3.65 chars/token. `FULLTEXT_CHARS` was then set to 13,000 on that
+basis, the guard said it fitted, and a real paper missed by 5 tokens.
+Density is not uniform through a document: a paper opens with a title
+block, an author list, an abstract and a table of contents, and only
+then settles into prose, so its first 12,000 characters are denser than
+its first 24,000. **Measuring a window other than the one the job sends
+is the same error wearing different clothes**, and it survived one round
+of fixing the error it is a form of.
+
+**The fix.**
+
+- `budget.FULLTEXT_CHARS_PER_TOKEN`, measured over the window the job
+  actually sends, with `tools/fulltext_density.py` to reproduce it
+  against live arXiv and `docs/evals/2026-09-27-fulltext-token-density.json`
+  as the receipt CI reads instead of the network.
+- `budget.request_text()`, one function where three call sites used to
+  build filler independently, so a job that declares a density gets it
+  everywhere or nowhere.
+- `tests/test_distill_fulltext_budget.py`, twelve tests, including the
+  one that matters: the rehearsal's payload must be heavier than the
+  heaviest real paper measured. It was 750 tokens lighter, so gate 3
+  would have passed a request the provider refuses.
+
+**The rule this argues for, offered rather than asserted.** A guard that
+estimates a payload it cannot see must state what it assumed the payload
+looks like, and something must compare that assumption to the real thing
+on a schedule. An estimate is a claim about the world and the org already
+knows what to do with those: it gives them an evidence grade.
