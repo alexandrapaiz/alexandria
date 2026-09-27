@@ -34,6 +34,13 @@ Three clauses make it work in practice.
    frontend gained Playwright screenshots, security gained a whole
    repository to sweep. A charter edit that adds work to a seat should
    be followed by a cap check, not by waiting for the failure.
+4. **A cron change is a re-measurement trigger too** (added 2026-09-27).
+   A cap belongs to a job, not to a seat. When one workflow grows a
+   second schedule with a different mode, it has two turn profiles
+   sharing one number and this table needs two rows from that moment.
+   The PM split into a Monday ceremony and a daily standup on
+   2026-09-23, and for four days this page carried one measured row that
+   described neither of them.
 
 ## When this gets reviewed
 
@@ -42,6 +49,8 @@ Three clauses make it work in practice.
 - **Immediately**, in the same run, whenever any cap is hit by any seat.
   A cap hit is evidence about the cap.
 - **On duty growth**, whenever a charter edit gives a seat more to do.
+- **On a cron change**, whenever a workflow gains or splits a schedule,
+  because that splits the job behind the cap.
 
 Never set a cap from a feeling about how much work a seat "should"
 need. The commands below take about a minute.
