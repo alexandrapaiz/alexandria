@@ -68,7 +68,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/ideas.md` (the ledger) | all seats | append-only, owner decides status | the ledger contract in most charters | daily, gated per run |  enforced |
 | `docs/agents/learning-log.md` | ExO | ExO appends every run | ExO §2, read first | weekly by construction, gated weekly |  enforced |
 | `docs/sprints/dispatch-queue.md` | PM | PM rewrites it every standup, PM §4 | ExO §2c counts dispatches against the log, because the actor never audits the act | daily once it exists, gated weekly |  new 2026-09-19, and the file does not exist until the first standup runs |
-| `docs/voice/value.md` | writer | writer drafts, owner approves | writer's copy step 1 refuses to draft copy without it | she rules once, gated per copy round | **new 2026-09-21, and the file does not exist yet.** This is the positive artifact incident 25 says was missing |
+| `docs/voice/value.md` | writer | writer drafts, owner approves | writer's copy step 1 refuses to draft copy without it | she rules once, gated per copy round | **the file exists as of 2026-09-27**, 6.7KB on main. The positive artifact incident 25 said was missing is written, and the ratio test in ExO §3d has something to count on the other side |
 | `docs/voice/preferences/` | chair records | chair appends per verdict, live in the session | writer's copy step and ship check, frontend before setting a word | she rules in hours, chair is present when she does | new 2026-09-21, schema in preference-data.md |
 | `docs/agents/copy-pipeline.md` | ExO | ExO writes the process | writer once before its first copy round, frontend run step 0, ExO §3e | the process changes rarely, gated per copy round | new 2026-09-21 |
 | `docs/agents/preference-data.md` | ExO | ExO writes the schema | PM's ruling-capture check, ExO §3e | rarely, gated per ruling | new 2026-09-21 |
@@ -441,7 +441,24 @@ table next: **grep main, then grep your own branch, and say which one you
 are quoting.** A seat's working tree contains its own optimism and a seat
 reading another's branch inherits it.
 
-### 3. The voice and design registers still carry no `Enforced at:` line
+### 3. The positive artifact exists, which is the one row that got better on its own
+
+`docs/voice/value.md` was queued on 2026-09-21 as a file that did not yet
+exist, and it exists now. That is the fix for the polarity finding in ExO
+§3d: a register of rulings cannot converge, because each "no" removes one
+candidate from an unbounded space, and eight rounds of site copy on
+2026-09-20 is what that arithmetic cost. The rulings tell a seat when it
+has failed and only the target tells it where to aim.
+
+So the next run has something it could not do before, and it is worth
+naming as a measurement rather than a vibe: **count the entries in
+`docs/voice/taste.md` that specify a target against the entries that
+forbid a shape, and watch the ratio over time.** If `value.md` is doing
+its job, new rulings should be rarer and more specific, and the rounds
+count in §3e should fall from eight toward one. Neither number is in
+evidence yet, because no copy round has run since the file landed.
+
+### 4. The voice and design registers still carry no `Enforced at:` line
 
 The mechanical check in `prompts/exo-agent.md` §3d is
 `grep -L "Enforced at:" docs/agents/*.md docs/voice/*.md docs/design/*.md`,
