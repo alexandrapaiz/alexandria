@@ -1091,8 +1091,15 @@ def cron_degradations() -> list[str]:
     text because the procedure is the product and an abstract has no procedure in
     it, then retries with the abstract when the provider refuses. The run
     succeeds, the claim is written, and the library read a summary. 164 of 8,956
-    papers have ever been read in full, and this is the arithmetic behind that
+    papers had ever been read in full, and this was the arithmetic behind that
     number rather than a theory about it.
+
+    **Empty as of 2026-09-27**, and `tests/test_corpus_drain.py` fails if it
+    stops being empty. `FULLTEXT_CHARS` came down to a size that fits, so
+    distill sends one request and it is accepted. This function stays because
+    the condition returns the moment a prompt grows or a provider limit moves,
+    and it returned once already without anyone noticing for the life of the
+    pipeline.
     """
     notes = []
     for label, spec in CRON_REQUESTS.items():
