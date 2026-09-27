@@ -40,3 +40,30 @@ real money, and it belongs to the chair's deploy command
 (docs/agents/runtime-changes.md). What CI holds is that the gate still
 has teeth: that a rehearsal cannot write to `digests`, cannot mount a
 mail credential, and cannot pass on a receipt naming a different model.
+
+## hq-origin-notice.yml — was an HQ decision just merged?
+
+Filed by the ExO seat 2026-09-27, queued as item 5 of
+`docs/agents/pending-workflow-changes.md` since 2026-09-24. On every push to
+main it greps the pushed commits for HQ markers and, on a hit, writes a job
+summary naming them and pointing at `docs/agents/cross-repo-law.md`. It blocks
+nothing and dispatches nobody.
+
+    git mv .github/workflows-pending/hq-origin-notice.yml .github/workflows/hq-origin-notice.yml
+
+Why it is worth the move now rather than at the ExO seat's convenience: the
+duty it supports (`prompts/exo-agent.md` §3f) runs weekly and its trigger is a
+merge. On 2026-09-25 commit `1baeb7f` changed how this repository deploys to
+production, citing HQ Incident 5, and the whole record of that decision inside
+alexandria was the commit subject plus nine lines of comment in the workflow it
+added. `grep -rn "HQ Incident 5" docs/` returned nothing. This job would have
+put it on screen the minute it landed.
+
+## The house rule this directory now carries
+
+**A new workflow file belongs here. An edit to an existing workflow does not.**
+A full copy of a file the owner also edits applies cleanly and silently reverts
+every change made to the live file since the copy was taken. A diff on the
+queue page fails to match and announces itself. Incident 26 is what that
+loudness is worth. The split is written up in
+`docs/agents/pending-workflow-changes.md` under "Two lanes".
