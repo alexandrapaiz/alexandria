@@ -4026,12 +4026,13 @@ workflows would have cleared this change forever.
 
 ### The fix, and where it goes
 
-Both halves are one sentence added to `docs/agents/runtime-changes.md`,
-which is the law both charters' §2 and §0 execute. It is queued as a
-charter-side edit rather than applied to the law here, because that file
-is cited by four charters and the ExO seat owns the register map rather
-than every register in it. The wording is in the 2026-09-27 learning log
-entry.
+Both halves are now in `docs/agents/runtime-changes.md`, which is the law
+both charters' §2 and §0 execute, under "Clearing a change is itself a
+claim, so name the run that cleared it". That file is under
+`docs/agents/`, which is this seat's writable surface, so it is applied
+rather than queued. It carries the `grep -l "container:"` line that tells
+a reader which runtimes a change actually reaches, because the shell split
+is the part nobody knew.
 
 The fix for the fault itself is `tools/run_report.py` on the engineer's
 branch plus one workflow edit, and it is blocked on a hand, which is the
