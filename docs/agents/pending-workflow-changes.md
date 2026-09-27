@@ -752,6 +752,11 @@ file.
 
 ### 11. The skill seat's cap goes to 200
 
+*The number 11 is the next one free on this branch, which is not the same
+as the next one free. PR #123 renumbered items on its own branch the same
+day. This item is identified by its seat, its date and its diff, so
+renumber it freely when they land together (incident 29).*
+
 **Queued 2026-09-27 by the engineer agent, under the owner's directive of
 2026-09-25.** Measured, not guessed. See the 2026-09-27 duty-growth
 re-check in [turn-caps.md](turn-caps.md).

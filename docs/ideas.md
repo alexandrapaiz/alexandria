@@ -5995,3 +5995,117 @@ acting on anything in this one.
   and entry 12 here.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-27 — Triage records why it screened a paper out, criterion by criterion
+
+- Trigger: this run built the reading-queue drain and ran it against the twelve
+  lines the skill seat wrote on 2026-09-26. Five of the first six ids were not
+  in `papers` at all, so they were ingested from arXiv during the smoke run.
+  The corpus had never seen the papers a skill of ours is built on, and nothing
+  anywhere records whether that is because the firehose missed them or because
+  triage discarded them. Today's craft scan, below, sells the missing half as a
+  feature: Paperguide's screening writes per-criterion evidence for every
+  include and exclude, and its own reviewer quote credits that, not the model,
+  for consistency.
+- What: `triage_log` already has `reasoning`, one prose blob per decision.
+  Replace it, or sit a column beside it, with the three or four criteria the
+  decision actually turns on, each with a verdict and the sentence from the
+  paper behind it: does it measure something, is it about agents or the
+  pipeline that builds them, is there a procedure a skill could carry, is the
+  evidence controlled or asserted. A discard then answers "why not this one"
+  in a query rather than in a paragraph, and the answer can be wrong in a way
+  somebody can see. It also gives the reading queue a counterpart: a paper a
+  seat asks for that triage discarded is a labelled disagreement, which is the
+  cheapest evaluation data the pipeline can produce about its own screening.
+- First step: one `sql_query` over the last 200 triage decisions asking how
+  many `reasoning` blobs already name a criterion explicitly, so the change is
+  argued from what the model writes today rather than from what it could.
+- Cost: $0. Same call, same model, a wider JSON object.
+- Status: proposed
+
+### 2026-09-27 — The reader that could not read a paper writes the queue line itself
+
+- Trigger: building `tools/read_paper.py` today. It ends with an exit code that
+  says precisely what the reading queue exists to record: 3 means arXiv served
+  no HTML and the seat got an abstract. The seat then has to notice that, open
+  docs/research/reading-queue.md, and hand-write a line in the documented
+  format. Every step between the fact and the record is a step that can be
+  skipped, and incident 20 is the standing proof that the skipped step is the
+  recording one.
+- What: `--queue --asked-by skills/<slug> --why "<one clause>"` appends the
+  line itself, in the file's own format, only on an abstract-only or
+  unavailable read, and never twice for the same id. The seat's reading step
+  becomes one command that both reads and records, and the queue stops
+  depending on a seat remembering a format.
+- First step: the append, plus a test that a second run for the same id is a
+  no-op and that a full-text read writes nothing.
+- Cost: $0
+- Status: proposed
+- Not built today on purpose: the queue's format and its append rule are
+  ADR-35's, and prompts/skill-agent.md is the file that would have to name the
+  new command. Charters are owner-merged, so a tool that writes into another
+  seat's register belongs in a proposal before it belongs in the tree.
+
+### 2026-09-27 — Ingest cannot tell an empty arXiv from a refused one
+
+- Trigger: while building the reader, every form of
+  `export.arxiv.org/api/query` answered **HTTP 406** from this runner, over
+  http and https, with and without headers, while `arxiv.org/abs/<id>` answered
+  200 from the same process a second later. `pipeline/ingest.py:fetch_arxiv`
+  calls that same API through feedparser, once per category, and feedparser
+  returns an empty `entries` list for a refusal exactly as it does for a
+  category with no new papers. The function appends nothing, prints nothing,
+  and the run ends on "fetched N items, inserted M new papers" with the blog
+  feeds making up N. A day of arXiv returning nothing looks like a quiet day.
+- What: count per source, print per source, and fail the run when a category
+  that has never been empty comes back empty. The same two-path fallback the
+  reader now carries (`tools/read_paper.py:fetch_metadata`) is the repair, and
+  the loud failure is the part that matters more, because the pipeline's whole
+  input is one API that nothing watches.
+- First step: `print(f"arxiv {cat}: {len(feed.entries)} entries")` per category
+  and a raise when every category is empty, which is four lines and can ship
+  with the next ingest change.
+- Cost: $0
+- Status: proposed
+- Unverified from here: this run holds no Modal credential and no database URL,
+  so whether Modal's egress sees the same 406 is unknown. The corpus is at
+  8,956 papers, so it was working recently.
+
+### 2026-09-27 — Craft scan: Paperguide (paperguide.ai)
+
+- Trigger: the rotation. Paperguide has sat on docs/market/landscape.md since
+  2026-09-18 with a two-line entry and no craft scan, and today's build is
+  about reading papers in full, which is the thing Paperguide sells. Read from
+  `https://paperguide.ai/` and `https://paperguide.ai/pricing`, both HTTP 200
+  on 2026-09-27.
+- **The thing worth stealing: it screens against a named external standard, and
+  it sells the standard rather than the model.** The top two tiers carry "PRISMA
+  grade dual reviewer screening", PRISMA being the reporting standard for
+  systematic reviews, and the customer quote under it credits per-criterion
+  evidence for making decisions "more consistent, not less" while cutting
+  abstract screening from three weeks to one. alexandria's triage is a single
+  model verdict with a score and a prose reason, judged against nothing a
+  reader outside the repo has heard of. The ledger entry above is the steal,
+  and the cheap half of it is that a named criterion makes a wrong screening
+  visible, which is the failure mode our own reading queue exists to catch.
+- **A second one, about pricing rather than craft.** The ladder is $0, $19,
+  $49, $149 per seat, and every tier is metered in AI credits with the caps
+  written out: 2,000, 12,500, 50,000, 150,000, plus Search API requests as a
+  separate line, 10 a month free and 1,500 at the top. A research tool can
+  publish per-unit limits without the page reading as an invoice, which is
+  worth knowing while alexandria's own price ladder is still being argued at
+  $20.
+- **What alexandria does better: we say what we did not read.** Paperguide's
+  landing claims 200M+ papers and 974,000+ researchers and states no coverage
+  or failure number anywhere on either page. alexandria records
+  `papers.fulltext_chars` per paper, prints how many papers a run read in full
+  against how many it read from the abstract, and, from this PR, puts what it
+  could not read into a file any seat can act on. The number that made this
+  seat's 2026-09-27 runs uncomfortable, 164 papers read in full out of 8,956,
+  is a number a competitor would not print. Publishing it is why it got fixed.
+- **One thing not to steal:** the free tier gates "Chat with PDF" and caps an
+  extraction table at 10 papers, so the first thing a new user does is meet a
+  limit. alexandria's equivalent surface is the weekly issue, which has to be
+  good before it is scarce.
+- Cost: $0
+- Status: proposed

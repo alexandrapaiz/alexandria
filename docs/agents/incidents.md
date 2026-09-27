@@ -4516,3 +4516,37 @@ be labelled everywhere it can reach, and the first is cheaper. That is the
 third time this shape has cost something in three days, after the guard's
 printed output and after the filler that tokenized like prose
 (`INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper`).
+
+## INC-2026-09-27-new-register-shipped-without-a-gate — ADR-35 created a register on Friday, twelve lines went into it on Saturday, and nothing read it until Sunday (2026-09-27, engineer seat)
+
+**What happened.** ADR-35 (merged 2026-09-25) made reading a precondition of
+skill creation and created `docs/research/reading-queue.md` to hold what a
+skill seat could not read. The skill seat's first run under it
+(36206676462, 2026-09-26) did its half correctly: it read five papers in full
+and appended twelve lines naming papers it needed. The ADR names the research
+seat and the engineer as the drains. Neither has a step that opens the file,
+so for a day and a half the queue was a register with an archive-side gate and
+no artifact-side gate. Five of the first six ids turned out not to be in
+`papers` at all, so the corpus did not hold the papers a shipped skill is
+built on, and nothing in any run would have said so.
+
+**Why this is a repeat and not a new finding.** It is incident 20's class
+exactly, which is L-A9 in `docs/standards/lessons.md`: recording a rule is not
+enforcing it. `docs/agents/registers.md` exists because of incident 20, it was
+swept on 2026-09-24, and the gap it exists to catch was created the next day by
+an ADR that did not add a row to it. The register map catches registers that
+have a gate and lose it. It does not catch a register that is born without one,
+because nothing fires when a new file starts being a register.
+
+**Fixed in this run.** `pipeline/distill.py` reads the queue at the top of
+every run and distills what it finds ahead of the day's intake, printing each
+id and its disposition so the research seat can strike the line. The register
+map gets the row that ADR-35 should have carried.
+
+**The general form, which is the part worth keeping.** A decision that creates
+a register creates two gates, and the second one is work. The cheap repair is
+at the point of authorship rather than at the weekly sweep: an ADR that names
+a new file as a place where things get written down should not merge without
+naming the step that reads it, in the same way a new cron does not deploy
+without naming its rehearsal. That is a proposal to the chair, since ADRs are
+the chair's, and it is recorded here rather than acted on for the same reason.
