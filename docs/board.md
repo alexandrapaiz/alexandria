@@ -230,3 +230,16 @@ survives belongs to the seat that grooms it.
 - No dependencies between items, no labels, no comments, no due-date alarms.
   Linear has all of them and the board will need some of them. It needs them
   after the first week of real use says which, not before.
+
+## Run 6, 2026-09-27: ids the board issues, and the snapshot the site reads
+
+In progress on `engineer/2026-09-27-board-ids-and-snapshot`. Two ledger
+entries from run 2's own review of what it built, both of them the second
+slice of HQ ADR-037 priority 1:
+
+- item ids come from the board rather than from whoever types the command,
+  so two seats cannot silently fold two pieces of work into one card
+- the board folds itself into `board/state.json` on the ref, so the site
+  reads one file instead of a tarball it has to fold in the render path
+
+This heading is replaced by the real sections when the work lands.
