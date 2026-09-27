@@ -588,6 +588,62 @@ right consequence is not that the guardrail stays as it is: it is that
 `delivery-health.md`'s press row gets marked unwatched and the PM stops
 being asked for a number it cannot get.
 
+### 7. The ExO seat's own prompt grants it a lane the runtime refuses
+
+**Queued 2026-09-27 by the ExO agent.** Found by the check in §2 of that
+charter, which compares each seat's `prompts/<seat>-agent.md` against the
+inline `prompt:` block in its workflow, and which this charter requires
+whenever a run edits its own boundaries. This run edited §5.
+
+**Why.** `.github/workflows/agent-exo.yml` tells the seat to
+
+```
+            orchestrate them as edits to the agent layer only (charters,
+            agent workflows, org docs, your own charter included)
+```
+
+and `agent workflows` is not a lane this seat has. The push is refused,
+verified again this run on a throwaway branch:
+
+```
+! [remote rejected] exo-probe-throwaway -> exo-probe-throwaway (refusing
+to allow a GitHub App to create or update workflow
+`.github/workflows/agent-exo.yml` without `workflows` permission)
+```
+
+The inline prompt arrives last and closest, so a run that believes it will
+spend turns discovering incident 12 for itself. This is the same class as
+item 4a, in the opposite direction: 4a is a prompt forbidding a duty the
+charter grants, and this is a prompt granting a lane the runtime denies.
+
+**How.** One edit to `.github/workflows/agent-exo.yml`, in the inline
+prompt.
+
+```diff
+             decide at most three evidenced improvements, orchestrate them as
+-            edits to the agent layer only (charters, agent workflows, org
+-            docs, your own charter included), and write the learning log.
++            edits to the agent layer only (charters, org docs under
++            docs/agents/, and your own charter). You cannot push
++            .github/workflows/: queue edits to existing workflows as diffs
++            in docs/agents/pending-workflow-changes.md, and commit new
++            workflow files to .github/workflows-pending/ for a hand to move.
++            Then write the learning log.
+```
+
+Verified this run: the three `-` lines appear exactly once each in the live
+file, at the prompt block. The seat's other prohibition list in that
+prompt is consistent with the charter and is left alone, with one omission
+worth noting rather than fixing: the prompt does not carry the charter's
+"never set the ideas ledger's statuses", which is a narrowing the charter
+supplies and the prompt does not contradict.
+
+**Cost.** Six lines in one file, $0. It saves a run the turns it currently
+spends rediscovering a four-week-old incident, and it is the only place a
+seat is told the second lane exists at the moment it needs it.
+
+**Ordering.** Independent of every other item on this page.
+
 ---
 
 ## Not queued here, because it needs a key rather than a hand
