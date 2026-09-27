@@ -197,6 +197,41 @@ on 2026-09-19, and the owner found two failed runs herself the same day.
 Where you find a cadence gap, the fix is a cron change queued in
 pending-workflow-changes.md, not another sentence in a charter.
 
+Second and three-quarters, and this is the clause the 2026-09-27 run
+added because the register had been wrong about a row for three days:
+**check capability, not only wording and cadence.** A duty is owned when
+the naming seat can actually reach the evidence the duty is defined by.
+Words are cheap and crons are cheap. Inputs are not. A seat runs in a
+sandbox whose secrets are listed in its workflow, and a charter cannot
+grant a credential.
+
+So for every assigned row, read the duty's evidence, then read the
+naming seat's workflow, and ask whether the second contains what the
+first requires.
+
+```bash
+# what the duty needs, against what the seat's runtime actually holds
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-<seat>.yml | sort -u
+```
+
+The register was born with this bug too, and in the same row twice over.
+On 2026-09-24 a run assigned "the product reached its readers" to the PM
+seat, whose evidence `docs/agents/delivery-health.md` defines as the
+newest row in `digests`, and `.github/workflows/agent-pm.yml` has never
+carried `NEON_RO_URL`. The PM said so in its own standups, plainly and
+twice, and substituted the public library page, which is a weaker proxy
+in a direction that matters: a row written but never sent and a page
+served from cache both read as healthy. Three audits in a row scored
+that row assigned.
+
+This is the worst of the three shapes for the same reason cadence beats
+wording: the seat reports honestly, the row reads covered, and the
+substitution is invisible unless someone compares two files nobody
+reads together. Where you find a capability gap, the fix is a secret
+added to a workflow, queued in pending-workflow-changes.md, and the row
+is marked **capability gap** until the queue item lands rather than the
+moment it is queued.
+
 Third, look for the other shape of the same defect, which is a duty
 split across three seats with no owner. Shared custody of awareness is
 exactly what produced incident 19, and a duty everyone contributes to is
@@ -416,6 +451,36 @@ runner's token cannot push `.github/workflows/` at all, and no
 the workflow files). Write workflow changes out in full in
 docs/agents/pending-workflow-changes.md, with the evidence and the exact
 edit, and the owner applies them.
+
+**There are two lanes, not one, and this charter knew about one of them
+until 2026-09-27.** The push is refused for paths under
+`.github/workflows/` and nowhere else, so a seat can commit a complete,
+valid YAML file to `.github/workflows-pending/` and the owner's whole
+act of applying it is `git mv`. The engineer seat found this on
+2026-09-19 and has used it four times since, and that directory has its
+own README explaining the move. Meanwhile this charter and the queue
+page both went on telling every seat that prose was the only lane. An
+org that discovers a capability and does not write it where the next run
+looks has not discovered it.
+
+Which lane a change takes is decided by one property, and it is not
+convenience.
+
+- **A new workflow file goes in `.github/workflows-pending/`.** There is
+  nothing to rot against, the artifact is the thing itself rather than a
+  description of it, and CI can parse it where it sits.
+- **An edit to an existing workflow stays a diff on the queue page.** A
+  full-file copy of a file the owner also edits is the rot problem with
+  the loudness removed. A diff's anchor fails to match and the item is
+  visibly rotted, which is the whole mechanism of the paragraph below. A
+  stale full copy applies cleanly and silently reverts every edit made
+  to the live file since the copy was taken. Incident 26 is what a
+  rotted diff nearly cost when it still announced itself. Do not trade
+  that away for one fewer keystroke.
+
+So when you queue an item, say which lane it is in and why, and when a
+queued edit has grown large enough that a diff is unreadable, the answer
+is to split the item rather than to switch lanes.
 
 **A queued diff rots, so re-verify every pending item against the live
 file each run, before you queue anything new.** Open each workflow the
