@@ -37,10 +37,30 @@ by inference from the shape of the output, which is how the interpret prompt
 went seven days stale unnoticed while its output reached readers
 (INC-2026-09-26-interpret-stale-third-sighting).
 
-One number worth knowing while reading this file: a full-text request does not
-fit Groq's free tier, by 109 tokens, so the retry below that falls back to the
-abstract is not an edge case but the common path. `python3 pipeline/budget.py`
-prints the arithmetic and docs/ideas.md 2026-09-26 has the proposal.
+## What changed on 2026-09-27
+
+The job reads the paper now, and it did not before.
+
+`FULLTEXT_CHARS` was 24,000 and a 24,000-character request never fitted Groq's
+free tier — not by 109 tokens, which is what this file said yesterday, but by
+about 1,900. The 109 came from sizing a paper with a prose filler that runs
+6.17 chars/token against a real paper's 3.35, and it was wrong in five places
+at once (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). So every
+full-text call was refused, the retry below fell back to `abstract[:6000]`, and
+the run reported success. "164 papers read in full out of 8,956" is that
+sentence, counted.
+
+`FULLTEXT_CHARS` is 12,000 now, which every one of 14 real papers fits inside
+with room, and the job declares `MAX_COMPLETION_TOKENS` instead of leaving the
+reservation to be assumed by whoever is doing the arithmetic. The receipt is
+docs/evals/2026-09-27-fulltext-token-density.json and
+`python3 tools/fulltext_density.py` reproduces it against the live papers.
+
+Twelve thousand characters of a paper's body is not a paper. It is twice what
+the job was actually reading, it is the part with the method in it, and
+`papers.fulltext_chars` has always recorded the true number per paper. Reading
+a whole paper needs a provider with a larger per-request window, which costs
+money and is the owner's call, priced in docs/ideas.md.
 """
 
 import hashlib
@@ -272,12 +292,25 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
     raise RuntimeError(f"{provider}: exhausted retries")
 
 
-# One paragraph of real paper prose, repeated to FULLTEXT_CHARS by the rehearsal.
 # The payload is a fixed sample carried in this file, the way triage's rehearsal
-# batch is, so the gate needs no database. What must be real is its SIZE, because
-# the question this gate answers is whether a full paper fits, and the answer
-# depends on the length and nothing else.
-REHEARSAL_SAMPLE = (
+# batch is, so the gate needs no database. What must be real is its SIZE IN
+# TOKENS, because the question this gate answers is whether a full paper fits.
+#
+# "Length" is not size. Until 2026-09-27 this was prose alone, which runs 4.24
+# chars/token, so at FULLTEXT_CHARS the rehearsal sent 750 fewer tokens than the
+# densest real paper and would have passed a request that Groq refuses. That is
+# the same mistake as the budget guard's prose filler
+# (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper), made independently, in
+# the gate whose whole job is to catch it.
+#
+# A real paper is prose with tables in it, and the tables are what make it dense.
+# Five parts prose to one part table lands at 3.30 chars/token against the 3.35
+# of arxiv:2407.21783, the densest of the 14 papers in
+# docs/evals/2026-09-27-fulltext-token-density.json. Slightly worse than the
+# worst real paper is the correct place for a gate to sit.
+# `tests/test_distill_fulltext_budget.py` holds that, so the ratio cannot drift
+# back toward prose.
+REHEARSAL_PROSE = (
     "We introduce a two-stage procedure for aligning a reward model to human "
     "preference pairs. In the first stage the policy is trained with supervised "
     "fine-tuning on 12,400 demonstrations. In the second stage we distil the "
@@ -286,6 +319,19 @@ REHEARSAL_SAMPLE = (
     "win rate against the SFT baseline, measured by three annotators with "
     "Krippendorff alpha 0.81. Training used 64 A100-hours. "
 )
+
+REHEARSAL_TABLE = (
+    "Table 4: ablation over KL penalty. beta 0.005 0.01 0.02 0.05 0.10 0.20 | "
+    "MMLU 5-shot 66.1 68.4 71.3 70.9 69.2 64.8 | GSM8K 8-shot maj@1 74.2 78.0 "
+    "82.4 81.7 79.3 71.5 | HumanEval pass@1 55.4 59.8 64.0 63.1 60.2 52.7 | "
+    "MATH 4-shot 28.3 31.6 34.9 34.1 32.0 26.4 | ARC-C 25-shot 81.2 83.5 85.7 "
+    "85.0 83.8 79.1 | HellaSwag 10-shot 82.0 83.9 85.2 84.8 83.6 80.3 | "
+    "TruthfulQA mc2 44.7 47.2 49.8 49.1 47.5 43.0 | avg 61.8 64.6 67.6 66.9 "
+    "65.1 59.7 | Delta vs. SFT +0.0 +2.8 +5.8 +5.1 +3.3 -2.1 | n=3 seeds, "
+    "sigma<=0.4. "
+)
+
+REHEARSAL_SAMPLE = REHEARSAL_PROSE * 5 + REHEARSAL_TABLE
 
 REHEARSAL_TITLE = "A two-stage procedure for distilling reward models into policies"
 
@@ -373,14 +419,20 @@ def rehearse(allow_abstract_only: bool = False) -> str:
     database.
 
     **It asks distill's own question, which no other gate asks: can this job
-    read a paper in full?** `python3 pipeline/budget.py` says today that it
-    cannot, on either model, and it misses by 109 tokens: prompt 990 + payload
-    3,887 + reservation 2,000 + envelope 32 = 6,909 against 6,800 usable. The
-    run then degrades to `abstract[:6000]` and succeeds. A job that succeeds while doing
-    the lesser thing is the shape of the owner's finding of 2026-09-25, that the
-    corpus is not being read: 164 papers read in full out of 8,956 ingested. So
-    a rehearsal that got claims out of an abstract and called itself green would
-    be the same defect in a smaller box.
+    read the paper it was handed?** Until 2026-09-27 the answer was no and
+    nothing said so out loud: the request was refused every time, the run
+    degraded to `abstract[:6000]`, and it succeeded. A job that succeeds while
+    doing the lesser thing is the shape of the owner's finding of 2026-09-25,
+    that the corpus is not being read: 164 papers read in full out of 8,956
+    ingested. So a rehearsal that got claims out of an abstract and called
+    itself green would be the same defect in a smaller box.
+
+    `python3 pipeline/budget.py` now says the request fits, with 241 tokens to
+    spare at `FULLTEXT_CHARS` of 12,000. This gate is what turns that arithmetic
+    into a fact, because the arithmetic has been wrong before: the payload it
+    sends is 50 tokens heavier than the densest of the 14 real papers in
+    docs/evals/2026-09-27-fulltext-token-density.json, so a provider that
+    accepts this accepts them.
 
     It therefore raises when the full-text request does not survive, and
     `--allow-abstract-only` is the escape hatch for the day the chair is
@@ -414,11 +466,12 @@ def rehearse(allow_abstract_only: bool = False) -> str:
             raise RuntimeError(
                 f"the rehearsal's full-paper request was refused with HTTP "
                 f"{status}, so a deploy today installs a job that reads "
-                "abstracts and reports papers. That is the finding of "
-                "2026-09-25 rather than a surprise: `python3 "
-                "pipeline/budget.py` already says this request does not fit. "
-                "Shrink FULLTEXT_CHARS, lower the reservation, or move the job "
-                "to a provider with room. Pass --allow-abstract-only to deploy "
+                "abstracts and reports papers. `python3 pipeline/budget.py` "
+                "says this request fits, so either the prompt grew since the "
+                "guard last ran, or the provider's limit moved, or the guard's "
+                "measured density is stale. `python3 tools/fulltext_density.py` "
+                "says which, against real papers. Lower FULLTEXT_CHARS until it "
+                "stops printing REFUSED. Pass --allow-abstract-only to deploy "
                 "anyway, knowingly. Nothing was deployed."
             ) from exc
         read_in_full = False

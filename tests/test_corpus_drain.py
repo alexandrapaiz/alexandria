@@ -521,32 +521,81 @@ def test_every_corpus_job_is_in_the_request_table():
         assert job in labels, job
 
 
-def test_a_full_paper_does_not_fit_distills_free_tier_and_the_guard_says_so():
-    # Measured 2026-09-26: prompt 990 + payload 3,887 + a 2,000-token output
-    # reservation is 6,909 tokens against 6,800 usable, so it misses by 109.
-    # This is the arithmetic behind "164 of 8,956 papers read in full".
-    notes = budget.cron_degradations()
-    assert notes, "the full-text path fits now; update this test and opex.md"
-    assert all("distill" in note for note in notes)
+def test_the_full_text_request_fits_now_and_nothing_degrades():
+    # This test asserted the opposite on 2026-09-26, and said so: "the full-text
+    # path fits now; update this test and opex.md". It fits now. The 2026-09-26
+    # arithmetic (miss by 109) was itself wrong — the guard was sizing a paper
+    # with prose filler, INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper —
+    # and the real miss at FULLTEXT_CHARS of 24,000 was about 1,900 tokens.
+    #
+    # What closed it: FULLTEXT_CHARS 24,000 -> 12,000, a declared
+    # MAX_COMPLETION_TOKENS, and a measured density. The degradation to
+    # abstract[:6000] stays in the code as an error path and is no longer the
+    # common one.
+    assert budget.cron_degradations() == [], (
+        "distill degrades again: a full-text request stopped fitting, so the "
+        "job is back to writing claims from abstracts while reporting success. "
+        "Run `python3 tools/fulltext_density.py` and lower FULLTEXT_CHARS.")
+    assert [p for p in budget.check_cron_requests() if "distill" in p] == []
+
+
+def test_the_guard_sizes_a_paper_as_a_paper_and_not_as_prose():
+    # The bug this file's neighbour exists to prevent, stated as arithmetic.
+    # Prose filler runs 6.17 chars/token and a real paper runs 3.35, so sizing
+    # distill's payload with `_filler` understates it by about 45%, which is
+    # how a request that missed by 1,900 tokens was reported as missing by 109.
+    spec = budget.CRON_REQUESTS["distill (pipeline/distill.py)"]
+    chars = budget.request_payload_chars(spec)
+    assert spec["chars_per_token"] == budget.FULLTEXT_CHARS_PER_TOKEN
+
+    as_paper = budget.count_tokens(budget.request_text(spec, chars))
+    as_prose = budget.count_tokens(budget._filler(chars))
+    assert as_paper > as_prose * 1.4, (
+        f"{chars} characters sized as a paper is {as_paper} tokens and as prose "
+        f"{as_prose}; if these are close, the density override stopped applying")
+
+
+def test_the_measured_density_matches_the_committed_receipt():
+    # The constant may not drift away from the measurement that justifies it.
+    # tools/fulltext_density.py rewrites this receipt against live arXiv; CI
+    # reads the receipt because CI does not get to depend on arxiv.org.
+    receipt = json.loads((ROOT / "docs" / "evals"
+                          / "2026-09-27-fulltext-token-density.json").read_text())
+    assert budget.FULLTEXT_CHARS_PER_TOKEN <= receipt["worst_chars_per_token"], (
+        "the guard assumes a paper is looser than the worst paper measured")
+    assert receipt["window_chars"] == budget.request_payload_chars(
+        budget.CRON_REQUESTS["distill (pipeline/distill.py)"]), (
+        "the receipt measured a different window than the job sends, which is "
+        "the mistake that made the first corrected constant wrong too")
+    assert receipt["all_fit"], "a measured paper did not fit at this window"
+
+
+def _oversize_distill(monkeypatch, payload_chars, degrades_to_chars):
+    """Distill's spec with the two request sizes forced, for the paths that no
+    longer occur in production now that the real request fits."""
+    spec = dict(budget.CRON_REQUESTS["distill (pipeline/distill.py)"])
+    spec["payload_chars"] = payload_chars
+    spec["degrades_to_chars"] = degrades_to_chars
+    monkeypatch.setitem(budget.CRON_REQUESTS, "distill (pipeline/distill.py)", spec)
+
+
+def test_a_request_that_no_longer_fits_is_a_degradation_and_not_a_failure(monkeypatch):
+    # This was distill's real state until 2026-09-27 and it is the state the
+    # job returns to the moment the prompt grows or a limit moves, so it keeps
+    # its test even though production no longer reaches it.
+    _oversize_distill(monkeypatch, 400_000, 6_000)
+    notes = [n for n in budget.cron_degradations() if "distill" in n]
+    assert notes, "a big request that does not fit has to be reported"
     assert "cannot take a full paper" in notes[0]
     assert "read from its abstract instead of in full" in notes[0]
-
-
-def test_a_degradable_job_is_a_quality_ceiling_and_not_a_failed_gate():
-    # The chair's deploy chains start with this command. Failing them all on a
-    # condition that predates the change would stop the press deploying over a
-    # distill quality ceiling, so the finding is printed and the gate passes.
-    assert budget.cron_degradations()
-    problems = [p for p in budget.check_cron_requests() if "distill" in p]
-    assert problems == []
+    assert [p for p in budget.check_cron_requests() if "distill" in p] == [], \
+        "a job with a working fallback degrades; it does not fail the gate"
 
 
 def test_a_job_with_nowhere_left_to_go_is_still_a_failure(monkeypatch):
     # The degradation path must not become a way for any request to pass. If the
     # smaller retry does not fit either, the job cannot write a claim at all.
-    spec = dict(budget.CRON_REQUESTS["distill (pipeline/distill.py)"])
-    spec["degrades_to_chars"] = 400_000
-    monkeypatch.setitem(budget.CRON_REQUESTS, "distill (pipeline/distill.py)", spec)
+    _oversize_distill(monkeypatch, 400_000, 400_000)
     problems = [p for p in budget.check_cron_requests() if "distill" in p]
     assert problems, "a retry that does not fit either has to fail the gate"
     assert budget.cron_degradations()[0].endswith(

@@ -553,8 +553,22 @@ def _filler_tokens(n: int) -> str:
     enc = _encoder()
     if enc is None:
         return _filler(int(n * FALLBACK_CHARS_PER_TOKEN))
-    reps = -(-n // count_tokens(_FILLER)) + 1
-    return enc.decode(enc.encode(_FILLER * reps)[:n])
+    # Grow until it is long enough, then cut. Not `n // count_tokens(_FILLER)`
+    # repetitions: repeated text merges at the seams, so 104 copies of a
+    # 35-token string is 3,537 tokens and not 3,640, and a filler that silently
+    # comes up 45 tokens short is the whole failure this module is recovering
+    # from, one order of magnitude smaller.
+    reps = max(1, -(-n // count_tokens(_FILLER)))
+    tokens = enc.encode(_FILLER * reps)
+    while len(tokens) < n:
+        reps += max(1, (n - len(tokens)) // count_tokens(_FILLER))
+        tokens = enc.encode(_FILLER * reps)
+    # Decoding a cut token list can re-encode to a different length when the cut
+    # lands mid-word, so the cut is verified rather than trusted.
+    text = enc.decode(tokens[:n])
+    while count_tokens(text) > n:
+        text = text[:-1]
+    return text
 
 
 def worst_case_payload() -> dict:

@@ -9,11 +9,14 @@ interpret. `distill` had none: no `preflight`, no `rehearse`, and no gate chain
 in its deploy docstring, which is how the job whose entire purpose is reading
 papers in full came to be unable to read one.
 
-That last part is measured rather than feared. `python3 pipeline/budget.py`,
-with tiktoken installed so the count is exact, prints that distill's full-paper
-request misses Groq's usable free tier by 109 tokens on both of its models, and
-that the run then retries at `abstract[:6000]` and succeeds. A job that succeeds while doing the lesser thing is the owner's
-finding of 2026-09-25 in miniature: 164 papers read in full out of 8,956.
+That last part is measured rather than feared. On 2026-09-26 `python3
+pipeline/budget.py` put the miss at 109 tokens; on 2026-09-27 it turned out to
+be about 1,900, because the guard was sizing a paper with a prose filler
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). Either way the run
+retried at `abstract[:6000]` and succeeded, which is the owner's finding of
+2026-09-25 in miniature: 164 papers read in full out of 8,956. The request fits
+now, at `FULLTEXT_CHARS` of 12,000, and
+`tests/test_distill_fulltext_budget.py` is what holds it fitting.
 
 Nothing here calls a provider. `extract_claims` makes the one HTTP request the
 job makes, with a function-local `import httpx`, so these tests replace
@@ -161,8 +164,9 @@ def test_a_successful_rehearsal_reports_that_it_wrote_nothing(monkeypatch, capsy
 def test_a_refused_full_paper_stops_the_deploy(monkeypatch):
     """The finding, turned into a gate.
 
-    budget.py says the full-paper request misses by 109 tokens on either model
-    and that the run degrades to the abstract and succeeds. A rehearsal that accepted the
+    The request fits as of 2026-09-27, so this gate should not fire. It stays
+    because fitting is a property of today's prompt, today's density and
+    today's provider limit, and all three move. A rehearsal that accepted the
     degradation would be green on the exact defect the owner named.
     """
     post_returning(monkeypatch, FakeResponse(413))
