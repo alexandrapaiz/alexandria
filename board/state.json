@@ -1,0 +1,55 @@
+{
+  "events": 3,
+  "generated": "2026-09-27T15:51:53Z",
+  "items": {
+    "board-store": {
+      "assignee": "engineer",
+      "by": "engineer",
+      "events": 1,
+      "id": "board-store",
+      "pr": 115,
+      "status": "review",
+      "title": "The board's own store, write path and read path",
+      "updated": "2026-09-26T01:39:09Z"
+    },
+    "board-ui": {
+      "assignee": "frontend",
+      "by": "engineer",
+      "events": 1,
+      "id": "board-ui",
+      "note": "queued by the PM in #113; reads the board ref, see docs/board.md",
+      "status": "next",
+      "title": "Read-only board view on the site",
+      "updated": "2026-09-26T01:39:18Z"
+    }
+  },
+  "latest_run": {
+    "engineer": {
+      "at": "2026-09-26T01:50:59Z",
+      "attempt": 1,
+      "branch": "engineer/2026-09-26-board-store",
+      "pr": 115,
+      "result": "The board exists and it is ours: `python3 tools/board.py show` prints the real state off the real `board` ref, which this run created and posted its own report onto.",
+      "run_id": "36208446311",
+      "seat": "engineer",
+      "status": "success",
+      "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36208446311"
+    }
+  },
+  "runs": [
+    {
+      "at": "2026-09-26T01:50:59Z",
+      "attempt": 1,
+      "branch": "engineer/2026-09-26-board-store",
+      "pr": 115,
+      "result": "The board exists and it is ours: `python3 tools/board.py show` prints the real state off the real `board` ref, which this run created and posted its own report onto.",
+      "run_id": "36208446311",
+      "seat": "engineer",
+      "status": "success",
+      "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36208446311"
+    }
+  ],
+  "runs_kept": 1,
+  "runs_total": 1,
+  "source": "derived: folded from board/events on the board ref by tools/board.py. The log is the source of truth; this file is a read cache and a writer that finds it stale replaces it."
+}
