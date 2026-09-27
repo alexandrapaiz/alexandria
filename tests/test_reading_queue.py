@@ -457,3 +457,16 @@ def test_distill_takes_the_queue_before_the_intake():
     source = (ROOT / "pipeline" / "distill.py").read_text()
     body = source[source.index("def distill("):]
     assert body.index("queue.resolve(") < body.index("from distill_queue")
+
+
+def test_there_is_one_cleaner_and_both_callers_use_it():
+    """`tools/fulltext_density.py` measured the density of a cleaner it had
+    copied, and the docstring claiming a test held the copy identical named a
+    test file that does not exist. A receipt for the wrong cleaner is worse
+    than no receipt. Both callers import `read_paper.clean_html` now."""
+    density = (ROOT / "tools" / "fulltext_density.py").read_text()
+    distill_source = (ROOT / "pipeline" / "distill.py").read_text()
+    assert "read_paper.clean_html(raw)" in density
+    assert "re.sub(r\"<[^>]+>\"" not in density
+    assert "read_paper().fetch_fulltext(" in distill_source
+    assert "re.sub(r\"<[^>]+>\"" not in distill_source

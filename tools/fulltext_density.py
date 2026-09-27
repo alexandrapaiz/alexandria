@@ -30,18 +30,19 @@ receipt it writes into docs/evals/ is what CI reads instead.
 """
 
 import argparse
-import html as htmllib
 import json
 import pathlib
-import re
 import sys
 import urllib.error
 import urllib.request
 from datetime import date
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "pipeline"))
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "pipeline"))
 
 import budget  # noqa: E402
+import read_paper  # noqa: E402
 
 # Fourteen papers of the kind the library's corpus is made of. Chosen to span
 # the formatting that changes the answer — pages of tables, pages of math,
@@ -70,19 +71,19 @@ DEFAULT_PAPERS = [
 
 
 def clean(raw: str) -> str | None:
-    """Exactly `pipeline/distill.py:fetch_fulltext`'s cleaning, and nothing else.
+    """Exactly the cleaning the pipeline applies, because it is the same function.
 
-    Copied rather than imported on purpose: importing distill.py pulls in
-    `modal`, which this tool has no reason to need. `tests/test_fulltext_density.py`
-    holds the two implementations identical, so the copy cannot drift.
+    This was a copy until 2026-09-27, with a docstring claiming a test held the
+    two identical. That test did not exist, so the copy was free to drift from
+    the thing it was measuring, which would have made the receipt describe a
+    cleaner nobody runs. The cleaning now lives in `read_paper.clean_html`,
+    beside this file and importable without `modal`, and both this tool and
+    `pipeline/distill.py:fetch_fulltext` call it.
     """
-    if len(raw) < 5000:
+    if len(raw) < read_paper.MIN_HTML_BYTES:
         return None
-    text = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", raw)
-    text = re.sub(r"<[^>]+>", " ", text)
-    text = htmllib.unescape(text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text if len(text) > 2000 else None
+    text = read_paper.clean_html(raw)
+    return text if len(text) > read_paper.MIN_TEXT_CHARS else None
 
 
 def fetch(arxiv_id: str, timeout: float = 30.0) -> str | None:
