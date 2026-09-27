@@ -141,6 +141,16 @@ image = (
     # The taxonomy travels with the job, so the list the tests check is the list
     # the insert enforces.
     .add_local_file("pipeline/topics.py", "/root/topics.py")
+    # The reader and the queue parser travel too, so the job reads a paper the
+    # same way the seats do (tools/read_paper.py) and drains the same file the
+    # skill seat writes (ADR-35).
+    .add_local_file("tools/read_paper.py", "/root/read_paper.py")
+    .add_local_file("pipeline/reading_queue.py", "/root/reading_queue.py")
+    # The queue's CONTENT is baked at deploy time, which is the one thing to
+    # know about it: a line appended today reaches the cron on the next
+    # `modal deploy`. A manual `modal run` sends the working copy instead, so
+    # an urgent request is one command rather than a deploy.
+    .add_local_file("docs/research/reading-queue.md", "/root/reading-queue.md")
 )
 
 app = modal.App("alexandria-distill", image=image)
@@ -183,6 +193,33 @@ def topics():
     import topics as module
 
     return module
+
+
+def _sibling(name: str):
+    """Import a module Modal dropped at /root, or that sits beside this file.
+
+    The same two-path trick `evidence()` and `topics()` use, once, for the two
+    modules added since. `tools/read_paper.py` lands at /root/read_paper.py in
+    the image and at ../tools/read_paper.py in a checkout.
+    """
+    import importlib
+    import sys
+
+    here = pathlib.Path(__file__).resolve().parent
+    for path in ("/root", str(here), str(here.parent / "tools")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    return importlib.import_module(name)
+
+
+def read_paper():
+    """tools/read_paper.py — the one reader, shared by this job and the seats."""
+    return _sibling("read_paper")
+
+
+def reading_queue():
+    """pipeline/reading_queue.py — the parser for docs/research/reading-queue.md."""
+    return _sibling("reading_queue")
 
 
 def load_prompt() -> tuple[str, str]:
@@ -233,29 +270,16 @@ def has_evidence_grade(conn) -> bool:
 
 
 def fetch_fulltext(paper_id: str) -> str | None:
-    """arXiv serves full-paper HTML for most recent papers. Returns cleaned
-    text (~FULLTEXT_CHARS) or None so the caller falls back to the abstract."""
-    import html as htmllib
-    import re
+    """arXiv's HTML full text, cut to FULLTEXT_CHARS, or None for the abstract.
 
-    import httpx
-
-    if not paper_id.startswith("arxiv:"):
-        return None  # blog posts: the feed summary already is the content
-    arxiv_id = re.sub(r"v\d+$", "", paper_id.removeprefix("arxiv:"))
-    try:
-        resp = httpx.get(f"https://arxiv.org/html/{arxiv_id}",
-                         follow_redirects=True, timeout=30)
-        if resp.status_code != 200 or len(resp.text) < 5000:
-            return None
-        text = re.sub(r"<(script|style)[\s\S]*?</\1>", " ", resp.text)
-        text = re.sub(r"<[^>]+>", " ", text)
-        text = htmllib.unescape(text)
-        text = re.sub(r"\s+", " ", text).strip()
-        return text[:FULLTEXT_CHARS] if len(text) > 2000 else None
-    except Exception as exc:
-        print(f"  fulltext fetch failed for {paper_id}: {exc}")
-        return None
+    The fetching and the cleaning live in `tools/read_paper.py` now, so that
+    the job and the seats read a paper the same way and there is one place to
+    fix when arXiv changes. What stays here is the only part that is distill's
+    own: the cut to FULLTEXT_CHARS, which is a provider limit and not a fact
+    about the paper. A seat running `python3 tools/read_paper.py <id>` gets the
+    whole thing.
+    """
+    return read_paper().fetch_fulltext(paper_id, max_chars=FULLTEXT_CHARS)
 
 
 def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
@@ -561,7 +585,14 @@ def bake_off(n_papers: int = 8) -> list[dict]:
     volumes={"/root/.cache/huggingface": hf_cache},
     timeout=3600,
 )
-def distill(max_papers: int = 30):
+def distill(max_papers: int = 30, queue_text: str | None = None):
+    """The day's drain: the reading queue first, then the daily intake.
+
+    `queue_text` is docs/research/reading-queue.md's content. The scheduled run
+    leaves it None and reads the copy baked into the image; `modal run` passes
+    the working copy, so a line appended this morning is read this morning
+    rather than after the next deploy.
+    """
     import os
 
     import httpx
@@ -569,7 +600,29 @@ def distill(max_papers: int = 30):
     from sentence_transformers import SentenceTransformer
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        papers = conn.execute(
+        # ADR-35: what the skill seat could not read comes before what the
+        # firehose happened to deliver, because a queue line is a person
+        # asking and the intake is a subscription.
+        queue = reading_queue()
+        text = queue_text
+        if text is None:
+            text = queue.read_file("/root/reading-queue.md") or queue.read_file(queue.QUEUE_PATH)
+        if text:
+            waiting = queue.pending(text, limit=None)
+            requested = waiting[:queue.MAX_PER_RUN]
+            print(f"reading queue: {len(waiting)} pending, {len(requested)} taken this run")
+        else:
+            requested = []
+            print("reading queue: unreadable from here, so the day's intake only. "
+                  "The file is baked into the image; check the deploy.")
+        first = queue.resolve(conn, requested,
+                              fetch_metadata=read_paper().fetch_metadata) if requested else []
+        # Committed before a single claim is written: a paper ingested because
+        # someone asked for it should stay in the corpus even if the provider
+        # rate-limits this run to a stop two papers later.
+        conn.commit()
+
+        intake = conn.execute(
             """
             select id, title, abstract, triage_decision, source
             from distill_queue
@@ -579,7 +632,9 @@ def distill(max_papers: int = 30):
             """,
             (max_papers,),
         ).fetchall()
-        print(f"{len(papers)} papers queued for distillation")
+        papers = queue.merge(first, intake, max_papers)
+        print(f"{len(papers)} papers to distill: {len(first)} from the reading "
+              f"queue, {len(papers) - len(first)} from the day's intake")
         if not papers:
             return 0
 
@@ -601,6 +656,7 @@ def distill(max_papers: int = 30):
         off_list: dict[str, int] = {}
 
         wrote_any = False
+        finished: list[str] = []   # papers this run actually got through
         fulltexts_used = 0     # the fetch budget: how many HTML pulls were tried
         read_in_full = 0       # how many papers' claims actually came from one
         graded: dict[str, int] = {}
@@ -684,8 +740,21 @@ def distill(max_papers: int = 30):
             else:
                 conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
             conn.commit()
+            finished.append(pid)
             print(f"  {len(claims)} claims <- {title[:60]}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
+
+        # The research seat strikes the queue line, and it strikes what this
+        # log says was read. One line, greppable, naming the ids.
+        if first:
+            done = [pid for pid, *_ in first if pid in set(finished)]
+            left = [pid for pid, *_ in first if pid not in set(finished)]
+            if done:
+                print("reading-queue: read this run, the lines for these ids can "
+                      f"be struck in {queue.QUEUE_PATH}: {', '.join(done)}")
+            if left:
+                print("reading-queue: not reached this run, still pending: "
+                      + ", ".join(left))
 
         print(f"read {read_in_full} papers in full, "
               f"{len(papers) - read_in_full} from the abstract alone")
@@ -739,8 +808,16 @@ def distill(max_papers: int = 30):
 
 
 @app.local_entrypoint()
-def main(max_papers: int = 30):
-    print(f"claims written: {distill.remote(max_papers)}")
+def main(max_papers: int = 30, queue: str = "docs/research/reading-queue.md"):
+    """A manual run sends the working copy of the reading queue, not the baked one.
+
+        modal run pipeline/distill.py --max-papers 8
+        modal run pipeline/distill.py --queue /dev/null     # the intake alone
+    """
+    text = pathlib.Path(queue).read_text() if pathlib.Path(queue).exists() else None
+    if text is None:
+        print(f"no reading queue at {queue}; the run will use the image's copy")
+    print(f"claims written: {distill.remote(max_papers, queue_text=text)}")
 
 
 @app.local_entrypoint()
