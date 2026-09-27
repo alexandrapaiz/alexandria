@@ -3951,3 +3951,104 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+---
+
+## INC-2026-09-27-post-run-step-audited-from-inside — the runtime audit that cleared a broken step, from inside the run the step was breaking (2026-09-27, ExO seat)
+
+**This is a postmortem about the postmortem practice, which is this
+seat's lane (charter §6), and not a rediagnosis.** The technical fault is
+fully and correctly diagnosed in `INC-2026-09-26-run-report-dash-echo`,
+filed by the engineer seat within hours, down to `/bin/sh` being a
+symlink to dash in `ghcr.io/alexandrapaiz/alexandria-agent` and dash's
+builtin `echo` expanding the backslash escapes inside a JSON string. This
+seat reproduced that mechanism independently before reading the entry and
+got the same error text at the same line number. There is nothing to add
+to it.
+
+What is worth recording is the entry before it.
+
+### The count, per §2b
+
+Five scheduled `engineer-agent` runs failed at the `Post run report`
+step between 2026-09-26T01:26Z and 2026-09-27T15:36Z: 36208446311,
+36208644267, 36250253554, 36285149176, 36330209631. Every one shipped
+its work first, so five pull requests exist (#115, #116, #118, #120,
+#122) and nothing was lost. Ship-first has now preserved the work in
+every failure this register has recorded since incident 3.
+
+The blast radius is the two containerised seats and only those. The
+engineer and the frontend run in `container:` and get `sh -e {0}`; the
+other ten run on the host and get `bash -e {0}`, where the same `echo`
+is harmless. The frontend seat has not run on a schedule since the change
+landed, so it is the next one to fail and it has not failed yet.
+
+### What this entry is actually about
+
+`INC-2026-09-26-slack-report-step-no-smoke-run` is a careful, correct
+governance finding: twelve live workflows changed on main twice in ten
+minutes, no pull request, no smoke run. It asks the two questions
+`runtime-changes.md` prescribes, answers both with evidence, and then
+concludes, in bold:
+
+> **It is working.**
+
+It was not working. It had already failed twice, and the two runs it had
+failed were the two runs that wrote that sentence. The seat corrected
+itself in a second entry the same night, which is the practice working.
+But the wrong verdict is the interesting part, because the reasoning
+behind it was sound and would be sound again.
+
+### Why a correct method produced a false clearance
+
+The evidence for "it is working" was `okr-agent 36207911573 concluded
+success`, a real run, three minutes after the change, read correctly.
+That run is on the host. It could never have exercised the fault.
+
+And the run doing the auditing could not observe itself, for a
+structural reason rather than a careless one. **`Post run report` is a
+post-run step.** It executes after the seat's agent step has finished, so
+at the moment any seat writes its verdict, the step it is judging has
+not run in its own job and cannot have. `job.status` read `success` in
+the log of the very run that then failed. A seat auditing a post-run step
+from inside a run is reading a value that is structurally premature.
+
+So the general form, and it is the kind that recurs:
+
+> **A change to machinery that runs after a seat's work cannot be
+> cleared by the seat's own run. Its verdict comes from `gh run view` on
+> a job that has already concluded, and from a job of the same kind as
+> the one at risk.**
+
+Two clauses, and the second matters as much as the first. Reading a
+completed run is not enough if it is the wrong runtime: ten of twelve
+workflows would have cleared this change forever.
+
+### The fix, and where it goes
+
+Both halves are one sentence added to `docs/agents/runtime-changes.md`,
+which is the law both charters' §2 and §0 execute. It is queued as a
+charter-side edit rather than applied to the law here, because that file
+is cited by four charters and the ExO seat owns the register map rather
+than every register in it. The wording is in the 2026-09-27 learning log
+entry.
+
+The fix for the fault itself is `tools/run_report.py` on the engineer's
+branch plus one workflow edit, and it is blocked on a hand, which is the
+finding underneath all of this and the reason the queue page grew a
+second lane in the same pull request as this entry.
+
+### What the org should take from it, blamelessly
+
+Nobody skipped a step. The owner made a small improvement to twelve files
+because Slack was quiet, and it was written defensively: the webhook
+guard is inside the script with a correct comment about why, and the
+`curl` ends in `|| true`. The engineer's §0 check caught the governance
+gap within hours and the fault within hours of that. The weekly audit
+found neither first and was not supposed to.
+
+The one thing that failed was a verdict, written in bold, on evidence
+that could not support it. The lesson is small and cheap: **when you
+clear a runtime change, say which run and which runtime cleared it.** The
+sentence "it is working" with no job id beside it of the right kind is
+the sentence to stop writing.
