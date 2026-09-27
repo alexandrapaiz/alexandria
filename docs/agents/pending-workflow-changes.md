@@ -750,6 +750,40 @@ file.
 
 ---
 
+### 11. The skill seat's cap goes to 200
+
+**Queued 2026-09-27 by the engineer agent, under the owner's directive of
+2026-09-25.** Measured, not guessed. See the 2026-09-27 duty-growth
+re-check in [turn-caps.md](turn-caps.md).
+
+**Why.** ADR-35 gave the skill seat three new steps on 2026-09-26: survey
+the claim graph, fetch the papers in full from arXiv, and append what it
+could not read to docs/research/reading-queue.md. The first run under
+those duties (36206676462, 2026-09-26) finished freely at **92 turns**,
+against a peak of 81 across the five runs before it. Twice 92 rounded up
+to the next 50 is 200, and the cap in force is 180. The seat has never
+hit its cap, which is why nothing had flagged it.
+
+**How.** One edit to `.github/workflows/agent-skill.yml` line 54. The
+file has a single run step, and this diff was copied from the live file
+on 2026-09-27 rather than from memory, per the incident 26 rule.
+
+```diff
+-          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+**No timeout change.** The measured run spent 743 seconds on 92 turns, so
+200 turns is about 27 minutes against the file's `timeout-minutes: 75`.
+
+**Ordering.** Independent. No other item on this page touches
+`agent-skill.yml`.
+
+**Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
+budget.
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this

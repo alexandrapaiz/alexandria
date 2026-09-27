@@ -61,6 +61,26 @@ the job was actually reading, it is the part with the method in it, and
 `papers.fulltext_chars` has always recorded the true number per paper. Reading
 a whole paper needs a provider with a larger per-request window, which costs
 money and is the owner's call, priced in docs/ideas.md.
+
+## The reading queue comes first (2026-09-27)
+
+ADR-35 made reading a precondition of skill creation, and the skill seat's first
+run under it read five papers and listed twelve more it needed and could not
+reach, in docs/research/reading-queue.md. Nothing in the pipeline read that
+file, so the request was addressed to nobody.
+
+This job reads it now, before it looks at the day's intake.
+`pipeline/reading_queue.py` parses the unchecked lines, resolves each arXiv id
+against `papers`, ingests anything the corpus has never seen straight from
+arXiv, and hands back rows for the front of the drain. Each id prints on its
+own `reading-queue:` line with what happened to it, because the research seat
+is the one who strikes the line and it strikes what the log shows. Six lines a
+run, so a backlog drains in days without a day ever belonging to the queue.
+
+One thing to know about it: the queue's CONTENT is baked into the image at
+`modal deploy`, so a line appended this morning reaches the scheduled run
+tomorrow. `modal run pipeline/distill.py` sends the working copy instead, which
+is the escape hatch for a paper somebody needs today.
 """
 
 import hashlib
