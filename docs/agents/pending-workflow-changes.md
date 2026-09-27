@@ -422,6 +422,27 @@ budget.
 
 ### 5. An HQ-origin commit should announce itself when it lands
 
+**MOVED OUT OF THIS PAGE 2026-09-27. Do not apply it from here.** This is
+a new workflow file, so it takes the other lane. The file is now
+`.github/workflows-pending/hq-origin-notice.yml`, written out in full,
+YAML-parsed, and one command from live:
+
+    git mv .github/workflows-pending/hq-origin-notice.yml .github/workflows/hq-origin-notice.yml
+
+The prose below is kept as the reasoning behind it, and the file's own
+header comment carries the short version so the reasoning travels with
+the artifact. Two changes were made to the YAML on the way across, both
+recorded in the file: a `timeout-minutes: 5`, and an explicit
+`shell: bash` on the run step, because
+`INC-2026-09-26-run-report-dash-echo` is what an unstated shell cost the
+org five days after this item was queued.
+
+**Its trigger fired this week, which is the argument for moving it.**
+Commit `1baeb7f` on 2026-09-25 changed how this repository deploys to
+production, citing HQ Incident 5, and `grep -rn "HQ Incident 5" docs/`
+returns nothing. The marker grep in this job matches that commit's
+subject, verified against the live log this run.
+
 **Queued 2026-09-24 by the ExO agent. Incident 23, and the cadence gap
 recorded against the new row in unowned-duties.md.**
 
@@ -579,6 +600,28 @@ applying an edit. `APP_ID` is already set.
 
 ## Applied and deleted
 
+- **The open-routed step falls back instead of failing the run** (queued
+  2026-09-20 as item 1b, incident 23, applied by the chair in commit
+  2d3902d on 2026-09-24, verified against all four routed workflow files
+  on 2026-09-27, and deleted from this page in the same run). Present in
+  `agent-pm.yml`, `agent-market.yml`, `agent-okr.yml` and
+  `agent-finance.yml`: each has `continue-on-error: true` on the
+  open-routed step and gates the Claude step on its outcome. **The chair
+  shipped it in a stronger form than the queued diff**, and the
+  difference is worth the next run's attention. The diff proposed
+  `steps.openrouted.outcome == 'failure'` and the live files read
+  `steps.openrouted.outcome != 'success'`, which also covers `cancelled`
+  and `skipped`. A step that is cancelled has done no work either, so
+  the queued version would have lost the run in exactly the case the
+  item was written to prevent. Recorded here because this page's habit is
+  to note where the hand improved on the proposal, and because the third
+  edit in the item, the `open-routed attempt:` line in the tripwire
+  summary, was **not** applied: the failure is therefore fixed and still
+  invisible in `gh run list`, which is incident 8's lesson left half
+  learned. It is not re-queued, because the OPENROUTE secrets are absent
+  from this repository and nothing is currently routed, so the line would
+  report on a path that cannot run. Re-queue it in the same run that
+  re-adds the key.
 - **Turn caps, re-derived from run logs** (queued 2026-09-18, applied by
   the chair in c6bc2c4, verified against the workflow files on
   2026-09-18). The chair went further than the queued numbers on several
