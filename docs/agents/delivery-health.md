@@ -102,20 +102,84 @@ week was W38.
 Anywhere a scheduler and an artifact disagree, the artifact is the
 evidence. A scheduler reports its own intentions.
 
-## The known state of each surface, 2026-09-24
+## Guardrail 5, added 2026-09-27: the evidence has to be reachable
+
+The four guardrails above say what to check. None of them asks whether
+the seat that owns the check can get at the thing it is checking, and
+that turned out to be the gap that mattered most, because it is the one
+that produces an honest report of the wrong number.
+
+**A guardrail is not in force until the seat that owns it holds the
+credential its evidence requires.** Guardrail 4 names the newest row in
+`digests` as the press's evidence and assigns the watch to the PM's
+daily standup. `.github/workflows/agent-pm.yml` has never carried
+`NEON_RO_URL`. Three seats do (research, writer, skill) and the seat
+that owns the delivery check does not. The PM has said so in every
+standup since: "No database credentials in this sandbox, so the
+`digests` table itself was not queried," and then substituted the public
+library page.
+
+That substitution is not a small one, and the direction of its error is
+the problem. The library page lists the issues the site has built. A
+digest row written and never sent, a send that failed after the row
+landed, and a page served from an edge cache all read as healthy on that
+page, and those are exactly the three failures guardrail 3 exists to
+catch. So the proxy is strongest precisely where the real check would
+have been most useful.
+
+The rule that follows, for whoever writes the next guardrail: **name the
+evidence and the credential in the same sentence.** If the credential is
+not in the owning seat's workflow, the guardrail ships as a queued
+workflow change first and as a charter line second, and the surface
+stays marked unwatched until the secret lands. A guardrail whose input
+is missing is worse than an absent one, because it reports.
+
+## The known state of each surface, 2026-09-27
 
 | Surface | Trigger | Artifact to check | Guardrails 1 to 3 | Watched daily |
 | --- | --- | --- | --- | --- |
-| The press, weekly issue | Modal cron, Monday 09:00 UTC after PR #75 | newest row in `digests` | shipped in PR #75, unmerged at this writing | from the next standup, PM §1f |
-| The press, daily pipeline | Modal crons, 11:00 to 14:00 UTC | newest rows in the corpus tables | budget guard only, no availability check | not yet, and this is the next gap |
-| The site | deploy on merge | newest commit live | none | no |
+| The press, weekly issue | Modal cron, Monday 09:00 UTC after PR #75 | newest row in `digests` | shipped in PR #75, unmerged at this writing | **named, not performed**: PM §1f watches it daily and has no `NEON_RO_URL`, so the site is read instead (guardrail 5) |
+| The press, daily pipeline | Modal crons, 11:00 to 14:00 UTC, windows now checked by `budget.check_kimi_windows()` | newest rows in the corpus tables | budget guard only, no availability check | no, and this is still the next gap |
+| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no |
 | The MCP server | long-running | a probe query | none | no, and incident 21 is what that costs |
 
-The bottom three rows are the honest part of this table. One surface is
-instrumented, three are not, and the daily pipeline is the one that
-feeds everything else. Closing those is engineer work and belongs in the
-sprint rather than in this file, which is why it is written here as a
-finding for the PM to groom rather than as an assignment.
+### What changed under the site row, and why it is now the weakest
+
+Until 2026-09-25 the site deployed on every merge, through Vercel's Git
+integration. HQ Incident 5 took that away: seat branches were spending
+the Hobby plan's 100 deployments a day and production builds were
+refused for 24 hours. `site/vercel.json` now sets
+`git.deploymentEnabled=false`, and `.github/workflows/deploy-main.yml`
+fires the project's deploy hook on pushes to main under `site/**`.
+
+That is the right fix for the quota and it introduced two silent paths,
+neither of them recorded anywhere before this run.
+
+**The hook's acceptance is not a build.** The workflow's only assertion
+is that the POST returned 200 or 201. A deploy hook returns as soon as
+the job is queued, so a build that fails afterwards leaves the workflow
+green, `gh run list` clean, and production serving the previous commit.
+This is the definition error at the top of this file, reproduced exactly,
+in the runtime added the day after the file was written to prevent it.
+Guardrail 3 wants an alarm on every path that ends without a delivery,
+and this runtime has no notifier at all.
+
+**The path filter decides what counts as a change to the site.** A merge
+that changes what the site renders from without touching `site/**` does
+not fire the hook. That is correct for the quota and it means the set of
+files the site depends on is now load-bearing and written in one place
+only, as a glob in a workflow the seats cannot edit.
+
+Neither of these is an outage today and neither is the engineer seat's
+to fix from where it sits. Both belong in the sprint, and the honest
+statement until they are closed is that the site is the one surface
+whose deploy reports success without evidence that anything deployed.
+
+The rest of the table is the honest part. One surface is instrumented,
+three are not, and the daily pipeline is the one that feeds everything
+else. Closing those is engineer work and belongs in the sprint rather
+than in this file, which is why it is written here as a finding for the
+PM to groom rather than as an assignment.
 
 ## The standing question this file answers
 

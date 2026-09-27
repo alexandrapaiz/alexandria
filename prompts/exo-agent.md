@@ -413,6 +413,20 @@ For each hit, three questions, and they are in order of severity.
    is not a record. Nothing reads commit subjects. Where it is missing,
    the entry is the chair's to write and yours to ask for, because
    docs/decisions.md is not your surface.
+
+   **And a comment inside the artifact is not a record either**, which is
+   the sharper form of the same rule and the one that fooled this seat on
+   2026-09-27. HQ Incident 5 changed how alexandria deploys to
+   production. Its reasoning was written out carefully, in nine lines of
+   comment at the top of `.github/workflows/deploy-main.yml`, and it
+   existed nowhere else: not in docs/decisions.md, not in
+   docs/agents/runtime-changes.md, and not in
+   docs/agents/delivery-health.md, which is this seat's own file and
+   whose table still described the deploy trigger the change had
+   replaced. A comment is read by whoever opens that file for some other
+   reason. `grep -rn "HQ Incident 5" docs/` returned nothing at all.
+   So run the grep, on the parent's own words for its decision, and
+   absence of a hit outside the artifact is the finding.
 3. **Do the seats whose behaviour changed know?** The four routed seats
    could not see their own model. A seat that cannot see its
    configuration cannot report on it, which is why the failure needed a
