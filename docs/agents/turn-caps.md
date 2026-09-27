@@ -106,8 +106,8 @@ twice that, rounded up to the next 50, floor 100.
 | Seat | Runs measured | Peak turns | Cap in force | Required | Verdict |
 |---|---|---|---|---|---|
 | frontend | 8 | 286 | 600 | 600 | ok |
-| pm (ceremony) | 8 | 141 (censored) | 300 | 400 queued | censored, and duties grew 2026-09-19 |
-| pm (standup) | 0 | unmeasured | shares the pm cap | n/a | provisional, measure after the first run |
+| pm (ceremony) | 8, none since the cron split | 141 (censored) | 300 | unknown | **stale**: last measured before the ceremony and the standup became separate runs, see below |
+| pm (standup) | 4 | 81 | shares the pm cap, 300 | 200 | **measured 2026-09-27**, comfortable, see below |
 | security | 3 | 108 | 250 | 250 | ok, re-checked 2026-09-20 after duty growth |
 | engineer | 8 | 82 | 200 | 200 | ok, re-checked 2026-09-20 after duty growth |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
@@ -301,3 +301,59 @@ cap contributes nothing to this table, high or low.**
 since the 2026-09-21 check, on a seat that runs daily and gained three
 duties that week. 150 has still never been hit, which is the reason
 nobody has noticed, and 200 remains the rule's answer.
+
+
+---
+
+## The PM's two runs, measured apart (2026-09-27)
+
+The cron split of 2026-09-23 turned one weekly PM run into two different
+jobs sharing one cap, and this page carried the standup row as
+`unmeasured, provisional` for four days after the first one completed.
+Measured now, with the command at the top of this page, on the four
+scheduled standup runs since the split:
+
+| Run | Date | `num_turns` | Cap in force |
+|---|---|---|---|
+| 36022688185 | 2026-09-24 | 62 | 300 |
+| 36156468758 | 2026-09-25 | 44 | 300 |
+| 36250215509 | 2026-09-26 | 81 | 300 |
+| 36330174329 | 2026-09-27 | 38 | 300 |
+
+Peak 81, so the standing rule of twice the peak rounded up to the next 50
+gives 200. The cap in force is 300 and nothing is close to it. **The
+consequence for the queue is that the standup's share of the 300-to-400
+raise in item 2 of pending-workflow-changes.md is cancelled**, on
+measurement rather than on judgment, which is the whole point of keeping
+this page.
+
+**The ceremony row is the one to watch, and it is stale rather than
+comfortable.** Its 141 was measured when the ceremony and the standup
+were the same run, so it includes work the standup now does and excludes
+nothing the ceremony has since gained, which is the grooming, the sprint
+plan and the day's dispatch queue. No ceremony run has completed since
+the split: the only Monday in between, 2026-09-21, failed at turn 30.
+Two rows of this table therefore describe a seat that no longer exists in
+that shape.
+
+**What the next run does, and it is one command.** The 2026-09-28
+ceremony run is the first real measurement of the heavier half.
+
+```bash
+gh run list --workflow=agent-pm.yml --limit 5 --json databaseId,createdAt,conclusion
+# then the num_turns command at the top of this page, on the Monday id
+```
+
+If it comes in under 150, delete item 2 from the queue and mark both rows
+ok. If it comes in over 200, the raise is a shortfall rather than
+headroom and the item's justification changes from optional to required.
+Either way the number decides it.
+
+**The general note, because this is the second time this page has been
+wrong for the same reason.** A cap belongs to a job and not to a seat.
+When one workflow grows a second cron with a different mode, it has two
+turn profiles sharing one number, and this table needs two rows from that
+moment rather than from the moment somebody notices. The trigger for a
+re-measurement is therefore not only a cap hit and a duty change, which
+is what the rule above says. **It is also a cron change**, and that is
+now the third entry on the list in this page's opening rule.
