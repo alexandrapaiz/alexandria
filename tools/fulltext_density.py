@@ -43,17 +43,29 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "pipelin
 
 import budget  # noqa: E402
 
-# Five papers the library's own corpus is made of: two reasoning-model releases,
-# two frontier model cards, one small dense model. Chosen to span the formatting
-# that changes the answer — heavy tables, heavy math, plain prose — rather than
-# to be representative of arXiv, because the number this tool exists to produce
-# is a worst case and not an average.
+# Fourteen papers of the kind the library's corpus is made of. Chosen to span
+# the formatting that changes the answer — pages of tables, pages of math,
+# pages of plain prose — rather than to be representative of arXiv, because the
+# number this tool exists to produce is a worst case and not an average.
+#
+# arxiv:2407.21783 (Llama 3) is the one that binds, at 3.35 chars/token: it
+# opens with tables. The loosest is arxiv:2408.03314 at 4.93, and the spread
+# between them is the reason a single hand-picked sample would not have done.
 DEFAULT_PAPERS = [
     "2501.12948",   # DeepSeek-R1
     "2412.19437",   # DeepSeek-V3
-    "2407.21783",   # Llama 3
+    "2407.21783",   # Llama 3 — the densest of these, and the one that binds
     "2310.06825",   # Mistral 7B
-    "2402.03300",   # DeepSeekMath / GRPO
+    "2402.03300",   # DeepSeekMath, GRPO
+    "2305.18290",   # DPO
+    "2201.11903",   # chain-of-thought prompting
+    "2203.02155",   # InstructGPT
+    "2302.13971",   # LLaMA
+    "2404.19737",   # multi-token prediction
+    "2408.03314",   # test-time compute scaling
+    "2312.11805",   # Gemini
+    "2501.19393",   # s1, simple test-time scaling
+    "2410.05229",   # GSM-Symbolic
 ]
 
 
@@ -84,11 +96,26 @@ def fetch(arxiv_id: str, timeout: float = 30.0) -> str | None:
         return clean(resp.read().decode("utf-8", "ignore"))
 
 
-def measure(papers: list[str], window: int) -> dict:
-    """Density of the first `window` characters of each paper, which is the slice
-    distill actually sends. Density is not uniform through a paper — the
-    references section is far denser than the introduction — so measuring the
-    whole file would answer a question nobody asks."""
+def measure(papers: list[str], window: int, model: str) -> dict:
+    """Density of the first `window` characters of each paper, and whether the
+    real request built from it fits.
+
+    `window` is the slice distill actually sends, and measuring anything else
+    answers a question nobody asks. Density is not uniform through a paper: the
+    same 14 papers run 3.65 chars/token over their first 24,000 characters and
+    3.35 over their first 12,000, because a paper opens with a title block,
+    an author list, an abstract and a table of contents before it settles into
+    prose. Measuring the generous window and sending the tight one is how a
+    corrected constant was still wrong on its first attempt.
+
+    The fit verdict is the point. A density is a summary; whether Groq accepts
+    the request is the fact, and `check_request` is the same arithmetic the
+    guard and CI use rather than a second copy of it.
+    """
+    prompt = (pathlib.Path(__file__).resolve().parent.parent
+              / "prompts" / "distill.md").read_text()
+    reservation, _ = budget.request_reservation(
+        budget.CRON_REQUESTS["distill (pipeline/distill.py)"])
     rows, failures = [], []
     for pid in papers:
         try:
@@ -101,12 +128,16 @@ def measure(papers: list[str], window: int) -> dict:
             continue
         body = text[:window]
         tokens = budget.count_tokens(body)
+        report = budget.check_request(prompt, body, reservation, model)
         rows.append({
             "paper": f"arxiv:{pid}",
             "cleaned_chars": len(text),
             "measured_chars": len(body),
             "tokens": tokens,
             "chars_per_token": round(len(body) / tokens, 4),
+            "request_tokens": report.total,
+            "headroom": report.headroom,
+            "fits": report.fits,
         })
     return {"papers": rows, "failures": failures}
 
@@ -116,6 +147,8 @@ def main() -> int:
     ap.add_argument("--papers", help="comma-separated arXiv ids")
     ap.add_argument("--window", type=int, default=None,
                     help="characters to measure (default: distill's FULLTEXT_CHARS)")
+    ap.add_argument("--model", default="openai/gpt-oss-120b",
+                    help="the model whose per-request limit binds")
     ap.add_argument("--write", help="path to write the JSON receipt to")
     args = ap.parse_args()
 
@@ -130,40 +163,56 @@ def main() -> int:
               "ratio. Run `pip install tiktoken==0.8.0` first.", file=sys.stderr)
         return 2
 
+    model = args.model
     print(f"measuring the first {window} characters of {len(papers)} papers "
-          f"with o200k_base\n")
-    result = measure(papers, window)
+          f"with o200k_base, against {model}\n")
+    result = measure(papers, window, model)
     for row in result["papers"]:
-        print(f"  {row['paper']:<20} {row['measured_chars']:>6} chars -> "
-              f"{row['tokens']:>5} tokens   {row['chars_per_token']:.3f} chars/token")
+        print(f"  {row['paper']:<18} {row['measured_chars']:>6} chars -> "
+              f"{row['tokens']:>5} tokens  {row['chars_per_token']:.3f} c/t  "
+              f"request {row['request_tokens']:>5}  headroom {row['headroom']:>6}  "
+              f"{'fits' if row['fits'] else 'DOES NOT FIT'}")
     for bad in result["failures"]:
-        print(f"  {bad['paper']:<20} {bad['why']}")
+        print(f"  {bad['paper']:<18} {bad['why']}")
 
     if not result["papers"]:
         print("\nnothing measured, so nothing to report", file=sys.stderr)
         return 1
 
     worst = min(r["chars_per_token"] for r in result["papers"])
-    filler = budget.FALLBACK_CHARS_PER_TOKEN
+    worst_headroom = min(r["headroom"] for r in result["papers"])
+    refused = [r["paper"] for r in result["papers"] if not r["fits"]]
     prose = round(window / budget.count_tokens(budget._filler(window)), 4)
     print(f"\n  worst real paper        {worst:.3f} chars/token  <- the number that binds")
     print(f"  budget._FILLER prose    {prose:.3f} chars/token")
-    print(f"  the no-tokenizer ratio  {filler:.3f} chars/token")
-    print(f"  budget.FULLTEXT_CHARS_PER_TOKEN is {budget.FULLTEXT_CHARS_PER_TOKEN}")
+    print(f"  the no-tokenizer ratio  {budget.FALLBACK_CHARS_PER_TOKEN:.3f} chars/token")
+    print(f"  the guard assumes       {budget.FULLTEXT_CHARS_PER_TOKEN} chars/token")
+    print(f"  worst real headroom     {worst_headroom}")
 
-    if budget.FULLTEXT_CHARS_PER_TOKEN > worst:
+    stale = budget.FULLTEXT_CHARS_PER_TOKEN > worst
+    if stale:
         print(f"\nSTALE: the guard assumes {budget.FULLTEXT_CHARS_PER_TOKEN} "
               f"chars/token and a real paper measured {worst}. Every distill "
               "request is being sized smaller than it is. Lower the constant "
               "in pipeline/budget.py to at most the worst number above.",
+              file=sys.stderr)
+    if refused:
+        print(f"\nREFUSED: {len(refused)} of {len(result['papers'])} real papers "
+              f"do not fit at FULLTEXT_CHARS={window}: {', '.join(refused)}. The "
+              "job will send them, be refused, and fall back to the abstract "
+              "while reporting success. Lower FULLTEXT_CHARS in "
+              "pipeline/distill.py until this line stops printing.",
               file=sys.stderr)
 
     if args.write:
         receipt = {
             "measured_on": date.today().isoformat(),
             "tokenizer": "o200k_base (tiktoken)",
+            "model": model,
             "window_chars": window,
             "worst_chars_per_token": worst,
+            "worst_headroom_tokens": worst_headroom,
+            "all_fit": not refused,
             "budget_filler_chars_per_token": prose,
             "guard_constant": budget.FULLTEXT_CHARS_PER_TOKEN,
             **result,
@@ -171,7 +220,7 @@ def main() -> int:
         pathlib.Path(args.write).write_text(json.dumps(receipt, indent=2) + "\n")
         print(f"\nreceipt written to {args.write}")
 
-    return 0 if budget.FULLTEXT_CHARS_PER_TOKEN <= worst else 1
+    return 1 if (stale or refused) else 0
 
 
 if __name__ == "__main__":
