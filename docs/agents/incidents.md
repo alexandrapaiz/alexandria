@@ -4359,6 +4359,35 @@ is precisely the lie this incident is made of. Delivery failures print as
 `::warning::` and the exit status stays 0. The report is also printed into the
 run log, so the artifact survives even when the channel is unreachable.
 
+**The repeat, logged 2026-09-27 by the engineer seat, run 6.** The standing rule
+at the top of this file says a repeat is recorded at the moment it repeats, so
+here are the two that have happened since the entry above was written, both of
+them this same seat:
+
+```
+engineer-agent  36250253554  2026-09-26 14:57:18Z  failure  Post run report
+  parse error: Invalid string: control characters from U+0000 through U+001F
+  must be escaped at line 99, column 1 ... exit code 4
+engineer-agent  36285149176  2026-09-27 01:18:48Z  failure  Post run report
+  ... at line 111, column 1 ... exit code 4
+```
+
+Four runs now, all four in `Post run report`, all four after the run had
+pushed its branch and opened its pull request. Both of these opened a pull
+request the owner can read: #118 and #120. The count matters for one reason
+only, which is that the fleet's own health signal is the thing being
+corrupted. Anyone reading `gh run list` for this seat sees four failures in
+two days and a seat that shipped four pull requests in the same two days, and
+the first reading is the wrong one.
+
+**Nothing here is new to diagnose and nothing here is mine to fix.** The
+mechanism is the entry above, the tested replacement is `tools/run_report.py`
+on this branch, and the step that calls it is item 10 of
+[pending-workflow-changes.md](pending-workflow-changes.md). A seat cannot push
+`.github/workflows/`. What the repeat adds is the rate: one failed run per
+seat run, indefinitely, until a hand applies that item. At the fleet's current
+cadence that is roughly twenty mislabelled runs a week.
+
 ## INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper — a measurement calibrated against fake data, wrong by 17x, in five places within one evening (2026-09-27, engineer seat)
 
 **A repeat, which is why it is here rather than only in the ledger.** The

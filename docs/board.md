@@ -117,7 +117,10 @@ python3 tools/board.py show --view runs         # the fleet's last 30 runs
 python3 tools/board.py show --json             # the same state, for an agent
 python3 tools/board.py show --seat frontend    # one seat's items and runs
 python3 tools/board.py report --status success --dry-run   # what a run would post
-python3 tools/board.py item --id <id> --status doing       # create or move an item
+python3 tools/board.py item --title "..." --status next --assignee frontend
+                                               # a new card, id issued by the board
+python3 tools/board.py item --id ALX-1 --status doing       # move a card it issued
+python3 tools/board.py snapshot                # refold board/state.json by hand
 python3 tools/board.py init                    # create the ref, idempotent
 python3 -m pytest tests/test_board.py -q
 ```
@@ -131,16 +134,30 @@ debugging the store.
 ## Reading it from the site
 
 The next slice is the frontend seat's read-only view. This repository is
-public, so the state needs no credential. Both of these were run against the
-live ref on 2026-09-26.
+public, so the state needs no credential. Every measurement here was taken
+against the live ref, the first two on 2026-09-27 and the last on 2026-09-26.
 
-**One request for the whole board**, which is the one to build on:
+**One request for the folded board**, which is the one to build on:
+
+```
+GET https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json
+```
+
+HTTP 200, 2,212 bytes, 701 with gzip accepted, and nothing to fold: it holds
+every item, the latest run per seat, the newest 200 reports, and the count of
+events behind them. `tools/board.py` refreshes it after every write. Read
+`events` against the ref if you need to know whether it is current, and read
+`runs_total` against `runs_kept` to know whether you are looking at a window.
+The file is derived, so treat it as a cache: if it is missing or stale, the log
+below is the truth and `python3 tools/board.py snapshot` rebuilds it.
+
+**One request for the whole log**, if you want the events themselves:
 
 ```
 GET https://codeload.github.com/alexandrapaiz/alexandria/tar.gz/refs/heads/board
 ```
 
-1,029 bytes gzipped for the board as it stands. Untar it server-side, keep the
+1,547 bytes gzipped for the board as it stands. Untar it server-side, keep the
 files under `board/events/`, and fold them with the same rules
 `tools/board.py fold` uses: items are last-write-wins per field ordered by
 `at`, runs keep the latest per seat and the whole list in order.
@@ -195,9 +212,22 @@ an event carrying a status and nothing else:
 }
 ```
 
-`status` must be one of `board/views.json`'s columns. Every other field is
-free text, and `ITEM_FIELDS` in `tools/board.py` is the list, so carrying a new
-one is one entry there and one line here.
+`status` must be one of `board/views.json`'s columns, and `id` must be a name
+the ref can hold as a path: letters, digits, dot, dash and underscore, up to
+64 characters. Every other field is free text, and `ITEM_FIELDS` in
+`tools/board.py` is the list, so carrying a new one is one entry there and one
+line here.
+
+A third shape, which is not an event and never folds. One file per id under
+`board/ids/`, written by the allocator and read by nothing but the allocator:
+
+```json
+{
+  "at": "2026-09-27T15:52:00Z",
+  "by": "engineer",
+  "id": "ALX-1"
+}
+```
 
 ## How it relates to the three surfaces that already exist
 
@@ -221,25 +251,98 @@ where an item's state is machine-readable, and `docs/backlog.md` stays the
 week's ordered narrative. Two surfaces is one too many, and choosing which
 survives belongs to the seat that grooms it.
 
-## What this slice does not do
+## Ids come from the board, not from whoever types the command
 
-- No UI. The frontend seat has the read-only view, queued by the PM in PR #113.
-- No workflow step yet, because no seat can push `.github/workflows/`. It is
-  written out ready to apply as item 5 of
-  [pending-workflow-changes.md](agents/pending-workflow-changes.md).
-- No dependencies between items, no labels, no comments, no due-date alarms.
-  Linear has all of them and the board will need some of them. It needs them
-  after the first week of real use says which, not before.
+The first two items here were named by hand, `board-store` and `board-ui`.
+Nothing stopped the next seat from choosing `board-ui` again for different
+work, and that failure is silent rather than loud: item events are patches
+folded by id, so two seats naming one id write two valid events and the fold
+merges two pieces of work into one card with nothing to look at.
 
-## Run 6, 2026-09-27: ids the board issues, and the snapshot the site reads
+So the board issues ids. Leave `--id` off and it allocates the next
+`ALX-<n>`:
 
-In progress on `engineer/2026-09-27-board-ids-and-snapshot`. Two ledger
-entries from run 2's own review of what it built, both of them the second
-slice of HQ ADR-037 priority 1:
+```
+$ python3 tools/board.py item --title "..." --status review --assignee engineer --pr 122
+board: issued ALX-1
+board: written board/events/item/2026-09-27/20260927T155201Z-alx-1-b1f0acbb.json
+board: board/state.json holds 4 events
+```
 
-- item ids come from the board rather than from whoever types the command,
-  so two seats cannot silently fold two pieces of work into one card
-- the board folds itself into `board/state.json` on the ref, so the site
-  reads one file instead of a tarball it has to fold in the render path
+**The check is a file named by the id and nothing else.** `board/ids/ALX-1.json`
+is written with a create that fails when the path exists, so two seats racing
+for `ALX-1` means the second one is refused and takes `ALX-2`. Verified against
+the live ref the same run:
 
-This heading is replaced by the real sections when the work lands.
+```
+$ list_claimed_ids()      -> ['ALX-1']
+$ next_id(['ALX-1'])      -> 'ALX-2'
+$ claim_id('ALX-1', by='frontend')
+  ('exists', {'at': '2026-09-27T15:52:00Z', 'by': 'engineer', 'id': 'ALX-1'})
+```
+
+That is a check rather than a convention, which is the whole reason to build
+it this way. The incident register allocates its numbers by convention and has
+collided four times (incident 29), and the fix there was to stop using numbers.
+Here the allocation happens against the ref at write time and the ref answers.
+
+`--id` still takes any name, because moving a card means naming it, and the
+two items that predate this keep the names they have. What `--id` does now is
+claim the name too, so the registry stays the complete list of what has been
+issued. Naming an id another seat issued is allowed and says so on stderr,
+because patching another seat's card is usually exactly what you meant and
+silence is the only wrong answer.
+
+## The snapshot the site reads
+
+`board/state.json`, on the same ref, holding the fold: every item, the latest
+run per seat, the newest 200 run reports, and the number of events it was
+folded from. `tools/board.py report` and `tools/board.py item` refresh it after
+they write, so no workflow change is needed to keep it current, and
+`tools/board.py snapshot` rebuilds it by hand.
+
+Measured against the live ref on 2026-09-27, which is what the read path
+below is now built on:
+
+```
+GET https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json
+  HTTP 200, 2,212 bytes, 701 bytes with gzip accepted, no credential, no fold
+```
+
+against 1,547 bytes for a tarball of the whole ref that the reader must untar
+and fold itself. The byte difference is not the point today and the fold is.
+The byte difference becomes the point on its own: the tarball grows with every
+event forever, and the snapshot's size is bounded by the item count plus 200
+runs.
+
+**It is derived, and the log stays the source of truth.** That matters because
+it is the first mutable path in an append-only store, and the failure it invites
+is one writer dropping another's event. So the write is a compare-and-swap: the
+Contents API takes the existing blob's sha as the writer's proof of what it
+believed it was replacing, and a writer working from a stale read is refused.
+The refusal is answered by folding the log again rather than by re-sending the
+same body, because the writer that won had read events this one had not.
+`tests/test_board.py::test_a_stale_sha_forces_a_refold_instead_of_an_overwrite`
+is that property: an event that lands between the two attempts is in the
+snapshot that finally gets written.
+
+A snapshot that cannot be written is not an error and never fails the command
+that was reporting. The event is already on the ref, and the next writer
+repairs the file.
+
+## What the board still does not do
+
+- **No UI.** The frontend seat has the read-only view, queued by the PM in PR
+  #113 as item `board-ui`. The read path in this file is now one fetch of
+  `board/state.json`, which is the part of that dispatch's instruction that
+  changed.
+- **No workflow step yet**, because no seat can push `.github/workflows/`. It
+  is written out ready to apply as item 5 of
+  [pending-workflow-changes.md](agents/pending-workflow-changes.md), and it
+  needs no edit for the snapshot: the same one-line step refreshes it.
+- **No dependencies between items, no labels, no comments, no due-date
+  alarms.** Linear has all of them and the board will need some of them. It
+  needs them after the first week of real use says which, not before.
+- **Nothing reads the board back yet.** A seat can fold it, and no charter
+  tells a seat to. Deciding whether the board or `docs/backlog.md` is the
+  board a seat consults on Monday is the PM's call, above.

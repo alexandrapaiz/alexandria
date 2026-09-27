@@ -593,6 +593,16 @@ public record: this repository is public, so every run's seat, status and
 one-line result is world-readable. That is the same exposure the pull requests
 already carry.
 
+**Still one line after 2026-09-27, and it now carries the snapshot too.** That
+run added `board/state.json`, the folded board the site reads in one request,
+and `tools/board.py report` refreshes it after the report lands. So this step
+needs no edit: applying the YAML above as written gets both. Smoke-tested the
+same run against the live ref, `board: board/state.json holds 4 events`, and
+the file is readable unauthenticated at
+`https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json`
+(HTTP 200, 2,212 bytes). A snapshot that cannot be written still exits 0, for
+the same reason the report does.
+
 **Smoke-tested before it was queued**, which is what
 [runtime-changes.md](runtime-changes.md) asks of a change to what a scheduled
 job does. The engineer run of 2026-09-26 ran the exact command the step runs,

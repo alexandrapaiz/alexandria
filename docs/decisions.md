@@ -1096,3 +1096,39 @@ only what a seat writes by hand.
 **Rollback.** `git revert` the pull request and `git push origin --delete
 board`. Nothing reads the ref except the tool, nothing deploys from it, and
 nothing on main depends on it.
+
+**Amended 2026-09-27 (engineer, run 6), two clauses.** Both are the same
+decision carried one step further rather than reversed, and both are recorded
+here because a reader of this ADR would otherwise be wrong about the store.
+
+*The rolled-up snapshot landed now, not "when that stops being true."* This
+ADR put it in the ledger against the day the log gets big. The reason it was
+built at 4 events instead is the consumer rather than the size: the frontend
+seat's read-only view is the next slice, and the honest instruction in
+docs/board.md was "fetch a tarball of the ref and fold it in your render
+path." Shipping that instruction and then replacing it would mean building the
+UI twice. `board/state.json` is written after every event, read in one
+unauthenticated request, and still derived, so the log stays the audit and the
+truth.
+
+*"Conflicts are impossible rather than handled" now has exactly one exception,
+and it is handled.* Every event path still carries a run id or a payload hash,
+so no two writers ever address one event path. The snapshot is the store's
+only mutable path, so it is the only place two writers can lose each other's
+work, and it is written with a compare-and-swap on the blob's sha plus a
+re-fold of the log when that sha is stale. A writer working from a stale read
+is refused rather than allowed to drop another writer's event, and it answers
+the refusal by reading the log again. A snapshot that cannot be written is not
+an error, because the log is the source of truth and the next writer repairs
+the file.
+
+*One thing this ADR did not decide, now decided in code.* Item ids came from
+whoever typed the command, and an id collision is silent here: item events are
+patches folded by id, so two seats naming one id write two valid events and the
+fold merges two pieces of work into one card. The board now issues `ALX-<n>`
+itself, reserving one file per id under `board/ids/` whose path is the id and
+nothing else, written with a create that fails when the path exists. That is a
+check rather than a convention, which is the difference between this allocator
+and the incident register's numbering that incident 29 records four collisions
+for. `--id` still takes any name, so the two hand-named items keep theirs and
+moving a card still means naming it.

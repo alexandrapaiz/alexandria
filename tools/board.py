@@ -52,7 +52,7 @@ run. It cannot show that view to anybody else.
 
 **Ids come from the board.** The first two items here were named by hand, and
 nothing stopped the next seat from choosing the same name for different work.
-Item events are patches folded by id, so a collision does not error; it merges
+Item events are patches folded by id, so a collision does not error. It merges
 two pieces of work into one card silently. `allocate_id` issues `ALX-<n>` by
 reserving one file per id under `board/ids/`, whose path is the id and nothing
 else, with a create that fails when the path exists. Two seats racing for
@@ -368,8 +368,8 @@ def snapshot(state, event_count, at=None, runs=SNAPSHOT_RUNS):
         "runs_total": len(state["runs"]),
         "source": (
             f"derived: folded from {EVENTS_DIR} on the {BOARD_REF} ref by "
-            "tools/board.py. The log is the source of truth; this file is a "
-            "read cache and a writer that finds it stale replaces it."
+            "tools/board.py. The log is the source of truth, and this file is a "
+            "read cache that a writer finding it stale replaces."
         ),
     }
 
