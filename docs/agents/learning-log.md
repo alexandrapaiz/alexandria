@@ -2178,3 +2178,8 @@ these four, and read them first because they are this run's unpaid debt.
    reservation or a timeout, and for each one ask whether a rehearsal
    ran. This is the new half of step 2 and the first run to use it is
    the one that finds out whether the clause is written usefully.
+
+## 2026-09-27 — the run opens
+
+Branch open, PR open, work not yet done. This line exists so that a
+sandbox teardown at turn 20 still leaves a reviewer something to read.
