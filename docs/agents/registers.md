@@ -56,7 +56,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
 | `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily over `.github/` **and `pipeline/`**, plus frontend, security and ExO before their own edits, plus the deploy command's `&&` chain for the press | machinery changed twice in a week, gated daily |  reopened and reclosed 2026-09-24: the gate fired on the right files and the law's scope excluded provider changes |
-| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, not yet code | provider changes are rare and catastrophic |  GAP, and the only GAP in this table with a shell-level fix already written |
+| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, `rehearse()` shipped and CI-held on the engineer's branch | provider changes are rare and catastrophic |  was GAP, **closed in code 2026-09-24 and unmerged since**, see the 2026-09-27 sweep |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -76,7 +76,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
-| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24 |
+| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | PM §1f delivery half, daily | the product ships weekly and daily, gated daily | **GAP of a new kind, found 2026-09-27**: both gates fire and the owning seat cannot reach the evidence, because `agent-pm.yml` has no `NEON_RO_URL`. Guardrail 5 and the capability test are the response |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 
 ## What this run changed
@@ -371,3 +371,94 @@ not a register and gating it would be ceremony.
 under `docs/voice/` and `docs/design/` are now four days an open ledger
 request. Still not this seat's files, still not worth a second mention
 to the owner.
+
+
+---
+
+## The 2026-09-27 sweep
+
+Three questions this run asked of the map, and the third one is new.
+
+### 1. The third kind of gap: both gates fire and the seat cannot reach the evidence
+
+This page has always had two columns for a reason, and its founding
+lesson is that recording is not enforcing. This run found a register
+where both columns are honestly filled in and the rule is still not in
+force, and the reason is in neither column.
+
+`docs/agents/delivery-health.md` has an archive-side gate (the ExO seat
+writes the guardrails) and an artifact-side gate (the PM's daily standup,
+charter §1f). Both fire, weekly and daily. And guardrail 4 defines the
+press's evidence as the newest row in the `digests` table, which the PM
+seat has never been able to query, because `.github/workflows/agent-pm.yml`
+does not carry `NEON_RO_URL`. Three other workflows do.
+
+So the gate opens the file, reads the rule, and substitutes a weaker
+proxy, honestly and in writing, every day. The full finding is in
+`docs/agents/unowned-duties.md` under the 2026-09-27 rows, and the
+generalization is guardrail 5 of `delivery-health.md`: **name the evidence
+and the credential in the same sentence.**
+
+**What this means for the map itself.** Two gates are not enough to
+describe a register whose rule depends on an input. A third question
+belongs in the sweep, and it is cheap:
+
+> **Where a register's rule names evidence outside this repository, does
+> the gating seat's workflow hold what reaches it?**
+
+Only a few rows can fail it, which is what makes it cheap. A register
+about words in this repo needs nothing but a checkout. A register about a
+database, a provider, a paid service or a live endpoint needs a
+credential, and a credential lives in a file no seat can edit. Those rows
+are `delivery-health.md` today and would be any future register about
+subscribers, revenue or uptime.
+
+### 2. A GAP that closed in code and has stayed unmerged for three days
+
+`docs/agents/press-rehearsal.md` was the only GAP on this table with its
+fix already written, and the fix landed: `rehearse()` exists in
+`pipeline/weekly.py`, CI holds its teeth, and the receipt is in the deploy
+chain. All of it is on the engineer seat's branch and none of it is on
+main.
+
+Which is a state this page has no column for, and it is worth naming
+because it will recur. A gate that is written, tested and unmerged is
+**not** enforcing anything, and it reads as closed to anyone who greps
+the repository on a seat branch rather than on main. The state column now
+says "closed in code and unmerged" rather than "closed", and the rule for
+whoever updates this table next is to **grep main, not your own branch**,
+because a seat's working tree contains its own optimism.
+
+### 3. The voice and design registers still carry no `Enforced at:` line
+
+The mechanical check in `prompts/exo-agent.md` §3d is
+`grep -L "Enforced at:" docs/agents/*.md docs/voice/*.md docs/design/*.md`,
+and it returns ten files: every register under `docs/voice/` and
+`docs/design/`.
+
+**This is not ten gaps, and the distinction matters.** Every one of those
+files has a real artifact-side gate recorded in the table above, most of
+them the writer's or the frontend's grading step, and several were closed
+by earlier sweeps. What they lack is the header that says so in the file
+itself. The table knows; the file does not.
+
+The cost is small and real: a seat that opens `docs/voice/taste.md`
+directly, which is what the gate tells it to do, cannot see what enforces
+the file it is reading, and the one place that knows is a table in a
+different directory. That is the same distance the founding lesson is
+about, shortened by one hop.
+
+**It is not fixed here, deliberately, and this is the honest reason.**
+`docs/voice/` and `docs/design/` are the writer's and the frontend's
+surfaces, and §3d of the ExO charter is explicit that where a register
+belongs to another seat's surface the check is filed as a charter edit
+rather than as an edit to their file. Filing two more charter edits this
+run would put this run over its three-improvement limit for a header
+line. So it is recorded here, with the count, for the run that has room:
+**ten files, one line each, and the line is `**Enforced at:**` followed
+by what the table above already says.** The right owners are the writer
+for the four under `docs/voice/` and the frontend for the four under
+`docs/design/`, with the two dated snapshots
+(`site-copy-2026-09-19.md`, `prose-benchmark-2026-09-19.md`) being
+evidence rather than registers, which is worth saying in the file so the
+next sweep stops counting them.
