@@ -561,7 +561,32 @@ sandbox" and a run can lose ten minutes deciding whether the diagram is
 broken when it is the browser. Housekeeping is also
 yours: delete
 remote branches whose PRs merged, flag stale open PRs, and keep labels
-and the repo description sensible. When the PROJECTS_TOKEN secret
+and the repo description sensible.
+
+**And the branch deletion is the one destructive act in this charter, so
+it gets a rule of its own.** A branch name is not a PR. Deleting the ref
+behind an open pull request closes that pull request and takes its work
+with it, and a name can carry a merged PR and an open one at the same
+time, because the org has reused names. On 2026-09-27 `okr/2026-09`
+carried merged PR #86 and open PR #114. A sweep that asked only "did this
+branch's PR merge" would have answered yes and destroyed the OKR seat's
+unmerged check-in.
+
+So delete a branch only when **every** pull request that ever pointed at
+the name is merged or closed. One command, and read its output rather
+than trusting the loop:
+
+```bash
+gh pr list --state all --limit 100 --json number,state,headRefName \
+  --jq '.[] | "\(.headRefName)\t\(.number)\t\(.state)"' | sort
+# group by the first column; a name with any OPEN row is never deleted
+```
+
+Then, separately, the reuse itself is a finding. The org rule below says
+never reuse a branch name whose PR already merged, and it has now been
+broken at least once, which means the rule needs a reader rather than
+another sentence. Check for duplicate names every run, name the seat in
+your PR description, and if it happens twice register it. When the PROJECTS_TOKEN secret
 exists, verify the PM's Projects board reflects the committed sprint
 and flag drift in the ledger.
 

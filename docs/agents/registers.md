@@ -56,7 +56,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
 | `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily over `.github/` **and `pipeline/`**, plus frontend, security and ExO before their own edits, plus the deploy command's `&&` chain for the press | machinery changed twice in a week, gated daily |  reopened and reclosed 2026-09-24: the gate fired on the right files and the law's scope excluded provider changes |
-| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, `rehearse()` shipped and CI-held on the engineer's branch | provider changes are rare and catastrophic |  was GAP, **closed in code 2026-09-24 and unmerged since**, see the 2026-09-27 sweep |
+| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, and `rehearse()` is now real code in the deploy chain | provider changes are rare and catastrophic |  **was GAP, closed on main 2026-09-24**. The CI half that checks the gate still has teeth is in `.github/workflows-pending/`, so it is not running |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -413,21 +413,33 @@ credential, and a credential lives in a file no seat can edit. Those rows
 are `delivery-health.md` today and would be any future register about
 subscribers, revenue or uptime.
 
-### 2. A GAP that closed in code and has stayed unmerged for three days
+### 2. The last GAP on this table closed, and half of its gate is still parked
 
-`docs/agents/press-rehearsal.md` was the only GAP on this table with its
-fix already written, and the fix landed: `rehearse()` exists in
-`pipeline/weekly.py`, CI holds its teeth, and the receipt is in the deploy
-chain. All of it is on the engineer seat's branch and none of it is on
-main.
+`docs/agents/press-rehearsal.md` was the only GAP here with its fix
+already written, and the previous learning log left two greps for this run
+to settle. Both come back clean **on main**: `pipeline/weekly.py` line
+1187 defines `rehearse()`, and line 54 of the module docstring has
+`&& modal run pipeline/weekly.py::rehearse` in the deploy chain, which is
+the link whose absence would have made the function decorative. So the
+gate is real, the table's state moves from GAP to closed, and the specific
+failure that produced it, a provider migration with no rehearsal behind
+it, now has a command standing in front of it.
 
-Which is a state this page has no column for, and it is worth naming
-because it will recur. A gate that is written, tested and unmerged is
-**not** enforcing anything, and it reads as closed to anyone who greps
-the repository on a seat branch rather than on main. The state column now
-says "closed in code and unmerged" rather than "closed", and the rule for
-whoever updates this table next is to **grep main, not your own branch**,
-because a seat's working tree contains its own optimism.
+**The half that is not running.** The CI step that checks the gate still
+has teeth, meaning that a rehearsal cannot write to `digests`, cannot
+mount a mail credential and cannot pass on a receipt naming a different
+model, lives in `.github/workflows-pending/checks.yml`. Nothing in that
+directory executes. So the deploy chain is guarded and the guard is
+unguarded, which is a smaller thing than it sounds and worth one sentence
+in the state column rather than a GAP.
+
+**The habit this nearly cost.** This run's first draft of the row above
+said "closed in code and unmerged", written after reading the engineer's
+branch and before checking main. That was wrong in the safe direction, and
+it would have understated real progress. The rule for whoever updates this
+table next: **grep main, then grep your own branch, and say which one you
+are quoting.** A seat's working tree contains its own optimism and a seat
+reading another's branch inherits it.
 
 ### 3. The voice and design registers still carry no `Enforced at:` line
 
