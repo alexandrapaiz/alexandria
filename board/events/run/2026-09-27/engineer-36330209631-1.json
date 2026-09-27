@@ -1,0 +1,12 @@
+{
+  "at": "2026-09-27T16:03:15Z",
+  "attempt": 1,
+  "branch": "engineer/2026-09-27-board-ids-and-snapshot",
+  "kind": "run",
+  "pr": 122,
+  "result": "The board issues its own item ids and folds itself into one file the site fetches in a single unauthenticated request, so the frontend seat's next slice reads `board/state.json` instead of untarring t",
+  "run_id": "36330209631",
+  "seat": "engineer",
+  "status": "success",
+  "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36330209631"
+}
