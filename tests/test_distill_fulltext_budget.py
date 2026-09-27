@@ -30,11 +30,25 @@ import json
 import pathlib
 import sys
 
+import pytest
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
 import budget                                                    # noqa: E402
 import distill                                                   # noqa: E402
+
+#: These files assert token counts, and a count is only a measurement when the
+#: real tokenizer produced it. Without tiktoken `pipeline/budget.py` falls back
+#: to a chars-per-token ratio, and every one of these assertions then compares
+#: the ratio against itself and fails with a message about a production defect
+#: that is not there. Reporting a fallback ratio as a measurement is
+#: INC-2026-09-25-budget-guard-estimates, and `tests/test_rag_fallback.py`
+#: already guards its own three counting tests this way.
+NEEDS_TIKTOKEN = (
+    "these assertions are a measurement, and only the real tokenizer makes one. "
+    "Run pip install tiktoken==0.8.0, which is what CI does."
+)
 
 RECEIPT = json.loads((ROOT / "docs" / "evals"
                       / "2026-09-27-fulltext-token-density.json").read_text())
@@ -53,6 +67,7 @@ def rehearsal_body() -> str:
 # ---------------- 1. it fits ----------------
 
 def test_the_full_text_request_fits_every_model_distill_can_reach():
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     for model in budget.distill_models():
         if model not in budget.MODELS:
             continue
@@ -112,6 +127,7 @@ def test_the_payload_is_sized_at_the_measured_paper_density():
 
 
 def test_prose_filler_would_understate_a_paper_by_a_third_or_more():
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # The bug, stated as the arithmetic that would reintroduce it.
     paper = budget.count_tokens(budget.request_text(SPEC, distill.FULLTEXT_CHARS))
     prose = budget.count_tokens(budget._filler(distill.FULLTEXT_CHARS))
@@ -138,6 +154,7 @@ def test_the_rehearsal_sends_more_tokens_than_the_densest_real_paper():
 
 
 def test_the_rehearsal_payload_still_fits():
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # Harder than production, and still inside the limit. If this fails, the
     # gate has become impossible to pass rather than strict.
     report = budget.check_request(PROMPT, rehearsal_body(),

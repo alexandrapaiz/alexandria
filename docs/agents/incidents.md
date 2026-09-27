@@ -4465,3 +4465,54 @@ estimates a payload it cannot see must state what it assumed the payload
 looks like, and something must compare that assumption to the real thing
 on a schedule. An estimate is a claim about the world and the org already
 knows what to do with those: it gives them an evidence grade.
+
+## INC-2026-09-27-suite-fails-without-the-tokenizer — five tests reported a production defect that was a missing local dependency (2026-09-27, engineer seat)
+
+**Filed under L-A17** (docs/standards/lessons.md): a failure diagnosed in under
+a minute gets an entry, because that is the kind the org rediscovers. Nothing
+shipped broken and nothing in production was affected.
+
+**What happened.** Run 6 ran `python3 -m pytest tests/ -q` on a fresh sandbox
+and got five failures. Their messages:
+
+```
+distill degrades again: a full-text request stopped fitting, so the job is back
+  to writing claims from abstracts while reporting success
+12000 characters sized as a paper is 3583 tokens and as prose 4001; if these
+  are close, the density override stopped applying
+distill cannot send a paper to openai/gpt-oss-120b: ... DOES NOT FIT,
+  headroom -189
+```
+
+Every one of those is a statement about the press being broken, and the press
+was fine. `tiktoken` was not installed. `pipeline/budget.py` falls back to a
+chars-per-token ratio when it cannot load the real tokenizer, so the tests that
+assert measured counts were comparing the fallback ratio against itself, and
+the fallback puts a 12,000-character paper at 4,001 tokens where the tokenizer
+puts it at 3,583.
+
+**Why it is worth the five minutes.** This is
+`INC-2026-09-25-budget-guard-estimates` wearing a different hat: a number
+produced by the fallback ratio, presented as a measurement, believed. That
+incident was about the guard's printed output and this one is about the test
+suite's failure messages, and the second is worse in one way, because a failing
+test names a defect and a reader's first move is to go looking for it. The
+repo already had the answer in the same week's code:
+`tests/test_rag_fallback.py` guards its own three counting tests with
+`pytest.importorskip("tiktoken")`, and the two files added on 2026-09-26 and
+2026-09-27 did not.
+
+**Fixed in this run.** The five tests carry
+`pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)`, with the reason
+naming the install command CI already runs. With the tokenizer, 421 pass and 1
+skips, unchanged. Without it, the five skip and say why instead of accusing
+distill. CI installs `tiktoken==0.8.0` in a named step, so nothing there is
+newly skipped, and a failure of that step still fails the build on its own.
+
+**The general form, which is the part worth keeping.** A guard that degrades to
+an estimate must not be read by anything that asserts a measurement. Either the
+assertion refuses to run without the real measurement, or the estimate has to
+be labelled everywhere it can reach, and the first is cheaper. That is the
+third time this shape has cost something in three days, after the guard's
+printed output and after the filler that tokenized like prose
+(`INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper`).

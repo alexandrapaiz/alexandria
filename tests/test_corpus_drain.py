@@ -82,6 +82,19 @@ def no_sleep(monkeypatch):
 
 # ---------------- the spend cap ----------------
 
+#: These files assert token counts, and a count is only a measurement when the
+#: real tokenizer produced it. Without tiktoken `pipeline/budget.py` falls back
+#: to a chars-per-token ratio, and every one of these assertions then compares
+#: the ratio against itself and fails with a message about a production defect
+#: that is not there. Reporting a fallback ratio as a measurement is
+#: INC-2026-09-25-budget-guard-estimates, and `tests/test_rag_fallback.py`
+#: already guards its own three counting tests this way.
+NEEDS_TIKTOKEN = (
+    "these assertions are a measurement, and only the real tokenizer makes one. "
+    "Run pip install tiktoken==0.8.0, which is what CI does."
+)
+
+
 def test_the_cap_is_measured_from_the_providers_own_usage_block():
     cap = llm.Cap(1.00, label="t")
     cap.record("kimi-k2.6", {"prompt_tokens": 1_000_000,
@@ -522,6 +535,7 @@ def test_every_corpus_job_is_in_the_request_table():
 
 
 def test_the_full_text_request_fits_now_and_nothing_degrades():
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # This test asserted the opposite on 2026-09-26, and said so: "the full-text
     # path fits now; update this test and opex.md". It fits now. The 2026-09-26
     # arithmetic (miss by 109) was itself wrong — the guard was sizing a paper
@@ -540,6 +554,7 @@ def test_the_full_text_request_fits_now_and_nothing_degrades():
 
 
 def test_the_guard_sizes_a_paper_as_a_paper_and_not_as_prose():
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # The bug this file's neighbour exists to prevent, stated as arithmetic.
     # Prose filler runs 6.17 chars/token and a real paper runs 3.35, so sizing
     # distill's payload with `_filler` understates it by about 45%, which is
