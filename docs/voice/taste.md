@@ -201,6 +201,27 @@ the chair and the PM record her rulings.
   parallel, a short bold lead per item, a one-line pull for the
   number that matters, white space between sections. Prose stays
   for the argument; lists carry the inventory.
+- 2026-09-27 — Codes are never owner-facing. Her words: "i dont want
+  to see adrs, for me its just random codes. id rather have good
+  descriptions." Ruling, relayed the same day in full: in everything
+  she reads — Slack bullets, PR opening bullets, the board — a
+  decision is named by what it decides, never by its number. No
+  "ADR-", no "L-", no "Incident N" inside an owner-facing line. The
+  codes stay inside the repo (docs/decisions.md, docs/agents/
+  incidents.md, docs/standards/lessons.md), where a seat still cites
+  one to prove a judgment already exists rather than invent it; only
+  the sentence that reaches her translates the code into the decision
+  it recorded. Scope widens past the newsletter the same way site copy
+  did on 2026-09-19: this binds every seat's owner-facing prose, not
+  only the digest. NOT YET GATED as of the day it was recorded: no
+  charter's shipping step checks a PR description or a Slack line
+  against it before that line reaches her, and a live contradiction
+  already exists on this same day — prompts/pm-agent.md section 4's
+  own example prints "**Trigger.** ADR-29 class 3" inside the
+  dispatch-queue entry that charter copies into the PM's PR
+  description in full. Fixing that charter line is the ExO's edit to
+  make, filed in docs/sprints/pending.md the same day this was
+  recorded.
 - 2026-09-25 — Graph page copy. "A graph that never forgets." (the
   parked graph page's title) and its intro ("...only ever appended to")
   are REJECTED as cheesy. Ruling applied on the chair's graph page and
