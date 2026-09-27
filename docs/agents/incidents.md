@@ -3978,9 +3978,9 @@ its work first, so five pull requests exist (#115, #116, #118, #120,
 every failure this register has recorded since incident 3.
 
 The blast radius is the two containerised seats and only those. The
-engineer and the frontend run in `container:` and get `sh -e {0}`; the
-other ten run on the host and get `bash -e {0}`, where the same `echo`
-is harmless. The frontend seat has not run on a schedule since the change
+engineer and the frontend run in `container:` and get `sh -e {0}`, and
+the other ten run on the host and get `bash -e {0}`, where the same
+`echo` is harmless. The frontend seat has not run on a schedule since the change
 landed, so it is the next one to fail and it has not failed yet.
 
 ### What this entry is actually about

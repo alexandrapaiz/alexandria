@@ -2216,8 +2216,8 @@ under bash and are immune. The frontend has not run on a schedule since
 the change, so it is the next to fail.
 
 **Three owner pushes to machinery, none with a pull request or a smoke
-run.** Two rewrote the Slack step in twelve files ten minutes apart; the
-third, `1baeb7f`, changed how production deploys. All three are registered
+run.** Two rewrote the Slack step in twelve files ten minutes apart, and
+the third, `1baeb7f`, changed how production deploys. All three are registered
 by the engineer seat. Twenty-six non-merge commits went straight to main
 from her hand in this window, and about eight of them are press fixes in
 `pipeline/`, which is the engineer's lane. Incident 22's pattern, again.
@@ -2245,7 +2245,7 @@ is owned when the naming seat can reach the evidence the duty is defined
 by. `docs/agents/delivery-health.md` guardrail 4 defines the press's
 delivery evidence as the newest row in `digests` and assigns the daily
 watch to the PM. `.github/workflows/agent-pm.yml` has never carried
-`NEON_RO_URL`; research, writer and skill do. So the PM has said in every
+`NEON_RO_URL`, and research, writer and skill do. So the PM has said in every
 standup since 2026-09-24, honestly and in writing, that it could not query
 the table, and read the public library page instead, where a row written
 and never sent, a send that failed after the row landed, and a cached page
@@ -2323,7 +2323,7 @@ fired this week, which is the argument for moving it.
   exactly once. Item 4a is incident 25's second hand, and for six days now
   the writer charter has told that seat to draft site copy while the
   prompt it actually reads has forbidden it. Incident 13 sat through
-  sixteen pull requests; this is at six days.
+  sixteen pull requests, and this one is at six days.
 - **The page had two items numbered 4.** Renumbered. It is applied by hand
   by one person and the numbers are how she refers to them.
 
@@ -2345,7 +2345,7 @@ branches whose PRs merged, and `okr/2026-09` has a merged PR (#86) and an
 open one (#114) on the same ref. Deleting it would have closed the OKR
 seat's unmerged check-in and taken its work. Nineteen branches were
 deleted after checking that every PR ever pointing at each name was merged
-or closed; the charter now carries that check and the command for it.
+or closed, and the charter now carries that check and the command for it.
 
 ### What the next run must check first
 

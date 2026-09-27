@@ -129,7 +129,8 @@ already concluded, and never from the run you are in.
 **2. And from a job of the same kind as the one at risk.** Reading a
 completed run is not enough if it is the wrong runtime. The engineer and
 the frontend seats run in `container:` and get `sh -e {0}`, where
-`/bin/sh` is dash; the other ten run on the host and get `bash -e {0}`.
+`/bin/sh` is dash, and the other ten run on the host and get
+`bash -e {0}`.
 The step that broke five engineer runs was cleared against a completed
 `okr-agent` run, read correctly, which could never have exercised the
 fault. Ten of twelve workflows would have cleared it forever.

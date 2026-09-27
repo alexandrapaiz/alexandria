@@ -129,7 +129,7 @@ main; seat branches no longer create Vercel deployments (HQ Incident 5:
 the 100/day limit)". It adds `.github/workflows/deploy-main.yml` and
 sets `git.deploymentEnabled=false` in `site/vercel.json`. No pull
 request explains it (`gh api .../commits/1baeb7f/pulls` is empty) and no
-smoke run precedes it; the first execution of the new workflow is a
+smoke run precedes it. The first execution of the new workflow is a
 production push. That half is registered locally as
 `INC-2026-09-26-deploy-workflow-no-smoke-run` by the engineer seat.
 

@@ -469,7 +469,7 @@ and it returns ten files: every register under `docs/voice/` and
 files has a real artifact-side gate recorded in the table above, most of
 them the writer's or the frontend's grading step, and several were closed
 by earlier sweeps. What they lack is the header that says so in the file
-itself. The table knows; the file does not.
+itself. The table knows and the file does not.
 
 The cost is small and real: a seat that opens `docs/voice/taste.md`
 directly, which is what the gate tells it to do, cannot see what enforces
