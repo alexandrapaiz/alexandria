@@ -76,7 +76,42 @@ EMBED_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 # Groq budget; the cap is a safety valve for backlog days (deep_read papers
 # sort first in the queue, so they always get full text).
 FULLTEXT_MAX_PER_RUN = 15
-FULLTEXT_CHARS = 24000
+
+# 24000 until 2026-09-27, which never fitted and never could. Measured against
+# 14 real papers (receipt: docs/evals/2026-09-27-fulltext-token-density.json),
+# 24,000 characters of cleaned arXiv HTML is 5,600 to 6,600 tokens, so the
+# request came to between 8,600 and 9,600 against 6,800 usable. Groq refused it
+# every time, the code below retried with abstract[:6000], and the run reported
+# success. That is the whole of "164 papers read in full out of 8,956".
+#
+# 12000 is what is left for the payload after the prompt (990), the declared
+# reservation (2,000) and the envelope (32) come out of 6,800, at the density of
+# the densest paper measured: 3,582 tokens, 196 to spare. All 14 papers fit at
+# this size and one of them does not fit at 13,000, which is how the number was
+# chosen — by sending it, not by dividing. `python3 pipeline/budget.py`
+# recomputes it on every change to the prompt and fails CI if it stops fitting,
+# so this number does not need to be remembered, only lowered when the guard
+# says so.
+#
+# It is not "in full" and this file will not pretend otherwise. It is 12,000
+# characters of the paper's own body — abstract, introduction and usually the
+# method — against 6,000 characters of abstract, which is what the job actually
+# read before today. `papers.fulltext_chars` records exactly how much, per paper,
+# and the digest's `papers_read_in_full` counts rows where that column is set.
+# On a 90,000-character paper this reads the first 13% of it. Saying so is the
+# owner's and the writer's call, not this file's, and it is flagged in the pull
+# request that changed this line.
+FULLTEXT_CHARS = 12000
+
+# The job sent no reservation until 2026-09-27, so the provider was free to
+# spend the rest of the window on output and the budget guard had to assume a
+# number. 2,000 is that assumption made explicit rather than a new, smaller
+# guess: 1 to 5 claims with evidence and a numbered procedure measures around
+# 1,500 tokens, and an under-sized reservation truncates the JSON mid-object,
+# which surfaces as a json.JSONDecodeError and loses the whole paper. Buying
+# 600 more characters of paper with that risk is a bad trade. Lower it only
+# against a measurement from `rehearse`, which prints the real usage block.
+MAX_COMPLETION_TOKENS = 2000
 
 image = (
     modal.Image.debian_slim()
@@ -217,6 +252,7 @@ def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
             json={
                 "model": p["model"],
                 "temperature": 0.2,
+                "max_completion_tokens": MAX_COMPLETION_TOKENS,
                 "response_format": {"type": "json_object"},
                 "messages": [
                     {"role": "system", "content": prompt},

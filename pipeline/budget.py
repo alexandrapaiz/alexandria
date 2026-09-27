@@ -502,9 +502,59 @@ _FILLER = (
 
 def _filler(n: int) -> str:
     """Realistic English of length n. Not 'x' * n, which tokenizes far too
-    cheaply and would make every estimate here look better than it is."""
+    cheaply and would make every estimate here look better than it is.
+
+    Read `FULLTEXT_CHARS_PER_TOKEN` below before using this for a payload that
+    is not editorial prose. This string is prose and runs 6.17 chars/token; a
+    cleaned arXiv paper runs 3.65. Sizing a paper with this filler is the same
+    mistake as `'x' * n`, one order of magnitude smaller, and the org made it.
+    """
     reps = -(-n // len(_FILLER))
     return (_FILLER * reps)[:n]
+
+
+# What a cleaned arXiv full text actually costs, measured rather than assumed:
+# the worst of 14 real papers fetched through `distill.fetch_fulltext`'s own
+# cleaning and counted with o200k_base. The receipt is
+# docs/evals/2026-09-27-fulltext-token-density.json and
+# `python3 tools/fulltext_density.py` reproduces it against the live papers.
+#
+# It is here because `_filler` is not, and that cost the org a wrong number in
+# five places (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). Sized with
+# prose filler, distill's full-text request missed Groq's free tier by 109
+# tokens; sized with real papers it missed by about 1,900, and the free fix the
+# ledger proposed off the first number would not have worked.
+#
+# 3.35 is arxiv:2407.21783, the Llama 3 paper, whose opening pages are mostly
+# tables. It is the densest of the 14 and not an average of them, because the
+# request this number sizes either fits or is refused, and an average request
+# does not exist.
+#
+# Measured AT THE WINDOW THE JOB SENDS, which is `FULLTEXT_CHARS` and not the
+# whole paper. Density is not uniform: the same 14 papers run 3.65 over their
+# first 24,000 characters and 3.35 over their first 12,000, because a paper
+# opens with its title block, authors, abstract and contents and only then
+# settles into prose. Measuring the wrong window is how the first version of
+# this constant was still wrong after the bug it exists to fix was found — at
+# 13,000 characters the guard said fits and a real paper missed by 5 tokens.
+#
+# Lower it when a measurement says lower. Never raise it to make a request fit.
+FULLTEXT_CHARS_PER_TOKEN = 3.35
+
+
+def _filler_tokens(n: int) -> str:
+    """Realistic English of exactly n TOKENS, for payloads measured in tokens.
+
+    `_filler` takes a character count, which is the right unit when the job's
+    own cap is in characters. It is the wrong unit when what was measured is a
+    density, because then the char count is a derived quantity and rounding it
+    twice loses the thing that was measured.
+    """
+    enc = _encoder()
+    if enc is None:
+        return _filler(int(n * FALLBACK_CHARS_PER_TOKEN))
+    reps = -(-n // count_tokens(_FILLER)) + 1
+    return enc.decode(enc.encode(_FILLER * reps)[:n])
 
 
 def worst_case_payload() -> dict:
@@ -911,17 +961,24 @@ CRON_REQUESTS = {
     "distill (pipeline/distill.py)": {
         "path": "pipeline/distill.py",
         "prompt": "prompts/distill.md",
-        # The job sends no output reservation at all, so there is no literal to
-        # read. 1 to 5 claims, each with evidence and a numbered procedure,
-        # measures around 1,500 tokens; 2,000 is the generous version of that.
-        # The absence is itself worth seeing, which is why this is a separate key
-        # rather than a number quietly written into the other one.
-        "reservation_assumed": 2_000,
+        # Declared by the job as of 2026-09-27. It used to send no reservation at
+        # all and this entry carried `reservation_assumed: 2000`, a guess. The
+        # guess was the right size and the wrong kind of fact: a request sized
+        # against an assumption is not sized.
+        "reservation": "MAX_COMPLETION_TOKENS",
         "payload_chars": "FULLTEXT_CHARS",
+        # A paper is not prose. Measured, not assumed: see
+        # FULLTEXT_CHARS_PER_TOKEN above and the receipt it names. This one key
+        # is the difference between "misses by 109" and "misses by 1,900", and
+        # the org spent a day acting on the first number.
+        "chars_per_token": FULLTEXT_CHARS_PER_TOKEN,
         # What the job does when the provider refuses the full text: retries the
         # same call with abstract[:6000]. So the full-text request failing to fit
         # is a degradation rather than an outage, and the request that MUST fit is
-        # this one.
+        # this one. The abstract is sized at the same measured density: an
+        # abstract is academic prose too, and over-sizing the request the job
+        # falls back to errs toward calling the fallback too big, which is the
+        # safe direction for a number whose whole job is to be conservative.
         "degrades_to_chars": 6_000,
         "models": "distill",
     },
@@ -954,6 +1011,22 @@ def request_payload_chars(spec) -> int:
                         f"{spec['path']} {chars}").replace("_", ""))
 
 
+def request_text(spec, chars: int) -> str:
+    """Filler standing in for `chars` characters of this job's real payload.
+
+    One function instead of three call sites, because the three call sites
+    disagreed once and nobody noticed for a day. The `chars_per_token` key is
+    what makes them agree: without it every payload is sized as editorial prose
+    at 6.17 chars/token, which is right for a batch of claims and wrong by 69%
+    for a paper. A job that declares a measured density gets filler built to
+    that density instead.
+    """
+    density = spec.get("chars_per_token")
+    if density is None:
+        return _filler(chars)
+    return _filler_tokens(round(chars / density))
+
+
 def check_cron_requests() -> list[str]:
     """Every model a corpus cron can reach for can actually take its request.
 
@@ -969,8 +1042,8 @@ def check_cron_requests() -> list[str]:
                             "request can be sized for it")
             continue
         reservation, _ = request_reservation(spec)
-        user = _filler(request_payload_chars(spec))
-        degraded = (_filler(spec["degrades_to_chars"])
+        user = request_text(spec, request_payload_chars(spec))
+        degraded = (request_text(spec, spec["degrades_to_chars"])
                     if "degrades_to_chars" in spec else None)
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
@@ -1015,8 +1088,8 @@ def cron_degradations() -> list[str]:
         if not prompt_path.exists():
             continue
         reservation, _ = request_reservation(spec)
-        big = _filler(request_payload_chars(spec))
-        small = _filler(spec["degrades_to_chars"])
+        big = request_text(spec, request_payload_chars(spec))
+        small = request_text(spec, spec["degrades_to_chars"])
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue
@@ -1044,7 +1117,7 @@ def cron_request_report() -> list[str]:
             lines.append(f"  {label}: {spec['prompt']} missing")
             continue
         reservation, how = request_reservation(spec)
-        user = _filler(request_payload_chars(spec))
+        user = request_text(spec, request_payload_chars(spec))
         lines.append(f"  {label}, worst request, reservation {reservation}{how}")
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
