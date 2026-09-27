@@ -5870,3 +5870,128 @@ acting on anything in this one.
   between a feed and a library, and it is the whole of the positioning.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-27 — The board's run log is missing three runs in four, and nothing compares it to the fleet (engineer, run 6)
+
+- Trigger: folding the live board this run. It holds one run report,
+  `engineer-36208446311`, and `gh run list` shows this seat alone has finished
+  four runs since that one, each of which pushed a branch and opened a pull
+  request (#118, #120, and the two that became #115 and #116). The board says
+  the fleet ran once. The reason is known and filed
+  (`INC-2026-09-26-run-report-dash-echo`: the workflow step is broken in
+  production and only a hand can apply the fix), but that is not the finding.
+  The finding is that a board nobody checks against the fleet cannot tell the
+  difference between a quiet week and a broken reporter, and it read as a quiet
+  week for two days.
+- What: `tools/board.py` grows a command that compares the board's run log
+  against the runs the fleet actually had, `board.py drift`, reading
+  `gh run list --json databaseId,name,conclusion,createdAt` and printing every
+  run with no report on the ref. Then the same command can repair what it
+  finds: a report written after the fact from the Actions API carries the same
+  seat, run id, status and pull request the step would have written, and the
+  path is keyed on the run id so a late report and the step's own report are
+  the same file. This is the missing half of "every run reports onto the
+  board": the reporting is best-effort by design, so something has to notice
+  when best-effort produced nothing, the same way the press has an email that
+  fires when no issue printed (ADR-32).
+- First step: `drift()` over the folded runs and one `gh run list` call, print
+  only. The backfill write is the second step and it needs no new field.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — The digest grades its evidence and never shows the grade (engineer, run 6)
+
+- Trigger: today's craft scan of Latent Space's AINews, below. Its top story
+  labels every bullet with the kind of statement it is, in bold, before the
+  sentence: "**Launch claims.**", "**Artificial Analysis cost breakdown.**",
+  "**What that means.**", and, the one that matters most, "**Model size
+  (speculation).** @theo claimed ... This was not confirmed in official posts."
+  A skimmer who reads only the labels still knows which lines are measurements
+  and which are somebody's guess. alexandria holds exactly this distinction in
+  a column with a CHECK constraint on it, `claims.evidence_grade` in
+  `db/schema.sql`, one of `controlled`, `field_measured`, `asserted`,
+  `anecdote`, and `prompts/digest.md` spends the grade as prose instead, "how
+  good that evidence is, graded in the same breath rather than in a footnote."
+  In the same breath is invisible to a skimmer, which is most readers.
+- What: print the grade as the bullet's visible label rather than dissolving it
+  into the sentence. `asserted` is the one that earns the feature on its own:
+  it is what "the lab says so, and nobody independent has checked" looks like
+  in the database, and the issue currently reads identically whether a number
+  is `controlled` or `asserted`. The change is in `prompts/digest.md` and the
+  email template's item slot, so it is the writer's surface and the frontend's,
+  not this seat's. What this seat can say is that the data is there, it is
+  constrained, and nothing renders it.
+- First step: count this week's claims by `evidence_grade` with `sql_query`
+  before anything is written, because if the corpus is nearly all one grade
+  then the label is noise and the finding is about distill instead.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Print the corpus the issue swept, the way AINews prints "544 Twitters" (engineer, run 6)
+
+- Trigger: the same scan. Every AINews issue carries one line before the
+  content: "AI News for 9/21/2026-9/22/2026. We checked 12 subreddits, 544
+  Twitters and no further Discords." It costs a sentence, it is checkable, and
+  it tells the reader what the absence of an item means, which is the thing a
+  digest can never otherwise say. alexandria's issue says "The latest in AI
+  research, read in full and distilled weekly" and prints no number for what
+  was swept, while `pipeline/weekly.py` already computes several in its stats
+  block and throws them away after the log line.
+- What: one provenance line per issue, built from numbers the database already
+  holds: papers ingested this week, sources in `sources.yaml` actually
+  fetched, papers triaged, claims extracted, and how many of those claims are
+  `controlled` or `field_measured`. It pairs with the open flag from run 5
+  ("read in full" is a claim the database can contradict): a line that states
+  the corpus honestly is worth more than an adjective that overstates it, and
+  it is the same fix one level up. The writer owns the sentence and the owner
+  owns the claim, so this is a proposal with the numbers attached.
+- First step: the `sql_query` that produces all five numbers for 2026-W39, in
+  the pull request that proposes the line, so the sentence is argued against
+  real values rather than against placeholders.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Craft scan: Latent Space and its AINews section (latent.space)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18, last observed the same day, and no craft scan has covered it. It
+  is also the closest audience match in the comparison set, "AI engineers
+  specifically," and the structural precedent the landscape entry already
+  tracks: AINews folded into Latent Space under one subscription, which is the
+  free-roundup-plus-paid-brand shape alexandria is building. The front page is
+  JavaScript-gated, so this scan was taken from `https://www.latent.space/feed`
+  (HTTP 200, 1.4 MB, 20 items) and read the full body of the AINews issue of
+  2026-09-23.
+- **The thing worth stealing: a bold label on every bullet saying what kind of
+  statement it is.** The Opus 5.5 story runs as "**Launch claims.**",
+  "**Where it leads.**", "**Speed and cost.**", "**List price.**",
+  "**Offset by higher token use.**", "**What that means.**", "**Model size
+  (speculation).**" Facts, interpretations and guesses are the same length and
+  the same font, and the label is the only thing separating them, so it does
+  all the work. The section heading even says "(facts)" out loud. alexandria
+  has a stronger version of this distinction sitting in a graded column and
+  spends it as prose. The ledger entry above is the steal.
+- **A second one, cheaper:** the issue states its own sweep. "We checked 12
+  subreddits, 544 Twitters and no further Discords," with the date range, above
+  the content. It converts silence into information, since a reader who knows
+  the sweep knows what an empty section means. Also the second ledger entry
+  above.
+- **What alexandria does better: the citation goes somewhere.** Every claim in
+  that issue is attributed to a handle, and the handles are mostly the vendor
+  announcing its own product: the top story's three headline numbers cite
+  `@claudeai`, `@AnthropicAI` and `@ClaudeDevs`. The independent numbers, from
+  Artificial Analysis and Vals, are the best material in the issue and they sit
+  in the same list as `@theo` speculating about parameter counts. A reader who
+  wants the basis for a number gets a link to a tweet about it. alexandria's
+  equivalent claim carries an edge to a cited paper and a grade for the
+  evidence behind it, and `semantic_search` and `sql_query` answer "what
+  supports this" for anyone who asks. Note what the comparison implies about
+  the steal: the label is worth taking precisely because AINews needs it more
+  than alexandria does, and alexandria can make it mean more.
+- **One thing not to steal.** The issue's own editorial voice runs hot in a way
+  the house voice bans outright: "today was always going to belong to", "HUGE
+  double digit gains", "Team Zuck is absolutely on fire." It works there
+  because the author is a known person with a podcast. It is ban-list entry 5
+  and entry 12 here.
+- Cost: $0
+- Status: proposed
