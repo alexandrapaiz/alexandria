@@ -1249,8 +1249,22 @@ the rule's question to the thing in front of you.
   something: every line beginning with `#`, and every run of bold or italic
   text sitting alone on its own line. The standing close is the one
   exception, because it is required to be identical in every issue and is
-  never rewritten by this gate or any other. Then put ONE question to the
-  rest of them, and it is the question that decides, never a list. Could
+  never rewritten by this gate or any other.
+  **Then collect the fragments, because a label does not need a line to
+  itself and the ones that have shipped did not take one.** For every line in
+  the issue that contains a colon, take the text in front of that colon as a
+  thing to check on its own, whether it is bolded or plain. That fragment is
+  the unit, not the line it sits in, and this is the whole reason this shape
+  keeps getting through: the question below is asked of a line, a label welded
+  to the front of a sentence is a piece of a line, and a line whose second
+  half is real writing passes a question its first half would fail. The
+  published 2026-W39 carries three, none of them bolded alone and none of them
+  collected by the step above: "**The number that matters:**", which is the
+  name of a formatting rule in this file, "For builders:", and "The procedure
+  is extractable:". Take the fragment, drop the colon, and write the sentence
+  whole.
+  Then put ONE question to everything you collected, lines and fragments
+  alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
