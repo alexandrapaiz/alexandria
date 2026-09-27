@@ -5294,3 +5294,76 @@ press does with a 503.
   under another name, and reuse rather than add.
 - Cost: $0. One query added to an endpoint that already runs one.
 - Status: proposed
+
+### 2026-09-27 — The masthead is fixed and every published issue keeps the false line (writer seat, for engineer)
+
+- Trigger: `MASTHEAD` in `pipeline/weekly.py` was corrected on 2026-09-26 to
+  drop the claim that the library reads every paper in full. On 2026-09-27 the
+  only published issue still opens on the old line, in its second line, above
+  the fold: "*The latest in AI research, read in full and distilled weekly...*".
+  That is canon law 15, the one claim in an issue a reader cannot check against
+  a linked paper, live on the whole public archive.
+- Why a prompt change cannot reach it: the model does not write this string.
+  `add_masthead` splices the constant into the body before the body is stored,
+  so the sentence is baked into the artifact at write time. `site/lib/content.js`
+  serves the stored body whole, from the markdown fixture locally and from Neon
+  in production. Editing the constant governs the next issue and cannot reach
+  one that already exists. Every issue keeps the masthead it was printed with,
+  and the archive grows.
+- What, option A, the narrow fix: correct the stored bodies. One update over
+  `digests`, replacing the old masthead line with the current one, plus the
+  same edit to `site/content/issues/2026-W39.md`. Two rows exist and one is
+  hidden, so this is minutes of work today and it does not stop the next
+  occurrence.
+- What, option B, the one that stops this recurring: stop baking the line in.
+  Remove the `add_masthead` splice from the write path and have the renderers
+  compose the masthead when a page or an email is built, so the constant is the
+  single source and correcting it corrects every issue at once. Stored bodies
+  then hold only what the model wrote, which is also what the pre-send checks
+  already filed want to assert over.
+- Recommended: B, with A as the one-time backfill for the bodies already
+  stored. B alone leaves the old string in the stored text of 2026-W39, which a
+  grep for the defect's own words will keep finding.
+- Whose call: the owner decides whether an issue already sent to subscribers is
+  altered at all. The engineer owns the write path either way, and the archive
+  page is the frontend seat's surface.
+- Related: `INC-2026-09-27-law-15-live-in-the-archive`, ban list 61 and 64. The
+  general form is worth one line in its own right, because it is not only the
+  masthead: any reader-facing string spliced into output before storage is
+  beyond the reach of every later correction, which includes the preheader, the
+  edition label and the footer if those travel the same way.
+- Cost: option A is one UPDATE and one file edit. Option B is one function
+  removed from the write path and one call added in each renderer.
+- Status: proposed
+
+### 2026-09-27 — Ban list entries 1 to 50 have never been swept for enforcement (writer seat, own lane)
+
+- Trigger: entry 46 named the heading gate's collection step as the reason its
+  six specimens got through, named the fix in the same sentence, and the gate
+  was unchanged three days and three editorial runs later. Two more specimens
+  of that shape are live on the site. Fixed in this pull request, and the
+  reason it went unfixed is the backlog rather than the entry.
+- The gap: the standing rule at the top of `docs/voice/ban-list.md`, that an
+  entry ends in the change to `prompts/digest.md` that enforces it or in the
+  ledger entry saying why none can, was written on 2026-09-25. Entry 46 was
+  written on 2026-09-24. The rule binds new entries, so nothing has ever asked
+  whether entries 1 to 50 landed anywhere. The register that was fixed kept its
+  backlog, which is the shape of
+  `INC-2026-09-25-tell-recorded-never-enforced` one level out.
+- What: one pass over entries 1 to 50, one question each. Is there a change in
+  `prompts/digest.md` that would stop this tell, and if not, can there be? Each
+  entry then gains one of the two endings the standing rule already defines.
+  Entry 51's case is the one to watch for: an ending can name a place in the
+  file where the rule is now written and still not name the gate the defect
+  would pass through, which is a note wearing a fix's clothes.
+- Expected shape of the answer: most entries are word tells that the voice
+  section already covers, and the interesting ones are the entries that
+  diagnose machinery, because those are the ones whose fix is a specific change
+  and whose absence is invisible. Entry 46 was one. Expect a handful.
+- Why not done in this run: fifty entries is a pass of its own, and doing it
+  badly beside a grade would produce fifty endings that say "covered" without
+  anyone having checked. This is the one register this seat owns outright, so
+  the work is this seat's and wants its own run.
+- Whose call: writer seat, next run, no dependency on anyone.
+- Cost: one editorial run, no code.
+- Status: proposed

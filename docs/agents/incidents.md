@@ -4165,3 +4165,131 @@ surface for the defect's own words before it calls the fix done, which is
 `pipeline/`, `site/` and the email templates, and reports what it found. A law
 written from one sentence is not enforced until the surfaces it names have
 been read. This run did that grep and this entry is what it returned.
+
+## INC-2026-09-27-gate-unit-is-the-line — a ban list entry named a gate's defect and its fix, and the gate was not changed (2026-09-27, writer seat)
+
+**This is a repeat of `INC-2026-09-25-tell-recorded-never-enforced`, recorded
+at the moment it repeated, per the standing rule at the top of this file. The
+seat is the same one, the register is the same one, and the entry that went
+unenforced is the entry that diagnosed the machine.**
+
+**What happened.** Ban list entry 46 was appended on 2026-09-24 by the grade
+that found it. It names the label welded to the front of a sentence, lists six
+specimens, and then does something a ban list entry rarely does. It names the
+gate that should have caught them and says precisely why the gate could not:
+
+> The gate missed them because it collects lines beginning with `#` and runs of
+> bold or italic sitting alone, and a label welded to the front of a sentence
+> sits alone in none of those ways.
+
+The collection step in `prompts/digest.md` on 2026-09-27 is word for word what
+that sentence describes. Three days, three editorial runs and eleven patches to
+that file later, the step is unchanged. Two labels of exactly this shape are
+live on the published 2026-W39, and neither is among entry 46's six: "For
+builders:" and "The procedure is extractable:". A third, "**The number that
+matters:**", is entry 51's own specimen.
+
+**Why the gate could not catch it, which is the transferable part.** The gate's
+question is correct. "Could this exact line sit over a different day's items
+without changing a word?" rejects all three labels on sight. The gate never
+asks it of them, because its unit of inspection is a line and a label is a
+fragment of a line. Asked of the whole of "For builders: sequential
+specialization is not free", the honest answer is no, that line is about
+today's material, so it passes. The half that would have failed is never held
+up on its own.
+
+That is a defect of a shape worth naming for every gate in the org, not only
+this one. **A gate has a question and a unit, and reviewing the question tells
+you nothing about the unit.** Every run that read this gate read a question
+that was getting sharper each time, and a correct question applied to the wrong
+unit returns a pass forever. The four disguises the gate lists are all
+line-shaped, so each rewrite widened the question inside a collection step that
+could not reach the new shape.
+
+**Why entry 46 went unenforced, and it is not carelessness.** The standing rule
+in `ban-list.md`, that an entry ends in the change to `prompts/digest.md` that
+enforces it or in the ledger entry saying why none can, was written on
+2026-09-25 by the incident this one repeats. Entry 46 was written on 2026-09-24.
+The rule binds new entries, so nothing ever asked whether entry 46 had landed,
+and entries 1 to 50 have never been swept. The register that was fixed kept its
+backlog.
+
+Entry 51 shows the second way this fails. Its ending says "Enforced
+2026-09-25", and that is true. The enforcement went into the
+internal-vocabulary test, which sits in the traction section's guidance, is
+advice to the writer composing a line, and has no reach over finished output.
+The gate that reads finished output still could not see the string. **An
+enforcement ending that names a place in the file rather than the gate the
+defect would pass through is a note wearing a fix's clothes.**
+
+**The fix, in this pull request.**
+
+- `prompts/digest.md`: the heading gate takes the text in front of any colon as
+  its own unit of inspection and puts the question to that fragment rather than
+  to the line around it.
+- Entry 46 gains its enforcement ending. Entry 51's ending is corrected to say
+  which change reaches the gate.
+- Ledger entry for this seat: sweep ban list entries 1 to 50 for enforcement
+  endings, which is the backlog the 2026-09-25 rule does not cover.
+
+**What is still open, for the ExO.** Two questions this entry raises and this
+seat cannot answer. Does every other gate in the org have a unit that nobody
+has reviewed, the way this one did? And do the other registers in
+`docs/agents/registers.md` carry the same pre-rule backlog, where a standing
+rule about endings binds entries written after the rule and leaves everything
+before it unchecked?
+
+## INC-2026-09-27-law-15-live-in-the-archive — the masthead was corrected in code and the false claim is still the second line a visitor reads (2026-09-27, writer seat)
+
+**This is a repeat of `INC-2026-09-26-law-15-fixed-on-one-surface`, and the
+third occurrence of law 15 being repaired on one surface while a live one keeps
+the claim. Recorded per the standing rule.**
+
+**What happened.** Run 14 cut the false reading claim from `MASTHEAD` in
+`pipeline/weekly.py` on 2026-09-26. On 2026-09-27 the only published issue,
+`site/content/issues/2026-W39.md` and the byte-identical body of `digests` row
+18, still opens on it:
+
+```
+*The latest in AI research, read in full and distilled weekly: what's new,
+what's gaining acceptance, and what newer evidence has overturned.*
+```
+
+2026-W37 is hidden, so that is the whole public archive.
+
+**Why the fix does not reach it, and this cause is new.** The two earlier
+occurrences were the same string standing in more than one place, and the fix
+for those is a grep. This one is not a second copy of the string. `add_masthead`
+splices the constant into the body before the body is stored, so the sentence is
+baked into the artifact at write time rather than composed when a page renders,
+and `site/lib/content.js` serves the stored body whole from either the markdown
+fixture or Neon. Changing the constant governs the next issue and cannot reach
+one that already exists. **A reader-facing string that joins its artifact before
+storage passes out of the reach of every later correction.** Every issue keeps
+the masthead it was printed with, permanently, and the archive is designed to
+grow.
+
+**The step added yesterday is what found this, and that is worth recording as
+plainly as the failure.** `INC-2026-09-26-law-15-fixed-on-one-surface` ends by
+requiring a writer run that adds a law or a ban list entry to grep `pipeline/`,
+`site/` and the email templates for the defect's own words before calling the
+fix done. This run ran that grep for "distilled weekly" and the archive file is
+what came back. The step works. What it does not yet cover is the difference
+between a surface that can be corrected by editing code and a surface that
+holds a copy no edit can reach, and that distinction is the new finding rather
+than the grep.
+
+**Not fixed here, and the boundary is why.** The stored bodies are the
+pipeline's and the page is the frontend seat's, and altering an issue that has
+already been sent to subscribers is the owner's call rather than a seat's.
+Filed in `docs/ideas.md` with both repairs stated: correct the stored bodies, or
+stop baking the line in and compose it when a page renders. The second is the
+one that stops this recurring.
+
+**One inherited boundary crossing, flagged rather than reverted.** Run 14's
+correction to `MASTHEAD` is a writer-seat edit to `pipeline/weekly.py`, and the
+writer charter's boundary list says never pipeline code. That commit is in this
+branch because this branch builds on it. Reverting it would restore a false
+claim about the product in order to satisfy a boundary, so it stands and the
+call is the owner's. The ledger entry above is where the correction would
+arrive through the engineer instead.
