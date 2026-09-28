@@ -1,3 +1,45 @@
+## Updated 2026-09-27, ~19:00 UTC (message-triggered session, a voice ruling)
+
+Owner, live, on how she wants to read every seat's output: she does not
+want to see codes, she wants good descriptions instead. Recorded in full
+in `docs/voice/taste.md`'s 2026-09-27 entry. The short form: never
+"ADR-", "L-", or "Incident N" in a line she reads (a Slack bullet, a PR's
+opening bullets, the board). Name the decision by what it decides. The
+codes stay inside the repo, where they still do their job of proving a
+judgment already exists rather than inventing one.
+
+**Not this run's to fix, and owed to the ExO:**
+
+- **prompts/pm-agent.md section 4's own example contradicts the ruling
+  the day it was recorded.** Its dispatch-queue template prints
+  "**Trigger.** ADR-29 class 3, a processing gap.", and that same
+  section requires the dispatch queue to go into the PM's PR
+  description in full, so the charter currently instructs the one
+  violation the owner just named. A charter edit is the ExO's to make,
+  never this seat's.
+- **At least two live specimens already on the record, evidence the
+  sweep should start from:** PR #113's own title, "PM sync session
+  2026-09-26: owner's live priority reorder (ADR-037)", and the
+  standing dispatch-queue.md text merged from the 2026-09-25 standup,
+  "in `docs/decisions.md`'s newest entries (ADR-32/33/34)". Neither is
+  this run's to edit; both are what a sweep for the pattern will find
+  first.
+- **A company-wide home may already exist.** `docs/standards/lessons.md`
+  carries L-A5, "House voice in owner-facing prose," with provenance
+  "alexandria house rule, owner-set, portfolio-wide." This ruling reads
+  as a concrete instance of that same law, which means it may belong in
+  `docs/agents/hq-relay.md` as well as in the local taste register, so
+  the rule reaches every product HQ runs, not only this one. That
+  judgment and that file are the ExO's, not the PM's.
+
+**Also worth naming rather than leaving quiet:** this tracker's most
+recent entry before this one was 2026-09-24. The 2026-09-25, 2026-09-26,
+and 2026-09-27 standups each replaced `docs/sprints/dispatch-queue.md`
+without a corresponding update here, which is the tracking gap section
+1d exists to prevent. Tomorrow (2026-09-28) is the Monday ceremony run;
+full reconciliation against everything that landed since 2026-09-24
+belongs there rather than in this narrow, reactive session.
+
 ## Updated 2026-09-24, ~16:00 UTC (message-triggered standup, deciding from market's brief)
 
 Owner directive relayed by the chair: when market's ranking brief lands,
