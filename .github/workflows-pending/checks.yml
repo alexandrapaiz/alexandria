@@ -30,7 +30,6 @@ on:
       - "tests/test_distill_fulltext_budget.py"
       - "tools/board.py"
       - "tools/run_report.py"
-      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -52,7 +51,6 @@ on:
       - "tests/test_distill_fulltext_budget.py"
       - "tools/board.py"
       - "tools/run_report.py"
-      - "board/views.json"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -157,21 +155,22 @@ jobs:
       - name: the taxonomy is closed, and a paper may have a decision history
         if: always()
         run: python3 -m pytest tests/test_reasoning_rubric.py -q
-      # 2026-09-26: the board (docs/board.md), which replaces Linear and which
-      # every seat's workflow step writes to. Three properties are worth a
-      # build. A report lands exactly once, because the step runs under
-      # `if: always()` and a duplicated run row is a board nobody trusts. A
-      # seat cannot invent a column or a view, which is the owner's ruling and
-      # is enforced by `board/views.json` living on main. And a board that
-      # cannot be written exits 0, because twelve seats' runs must not go red
-      # over a window.
+      # 2026-09-28: the board client (docs/board.md). The board itself is the
+      # owner's server now (ADR-2026-09-28-board-client), so what this build
+      # protects is the client's four properties. A report lands exactly once,
+      # because the step runs under `if: always()` and the board's server
+      # implements no DELETE, so a duplicate row is permanent. A seat cannot
+      # invent a company, a sprint, a column or a view, which is pm.md §14's
+      # permission line and is enforced here by the parser having no such
+      # command. A board that cannot be written exits 0, because twelve seats'
+      # runs must not go red over a notification. And the runtime token never
+      # reaches stdout or stderr on any path, including every error path.
       #
-      # `board/views.json` is in this workflow's paths for the reason the email
-      # template is: the file is the owner's and the tool that reads it is the
-      # engineer's, so a change to one that breaks the other is the cross-seat
-      # break CI exists to catch. The last test in that file is the one that
-      # catches it, by holding every workflow's seat name against that file.
-      - name: a run reports onto the board exactly once
+      # These tests run a real HTTP server on localhost and never touch
+      # board.libraryofalexandria.dev, because run reports there are
+      # append-only and a suite that posted to it would leave a row behind on
+      # every green run.
+      - name: the board client, against a board that is not the company's
         if: always()
         run: python3 -m pytest tests/test_board.py -q
 

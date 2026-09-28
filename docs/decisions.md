@@ -1030,6 +1030,14 @@ them leaves papers in `distill_queue` that the old rubric would not have
 sent there, which is a deliberate outcome rather than a leak.
 ## ADR-2026-09-26-board: The board is a ref in this repository, not a table and not a vendor
 
+**SUPERSEDED 2026-09-28 by ADR-2026-09-28-board-client.** The constraint this
+decision was built on ended two days after it was written: the owner put
+`BOARD_RUNTIME_TOKEN` into all twelve seat workflows and stood the board up at
+board.libraryofalexandria.dev. Everything below is kept because the reasoning
+is still the reasoning, and because a decision that vanishes when it is
+overturned teaches the next reader nothing. The ref, `board/views.json` and the
+`ALX-<n>` allocator are gone from the tree.
+
 **A dated id with a slug, not ADR-36.** Sequential ids have collided twice in
 this file, and this branch already carries `ADR-2026-09-26` for the corpus
 decision, so a bare date can collide too. The slug settles it.
@@ -1132,3 +1140,58 @@ check rather than a convention, which is the difference between this allocator
 and the incident register's numbering that incident 29 records four collisions
 for. `--id` still takes any name, so the two hand-named items keep theirs and
 moving a card still means naming it.
+
+
+## ADR-2026-09-28-board-client: The board is the owner's server, and this repository holds a client
+
+**Status.** Accepted 2026-09-28, owner-directed. Supersedes
+ADR-2026-09-26-board two days after it was written.
+
+**What changed, and it was not an argument.** `docs/standards/pm.md` §14
+(owner, 2026-09-27) says the board at board.libraryofalexandria.dev is the
+state of the work, that every seat reads it at the start of a run and writes to
+it as it works, and that runs on GitHub runners reach it over HTTP with
+`BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` in the environment. Commit 6820ac1
+put both variables into all twelve seat workflows the same day. The board was
+seeded at 19:19 UTC on 2026-09-27 and already holds this company's columns, its
+sprint and sixteen items.
+
+**Decision.** The board is not ours to store. `tools/board.py` is a client of
+the owner's HTTP API and holds no state of its own. The ref-based store
+ADR-2026-09-26-board built is deleted rather than deprecated: `board/` is gone,
+and so are the event log, the snapshot and the `ALX-<n>` allocator.
+
+**Why deleting it beat keeping it as a fallback.** Two boards means every seat
+has to know which one the PM's ceremony reads, and the first time the two
+disagree the answer is whichever one the reader happened to open. The
+fallback's own value was never storage, it was that a seat could write
+somewhere without a credential, and that is exactly the thing that stopped
+being true.
+
+**What survives from the old store.** The part that was never about storage:
+filling a run report in from the Actions environment so twelve workflow files
+can each call one line, and taking the report's one line from the pull
+request's first bullet, which is the owner's correction of 2026-09-26.
+
+**The permission line is checked at both ends.** pm.md §14 gives a seat
+create, move, comment and read, and withholds create-or-rename on a company, a
+sprint, a column and a view. The client has no command for any of those four,
+so the line holds on this side of the wire as well as on the server's. A rule
+only one end checks is incident 20's shape, and this is the cheap half of
+avoiding it.
+
+**Run reports are append-only, which is a design constraint and not a
+detail.** The board's server implements GET and POST; PATCH, PUT and DELETE
+answer 501. A posted report cannot be edited or withdrawn. So `report` is
+called once, in a run's last step, with the run's real outcome, and every write
+command takes `--dry-run` because the other way to learn what a report contains
+is to spend it. Two blank rows this run created while mapping the endpoint are
+on the live board permanently, and only the owner can remove them from the
+store.
+
+**Two places the documented API and the live API disagree.** A move needs
+`seat` in its body, which pm.md §14's example omits, and it takes `column_id`
+as a uuid and refuses a column name, so every mover has to read the board
+first. The client does both for the caller. Reported to the owner in the pull
+request rather than patched into the vendored standard, per
+docs/agents/cross-repo-law.md.

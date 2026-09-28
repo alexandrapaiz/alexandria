@@ -1,348 +1,126 @@
 # The board
 
-Our own task manager and run log. It replaces Linear, it costs nothing, and
-it needs no account, no API key and no vendor. The owner's ruling of
-2026-09-26 (HQ ADR-037 item 1, relayed through the PM's sync session in PR
-#113) set three requirements: the store is ours, seats cannot create views,
-and every seat run reports onto the board.
+The company board is `board.libraryofalexandria.dev`. It holds every company
+Alexandra Systems runs, and this repository is the `alexandria` company on it.
+The board is the state of the work: items in columns, inside a sprint, with the
+run reports that touched them beside them.
 
-Written for the next engineer. Every path, command and number below is real,
-and the ones that came from a live call say so.
+It is the owner's server, on the host. Nothing in this repository stores board
+state. What is here is the door a run on a GitHub runner uses, which is
+`tools/board.py`.
 
-## Components
+The law is `docs/standards/pm.md` §14, the owner's directive of 2026-09-27, and
+the decision that follows from it is `ADR-2026-09-28-board-client` in
+docs/decisions.md.
 
-| Component | Where | Who writes it |
+## Two doors, one board
+
+| Where the run is | How it reaches the board | What the runtime sets |
 |---|---|---|
-| The views: columns, seats, named views | `board/views.json`, on `main` | the owner, by merging a pull request |
-| The state: items and run reports | `board/events/**.json`, on the `board` ref | `tools/board.py`, and nothing else |
-| The write path, the read path, the fold | `tools/board.py` | the engineer seat |
-| The workflow step that reports | queued in [pending-workflow-changes.md](agents/pending-workflow-changes.md) item 5 | the owner or the chair, by hand |
-| Tests | `tests/test_board.py`, 37 of them | the engineer seat |
+| The host, under Temporal | the `asc-board` MCP server | `ASC_SEAT`, `ASC_COMPANY` |
+| A GitHub runner, under Actions | HTTP, through `tools/board.py` | `BOARD_API_URL`, `BOARD_RUNTIME_TOKEN` |
 
-## Data flow
+Both doors carry the same permission line. A seat creates items, moves them,
+comments on them and reads them. A seat never creates or renames a company, a
+sprint, a column or a view. `tools/board.py` has no command for any of those
+four, which is how the line is enforced on this side of the wire rather than
+only trusted.
 
-```
-a seat's run finishes
-  -> .github/workflows/agent-<seat>.yml, step "Post run report to the board"
-     -> python3 tools/board.py report --status <job.status>
-        -> derives seat, run id, attempt, branch, PR, one-line result
-        -> PUT /repos/{repo}/contents/board/events/run/<date>/<seat>-<run>-<attempt>.json
-           with branch=board
-                                  the board ref
-                                       |
-   python3 tools/board.py show  <------+------>  the site, next slice
-   (git archive, one subprocess)                (one tarball fetch)
-```
+## What a seat does with it
 
-The PM and the owner write items the same way, by hand:
+Read it first. The board is the answer to "what is the state of the work," and
+it is a better answer than twenty open pull request titles.
 
 ```bash
-python3 tools/board.py item --id board-ui --title "Read-only board view" \
-    --status next --assignee frontend
+python3 tools/board.py show                      # the whole board
+python3 tools/board.py show --seat engineer      # one seat's items and runs
+python3 tools/board.py show --json               # the same state, for an agent
+python3 tools/board.py get --id <uuid>           # one item, with comments and runs
 ```
 
-## Why the state is not in the two obvious places
-
-**Not in Neon**, which is the project's database of record and would otherwise
-be the default. The only database credential a seat's run holds is
-`NEON_RO_URL`, and it is read-only on purpose. A Postgres board would mean
-minting a writable URL and handing it to all twelve seats, so the price of a
-board would be that every agent run could write the corpus. That is an
-authority change rather than a storage choice, and it belongs to the owner in
-the same way the `workflow`-scoped token on
-[pending-workflow-changes.md](agents/pending-workflow-changes.md) does.
-
-**Not on `main`.** A seat may not push to main, so a report would travel by
-pull request and appear only after a merge, which is the one moment a board
-stops being worth reading. The second reason has a number on it: since
-2026-09-25 a push to main runs `deploy-main.yml`, and twelve seats reporting
-twice a day would spend 24 production deploys a day against the vendor's
-100-a-day limit that HQ incident 5 already cost us a day of production builds
-for.
-
-**So the `board` ref, append only, one JSON file per event.** What that buys:
-
-- Conflicts are impossible rather than handled. A run report's path carries the
-  run id and the attempt, an item patch's path carries a hash of itself, so two
-  writers never address one path. The only retry in the code is for the ref
-  moving under a concurrent write, and the API answers that in one round trip.
-- Reporting twice is a no-op. The workflow step runs under `if: always()`, and
-  a second post of the same attempt prints `exists` and writes nothing.
-- The history is the audit. Nothing is ever overwritten, so how an item reached
-  `done` is still on the ref, and the current state is a fold over the log.
-- It is free and it is ours. A ref in a repository we already have.
-
-The cost, stated plainly: a fold over every event is how you read the board, so
-the read grows with the log. At 12 seats reporting twice a day the log grows by
-about 9,000 files a year, which `git archive` still hands over in one
-subprocess. The day that stops being true, the fix is a rolled-up snapshot file
-on the same ref, and the ledger carries it as an idea rather than as code.
-
-This is ADR-9's blackboard, which the pipeline's workers already coordinate
-through, pointed at the seats instead of at the papers.
-
-## Why seats cannot create views
-
-The views live on `main`. A seat can edit `board/views.json` on its own branch
-and see the result inside its own run, and it cannot show that view to anybody
-else, because only the owner's merge puts it on main. That is an enforcement
-rather than a convention, and it is the strongest one available to a repository
-whose seats all have `contents: write`.
-
-Two smaller gates fall out of the same file. `tools/board.py` has no command
-that writes a view. And an item whose status is not one of the columns
-`board/views.json` declares is refused before it is written, with the refusal
-naming the file, so a seat cannot invent a column either:
-
-```
-$ python3 tools/board.py item --id x --status blocked
-board: this event was refused:
-  status 'blocked' is not a column. The columns are inbox, next, doing, review,
-  done, and they are declared in board/views.json on main, so a new one takes a
-  pull request the owner merges.
-```
-
-Items themselves are open to every seat, and each item event records `by`. That
-is a reading of the ruling rather than a quotation of it: the owner named views
-as the thing seats may not create, and a seat that cannot file its own
-follow-up work would push that work back into prose nobody folds. If she meant
-items too, the change is one check in `validate` and one line in this file.
-
-## Commands
+Then write as the work happens.
 
 ```bash
-python3 tools/board.py show                     # the board
-python3 tools/board.py show --view seats        # grouped by seat, with the run log
-python3 tools/board.py show --view runs         # the fleet's last 30 runs
-python3 tools/board.py show --json             # the same state, for an agent
-python3 tools/board.py show --seat frontend    # one seat's items and runs
-python3 tools/board.py report --status success --dry-run   # what a run would post
-python3 tools/board.py item --title "..." --status next --assignee frontend
-                                               # a new card, id issued by the board
-python3 tools/board.py item --id ALX-1 --status doing       # move a card it issued
-python3 tools/board.py snapshot                # refold board/state.json by hand
-python3 tools/board.py init                    # create the ref, idempotent
-python3 -m pytest tests/test_board.py -q
+# start work: the item moves, by column name rather than by uuid
+python3 tools/board.py move --id <uuid> --column "In progress"
+
+# no item for the work? make one, which pm.md §14 requires rather than permits
+python3 tools/board.py item --title "Drain the reading queue" --horizon now
+
+# ship: say where it went
+python3 tools/board.py comment --id <uuid> --body "shipped in #127"
+
+# the run's last step, once
+python3 tools/board.py report --status success
 ```
 
-`report` never fails its caller. A board that cannot be written prints
-`board: report not posted (...)` on stderr and exits 0, because the board is a
-window and not a gate, and a seat's run is not less finished because the report
-did not land. `--strict` turns that off, for the tests and for a human
-debugging the store.
+Every write takes `--dry-run`, which prints the exact payload and posts
+nothing.
 
-## Reading it from the site
+## The run report
 
-The next slice is the frontend seat's read-only view. This repository is
-public, so the state needs no credential. Every measurement here was taken
-against the live ref, the first two on 2026-09-27 and the last on 2026-09-26.
+`report` is what a seat's final workflow step calls. It takes the one thing the
+step alone knows, GitHub's `job.status`, and derives the rest: the seat from the
+workflow name, the company from the repository name, the run url from
+`GITHUB_RUN_ID`, the trigger from `GITHUB_EVENT_NAME`, and the report's one line
+from the first bullet of the pull request opened on this branch. That is why the
+step is one line in twelve identical workflow files.
 
-**One request for the folded board**, which is the one to build on:
+It never fails a run. A board that refuses a report prints `::warning::` and
+exits 0, because a red job for an undelivered notification is a lie to every
+reader of `gh run list`, and the PM's standup reads run health off exactly those
+statuses. `INC-2026-09-26-run-report-dash-echo` is six engineer runs marked
+`failure` for precisely that mistake in the step this one replaces.
 
-```
-GET https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json
-```
+**Reports cannot be corrected.** The board's server answers PATCH, PUT and
+DELETE with 501, so a posted report is permanent. Call `report` once, at the
+end, and use `--dry-run` when you want to see it first.
 
-HTTP 200, 2,212 bytes, 701 with gzip accepted, and nothing to fold: it holds
-every item, the latest run per seat, the newest 200 reports, and the count of
-events behind them. `tools/board.py` refreshes it after every write. Read
-`events` against the ref if you need to know whether it is current, and read
-`runs_total` against `runs_kept` to know whether you are looking at a window.
-The file is derived, so treat it as a cache: if it is missing or stale, the log
-below is the truth and `python3 tools/board.py snapshot` rebuilds it.
+## The API, as the live board answers it
 
-**One request for the whole log**, if you want the events themselves:
+Six routes. `$BOARD_API_URL` and `$BOARD_RUNTIME_TOKEN` are in every seat run's
+environment; the values are Actions secrets synced from Infisical and belong in
+no file.
 
-```
-GET https://codeload.github.com/alexandrapaiz/alexandria/tar.gz/refs/heads/board
-```
+| Call | Requires | Notes |
+|---|---|---|
+| `GET /api/health` | nothing | `{"ok": true, "companies": 6, "token_configured": true}` |
+| `GET /api/board/<company>` | bearer | columns, the open sprint, items, runs |
+| `GET /api/items/<id>?company=<name>` | bearer, `company` | adds `comments` and `runs` |
+| `POST /api/items` | `company`, `seat`, `title` | `horizon` is `now`, `next` or `later`; column defaults to the first |
+| `POST /api/items/<id>/move` | `company`, `seat`, `column_id` | see below |
+| `POST /api/items/<id>/comments` | `company`, `seat`, `body` | |
+| `POST /api/runs` | `company`, `seat` | every other field optional: `repo`, `trigger`, `started_at`, `ended_at`, `turns`, `model`, `exit`, `pr_url`, `run_url`, `report`, `item_ids` |
 
-1,547 bytes gzipped for the board as it stands. Untar it server-side, keep the
-files under `board/events/`, and fold them with the same rules
-`tools/board.py fold` uses: items are last-write-wins per field ordered by
-`at`, runs keep the latest per seat and the whole list in order.
+Two places the live board differs from pm.md §14's examples, found by calling
+it on 2026-09-28 and reported to the owner rather than patched into the
+vendored standard:
 
-**One file, if you want a single event:**
+- **A move needs `seat`.** The documented example sends `company` and
+  `column_id` only, and the board answers `400 company and seat are required`.
+- **A move takes only `column_id`, and it must be a uuid.** Naming the column
+  gets `400 column_id is not a uuid: None`, so every mover has to read the
+  board first to turn `"In progress"` into its id. `tools/board.py move` takes
+  the name and does the lookup.
 
-```
-GET https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/events/run/2026-09-26/engineer-36208446311-1.json
-```
+One smaller quirk worth knowing before it wastes an hour: `GET
+/api/board/<company>` answers `404 no such route` if the path carries any query
+string at all, while `GET /api/items/<id>` requires one. The client sends each
+the only way that works.
 
-Do not build the UI on `GET /repos/{repo}/git/trees/board?recursive=1` plus one
-request per file. It works, and unauthenticated GitHub API calls are limited to
-60 an hour per address, which a page that folds a thousand events exhausts on
-its first render.
+## What is gone, and why it was here
 
-The views come from `board/views.json` on main, which the site already has in
-its own checkout, so the UI reads its columns from the file rather than from
-the ref.
+Until 2026-09-28 this file described a board of our own: an append-only log of
+JSON events on a dedicated `board` ref, folded into `board/state.json`, with
+views on `main` in `board/views.json` so that only the owner's merge could add
+one. It was built that way for one reason, written into its own docstring: the
+only database credential a seat's run held was `NEON_RO_URL`, read-only on
+purpose, so there was nowhere a seat could write that was not either the
+production corpus or `main`.
 
-## The event shapes
-
-A run report, which is the owner's list of seat, run id, PR and result:
-
-```json
-{
-  "at": "2026-09-26T01:38:57Z",
-  "attempt": 1,
-  "branch": "engineer/2026-09-26-board-store",
-  "kind": "run",
-  "pr": 115,
-  "result": "the board's own store, and every run reports onto it",
-  "run_id": "36208446311",
-  "seat": "engineer",
-  "status": "success",
-  "url": "https://github.com/alexandrapaiz/alexandria/actions/runs/36208446311"
-}
-```
-
-An item event, which is a patch. Only the fields it names change, so a move is
-an event carrying a status and nothing else:
-
-```json
-{
-  "at": "2026-09-26T01:39:18Z",
-  "assignee": "frontend",
-  "by": "engineer",
-  "id": "board-ui",
-  "kind": "item",
-  "note": "queued by the PM in #113; reads the board ref, see docs/board.md",
-  "status": "next",
-  "title": "Read-only board view on the site"
-}
-```
-
-`status` must be one of `board/views.json`'s columns, and `id` must be a name
-the ref can hold as a path: letters, digits, dot, dash and underscore, up to
-64 characters. Every other field is free text, and `ITEM_FIELDS` in
-`tools/board.py` is the list, so carrying a new one is one entry there and one
-line here.
-
-A third shape, which is not an event and never folds. One file per id under
-`board/ids/`, written by the allocator and read by nothing but the allocator:
-
-```json
-{
-  "at": "2026-09-27T15:52:00Z",
-  "by": "engineer",
-  "id": "ALX-1"
-}
-```
-
-## How it relates to the three surfaces that already exist
-
-The org already coordinates through files, and this one does not delete any of
-them. What it changes is which of them holds state that a seat can fold.
-
-- **`docs/ideas.md`**, the ledger. Unchanged, and still the proposal surface
-  where agents append and only the owner writes verdicts. The board holds work
-  that has been decided, the ledger holds work that has not.
-- **`docs/backlog.md`**, which its own first line calls the consolidated board.
-  This is the PM's file, rebuilt each Monday during grooming, and it is a
-  leverage-ordered read of every seat's proposals. It overlaps this board on
-  purpose for now, because migrating it is the PM's call and not this seat's.
-  The ledger carries the proposal.
-- **`docs/sprints/dispatch-queue.md`**, the PM's queue of who to dispatch next.
-  Also unchanged, and also a candidate to become board items later, for the same
-  reason and with the same owner.
-
-Until the PM decides, read it this way: the board is where run reports live and
-where an item's state is machine-readable, and `docs/backlog.md` stays the
-week's ordered narrative. Two surfaces is one too many, and choosing which
-survives belongs to the seat that grooms it.
-
-## Ids come from the board, not from whoever types the command
-
-The first two items here were named by hand, `board-store` and `board-ui`.
-Nothing stopped the next seat from choosing `board-ui` again for different
-work, and that failure is silent rather than loud: item events are patches
-folded by id, so two seats naming one id write two valid events and the fold
-merges two pieces of work into one card with nothing to look at.
-
-So the board issues ids. Leave `--id` off and it allocates the next
-`ALX-<n>`:
-
-```
-$ python3 tools/board.py item --title "..." --status review --assignee engineer --pr 122
-board: issued ALX-1
-board: written board/events/item/2026-09-27/20260927T155201Z-alx-1-b1f0acbb.json
-board: board/state.json holds 4 events
-```
-
-**The check is a file named by the id and nothing else.** `board/ids/ALX-1.json`
-is written with a create that fails when the path exists, so two seats racing
-for `ALX-1` means the second one is refused and takes `ALX-2`. Verified against
-the live ref the same run:
-
-```
-$ list_claimed_ids()      -> ['ALX-1']
-$ next_id(['ALX-1'])      -> 'ALX-2'
-$ claim_id('ALX-1', by='frontend')
-  ('exists', {'at': '2026-09-27T15:52:00Z', 'by': 'engineer', 'id': 'ALX-1'})
-```
-
-That is a check rather than a convention, which is the whole reason to build
-it this way. The incident register allocates its numbers by convention and has
-collided four times (incident 29), and the fix there was to stop using numbers.
-Here the allocation happens against the ref at write time and the ref answers.
-
-`--id` still takes any name, because moving a card means naming it, and the
-two items that predate this keep the names they have. What `--id` does now is
-claim the name too, so the registry stays the complete list of what has been
-issued. Naming an id another seat issued is allowed and says so on stderr,
-because patching another seat's card is usually exactly what you meant and
-silence is the only wrong answer.
-
-## The snapshot the site reads
-
-`board/state.json`, on the same ref, holding the fold: every item, the latest
-run per seat, the newest 200 run reports, and the number of events it was
-folded from. `tools/board.py report` and `tools/board.py item` refresh it after
-they write, so no workflow change is needed to keep it current, and
-`tools/board.py snapshot` rebuilds it by hand.
-
-Measured against the live ref on 2026-09-27, which is what the read path
-below is now built on:
-
-```
-GET https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json
-  HTTP 200, 2,212 bytes, 701 bytes with gzip accepted, no credential, no fold
-```
-
-against 1,547 bytes for a tarball of the whole ref that the reader must untar
-and fold itself. The byte difference is not the point today and the fold is.
-The byte difference becomes the point on its own: the tarball grows with every
-event forever, and the snapshot's size is bounded by the item count plus 200
-runs.
-
-**It is derived, and the log stays the source of truth.** That matters because
-it is the first mutable path in an append-only store, and the failure it invites
-is one writer dropping another's event. So the write is a compare-and-swap: the
-Contents API takes the existing blob's sha as the writer's proof of what it
-believed it was replacing, and a writer working from a stale read is refused.
-The refusal is answered by folding the log again rather than by re-sending the
-same body, because the writer that won had read events this one had not.
-`tests/test_board.py::test_a_stale_sha_forces_a_refold_instead_of_an_overwrite`
-is that property: an event that lands between the two attempts is in the
-snapshot that finally gets written.
-
-A snapshot that cannot be written is not an error and never fails the command
-that was reporting. The event is already on the ref, and the next writer
-repairs the file.
-
-## What the board still does not do
-
-- **No UI.** The frontend seat has the read-only view, queued by the PM in PR
-  #113 as item `board-ui`. The read path in this file is now one fetch of
-  `board/state.json`, which is the part of that dispatch's instruction that
-  changed.
-- **No workflow step yet**, because no seat can push `.github/workflows/`. It
-  is written out ready to apply as item 5 of
-  [pending-workflow-changes.md](agents/pending-workflow-changes.md), and it
-  needs no edit for the snapshot: the same one-line step refreshes it.
-- **No dependencies between items, no labels, no comments, no due-date
-  alarms.** Linear has all of them and the board will need some of them. It
-  needs them after the first week of real use says which, not before.
-- **Nothing reads the board back yet.** A seat can fold it, and no charter
-  tells a seat to. Deciding whether the board or `docs/backlog.md` is the
-  board a seat consults on Monday is the PM's call, above.
+That reason ended on 2026-09-27. The store is deleted rather than kept as a
+fallback, because two boards means every seat has to know which one the PM's
+ceremony reads, and the first time they disagree the answer is whichever one the
+reader happened to open. The history is in git and the reasoning is in
+ADR-2026-09-26-board, which now carries a superseded banner instead of being
+removed.

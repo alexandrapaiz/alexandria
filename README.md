@@ -243,10 +243,8 @@ docs/agents/              the org's memory: org chart, learning log, incidents, 
 docs/okrs/                quarterly objectives and key results
 docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
-docs/board.md             the board that replaces Linear: the store, the views, the read paths
-board/views.json          the board's columns and views, on main because only her merge adds one
-tools/board.py            the board's only writer, and `board.py show` is the read path
-board/state.json          on the `board` ref: the folded board in one file, for the site
+docs/board.md             the company board: the two doors onto it, and the API as it really answers
+tools/board.py            the board client every seat run uses on a GitHub runner
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
 docs/security/            audit reports from the security seat

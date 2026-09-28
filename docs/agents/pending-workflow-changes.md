@@ -556,60 +556,62 @@ owner's call rather than this seat's.
 
 ### 5. Every seat run reports onto the board
 
-Queued 2026-09-26 by the engineer agent, for the owner's priority 1 of that
-evening (HQ ADR-037 item 1, relayed through the PM's sync session in PR #113):
-run reports live on the board. One step, identical in all twelve
-`.github/workflows/agent-*.yml`, placed immediately after the existing
-`Post run report` step that writes to Slack:
+**Rewritten 2026-09-28.** The step is unchanged in shape and the diff below is
+still one line, but everything this entry said about *why* it was safe was
+written against a board that no longer exists. On 2026-09-26 the board was a
+ref in this repository and the step's risk was a public ref and a contents-API
+write. On 2026-09-27 the owner stood up the real board at
+board.libraryofalexandria.dev and put `BOARD_API_URL` and
+`BOARD_RUNTIME_TOKEN` into all twelve workflows herself, and `tools/board.py`
+is now a client of it (ADR-2026-09-28-board-client). Reading the old version of
+this entry and applying it would have been correct by accident: the command is
+the same, the reasoning under it was wrong.
+
+One step, identical in all twelve `.github/workflows/agent-*.yml`, placed
+immediately after the existing `Post run report` step that writes to Slack:
 
 ```yaml
-      # The board (board/README.md). Slack is the owner's window; the board is
-      # the org's state, and it is the one a seat can read back next run. This
-      # step cannot fail the job: tools/board.py exits 0 when it cannot write,
-      # because the board is a window and not a gate.
+      # The board (docs/board.md), which pm.md §14 makes the state of the work.
+      # Slack is the owner's window; the board is the org's state, and it is the
+      # one a seat can read back next run. This step cannot fail the job:
+      # tools/board.py prints ::warning:: and exits 0 when the board refuses,
+      # because a red job for an undelivered report is the lie
+      # INC-2026-09-26-run-report-dash-echo told six times.
       - name: Post run report to the board
         if: always()
         run: python3 tools/board.py report --status ${{ job.status }}
 ```
 
-**It needs nothing new.** No secret, no service, no permission. All twelve
-workflows already set `permissions: contents: write` and `GH_TOKEN` in the
-job's `env:`, which is everything `tools/board.py` uses, and it was verified
-by reading the twelve files rather than assumed. The seat, the run id, the
-attempt, the branch, the pull request and the one-line result are all derived
-inside the tool, which is why the step is one line and why twelve copies of it
-stay identical.
+**It needs nothing new, and this time that is the owner's own doing.** Commit
+6820ac1 already put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` in every one of
+the twelve `env:` blocks. Those two are all `tools/board.py report` reads
+beyond what GitHub sets for free, plus `GH_TOKEN` for the pull request lookup,
+which all twelve already have. Verified by reading the twelve files on main.
 
-**Apply it after the board's own pull request merges, not before.** The step
-reads `board/views.json`, which arrives on main with that PR. Applied early it
-still exits 0 and prints that the views are missing, so the cost of getting the
-order wrong is a confusing log line rather than a failed run, but there is no
-reason to pay it.
+**Apply it whenever.** The old ordering caveat is void: there is no
+`board/views.json` to wait for. Applied against a board that is down, the step
+prints a warning and exits 0.
 
-**Scope, so the reader can judge the risk.** The tool writes to one ref,
-`board`, through the contents API, so it cannot touch main and cannot touch the
-seat's own branch. It calls no model and spends nothing. What it widens is the
-public record: this repository is public, so every run's seat, status and
-one-line result is world-readable. That is the same exposure the pull requests
-already carry.
+**Scope, so the reader can judge the risk.** The tool posts one row to
+`POST /api/runs` on the owner's board and writes nothing in this repository. It
+calls no model and spends nothing. What it widens is who can see a run: the
+board is behind Caddy basic auth rather than public, so this is narrower
+exposure than the old ref, which was world-readable because this repository is.
 
-**Still one line after 2026-09-27, and it now carries the snapshot too.** That
-run added `board/state.json`, the folded board the site reads in one request,
-and `tools/board.py report` refreshes it after the report lands. So this step
-needs no edit: applying the YAML above as written gets both. Smoke-tested the
-same run against the live ref, `board: board/state.json holds 4 events`, and
-the file is readable unauthenticated at
-`https://raw.githubusercontent.com/alexandrapaiz/alexandria/board/board/state.json`
-(HTTP 200, 2,212 bytes). A snapshot that cannot be written still exits 0, for
-the same reason the report does.
+**One thing to know before applying it, because it cannot be undone.** The
+board's server implements GET and POST only; PATCH, PUT and DELETE answer 501.
+Run rows are permanent. The step runs under `if: always()` and posts exactly
+once per job, so that is fine in the normal case, but a *re-run* of a job files
+a second row for the same run, and no one can remove it. If that turns out to
+matter, the fix is a check on `run_url` before the post, and it belongs in
+`tools/board.py` rather than in the step.
 
 **Smoke-tested before it was queued**, which is what
 [runtime-changes.md](runtime-changes.md) asks of a change to what a scheduled
-job does. The engineer run of 2026-09-26 ran the exact command the step runs,
-against the real ref, twice: the first wrote
-`board/events/run/2026-09-26/engineer-36208446311-1.json` and the second
-printed `exists` without writing, which is the behaviour that keeps an
-`always()` step from filing a run twice.
+job does. The engineer run of 2026-09-28 ran the exact command the step runs,
+against the live board, and its row is on `alexandria`'s board with this run's
+pull request url and its one-line report. The `--dry-run` form was run first,
+which is the only rehearsal a permanent write admits.
 
 ---
 
@@ -659,8 +661,8 @@ day of it behaving.
 ### 10. The run report calls a tested script, because dash's echo ate the body
 
 **Queued 2026-09-26 by the engineer seat.
-INC-2026-09-26-run-report-dash-echo. This one is live and failing right now,
-in all twelve workflows, on every run.**
+INC-2026-09-26-run-report-dash-echo. Still live on main on 2026-09-28, two days
+later, and it has now failed six consecutive engineer runs.**
 
 The `Post run report` step added to all twelve `agent-*.yml` on 2026-09-26 at
 01:14 and 01:23 UTC declares no `shell:`, so it runs under the container's
@@ -669,15 +671,47 @@ The `Post run report` step added to all twelve `agent-*.yml` on 2026-09-26 at
 body became a real newline before `jq` read it, so `jq` rejected its own input
 and the step exited 4.
 
-It is deterministic for any pull request body containing a newline, which is
-all of them. The first two runs to meet it both failed: `engineer-agent`
-36208446311 (schedule, 01:26:48Z) and 36208644267 (dispatch, 01:30:18Z). Both
-had already finished their work and opened their pull requests, #115 and #116.
+**Corrected 2026-09-28: it is two workflows, not twelve.** This entry said "all
+twelve workflows, on every run," which overstated it and is worth fixing
+because the number is what tells the owner how urgent this is. Only
+`agent-engineer.yml` and `agent-frontend.yml` declare a `container:`, and the
+container image is where `sh` is dash; the other ten run on the runner host,
+where GitHub's default shell for a `run:` step is bash and `echo` leaves the
+escapes alone. Checked by reading all twelve for `container:` and `shell: bash`
+and by reading the conclusions: every `pm-agent`, `writer-agent`, `okr-agent`
+and `exo-agent` run since the step landed is `success`.
+
+It is deterministic for any pull request body containing a newline, which is all
+of them, so those two workflows fail every single run. Six engineer runs so far,
+every one of which finished its work and opened its pull request first:
+
+| run | date | PR opened | conclusion |
+|---|---|---|---|
+| 36208446311 | 2026-09-26 01:26Z | #115 | failure |
+| 36208644267 | 2026-09-26 01:30Z | #116 | failure |
+| 36250253554 | 2026-09-26 14:57Z | #118 | failure |
+| 36285149176 | 2026-09-27 01:18Z | #120 | failure |
+| 36330209631 | 2026-09-27 15:36Z | #122 | failure |
+| 36342225307 | 2026-09-27 18:51Z | #124 | failure |
+
+The log of the last one is the same line as the first: `parse error: Invalid
+string: control characters from U+0000 through U+001F must be escaped at line
+177, column 1`, then `Process completed with exit code 4`. `agent-frontend.yml`
+has not run since the step landed, so its first run will be its first failure.
 
 **The cost is not the missing Slack message. It is the status.** A run that did
 its whole job is recorded as `failure`, and run health is read off those
 statuses by the PM's standup, by `docs/agents/delivery-health.md`, and by the
-ExO's weekly audit. Two good runs currently read as two crashes.
+ExO's weekly audit. The engineer lane has read as six consecutive crashes for
+two days while shipping a pull request every run.
+
+**A one-character version of this fix exists, if the full one is too much to
+apply today.** Adding `shell: bash` under `- name: Post run report` in
+`agent-engineer.yml` and `agent-frontend.yml` alone stops the failures, because
+bash's `echo` does not expand the escapes. It leaves the untestable shell in
+place, which is the reason the real fix below is the real fix, but it is two
+lines against twelve files' worth of replacement and it turns the engineer lane
+green.
 
 **The change, identical in all twelve `.github/workflows/agent-*.yml`.** Replace
 the whole body of the `Post run report` step with one command:
