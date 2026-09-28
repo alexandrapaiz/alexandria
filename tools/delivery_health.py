@@ -341,7 +341,7 @@ def exit_code(results: list[Surface]) -> int:
 
 def render(results: list[Surface]) -> str:
     mark = {OK: "ok     ", FAILING: "FAILING", UNKNOWN: "unknown"}
-    lines = ["Delivery health — did the product reach a reader",
+    lines = ["Delivery health: did the product reach a reader",
              "(docs/agents/delivery-health.md guardrail 4: read the artifact, not the scheduler)",
              ""]
     for s in results:
