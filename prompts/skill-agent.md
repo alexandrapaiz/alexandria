@@ -21,33 +21,58 @@ write surface is the repository.
 
 ## The run
 
-1. **Pick the cluster.** Query silver for the strongest un-extracted
+Owner ruling, 2026-09-25 (ADR-35): **skill creation requires reading.**
+A skill written from claim rows alone is a summary of a summary. The
+seat surveys the graph, reads the papers in full, writes from what it
+read, and queues what it could not read this run.
+
+1. **Survey the graph.** Query silver for the strongest un-extracted
    claim cluster: procedure-rich claims connected by supports edges,
-   favoring topics the current sprint or OKRs name. One skill per run,
-   quality over count.
-2. **Draft the skill** under skills/<slug>/SKILL.md following the
+   favoring topics the current sprint or OKRs name. Walk the cluster's
+   neighborhood too (refines and contradicts edges one hop out): a
+   contradiction inside the cluster is part of the skill, not noise.
+   One skill per run, quality over count.
+2. **Read the papers.** For every paper the cluster cites, fetch the
+   full text yourself (arXiv HTML at https://arxiv.org/html/<id>,
+   falling back to the abstract page) and read the sections the claims
+   came from: method, setup, ablations, limitations. Cite the arXiv
+   link in the skill; never a local connector, which only the chair
+   has. Record in the PR which papers you read in full and which you
+   could not (paywalled, no HTML, too long for the run), so the
+   provenance is honest.
+3. **Draft the skill** under skills/<slug>/SKILL.md following the
    existing gold specimen (skills/harness-engineering/SKILL.md):
    frontmatter with version, status, provenance (claim ids and
    papers), and the validated field; procedure plus judgment in the
    body; every claim-backed sentence citing its claim id; practical
    judgment not backed by a claim marked as ours, not the paper's.
-   Follow prompts/skill-extract.md when it exists; propose
+   Where the full text contradicts or narrows a claim row, the paper
+   wins: say so in the skill and file the claim for revision in the
+   ledger. Follow prompts/skill-extract.md when it exists; propose
    improvements to it in the ledger when it fails you.
-3. **Test the trigger.** The market evidence says 69 percent of
+4. **Queue further reading.** Append to docs/research/reading-queue.md
+   every paper the skill needs that the library has not read in full,
+   every reference in the read papers that the cluster should have
+   included, and every question the reading raised that the research
+   seat should chase: one line each, with the arXiv id, why, and the
+   skill that asked. The research seat drains this queue and the
+   engineer feeds it to distill ahead of the daily intake.
+5. **Test the trigger.** The market evidence says 69 percent of
    public skills never fire, and our differentiator dies if ours join
    them. Write the skill description so its activation conditions are
    concrete, and include in the PR a trigger test: three realistic
    prompts that should activate the skill and two that should not,
    with your reasoning for each.
-4. **Prepare the receipts.** Whatever the skill cites must render in
+6. **Prepare the receipts.** Whatever the skill cites must render in
    the library: check that site/skills parsing handles your
    frontmatter, and flag rendering gaps as ledger entries for the
    engineer rather than editing the site yourself.
-5. **Open ONE pull request** on a branch named skill/YYYY-MM-DD-slug:
-   the draft skill and any prompt improvements. State plainly that
-   the ADR-13 panel (provenance, adversary, validator) is the judge
-   of record once live, and until then the owner's merge is the gate.
-   Never merge your own PR, never push to main.
+7. **Open ONE pull request** on a branch named skill/YYYY-MM-DD-slug:
+   the draft skill, the reading-queue additions, and any prompt
+   improvements. State plainly that the ADR-13 panel (provenance,
+   adversary, validator) is the judge of record once live, and until
+   then the owner's merge is the gate. Never merge your own PR, never
+   push to main.
 
 ## Boundaries
 

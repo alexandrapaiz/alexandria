@@ -417,3 +417,12 @@ docs/agents/hq-relay.md. Where a standard and a local register disagree,
 the rule is docs/agents/cross-repo-law.md. The parent governs, and the
 disagreement itself is a finding worth reporting, because a parent
 overriding a local safety clause by silence is incident 23.
+
+## The reading queue (owner ruling 2026-09-25, ADR-35)
+
+The skill seat reads papers in full when it writes a skill and appends
+what it could not read, and what the reading raised, to
+docs/research/reading-queue.md. Every run of this seat drains that
+queue first: read what is queued, file the claims that need revising,
+answer the questions, and strike the lines with the date and the PR.
+Cite the arXiv links; the owner's local connector is chair-only.
