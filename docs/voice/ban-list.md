@@ -827,3 +827,25 @@ gap that the same collision had left empty (incident 25).
     2026-09-28. Enforced the same day: the grade slot now forbids opening on
     the word "evidence" or on any stem already used in the issue, and requires
     the grade to be folded into a sentence doing other work.
+71. The banned example and its repair, quoted side by side where the work is
+    written. Entry 53 is the prohibition that supplies the string and entry 56
+    is the example that supplies the frame. This is both at once, and it is the
+    shape that produced the worst line of 2026-09-28. The opening slot in
+    prompts/digest.md carried the owner's struck sentence, then six lines later
+    the repair written to replace it, both quoted in full, both at the position
+    where the opening gets written. The print took the subject and the tense from
+    the struck one, three phrases from the repair including one clause word for
+    word, and assembled an opening whose every part came from the prompt and no
+    part came from that day's news. Neither quotation was careless. The struck
+    sentence is the owner's own ruling and the repair is the canon's model of the
+    fix, and putting them together looks like teaching. It is not teaching. **A
+    negative example beside a positive example, at the position of writing, is a
+    menu, and the output is a dish from both halves of it.** The tell is any pair
+    of quoted specimens in one slot, whatever the sentences around them say, and
+    the company standard is `L-A23` in docs/standards/lessons.md, which reached
+    this repository on 2026-09-28 in the HQ sync and says it in one line: read
+    the instruction from the position of whoever obeys it. Added 2026-09-28.
+    Enforced the same day: both quotations left the opening slot, the struck
+    sentence joined the two already held at the stands-alone gate, and the repair
+    was rewritten about a subject no payload will ever hand the model, which is
+    this file's existing technique for an example that must not be copied.
