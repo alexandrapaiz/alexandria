@@ -25,6 +25,15 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: verdict schema and the provenance reviewer
 - Cost: $0
 - Status: accepted
+- Groomed 2026-09-28 (PM): accepted 11 days ago, still unbuilt, and
+  larger than a day as written (O3 KR1 names 2026-11-15 for it live).
+  Split for whoever takes it: (1) the verdict schema and the provenance
+  reviewer alone, against already-open promotion PRs, read-only, no
+  merge action; (2) the adversary and validator reviewers added to the
+  same pass; (3) unanimous-verdict merge automation, which is blocked
+  regardless on the owner minting a PR-merge-scoped token
+  (docs/sprints/pending.md item 7). (1) and (2) do not need that token
+  and can ship independently of it.
 
 ### 2026-09-17 — Institution backfill, then regenerate and resend digest
 - Trigger: known gap; scratchpad script `backfill_institutions.py` exists
@@ -435,7 +444,12 @@ herself.
   "Accelerate every builder to frontier speed." alone, everywhere, no
   subtitle or companion line (one was considered and deleted).
   Recorded at the top of vision.md §0. This entry is done.
-- Status: proposed
+- Groomed 2026-09-28 (PM): this entry carried a stray duplicate
+  "Status: proposed" line after the owner's outcome above, a
+  duplication artifact rather than a second status. Removed, since it
+  did not represent a status the owner set (the real, current status
+  stays "built" two lines up) and it was making the entry read as a
+  live proposal to any grep-based grooming pass.
 
 ## Security agent findings (first run, 2026-09-18)
 
@@ -606,6 +620,11 @@ build.
   work the same way gh pr create already does for every other seat
 - Cost: $0
 - Status: proposed
+- Groomed 2026-09-28 (PM): superseded. ADR-25 renamed this line of work
+  to the research seat, `.github/workflows/agent-research.yml` exists
+  and has run on a Monday cadence since 2026-09-19, and
+  docs/agents/org-chart.md already lists it. Marking stale rather than
+  leaving it readable as still-open; no action owed.
 
 ### 2026-09-18 — Store each paper's arXiv category (engineer agent)
 - Trigger: same doc. The arXiv firehose can only ever confirm categories
@@ -700,6 +719,11 @@ build.
   week going forward
 - Cost: $0
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. `skills/_validation/trigger_test.py`
+  and per-skill `triggers.json` fixtures exist and run against the
+  whole library on every skill-agent PR (most recently PR #83, 27 of 27
+  cases). Marking stale rather than leaving it readable as still-open;
+  no action owed.
 
 ### 2026-09-18 — Self-application step for prompts/weekly-agent.md (engineer agent, charter-text proposal)
 - Trigger: owner's architecture-run directive, verbatim: "the big things
@@ -934,6 +958,13 @@ build.
   doc, engineer seat
 - Cost: $0
 - Status: accepted
+- Groomed 2026-09-28 (PM): still unbuilt 10 days on. Already correctly
+  day-sized via its own "First step"; the audit-plus-design-doc is the
+  right slice to schedule, not the full upgrade. Lower leverage this
+  week than the corpus-stall finding in the 2026-09-24 curation brief
+  (edges have stopped forming at all since 2026-09-12, a supply
+  problem the graph-quality audit would just measure more precisely),
+  so carried rather than scheduled this sprint.
 
 ### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
 - Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
@@ -1555,6 +1586,18 @@ owning seat rather than assumed. Arguments in docs/sales/.
   not-yet-costed item, so this is worth re-checking once that figure
   exists rather than assumed free of any real cost.
 - Status: proposed
+- Groomed 2026-09-28 (PM): flagging a self-contradiction rather than
+  resolving it, since it needs the ExO or the owner, not this seat.
+  This entry's own "Decision" line above says "adopted", but the
+  Status field here still says "proposed", and neither
+  `prompts/skill-agent.md` nor `.github/workflows/agent-skill.yml` nor
+  docs/agents/org-chart.md's skill row (still "Tue 8:00 ET" only) has
+  been changed in the 10 days since. Either the charter-and-workflow
+  edit is still owed (in which case Status should read "accepted, not
+  yet applied" rather than "proposed"), or the owner has not actually
+  ratified the PM's adoption call and Status is the accurate one. This
+  seat cannot edit prompts/ or .github/workflows/ to close the gap
+  either way.
 
 ### 2026-09-18 — Let a skill declare its own shelf and its own summary (frontend proposal)
 
@@ -1987,6 +2030,9 @@ owning seat rather than assumed. Arguments in docs/sales/.
   so tight that "Claude Opus 5" reads as "ClaudeOpus5" in a mail client.
 - Cost: $0. No new dependency, no new service, no new font.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. PR #90 (2026-09-24) wired
+  `site/emails/digest.html` into the send path. Marking stale rather
+  than leaving it readable as still-open; no action owed.
 
 ### 2026-09-19 — The writing model emits narrow no-break spaces (frontend observation, for the writer)
 
@@ -2129,6 +2175,10 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the engineer, with the frontend seat, since it is the
   rendering path.
 - Status: urgent
+- Groomed 2026-09-28 (PM): built. PR #69 (2026-09-22, merged 2026-09-24)
+  is the live XSS break-fix, sanitizing the digest body before it
+  renders. Marking stale rather than leaving an urgent item reading as
+  still-open; no action owed.
 
 ### 2026-09-19 — Pin the embedding model, and stop sharing its cache with the MCP server (security agent)
 - Trigger: the owner's incident 19 dispatch and the 2026-09-19 audit.
@@ -3548,6 +3598,9 @@ needs an owner decision or an owner push, not an engineer build.
   table in Postgres and it is about a day.
 - Cost: $0.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. A 2026-09-25 engineer run shipped
+  single-use enforcement on MCP authorization codes. Marking stale
+  rather than leaving it readable as still-open; no action owed.
 
 ### 2026-09-24 — The MCP metadata endpoints let the caller choose the host they advertise (security agent)
 
@@ -3658,6 +3711,10 @@ needs an owner decision or an owner push, not an engineer build.
   way.
 - Cost: $0.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. PR #105 (2026-09-25, merged
+  2026-09-26) gave the MCP synthesis path incident 24's fallback list.
+  Marking stale rather than leaving it readable as still-open; no
+  action owed.
 
 ### 2026-09-22 — interpret drains 11 claims a day while distill adds 40, so the graph can never reach the newest research (skill agent)
 - The measurement, read-only against Neon this run: 661 claims, 222 of
@@ -3700,6 +3757,16 @@ needs an owner decision or an owner push, not an engineer build.
 - Cost: unknown until the per-claim interpret cost is stated. Everything
   else in this entry is free.
 - Status: proposed
+- Groomed 2026-09-28 (PM): the fix shipped. PR #110 (2026-09-26) moves
+  triage and interpret onto Kimi K2, replacing Groq's shared
+  8,000-tokens-a-minute ceiling with a per-job spend cap, and the
+  2026-09-24 curation brief's numbers (interpret at 11/day against a
+  40/day inflow, the graph frozen since 2026-09-12) are this entry's
+  own finding restated with a week more data. Not closing the entry:
+  per PR #110's own words, "nothing is live... the change is written,
+  tested and dormant" until the chair runs
+  `modal deploy pipeline/triage.py` and `pipeline/interpret.py`. See
+  docs/sprints/pending.md and this sprint's item 1.
 
 ### 2026-09-22 — The trigger test has no length normalisation, so the wordiest description wins (skill agent)
 - Trigger: this run's draft skill, on its first complete pass, took two
