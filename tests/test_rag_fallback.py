@@ -287,18 +287,44 @@ def test_the_crons_pass_today():
     assert budget.check_crons() == []
 
 
+def test_each_cron_has_a_fallback_list_and_moonshot_at_its_head():
+    # 2026-09-26: the corpus jobs moved to the funded account, because Groq's
+    # free tier is why 4,973 papers were never triaged and 487 claims never
+    # linked. The head of each list is the primary, and it has to be Moonshot's
+    # or the move did not happen.
+    lists = budget.cron_model_lists()
+    assert set(lists) == set(budget.CRON_MODELS)
+    for label, models in lists.items():
+        assert len(models) >= 2, f"{label} has no fallback"
+        assert budget.MODELS[models[0]]["provider"] == "moonshot", label
+        assert any(budget.MODELS[m]["provider"] == "groq" for m in models[1:]), (
+            f"{label} has no second provider, so one withdrawal takes it down")
+
+
 def test_the_guard_catches_a_cron_pointed_at_a_withdrawn_model(monkeypatch):
     # Incident 24 in the shape it would take here: the model is retired, and
     # the first symptom is a red cron nobody is watching.
-    monkeypatch.setattr(budget, "cron_models", lambda: {"triage": "groq/compound"})
+    monkeypatch.setattr(budget, "cron_model_lists",
+                        lambda: {"triage": ["groq/compound", "kimi-k2.6"]})
     problems = budget.check_crons()
     assert len(problems) == 1
     assert "withdrawn" in problems[0]
 
 
+def test_the_guard_checks_every_fallback_not_only_the_head(monkeypatch):
+    # A fallback that has never been checked is a fallback that fails at 3am.
+    # Until 2026-09-26 these jobs had one model each and this could not be asked.
+    monkeypatch.setattr(budget, "cron_model_lists",
+                        lambda: {"triage": ["kimi-k2.6", "groq/compound"]})
+    problems = budget.check_crons()
+    assert len(problems) == 1
+    assert "fallback 2" in problems[0], problems
+
+
 def test_the_guard_catches_a_cron_model_absent_at_the_provider(monkeypatch):
-    monkeypatch.setattr(budget, "cron_models",
-                        lambda: {"interpret": "openai/gpt-oss-120b"})
+    monkeypatch.setattr(budget, "cron_model_lists",
+                        lambda: {"interpret": ["openai/gpt-oss-120b",
+                                               "qwen/qwen3.8-27b"]})
     problems = budget.check_crons(available={"qwen/qwen3.8-27b"})
     assert len(problems) == 1
     assert "would 404" in problems[0]
@@ -309,8 +335,90 @@ def test_the_guard_says_where_to_fix_the_pattern_if_a_cron_moves(monkeypatch):
     # so it raises with the file to edit rather than silently checking nothing.
     monkeypatch.setitem(budget.CRON_MODELS, "invented", "pipeline/budget.py")
     with pytest.raises(LookupError) as caught:
-        budget.cron_models()
-    assert "budget.py MODEL" in str(caught.value)
+        budget.cron_model_lists()
+    assert "cron_model_lists" in str(caught.value)
+
+
+def test_a_one_model_cron_is_refused_as_a_single_point_of_failure(monkeypatch, tmp_path):
+    # The same rule fallback_models() and synthesis_models() already enforce.
+    job = tmp_path / "job.py"
+    job.write_text('MODELS = ["kimi-k2.6"]\n')
+    monkeypatch.setattr(budget, "CRON_MODELS", {"lonely": job.name})
+    monkeypatch.setattr(budget, "ROOT", tmp_path)
+    with pytest.raises(LookupError) as caught:
+        budget.cron_model_lists()
+    assert "single point of failure" in str(caught.value)
+
+
+# ---------------- the corpus jobs' requests, caps and windows ----------------
+
+def test_every_corpus_fallback_can_actually_take_the_jobs_request():
+    # The press cannot fit its request on Groq's free tier at all, so its Groq
+    # entries are a last resort that has never printed. These two jobs send a
+    # few thousand tokens, so their Groq fallbacks are real, and that is worth
+    # proving rather than assuming.
+    pytest.importorskip("tiktoken")
+    assert budget.check_cron_requests() == []
+
+
+def test_a_reservation_too_large_for_a_fallback_is_a_finding(monkeypatch):
+    pytest.importorskip("tiktoken")
+    spec = dict(budget.CRON_REQUESTS["triage (pipeline/triage.py)"])
+    spec["payload_chars"] = 400_000      # a batch nothing on the free tier can take
+    monkeypatch.setitem(budget.CRON_REQUESTS, "triage (pipeline/triage.py)", spec)
+    problems = budget.check_cron_requests()
+    assert problems, "an oversized batch was accepted by every fallback"
+    assert "is not a fallback" in problems[0]
+
+
+def test_the_corpus_caps_project_under_the_ceiling_finance_was_given():
+    projected, lines = budget.monthly_projection()
+    assert lines, "no cap was read out of any job"
+    assert projected <= budget.MONTHLY_CAP_CEILING_USD
+    assert budget.check_cron_spend() == []
+
+
+def test_raising_a_cap_past_the_ceiling_fails_the_command(monkeypatch):
+    # A cap is a runtime number. Raising one is a change to what the org spends,
+    # so it goes to the owner with docs/finance updated, never as a one-line edit.
+    monkeypatch.setattr(budget, "cron_caps", lambda: {"triage": 5.0})
+    problems = budget.check_cron_spend()
+    assert len(problems) == 1
+    assert "docs/finance/opex.md" in problems[0]
+
+
+def test_no_two_kimi_jobs_share_a_window():
+    # Moonshot's organization concurrency is 1 on this account. Two overlapping
+    # jobs is a 429 and a lost slot, which was failure 2 of
+    # INC-2026-09-24-press-provider-migration.
+    assert budget.check_kimi_windows() == []
+
+
+def test_an_overlapping_window_is_caught():
+    llm = budget._llm()
+    original = dict(llm.KIMI_WINDOWS)
+    try:
+        llm.KIMI_WINDOWS["invented"] = (12 * 60 + 30, 13 * 60 + 30)
+        problems = llm.window_overlaps()
+        assert problems, "two jobs inside one hour were called compatible"
+        assert "concurrency is 1" in problems[0]
+    finally:
+        llm.KIMI_WINDOWS.clear()
+        llm.KIMI_WINDOWS.update(original)
+
+
+def test_a_cron_rescheduled_out_of_its_declared_window_is_caught(monkeypatch):
+    # The table is what the overlap check trusts, so a schedule edit that
+    # forgets the table has to fail here rather than in production.
+    llm = budget._llm()
+    monkeypatch.setattr(budget, "_llm", lambda: llm)
+    original = llm.KIMI_WINDOWS["triage (pipeline/triage.py)"]
+    try:
+        llm.KIMI_WINDOWS["triage (pipeline/triage.py)"] = (20 * 60, 21 * 60)
+        problems = budget.check_kimi_windows()
+        assert any("12:00" in p and "20:00" in p for p in problems), problems
+    finally:
+        llm.KIMI_WINDOWS["triage (pipeline/triage.py)"] = original
 
 
 # ---------------- the guard's verdict names its own confidence ----------------
@@ -356,7 +464,8 @@ def test_a_broken_synthesis_list_fails_the_command(capsys, monkeypatch):
 
 
 def test_a_broken_cron_model_fails_the_command(capsys, monkeypatch):
-    monkeypatch.setattr(budget, "cron_models", lambda: {"triage": "groq/compound"})
+    monkeypatch.setattr(budget, "cron_model_lists",
+                        lambda: {"triage": ["groq/compound", "kimi-k2.6"]})
     assert budget.main() == 1
     assert "CRON" in capsys.readouterr().out
 
