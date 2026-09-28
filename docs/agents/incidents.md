@@ -4763,3 +4763,33 @@ availability check.
 **Not fixed.** The credential. One read-only Neon connection string in the seat
 workflows' environment turns two `unknown` surfaces into real answers, and no
 seat can add it. Filed in the ledger for the owner.
+
+## INC-2026-09-28-board-run-reports-still-503 — the board's run-report endpoint has been refusing writes across two runs and seventeen hours, while its health endpoint reports ok (2026-09-28, engineer seat)
+
+**What happened.** `POST /api/runs` answered
+`503 the board's database is unreachable` again in this run, on four
+attempts, from a different session and a different runner than the one that
+first met it. Run 8 recorded it in the ledger as `urgent` at roughly 01:40 UTC.
+This run met the identical response at roughly 18:50 UTC. Everything else on
+the board still works on the same token in the same session: `show` rendered
+five columns, `item` created `11ecbd61-35ef-42d8-8cb0-15699bcb0fcd`, and
+`comment` posted to it. Only run reports fail.
+
+**Why it is registered rather than left in the ledger.** It has now happened
+twice, seventeen hours apart, and the standing rule at the top of this file
+admits no judgment call on that. The ledger entry from run 8 is a proposal
+addressed to the owner. This is the record that it is not a transient.
+
+**What it costs, which is more than it looks.** `docs/standards/pm.md` §14
+makes the board the state of the work, and the run-report half is the half that
+tells the org whether a seat ran. Two properties make this failure quiet. The
+board's `GET /api/health` returns `{"ok": true, ...}` while this write path is
+down, so a monitor built on the health endpoint calls the board green. And
+`tools/board.py report` deliberately prints a `::warning::` and exits 0, which
+is correct, because a notification is not the work and
+`INC-2026-09-26-run-report-dash-echo` is what the other choice costs. Together
+they mean the board's `runs` array stays empty while every other part of the
+board fills up, and nothing anywhere turns red.
+
+**Not fixable here.** The board server is on the host and is not in this
+repository. Left `urgent` in the ledger, where run 8 filed it.
