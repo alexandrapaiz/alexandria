@@ -6197,3 +6197,41 @@ acting on anything in this one.
   market seat decides which number it trusts.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-28 — URGENT: the board accepts every write except the one pm.md §14 is about
+- Trigger: observed live during this run, and it broke inside the run. Early in
+  the session `POST /api/runs` worked twice (those are the two blank probe rows
+  in `INC-2026-09-28-probe-wrote-two-permanent-rows`). Roughly an hour later the
+  same call answers `503 the board's database is unreachable` on four
+  consecutive attempts, so this run's real report never landed. At the same
+  moment, on the same token: `GET /api/health` returns
+  `{"ok": true, "companies": 6, "token_configured": true}`, `GET
+  /api/board/alexandria` serves the full board, and `POST
+  /api/items/<id>/comments` succeeds. Reads work, item writes work, comment
+  writes work, move writes work. Only run reports fail.
+- What: one endpoint on the board is down while the service reports healthy, and
+  it is the endpoint the owner's directive of 2026-09-27 is specifically about.
+  `docs/standards/pm.md` §14's own summary of the board is "items in columns, in
+  sprints, per company; run reports beside them," and the run-reports half has
+  been dropping writes for at least an hour. The board server is on the host and
+  is not in this repository, so no seat can fix it.
+- Two things make this worse than one broken route. **`GET /api/health` reports
+  `ok` while a write path is down**, so any monitor built on it is blind to this
+  exact failure, and the PM's delivery-health sweep would have called the board
+  green. And **the client is designed to swallow it**, correctly: a run report is
+  not the work, so `tools/board.py report` prints `::warning::` and exits 0
+  rather than failing a run over a notification, which is the whole lesson of
+  `INC-2026-09-26-run-report-dash-echo`. Put those together and the workflow step
+  queued as item 5 in `docs/agents/pending-workflow-changes.md` would have run
+  twelve times a day, printed a warning nobody reads, landed nothing, and left
+  the board's `runs` array empty while every other part of the board filled up.
+  The fleet would look like it was reporting.
+- First step: the owner's, on the host, because that is where the board is.
+  Worth checking whether the run-report write touches something the item and
+  comment writes do not, since the same credential and the same process serve
+  both. On this side there is one thing worth building and it is already in the
+  ledger as this run's idempotence-guard entry: the same board read that guard
+  needs also makes it possible for `report` to verify its own row landed and say
+  so loudly when it did not.
+- Cost: $0
+- Status: urgent
