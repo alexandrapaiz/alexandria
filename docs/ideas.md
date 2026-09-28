@@ -5483,8 +5483,20 @@ press does with a 503.
   which caught a third of the opening's promise never being delivered.
 - Why outside the model: each one is a count or a string match, and each has
   now been asked of the model in `prompts/digest.md` and got a wrong answer. A
-  gate the model runs on itself is a gate that can be believed. These three can
-  be decided without belief.
+  gate the model runs on itself is a gate that has to be believed. These can be
+  decided without belief.
+- **The company standard now requires this to be said out loud.** `L-A22` in
+  `docs/standards/lessons.md`, which reached main in the sync of 2026-09-28,
+  says a rule enforced by a sentence is enforced at the reliability of a model
+  reading a file, that writing a failed law more clearly is not the fix, and
+  that where putting the check in a command is impossible a seat says so plainly
+  and records the rule as enforced at the reliability of reading. Ten of the
+  eleven changes in the writer pull request of 2026-09-28 are enforced at the
+  reliability of reading. It is impossible for this seat to do otherwise,
+  because `pipeline/`, `tools/` and the press command are outside its writable
+  surface. This entry is the plain saying-so, and it now also covers a fourth
+  check: a semicolon or any non-ASCII character in the body, which is canon law
+  1 and ban list 13 and is one `grep` away from being decided by a shell.
 - Not urgent: all three are enforced in the prompt in this pull request, which
   is the right first move. This entry is for when one of them fails twice.
 - Whose call: engineer, after #60 lands.

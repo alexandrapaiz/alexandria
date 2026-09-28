@@ -4345,10 +4345,38 @@ of them can both be satisfied.** This generalizes past prompts: any instruction
 set with a rules section and an acceptance-criteria section can contradict
 itself across the two, and the acceptance criteria are what the work aims at.
 
+**The deeper cause, found after merging main, and it is the company standard
+that arrived the same morning.** The opening slot also carried two quoted
+specimens six lines apart: the owner's struck sentence, and the canon's repair
+for it. Both verbatim, both at the position where the opening gets written. The
+print spliced them. The subject and tense came from the struck sentence, and
+"thinking less", "That trick has a ceiling" and "This week the field went
+after" all came from the repair, the last two word for word. Not one clause of
+that opening was written about the day's news.
+
+`L-A23` in `docs/standards/lessons.md`, which landed on main in the HQ sync of
+2026-09-28 (#128), states it exactly: read the instruction from the position of
+whoever obeys it, and if the nearest quoted example at that position is the
+thing being banned, the prohibition is a supply. The standard and its sharpest
+local specimen arrived on the same day. **A negative example beside a positive
+example, at the position of writing, is a menu.** Ban list 71.
+
 **Fixed in this PR.** The test now says the reader's JOB, which is knowable
-from where the generator sits, and the slot records why the noun changed. Ban
-list 65 carries the tell. Four runs of this seat read this file without finding
-it, so the review of 2026-09-28 names reading a slot's asks as its own step.
+from where the generator sits. Both quotations left the opening slot: the
+struck sentence joined the two already held at the stands-alone gate, and the
+repair was rewritten about a subject no payload will hand the model. Ban list
+65 carries the test tell and 71 carries the menu.
+
+**This run committed the same failure in its own patches, and that is worth
+recording.** The first pass at fixing the greeting quoted the banned sentence
+inside the greeting slot. Four other patches did the same with their own
+specimens. They were caught only because merging main brought L-A23 in and the
+run applied it to itself before shipping. Four previous runs of this seat wrote
+patches to this file without that standard available. **A seat's own output
+needs the check it is writing into the generator**, and the cheap version of
+that is one question at ship time: for every specimen this run quoted, is it at
+a position where something gets written, or at a position where output gets
+read?
 
 ## INC-2026-09-28-repair-written-never-deployed — four days of editorial fixes sat in open pull requests while the cron printed daily without them (2026-09-28, writer seat)
 
