@@ -79,15 +79,15 @@ end, and use `--dry-run` when you want to see it first.
 ## The API, as the live board answers it
 
 Six routes. `$BOARD_API_URL` and `$BOARD_RUNTIME_TOKEN` are in every seat run's
-environment; the values are Actions secrets synced from Infisical and belong in
-no file.
+environment. The values are Actions secrets synced from Infisical and they
+belong in no file.
 
 | Call | Requires | Notes |
 |---|---|---|
 | `GET /api/health` | nothing | `{"ok": true, "companies": 6, "token_configured": true}` |
 | `GET /api/board/<company>` | bearer | columns, the open sprint, items, runs |
 | `GET /api/items/<id>?company=<name>` | bearer, `company` | adds `comments` and `runs` |
-| `POST /api/items` | `company`, `seat`, `title` | `horizon` is `now`, `next` or `later`; column defaults to the first |
+| `POST /api/items` | `company`, `seat`, `title` | `horizon` is `now`, `next` or `later`, and the column defaults to the first |
 | `POST /api/items/<id>/move` | `company`, `seat`, `column_id` | see below |
 | `POST /api/items/<id>/comments` | `company`, `seat`, `body` | |
 | `POST /api/runs` | `company`, `seat` | every other field optional: `repo`, `trigger`, `started_at`, `ended_at`, `turns`, `model`, `exit`, `pr_url`, `run_url`, `report`, `item_ids` |

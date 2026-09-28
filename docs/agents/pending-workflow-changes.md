@@ -675,7 +675,7 @@ and the step exited 4.
 twelve workflows, on every run," which overstated it and is worth fixing
 because the number is what tells the owner how urgent this is. Only
 `agent-engineer.yml` and `agent-frontend.yml` declare a `container:`, and the
-container image is where `sh` is dash; the other ten run on the runner host,
+container image is where `sh` is dash. The other ten run on the runner host,
 where GitHub's default shell for a `run:` step is bash and `echo` leaves the
 escapes alone. Checked by reading all twelve for `container:` and `shell: bash`
 and by reading the conclusions: every `pm-agent`, `writer-agent`, `okr-agent`
