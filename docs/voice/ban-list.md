@@ -726,3 +726,104 @@ gap that the same collision had left empty (incident 25).
     engineer in docs/ideas.md rather than enforced here, because no change to
     prompts/digest.md can reach a string the model does not write
     (INC-2026-09-27-law-15-live-in-the-archive).
+65. The test that asks for the banned sentence. Entry 56 is the example that
+    supplies the frame rather than the string, and this is where the frame
+    hides when no example is left to carry it. The opening slot in
+    prompts/digest.md ended on a list of tests, and one of them read "the
+    greeting sounds like a person who knows what the reader's week has been
+    like". Two hundred lines above it sat a hard rule with no exceptions: never
+    a past-tense verb with "you" as its subject. The rule is the law and the
+    test is the brief, and the brief asked for the reader's week. The only
+    honest source for that noun is the reader's past, so the greeting came back
+    as a report on what they had been doing. The print of 2026-09-28 opened
+    "You have spent the week watching agents get faster by thinking less at
+    test time", which is the third outing of a sentence the owner struck on
+    2026-09-24. The tell is a rule and an instruction in one file that cannot
+    both be obeyed, and the way to find it is to read what a slot ASKS for
+    rather than what it forbids, because the asking is what gets written from.
+    Position decides which one wins: the prohibition is read as law and the
+    test is read as the assignment, and the assignment is at the bottom of the
+    slot where the writing happens. Added 2026-09-28. Enforced the same day:
+    the test now says the reader's JOB, which is knowable from here, and the
+    slot records why the noun changed.
+66. The issue's own diagnostic vocabulary printed at the reader. Entry 14 is
+    internal vocabulary from the pipeline, and this is the same failure from
+    the other register, which is the one the grading procedure keeps. The print
+    of 2026-09-28 says "The edge between them fails the kind test". "Edge" is a
+    row in alexandria's claim graph. "The kind test" is the name of a question
+    in the canon's claims pass, asked while grading an issue that has already
+    been written. Both were in prompts/digest.md, in one sentence, three words
+    apart: "every one of these is you noticing that the edge fails the kind
+    test and continuing anyway". That is entry 53 with a new source, because
+    what supplied the string this time was not a prohibition quoting a bad
+    example, it was the file reasoning about its own work in its own shorthand.
+    A subscriber cannot look either phrase up. They are not jargon and not a
+    term of art, they are the machine's names for its parts, and a reader who
+    meets one learns only that the issue was assembled. Added 2026-09-28.
+    Enforced the same day: the sentence now says "the two measures do not
+    match", and the rule under it names the class, which is every word the file
+    uses for the pipeline and every word it uses for its own checks.
+67. The promise the issue does not keep. Entry 23 is the issue that never says
+    what is in it, and this is the opposite failure by the same measure. The
+    contents line of 2026-09-28 named three findings. Its second one, "a memory
+    system that routes simple decisions to a fast controller and saves the
+    heavy model for when it matters, cutting query latency by more than a
+    third", from a named team, appears nowhere else in the issue. The section
+    that ran in its place was never promised. Nothing was misread and no
+    sentence is false. The reader who kept the promise in their head goes
+    looking for a third of the issue that does not exist, and finding nothing
+    is worse than never being told, because now they are also wondering what
+    else they missed. The rule against this was already in the file, as
+    "name only items that actually appear below", which is a count written as a
+    preference. Added 2026-09-28. Enforced the same day: the opening slot now
+    matches each promised item to the section that delivers it, by institution,
+    system and result, before the opening is left.
+68. The count said out loud that nobody counted. One section of 2026-09-28 is
+    headed "Two new bets on how agents improve themselves". Its first sentence
+    says "two different bets" and then lists three, "one that evolves the
+    harness, one that distills it, and one that watches what happens when you
+    stack training stages". Two items follow, and distillation, the second of
+    the three listed, was the previous section's entire subject. Three
+    sentences, three different answers, each one written correctly on its own.
+    This is not a wrong number in the research, which every gate in the file
+    watches for. It is the issue failing to count itself, and it is the
+    cheapest error here to catch and the most damaging to be caught at, because
+    a reader who counts two where three were promised concludes the issue does
+    not know what is in it. The tell is any quantity whose subject is the
+    issue's own contents: three findings, two labs, both results. Added
+    2026-09-28. Enforced the same day as a hard gate in prompts/digest.md that
+    counts every such quantity against the things underneath it.
+69. The heading that its own body takes back. Entry 62 is the heading that
+    names the section's job, and entry 19 is the heading that names a category.
+    This one is written from the day's news, in voice, false for any other day,
+    and still wrong, because the section under it disproves it. "The 82.2%
+    ceiling was not a ceiling" stands over four paragraphs of 2026-09-28 whose
+    conclusion is that the two results being compared measure different
+    quantities, so nothing was established about the ceiling either way. The
+    body is the claims pass working exactly as the canon wants: it names the
+    category error and refuses the comparison. The heading was written before
+    that happened and never revisited, and the heading is the part a skimmer
+    keeps. This is the hedge of ban list 50 one level up. There, a sentence
+    concedes the comparison fails and proceeds; here, the concession is the
+    whole section and the heading proceeds without it. Added 2026-09-28.
+    Enforced the same day: the heading gate now reads each heading against the
+    block under it and asks whether the section ends where the heading says it
+    does, and names the repair, which is that a comparison failing is itself
+    the finding and makes the better heading.
+70. The evidence grade as a stamp. Canon law 6 requires the grade in-line and
+    prompts/digest.md requires it as "a short clause inside the item's own
+    prose". The print of 2026-09-28 carried one on all three items and the
+    count passed: "The evidence is the authors' own experiments across three
+    domains, not yet replicated", "The evidence is single-team, single-paper",
+    "The evidence is one paper, one model family". One stem, three sentences of
+    their own, each at the same position in its item. Every one is accurate and
+    the third is invisible, because by then the words "The evidence is" are the
+    furniture between items rather than something being said. Entry 31 is the
+    advice sentence in the same clothes every time and this is the grade in the
+    same clothes, which is worth its own entry because the grade is the thing
+    the owner named as product rather than weakness, and product that reads as
+    a form has stopped being product. A gate that counts grades cannot see
+    this, and counting is how the grade was made to survive at all. Added
+    2026-09-28. Enforced the same day: the grade slot now forbids opening on
+    the word "evidence" or on any stem already used in the issue, and requires
+    the grade to be folded into a sentence doing other work.
