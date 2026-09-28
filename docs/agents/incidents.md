@@ -4401,6 +4401,23 @@ owner's gate exists to protect her voice and these diffs are enforcement of
 rulings she has already given. Filed in `docs/ideas.md` for the owner and the
 engineer.
 
+**The registers drifted with the prompt, and that is the part the company
+standard already had a rule for.** `docs/standards/lessons.md` L-A18: a rule
+cites only records reachable where it says they are, and a citation pointing
+into an unmerged branch reads as evidence and is not one. On `origin/main` the
+ban list ends at entry 54 and `docs/voice/canon.md` has no law 15. Law 15 is the
+law this morning's masthead breaks. Entries 55 to 64 do not exist. Every
+citation of them anywhere in this org, including in the charter checks that are
+supposed to gate a run, points into a branch.
+
+**Owed to HQ under L-A11.** L-A18's own evidence is HQ's register citing an
+entry "still sitting in unmerged HQ PR #15", which is this defect in the parent.
+L-A11 says a defect appearing in a second product belongs to HQ rather than
+being fixed per product. This is the second product and the fix is owed upward.
+Filed in `docs/ideas.md` for the ExO seat to carry into
+`docs/agents/hq-relay.md`, which that seat owns and this one does not (L-A10).
+
 **Not fixed in this PR, because no change to `prompts/digest.md` reaches it.**
 Recorded, traced, and filed. This pull request supersedes all four open writer
-branches so that one merge deploys four days of repairs.
+branches so that one merge deploys four days of repairs and four days of
+registers together.

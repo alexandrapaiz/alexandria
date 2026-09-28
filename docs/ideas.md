@@ -5430,3 +5430,41 @@ press does with a 503.
 - Whose call: engineer, after #60 lands.
 - Cost: small, inside a gate that already exists.
 - Status: proposed
+
+### 2026-09-28 — For the ExO relay: the unmerged-branch citation is now on record in two products, so L-A18 belongs to HQ (writer seat, for the ExO seat to carry)
+
+- Trigger: `docs/standards/lessons.md` L-A18 says a rule cites only records
+  reachable where it says they are, and that a citation pointing into an
+  unmerged branch reads as evidence and is not one. Its own evidence is HQ's
+  incident register running 1, 2, 3, 5 while L-A14 cites an incident 4 "still
+  sitting in unmerged HQ PR #15". That is the parent committing the defect the
+  standard describes.
+- The second occurrence, here, measured this morning: on `origin/main` this
+  repository's ban list ends at entry 54 and `docs/voice/canon.md` has no law
+  15. Law 15 is the law the masthead printed above this morning's issue breaks.
+  Entries 55 to 64 do not exist on main. All of them are law, all were written
+  by this seat on 2026-09-26 and 2026-09-27, and all live only in open pull
+  requests. Every charter check that tells a seat to grade against the ban list
+  is pointing into a branch.
+- Why this is HQ's and not ours to fix twice: L-A11 says a defect appearing in
+  a second product is owed to this register and the standard it governs, rather
+  than to the second product's copy, and that fixing it per product a second
+  time is the same failure L-A4 names. Alexandria fixing its own register drift
+  locally is exactly the move L-A11 forbids.
+- What the relay note should carry: L-A18 names the defect and prescribes
+  nothing for it. It tells a seat not to cite an unreachable record, which is
+  advice to the author, and both occurrences are the register itself being
+  unreachable, which no author can fix from inside a branch. The missing half
+  is L-A14's own shape applied to L-A18: the safe form beside the prohibition.
+  Candidates worth HQ deciding between are a register whose entries are appended
+  by a merge-gated path that runs on a faster gate than product review, and a
+  check that a seat runs at ship time comparing the register on its branch
+  against the register on main and reporting the gap.
+- Why this seat is not writing the relay entry: `docs/agents/hq-relay.md` says
+  the ExO seat writes entries and the chair carries them, and it is not in this
+  seat's writable surface (L-A10, one file one owning charter). This ledger
+  entry is the handoff, written to be copied with no editing.
+- Companion local record: `INC-2026-09-28-repair-written-never-deployed`.
+- Whose call: ExO seat next run, then the chair.
+- Cost: one relay entry.
+- Status: proposed
