@@ -989,15 +989,42 @@ def notify_owner(subject: str, detail: str) -> str:
     return f"owner notified at {to}: {subject}"
 
 
-def week_just_ended() -> tuple[str, str]:
+def last_sunday(today: date) -> date:
+    """The most recent Sunday strictly before `today`.
+
+    One anchor for both halves of `week_just_ended`, which is the whole point.
+    The old code took two: yesterday for the week label and yesterday-minus-six
+    for the date range. On the Monday the cron runs those agree, because
+    yesterday is Sunday. On any other day they disagree, and the issue then
+    carries a week label and a date range describing different weeks.
+    """
+    # isoweekday(): Monday 1 ... Sunday 7. Monday is 1 day back, Tuesday 2,
+    # and Sunday is 7 rather than 0, because a Sunday run is reporting on the
+    # week that ended the Sunday before, not on the day it is standing in.
+    return today - timedelta(days=today.isoweekday())
+
+
+def week_just_ended(today: date | None = None) -> tuple[str, str]:
     """The ISO week label and the reader-facing date range, as one answer.
 
     Shared by `weekly` and `rehearse` rather than computed twice. The
     rehearsal's whole claim is that it runs the real thing against the real
     payload, and the week label is an input to that payload: a rehearsal that
     labels its own week differently is rehearsing a different issue.
+
+    The week this returns is always a week that has finished. That used to be
+    true only on Mondays, and 2026-W38 is what the difference cost. The cron
+    did not fire on Monday 2026-09-21 (incident 24), the recovery run went out
+    on Wednesday 2026-09-23, and it labelled its issue 2026-W39 because
+    "yesterday" that day was a Tuesday inside the in-progress week. So the run
+    that existed to recover the missing week wrote under the *next* week's
+    label, W38 was skipped for good, and the following Monday's scheduled run
+    upserted over what the recovery had written. A press whose week label
+    depends on the day someone happens to run it cannot be backfilled.
+
+    `today` is injectable so the tests can stand on a Wednesday.
     """
-    y = date.today() - timedelta(days=1)   # yesterday is Sunday on cron day
+    y = last_sunday(today or date.today())
     week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
     monday = y - timedelta(days=6)
     if monday.month == y.month:
