@@ -4140,3 +4140,43 @@ access to try one. Until the App-installation permission is checked,
 charter §5 authority is real only for direct chair-driven sessions and
 not for this seat's own scheduled runs, which is the majority of when it
 would fire.
+
+---
+
+## INC-2026-09-28-merge-not-deployed-repeat — a second cron fix merges and sits inert, same shape as incident 24 (PM seat)
+
+**Recorded under the standing rule.** Incident 24 (the Modal press
+cron) established the pattern: a fix can merge to main and still not
+run, because this org's pipeline crons deploy by a separate, manual
+`modal deploy` step no seat's token can perform, and nothing checks
+that a deploy actually followed a merge. That pattern has now recurred
+on a second, independent cron.
+
+**What happened.** PR #110 (2026-09-26, engineer) merged the fix for
+the corpus stall the 2026-09-24 curation brief found: triage and
+interpret move to Kimi K2, replacing Groq's shared rate ceiling. The PR
+says so itself: "Nothing is live: the change is written, tested and
+dormant, because this seat has no Modal CLI and the deploy belongs to
+the chair." As of this Monday ceremony, two days later, no evidence of
+a deploy was found (this seat cannot reach Modal directly, so this is
+inferred from the corpus-stall symptoms the fix was meant to close
+still being the best available read; PR #110 also carries no confirming
+follow-up). The gap between merge and deploy, which incident 24 cost a
+full missed weekly issue over, is open again on a second cron.
+
+**Why this is a repeat and not a fresh incident.** Same root cause as
+incident 24: a manual deploy step with no owner and no check. Different
+symptom (a stalled claim graph rather than a missed send), same
+structural gap.
+
+**What this run did instead of leaving it implicit.** Sprint
+2026-09-28 item 2 assigns the engineer seat to build a deploy-drift
+guard: each cron records the code/prompt sha it is actually running,
+compared against `HEAD`, alarmed through the existing notify channel
+per delivery-health.md guardrail 1 if they drift more than a day. Item
+3 of the "top three" in docs/sprints/pending.md asks the owner directly
+to run the two deploy commands PR #110 is still waiting on.
+
+**Not yet done.** The guard itself does not exist yet; this entry
+records the second occurrence of the pattern per the standing rule, the
+same run that schedules the fix rather than only naming it.
