@@ -4293,3 +4293,114 @@ branch because this branch builds on it. Reverting it would restore a false
 claim about the product in order to satisfy a boundary, so it stands and the
 call is the owner's. The ledger entry above is where the correction would
 arrive through the engineer instead.
+
+## INC-2026-09-28-test-commissioned-the-banned-sentence — the struck opening printed a third time, out of a test list at the bottom of the slot that forbade it (2026-09-28, writer seat)
+
+**This is a repeat of `INC-2026-09-26-example-supplies-the-frame` and the third
+occurrence of one sentence shape the owner struck personally. Recorded per the
+standing rule.**
+
+**What happened.** `digests` row 18, written 2026-09-28 09:01:28 UTC by
+`kimi-k2.6` at prompt `ea2d678d86e9`, opens:
+
+```
+You have spent the week watching agents get faster by thinking less at test time.
+```
+
+The history of that sentence. The owner struck "You spent last week watching
+agents get faster by doing less at test time" on 2026-09-24 with the words
+"dont assume readers read each issue", which became canon law 13. On 2026-09-26
+the generator produced "You have spent the week watching the field argue about
+whether agents need a heavy harness at deployment", which became the 2026-09-25
+tightening of law 13 into a grammar rule, ban list 55, and
+`INC-2026-09-26-example-supplies-the-frame`. This morning is the third, and the
+first to be stored rather than caught in rehearsal.
+
+**Why it printed, and the cause is new.** The two earlier occurrences were
+diagnosed as a banned specimen quoted at the position where the line gets
+written, and the fix was to move every specimen to the gate at the end of the
+file. That fix held. No specimen is in the opening slot.
+
+The opening slot ends on a list of tests the opening has to pass, and one of
+them read:
+
+```
+the greeting sounds like a person who knows what the reader's week has been like
+```
+
+Two hundred lines above it, in the same slot, sits a hard rule with no
+exceptions: never a past-tense verb with "you" as its subject. **A prohibition
+is read as law and a test is read as the assignment, and the assignment was at
+the bottom of the slot, which is the position writing gets done from.** Asked
+for the reader's week, the only honest source for that noun is the reader's
+past, so the greeting came back as a report on what they had been doing.
+
+**The general form, for the ExO.** The three prior fixes in this chain all
+asked what a prompt FORBIDS and where the forbidden thing is quoted. None asked
+what it ASKS FOR. A file can forbid a shape in one paragraph and commission it
+in another, and the commissioning paragraph wins, because it is the brief and
+because position decides. **Auditing a prompt means reading its imperatives and
+its success criteria against its prohibitions, and the check is whether any two
+of them can both be satisfied.** This generalizes past prompts: any instruction
+set with a rules section and an acceptance-criteria section can contradict
+itself across the two, and the acceptance criteria are what the work aims at.
+
+**Fixed in this PR.** The test now says the reader's JOB, which is knowable
+from where the generator sits, and the slot records why the noun changed. Ban
+list 65 carries the tell. Four runs of this seat read this file without finding
+it, so the review of 2026-09-28 names reading a slot's asks as its own step.
+
+## INC-2026-09-28-repair-written-never-deployed — four days of editorial fixes sat in open pull requests while the cron printed daily without them (2026-09-28, writer seat)
+
+**This is a repeat of the law 15 chain, `INC-2026-09-26-law-15-fixed-on-one-surface`
+and `INC-2026-09-27-law-15-live-in-the-archive`, and the fourth occurrence of a
+correction that does not reach the artifact a reader gets. Recorded per the
+standing rule.**
+
+**What happened.** The false reading claim was cut from `MASTHEAD` in
+`pipeline/weekly.py` on 2026-09-26. This morning's run wrote a brand new row,
+and its second line is:
+
+```
+*The latest in AI research, read in full and distilled weekly: what's new,
+what's gaining acceptance, and what newer evidence has overturned.*
+```
+
+`origin/main` still holds the uncorrected constant. The corrected one exists
+only on `writer/2026-09-26-b` and the branches stacked on it. The cron runs from
+main.
+
+**How far this reaches, traced.** Five of the defects graded in
+`docs/voice/reviews/2026-09-28.md` have a written repair that has never run:
+the tense of the opening (law 13), the masthead (law 15), 44.3% against 30%
+(ban list 63), "Worth the hour if you are" on every reading-list entry (ban
+list 44), and the reading list's generic heading (ban list 62). All five were
+fixed on 2026-09-26 or 2026-09-27. All five printed this morning.
+
+**Why, and this cause is different from the three before it.** The earlier
+occurrences were about where a string lives: a second copy that a grep would
+find, then a constant baked into an artifact before storage. This one is not
+about the code at all. **The repair was correct, complete and reviewed, and it
+was on a branch.** `#107`, `#112`, `#119` and `#126` are all open, in a stack,
+oldest for two days.
+
+The writer seat writes every editorial repair and cannot deploy one. Its
+charter forbids merging its own pull request, correctly. So the interval between
+a fix being written and a fix taking effect is set by an owner review, it is
+unbounded, and a daily cron prints into that interval. Ban list 64 named a fix
+that reaches only what prints next. This morning it did not reach that either.
+
+**The general form, for the ExO.** Every seat that writes a repair it cannot
+deploy has this gap, and the org measures the writing rather than the
+deploying. A fix is not a fix until the thing that runs has it. Two candidate
+gates, both outside this seat: the press send could refuse when the deployed
+`prompt_sha` does not match the prompt on main, which turns an undeployed fix
+into a loud failure instead of a quiet daily cost; and an editorial fix to a
+generator could merge on a faster gate than a full owner review, since the
+owner's gate exists to protect her voice and these diffs are enforcement of
+rulings she has already given. Filed in `docs/ideas.md` for the owner and the
+engineer.
+
+**Not fixed in this PR, because no change to `prompts/digest.md` reaches it.**
+Recorded, traced, and filed. This pull request supersedes all four open writer
+branches so that one merge deploys four days of repairs.
