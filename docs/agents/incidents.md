@@ -4550,3 +4550,127 @@ a new file as a place where things get written down should not merge without
 naming the step that reads it, in the same way a new cron does not deploy
 without naming its rehearsal. That is a proposal to the chair, since ADRs are
 the chair's, and it is recorded here rather than acted on for the same reason.
+
+## INC-2026-09-28-dash-echo-sixth-failure — the engineer lane has read as six consecutive crashes for two days, with a pull request opened on every one of them (2026-09-28, engineer seat)
+
+**What happened.** `INC-2026-09-26-run-report-dash-echo` is not fixed. It has
+now failed every engineer run since it landed: 36208446311, 36208644267,
+36250253554, 36285149176, 36330209631 and 36342225307, opening pull requests
+#115, #116, #118, #120, #122 and #124 respectively, and being recorded
+`failure` every time. The log of the sixth is the log of the first, to the
+character: `parse error: Invalid string: control characters from U+0000 through
+U+001F must be escaped at line 177, column 1`, then `Process completed with
+exit code 4`. Every one of those runs did its whole job first. Only the
+notification failed.
+
+**Why it is recorded again rather than left as one entry.** The standing rule at
+the top of this file is that a repeat is recorded at the moment it repeats, with
+no exceptions. It has repeated four more times since the entry was written. More
+usefully, the original entry got the blast radius wrong and the number is what
+tells a reader how urgent this is.
+
+**The correction: two workflows, not twelve.** The 2026-09-26 entry and
+`docs/agents/pending-workflow-changes.md` item 10 both say "all twelve
+workflows, on every run." Only `agent-engineer.yml` and `agent-frontend.yml`
+declare a `container:`, and the container image is where `sh` is dash. The other
+ten run on the runner host, where GitHub's default shell for a `run:` step is
+bash, whose `echo` leaves the escapes alone. Checked by reading all twelve for
+`container:` and `shell: bash`, and by reading conclusions: every `pm-agent`,
+`writer-agent`, `okr-agent` and `exo-agent` run since the step landed is
+`success`. `agent-frontend.yml` has not run since, so its next run will be its
+first failure.
+
+**Why it stayed broken, which is the part worth keeping.** The fix was written
+on the day it was found. `tools/run_report.py` is tested, it is on this seat's
+branch, and the one-line workflow diff has been item 10 in
+`docs/agents/pending-workflow-changes.md` for two days. No seat can push a
+workflow file, so the fix waits on the owner's hand, and the only thing that
+travels to her is a pull request description she has not merged yet. Six runs is
+what that queue costs when the thing waiting in it is the thing that colours the
+queue red.
+
+The org already has the shape of this problem registered twice: recording a rule
+is not enforcing it (incident 20, L-A9). This is the operational twin. Writing a
+fix is not shipping it, and a fix that cannot be shipped by the seat that wrote
+it should be loud in proportion to what it is costing per day rather than
+filed once and left. What this seat can do about that is bounded, so what it did
+is put the daily cost in the entry and give the owner a two-line version of the
+fix she can apply in a minute: add `shell: bash` to the `Post run report` step
+in the two containerised workflows. That is not the right fix, because
+untestable shell in YAML is the root cause, but it turns the engineer lane green
+today.
+
+## INC-2026-09-28-twelve-workflows-changed-again-no-smoke-run — a second fleet-wide runtime change reached main with no pull request and no smoke run, and this run was the first to meet it (2026-09-28, engineer seat)
+
+**What happened.** Commit 6820ac1 (2026-09-27 19:24 UTC, owner) added
+`BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` to the `env:` block of all twelve
+`.github/workflows/agent-*.yml`, plus §14 to `docs/standards/pm.md`. Two new
+secrets a run reads, in twelve live workflows, on main, with no pull request.
+`gh run list` shows no run of any workflow between the commit and this one, so
+there was no smoke run and the first seat to meet the change is this one, which
+is the daily engineer run of 2026-09-28.
+
+**Why this is a repeat.** `INC-2026-09-26-slack-report-step-no-smoke-run` is the
+same event two days earlier, in the same twelve files, from the same hand:
+"twelve live workflows changed on main twice in ten minutes, no pull request and
+no smoke run." `docs/agents/runtime-changes.md` names a change to a secret a run
+reads as a runtime change explicitly. That law was written after the first one.
+
+**What it cost this time: nothing, and that is worth saying plainly.** The
+change is additive. Both variables are set, `GET /api/health` on the board
+answers `{"ok": true, "companies": 6, "token_configured": true}`, and no
+existing step reads either name, so a wrong value could not have broken a run.
+This entry is not a complaint about a two-line diff. It is here because the
+first one cost four production failures in one evening
+(INC-2026-09-24-press-provider-migration), because the law's own words are that
+a runtime change is a runtime change "even when it is two lines and obviously
+correct," and because a rule that is enforced only when a change turns out badly
+is not enforced.
+
+**The one real finding underneath it.** The change was half a change. It put the
+credentials in every run's environment and wrote the directive that every seat
+uses the board, and it shipped no way for a seat to use them: nothing in this
+repository read either variable until this run, and the board's `runs` array was
+empty two days after the board was seeded. That is the same shape as
+INC-2026-09-27-new-register-shipped-without-a-gate, one layer down. A directive
+landed, the surface it names existed, and nothing between the two ever opened
+it. Fixed in this run's pull request, which is what the board client is.
+
+## INC-2026-09-28-probe-wrote-two-permanent-rows — mapping an undocumented endpoint on a live board left two blank run reports that no API can delete (2026-09-28, engineer seat)
+
+**Not a repeat, recorded anyway.** The standing rule covers repeats and this is
+a first occurrence, so this entry is voluntary. It is here because the cost is
+permanent and because the next seat to meet an undocumented write endpoint will
+be one command away from repeating it.
+
+**What happened.** `docs/standards/pm.md` §14 documents five board routes and
+says run reports live on the board, but names no route for posting one. The
+board read returns a `runs` array, so the endpoint had to exist. This run found
+it by posting progressively fuller bodies to `POST /api/runs` and reading the
+400s, which is a sound way to learn a schema from a server that has no OpenAPI
+document. Two of those bodies were complete enough to succeed, so the board now
+holds two run rows with a seat and nothing else: `01069305-c634-46a9-9d0f-9f72b6e988b3`
+and `a36965bf-68fe-4b6d-886c-f1298f8336ae`.
+
+**Why they cannot be cleaned up.** The board's server implements GET and POST.
+PATCH, PUT and DELETE all answer `501`. There is no API path by which the seat
+that created them can remove them, correct them, or mark them as noise. Only the
+owner, in the store on the host, can. Both rows are on `alexandria`'s board
+permanently unless she removes them.
+
+**The general form.** A 400 costs nothing and a 201 cannot be taken back, and on
+an append-only surface those two live one field apart. Probing for *required*
+fields is safe and probing for *sufficient* fields is a write. The order that
+would have avoided this: find the cheapest read that reveals the schema first,
+which here was the `runs` array the board read already returned, whose keys are
+the payload's keys. This run read that array only after creating the rows. The
+same lesson is already half-recorded elsewhere in this org's history: the
+2026-09-18 sprint review notes that GraphQL mutations against the live Projects
+board persisted from a run that died and shipped no pull request, so the board
+was "already partway done" on the third attempt. Writes to a live external
+surface outlive the run that made them, including the runs that fail.
+
+**What changed because of it.** Every write command in `tools/board.py` takes
+`--dry-run`, which prints the exact payload and posts nothing, and the tool's
+docstring and `docs/board.md` both say why: on a surface with no DELETE, the
+other way to find out what a report contains is to spend it.

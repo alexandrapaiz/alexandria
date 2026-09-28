@@ -6109,3 +6109,91 @@ acting on anything in this one.
   good before it is scarce.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-28 — The board clause belongs in all twelve charters, not in one seat's run
+- Trigger: `docs/standards/pm.md` §14 (owner, 2026-09-27) says "every seat
+  reads it at the start of a run and writes to it as it works," and commit
+  6820ac1 put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` into all twelve seat
+  workflows. This run built the door and used it. The other eleven charters do
+  not name the board, so eleven seats now hold credentials for a register they
+  have no instruction to open. The board's `runs` array was empty when this run
+  read it, a day and a half after the board was seeded.
+- What: one paragraph, identical in all twelve charters, in the Observe step
+  rather than the ship check, because the board is read before the work and not
+  before the merge: read the board first with `python3 tools/board.py show
+  --seat <seat>`, move the item you are about to work on to In progress, create
+  one if none exists, comment the pull request url when you ship, and let the
+  final workflow step post the run report. The pull-request-collision rule and
+  the dispatch-queue rule both already have this shape, so the wording can be
+  lifted from them. A twelve-charter edit is the owner's merge by definition
+  (charters are edited only by her), which is why this is a ledger entry and not
+  a commit.
+- First step: draft the paragraph once and put it in this ledger entry's own
+  text, so her merge of the charters is a copy rather than a writing task. The
+  engineer charter is the one seat that may not receive it from here, since a
+  seat never edits its own charter.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — A run report cannot be posted twice, and right now it can
+- Trigger: found while building the board client. The board's HTTP server
+  implements GET and POST; PATCH, PUT and DELETE all answer 501. So a posted run
+  report is permanent, and two blank rows this run created while mapping the
+  undocumented `POST /api/runs` endpoint are on `alexandria`'s board forever
+  (`INC-2026-09-28-probe-wrote-two-permanent-rows`). The step that will call
+  `report` runs under `if: always()`, which is right, but a re-run of a job
+  fires it a second time for the same run and files a second row nobody can
+  remove.
+- What: `tools/board.py report` reads the company's board before it posts and
+  refuses when a run row already carries this run's `run_url`, printing what it
+  found instead of posting. That turns an append-only endpoint into an
+  idempotent one from the client's side, which is the only side this repository
+  controls. The same read makes a second, better thing possible: the report can
+  carry `item_ids` for the items the run actually touched, by matching the
+  branch against the items a seat moved this run, instead of the seat having to
+  pass them by hand.
+- First step: the guard, which is one board read and one comparison, plus the
+  test that a second `report` for one `run_url` posts nothing. The `item_ids`
+  half is separate and can wait.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — Craft scan: Ben's Bites (bensbites.com)
+- Trigger: today's craft scan, rotating through docs/market/landscape.md. Ben's
+  Bites was added 2026-09-24, last observed the same day, and no craft scan has
+  covered it. It is also the landscape's closest content-brand price comp to the
+  $20 tier, so the entry is load-bearing for positioning.md's price ladder.
+- What: three findings, all from the live site and its public archive API on
+  2026-09-28, and the first one changes what the landscape entry means.
+- **Every post is free, and there are no exceptions.** All 15 of the newest
+  posts in `bensbites.com/api/v1/archive`, back to 2026-08-21, carry
+  `"audience": "everyone"`. A newsletter the landscape records as selling an $80
+  community and a $150 Pro tier publishes 100% of its content to everybody. Its
+  paid product is not gated writing at all. That is alexandria's exact shape,
+  free digest plus a paid spine, running at 171,000 subscribers, which is the
+  best evidence yet that the 2026-09-17 pricing decision is a normal shape in
+  this category rather than a concession.
+- **The thing worth stealing: a numbered series inside the same list.** The
+  archive alternates roughly three news posts a week with one "Ben's session
+  #N", numbered #3 through #7 over five weeks. The number is the whole trick. A
+  reader sees a series rather than a post, knows there are six earlier ones, and
+  can start anywhere. alexandria publishes one weekly format and its only
+  reader-visible serial marker is the ISO week code, which ban-list entry 14
+  already names as internal vocabulary a subscriber cannot decode. The skill
+  library is the obvious series and has no serial form at all: a skill lands on
+  a page and nothing tells a reader it is the fourth of anything. This is the
+  writer's and the frontend's to build, not this seat's, which is why it is here
+  as a proposal.
+- **What alexandria does better: it owns its archive and its evidence.** Ben's
+  Bites is on Substack, so its archive URLs, its rendering and its list belong to
+  a vendor. alexandria's archive is its own site reading its own Postgres. And
+  every Ben's Bites item is a link plus a take, with no citation, no claim
+  structure and nothing an agent can load, while alexandria's items each cite a
+  claim-graph edge.
+- **One number to hand to the market seat rather than use.** The landscape
+  records ~120,000 subscribers as of 2026-09-24 and the site says "Over 171,000"
+  today. A 42% move in four days is far likelier to be two incomparable figures
+  than real growth, so positioning.md should not be updated from this until the
+  market seat decides which number it trusts.
+- Cost: $0
+- Status: proposed

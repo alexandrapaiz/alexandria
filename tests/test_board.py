@@ -430,7 +430,7 @@ def test_a_dry_run_needs_no_board_at_all(monkeypatch, capsys):
     monkeypatch.setenv("BOARD_API_URL", "http://127.0.0.1:1")
     monkeypatch.setenv("BOARD_RUNTIME_TOKEN", "t")
     monkeypatch.setenv("GITHUB_REPOSITORY", "alexandrapaiz/alexandria")
-    assert board.main(["--seat", "engineer", "move", "--id", "i-1",
+    assert board.main(["move", "--seat", "engineer", "--id", "i-1",
                        "--column", "Done", "--dry-run"]) == 0
     out = capsys.readouterr().out
     assert "would POST /api/items/i-1/move" in out
@@ -446,3 +446,11 @@ def test_a_dry_run_needs_no_board_at_all(monkeypatch, capsys):
 def test_there_is_no_command_that_creates_a_company_sprint_column_or_view(forbidden):
     with pytest.raises(SystemExit):
         board.build_parser().parse_args([forbidden, "--name", "x"])
+
+
+def test_the_options_go_after_the_subcommand_the_way_the_docs_show(live_board, capsys):
+    """`board.py show --seat engineer`, which is how docs/board.md writes it."""
+    assert board.main(["show", "--seat", "engineer"]) == 0
+    out = capsys.readouterr().out
+    assert "Drain the reading queue" in out
+    assert "Ship the pricing page" not in out

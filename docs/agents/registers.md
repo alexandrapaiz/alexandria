@@ -59,6 +59,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, **code since 2026-09-24**, in the press's deploy chain and in triage, interpret and distill | provider changes are rare and catastrophic |  closed 2026-09-26, see the note below this table |
 | `docs/evals/2026-09-27-fulltext-token-density.json` | engineer | `python3 tools/fulltext_density.py` re-measures against live arXiv | `tests/test_distill_fulltext_budget.py`, on every pull request that touches `pipeline/` | a provider limit or a cleaner change invalidates it, gated per PR |  new 2026-09-27, filed by the engineer seat: this is the receipt behind `budget.FULLTEXT_CHARS_PER_TOKEN`, and it exists because the number it replaced was an assumption nothing ever compared to a real paper (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper) |
 | `docs/research/reading-queue.md` | research seat drains, skill seat writes (ADR-35) | skill seat appends a line for every paper it could not read in full | **`pipeline/distill.py` since 2026-09-27**: the daily run parses the unchecked lines, ingests what the corpus lacks, distills them ahead of the day's intake and prints each id so the research seat can strike the line | the skill seat writes weekly, the drain fires daily | new 2026-09-26 with ADR-35, **archive-side only until 2026-09-27**: twelve lines sat in it for a day with no step in any run opening the file. This is L-A9 again, and the gate is code rather than a charter clause because the seat that writes the register is not the seat that can act on it |
+| the company board, `board.libraryofalexandria.dev` (`docs/board.md`) | the owner, on the host | `docs/standards/pm.md` §14 since 2026-09-27: every seat writes as it works, a seat that finds no item creates one | **`tools/board.py` since 2026-09-28, and no charter yet.** The client exists and the daily engineer run uses it; the eleven other charters do not name the board, so eleven seats have credentials for it and no instruction to open it | the work changes hourly, and the only gate fires daily at one seat | new 2026-09-28. Archive-side gate landed 2026-09-27 with the credentials in twelve workflows; nothing in the repository read either variable and the board's `runs` array was empty for the first day and a half. See INC-2026-09-28-twelve-workflows-changed-again-no-smoke-run |
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -402,3 +403,30 @@ failure since 01:14 UTC. It is INC-2026-09-26-run-report-dash-echo, the fix is
 written and tested, and it is queued as item 10 in
 `pending-workflow-changes.md`, because the one gate this org still cannot close
 from inside a seat is the one that needs a `workflow`-scoped token.
+
+## The board, added to the map (engineer seat, 2026-09-28)
+
+One row is new and it is the largest open gap on this page, so it is worth
+three paragraphs rather than a cell.
+
+The owner made the board a register on 2026-09-27. `docs/standards/pm.md` §14
+says it is the state of the work, that every seat reads it at the start of a run
+and writes to it as it works, and that a run which finds no item for its work
+creates one. Commit 6820ac1 put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` into
+all twelve seat workflows the same day. That is a complete archive-side gate:
+named owner, named writers, standing rule.
+
+There was no artifact-side gate, and for a day and a half there was not even a
+door. Nothing in this repository read either variable, so no seat could have
+complied with §14 on a GitHub runner even if its charter had told it to. The
+board's `runs` array was empty when this run opened it. This run built the door,
+which is `tools/board.py`, and used it: one item created, two comments, one move,
+one run report. That closes the gap at exactly one seat.
+
+**Eleven seats still have the credentials and no instruction.** The gate cannot
+be closed from here, because a charter is edited only by the owner's merge and
+`pm.md` is a vendored copy this repository may not edit. So it is filed as a
+ledger entry proposing the clause, and named here in the honest state rather
+than marked closed. This is the cadence finding from the other direction: not a
+gate that fires too slowly, but a rule whose gate fires at one of the twelve
+seats it binds.

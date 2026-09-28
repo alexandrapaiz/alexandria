@@ -485,20 +485,29 @@ def cmd_report(args):
 
 def build_parser():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--company", help="board company; defaults to this repository's name")
-    parser.add_argument("--seat", help="the seat acting; defaults to ASC_SEAT or the workflow name")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    show = sub.add_parser("show", help="print the board")
+    # Every command takes these two, and they go on the subcommands rather than
+    # on the top level so that `board.py show --seat engineer` works. Options
+    # before a subcommand read as an afterthought and get typed after it anyway.
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--company", help="board company; defaults to this repository's name")
+    common.add_argument(
+        "--seat",
+        help="on a write, the seat acting, defaulting to ASC_SEAT or the workflow "
+             "name; on `show`, the seat to filter the board down to",
+    )
+
+    show = sub.add_parser("show", parents=[common], help="print the board")
     show.add_argument("--json", action="store_true", help="the board as the API returns it")
     show.add_argument("--runs", type=int, default=10, help="how many run reports to print")
     show.set_defaults(func=cmd_show)
 
-    get = sub.add_parser("get", help="print one item, with its comments and runs")
+    get = sub.add_parser("get", parents=[common], help="print one item, with its comments and runs")
     get.add_argument("--id", required=True)
     get.set_defaults(func=cmd_get)
 
-    item = sub.add_parser("item", help="create one item in the current sprint")
+    item = sub.add_parser("item", parents=[common], help="create one item in the current sprint")
     item.add_argument("--title", required=True)
     item.add_argument("--body", default="")
     item.add_argument("--horizon", choices=HORIZONS, default="now")
@@ -506,19 +515,19 @@ def build_parser():
     item.add_argument("--dry-run", action="store_true")
     item.set_defaults(func=cmd_item)
 
-    move = sub.add_parser("move", help="move one item to a column, named not numbered")
+    move = sub.add_parser("move", parents=[common], help="move one item to a column, named not numbered")
     move.add_argument("--id", required=True)
     move.add_argument("--column", required=True)
     move.add_argument("--dry-run", action="store_true")
     move.set_defaults(func=cmd_move)
 
-    comment = sub.add_parser("comment", help="comment on one item")
+    comment = sub.add_parser("comment", parents=[common], help="comment on one item")
     comment.add_argument("--id", required=True)
     comment.add_argument("--body", required=True)
     comment.add_argument("--dry-run", action="store_true")
     comment.set_defaults(func=cmd_comment)
 
-    report = sub.add_parser("report", help="post this run's report onto the board, once")
+    report = sub.add_parser("report", parents=[common], help="post this run's report onto the board, once")
     report.add_argument("--status", required=True, choices=RUN_STATUSES, help="GitHub's job.status")
     report.add_argument("--report", help="the run's one line; the PR's first bullet by default")
     report.add_argument("--branch", help="defaults to the checked-out branch")
