@@ -804,7 +804,7 @@ gap that the same collision had left empty (incident 25).
     category error and refuses the comparison. The heading was written before
     that happened and never revisited, and the heading is the part a skimmer
     keeps. This is the hedge of ban list 50 one level up. There, a sentence
-    concedes the comparison fails and proceeds; here, the concession is the
+    concedes the comparison fails and proceeds. Here the concession is the
     whole section and the heading proceeds without it. Added 2026-09-28.
     Enforced the same day: the heading gate now reads each heading against the
     block under it and asks whether the section ends where the heading says it

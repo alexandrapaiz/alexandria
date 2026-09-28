@@ -4395,7 +4395,7 @@ deploy has this gap, and the org measures the writing rather than the
 deploying. A fix is not a fix until the thing that runs has it. Two candidate
 gates, both outside this seat: the press send could refuse when the deployed
 `prompt_sha` does not match the prompt on main, which turns an undeployed fix
-into a loud failure instead of a quiet daily cost; and an editorial fix to a
+into a loud failure instead of a quiet daily cost. And an editorial fix to a
 generator could merge on a faster gate than a full owner review, since the
 owner's gate exists to protect her voice and these diffs are enforcement of
 rulings she has already given. Filed in `docs/ideas.md` for the owner and the
