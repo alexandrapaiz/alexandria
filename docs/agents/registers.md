@@ -79,7 +79,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
-| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24 |
+| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Two of its four surfaces are still `unknown` in every seat sandbox for want of a read-only `DATABASE_URL` |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 
 ## What this run changed

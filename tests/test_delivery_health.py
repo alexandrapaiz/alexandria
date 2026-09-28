@@ -63,7 +63,7 @@ def test_unknown_is_never_green_and_never_red():
           "not a green report" in dh.render([dh.Surface("press", dh.UNKNOWN, "x")]))
 
 
-def test_a_missing_credential_is_unknown_not_failing(monkeypatch=None):
+def test_a_missing_credential_is_unknown_not_failing():
     """No DATABASE_URL must never render the press as broken.
 
     Reporting a healthy press as broken is how a report teaches its reader to

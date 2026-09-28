@@ -5,7 +5,7 @@
     python3 tools/delivery_health.py --json     # the same answer, for a script
     python3 tools/delivery_health.py --surface press
 
-`docs/delivery-health.md` was written on 2026-09-24 after incident 24, and it
+`docs/agents/delivery-health.md` was written on 2026-09-24 after incident 24, and it
 says the right thing: read the artifact, not the scheduler. A scheduler reports
 its own intentions. Guardrail 4 makes the PM's daily standup the outside
 observer that catches a run which never started, and it names the evidence
@@ -342,7 +342,7 @@ def exit_code(results: list[Surface]) -> int:
 def render(results: list[Surface]) -> str:
     mark = {OK: "ok     ", FAILING: "FAILING", UNKNOWN: "unknown"}
     lines = ["Delivery health — did the product reach a reader",
-             "(docs/delivery-health.md guardrail 4: read the artifact, not the scheduler)",
+             "(docs/agents/delivery-health.md guardrail 4: read the artifact, not the scheduler)",
              ""]
     for s in results:
         lines.append(f"  {mark[s.state]}  {s.name:9} {s.headline}")

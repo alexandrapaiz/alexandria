@@ -6236,4 +6236,111 @@ acting on anything in this one.
 - Cost: $0
 - Status: urgent
 
-<!-- engineer run 2026-09-28 (run 9): sprint 2026-09-28 item 1 in progress -->
+### 2026-09-28 — URGENT: nobody in this org can tell whether the press printed today
+- Trigger: sprint 2026-09-28's first item asks for a definitive answer on this
+  Monday's send, and this run could not give one. `docs/agents/delivery-health.md`
+  guardrail 4 names the evidence exactly, which is the newest row in `digests`,
+  and no seat holds a credential for that table. `DATABASE_URL` lives in the
+  `neon` Modal secret and in no GitHub Actions environment, so every seat that
+  has ever been asked this question has substituted a proxy. This morning's
+  standup substituted commits under `site/content/issues/`, which cannot answer
+  it at any time: nothing in this repository publishes a digest to the site, so
+  that signal reads the same on a perfect week as on a dead one.
+- What: the press is the product. Launch is 2026-10-13, fifteen days out, and
+  the org's ability to answer "did this week's issue reach a reader" is
+  currently a guess. `tools/delivery_health.py` shipped in this run and answers
+  the two public surfaces, the site and the MCP server, with no credential at
+  all. It answers the two that matter most with `unknown`, and prints exit
+  status 2 rather than 0 so that no reader mistakes it for green. The gap is one
+  environment variable.
+- First step: the owner's, and it is small. Create a read-only role in Neon,
+  put its connection string in a repository secret, and add that secret to the
+  seat workflows the same way `BOARD_API_URL` was added on 2026-09-27. Read-only
+  matters: a seat that can drop a table does not need to be able to, and the
+  MCP server already models the pattern with its own restricted query path.
+  After that, `python3 tools/delivery_health.py` answers all four surfaces and
+  guardrail 4 has a reader for the first time since it was written.
+- Cost: $0. Neon roles are free and this adds no service and no account.
+- Status: urgent
+
+### 2026-09-28 — A public status page, split into what we run and what we rent
+- Trigger: today's craft scan of Elicit, below, and one thing this repo already
+  knows. Elicit publishes three uptime groups, and the second is "Model
+  providers we use" at 99.54% against 100% for its own service. alexandria has
+  been broken by a rented dependency three times in one week (incident 24's
+  withdrawn model, the Kimi migration's four failures, the board's `POST
+  /api/runs` returning 503 today) and has no surface anywhere that separates
+  "our code failed" from "the thing we rent failed". The board's own
+  `/api/health` is the counter-example in miniature: it returned `ok` today
+  while one write path was down.
+- What: a `/status` page on the site, generated from
+  `tools/delivery_health.py --json`, with the surfaces grouped the way Elicit
+  groups them. What we run is the press, the corpus pipeline, the site and the
+  MCP server. What we rent is Moonshot, Groq, Neon, Modal and Gmail. Two
+  properties are worth being stubborn about, and both come out of this week.
+  A dependency group whose failures are visible is the honest version of a $0
+  product built on free tiers, and a page that says `unknown` where it cannot
+  see is worth more than one that says `ok` by default, which is the error the
+  board's health endpoint makes.
+- First step: the JSON already exists. One static route reading the output of a
+  scheduled `delivery_health` run, rendered with the three states the tool
+  already distinguishes. No new backend and no new service.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — The press reports onto the board like every other scheduled job
+- Trigger: `tools/board.py` landed on this seat's chain yesterday and every
+  agent seat now posts a run report. The press does not, and the press is the
+  only scheduled job in this org that ships something to a customer. So the one
+  job whose silence costs a reader is the one job the board cannot see, which is
+  a straight restatement of `docs/agents/delivery-health.md`'s definition error: every
+  health surface the org keeps watches the agents and none of them watches the
+  product.
+- What: `weekly()` posts a run report to `BOARD_API_URL` on every path out of
+  the run, including the two alarm paths, carrying the week, the model that
+  wrote it, the word count and the subscriber count. The board is then the
+  outside observer guardrail 4 asks for, and it is one every seat can already
+  read with a token every seat already has. This does not replace the
+  `DATABASE_URL` proposal above, because a job that never starts cannot report
+  either. It closes the other half, which is a job that starts and dies.
+- First step: pass the board's URL and token into the `weekly` Modal function
+  as one more secret, and call the same client `tools/board.py` already
+  implements. Worth waiting on the board's 503, recorded above as urgent, since
+  `POST /api/runs` is the exact endpoint this needs.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — Craft scan: Elicit (elicit.com, status.elicit.com)
+The flagship of the category alexandria competes in, and the last one this seat
+had not scanned this week. Fetched today: the home page, the help center, and
+the status page linked from its "About Elicit" collection.
+
+**Worth stealing: a status page that names the dependency, not just the
+service.** status.elicit.com carries three groups over ninety days. Elicit
+itself at 100%, "Infrastructure we run on" at 100%, and "Model providers we
+use" at 99.54%. The third group is the interesting one. Elicit is a product
+built on somebody else's models, exactly as alexandria is, and rather than
+hiding that it gives the dependency its own public uptime line. A reader who
+sees a bad answer on a bad day can tell which layer failed. alexandria has the
+same exposure and publishes nothing: three of this week's production failures
+were rented dependencies changing under the product, and a reader had no way to
+know that any of them happened. The ledger entry above is this, made concrete.
+
+**Worth noting, separately: Elicit ships a page called "Elicit's limitations"
+and one called "Elicit's reliability", both in its customer-facing help
+center.** A research tool that publishes where it is weak is making the same
+bet alexandria makes with claim grades and deprecated claims, and it is making
+it one level further out, in the sales surface rather than in the product.
+
+**What alexandria does better: the failure is designed not to reach the
+reader.** Elicit's status page is how you find out that a model provider had a
+bad day. alexandria's press answers the same event with guardrails 1 and 2,
+which are an availability check at run start against the provider's own
+`/models` endpoint and an ordered fallback list spread across two providers,
+every entry verified by the same check. The design intent is that a withdrawn
+model costs the reader nothing, because the issue is written by the next model
+in the list instead. That is a stronger promise than transparency about the
+outage, and this week is evidence it was needed: incident 24 is precisely a
+provider withdrawing a model with no notice. The honest caveat is that the
+promise is younger than the scan makes it sound, since it was built on
+2026-09-24 in response to that incident and has had one Monday to prove itself.

@@ -4674,3 +4674,92 @@ surface outlive the run that made them, including the runs that fail.
 `--dry-run`, which prints the exact payload and posts nothing, and the tool's
 docstring and `docs/board.md` both say why: on a surface with no DELETE, the
 other way to find out what a report contains is to spend it.
+
+## INC-2026-09-28-press-week-label-off-schedule — the run that existed to recover the missing week published under the next week's label, and 2026-W38 was lost for good (2026-09-28, engineer seat)
+
+**What happened.** `2026-W38` has never existed. Incident 24 records the first
+half of that: the press cron did not fire on Monday 2026-09-21, and the owner
+found out from her own inbox three days later. The second half was found today
+and had not been recorded anywhere. The recovery print went out on Wednesday
+2026-09-23 and it labelled its issue `2026-W39`, not `2026-W38`, so the run
+whose entire purpose was to recover the missing week wrote under the label of
+the week that had not finished yet. `digests` is keyed on week. The following
+Monday's scheduled run computed `2026-W39` as well and upserted straight over
+what the recovery had left. One issue was written to cover two weeks, the
+second write silently replaced the first, and the week the org was trying to
+rescue was skipped permanently.
+
+**Why, mechanically.** `week_just_ended()` in `pipeline/weekly.py` anchored on
+`date.today() - timedelta(days=1)`, with the comment "yesterday is Sunday on
+cron day". That is true on the Monday the cron runs and false on the other six
+days. On Wednesday 2026-09-23, yesterday was Tuesday 2026-09-22, which ISO
+week numbering puts inside W39. The same function's second half was wrong in a
+different direction: `monday = y - timedelta(days=6)` is a Monday only when `y`
+is a Sunday, so an off-schedule run also produced a reader-facing date range
+that was not a calendar week at all. That day's payload said "September 16-22"
+while carrying the label for September 21 to 27.
+
+**Why nothing caught it.** The docstring of the manual path in this module's
+own header says `modal run pipeline/weekly.py` is a supported one-off, and
+every recovery this org has ever run has used it. So the off-schedule path is
+not an edge case, it is the path taken on exactly the days something has
+already gone wrong. Nothing tested it, because the scheduled path is the one a
+test writer thinks about, and the scheduled path was correct.
+
+**Fixed in this run.** Both halves now come off one anchor, the last Sunday
+strictly before today, so the label and the range can never describe different
+weeks. `tests/test_press_week_label.py` pins Monday's answer against the old
+expression for all 52 Mondays of 2026, so the scheduled path is provably
+unmoved, and holds the 2026-09-23 case as its own named test.
+
+**Not fixed, and it needs the owner or the chair.** The `digests` row for
+`2026-W39` and the file `site/content/issues/2026-W39.md` are still whatever
+the most recent write left there, and no issue covering 2026-09-14 to
+2026-09-20 exists. Whether to backfill W38 is an editorial call, not an
+engineering one. With this fix deployed the command is one line and it will
+now label itself correctly, which it would not have done yesterday.
+
+**The general form.** A date function whose correctness depends on the day it
+runs is a function that is correct in production and wrong in every recovery.
+Recovery paths run only after something has already failed, which is the worst
+moment for a second defect and the moment least likely to be under test.
+
+## INC-2026-09-28-guardrail-4-had-no-reader — the law that says read the artifact was read by nothing, and the standup enforcing it used a proxy that cannot answer (2026-09-28, engineer seat)
+
+**What happened.** `docs/agents/delivery-health.md` guardrail 4 has said since
+2026-09-24 that only an outside observer catches a run that never started, that
+the observer is the PM's daily standup, and that the evidence is the artifact:
+the newest row in `digests`, the newest issue the live site publishes, a probe
+of the MCP endpoint. Today's standup, four days later, could not check the
+press. It said so honestly and then reached for the nearest visible thing,
+which was whether a commit had appeared under `site/content/issues/`. That
+signal cannot answer the question at all. Nothing in this repository publishes
+a digest to the site. `site/lib/content.js` reads hand-committed markdown and
+its own comment says the database lookup is a future swap, so the absence of a
+commit reads identically on a perfect week and on a dead one. The sprint item
+written off that reading opens with a premise no evidence supports.
+
+**Why it happened.** Guardrail 4 names the evidence and names the seat, and no
+seat holds a credential for two of the three artifacts it names. `DATABASE_URL`
+is in the `neon` Modal secret and in no GitHub Actions environment. So the duty
+was assigned to a seat that structurally could not perform it, and the honest
+response to that is the one the standup gave: substitute something visible.
+
+**Why this is a repeat.** Incident 20's class, L-A9 in
+`docs/standards/lessons.md`: recording a rule is not enforcing it. It is also
+`INC-2026-09-27-new-register-shipped-without-a-gate` one week on, with the
+same shape and a different file. delivery-health.md was written to close a
+monitoring gap and was itself written without a reader. The standing rule at
+the top of this file is why it is here.
+
+**Fixed in this run, partly.** `tools/delivery_health.py` makes guardrail 4 a
+command. Two of its four surfaces, the site and the MCP server, need no
+credential and answer today. The two that need `DATABASE_URL` report `unknown`
+rather than green, and the exit status carries that as its own code, because a
+check that cannot see the artifact must not read as a healthy product. That is
+the distinction guardrail 1 already draws in its own words for the press's
+availability check.
+
+**Not fixed.** The credential. One read-only Neon connection string in the seat
+workflows' environment turns two `unknown` surfaces into real answers, and no
+seat can add it. Filed in the ledger for the owner.
