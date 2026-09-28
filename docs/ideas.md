@@ -5367,3 +5367,66 @@ press does with a 503.
 - Whose call: writer seat, next run, no dependency on anyone.
 - Cost: one editorial run, no code.
 - Status: proposed
+
+### 2026-09-28 — An editorial repair takes effect only when the owner merges, and the cron prints daily into the gap (writer seat, needs the owner and the engineer)
+
+- Trigger: the print of 2026-09-28 committed five defects whose repairs were
+  already written, reviewed and sitting in open pull requests, one of them for
+  two days. Traced in `docs/voice/reviews/2026-09-28.md` and recorded as
+  `INC-2026-09-28-repair-written-never-deployed`.
+- The gap: this seat writes every editorial repair and can deploy none of them.
+  The charter forbids merging its own pull request, which is right. The
+  consequence is that the interval between a fix being written and a fix taking
+  effect is set by an owner review, it has no upper bound, and a daily cron
+  prints into it. The five undeployed repairs of this morning were the tense of
+  the opening (canon law 13), the masthead's false reading claim (law 15),
+  44.3% against 30% (ban list 63), "Worth the hour if you are" on every
+  reading-list entry (ban list 44), and the reading list's generic heading (ban
+  list 62). The masthead case is the sharpest: the constant was corrected on
+  2026-09-26 under the owner's own order, and this morning's run wrote a new row
+  carrying the false sentence, because the correction is on a branch and the
+  cron runs from main.
+- Two candidate fixes, neither this seat's to build, and they are not
+  alternatives.
+  1. **Make an undeployed fix loud.** The press send already compares the
+     deploying model and prompt against the rehearsal row. Add the same
+     comparison against main: if `prompt_sha` is not the hash of
+     `prompts/digest.md` at `origin/main`, or if a writer branch is open whose
+     diff touches `prompts/digest.md`, say so in the send report. Today an
+     undeployed fix costs a daily issue silently. This turns it into a line
+     somebody reads. Cheap, and it is the engineer's lane.
+  2. **Shorten the gate for enforcement diffs.** The owner's merge gate exists
+     to protect her voice from a seat inventing structure. A diff that enforces
+     a ruling she has already given is a different object from a diff that
+     proposes one. If the two could be separated, the first could merge on a
+     faster gate. This is a governance change and it is hers alone.
+- What this seat did instead, and why it is not enough: stacked, so one merge
+  deploys four days of work. That works exactly once and does nothing about the
+  interval.
+- Whose call: the owner on the gate, the engineer on the send report.
+- Cost: the send report is small. The gate change is a decision, not work.
+- Status: proposed
+
+### 2026-09-28 — The four framework names want a regular expression, and now so do three more checks (writer seat, for the engineer)
+
+- Trigger: ban list 62 filed the four-string heading check for the engineer on
+  2026-09-26, because a closed set of exact strings is decided by a regular
+  expression outside the model. That gate held this morning, greped clean, and
+  the law leaked anyway through "compounding evidence" and "the genuinely new
+  work" in two section intros.
+- What: the pre-send quality gate (open in #60) is the right home for the
+  checks in this morning's grade that are arithmetic rather than judgment, and
+  three of them are new. The four framework names anywhere in the body, not only
+  in headings. Every reader-facing count against the items under it, which
+  caught a heading saying two over a section listing three and holding two. And
+  every institution or system named in the contents line appearing again below,
+  which caught a third of the opening's promise never being delivered.
+- Why outside the model: each one is a count or a string match, and each has
+  now been asked of the model in `prompts/digest.md` and got a wrong answer. A
+  gate the model runs on itself is a gate that can be believed. These three can
+  be decided without belief.
+- Not urgent: all three are enforced in the prompt in this pull request, which
+  is the right first move. This entry is for when one of them fails twice.
+- Whose call: engineer, after #60 lands.
+- Cost: small, inside a gate that already exists.
+- Status: proposed
