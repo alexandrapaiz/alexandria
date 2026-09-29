@@ -304,9 +304,8 @@ All three rows are filed for revision in docs/ideas.md.
 One provenance note the rows do not carry. The streaming-video paper behind the
 shallow-index section is labelled "Work in Progress" by its own authors, and the
 complete-reasoning-traces paper is the one paper in this cluster this skill's
-author could not read in full, because arXiv serves no HTML rendering for it;
-only its abstract, which is peer-reviewed as an EMNLP 2026 Findings paper, was
-read. Weight both accordingly.
+author could not read in full, because arXiv serves no HTML rendering for it. Only its abstract, which is
+peer-reviewed as an EMNLP 2026 Findings paper, was read. Weight both accordingly.
 
 ## Caveats
 
@@ -315,8 +314,8 @@ of them one family, all using grouped-query attention with eight or ten
 key-value heads per layer. Architectures where per-head independence is
 unavailable, such as multi-head latent attention or multi-query attention, were
 not tested. The regime is short prompts and traces of several thousand to 32K
-tokens at 10 to 50 percent compression; workloads where the input itself fills
-the cache fall outside it. Significance is per-comparison with no correction for
+tokens at 10 to 50 percent compression. Workloads where the input itself fills
+the cache fall outside that regime. Significance is per-comparison with no correction for
 multiple comparisons.
 
 The parallel-reading evidence is multi-hop question answering on two datasets,
