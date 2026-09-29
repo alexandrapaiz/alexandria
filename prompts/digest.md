@@ -824,6 +824,22 @@ The published 2026-W39 opened this section on a benchmark success rate of
 aircraft, and declared a ceiling broken. The two numbers share a percent sign
 and nothing else, and nothing was broken.
 
+**Ask it of one pairing at a time, because a group verdict is not a
+verdict.** The question above is written in the singular and the payload
+hands you an old claim with several newer ones standing against it. Take each
+old-against-new pairing on its own, answer for that pairing, and write the
+answer down before you look at the next one. Where two pairings get different
+answers, that is the ordinary case and not a conflict: print the one that
+holds, drop the one that does not, and never write one refusal that covers
+both. A sentence beginning "these numbers" or "the two newer results" is the
+tell, because it has already pooled the pairings before the question was
+asked, and the pooled answer is always the answer for the weakest member.
+Then read the conclusion you are about to print and find the pairing that
+supports it. Where every pairing that supports it has just been dropped, the
+conclusion goes with them. A section that refuses its own evidence and keeps
+what the evidence was for has printed an assertion with nothing under it, and
+that is more expensive than the bad comparison it was trying to avoid.
+
 That one reached the reader through a hedge, so the hedge is a hard rule of
 its own. **If you find yourself writing the concession, you do not have the
 finding.** "The contexts differ, but", "the domains are not the same, though",
@@ -892,9 +908,14 @@ Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
-`deep_reads` overlaps the other sections by design, and today two of its three
-papers are already in `new_claims`. Drop the overlap and print what remains,
-even when what remains is one paper or none.
+Check each pick against the ISSUE you have just written, section by section,
+and never against a payload stream. Naming one stream is how this failed: the
+rule used to say the overlap is with `new_claims`, one pick had been covered
+in the traction section instead, and it went out with a line recommending the
+paper the issue's own lead item was about. A paper covered anywhere above is
+covered. Drop the overlap and print what remains, even when what remains is
+one paper or none. When nothing remains, the section does not run and its
+heading does not print, the same as any other empty slot.
 Drop it silently. A dropped paper leaves no trace in the issue. A sentence
 explaining why a paper is not on the list spends the shortest section in the
 newsletter on this file's own bookkeeping, and the reader did not come for the
@@ -999,8 +1020,20 @@ the rule's question to the thing in front of you.
   as much as the reading list is. The 2026-W39 issue got the form right on
   all three of its links and printed seven more items, in three sections,
   with no link on any of them, because this rule was read as a rule about
-  what a url should look like. Count the items. Count the links. They
-  match, or the issue is not finished.
+  what a url should look like.
+  **Count named works, not items, because an item can name three of them.**
+  Go through the finished issue and list every piece of research it names:
+  every paper, every benchmark result, every method or system whose number
+  the issue prints, and every older belief it says fell. That list is the
+  unit. Each entry on it carries a link at the place the issue names it, and
+  an item that names three pieces of work needs three links rather than one.
+  A superseded pairing is two entries and takes two links, the old work and
+  the new one, because the reader who wants to check what changed has to
+  reach both ends of it. Count the list. Count the links. They match, or the
+  issue is not finished. Counting items instead passed an issue whose
+  fell-behind section named three separate results and carried no link at
+  all, and the grade of that issue also recorded a pass, because what this
+  rule forbids is an absence and an absence cannot be quoted.
 - **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line:
   "the authors' own experiments, not yet replicated", "three independent
@@ -1027,9 +1060,18 @@ the rule's question to the thing in front of you.
   other work. "Nobody outside the group has run it again" grades. "One team, one
   model family, and the effect is big enough that somebody will check it" grades
   and says what happens next. The counting of stems happens at the gate.
-  Then count them, the way the links are counted one rule above. Count the
-  items carrying a number. Count the grades. They match, or the issue is not
-  finished. The count is the rule and not a reminder of it. On 2026-09-24 these
+  Then count them, off the same list the links are counted against one rule
+  above, which is every named piece of work in the issue and not every item.
+  Take from that list the entries whose number the issue prints, and count the
+  grades. They match, or the issue is not
+  finished. Running the count over items instead let a fell-behind section
+  print three benchmark numbers with no grade anywhere near them, and the
+  grade of that issue counted three grades against three items and called the
+  presence half a pass. The fell-behind section is where this hides, because
+  its numbers arrive as an old belief and a newer one rather than as a result,
+  and a number that overturned something needs its grade more than any other
+  number in the issue, not less. The count is the rule and not a reminder of
+  it. On 2026-09-24 these
   two rules sat next to each other in this file, one of them counted and the
   other only described, and the issue shipped with five links out of five and
   zero grades out of four. The grade is a clause, every compression pass
@@ -1356,6 +1398,21 @@ the rule's question to the thing in front of you.
   word "evidence". Three accurate grades built on one stem shipped on
   2026-09-28, at the same position in three consecutive items, and the count of
   grades passed all three.
+- **Then check who the issue says did the research. A hard gate, and it is
+  grammar rather than judgment.** The attribution rule above allows two forms,
+  the institution and the named author, and says there is no third. The third
+  one gets invented anyway, halfway down a paragraph, where the rule is not
+  being read because the item's attribution was settled in its first sentence.
+  So run it on the finished issue the way the tense check runs. Find every
+  sentence whose subject is a benchmark, a method, a pipeline, a system, a
+  dataset or a paper title, and whose verb is a verb of research or reporting:
+  reports, finds, shows, achieves, demonstrates, claims, measures. None of
+  those subjects is anybody, so every one of those sentences is telling the
+  reader that a thing did the work. Two repairs and no third. Put the people
+  in the subject slot, or rewrite the sentence with no attributive subject at
+  all, so "83.3% is the current best on that benchmark" rather than "X now
+  reports 83.3%". The print that made this a gate carried two of them in one
+  sentence and the rule above was in the file, correctly, the whole time.
 - **Then read the issue for this file's own words.** Every name for a piece of
   the pipeline, and every name for a check in this file, is internal. A print on
   2026-09-28 told a subscriber that two results "fail the kind test", which is
