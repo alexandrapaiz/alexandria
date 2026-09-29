@@ -509,6 +509,23 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    output rather than the word "pass". Grade one artifact per verdict.
    Two artifacts sharing a verdict line is where an attribution error
    becomes invisible.
+   **A law that asserts coverage is graded by a count, never by a
+   reading, and the count goes in the grade** (added 2026-09-29,
+   `INC-2026-09-29-grade-cleared-link-coverage`). The rule above is
+   right and it has one blind spot, which is that it steers a grade
+   toward the laws able to produce a quotation. Law 8 and law 6 forbid
+   an absence. An absence cannot be quoted, so a grade obeying the
+   quotation rule inspects the links and grades that exist, and
+   inspecting what exists is the one check that cannot find what is
+   missing. On 2026-09-28 that produced "Law 8 [...] PASS. Four distinct
+   URLs" on an issue with five items, three named works carrying no link
+   between them, and two of three benchmark numbers ungraded.
+   So wherever a law's subject is "every item" or "every issue", the
+   verdict carries two integers and how they were obtained: the number
+   of things the law says must be covered, and the number actually
+   covered. The unit is the named piece of work rather than the item,
+   because an item can name three. A pass on a coverage law with no
+   number beside it has not been graded.
 4. **The ban list**, including new tells to append.
 5. **The claims pass**, added 2026-09-24 after the fourth grade of
    2026-W39 found a false comparison that the four passes above had
