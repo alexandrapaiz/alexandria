@@ -77,8 +77,18 @@ from claims;
 least 2026-09-22, when 439 of 661 claims were waiting and no claim above id
 221 carried a single edge (incident 23, docs/agents/incidents.md). The
 `procedure` column was added to the schema after `interpret` had passed that
-region, so the edged claims and the procedure-rich claims are today almost
-disjoint sets: 15 claims carry both, 262 carry procedure and no edges.
+region, so the edged claims and the procedure-rich claims have been close to
+disjoint sets.
+
+Run the query rather than trusting the numbers in this paragraph, because the
+overlap is moving fast in the right direction and any figure written here goes
+stale within the week. The series so far, each measured by the run that
+recorded it in docs/ideas.md: 2026-09-22, no edge above id 221; 2026-09-26, 15
+claims carrying both a procedure and an edge; 2026-09-29, 66 of 846, with the
+edged frontier at id 301 and 545 claims still waiting on interpret. The ratio
+is the thing to read, not the count. While it is low, working inside the edged
+id range is what lets a run satisfy both criteria at once, and that is a real
+constraint on which clusters are available to you.
 
 When the two criteria cannot both be satisfied, procedure-rich wins and
 cross-paper breadth is satisfied by topic and embedding grouping instead. Say
@@ -282,6 +292,24 @@ beyond the five prompts:
 - **`kind` on every case**, one of `positive`, `negative`, or `confusion`,
   since the report scores the three separately and a suite that passes only
   because its negatives are easy should be visible as such.
+
+**Record the bundle last, after the final edit to SKILL.md.** The recorded
+result carries the sha256 of every skill file it judged, which is what makes it
+a receipt for exactly that text, and the library page matches a receipt to a
+skill by name and by that hash (site/lib/skill-provenance.js, PR #133). So a
+run that records the bundle and then fixes one sentence has published a receipt
+for text that no longer exists, and the page will say so. The order is: revise
+the description until the suite is as green as it is going to get, make every
+remaining edit to the body, then delete the bundle and re-run with `--json` as
+the last thing before the commit. Re-checking costs one command:
+
+```bash
+python3 skills/_validation/trigger_test.py --json skills/_validation/results/<date>-lexical-2.1.json
+python3 -c "import hashlib;print(hashlib.sha256(open('skills/<slug>/SKILL.md','rb').read()).hexdigest()[:16])"
+```
+
+and the second line must appear in the first line's bundle. Learned 2026-09-29,
+where the bundle was recorded before a two-semicolon fix to the body.
 
 Run `python3 skills/_validation/trigger_test.py` before opening the PR and
 paste the output into the PR body. A failing case is a finding worth
