@@ -849,3 +849,71 @@ gap that the same collision had left empty (incident 25).
     sentence joined the two already held at the stands-alone gate, and the repair
     was rewritten about a subject no payload will ever hand the model, which is
     this file's existing technique for an example that must not be copied.
+72. The gate whose unit is wider than the thing it governs. Entry 58 is the
+    rule obeyed where it counts and missed where it means, and this is the
+    structural cause underneath it: a check written correctly for the case in
+    front of its author, applied to a case one size larger, reporting a pass.
+    The print of 2026-09-28 carries three at once and they were found together
+    on 2026-09-29. The link rule counts items and work is cited per paper, so
+    an item naming three separate results carried no link and the count of
+    items against links came out even. The kind test asks whether "the two
+    claims" measure the same thing and the payload hands over one old claim
+    against several newer ones, so one refusal was written over two pairings
+    and the pairing that holds went out with the one that does not. The
+    reading list's overlap rule named `new_claims` and coverage happens in any
+    section, so the pick that had been covered in the traction section was
+    recommended back to the reader who had just read it. Three gates, three
+    passes, one defect. The tell is grammatical and it is in the gate rather
+    than in the issue: a check phrased in the singular, "the item", "the two
+    claims", "the stream", against material that arrives in groups. The
+    company standard is `L-A21`, a gate is judged by what it can see, and
+    `INC-2026-09-27-gate-unit-is-the-line` is the same finding about the
+    heading gate, whose unit was a line where the defect was a fragment. Added
+    2026-09-29. Enforced the same day: all three gates in prompts/digest.md
+    now name their unit explicitly and the two that are arithmetic count off
+    one shared list of every named piece of work in the issue.
+73. The comparison refused in a group, and the conclusion kept anyway. Entry
+    50 is the concession written and walked past, where a sentence notices the
+    two measures do not match and continues. This is its opposite and it costs
+    more. The print of 2026-09-28 was handed two results standing against one
+    old benchmark number: 83.3% on RMBench against the old 82.2% on RMBench,
+    and 87% in air-combat simulation against the same 82.2%. It wrote one
+    verdict over both, "these numbers share a percent sign and little else",
+    which is true of the second pairing and false of the first on the issue's
+    own words, since it names RMBench twice. The valid comparison was
+    discarded with the invalid one. Then the section printed its conclusion,
+    "treat the original 82.2% as a local optimum on one benchmark family, not
+    as a bound", which nothing on the page supports except the number the
+    paragraph above had just thrown away. The claims pass was working. It was
+    asked once where it should have been asked twice, and a pooled answer is
+    always the answer for the weakest member of the pool. Note what this costs
+    against what it was avoiding: refusing a bad comparison protects the
+    reader, and refusing a good one and keeping its conclusion leaves an
+    assertion with nothing under it, which is the thing a reader cannot check
+    and cannot forgive. The small true result, a benchmark ceiling passed by
+    1.1 points on that benchmark, never printed. Added 2026-09-29. Enforced
+    the same day: the fell-behind slot judges one pairing at a time, writes
+    the answer down before looking at the next, and then reads its own
+    conclusion against the pairings that survived.
+74. The grade that clears a coverage law by reading instead of counting. Not a
+    prose tell. This is the editorial instrument failing, recorded here
+    because the canon's grading passes are written in this register and the
+    writer seat's own output obeys every law it enforces. The grade of
+    2026-09-28 recorded "Law 8, links reach the full text. PASS. Four distinct
+    URLs, all arxiv.org/html/, no abstract landing pages." Every word true.
+    The issue had five items and three named pieces of work with no link
+    between them. The verdict graded the form of the links that existed and
+    never counted the items that had none. The canon requires every verdict to
+    carry a quoted line as evidence, and that requirement quietly steers a
+    grade toward the laws that can produce a quotation, because what a
+    coverage law forbids is an absence and an absence cannot be quoted. The
+    same grade recorded law 6's presence half as a pass on a count of three
+    against an issue holding five. The tell, for any future grade: a law whose
+    subject is "every item" or "every issue" is graded by a count with its
+    command written down, never by a reading, and a pass on one of those with
+    no number beside it has not been graded. `INC-2026-09-26-grade-cleared-a-
+    printed-violation` is the first occurrence and this is the second. Added
+    2026-09-29. Enforced the same day in prompts/digest.md, where both counts
+    now run off one list, and filed in docs/ideas.md for the pre-send gate,
+    where both are arithmetic and belong in a command rather than in a reading
+    (`L-A22`).
