@@ -1,0 +1,61 @@
+{
+  "skill": "context-window-engineering",
+  "suite_version": 1,
+  "written": "2026-09-29",
+  "author": "skill agent (ADR-22)",
+  "note": "Machine-readable form of the five-prompt trigger test prompts/skill-agent.md requires, plus two confusion cases for the nearest neighbours in the library. Run with skills/_validation/trigger_test.py.",
+  "cases": [
+    {
+      "id": "cwe-pos-1",
+      "kind": "positive",
+      "expect": "context-window-engineering",
+      "prompt": "Our serving stack caps the key-value cache at a fifth of a full reasoning trace, and we are about to build an attention-score ranker to decide which cached entries survive each eviction round. Is that ranker worth the engineering, and what should we be pinning unconditionally instead?",
+      "anchor": "when a fixed cache budget forces you to pick an eviction rule and you are weighing a scoring heuristic against a cheaper one",
+      "rationale": "This is the protect-the-input section verbatim, and the answer inverts the asker's plan: the measured effect lives in the protected set, not the ranker, and the ranker costs throughput. A skill that does not fire here has no reason to exist."
+    },
+    {
+      "id": "cwe-pos-2",
+      "kind": "positive",
+      "expect": "context-window-engineering",
+      "prompt": "Our coding agent gets noticeably worse after roughly forty tool calls, and the summarizer we bolted on to shrink the transcript keeps dropping things the agent later needs. Should we compress harder, or change what the acting loop is handed in the first place?",
+      "anchor": "when an agent's accumulated history has outgrown its window and you must decide what the acting step sees as opposed to what the planning step sees",
+      "rationale": "The memory-as-plans section answers this directly and the answer is the boundary rather than the summarizer, which is the option the asker has not considered."
+    },
+    {
+      "id": "cwe-pos-3",
+      "kind": "positive",
+      "expect": "context-window-engineering",
+      "prompt": "We answer questions over 300-page contracts. Accuracy is fine at twenty pages and collapses at three hundred even though the model advertises a million-token window, and it is worst when the clause we need sits halfway through.",
+      "anchor": "when long-document accuracy falls as the input grows even though the window is not full",
+      "rationale": "Two activation clauses match at once, the degradation-without-a-full-window one and the buried-evidence one, and the parallel-reading section names the positional failure and the architecture that removes it."
+    },
+    {
+      "id": "cwe-neg-1",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "We serve a 70B model and GPU memory is our bottleneck at peak. Should we quantize the weights to 4-bit or add two more GPUs and shard across them?",
+      "rationale": "Hard negative: it says memory, serving, and bottleneck, and the skill's own evidence is full of throughput and cache-budget numbers. But the decision is hardware capacity and weight precision, and nothing in this skill speaks to either. Firing here would be the context-bloat failure the market audit flags."
+    },
+    {
+      "id": "cwe-neg-2",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Our support bot searches a vector database of 200,000 help articles and comes back with irrelevant passages about half the time. Should we swap the embedding model or add a reranking step?",
+      "rationale": "Hard negative: chunks, retrieval, relevance and passages are the parallel-reading section's vocabulary. But no context budget is binding here, the corpus lives outside the window by design, and the question is embedding and reranker quality, which this skill has no evidence about."
+    },
+    {
+      "id": "cwe-conf-1",
+      "kind": "confusion",
+      "expect": "harness-engineering",
+      "prompt": "Our five-agent research pipeline gets about a third of its tasks wrong and we cannot localise which agent is responsible. How should we go about finding the culprit?",
+      "rationale": "Belongs to harness-engineering's sequential-intervention section. It is a multi-agent debugging question, and although this skill also describes a lead-agent-plus-subagents design, nothing about the prompt concerns a token budget."
+    },
+    {
+      "id": "cwe-conf-2",
+      "kind": "confusion",
+      "expect": "harness-engineering",
+      "prompt": "We collected fifty thousand reasoning trajectories from a stronger model and want to fine-tune our 8B on them. How much of each trajectory should we actually train on?",
+      "rationale": "Trajectory redundancy is a finding this skill cites, but only for what a cache may drop at inference, so the case tests that this skill stays out of a training-data decision. It scores 0.0 here, which is the assertion that matters. The destination was written as self-improving-post-training-loops and corrected to harness-engineering after the run: harness-engineering's description claims this case in its own words, \"when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories\", and its model-harness-fit section is the substantive answer. The expectation was wrong, not the routing."
+    }
+  ]
+}
