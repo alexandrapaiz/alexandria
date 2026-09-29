@@ -13,7 +13,7 @@
   "library": {
     "context-window-engineering": {
       "path": "skills/context-window-engineering/SKILL.md",
-      "sha256": "f017507983bb0206"
+      "sha256": "5918783aba9c2a98"
     },
     "evaluation-integrity": {
       "path": "skills/evaluation-integrity/SKILL.md",
@@ -41,7 +41,7 @@
     {
       "skill": "context-window-engineering",
       "source": "skills/context-window-engineering/triggers.json",
-      "skill_sha256": "f017507983bb0206",
+      "skill_sha256": "5918783aba9c2a98",
       "suite_version": 1,
       "cases": [
         {

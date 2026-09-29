@@ -60,7 +60,9 @@ the least of the prompt gains up to 22.5 points, while the method that already
 retained the most never gains more than 2 (Random Attention). Read from the
 other side, the same table is starker. Without prompt protection, random
 eviction scores as low as 0.231 on one task and a plain recency window scores
-0.093. With it, both are within about two points of the best scored baseline.
+0.093. With it, random eviction is the best policy in all four of those
+settings and the recency window is never more than two points below the best
+protected baseline.
 Losing the question is catastrophic. Cutting the generated trace at random is
 not.
 
@@ -287,8 +289,11 @@ read stronger than their source.
   match across four models and six tasks without naming where it does not hold.
   Code reasoning is the systematic case, on the two larger models, and the paper
   traces it to long code prompts consuming up to half the budget before
-  selection starts. The throughput figure also depends on the workload: at short
-  generations, every compressed method serves less than uncompressed attention.
+  selection starts. The throughput figure carries two limits the row does not.
+  It is measured against one baseline, the only one with a working port on the
+  serving version used, so it is a property of that integration as much as of
+  the algorithm. And it inverts at short generations, where every compressed
+  method serves less than uncompressed attention.
 - **Both redundancies are asserted, one is measured.** Our row states that
   reasoning traces protect themselves through redundancy in the text and across
   attention heads. Cross-head pooling is shown directly, but only in a
