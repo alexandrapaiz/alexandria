@@ -6447,3 +6447,122 @@ files and its cost is not linear. The receipts shipped today are generated from
 the instrument's own output with no hand-written step, which is the property that
 has to survive fifty skills, and it is the reason the block was built off
 `skills/_validation/results/` rather than off anything a seat types.
+
+### 2026-09-29 — Every labelled edge is kept, so precision becomes a trend
+- Trigger: today's craft scan of Semantic Scholar, below, read against the
+  worksheet that shipped this run. Its Highly Influential Citations feature,
+  the one edge weight in the largest research graph anybody runs, rests on a
+  dataset of roughly 450 hand-annotated citations released with Valenzuela,
+  Ha and Etzioni's "Identifying Meaningful Citations" (AAAI Scholarly Big Data
+  workshop, 2015). Not a prompt. A labelled set. This repository already knows
+  that pattern in one place: `triage_log.human_verdict` makes every routing
+  decision an eval row, and the charter calls that table the eval set for the
+  recursive loop. `claim_links` has no equivalent, so the precision worksheet
+  `tools/graph_audit.py --sample` produces is a measurement that evaporates
+  the moment somebody closes the file.
+- What: keep the labels. A filled worksheet is committed under
+  `docs/evals/graph-precision/YYYY-MM-DD-seed.json`, and because the seed
+  determines the draw, a later audit under a new prompt re-labels the same
+  edges and the two files are directly comparable. Once three or four sheets
+  exist the interesting artifact is not any one precision number, it is the
+  series, and the series is what tells you whether slice 3's confidence
+  anchoring actually worked. The stronger version puts the verdicts in
+  Postgres next to the edge, exactly as `human_verdict` sits next to a triage
+  decision, which also lets the graph page show a reader that an edge was
+  checked by a person. That is a schema change and belongs to the owner.
+- First step: label the first 40-edge sheet the day the credential lands, and
+  commit it. The directory and the naming are the whole mechanism.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — /graph reports what has been judged, not only what is linked
+- Trigger: writing section 3 of docs/product/graph-quality.md. Two live
+  readings of the same database on 2026-09-26 sit in this repository and say
+  different things. `site/lib/graph-live.js` records 214 of 746 claims
+  carrying no link, so 532 do, and the page reports that as "linked". The
+  owner's own Neon count the same day, recorded in `pipeline/interpret.py`,
+  says 487 claims were still in `interpret_queue`, so only 259 had ever been
+  judged at all. Both are true. A claim counts as linked when something newer
+  pointed at it, which is not the same as anything having asked what it
+  relates to, so at least 273 linked claims are claims the judge never
+  reached. The page's number reads as a healthy graph over a corpus that is
+  two thirds unjudged.
+- What: one more count on `/graph`. The query already fetches four totals in a
+  single round trip, and `select count(*) from claims where interpreted_at is
+  not null` is a fifth line in the same statement. The page then says how much
+  of the library has been judged beside how much of it is on screen, which is
+  the honest version of the same sentence it already tells. Worth a taste
+  ruling on the label, because "interpreted" is the pipeline's word and entry
+  14 of the ban list is about exactly that.
+- First step: frontend seat, one line in `loadGraph()`'s counts query and one
+  entry in the page's count list.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A CI step no path can reach is a guard that cannot fire
+- Trigger: found in this run, in my own seat's work from this morning. The
+  skill-receipts step was added to `.github/workflows-pending/checks.yml` at
+  02:56 today, correctly written and correctly reasoned, and not one of the
+  files it guards was added to the workflow's `paths`. Editing a `SKILL.md`
+  would not have run it. The step was fixed in this run's own commit, and the
+  near miss is the point: a check can be written, reviewed, merged and still
+  never execute, and nothing about reading the file tells you which. That is
+  incident 20's shape once more, one level down. The register map already says
+  recording is not enforcing, and this says installing is not firing.
+- What: a check that reads every workflow under `.github/`, takes each step's
+  pytest target, and asserts that the test file itself and the modules it
+  imports are matched by at least one entry in that workflow's `paths`. It is
+  a small static analysis and it would have caught this morning's gap in the
+  same pull request that made it. `tools/check_registers.py` is the natural
+  home, because it is already the command that asks whether the shared files
+  survived everybody appending to them, and it already sits in front of an
+  `&&` printing nothing when all is well.
+- First step: the parser and one assertion over the five steps
+  `checks.yml` already carries, engineer seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Craft scan: Semantic Scholar (semanticscholar.org)
+- Trigger: today's craft scan, rotating through docs/market/landscape.md.
+  Semantic Scholar was last observed 2026-09-18 and no craft scan has covered
+  it. It is also the right product to read on the day the claim graph gets its
+  first instrument, because it is the working answer to the question the
+  owner's directive asks. If "industry standard" means anything for a research
+  graph, it means this one.
+  Fetched today: [the citation-intent FAQ](https://www.semanticscholar.org/faq/citation-intent)
+  and the record for
+  [Identifying Meaningful Citations](https://www.semanticscholar.org/paper/Identifying-Meaningful-Citations-Valenzuela-Escarcega-Ha/1c7be3fc28296a97607d426f9168ad4836407e4b).
+
+**Worth stealing: the relation vocabulary and the edge weight are both
+learned, and the labelled set is small.** Semantic Scholar's edges carry an
+intent from three classes, and the FAQ defines them in its own words: Background
+citations "provide historical context, justification of importance, and/or
+additional information", Method citations "use the previously established
+procedures or experiments", and Result citations "extend on findings from
+research that was previously conducted". Separately, an edge may be marked
+highly influential, and that flag comes from a supervised model trained on
+about 450 hand-annotated citations. Neither number came out of a prompt. The
+part worth stealing is the scale rather than the technique: 450 labels bought
+the edge weight on a graph with billions of edges, and
+`tools/graph_audit.py --sample 40` draws forty at a time. Two afternoons of
+reading puts this project in the same order of magnitude as the reference
+implementation, which is not a sentence that is true of many comparisons in
+this ledger.
+
+**What alexandria does better: the vocabulary can say a finding is wrong now.**
+Background, Method and Result all describe why one paper reached for another.
+None of the three can record disagreement, so a graph of 2.4 billion citation
+edges cannot tell a reader that what they learned last year has since been
+overturned. Citation intent answers "how was this used". alexandria's four
+verbs include `contradicts`, the edge carries a confidence, and
+`deprecated_claims` turns a confident incoming contradiction into the
+Left-Behind Index. That is a product the larger graph structurally does not
+have, and today's audit is partly about whether ours is calibrated well enough
+to deserve it, since the 0.7 gate under that page is currently a threshold
+applied to a number nothing anchors.
+
+**The caveat.** Semantic Scholar is infrastructure at a scale this project will
+never need, its classifier is trained on a published dataset rather than asked
+at inference time, and its edges are between papers where ours are between
+claims. The scale comparison above is a comparison of labelling effort, not of
+graphs.
