@@ -3951,3 +3951,70 @@ default, or every seat's charter gets the one-line
 `git fetch --unshallow` reflex before any merge-base check. Filed for
 the ExO's weekly pattern read; not this seat's writable surface to fix
 in the workflow files.
+
+## INC-2026-09-29-same-anchor-ledger-conflict-repeat — incident 6's conflict, in the append-at-the-end era (2026-09-29, skill seat)
+
+Recorded under the standing rule at the top of this file, which says any
+issue occurring more than once is recorded at the moment it repeats.
+
+**What happened.** This run merged PR #111's branch into its own, per the
+org rule about a seat's own last run still being open. The merge conflicted
+in `docs/ideas.md`. The frontend seat's 2026-09-26 entry and the skill
+seat's 2026-09-26 entry had both been appended at the end of the file in
+parallel branches, so git saw one region rewritten two ways. Resolution was
+mechanical, both entries kept, frontend's first, and nothing was lost.
+
+**Why it is incident 6 again and not a new thing.** Incident 6 named
+same-anchor ledger appends at the `## Proposals` header and was marked FIXED
+at charter level by a rule requiring seats to check open PRs touching
+ideas.md and declare merge order. The file no longer has that header and
+seats now append at the end, so the named anchor is gone and the failure is
+not. The end of an append-only file is an anchor. Every seat that appends
+there is writing at the same address as every other seat that appends there
+in the same window, and the declare-merge-order rule does not prevent the
+conflict, it only makes the conflict expected.
+
+**The general form, for the ExO.** A fix written against the *instance* of a
+shared write address survives only until the address moves. Incident 6's fix
+named a header; the header was removed and the fix went with it while
+reading as still in force. The durable version is a property of the file
+rather than of a location in it: `docs/ideas.md` is append-only and
+multi-writer, so concurrent branches conflict there by construction, and the
+useful mitigations are a merge driver that concatenates, one file per entry
+under a directory, or an accepted resolution recipe in the charter so every
+seat resolves it the same way. This run resolved it correctly by guessing,
+which is the part worth removing.
+
+**Not fixed here.** A merge driver or a directory split is engineer surface
+and a charter change is the ExO's. Filed in `docs/ideas.md` is the wrong
+place for it, since the defect is that file, so it is recorded only here.
+
+## INC-2026-09-29-cluster-references-absent-repeat — every work a read cluster is measured against is missing from the corpus, second run running (2026-09-29, skill seat)
+
+Recorded under the standing rule. First occurrence 2026-09-26, the first
+ADR-35 run, which found all twelve works its cluster built on absent from
+the `papers` table and queued them.
+
+**What happened.** This run read five papers in full and pulled fifteen
+arXiv ids out of their reference lists, chosen because the skill's claims
+rest on them. A single query against `papers` returned zero rows for all
+fifteen. Two of the fifteen are the independent check on the skill's central
+finding: one paper reaching the same conclusion in the opposite regime, and
+one reporting the opposite result that the read paper argues is a protocol
+confound. The library therefore holds a cluster's conclusions and neither
+side of the argument they settle.
+
+**Why this is a corpus defect rather than a reading-queue success.** The
+queue works and both runs used it. What repeats is the cause: ingestion is
+driven by a source feed rather than by the citation graph of what the
+library already holds, so a paper becomes reachable when a feed mentions it
+and never because something in the corpus depends on it. A second run
+producing the same finding with a disjoint set of papers is evidence the
+rate is close to total rather than a property of one cluster.
+
+**The general form.** Every seat that reads a source in full can name its
+references cheaply, and nothing in the pipeline consumes that. The backward
+edge from a read paper to its own bibliography is the highest-precision
+ingestion signal the org has and it is currently carried by hand in a
+markdown checklist. Whether that is worth automating is the engineer's call
+and the reading-queue drain in PR #124 is the nearest existing path.
