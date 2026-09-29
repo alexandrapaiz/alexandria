@@ -121,9 +121,11 @@ BOUNDS = {
     # ones in the ledger entry.
     "ceiling_share": 0.10,
     # A judge that writes the same confidence on most of its edges has produced
-    # a label, not a score, and `deprecated_claims` silently depends on that
-    # score: its gate is confidence >= 0.7. Above 0.6 on one value, the gate is
-    # a coin the judge has already flipped.
+    # a label, not a score, and `deprecated_claims` depends on that score: its
+    # gate is confidence >= 0.7. prompts/interpret.md defines the value as a
+    # probability and warns about that gate, but anchors it to nothing, so there
+    # is no worked pair anywhere saying what separates 0.7 from 0.9. Above 0.6
+    # on one value, the gate is a coin the judge has already flipped.
     "modal_confidence_share": 0.60,
     # Two claims from one paper are near-neighbors in embedding space almost by
     # construction, so kNN hands the judge a paper's own siblings before it
