@@ -80,7 +80,19 @@ function SkillReceipts({ skill }) {
               Built from {s.claims.length}{" "}
               {s.claims.length === 1 ? "claim" : "claims"}
             </dt>
-            <dd className="skill-claims">{s.claims.join(", ")}</dd>
+            {/* Ban list entry 14 names claim ids as internal vocabulary
+                printed at the reader, and its amended test is whether someone
+                who has never seen the codebase could say what the number
+                refers to. So the ids ship with the sentence that decodes them
+                and the page that resolves them, rather than bare. */}
+            <dd className="skill-claims">
+              <span>{s.claims.join(", ")}</span>
+              <span className="skill-claims-note">
+                Each number is one finding in the library's claim graph.
+                Search for it on <Link href="/graph">the graph</Link> to read
+                the finding and the paper it came from.
+              </span>
+            </dd>
           </div>
         )}
       </dl>

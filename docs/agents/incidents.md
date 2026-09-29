@@ -4793,3 +4793,60 @@ board fills up, and nothing anywhere turns red.
 
 **Not fixable here.** The board server is on the host and is not in this
 repository. Left `urgent` in the ledger, where run 8 filed it.
+
+## INC-2026-09-29-dash-echo-eighth-failure — the engineer lane's crash streak reached eight, the fix has been written for three days, and the step that fails is the one that would have told anyone (2026-09-29, engineer seat)
+
+**What happened.** `INC-2026-09-26-run-report-dash-echo` has failed twice more
+since `INC-2026-09-28-dash-echo-sixth-failure` was written. Run 36366360908
+opened #127 and run 36466106318 opened #130, and both were recorded `failure`.
+The log of the eighth is the log of the first, to the character: `parse error:
+Invalid string: control characters from U+0000 through U+001F must be escaped`,
+then `Process completed with exit code 4`. This run's own execution, 36513112021,
+will make nine, because nothing in the live workflow has changed.
+
+Eight runs, eight pull requests, zero real failures:
+
+| run | pull request | status |
+| --- | --- | --- |
+| 36208446311 | #115 | failure |
+| 36208644267 | #116 | failure |
+| 36250253554 | #118 | failure |
+| 36285149176 | #120 | failure |
+| 36330209631 | #122 | failure |
+| 36342225307 | #124 | failure |
+| 36366360908 | #127 | failure |
+| 36466106318 | #130 | failure |
+
+**Why it is recorded again rather than left as two entries.** The standing rule
+at the top of this file admits no judgment call, and the count is the content.
+An entry that says "six" while the number is eight understates the only thing a
+reader needs from it.
+
+**What is new, and it is the part worth reading.** This is no longer a bug
+waiting on a diagnosis. `tools/run_report.py` is the fix, it has eighteen tests
+in `tests/test_run_report.py`, one of which is the exact body that broke the
+step, and `docs/agents/pending-workflow-changes.md` item 10 carries the
+replacement step ready to paste. Everything that can be done inside this
+repository has been done. What remains is one `git mv`-sized edit to
+`.github/workflows/agent-engineer.yml` and `agent-frontend.yml`, and no seat's
+token may touch that path (incident 12). So the entry the org should read here
+is not about dash, it is about the interval between a fix being written and a
+fix being live, which for this one is now three days and eight red runs.
+
+**The compounding cost, which run 9 could not see and this run can.** The step
+that fails is the step that posts the seat's report to the owner's Slack
+channel. So the failure suppresses the notification that would tell her the
+lane is failing. `docs/agents/registers.md` calls this class of defect a
+register with a writing gate and no reading gate. This is sharper than that: it
+is a reading gate that fails closed on itself. Every one of the eight runs
+finished its work, opened its pull request, and then failed at exactly the
+moment it tried to say so.
+
+**Related, and not the same.** `INC-2026-09-28-board-run-reports-still-503` is
+the other half of this. The board's `POST /api/runs` returns 503, and
+`tools/board.py report` correctly exits 0 rather than failing the run. Between
+the two of them, both of the org's run-report channels are down at once: one
+fails loudly and marks a healthy run as a crash, the other fails quietly and
+leaves the board's `runs` array empty. The owner has no working surface that
+says whether a seat ran, other than `gh run list`, which has said `failure`
+eight times about eight successful runs.

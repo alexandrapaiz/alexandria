@@ -33,6 +33,15 @@ rehearsal print (`tests/test_press_rehearsal.py`,
 INC-2026-09-24-press-provider-migration). None of them needs a key, a
 network or a database.
 
+A fifth step joined them on 2026-09-29: the skill library's receipts
+(`tests/test_skill_receipts.py`). It is the odd one out, because it guards a
+customer-facing page rather than the press, and it is here for the same reason
+as the rest. Every receipt on `/skills` is pinned by sha to the exact `SKILL.md`
+text the page shows, so editing a skill without re-running
+`python3 skills/_validation/trigger_test.py` publishes a pass rate for a
+document the reader cannot see. That step turns red on the pull request that
+does it. It needs no key, no network and no database.
+
 The rehearsal step is worth one sentence of its own, because it is the
 only one that guards a gate CI cannot run. The gate itself is `modal run
 pipeline/weekly.py::rehearse`, a real call with a real key that costs

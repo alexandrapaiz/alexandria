@@ -196,3 +196,40 @@ def test_a_corrupt_result_bundle_does_not_take_the_catalogue_down():
     assert "JSON.parse" in CONTENT
     guard = CONTENT[CONTENT.index("export function listValidations()") :]
     assert "try {" in guard and "catch" in guard
+
+
+# ------------------------------------------------------- the registers it binds
+
+def test_the_claim_ids_ship_with_the_sentence_that_decodes_them():
+    """docs/voice/ban-list.md entry 14 names claim ids as internal vocabulary
+    printed at the reader, and governs site copy since the owner's ruling of
+    2026-09-19. Its amended test is whether someone who has never seen the
+    codebase could say what the number refers to. The sprint item asks for the
+    ids on the page, so the ids carry their own decoder."""
+    panel = ROW[ROW.index("function SkillReceipts(") : ROW.index("function SkillRow(")]
+    assert "skill-claims-note" in panel, "the claim ids render with nothing to decode them"
+    assert "claim graph" in panel
+    assert 'href="/graph"' in panel, "the sentence has to resolve somewhere a reader can go"
+
+
+def test_the_receipts_copy_is_plain_ascii():
+    """Ban list entry 13, amended 2026-09-21 by incident 27: the entry is the
+    class, which is every character outside plain ASCII, and not only the three
+    it names. A curly apostrophe or an en dash in this block would be the same
+    defect the writer seat found in 2026-W37."""
+    panel = ROW[ROW.index("function SkillReceipts(") : ROW.index("function SkillRow(")]
+    offenders = sorted({c for c in panel if ord(c) > 127})
+    assert offenders == [], offenders
+    sentences = code_only(CORE)
+    offenders = sorted({c for c in sentences if ord(c) > 127})
+    assert offenders == [], offenders
+
+
+def test_no_heading_in_the_receipts_carries_an_explanatory_subtitle():
+    """L-E1 in docs/standards/lessons.md, the owner's law that predates the
+    company: bare nouns in her interfaces, units in note slots."""
+    panel = ROW[ROW.index("function SkillReceipts(") : ROW.index("function SkillRow(")]
+    heads = re.findall(r'className="skill-detail-head">([^<]*)<', panel)
+    assert heads == ["The receipts"], heads
+    for head in heads:
+        assert ":" not in head and "(" not in head, head

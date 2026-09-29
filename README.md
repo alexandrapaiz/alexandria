@@ -289,6 +289,12 @@ The pipeline, built bottom-up.
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations
+- [x] The library shows its receipts (2026-09-29): every skill on `/skills` states
+      the date it was distilled, the claim ids behind it, and its most recent
+      trigger-test result with the date and engine version, pinned by sha to the
+      exact text on the page. The provenance had been in the files since
+      2026-09-12 and reached no reader until today, because the frontmatter
+      reader could not see an indented field
 - [ ] ADR-13 reviewer panel (provenance, adversary, validator) as the gate on gold.
       Until it exists, the owner's merge is that gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`

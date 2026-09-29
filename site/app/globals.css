@@ -1458,10 +1458,22 @@ a {
   margin-left: -11px;
 }
 
-.skill-claims {
+/* The ids themselves are tabular so a long row of them scans as numbers, and
+   the sentence under them is the one ban list entry 14 requires: a reader who
+   has never seen the codebase can find out what 199 refers to. */
+.skill-claims > span:first-child {
   font-variant-numeric: tabular-nums;
-  color: var(--gray) !important;
   word-spacing: 0.08em;
+}
+
+.skill-claims-note {
+  margin-top: 4px;
+}
+
+.skill-claims-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 @media (max-width: 560px) {

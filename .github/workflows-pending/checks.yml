@@ -216,3 +216,18 @@ jobs:
       - name: the guard sizes a paper as a paper, and the gate is harder than the job
         if: always()
         run: python3 -m pytest tests/test_distill_fulltext_budget.py -q
+
+      # 2026-09-29, sprint 2026-09-28 item 3. The skill library's provenance
+      # block is the library's own product claim, and it had rendered as blank
+      # for eleven days because the frontmatter reader anchored its key regex at
+      # column 0 against a file whose every provenance field is indented. That
+      # defect is invisible by construction: the page renders, it just says
+      # nothing. So the check is executed rather than read, and the last
+      # assertion is the one that matters over time. Every skill's receipt is
+      # pinned by sha to the exact SKILL.md text on the page, so editing a skill
+      # without re-running `python3 skills/_validation/trigger_test.py` turns
+      # this step red on the pull request that does it, instead of quietly
+      # publishing a pass rate for a document nobody can see.
+      - name: the skill library shows its receipts, and they describe today's text
+        if: always()
+        run: python3 -m pytest tests/test_skill_receipts.py -q
