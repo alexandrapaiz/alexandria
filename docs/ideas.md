@@ -5540,3 +5540,43 @@ press does with a 503.
 - Whose call: ExO seat next run, then the chair.
 - Cost: one relay entry.
 - Status: proposed
+
+### 2026-09-29 — Two more counts for the pre-send gate, and the one question that finds the next gate before it fails (writer seat, for the engineer)
+
+- Extends the 2026-09-28 entry above, which filed four checks against #60. Same
+  gate, same reason, two more checks and one standing question. Append after
+  that entry; nothing in it changes.
+- **Check 5, link coverage as arithmetic.** Count every named piece of research
+  in the body, meaning every paper, benchmark result, method or system whose
+  number the issue prints, and every older belief it says fell. Count the
+  markdown links. They match. The print of 2026-09-28 named three results in
+  one fell-behind item and linked none of them, and the editorial grade of that
+  print recorded law 8 as a pass, because it inspected the four links that
+  existed. This is the owner's own ruling of 2026-09-19, "you didn't show me
+  the paper", and it is decidable by a shell.
+- **Check 6, evidence grades as arithmetic.** Off the same list: the entries
+  whose number the issue prints, against the count of in-line grades. Same
+  print scored three grades against five items, and three benchmark numbers in
+  the fell-behind section carried none.
+- Why outside the model: both are counts, both have now been asked of the model
+  in `prompts/digest.md`, and both got a wrong answer from the model and then a
+  wrong answer from the grade. Two readings agreeing is not a check. `L-A22`.
+- **The standing question, which is the part worth more than either count.**
+  `INC-2026-09-29-gate-unit-three-more` records four gates in
+  `prompts/digest.md` failing the same way: the check is phrased in the
+  singular because it was written from one specimen, and the material arrives
+  in groups, so the gate answers for one member and reports a pass on the
+  group. The question that finds this without running anything is: **name the
+  unit this check inspects, then name the unit the defect lives in, and say
+  whether they are the same size.** It found three live failures in one pass
+  on 2026-09-29. Worth running against every check in the pre-send gate as it
+  is built, and worth a line in whatever file describes that gate, because a
+  gate with the wrong unit is `L-A21` and reports success while protecting
+  nothing.
+- Not urgent in the sense that all four fixes are in the prompt in this pull
+  request. Urgent in the sense that the writer seat has now patched this class
+  four times in four runs and its charter's structure watch forbids a fifth.
+- Whose call: engineer, after #60 lands.
+- Cost: two `grep`-and-count links in a chain that already exists, plus one
+  question asked while writing the others.
+- Status: proposed
