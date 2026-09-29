@@ -246,6 +246,7 @@ docs/backlog.md           the consolidated board, every seat's proposals in one 
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
 tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the site, the MCP server
+tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
 docs/security/            audit reports from the security seat
