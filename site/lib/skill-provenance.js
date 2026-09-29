@@ -170,3 +170,52 @@ export function formatRate(v) {
   if (!v || !v.total) return "";
   return `${v.passed}/${v.total} cases, ${Math.round(v.rate * 100)}%`;
 }
+
+// "2026-09-24" -> "September 24, 2026". A date a reader can say out loud,
+// with no timezone in it, because a receipt's date is a calendar day and
+// constructing a Date from it would shift it west of UTC.
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+export function formatDate(iso = "") {
+  const m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return String(iso);
+  const month = MONTHS[Number(m[2]) - 1];
+  return month ? `${month} ${Number(m[3])}, ${m[1]}` : String(iso);
+}
+
+// The receipt in words, composed here rather than in the component so the
+// sentences a visitor reads are covered by tests. Each qualifier is a separate
+// sentence and every one of them is a caveat the page owes the reader: the
+// library's whole pitch is that a skill is checked, so the page has to be as
+// plain about what a check did not establish as about what it did.
+export function receiptSentences(v) {
+  if (!v) {
+    return ["No trigger test has been recorded against this skill yet."];
+  }
+  const cases = v.total === 1 ? "case" : "cases";
+  const out = [
+    `${v.passed} of ${v.total} trigger ${cases} passed on ${formatDate(v.date)}, engine ${v.engine}.`,
+  ];
+  if (v.current === false) {
+    out.push(
+      "The file has been revised since, so this result describes an earlier version of the text below."
+    );
+  } else if (v.current === true) {
+    out.push("Measured against the exact text below.");
+  }
+  if (v.narrow > 0) {
+    const n = v.narrow;
+    out.push(
+      `${n} of those ${n === 1 ? "decisions was" : "decisions were"} narrow, which means the skill outranked the decoy panel by less than the margin the policy sets in advance.`
+    );
+  }
+  if (!v.preRegistered) {
+    out.push(
+      "The engine's policy was not registered before the run, so this measures the engine rather than settling anything about the skill."
+    );
+  }
+  return out;
+}
