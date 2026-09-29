@@ -6344,3 +6344,105 @@ outage, and this week is evidence it was needed: incident 24 is precisely a
 provider withdrawing a model with no notice. The honest caveat is that the
 promise is younger than the scan makes it sound, since it was built on
 2026-09-24 in response to that incident and has had one Monday to prove itself.
+
+### 2026-09-29 — A claim id in the graph's URL, so a receipt links instead of instructing
+- Trigger: building the receipts block on `/skills` today, ban list entry 14
+  named claim ids as internal vocabulary printed at the reader, and its amended
+  test is whether someone who has never seen the codebase could say what the
+  number refers to. The sprint item required the ids on the page, so they now
+  ship with a sentence that decodes them. That sentence has to end in an
+  instruction, "search for it on the graph", because `/graph` holds its search
+  in `useState` and reads nothing from the URL. Twelve numbers on the page, and
+  every one of them is a copy-and-paste for the reader.
+- What: `site/app/graph/page.jsx` reads a `claim` search parameter and passes it
+  to `GraphExplorer` as the initial query, which already matches on `c.id`. Every
+  claim id on the skills page then becomes a link straight to the finding and the
+  paper behind it, and the decoding sentence becomes unnecessary. It also makes
+  the graph linkable from anywhere else, which nothing in the org can do today:
+  an issue, a brief and a skill all cite claim ids and none of them can point at
+  one.
+- First step: one `searchParams` read in the graph page and one `useState`
+  initialiser in the explorer, then turn the ids in `SkillReceipts` into links.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The skill frontmatter a customer reads is not written to the voice a customer is owed
+- Trigger: the receipts block put `provenance.validated` on a public page for
+  the first time today, and harness-engineering's reads "bare Claude endorsed
+  imitation fine-tuning on a stronger model's trajectories; with this skill
+  loaded it refused". That is a semicolon join, which L-A5 in
+  docs/standards/lessons.md bans in owner-facing prose and the house voice bans
+  in user-facing prose. It was written on 2026-09-12 as an internal note in a
+  file no visitor could see, and it was correct as one. Today it is sales copy.
+- What: the field's contract changed the moment it rendered, and nothing told the
+  skill seat. Either prompts/skill-agent.md states that `validated`, `extracted`
+  and the skill `description` are customer-facing strings governed by
+  docs/voice/ban-list.md, or the page stops printing the raw field and prints a
+  date plus a rewritten line. The first is better, because the raw sentence is
+  the most persuasive thing on the page: it is a real A/B trial with a real
+  outcome, and no rewrite of it will beat it for evidence.
+- First step: a check in `tests/test_skill_receipts.py` that every string the
+  page renders from frontmatter is free of semicolon joins and stylistic em
+  dashes, which fails today on one skill and tells the skill seat exactly what
+  to fix. It is a one-line change to the file, and the file is not this seat's
+  to edit.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The shelves are named for the research, and a buyer arrives looking for the job
+- Trigger: today's craft scan of skillbay.sh, below, read against the page this
+  run spent the day on. skillbay sorts its catalogue into twelve categories that
+  are job names: coding, writing, content, research, data, devops, design, sales,
+  legal, operations, productivity, other. alexandria's six shelves are research
+  areas: agent harnesses, context engineering, multi-agent systems, training
+  loops, serving and inference, multi-modal systems. Four of the six have been
+  empty since the page was built, and the resting page shows all six, so the
+  first thing a cold visitor sees is four statements that the library has
+  nothing for them.
+- What: this is not an argument for renaming the shelves, because the research
+  taxonomy is the honest one and docs/vision.md §2 is where it comes from. It is
+  an argument that the taxonomy is the wrong index for a buyer's first ten
+  seconds. A second axis, "what were you about to do", over the same skills, with
+  the shelves kept as the structural view. The claim-graph work means the org
+  already has the material for it: a skill's `triggers.json` positives are
+  literally the jobs it is for, written as prompts, and they are already tested
+  against a decoy panel.
+- First step: derive a job-shaped facet from each skill's positive trigger cases
+  and render it as a filter above the shelves, before writing any new taxonomy by
+  hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Craft scan: skillbay.sh, the paid skill marketplace
+The closest product in the landscape to the page this run rebuilt, and one
+carried in docs/market/landscape.md since 2026-09-18 without ever being opened.
+Fetched today: the catalogue home page.
+
+**Worth stealing: the price is on the row, at rest.** Every listing states its
+price as a field, beside the date, the category and the seller, with "free" said
+in the same place a number would go. alexandria states its entitlement once, in
+an open row and once more at the foot of the page, which is the owner's ruling of
+2026-09-18 and a good one for fifty rows. The stealable part is narrower than the
+whole pattern: skillbay makes the commercial fact a field rather than a sentence,
+so a buyer scanning twelve rows never wonders about any of them.
+
+**What alexandria does better, and today it is not close.** skillbay's entire
+trust claim is six words in its header, "curated by @skeptrune", and a listing
+carries no version, no date of last check, no test result and no statement of
+what curation meant. The buyer is asked to trust a person's taste and given
+nothing to check it against. That is exactly the objection the HN thread on its
+launch raised and the founder conceded, recorded in the landscape entry: why buy
+a markdown file when a model will write you one. As of this run every skill on
+`/skills` answers that with a dated trigger-test result, an engine version, a
+pass count rather than a percentage, and a sha that pins the result to the exact
+text on the page. The one that was measured against an eight-case suite says
+eight cases. The one with a narrow decision says so rather than rounding it into
+a hundred percent.
+
+**The honest caveat, because the scan cuts both ways.** skillbay is selling
+twelve categories of skill to anyone with a job to do, and alexandria is selling
+four skills about agent engineering. A trust apparatus is cheap to build for four
+files and its cost is not linear. The receipts shipped today are generated from
+the instrument's own output with no hand-written step, which is the property that
+has to survive fifty skills, and it is the reason the block was built off
+`skills/_validation/results/` rather than off anything a seat types.
