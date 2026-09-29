@@ -42,6 +42,24 @@ text the page shows, so editing a skill without re-running
 document the reader cannot see. That step turns red on the pull request that
 does it. It needs no key, no network and no database.
 
+A sixth joined them on 2026-09-29: the claim graph's audit
+(`tests/test_graph_audit.py`). `tools/graph_audit.py` holds ten SELECTs against
+the corpus database, and no CI job in this org can execute one, because the only
+Postgres that matters is the production one. So the step parses every query with
+libpg_query and resolves every relation and column it names against
+`db/schema.sql`. A migration that renames a column turns the pull request red
+rather than turning the audit red the first time somebody points it at Neon. No
+key, no network and no database.
+
+The same commit fixed the fifth step's triggers. The receipts step was added on
+2026-09-29 without adding anything it guards to this workflow's `paths`, so
+editing a `SKILL.md` would not have run it and the guard would have been a guard
+in name. `skills/**`, `site/lib/skill-provenance.js` and both new test files are
+in the list now. It is worth saying plainly what that near miss was, because it
+is the shape this whole directory exists to catch: a check can be written
+correctly, reviewed, merged, and still never fire, and nothing about reading it
+tells you which.
+
 The rehearsal step is worth one sentence of its own, because it is the
 only one that guards a gate CI cannot run. The gate itself is `modal run
 pipeline/weekly.py::rehearse`, a real call with a real key that costs

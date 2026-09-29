@@ -28,8 +28,13 @@ on:
       - "tests/test_run_report.py"
       - "tests/test_distill_gates.py"
       - "tests/test_distill_fulltext_budget.py"
+      - "tests/test_skill_receipts.py"
+      - "tests/test_graph_audit.py"
+      - "skills/**"
+      - "site/lib/skill-provenance.js"
       - "tools/board.py"
       - "tools/run_report.py"
+      - "tools/graph_audit.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -49,8 +54,13 @@ on:
       - "tests/test_run_report.py"
       - "tests/test_distill_gates.py"
       - "tests/test_distill_fulltext_budget.py"
+      - "tests/test_skill_receipts.py"
+      - "tests/test_graph_audit.py"
+      - "skills/**"
+      - "site/lib/skill-provenance.js"
       - "tools/board.py"
       - "tools/run_report.py"
+      - "tools/graph_audit.py"
       - "db/schema.sql"
       - "site/emails/digest.html"
       - ".github/workflows/checks.yml"
@@ -231,3 +241,17 @@ jobs:
       - name: the skill library shows its receipts, and they describe today's text
         if: always()
         run: python3 -m pytest tests/test_skill_receipts.py -q
+
+      # 2026-09-29, the graph audit. Two of these tests are the reason the file
+      # is in this workflow at all: `tools/graph_audit.py` holds ten SELECTs
+      # that no CI job anywhere can execute, because this org runs no database
+      # in CI and the only Postgres that matters is the production one. So the
+      # queries are parsed with libpg_query and every relation and column they
+      # name is resolved against db/schema.sql, which is why that file is in
+      # the paths above. A migration that renames a column turns this step red
+      # instead of turning the audit red the first time somebody points it at
+      # Neon. Both gates were confirmed to fail on a deliberate typo before
+      # this step was written.
+      - name: the graph audit's SQL still matches the schema, and still only reads
+        if: always()
+        run: python3 -m pytest tests/test_graph_audit.py -q
