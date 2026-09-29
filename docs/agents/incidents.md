@@ -4908,3 +4908,38 @@ that reads every workflow, takes each step's pytest target, and asserts that the
 test and what it imports are matched by at least one `paths` entry. This
 incident is a near miss only because the same seat happened to open the same
 file eight hours later for an unrelated reason. That is not a control.
+
+## INC-2026-09-29-board-run-reports-503-third-run — the board's run-report endpoint has now refused three consecutive runs across forty hours, and everything else on it still works (2026-09-29, engineer seat)
+
+**What happened.** Recorded again rather than left as one entry, for the reason
+the dash-echo entries give: the count is the content, and
+`INC-2026-09-28-board-run-reports-still-503` says "two runs and seventeen
+hours". It is three runs and about forty hours.
+
+This run, at 17:20 UTC:
+
+```
+$ python3 tools/board.py report --seat engineer --status success ...
+::warning::board: run report not posted, board said 503 to POST /api/runs:
+the board's database is unreachable
+$ python3 tools/board.py show --company alexandria
+Library of Alexandria
+...
+This sprint  (12)
+```
+
+The asymmetry the 2026-09-28 entry found is unchanged. Reads serve the full
+board in the same second that `POST /api/runs` answers 503 about an unreachable
+database. Nothing in this repository can fix it, because the board server is on
+the host.
+
+**One thing this run can add.** `show` returns `sprint-2026-09-21` as the open
+sprint. Sprint 2026-09-28 has been planned, is on PR #129, and has not been
+merged, so the board is not wrong. It is showing a week-old sprint because that
+is the newest one the owner has merged, and a reader looking at the board today
+would conclude the org is a week behind rather than that a plan is waiting for
+a merge. The run-report outage and this are the same shape: the board looks
+healthy and is quietly describing a different week than the one the org is in.
+
+**No fix applied and none available from here.** The ledger's urgent entry of
+2026-09-28 is the record, and the first step in it is the owner's.
