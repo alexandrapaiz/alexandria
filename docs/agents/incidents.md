@@ -4850,3 +4850,61 @@ fails loudly and marks a healthy run as a crash, the other fails quietly and
 leaves the board's `runs` array empty. The owner has no working surface that
 says whether a seat ran, other than `gh run list`, which has said `failure`
 eight times about eight successful runs.
+
+## INC-2026-09-29-receipts-step-had-no-paths — a CI step written, reasoned and queued the same morning could not have fired, because nothing it guards was in the workflow's trigger paths (2026-09-29, engineer seat)
+
+**What happened.** Commit `ba63921`, at 02:56 UTC today, added a fifth step to
+`.github/workflows-pending/checks.yml`:
+
+```yaml
+      - name: the skill library shows its receipts, and they describe today's text
+        if: always()
+        run: python3 -m pytest tests/test_skill_receipts.py -q
+```
+
+The step is correct. Its comment is correct, and it states the property the
+step exists to hold: every receipt on `/skills` is pinned by sha to the exact
+`SKILL.md` text, so editing a skill without re-running the trigger test turns
+the pull request red. The same commit added nine lines to
+`.github/workflows-pending/README.md` explaining it.
+
+What neither the step nor the README touched is the workflow's `on:` block.
+`checks.yml` fires on a `paths` list, and after that commit the list contained
+neither `tests/test_skill_receipts.py`, nor `skills/**`, nor
+`site/lib/skill-provenance.js`. So the pull request that the step exists to
+turn red is precisely the pull request that would not have run it. The only way
+it would ever have executed is a change to `pipeline/`, `db/schema.sql` or one
+of the press files, which is to say on every occasion except the one it was
+written for.
+
+**Why it is in this register.** The repository has met this class before.
+`INC-2026-09-27-new-register-shipped-without-a-gate` is a register created on a
+Friday and read by nothing until Sunday, and the whole of
+`.github/workflows-pending/` exists because a workflow sitting there is, in its
+own README's words, "a guard that is not guarding yet". The standing rule at the
+top of this file admits no judgment call once something has happened twice. The
+company standard is sharper still: L-A16 in `docs/standards/lessons.md` says
+configured is not in effect, and a capability counts as live only when a run log
+proves it served a real turn.
+
+**Why it is worth more than one line, which is the part to read.** The three
+previous instances were all visible by looking at where a thing lived. A
+register nobody opens, a workflow in the wrong directory, a decision accepted
+but not deployed. This one is invisible by looking. The step is in the right
+file, in the right job, with `if: always()` like its neighbours, and the fact
+that it can never run is forty lines away in a `paths` list, in a different
+section of the same document. Reading the step tells you nothing. Reading the
+whole file and holding both halves in your head at once tells you, and nobody
+reads a workflow that way.
+
+**Fixed in this run**, in the pull request that supersedes the one that made it.
+`skills/**`, `site/lib/skill-provenance.js`, `tests/test_skill_receipts.py`,
+`tests/test_graph_audit.py` and `tools/graph_audit.py` are in both `paths` lists
+now. Twenty-three entries each, and they were checked by parsing the file rather
+than by reading it.
+
+**The gate that does not exist yet**, filed as a ledger entry today: a check
+that reads every workflow, takes each step's pytest target, and asserts that the
+test and what it imports are matched by at least one `paths` entry. This
+incident is a near miss only because the same seat happened to open the same
+file eight hours later for an unrelated reason. That is not a control.
