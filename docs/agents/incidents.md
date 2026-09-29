@@ -4449,3 +4449,118 @@ Filed in `docs/ideas.md` for the ExO seat to carry into
 Recorded, traced, and filed. This pull request supersedes all four open writer
 branches so that one merge deploys four days of repairs and four days of
 registers together.
+
+## INC-2026-09-29-grade-cleared-link-coverage — a second editorial grade cleared a law the artifact visibly broke, and the law was the owner's own "you didn't show me the paper" (2026-09-29, writer seat)
+
+**This is a repeat of `INC-2026-09-26-grade-cleared-a-printed-violation`,
+recorded at the moment it repeated, per the standing rule at the top of this
+file. Same seat, same register, same shape: a pass reported on an artifact
+that fails.**
+
+**What happened.** Writer run 17 graded `digests` id 18 on 2026-09-28 and
+recorded, verbatim:
+
+> **Law 8, links reach the full text. PASS.** Four distinct URLs, all
+> `arxiv.org/html/`, no abstract landing pages.
+
+Every word of that is true. The issue has five items. Its fell-behind section
+names three separate pieces of research, the 82.2% RMBench reference
+implementation, MaP-WAM at 83.3% and DRG-MAPPO at 87%, and carries no link to
+any of them. Its second item links the newer paper and not the older claim it
+replaces, where the generator requires both. Two of the six link instances in
+the issue are the reading list reprinting links from sections one and two.
+
+The same grade recorded canon law 6's presence half as a pass on "all three
+items". There are five. The two in the fell-behind section carry no evidence
+grade, and they carry three benchmark numbers between them.
+
+**Why the verdict came out wrong, which is the reusable part.** The canon
+requires every verdict to carry a quoted line as evidence. That requirement is
+right and it has a blind spot nobody had named: **it steers a grade toward the
+laws that can produce a quotation.** Law 8 and law 6 both forbid an absence.
+An absence cannot be quoted. So the grade did the only thing quotation allows,
+which is to inspect the links that exist, and inspecting what exists is
+exactly the check that cannot find what is missing.
+
+The first occurrence had a different cause, two artifacts sharing one verdict
+line, and its fix was to make a pass carry evidence. This occurrence is what
+that fix does not reach. A pass with evidence is still a reading, and coverage
+is arithmetic.
+
+**Why it matters.** Law 8 is the owner's ruling of 2026-09-19 in her own
+words, "you didn't show me the paper". It failed on the fell-behind section,
+which the canon calls the product's only real difference from every other
+newsletter, and the instrument she relies on so she does not have to be the
+editor reported it clean. A grade that clears a law does not merely miss the
+defect. It reports that the generator is fine on that axis, which is what
+stops the next run from looking.
+
+**The fix, in this pull request.** Two halves and only the first is this
+seat's to build.
+
+In the canon's grading procedure: a law whose subject is "every item" or
+"every issue" is graded by a count, with the command written down, never by a
+reading. A pass on one of those with no number beside it has not been graded.
+This is the same escalation the first occurrence applied to canon law 12,
+which is graded by a grep, extended from the one law that names a closed set
+of strings to the class of laws that assert coverage.
+
+In `prompts/digest.md`: the link count and the grade count now run off one
+shared list, which is every named piece of work in the finished issue rather
+than every item. Recorded as ban list 72, 73 and 74.
+
+**What is still open, and it belongs to the engineer.** Both counts are
+arithmetic and both are therefore `L-A22` cases: enforced at the reliability
+of a model reading a file when they could be links in the pre-send gate's
+`&&` chain. Filed in `docs/ideas.md` against #60, beside the four run 17
+filed there for the same reason. This seat has now written the same class of
+check into the same prompt twice and does not get a third.
+
+## INC-2026-09-29-gate-unit-three-more — the defect that produced one incident produced three more in a single print (2026-09-29, writer seat)
+
+**This is a repeat of `INC-2026-09-27-gate-unit-is-the-line`, recorded at the
+moment it repeated, per the standing rule at the top of this file.**
+
+**What happened.** That incident found the heading gate in
+`prompts/digest.md` asking the right question of the wrong unit: it collected
+lines, and a label welded to the front of a sentence is a fragment of a line,
+so the gate's own question was never put to the half that would have failed
+it. The fix worked. The four framework names did not print on 2026-09-28 and
+the fragment half of the gate caught what it was written for.
+
+Grading that same print on 2026-09-29 turned up three more gates in the same
+file with the identical defect, all three reporting a pass:
+
+| Gate | Unit it inspects | Unit the defect lives in | What got through |
+|---|---|---|---|
+| Link coverage | the item | the named piece of work | one item naming three results, no link on any |
+| The kind test | "the two claims" | one old claim against several new | one refusal written over two pairings, the valid one discarded |
+| Reading-list overlap | the `new_claims` stream | any section of the issue | a pick covered in the traction section, recommended back |
+
+**The transferable finding, which is why this is worth an entry rather than
+three more ban-list lines.** The pattern is not in any of the four gates. It
+is in how a gate gets written in this file. A gate is written from the
+specimen that produced it, the specimen is always one instance, and the check
+comes out phrased in the singular: "the item", "the two claims", "the stream",
+"the line". The material arrives in groups. Every one of these gates then
+passes on the group by answering for one member of it, and a pass is
+indistinguishable from a real one, which is `L-A21` exactly.
+
+So the question to put to every gate in that file, and to every gate any seat
+writes: **name the unit this check inspects, then name the unit the defect
+lives in, and say whether they are the same size.** Where the check is
+singular and the material is plural, the gate will pass on the group. That
+question is cheap, it is answerable without running anything, and it found
+three live failures in one pass.
+
+**The fix, in this pull request.** All three gates now name their unit
+explicitly, and the two that are arithmetic count off one shared list. Ban
+list 72 carries the tell.
+
+**What is still open.** The charter's structure watch says that when the same
+structural fix fails twice through prompt changes alone, the pipeline change
+goes in the ledger instead of a third patch. Four gates, four prompt patches,
+and the fourth is in this pull request. The ledger entry filed against #60 is
+not another patch: it is the unit question above, as a standing check on the
+pre-send gate, plus the two counts that are arithmetic. The writer seat does
+not patch this class a fifth time.
