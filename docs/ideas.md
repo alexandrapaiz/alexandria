@@ -5545,7 +5545,7 @@ press does with a 503.
 
 - Extends the 2026-09-28 entry above, which filed four checks against #60. Same
   gate, same reason, two more checks and one standing question. Append after
-  that entry; nothing in it changes.
+  that entry. Nothing in it changes.
 - **Check 5, link coverage as arithmetic.** Count every named piece of research
   in the body, meaning every paper, benchmark result, method or system whose
   number the issue prints, and every older belief it says fell. Count the
