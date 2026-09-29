@@ -6384,8 +6384,9 @@ promise is younger than the scan makes it sound, since it was built on
 - First step: a check in `tests/test_skill_receipts.py` that every string the
   page renders from frontmatter is free of semicolon joins and stylistic em
   dashes, which fails today on one skill and tells the skill seat exactly what
-  to fix. It is a one-line change to the file, and the file is not this seat's
-  to edit.
+  to fix. The check belongs to this seat and the repair belongs to the skill
+  seat, which is why it is filed rather than merged: a test that fails on a file
+  this charter forbids it to edit is a red suite with no owner.
 - Cost: $0
 - Status: proposed
 
