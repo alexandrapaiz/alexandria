@@ -5,7 +5,14 @@ each run, because it is a queue rather than a log.
 
 ## 2026-09-29 (Tuesday standup)
 
-**One entry, fired this run.**
+**One entry, attempted this run, not fired.** Both charter §5
+conditions held (`PM_DISPATCH_ENABLED` true, no `workflow_dispatch` in
+the prior two hours), so this run tried to fire it for real rather than
+only propose it. The attempt 403'd, the same failure
+`INC-2026-09-24-dispatch-403` recorded five days ago against a
+different seat's workflow. Recorded as a repeat at
+`INC-2026-09-29-dispatch-403-repeat`. The command below is unchanged
+and ready for the owner or chair to run by hand with their own token.
 
 ### 1. skill — the Tuesday cron never fired, and sprint item 4 is ready and waiting
 
@@ -31,7 +38,7 @@ watches skill's cadence.
 **No open PR blocks this.** `gh pr list --state open` shows nothing on
 a `skill/*` branch.
 
-**Dispatch, fired this run:**
+**Dispatch, attempted this run, 403'd:**
 
 ```bash
 gh workflow run agent-skill.yml \
@@ -50,7 +57,17 @@ under skills/_validation/results/ with today'\''s date, and a plain
 statement of which engine wins now that the confound is removed.'
 ```
 
-Run URL recorded below under "Dispatched by the PM" once fired.
+**Result.**
+
+```
+could not create workflow dispatch event: HTTP 403: Resource not
+accessible by integration
+(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361031512/dispatches)
+```
+
+No run was created. The skill seat's own Tuesday cron still has not
+fired as of this PR; the gap and the ready sprint item both stand,
+waiting on the owner or chair to run the command above by hand.
 
 **Not proposed for any other seat.** Engineer has an open PR (#133,
 superseding #130 and the whole earlier chain) — a hard stop under §4's
@@ -131,7 +148,9 @@ Not checked this run (no new signal). Still on trial per the
 
 ## Dispatched by the PM
 
-1. **skill**, 2026-09-29, dispatched to close the Tuesday cron gap and
-   run sprint item 4 (decoy panel rewrite, lexical/2.1 vs lexical/3
-   re-measure). Full instruction: see entry 1 above. Run: *(added after
-   firing, below)*
+1. **skill**, 2026-09-29, attempted, not fired. `HTTP 403: Resource not
+   accessible by integration`, identical shape to
+   `INC-2026-09-24-dispatch-403` against a different seat's workflow
+   five days earlier. Full instruction: see entry 1 above. No run URL
+   exists because no run was created. Registered as a repeat at
+   `INC-2026-09-29-dispatch-403-repeat` in `docs/agents/incidents.md`.
