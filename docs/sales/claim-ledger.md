@@ -45,6 +45,8 @@ what was true two weeks ago.
 | A4 | The library's skills get picked correctly when they should be, and stay silent when they should not. | True, and measured: 40 of 43 cases, reliability 0.93, 95% confidence 0.81 to 0.99. Engine lexical/2.1, 8 decoys, policy pre-registered before the run. Dated 2026-09-29. | `tail -1 skills/_validation/results/2026-09-29-lexical-2.1.txt` |
 | A5 | An independent reader used a skill on real work and it changed a decision. | True, once, dated 2026-09-29: one design decision changed, one procedure adopted, two confirmations, on a three-stage build plan. The reviewer recorded that its own baseline was not clean, because it had read the file four days earlier. | `head -16 skills/harness-engineering/reviews/2026-09-29-ursa-chair.md` |
 | A6 | Twelve skills. | **FALSE and not scheduled to be true by launch.** Twelve by 2026-12-31 is a Q4 target graded at roughly 0.7 expectation, not a launch-day fact. | `docs/okrs/okrs-2026-Q4.md` O2 KR1 |
+| A7 | You can follow any recommendation in a skill back to the work it came from. | **Half true, and the half that is false is the half the drafts leaned on.** The papers are listed with arXiv links, which open. The claim numbers are integers that appear nowhere else in the file and resolve only on `/graph`, which is a paid page with no preview by her ruling of 2026-09-19. A non-subscriber cannot open a single claim. | `grep -A2 'claims:' skills/harness-engineering/SKILL.md`; `site/app/graph/page.jsx` |
+| A8 | 69 percent of 216 public Claude Code skills will not reliably trigger. | True as a sourced third-party finding, not ours: a Show HN report of 2026-09-17, item 49744398, recorded by the market seat on 2026-09-18. | `docs/market/opportunities-2026-09-18.md` |
 
 **The distinction A3 and A4 force, and the reason this section is first.**
 There are two different receipts and they are not interchangeable. A4 says the
@@ -62,6 +64,28 @@ that do that, drafted for reuse:
 > wrong one stays quiet. One of the six also carries a recorded trial showing
 > that loading it changed what the model recommended, and the other five do
 > not yet, which is the next thing to fix rather than the thing to talk around.
+
+**A7 is the correction this run had to make to its own new copy.** Three
+rewritten drafts said a reader could follow a recommendation back to the work it
+came from, which is the sentence the whole evidence pitch rests on, and it was
+written before anyone checked what a claim number resolves to. It resolves to
+nothing a stranger can reach. The drafts now lean on the paper links, which do
+open, and the Hacker News draft says outright that the claim numbers are
+internal and only resolve on a paid page, because on that venue naming the
+limit is worth more than the claim it costs.
+
+The fix that would make A7 true is not a copy fix. Either a claim gets a public
+permalink, or the skill file states its claims in words beside their numbers.
+Both are outside this seat. Filed in the ledger in this pull request.
+
+**A8 is the strongest comparative sentence the company owns, and it is one bad
+sentence away from being its worst.** Their audit says 69 percent of public
+skills will not reliably trigger. Our test says 40 of 43. Those measure the same
+axis and they do not share an instrument, we do not know their method, and a
+post that puts the two numbers side by side without saying so has claimed a head
+to head that nobody ran. Every draft that uses both now states that they are
+different instruments in the same breath, which is also, on this audience, the
+most persuasive thing in the post.
 
 ## B. The corpus and its numbers
 
@@ -146,11 +170,30 @@ ls site/content/issues/                            # C1, C2: what is actually in
 grep -n 'papers read' site/app/page.jsx            # B1: is the false verb still live
 ```
 
-A sixth check has no command, and it is the one this run was nearly caught
-by. Open `docs/voice/taste.md` and read from the bottom up to the date of the
-draft you are about to send. A ruling dated after the draft was written
-governs the draft, and the file's own law says the newest verdict wins even
-when it reverses one she gave the day before.
+A sixth check is the one this run was nearly caught by, and it does have a
+command. Every file in `docs/sales/launch/` declares the date it was written
+under on its second line. Compare that against the newest dated ruling in the
+taste register, and anything older is stale until a run says otherwise.
+
+```bash
+newest=$(grep -oE '^- 20[0-9]{2}-[0-9]{2}-[0-9]{2}' docs/voice/taste.md \
+  | grep -oE '20[0-9]{2}-[0-9]{2}-[0-9]{2}' | sort | tail -1)
+for f in docs/sales/launch/*.md; do
+  d=$(grep -m1 -oE '(Rewritten|Verified) 20[0-9]{2}-[0-9]{2}-[0-9]{2}' "$f" \
+    | grep -oE '20[0-9]{2}-[0-9]{2}-[0-9]{2}')
+  if [ -z "$d" ] || [ "$d" \< "$newest" ]; then echo "STALE: $f"; fi
+done
+```
+
+Run both ways on 2026-09-30. All seven current drafts pass. The 2026-09-18
+version of `email.md`, taken from main, is reported stale, which is the file
+whose staleness this gate exists because of. A gate that has only been shown to
+pass has not been shown to work.
+
+Then read the register anyway. The command compares dates and cannot tell you
+whether a draft obeys a ruling, only whether anyone has looked since it landed.
+The file's own law is that the newest verdict governs even when it reverses one
+she gave the day before, and no timestamp settles that.
 
 ## The register the drafts had already fallen behind
 
