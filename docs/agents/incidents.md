@@ -6325,3 +6325,77 @@ engineer seat's §0 machinery check also read
 any code, and it is what established the position: five consecutive failures on
 `main` and green on this branch. Worth putting in the charter, which is the
 owner's file, so it is a ledger entry rather than an edit here.
+
+## INC-2026-09-30-dispatch-lost-with-no-model-call — incident 23's fingerprint on the Claude path, where its own diagnostic says to stop looking (2026-09-30, engineer seat)
+
+**A repeat, recorded because the standing rule at the top of this file has no
+exceptions.** Incident 23 wrote the fingerprint down so the next diagnosis
+would be a lookup. It happened again on 2026-09-30, the lookup was run, and it
+returned the wrong answer, because the one discriminator the entry gives is the
+model name and this time the model name was a Claude model.
+
+**What happened.** Engineer run 36667082941, a `workflow_dispatch` created
+2026-09-30T04:02:26Z carrying the owner's ADR-37 directive on self-maintaining
+skills. The result block:
+
+```
+"type": "result", "subtype": "success", "is_error": true,
+"duration_ms": 435, "num_turns": 1, "total_cost_usd": 0,
+"permission_denials_count": 0, "modelUsage": {}
+```
+
+with `"model": "claude-opus-5"` in the init line four hundred milliseconds
+earlier. No commit, no branch, no pull request, and no model ever answered. The
+owner's directive was silently dropped. Nothing reported it for thirteen hours,
+until this run's machinery check read `gh run list` for its own seat.
+
+**Why the register did not answer it.** Incident 23's fingerprint section ends
+with a diagnostic command and this instruction: "If the model name is not a
+Claude model and `modelUsage` is `{}`, the seat's problem is its endpoint and
+not its charter." The condition is an `and`, and half of it is false here, so
+the entry that describes this exact failure hands the reader nothing. The
+generalizable defect is in the entry rather than in the runtime: **a fingerprint
+written from one specimen encodes that specimen's cause as part of its
+identity.** `modelUsage: {}` is the fingerprint. Open routing was the cause of
+the one instance that produced it. Recording them as one fact makes the second
+instance unrecognisable.
+
+That is the same shape as `INC-2026-09-29-gate-unit-three-more`: a check phrased
+from a single example, which then answers for the example instead of the class.
+
+**The duration is the new discriminator, and it points somewhere else.**
+Incident 23's instance ran 190 seconds before failing, which it correctly reads
+as a network timeout. This one ran 435 milliseconds, which is a refusal
+answered immediately. The two runs before it on the same
+`CLAUDE_CODE_OAUTH_TOKEN` cost $10.46 (94 turns, finished 04:02:02Z) and $9.29
+(100 turns, 2026-09-29 17:12Z), and this dispatch was created twenty-four
+seconds after the first of those ended. A subscription usage ceiling reached
+mid-day is the leading hypothesis and it is a hypothesis, not a finding,
+because the action runs with full output hidden for security and the upstream
+error is not recoverable from the log. That is incident 23's own second finding,
+still open ten days later: **the org cannot read why any of its runs fail.**
+
+**What it cost.** One dispatch carrying an owner directive, and the thirteen
+hours before anyone noticed. It cost no money, which is the part that makes it
+easy to miss: a $0 run in a cost report looks like a run that did not happen.
+
+**Not concurrency, and worth saying so explicitly.** `INC-2026-09-30-engineer-
+run-twice-again` is the day's other engineer-lane incident and item 9 on
+`docs/agents/pending-workflow-changes.md` is its fix. It is not this. The two
+runs did not overlap: 36665217714 completed at 04:02:02Z and this one's action
+step began at 04:03:11Z. A `concurrency:` block would not have saved it.
+
+**What would make the next one diagnosable, in the order they are worth doing.**
+
+1. Amend incident 23's fingerprint section so the identity is `modelUsage: {}`
+   alone, with the model name and the duration listed as discriminators among
+   at least two known causes rather than as part of the test. That is a one
+   paragraph edit to an ExO-owned section of this file and this entry is the
+   request for it.
+2. A `$0` run is a reportable outcome in its own right. `tools/run_report.py`
+   already runs on `if: always()` in every seat workflow and already has the
+   run's outcome; a run whose model usage is empty is a distinct fingerprint
+   from a crash and should say so in the line it posts, rather than being one
+   more red square.
+3. The hidden-output problem is the owner's, not a seat's. Ten days and two
+   incidents have now turned on an error message that exists and cannot be read.

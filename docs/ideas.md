@@ -7404,3 +7404,95 @@ graphs.
   file. Worth doing in the same hand that applies item 12.
 - Cost: $0, about 20 seconds a run.
 - Status: proposed
+
+### 2026-09-30 — Competitive scan: Paperguide sells the decision trail, and we give ours away for free
+
+- Trigger: this run's craft scan, rotating through `docs/market/landscape.md`
+  to the entry added 2026-09-18 and never opened since. Paperguide's front page
+  now leads with a product that did not exist at that observation, Systematic
+  Review, and its pitch is not the search. It is the audit: a predefined
+  protocol, a documented search, recorded screening decisions, a PRISMA flow,
+  two reviewers with a conflict resolver, and one sentence that reads like our
+  own charter, "AI never decides, it prepares the cited evidence." The value
+  they charge for is that the trail survives peer review and a regulatory
+  audit.
+- **Worth stealing: the decision trail is a product surface, not an internal
+  log.** alexandria already keeps a stronger version of exactly that artifact
+  and shows none of it. `triage_log` records every routing decision with the
+  model's reasoning and the prompt sha that produced it, the re-triage appends
+  rather than updates, so a paper carries a decision history, and
+  `pipeline/triage.py`'s own comment says why that history is the most valuable
+  row in the set. A reader of the digest cannot see one line of it. Paperguide
+  is charging $24 a month for the auditability of a screening decision that we
+  compute daily and throw behind a table nobody can query.
+- **What alexandria does better, and it is the axis their product cannot
+  reach.** A systematic review is a snapshot dated at submission. Ours is not:
+  `deprecated_claims` marks a claim the frontier has overtaken, and the
+  terminal state of a paper here is a skill, a pattern note or a discard rather
+  than a citation in someone's manuscript. Their output is a document a human
+  reads once. Ours is something an agent loads every day, and it changes when
+  the research changes.
+- Ledger idea this produces, sized for one day: a public page over
+  `triage_log` answering "why this paper, and why not that one" for the week
+  the current issue covers. Every row already carries the decision, the
+  reasoning and the prompt sha. This is the same lever the sprint's item 5
+  pulls, product surface being the OKR benchmark's weakest axis at 2.0, and it
+  needs no new backend either.
+- Status: proposed
+
+### 2026-09-30 — checks.yml should run the suite, not a list of fourteen filenames
+
+- Trigger: building sprint item 2 this run. `.github/workflows/checks.yml`
+  names fourteen test files by hand in two identical `paths` lists, and a new
+  test file is invisible to CI until somebody edits a file no agent seat can
+  push. Three items on `docs/agents/pending-workflow-changes.md` are queued
+  behind that fact right now (12, 13 and the one this run added, 14), and every
+  one of them is the same two-line hand edit to both lists.
+- What: replace the enumerated test entries with `tests/**` and `tools/**` in
+  both `paths` lists, and replace the per-file pytest steps with one step that
+  runs `python3 -m pytest tests/ -q`. The suite is 638 tests, it took 15
+  seconds in this run's sandbox, it needs no key, no network and no database,
+  and `tests/conftest.py` already installs the Modal stub for all of it. The
+  four script-mode steps stay as they are, because they also prove the files
+  still work when run directly, which is what their own docstrings promise.
+- Why it is worth a day rather than a line: this closes a class, not a gap.
+  `INC-2026-09-29-receipts-step-had-no-paths` is a CI step written, reasoned
+  and queued in one morning that could not have fired, because nothing it
+  guarded was in the trigger paths. `tests/conftest.py`, the file that decides
+  whether the whole suite collects at all, was in neither list until item 13
+  queued it. Both are the same defect, and it recurs because the check's input
+  is declared by hand instead of derived. That is the same argument
+  `pipeline/runtime_sha.py` makes for parsing the image manifest out of the
+  module, and the same one `pipeline/budget.py` makes for reading `MODELS` out
+  of `triage.py`.
+- First step: queue the diff on `docs/agents/pending-workflow-changes.md`,
+  verified against the live file, and delete items 12, 13 and 14's path halves
+  in the same entry so the owner applies one edit rather than four.
+- Cost: $0. Actions minutes are free on a public repo and the step is seconds.
+- Status: proposed
+
+### 2026-09-30 — The MCP server and the site are outside the drift guard, and the site is the one a reader meets
+
+- Trigger: building sprint item 2 this run. The guard covers the three Modal
+  crons the sprint named, `triage`, `interpret` and `weekly`. It does not cover
+  `mcp/server.py`, which is a fourth Modal app and the paid spine's whole
+  interface, and it does not cover the site, which deploys through a Vercel
+  hook on merge to `site/`. Both can sit merged and unshipped in exactly the
+  way PR #110 did, and for the MCP server nothing anywhere would say so:
+  `tools/delivery_health.py` probes it for a 401, which proves it is up and
+  guarded and says nothing at all about which code answered.
+- What: extend `runtime_sha.APPS` to the MCP app and record its digest on cold
+  start rather than per request, so a scale-to-zero server writes one row per
+  container rather than one per call. The site is a different shape and wants a
+  different answer: the build already knows its commit, so the honest check is
+  the deployed commit against `HEAD` rather than a file digest, read from a
+  small JSON the site publishes.
+- Why not today: the sprint's own note on item 2 says to scope this to
+  detection and alerting for the three crons and not to let it grow into
+  rebuilding the deploy pipeline. This entry is that scope held, written down
+  so the next run does not have to rediscover the boundary.
+- First step: the MCP half alone. One `@modal.enter()` hook, one row, one more
+  app in the surface's loop, and the tests already exist in a shape that takes
+  a fourth app without changing.
+- Cost: $0.
+- Status: proposed

@@ -1072,6 +1072,90 @@ push the file.
 **Cost.** $0. No key, no network, no database. The step adds about three seconds,
 which is what a subprocess pytest costs six times over.
 
+### 14. The deploy-drift guard runs in CI, so its own logic is under test
+
+**Queued 2026-09-30 by the engineer seat, sprint 2026-09-28 item 2.**
+
+Numbered 14 because 13 is the highest on this page today. Items 12, 13 and 14
+all append a step at the end of the `digest-budget` job and two lines to each
+`paths` list, and none of them touches another's lines, so any order works. If
+all three are applied, applying them in number order keeps the file readable.
+
+**What this protects.** `tools/delivery_health.py` grew a fifth surface,
+`deploy`, which answers the one question none of the other four can: is the
+code on main the code the crons are running. `modal deploy` bakes the
+repository into an image, so a merge and a deploy are two events, and the gap
+between them has cost the org twice. Incident 24 is the first. PR #110 is the
+second, merged 2026-09-26 and inert for days while three documents described
+its behaviour as live.
+
+The guard's own logic is the kind CI exists to hold, because the way it fails
+is by crying wolf. A seat's sandbox nearly always has uncommitted edits under
+`pipeline/`, a branch carries commits that never merged, and a shallow clone
+cannot date anything. All three must answer `unknown` rather than red, and a
+change that quietly turned one of them into a verdict would make the standup
+red every morning for a reason that resolves itself, which is how a report
+teaches its reader to stop reading it.
+
+**What the new test file is.** `tests/test_deploy_drift.py`, added in the same
+pull request as this item. It builds a real git repository in a temporary
+directory, because the dating and dirty-tree logic is `git log` and
+`git status`, and mocking those would test the mock. No network, no database,
+no Modal. `tests/test_delivery_health.py` joins the same step: its surface list
+changed in this pull request and nothing in CI runs it today.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These three lines go in both `paths` lists, after the
+existing `tools/graph_audit.py` entry, which is the last entry in each list.
+Verified against the live file this run: `      - "tools/graph_audit.py"`
+matches exactly twice, once per list, and neither `tools/delivery_health.py`
+nor `tests/test_deploy_drift.py` appears anywhere in the file.
+
+```yaml
+      - "tools/delivery_health.py"
+      - "tests/test_deploy_drift.py"
+      - "tests/test_delivery_health.py"
+```
+
+`pipeline/runtime_sha.py` needs no entry: `pipeline/**` already covers it, and
+that is deliberate rather than lucky, because the digest this guard compares is
+derived from the three job modules and moves whenever they do.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live
+file's last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30, sprint 2026-09-28 item 2. The deploy-drift guard. Each of
+      # triage, interpret and weekly now records a digest of the files it is
+      # actually running from, and tools/delivery_health.py computes the same
+      # digest from the checkout and compares. CI cannot run the guard against
+      # production, because the recorded side lives in Neon and this org runs no
+      # database in CI. What CI holds is the judgement, which is the half that
+      # can rot: that a drift under a day reads as a pending deploy rather than
+      # an alarm, that an uncommitted edit and an undatable checkout both answer
+      # unknown rather than red, that a job which has never reported is never
+      # green, and that the recording call cannot raise or abort the transaction
+      # of the job it guards. The last one is why this is not optional: a
+      # guardrail that can fail a production run is worse than no guardrail.
+      - name: a stale deploy trips the alarm, and a real deploy clears it
+        if: always()
+        run: python3 -m pytest tests/test_deploy_drift.py tests/test_delivery_health.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (638 passed, 9 skipped). The two
+acceptance tests were confirmed to be load bearing by inverting the fixture:
+with the recorded digest set to the current one the surface is green, and with
+it set to a stale value on a checkout whose last commit is nine days old the
+surface is red and names all three jobs. The step cannot be smoke-tested as a
+workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about two seconds.
+
+---
+
 ---
 
 ---
