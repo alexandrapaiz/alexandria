@@ -7718,3 +7718,15 @@ every delta ends in a numbered procedure with thresholds named, the
 builder's checklist sits first, and the file is under 120 lines. This
 entry is the placeholder the draft pull request opens against; the run
 replaces it with findings before `gh pr ready`.
+
+## Skill seat, 2026-09-30 (window run): no database, so the run goes to the trigger instrument
+
+`NEON_RO_URL` was absent from this run's environment, so no claim
+extraction was possible and no new skill was drafted. Per the skill
+charter's data-access clause that makes this a run for the parts that
+need no database. The outstanding dispatch for this seat, sprint item 4
+in `docs/sprints/sprint-2026-09-28.md`, is exactly such a part, and it
+has now been missed twice: rewrite the decoy panel to the library's own
+word budget, add the length-warning check to `trigger_test.py`, and
+re-measure lexical/2.1 against lexical/3 with the length confound
+removed. This run does that work.
