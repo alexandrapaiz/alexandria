@@ -6,9 +6,21 @@ proposes, a human approves, and the approved claims are written up as a skill
 or pattern. Since ADR-35 a skill is written from the papers read in full, not
 from claim rows.
 
-Six skills as of 2026-09-30, all drafted and none yet passed by the ADR-13
-panel, so every `provenance.validated` field except harness-engineering's is
-still empty.
+Eight skills as of 2026-09-30, none yet passed by the ADR-13 panel, so every
+`provenance.validated` field except harness-engineering's is still empty. Six
+carry `status: active` from before ADR-36; the two newest, `agent-containment`
+and `agent-security-measurement`, carry `status: draft` because their eval task
+sets exist and no harness has run them yet, which is what ADR-36 says draft
+means.
+
+`agent-containment` is the library's first skill with an empty
+`provenance.claims` list, and that is deliberate rather than a gap. The
+2026-09-30 coverage census found that all 24 claims the corpus attributes to the
+containment thread are keyword artefacts and that no claim in the graph concerns
+an isolation boundary, so the skill is written from six papers read in full
+under ADR-35 and its provenance is the `papers` list. A papers-only provenance
+block cannot pass ADR-36's automatic gate, which is a real conflict between the
+two ADRs and is filed in `docs/ideas.md` rather than worked around here.
 
 Two instruments, and they measure different things. Both have to pass.
 
