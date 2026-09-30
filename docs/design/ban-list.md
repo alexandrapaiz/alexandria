@@ -113,3 +113,34 @@ a page looks clean but says nothing true, it is not done.
     supplied one.
     (Spotted 2026-09-24 at four focus treatments plus the UA's on most of the
     surface, and zero table rules in 1600 lines of stylesheet.)
+
+27. Blanket `opacity` standing in for a control's off, disabled or inactive
+    state. It is the reflexive way to say "not active" and it costs nothing
+    to write, which is exactly why it arrives without anyone deciding
+    anything: it dims the decoration and the label and the number together,
+    so the control that reports the state becomes the least readable thing
+    on the surface at the moment the reader most needs to read it. It
+    survives review because it looks deliberate in a mockup, where nobody
+    measures the text it fades. The test is contrast, not appearance:
+    compute the effective ratio of every string inside the faded element,
+    not just the element's look. A designed off state moves colour on the
+    parts that carry meaning and leaves the text legible.
+    (Spotted 2026-09-26 on this seat's own graph legend at `opacity: 0.4`:
+    the label at roughly 2.9:1 against paper and its count near 1.5:1.)
+
+28. A generated layout judged at a demo's data instead of the real
+    distribution's shape. Entry 22 is this failure for list rows and counts
+    the rows; this is the same failure for anything computed, and volume is
+    not the variable. A force layout, a packing, a treemap or a chart can be
+    correct at fifty evenly-sized items and degenerate into a pattern at the
+    real data, because real data is lumpy: one large cluster, a shoulder,
+    and a long tail of pairs. The tail is what breaks it, and the tail is
+    what a demo fixture never has. It ships because the screenshot at
+    demo data is genuinely fine and nothing in the code reads as wrong.
+    The test is to render the real distribution's SHAPE, not just its row
+    count, and to look at the picture rather than the numbers.
+    (Spotted 2026-09-26: the claim graph's first layout packed component
+    slots into rows, so roughly thirty two- and three-node components
+    landed at one y and smeared into each other. At demo data it was a
+    graph. At the real shape the top and bottom of the canvas read as
+    dotted rules.)

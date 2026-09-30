@@ -760,3 +760,438 @@ local reading connector is chair-only. Engineer work: a reading_queue
 table or file reader in the distill priority, and the charter's cap
 re-measured.
 
+## ADR-2026-09-26: Triage and interpret write on Kimi; ADR-32's corpus clause is superseded
+
+**A dated id, not ADR-35.** Sequential ids have collided twice in this
+file (ADR-30, ADR-32), the numbering note above records the second one,
+and the ExO's standing recommendation is to move to dated ids. A seat
+writing on a branch cannot see the highest number that exists, only the
+highest number on its branch, which is exactly the condition that
+produced both collisions. So this entry takes the date. If the owner
+prefers a sequential id, renumbering one heading is a smaller edit than
+untangling a third collision.
+
+**Owner's decision, 2026-09-25, directed to the engineer seat.** ADR-32
+said "the corpus crons (triage, distill, interpret) stay on Groq's free
+tier, where their small prompts fit". The prompts do fit. The free tier
+still could not carry the work, and this is what that cost, counted in
+Neon on 2026-09-25:
+
+- 8,956 papers ingested, 4,973 of them never triaged
+- 164 papers read in full, out of 8,956
+- 746 claims, 693 of them with no evidence grade
+- 487 claims waiting to be linked, and interpret drawing 11 to 14 edges
+  a day against that queue
+
+"The prompt fits" was the wrong question. A triage batch fits inside
+Groq's 8,000 tokens per minute with room to spare, and a run still makes
+two calls before the per-minute ceiling refuses the third, then resumes
+tomorrow and does it again. The resume query made that look like patience.
+The library was not reading.
+
+**Decision.** Triage and interpret move to Moonshot's Kimi as PRIMARY,
+the same funded account ADR-32 bought for the press, with Groq's free
+tier kept behind them as a fallback list. Three things make that
+affordable and safe to leave unattended:
+
+1. **A per-run spend cap**, computed from measured token counts and
+   checked before each call, so a run stops at its allowance rather than
+   one call past it. $0.60 a run for triage, $0.30 for interpret, which
+   projects $27 a month if every cap fires every day and far less once
+   the backlogs are gone. `python3 pipeline/budget.py` prints the
+   projection and fails if the caps are raised past the ceiling
+   docs/finance/opex.md carries.
+2. **A schedule that respects organization concurrency 1.** Moonshot
+   allows this account one call at a time, so the press's band
+   (09:00-11:00 UTC, which includes the chair's manual rehearsal), triage
+   (12:00-13:00) and interpret (14:00-15:00) are declared in
+   `pipeline/llm.py` KIMI_WINDOWS and checked in CI. No cron moved; what
+   changed is that the existing slots are now load-bearing and enforced.
+3. **A rehearsal each, before the deploy.** Per
+   docs/agents/runtime-changes.md, a provider change gets three gates and
+   the third is a real call. Both jobs now have `preflight` and
+   `rehearse` functions, and both rehearsals can fail: triage's refuses a
+   model that answers for part of a batch, interpret's refuses one that
+   relates everything or nothing.
+
+**What does not move.** Distill stays on Groq, exactly as ADR-32 put it,
+because the owner's directive named triage and interpret and no more.
+Distill is the step that reads papers in full and it is the obvious next
+candidate; that is a ledger proposal (docs/ideas.md, 2026-09-26) and not
+an action taken here. The Groq fallback lists are real rather than
+decorative for these two jobs, which is the difference from the press:
+`budget.check_cron_requests` proves every Groq entry can take the job's
+own request, with 2,087 tokens of headroom on a triage batch. The press
+cannot say that and its Groq entries remain a last resort.
+
+**What ADR-32 keeps.** Everything else. The press writes on Kimi, Groq
+stays the corpus's cheap brain wherever the free tier can actually
+finish the work, and sovereign hosting is still the destination.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.**
+
+Recorded this way because L-A16 in docs/standards/lessons.md requires it:
+configured is not in effect, and a well-built fallback makes the gap
+silent. Nothing below has run against a provider. The engineer runner has
+no Modal CLI and no credentials (`modal: command not found`, verified this
+run), and docs/agents/runtime-changes.md puts the deploy in the chair's
+hands anyway, so this seat could not have activated it even with a token.
+
+Two things are therefore true at once and neither should be read as the
+other. The arithmetic is measured: `python3 pipeline/budget.py` passes and
+prints every number in this entry, and 277 Python tests and 66 Node tests
+pass. No Kimi call has been made by either job.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails:
+
+```bash
+# the schema, once: papers.fulltext_chars and nothing else is new
+modal run pipeline/db_setup.py::apply_schema
+
+# triage
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::drain \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py --max-calls 2 \
+  && modal deploy pipeline/triage.py
+
+# interpret
+python3 pipeline/budget.py \
+  && modal run pipeline/interpret.py::preflight \
+  && modal run pipeline/interpret.py::drain \
+  && modal run pipeline/interpret.py::rehearse \
+  && modal run pipeline/interpret.py --max-claims 2 \
+  && modal deploy pipeline/interpret.py
+
+# the grading backfill, one time, dry run first. Costs $0: no model call.
+modal run pipeline/backfill_grades.py::count
+modal run pipeline/backfill_grades.py::backfill
+
+# distill, redeployed so it starts writing papers.fulltext_chars
+modal deploy pipeline/distill.py
+
+# the press, redeployed so the issue carries the five counts
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+`drain` is the dry run the owner's directive asked for: it holds no model
+secret, so it cannot call anything, and it prints the queue depth, the
+runs the cap allows and the total cost before a cent is spent. `rehearse`
+is the third gate of the ladder: one real call, no database credential in
+the container, and it raises rather than passing if a fallback answered
+instead of the head of the list.
+
+**Do the Kimi steps outside 11:00-15:00 UTC.** Organization concurrency is
+1 and the corpus crons own that band once deployed. A rehearsal inside it
+collides with a live run, which is
+INC-2026-09-24-kimi-org-concurrency exactly.
+
+**Rollback** is `git revert` of the pull request and `modal deploy` of
+`pipeline/triage.py`, `pipeline/interpret.py`, `pipeline/distill.py` and
+`pipeline/weekly.py`. The schema column and the backfilled grades are
+additive and need no undo: `fulltext_chars` goes unread and the grades
+stay correct, since they were computed by the same rules the live grader
+uses.
+
+## ADR-2026-09-26b: Triage is a log with a history, and the claim taxonomy is closed
+
+**A dated id again, with a letter.** The entry above explains why this file
+moved to dated ids. Two entries on one day need one character to separate
+them, which is still cheaper than a third sequential collision.
+
+**Owner's directive, 2026-09-25, to the engineer seat.** Research on
+reasoning models has to reach the corpus. 209 papers in the corpus have
+"reasoning" in the title, 147 were never triaged, and of the 62 that were,
+47 went to `index` against 14 to `distill`, because `prompts/triage.md`
+rewarded a "construction technique" and a reasoning paper's contribution is
+usually a training recipe. The research seat wrote the rubric and the
+`reasoning` topic (PR #109). Three decisions were needed to apply them.
+
+**1. A revised rubric re-judges the papers it was written for, and the
+re-judgment is an append.** A paper may now hold more than one row in
+`triage_log`. `latest_triage`, a new view, is the newest decision per paper
+and the only row anything downstream reads.
+
+Alternatives weighed. *UPDATE the existing row*: the smallest diff, and it
+destroys the thing the table is for. `db/schema.sql` says the log doubles
+as the eval set for the recursive loop, and two rubrics disagreeing about
+one paper is the most valuable row in that set. *Delete the row and let the
+paper fall back into `triage_queue`*: the resume query would then be
+telling the truth about a queue and lying about history, and the count of
+papers ever judged would go down over time. *A separate `retriage_log`
+table*: every consumer would have to know about both, and the one that
+forgot would be wrong silently.
+
+The cost of appending is that a consumer joining `triage_log` for "this
+paper's decision" gets one row per decision the paper has ever had. That is
+not theoretical and it is why this change touches five files that have
+nothing to do with reasoning: a claim would have entered the digest payload
+twice, a paper would have been read in full twice in one distill run, an
+author's paper count in the MCP server would have inflated without them
+writing anything, and the weekly issue would have said it triaged 47 papers
+it triaged in September.
+
+**2. The claim taxonomy is closed and enforced where claims are written.**
+`prompts/distill.md` has always called its topic list closed and nothing
+checked, so 3.9% of tag applications were off it: 18 claims carry a
+non-breaking-hyphen twin of a real topic and are invisible to every query
+the product runs, and 22 tags were invented outright. `pipeline/topics.py`
+is now the only place that decides what a topic is.
+
+It folds spelling and refuses to fold meaning. `Post-Training` spelled with a
+U+2011 becomes plain `post-training`, because that is typography. `training` is dropped rather
+than promoted to `post-training`, because a fold that guesses would write
+tags the distiller never chose and the column would stop being evidence.
+Dropped tags are counted and printed, which turns a silent 3.9% into a
+number in the run log and a proposal for the seat that owns the prompt.
+
+Alternatives weighed. *A CHECK constraint or an enum on `claims.topics`*:
+the database would reject the whole insert over one bad tag, so a good
+claim would be lost to a typo, and the list lives in a prompt the research
+seat owns under ADR-12, which must be able to change without a migration.
+*Accept everything and clean up in a query later*: that is the status quo,
+and the cleanup never came. *Normalize at read time in each consumer*:
+three consumers, three copies, one of them wrong.
+
+**3. The reasoning priority sorts inside each tier, never ahead of the
+tiers.** Reasoning papers are drained first within every tier, and the
+interleaved tier quota that fixed the firehose starvation (`TIER_WEIGHTS`,
+2,445 unread papers) is untouched. A priority implemented as a global sort
+would have re-created that bug with a different favourite. Matching is on
+the title alone: half the corpus mentions reasoning in an abstract, and a
+priority that covers everything is not a priority.
+
+**Status: DORMANT as of 2026-09-26. Written, tested, not in effect.** Same
+reason as the entry above, and L-A16 requires it said plainly: this runner
+has no Modal CLI (`modal: command not found`, verified again this run) and
+no credentials, and the deploy is the chair's under
+docs/agents/runtime-changes.md. 307 Python tests pass and
+`python3 pipeline/budget.py` passes with real tiktoken counts. The rubric
+has judged no paper.
+
+**What turns it on**, in this order, and the chain stops at the first `&&`
+that fails. Do the Kimi steps outside 11:00-15:00 UTC, or inside the
+13:00-14:00 margin `pipeline/llm.py` keeps empty: organization concurrency
+is 1.
+
+```bash
+# the schema: claims.prompt_sha, triage_log.method, the latest_triage view
+modal run pipeline/db_setup.py::apply_schema
+
+# ingest, redeployed because sources.yaml is bundled into the image and two
+# reasoning feeds were added to it (ai2, lilianweng)
+modal deploy pipeline/ingest.py
+
+# triage, on the new rubric. The reasoning-first drain comes with it.
+python3 pipeline/budget.py \
+  && modal run pipeline/triage.py::preflight \
+  && modal run pipeline/triage.py::rehearse \
+  && modal run pipeline/triage.py::drain \
+  && modal deploy pipeline/triage.py
+
+# the 47 reasoning papers at index, judged again. Dry run first.
+modal run pipeline/triage.py::retriage_plan
+modal run pipeline/triage.py::retriage
+
+# distill, which now enforces the taxonomy and stamps claims.prompt_sha
+modal deploy pipeline/distill.py
+
+# the 18 invisible claims, repaired. Costs $0: no model, no provider secret.
+modal run pipeline/backfill_topics.py::count
+modal run pipeline/backfill_topics.py::backfill
+
+# the press, redeployed for the latest_triage joins and the honest triaged count
+python3 pipeline/budget.py \
+  && modal run pipeline/weekly.py::preflight \
+  && modal run pipeline/weekly.py::rehearse \
+  && modal deploy pipeline/weekly.py
+```
+
+**What it costs.** The rubric makes the triage prompt 1133 tokens instead
+of 728, so a call is $0.00852 at the ceiling instead of $0.00814 and the
+$0.60 cap buys 70 calls instead of 73. The re-triage is about $0.04 once,
+under a $0.10 cap of its own. The two new feeds add 78 items to the triage
+queue on their first run and a handful a month after that. Nothing here
+changes the $27.00 monthly ceiling in docs/finance/opex.md.
+
+**Rollback.** `git revert` of the pull request, then `modal deploy` of
+`pipeline/triage.py`, `pipeline/distill.py`, `pipeline/weekly.py` and
+`pipeline/ingest.py`. The schema is additive and needs no undo: a dropped
+`latest_triage` view leaves `triage_log` exactly as it was, and
+`claims.prompt_sha` and `triage_log.method` go unread. The one thing a
+revert does not undo is the re-triage rows, and it should not: they are a
+record of a judgment that was made. Reverting the rubric without reverting
+them leaves papers in `distill_queue` that the old rubric would not have
+sent there, which is a deliberate outcome rather than a leak.
+## ADR-2026-09-26-board: The board is a ref in this repository, not a table and not a vendor
+
+**SUPERSEDED 2026-09-28 by ADR-2026-09-28-board-client.** The constraint this
+decision was built on ended two days after it was written: the owner put
+`BOARD_RUNTIME_TOKEN` into all twelve seat workflows and stood the board up at
+board.libraryofalexandria.dev. Everything below is kept because the reasoning
+is still the reasoning, and because a decision that vanishes when it is
+overturned teaches the next reader nothing. The ref, `board/views.json` and the
+`ALX-<n>` allocator are gone from the tree.
+
+**A dated id with a slug, not ADR-36.** Sequential ids have collided twice in
+this file, and this branch already carries `ADR-2026-09-26` for the corpus
+decision, so a bare date can collide too. The slug settles it.
+
+**Status.** Accepted 2026-09-26, owner-directed. HQ ADR-037 item 1, relayed
+live through the PM's sync session (PR #113): "the task manager/board that
+replaces Linear: own store, seats cannot create views, run reports live on the
+board."
+
+**Decision.** The board's state is an append-only log of JSON events on a
+dedicated ref named `board`, one file per event under `board/events/`, written
+only by `tools/board.py`. Its views are a separate file, `board/views.json`, on
+`main`. The current board is a fold over the log, and `python3 tools/board.py
+show` is the read path.
+
+**Why not Neon, which is the database of record.** The only database credential
+a seat's run holds is `NEON_RO_URL`, read-only on purpose. A Postgres board
+means minting a writable URL and handing it to all twelve seats, so the price
+of a board would be that every agent run can write the corpus. That is an
+authority change rather than a storage choice, and it belongs with the
+`workflow`-scoped token question on
+docs/agents/pending-workflow-changes.md rather than inside a storage decision.
+
+**Why not `main`.** A seat may not push to main, so a report would travel by
+pull request and land only after a merge, which is the moment a board stops
+being worth reading. And since 2026-09-25 a push to main runs
+`deploy-main.yml`; twelve seats reporting twice a day would spend 24 production
+deploys a day against the 100-a-day limit that HQ incident 5 already cost a day
+of production builds.
+
+**What the ref buys.** Conflicts are impossible rather than handled, because a
+run report's path carries the run id and the attempt and an item patch's path
+carries a hash of itself, so two writers never address one path. A second post
+of the same run attempt writes nothing, which is what an `if: always()` step
+firing twice should cost. The history is the audit, since nothing is
+overwritten. And it is free.
+
+**The cost, stated.** Reading the board folds every event, so the read grows
+with the log. Twelve seats reporting twice a day is about 9,000 files a year,
+which `git archive` hands over in one subprocess, and the whole board today is
+one 1,029-byte request. When that stops being true the fix is a rolled-up
+snapshot on the same ref, which is in the ledger as an idea rather than in the
+code.
+
+**How "seats cannot create views" is enforced.** The views are on main, so a
+seat can edit them on its own branch and see the result inside its own run, and
+cannot show that view to anyone else. `tools/board.py` has no command that
+writes a view, and an item whose status is not one of the declared columns is
+refused before it is written, with the refusal naming the file. Items
+themselves stay open to every seat, with `by` recorded on each event. That last
+part is a reading of the ruling rather than a quotation of it, and it is one
+check away from the stricter reading if the owner meant items too.
+
+**Consequences.** ADR-9's blackboard now has a second instance: the pipeline's
+workers coordinate through the schema, and the seats coordinate through this
+ref. The board is a window and not a gate, so `tools/board.py report` exits 0
+when it cannot write and no seat's run goes red over a report. The frontend
+seat's read-only view is the next slice and reads the ref directly, with both
+unauthenticated paths written out in docs/board.md. The workflow step that
+posts the report is queued in pending-workflow-changes.md item 5, because no
+seat can push `.github/workflows/`, so until a hand applies it the board holds
+only what a seat writes by hand.
+
+**Rollback.** `git revert` the pull request and `git push origin --delete
+board`. Nothing reads the ref except the tool, nothing deploys from it, and
+nothing on main depends on it.
+
+**Amended 2026-09-27 (engineer, run 6), two clauses.** Both are the same
+decision carried one step further rather than reversed, and both are recorded
+here because a reader of this ADR would otherwise be wrong about the store.
+
+*The rolled-up snapshot landed now, not "when that stops being true."* This
+ADR put it in the ledger against the day the log gets big. The reason it was
+built at 4 events instead is the consumer rather than the size: the frontend
+seat's read-only view is the next slice, and the honest instruction in
+docs/board.md was "fetch a tarball of the ref and fold it in your render
+path." Shipping that instruction and then replacing it would mean building the
+UI twice. `board/state.json` is written after every event, read in one
+unauthenticated request, and still derived, so the log stays the audit and the
+truth.
+
+*"Conflicts are impossible rather than handled" now has exactly one exception,
+and it is handled.* Every event path still carries a run id or a payload hash,
+so no two writers ever address one event path. The snapshot is the store's
+only mutable path, so it is the only place two writers can lose each other's
+work, and it is written with a compare-and-swap on the blob's sha plus a
+re-fold of the log when that sha is stale. A writer working from a stale read
+is refused rather than allowed to drop another writer's event, and it answers
+the refusal by reading the log again. A snapshot that cannot be written is not
+an error, because the log is the source of truth and the next writer repairs
+the file.
+
+*One thing this ADR did not decide, now decided in code.* Item ids came from
+whoever typed the command, and an id collision is silent here: item events are
+patches folded by id, so two seats naming one id write two valid events and the
+fold merges two pieces of work into one card. The board now issues `ALX-<n>`
+itself, reserving one file per id under `board/ids/` whose path is the id and
+nothing else, written with a create that fails when the path exists. That is a
+check rather than a convention, which is the difference between this allocator
+and the incident register's numbering that incident 29 records four collisions
+for. `--id` still takes any name, so the two hand-named items keep theirs and
+moving a card still means naming it.
+
+
+## ADR-2026-09-28-board-client: The board is the owner's server, and this repository holds a client
+
+**Status.** Accepted 2026-09-28, owner-directed. Supersedes
+ADR-2026-09-26-board two days after it was written.
+
+**What changed, and it was not an argument.** `docs/standards/pm.md` §14
+(owner, 2026-09-27) says the board at board.libraryofalexandria.dev is the
+state of the work, that every seat reads it at the start of a run and writes to
+it as it works, and that runs on GitHub runners reach it over HTTP with
+`BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` in the environment. Commit 6820ac1
+put both variables into all twelve seat workflows the same day. The board was
+seeded at 19:19 UTC on 2026-09-27 and already holds this company's columns, its
+sprint and sixteen items.
+
+**Decision.** The board is not ours to store. `tools/board.py` is a client of
+the owner's HTTP API and holds no state of its own. The ref-based store
+ADR-2026-09-26-board built is deleted rather than deprecated: `board/` is gone,
+and so are the event log, the snapshot and the `ALX-<n>` allocator.
+
+**Why deleting it beat keeping it as a fallback.** Two boards means every seat
+has to know which one the PM's ceremony reads, and the first time the two
+disagree the answer is whichever one the reader happened to open. The
+fallback's own value was never storage, it was that a seat could write
+somewhere without a credential, and that is exactly the thing that stopped
+being true.
+
+**What survives from the old store.** The part that was never about storage:
+filling a run report in from the Actions environment so twelve workflow files
+can each call one line, and taking the report's one line from the pull
+request's first bullet, which is the owner's correction of 2026-09-26.
+
+**The permission line is checked at both ends.** pm.md §14 gives a seat
+create, move, comment and read, and withholds create-or-rename on a company, a
+sprint, a column and a view. The client has no command for any of those four,
+so the line holds on this side of the wire as well as on the server's. A rule
+only one end checks is incident 20's shape, and this is the cheap half of
+avoiding it.
+
+**Run reports are append-only, which is a design constraint and not a
+detail.** The board's server implements GET and POST; PATCH, PUT and DELETE
+answer 501. A posted report cannot be edited or withdrawn. So `report` is
+called once, in a run's last step, with the run's real outcome, and every write
+command takes `--dry-run` because the other way to learn what a report contains
+is to spend it. Two blank rows this run created while mapping the endpoint are
+on the live board permanently, and only the owner can remove them from the
+store.
+
+**Two places the documented API and the live API disagree.** A move needs
+`seat` in its body, which pm.md §14's example omits, and it takes `column_id`
+as a uuid and refuses a column name, so every mover has to read the board
+first. The client does both for the caller. Reported to the owner in the pull
+request rather than patched into the vendored standard, per
+docs/agents/cross-repo-law.md.

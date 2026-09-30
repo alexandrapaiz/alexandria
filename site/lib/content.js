@@ -1,5 +1,8 @@
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+
+import { latestValidation, readProvenance } from "./skill-provenance.js";
 
 // The digest is free in full (docs/vision.md §0, amended 2026-09-17), so an
 // issue has no teaser split and no entitlement check: the whole body is
@@ -81,36 +84,63 @@ export function weekRange(week) {
   return `${month(monday)} ${monday.getUTCDate()}–${tail}, ${sunday.getUTCFullYear()}`;
 }
 
+const VALIDATION_DIR = path.join(SKILLS_DIR, "_validation", "results");
+
 export function listSkills() {
   if (!fs.existsSync(SKILLS_DIR)) return [];
+  const bundles = listValidations();
   return fs
     .readdirSync(SKILLS_DIR, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => {
       const file = path.join(SKILLS_DIR, d.name, "SKILL.md");
       if (!fs.existsSync(file)) return null;
-      return parseSkill(fs.readFileSync(file, "utf8"));
+      return parseSkill(fs.readFileSync(file, "utf8"), bundles);
     })
     .filter(Boolean);
 }
 
-function parseSkill(raw) {
-  const m = raw.match(/^---\n([\s\S]*?)\n---/);
-  const fm = m ? m[1] : "";
-  const get = (key) => {
-    const line = fm.match(new RegExp(`^${key}:\\s*(.+)$`, "m"));
-    return line ? line[1].trim().replace(/^"|"$/g, "") : "";
-  };
-  const papers = [...fm.matchAll(/^\s+- "(.+?)"$/gm)].map((x) => x[1]);
+// Every recorded trigger-test run. A bundle that will not parse is skipped
+// rather than thrown: one corrupt receipt must not take the catalogue down
+// with it, and a skill with no readable receipt already renders as unmeasured.
+export function listValidations() {
+  if (!fs.existsSync(VALIDATION_DIR)) return [];
+  return fs
+    .readdirSync(VALIDATION_DIR)
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => {
+      try {
+        return JSON.parse(fs.readFileSync(path.join(VALIDATION_DIR, f), "utf8"));
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
+// The same digest skills/_validation/trigger_test.py records per suite:
+// sha256 of the file's bytes, first 16 hex characters. Computed here so the
+// page can say whether the receipt describes the text it is showing.
+export function skillSha(raw) {
+  return crypto.createHash("sha256").update(raw, "utf8").digest("hex").slice(0, 16);
+}
+
+function parseSkill(raw, bundles = []) {
+  // Provenance is nested under `provenance:` in the frontmatter, so it is read
+  // structurally by site/lib/skill-provenance.js rather than by key regex.
+  const p = readProvenance(raw);
   return {
-    name: get("name"),
-    description: get("description"),
-    version: get("version"),
-    status: get("status"),
-    validated: get("validated"),
-    papers,
+    name: p.name,
+    description: p.description,
+    version: p.version,
+    status: p.status,
+    extracted: p.extracted,
+    validated: p.validated,
+    claims: p.claims,
+    papers: p.papers,
+    validation: latestValidation(bundles, p.name, skillSha(raw)),
     // The skill file itself is the spine's product, so the body is read here
     // but only ever handed to an entitled visitor (site/lib/entitlement.js).
-    body: m ? raw.slice(m[0].length).trim() : raw.trim(),
+    body: p.body,
   };
 }
