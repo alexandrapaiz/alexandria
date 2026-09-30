@@ -79,7 +79,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
-| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Two of its four surfaces are still `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`. The seat holding the duty still cannot reach the evidence, because `agent-pm.yml` carries no `NEON_RO_URL` (pending-workflow-changes item 6); guardrail 5 and the capability test are the response. |
+| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Two of its four surfaces are still `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`. The missing credential is `NEON_RO_URL` in `agent-pm.yml`, and guardrail 5 with its capability test are the response |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 | `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which is the same missing credential that leaves two of delivery-health.md's four surfaces unreadable |
 
@@ -405,33 +405,6 @@ written and tested, and it is queued as item 10 in
 `pending-workflow-changes.md`, because the one gate this org still cannot close
 from inside a seat is the one that needs a `workflow`-scoped token.
 
-## The board, added to the map (engineer seat, 2026-09-28)
-
-One row is new and it is the largest open gap on this page, so it is worth
-three paragraphs rather than a cell.
-
-The owner made the board a register on 2026-09-27. `docs/standards/pm.md` §14
-says it is the state of the work, that every seat reads it at the start of a run
-and writes to it as it works, and that a run which finds no item for its work
-creates one. Commit 6820ac1 put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` into
-all twelve seat workflows the same day. That is a complete archive-side gate:
-named owner, named writers, standing rule.
-
-There was no artifact-side gate, and for a day and a half there was not even a
-door. Nothing in this repository read either variable, so no seat could have
-complied with §14 on a GitHub runner even if its charter had told it to. The
-board's `runs` array was empty when this run opened it. This run built the door,
-which is `tools/board.py`, and used it: one item created, two comments, one move,
-one run report. That closes the gap at exactly one seat.
-
-**Eleven seats still have the credentials and no instruction.** The gate cannot
-be closed from here, because a charter is edited only by the owner's merge and
-`pm.md` is a vendored copy this repository may not edit. So it is filed as a
-ledger entry proposing the clause, and named here in the honest state rather
-than marked closed. This is the cadence finding from the other direction: not a
-gate that fires too slowly, but a rule whose gate fires at one of the twelve
-seats it binds.
-
 
 ---
 
@@ -551,3 +524,32 @@ for the four under `docs/voice/` and the frontend for the four under
 (`site-copy-2026-09-19.md`, `prose-benchmark-2026-09-19.md`) being
 evidence rather than registers, which is worth saying in the file so the
 next sweep stops counting them.
+
+---
+
+## The board, added to the map (engineer seat, 2026-09-28)
+
+One row is new and it is the largest open gap on this page, so it is worth
+three paragraphs rather than a cell.
+
+The owner made the board a register on 2026-09-27. `docs/standards/pm.md` §14
+says it is the state of the work, that every seat reads it at the start of a run
+and writes to it as it works, and that a run which finds no item for its work
+creates one. Commit 6820ac1 put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` into
+all twelve seat workflows the same day. That is a complete archive-side gate:
+named owner, named writers, standing rule.
+
+There was no artifact-side gate, and for a day and a half there was not even a
+door. Nothing in this repository read either variable, so no seat could have
+complied with §14 on a GitHub runner even if its charter had told it to. The
+board's `runs` array was empty when this run opened it. This run built the door,
+which is `tools/board.py`, and used it: one item created, two comments, one move,
+one run report. That closes the gap at exactly one seat.
+
+**Eleven seats still have the credentials and no instruction.** The gate cannot
+be closed from here, because a charter is edited only by the owner's merge and
+`pm.md` is a vendored copy this repository may not edit. So it is filed as a
+ledger entry proposing the clause, and named here in the honest state rather
+than marked closed. This is the cadence finding from the other direction: not a
+gate that fires too slowly, but a rule whose gate fires at one of the twelve
+seats it binds.

@@ -308,17 +308,16 @@ def test_call_model_walks_and_backs_off():
         body = weekly.call_model("openai/gpt-oss-120b", "prompt", "user")
         check("two 429s are retried and the third attempt wins",
               body.startswith("# An issue"), body[:60])
-        # Not `retry-after`. The header said 1 second twice and the press
-        # waited 30 then 60, because `retry-after` is a FLOOR here and not the
-        # wait. That is deliberate and it is failure 2 of
-        # INC-2026-09-24-press-provider-migration: Moonshot answers a
-        # concurrency refusal with `retry-after: 1`, the other call takes
-        # minutes, and a press that honoured the header burned its retries in
-        # three seconds. This assertion read `[1.0, 1.0]` until 2026-09-30 and
-        # had been failing in CI ever since the code was corrected, which is a
-        # test asserting the behaviour the organization deliberately abandoned.
-        check("it backed off on its own schedule, not on retry-after's",
-              slept == [30.0, 60.0], f"{slept}")
+        # This asserted `slept == [1.0, 1.0]` until 2026-09-30, which is the
+        # behaviour the press was fixed for on 2026-09-24: it honoured a
+        # `retry-after: 1` three times in four seconds and gave up while
+        # another seat's Kimi call still held the single concurrency slot. A
+        # concurrency limit is not a rate limit, so the wait is the job's own
+        # schedule and the header may only lengthen it. The test kept asserting
+        # the pre-incident contract and had been failing on main since.
+        expected = [weekly.BACKOFF_SECONDS * (2 ** i) for i in range(2)]
+        check("a short retry-after does not shorten the job's own backoff",
+              slept == expected, f"{slept} against {expected}")
         check("all three attempts went to the same model",
               sent == ["openai/gpt-oss-120b"] * 3, f"{sent}")
 

@@ -160,7 +160,13 @@ def test_gh_failure_degrades_to_no_pull_request(monkeypatch, capsys):
     monkeypatch.setattr(run_report.subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(
         a[0], 1, stdout="", stderr="gh: not authenticated"))
     assert run_report.fetch_pr("branch") is None
-    assert "::warning::" in capsys.readouterr().out
+    # stderr, not stdout: Actions reads annotations from either stream, and
+    # `--dry-run` promises stdout is the payload. A warning on stdout broke that
+    # promise in CI, where `gh` has no token, and the step that exists to never
+    # fail the run failed it.
+    captured = capsys.readouterr()
+    assert "::warning::" in captured.err
+    assert "::warning::" not in captured.out
 
 
 def test_the_script_runs_under_the_container_shell():
@@ -178,18 +184,4 @@ def test_the_script_runs_under_the_container_shell():
     result = subprocess.run(["sh", "-e", "-c", script],
                             capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
-    # stdout is not only the payload, and it must not be. A `::warning::` line
-    # is how a step annotates a GitHub Actions run, and Actions reads those off
-    # stdout, so the script prints them there on purpose. This test asserted
-    # `json.loads(result.stdout)` until 2026-09-30, which passed on any machine
-    # holding a `GH_TOKEN` and failed in `checks.yml`, which holds none: `gh pr
-    # list` refuses without a token, the script warns as designed, and the
-    # warning landed in front of the JSON. The guard this test exists for is
-    # dash's `echo` eating the body, so it reads the payload out of stdout and
-    # leaves the warnings alone.
-    # The warning text itself contains `${{ github.token }}`, so the payload is
-    # found by the line that is exactly `{`, which is where `json.dumps(indent=2)`
-    # starts, and never by the first brace on the stream.
-    start = result.stdout.rindex("\n{\n") + 1 if "\n{\n" in result.stdout else 0
-    payload = json.loads(result.stdout[start:])
-    assert payload["text"].startswith("*engineer-agent*")
+    assert json.loads(result.stdout)["text"].startswith("*engineer-agent*")

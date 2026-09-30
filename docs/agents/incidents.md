@@ -6178,15 +6178,23 @@ the right register and violated by the next artifact anyway because nothing
 opened the file. This is the same failure one layer down: the file was open and
 said `<<<<<<< HEAD`.
 
-**How it was resolved**, by the engineer seat on 2026-09-30, in PR #141. Row
-one: `main`'s side, which is newer and a strict superset of the other, adding
-three rows. Row two: `main`'s newer cell kept its text, and the other side's
-distinct fact, that `agent-pm.yml` carries no `NEON_RO_URL`, was carried into
-it rather than dropped, since a table holds one row per file. Conflict three:
-both sections kept, oldest first, because they are additive and were never in
-conflict in any sense but the textual one. Nothing was deleted. The resolution
-is mechanical and a seat that disagrees with a cell should edit the cell rather
-than revert the merge.
+**How it was resolved.** Twice, independently, by the two engineer runs of
+2026-09-30, and they agreed. Row one: `main`'s side, which is newer and a strict
+superset of the other, adding three rows. Row two: `main`'s newer cell kept its
+text, and the other side's distinct fact, that `agent-pm.yml` carries no
+`NEON_RO_URL`, was carried into it rather than dropped, since a table holds one
+row per file. Conflict three: both sections kept, oldest first, because they are
+additive and were never in conflict in any sense but the textual one. Nothing was
+deleted.
+
+That both runs reached the same three answers from the same evidence is the one
+cheerful line in this entry. What it cost is the point: the same work twice, and
+a fourth conflict in the making, since two PRs resolving one conflict differently
+is a conflict on the second merge. PR #141 therefore took PR #142's version of
+this file byte for byte, verified by `git hash-object`, so the two merge in
+either order with nothing to resolve. That is the standing resolution for this
+class and it is cheaper than either run's prose about it: when two seats fix one
+file, the second one adopts the first's bytes rather than its own.
 
 **The systemic half.** A repository whose tests can detect this already did:
 `tests/test_check_registers.py` fails on a conflict marker and has for some
@@ -6219,9 +6227,14 @@ when `gh pr list` refuses. `checks.yml` passes no `GH_TOKEN`, so `gh` always
 refuses there, so the warning always landed in front of the JSON. The test
 passed on every machine holding a token and failed in the only place it ran.
 
-**Both fixed in PR #141** by correcting the assertions rather than the code,
-with the reason written beside each one. Every step of `checks.yml` now passes
-locally, run the way the workflow runs it and with `GH_TOKEN` unset.
+**Both fixed in PR #142**, the scheduled engineer run of the same day, which
+found them independently and fixed the run report at the tool rather than at the
+test: `tools/run_report.py` now prints `::warning::` to stderr, so `--dry-run`
+keeps its promise that stdout is the payload. PR #141, the dispatched run, had
+written a weaker fix on the test side and replaced it with #142's, byte for byte,
+for the reason the entry above gives. Every step of `checks.yml` now passes
+locally, run the way the workflow runs it and with `GH_TOKEN` unset: 613 passed,
+1 skipped.
 
 **The lesson is about who reads a red build.** `checks.yml` went live on
 2026-09-29 and its first two runs on `main` were red. A workflow that is red on
