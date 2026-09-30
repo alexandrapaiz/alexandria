@@ -110,10 +110,10 @@ not text to append. The prompt grows by fewer lines than the backlog holds.
 
 ## What this file no longer carries
 
-Cut 2026-09-30 because the bare subject produced all of it unprompted (he-c1,
-he-c3): collapse many low-level tools into few semantic actions, return rich
-errors rather than a bare "failed", make the failure reproducible before
-intervening, change one agent at a time starting upstream. All still correct,
-none worth your context window. **Feedback consistency** (claim 140) went for
-a different reason: the bare model did not state it, but our row carries no
-magnitude and ADR-38 requires a number. Filed for the research seat to price.
+Cut 2026-09-30 because the bare subject produced all of it unprompted: few
+semantic actions over many low-level ones, rich errors over a bare "failed",
+reproduce before intervening, one agent at a time starting upstream. All still
+correct, none worth your context window. **Feedback consistency** (claim 140)
+went for a different reason, that our row carries no magnitude and ADR-38
+requires a number; it is filed for the research seat to price. Receipts:
+`skills/_validation/results/2026-09-30-bare-arm-differential-screen.md`.

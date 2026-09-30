@@ -1,403 +1,120 @@
 ---
 name: context-window-engineering
-description: The subject is the finite token budget an agent runs inside, and which tokens earn a place in it. Use when a fixed cache budget forces you to pick an eviction rule and you are weighing a scoring heuristic against a cheaper one; when an agent's accumulated history has outgrown its window and you must decide what the acting step sees as opposed to what the planning step sees; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a run has to use a value it read once and did not repeat, many steps later, and a compaction step may already have discarded it.
-version: 3
+description: Two measured findings about spending a finite token budget that a strong model does not give unprompted. Use when a fixed KV cache budget forces a choice of eviction rule and you are weighing a scoring heuristic against a cheaper one; when you are about to adopt a ranking or scoring function for compaction and need to know what baseline it has to beat; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a multi-hop question over material larger than the window is answered by folding chunks into a running summary.
+version: 4
 status: active
 provenance:
   extracted: 2026-09-29
   revised: 2026-09-30
   validated: ""
+  differential_screen: "2026-09-30, bare-arm pre-screen on the benchmark-class subject (skills/_validation/results/2026-09-30-bare-arm-differential-screen.md). 2 of 4 candidates qualified, both as partials. cwe-c2 and cwe-c4 passed bare and their sections were cut."
   reviews:
     - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
-    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed; the additions say what has and has not tested each section, which the reader previously had to infer from one empty validated field."
-    - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 85 entered deprecated_claims, contradicted at 0.78 by claim 265, which this skill also cites. Re-read both papers. The claim is kept and the skill is unchanged in substance, because the two rows measure different task subsets of one benchmark and neither refutes the other. The section 'A contradiction inside the cluster' already carried that resolution and now names the deprecation explicitly."
-  claims: [78, 79, 80, 280, 291, 292, 293, 295, 265, 266, 267, 268, 85, 111, 112, 115, 68, 69, 70, 71]
+    - "2026-09-30 (ADR-38, the quality bar): 403 lines to under 120. Cut the read-once-state section and the planner-executor section because the bare subject gave both unprompted and in more useful form (cwe-c2, cwe-c4); cut the streaming-ingestion section because both its papers are multimodal video and nothing in it has ever been measured on a text agent. Claims 85, 265-268, 111, 112, 115 and 68-71 leave the provenance with those sections. Claim 85 is in deprecated_claims and this skill no longer cites it, which resolves the ADR-37 trigger by removing the citation and not by accepting the deprecation: the resolution stands in docs/ideas.md and the two rows still do not contradict each other."
+  claims: [78, 79, 80, 280, 291, 292, 293, 295]
   papers:
     - "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning — arxiv.org/abs/2609.03430"
     - "Revisiting Complete Reasoning Traces for Post-Training — arxiv.org/abs/2609.07103"
     - "PARSER: Read in Parallel, Reason in Depth for Long-Context LLM Agents — arxiv.org/abs/2609.06702"
-    - "Memory as Plans: World-Action Modeling with Memory-Grounded Planning — arxiv.org/abs/2609.11561"
-    - "EmbodiedSkills: A Unified Framework for Orchestrating, Training, and Deploying VLA Agents — arxiv.org/abs/2609.01281"
-    - "ShallowStream: Index Shallow then Answer Deep for Streaming Video Understanding — arxiv.org/abs/2609.02780"
-    - "Beyond Retrieval: Progressive Latent Memory Evolution for Streaming Video Understanding — arxiv.org/abs/2609.04131"
 ---
 
 # Context window engineering
 
-Every long-running agent eventually holds more material than its window takes,
-and something has to go. The usual instinct is to get smarter about choosing:
-rank the tokens, score the memories, keep the best ones. The evidence in this
-cluster says that instinct is aimed at the wrong half of the problem. What
-decides accuracy under a budget is almost entirely **what you protect
-unconditionally** and **which component sees the history at all**. How you rank
-the remainder is close to a rounding error, and the ranking pass is not free.
-
-This skill adds to standard practice rather than replacing it. Keep doing the
-things that already work: measure before you compress, keep the raw transcript
-somewhere outside the window, and check that a summarization step has not
-silently dropped a tool result. What follows is the set of places where recent
-evidence points somewhere other than the obvious.
-
-One boundary worth stating up front. Most of this evidence comes from one
-regime: a short input and a very long generated trace, which is what a
-reasoning model or a long-running agent produces. The opposite shape, a huge
-input and a short answer, has different evidence and is treated separately in
-the section on reading more than fits.
-
-## Protect the input. Sample the rest.
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, strengthened by the source paper's own controlled ablation, which is the section's evidence rather than ours. Eval tasks cwe-t1 and cwe-t2 cover it and have not been run.*
-
-The single largest effect anyone in this cluster measured is not a scoring
-function. It is a rule about what never gets evicted.
-
-A policy that pins the entire prompt and then evicts uniformly at random,
-independently per attention head, computing no score at all, is comparable to
-the strongest training-free cache evictor across four models and six reasoning
-tasks in math, science and code, and it is significantly ahead in 31 of the 60
-baseline comparisons in that grid (Random Attention). Because it skips the
-scoring pass entirely, it serves roughly 32 to 43 percent more tokens per
-second than the strongest scored baseline under paged serving.
-
-The reason is in a controlled ablation, and the ablation is the part to
-remember. Give every method the same rule, keep the prompt, and most of the
-difference between methods disappears. The gain each method receives is ordered
-by how much of the question its score had been losing: the method that retained
-the least of the prompt gains up to 22.5 points, while the method that already
-retained the most never gains more than 2 (Random Attention). Read from the
-other side, the same table is starker. Without prompt protection, random
-eviction scores as low as 0.231 on one task and a plain recency window scores
-0.093. With it, random eviction is the best policy in all four of those
-settings and the recency window is never more than two points below the best
-protected baseline.
-Losing the question is catastrophic. Cutting the generated trace at random is
-not.
-
-The second half of the explanation is why the trace survives random cutting.
-The trace is stored redundantly, in the text because the model restates what it
-is still using, and across attention heads because every head caches its own
-copy and eviction decides per head which copies die (Random Attention). A
-separate paper reaches a compatible conclusion from the training side: attention
-analyses and controlled token-removal studies both find that the intermediate
-tokens of a reasoning trajectory contribute minimally to final reasoning quality
-(Revisiting Complete Reasoning Traces). Two different methods, one about what a
-cache can drop and one about what training data can omit, land on the same
-property of the middle of a trace. Treating that convergence as one finding is
-our reading, not either paper's.
-
-What to do with this:
-
-1. Make prompt protection a hard rule in your compaction step, not something
-   your scoring function is expected to discover. The system prompt, the task
-   statement, and the user's actual question are stated once and cannot be
-   reconstructed.
-2. Before adopting any ranking heuristic, run it against the null: same budget,
-   same protection, random selection for everything else. If it does not beat
-   that, the ranking is buying you a latency cost and nothing else.
-3. Spend the engineering effort on deciding the protected set, since that is
-   where the measured effect is.
-
-## The exception is the one that describes most agents
-
-*Validation: no trial and no consumer report. The regime boundary is the paper's, the protected-region prescription is ours and untested anywhere. Eval task cwe-t3 covers it and has not been run.*
-
-The evidence above has a clean boundary, and the boundary is the part a builder
-needs most, because agent workloads sit inside it more often than reasoning
-benchmarks do.
-
-A signal-free policy fails on exactly one thing: a fact stated once, never
-restated, and needed much later. Random Attention never reproduces a passcode
-announced many compression rounds before the question, while one redundancy-aware
-scored evictor recovers it in a minority of trials and another in about a third
-(Random Attention). The paper draws the implication itself and names the case
-plainly: state that an agent reads once and consults much later is where a
-content-dependent signal earns its cost, and a signal-free default is the wrong
-choice there.
-
-So the question to ask about your own agent is not which compaction algorithm is
-best. It is which of two regimes you are in.
-
-- **Self-restating work**, where the agent keeps rephrasing its current goal and
-  intermediate results as it goes. Random or recency compaction over the trace
-  is close to free here, and a clever scorer earns very little.
-- **Read-once state**, where the agent reads a configuration value, an
-  identifier, a credential handle, or a user correction early and must still
-  have it forty steps later without ever having repeated it. This is the regime
-  the null policy loses, and it is the ordinary shape of a long tool-using
-  session.
-
-The practical move, ours rather than the paper's, follows from that split: if
-your agent has read-once state, do not ask the compaction policy to preserve it
-by luck. Give it a protected region of its own, next to the prompt, and write
-to that region explicitly when the agent learns a durable fact. The paper
-suggests a hybrid that reserves a few slots per head for a cheap content signal
-and says plainly that it did not evaluate one, so the hybrid is a direction
-rather than a result.
-
-## Read in parallel, reason in sequence
-
-*Validation: no trial and no consumer report. Claim and paper provenance only. Eval tasks cwe-t4 and cwe-t5 cover it and have not been run.*
-
-When the material is larger than the window, the common answer is to stream it
-through a compact memory: read a chunk, fold it into a running summary, repeat.
-That design makes document order into dependency depth, and it inherits three
-failures because of it.
-
-The alternative that measured better decouples the two orders. Bind one frozen,
-lightweight subagent to each chunk, give a lead agent the question but never the
-document, and run scatter-gather rounds: the lead broadcasts a focused query,
-every subagent reads its own chunk in parallel and returns a finding or
-abstains, and the lead conditions its next query on what came back (PARSER). On
-multi-hop question answering over contexts from 7K to 896K tokens, this beats
-the strongest sequential-memory baseline by 5.7 points on average with a 4B
-backbone and by 12.0 points at 896K, and a 9B version beats a frontier model
-with a native million-token window by 6.3 points (PARSER).
-
-The controlled experiments are more useful than the headline, because they name
-the failure the architecture removes. Three perturbations were varied
-independently over 512 questions each: where in the document the evidence sits,
-whether the evidence appears in its logical dependency order or reversed, and
-how far apart two pieces of evidence are. Sequential memory swings on all three.
-Parallel reading stays nearly flat, because every chunk is re-read under a fresh
-query each round, so access is symmetric with respect to position (PARSER). If
-your long-context system is failing in a way that moves when you shuffle the
-input, that is the diagnosis.
-
-Four design details from the full text that the result depends on:
-
-1. **Chunk size matters, and smaller is better within the range tested.**
-   Removing chunking entirely, so one subagent reads the whole document, drops
-   accuracy notably, especially on the long subsets, and performance degrades
-   steadily as chunk size grows.
-2. **The subagents can be small and frozen.** Going from a 2B to a 4B subagent
-   improves the average from 78.26 to 84.57, and going to 9B saturates. The
-   reading task is genuinely easy once the query is focused and the span is
-   short.
-3. **Only the lead agent needs training.** All the learnable behavior sits in
-   the lead, optimized with reinforcement learning against a binary exact-match
-   reward, with observation tokens masked out of the gradient (PARSER). The same
-   lead agent also coordinated thinking subagents and shell-tool search
-   subagents without retraining.
-4. **The known failure is an unverifiable finding.** A subagent sees only the
-   query and its own chunk, not the reasoning history, so an underspecified
-   query can produce a confident local conclusion the lead cannot check against
-   a source, and the lead may over-trust it. The paper reports this as
-   occasional and says cross-validation across subagents usually catches it.
-   Our addition, not the paper's: have subagents return a span or quotation with
-   every finding, so the aggregation step has something to check.
-
-## Give history to the planner, not to the executor
-
-*Validation: no trial and no consumer report. The strongest generalisation in this skill and the least directly evidenced outside robotics, so treat the architecture as carried and the margin as not. Eval task cwe-t6 covers it and has not been run.*
-
-The third pattern is the one that generalizes furthest, and it is the reason
-this cluster holds together. In all three settings the winning move is the same:
-stop feeding accumulated history to the component that acts.
-
-A robotics framework makes this explicit. Instead of conditioning the action
-model on a growing visual history, it stores each completed segment as a record
-with a language instruction and a few frames, uses that episodic record at
-planning time to produce a compact next-segment plan, and hands the executor
-only that plan (Memory as Plans). The executor's context length stays fixed. The
-reported result is 83.3 percent overall success on a memory-dependent
-manipulation benchmark and 78.0 percent on real-robot tasks, with executor
-latency approximately constant as task history grows.
-
-The structural claim is separable from the robots, and it is the transferable
-part: **long-horizon history is evidence for deciding what to do next, not input
-for doing it.** Whether the executor is a robot arm, a code-writing subagent, or
-a tool call, the same split applies. Let a planning step read the long record
-and emit a short, explicit instruction. Let the acting step run against a
-bounded context it can cache.
-
-### A contradiction inside the cluster, and what it actually is
-
-Our claim graph records a contradiction here, between the 83.3 percent above and
-a second paper reporting 12.5 percent average success on memory-dependent tasks
-from the same benchmark (EmbodiedSkills). As of 2026-09-30 that edge carries
-enough confidence, 0.78, to put the 12.5 percent row in the library's
-`deprecated_claims` view, which is the signal that normally retires a sentence
-from a skill. This one is not retired, and the reason belongs in the skill
-rather than in a commit message. Reading both papers resolves the edge, and the
-resolution is worth more than the edge was.
-
-The numbers are measured on different task sets. The 12.5 percent is a
-macro-average over the four tasks that require multiple past observations, where
-that paper leads every published baseline it lists, the best of which reaches
-7.3 percent. The 83.3 percent is an overall average across the benchmark's full
-nine tasks, five of which require only a single past observation. On the same
-four multi-observation tasks, the memory-as-plans system reports 82, 94, 100 and
-96 percent (Memory as Plans), against 19, 9, 6 and 16 percent (EmbodiedSkills).
-
-So the two rows do not contradict each other as propositions, and the
-deprecation is a fact about the graph rather than about the evidence. Both
-numbers are reported accurately by their papers, and both are still true after
-reading. They compare two
-architectures on one benchmark, and the comparison survives the correction: an
-executor conditioned directly on task-adapted history scores in the low tens on
-the tasks that need history, and an executor handed a planner-written plan
-scores in the high eighties to high nineties on those same tasks. Three cautions
-before leaning on it. The two systems were trained differently, so this is not a
-controlled comparison. The planner-based system is not uniformly best, losing on
-two tasks to a growing-visual-window baseline that reaches 100 percent where it
-reaches 66 and 94. And both are robot manipulation, so carrying the number
-across to a text agent is unsupported. What carries is the architecture, not the
-margin.
-
-Our rule of thumb, not the papers': when an agent starts to slow down or
-degrade as a session lengthens, check first whether the acting step is being
-handed the history at all. If it is, the fix is usually a boundary rather than a
-better summarizer.
-
-## Make the steady-state cost cheaper than the answer cost
-
-*Validation: no trial and no consumer report. Claim and paper provenance only, from two video systems. Nothing here has been measured on a text agent. Eval task cwe-t7 covers it and has not been run.*
-
-The last pattern is about when you pay. An agent that watches a stream has an
-asymmetric workload: material arrives continuously, and questions arrive
-occasionally. That makes per-item ingestion cost, not per-question cost, the
-first-order system cost, and most designs get this backwards by running the full
-model over everything on arrival (ShallowStream).
-
-The measured alternative uses only the shallow layers of the model to encode
-incoming frames and build a retrieval index at the same time, keeping an
-always-on lightweight index rather than a full-depth one (ShallowStream). At
-query time it scores candidates using the attention weights those same shallow
-layers already produced, and selects with a diversity-aware rule so the
-retrieved evidence is not all near-duplicates (ShallowStream). Because the full
-model never prefills the stream, the cache stops growing in proportion to model
-depth (ShallowStream). The reported outcome is accuracy on par with the
-strongest streaming methods at a large reduction in per-frame prefill and
-end-to-end latency.
-
-A second streaming system attacks the budget from the storage side. Its
-argument is that keeping history in an external bank and retrieving from it on
-demand leaves the retrieved evidence sitting in the window as variable-length
-extra context, so it moves from storing and retrieving to retrieving and
-internalizing, building a compact working memory that evolves as the stream
-runs (Beyond Retrieval). Concretely it organizes history into short, mid and
-long-term levels under a fixed memory budget with adaptive consolidation
-between them (Beyond Retrieval). Once a query arrives, it
-gives groups of latent tokens progressively expanding scopes so they can pull
-evidence from their level and fold it into a fixed-length representation
-(Beyond Retrieval), and a confidence-guided optimization step refines those
-tokens and the retrieved evidence jointly using group-wise predictive entropy
-(Beyond Retrieval). The transferable shape, and our reading rather than the
-paper's, is the tiering discipline: a fixed total budget, explicit levels, and a
-consolidation rule that runs on arrival instead of a compaction that panics when
-the window fills.
-
-Both of these are multimodal video systems. The mechanism that transfers is the
-asymmetry argument, which is architecture-independent: if ingestion is continuous
-and queries are sparse, the ingestion path must be the cheap one, and it is
-worth using a deliberately weaker model for it. Whether a shallow-layer index
-specifically works for text agents is untested here.
-
-## Where the full text narrows our claim rows
-
-*Validation: this section is itself the validation of the three rows it narrows, done by reading the papers on 2026-09-29 under ADR-35. Eval task cwe-t8 checks that a reader carrying this skill pushes back on the flat version of the row, and has not been run.*
-
-Read the papers before quoting the rows. Three of the rows behind this skill
-read stronger than their source.
-
-- **The strongest claim in the cluster is scoped, and the row states it flat.**
-  Our row says the selection signal used by existing cache compression methods
-  contributes almost nothing to performance. The paper's own limitations section
-  says the significant wins "establish that Random Attention is competitive, not
-  that scores carry no information," restricts the claim to decode-phase
-  eviction with short prompts and long traces against training-free evictors,
-  calls it a claim about the aggregate rather than every cell, and notes that a
-  non-significant cell is not by itself evidence of equality. Four comparisons
-  across the paper's two accuracy tables favour a baseline significantly.
-- **Matching the strongest evictor has four exceptions.** Our row reports a
-  match across four models and six tasks without naming where it does not hold.
-  Code reasoning is the systematic case, on the two larger models, and the paper
-  traces it to long code prompts consuming up to half the budget before
-  selection starts. The throughput figure carries two limits the row does not.
-  It is measured against one baseline, the only one with a working port on the
-  serving version used, so it is a property of that integration as much as of
-  the algorithm. And it inverts at short generations, where every compressed
-  method serves less than uncompressed attention.
-- **Both redundancies are asserted, one is measured.** Our row states that
-  reasoning traces protect themselves through redundancy in the text and across
-  attention heads. Cross-head pooling is shown directly, but only in a
-  planted-fact probe on one 4B model where the text is non-redundant by
-  construction. Text-level redundancy is inferred rather than measured, and the
-  paper says so. It also reports that a shared draw, keeping the same positions
-  in every head, scores within a couple of points of the per-head version on
-  real traces, which means the cross-head mechanism is a second line of defence
-  rather than the cause of the benchmark result.
-
-All three rows are filed for revision in docs/ideas.md.
-
-One provenance note the rows do not carry. The streaming-video paper behind the
-shallow-index section is labelled "Work in Progress" by its own authors, and the
-complete-reasoning-traces paper is the one paper in this cluster this skill's
-author could not read in full, because arXiv serves no HTML rendering for it. Only its abstract, which is
-peer-reviewed as an EMNLP 2026 Findings paper, was read. Weight both accordingly.
+Two findings, both about a baseline you are probably not running.
 
 ## Apply: the builder's checklist
 
-Before shipping a compaction step, a long-context reader, or a long-running
-session this skill touched:
+1. **Your ranking heuristic has beaten protected-random at the same budget.**
+   Until it has, you do not know the scorer does anything (delta 1).
+2. **Compaction protects the whole prompt outside the score's reach**, where the
+   measured effect lives (delta 1).
+3. **A multi-hop reader re-queries its chunks each round from a lead that never
+   sees the document**, rather than folding chunks into a summary once (delta 2).
+4. **You have shuffled the input and reversed the evidence order.** If accuracy
+   moves, document order has become dependency depth (delta 2).
 
-1. Protected set: is the whole prompt, meaning the system prompt, the task
-   statement and the user's question, pinned unconditionally and never subject
-   to the score?
-2. Null arm: has your ranking heuristic been run against random selection at
-   the same budget with the same protection, and did it win by more than
-   latency?
-3. Read-once state: does every durable fact the agent learns get written to an
-   explicit protected region, rather than left to the compaction policy's luck?
-4. Order sensitivity: does accuracy move when you shuffle the input or reverse
-   the evidence order? If it does, the architecture is making document order
-   into dependency depth, and parallel reading under a fresh query per round is
-   the fix.
-5. History boundary: does only the planning step see accumulated history, with
-   the acting step handed a short explicit instruction and a bounded, cacheable
-   context?
-6. Ingestion asymmetry: when material arrives continuously and questions
-   arrive occasionally, is the ingestion path the deliberately cheap one?
+## Delta 1: the null policy is the baseline, and almost nothing beats it
+
+*Validation: no trial and no consumer report. Bare-arm screen cwe-c1, 2026-09-30: partial. Asked to choose an eviction policy, the bare subject recommended keeping the prompt plus sinks plus a recency window, so the prescription itself is not a delta; it never proposed a random-eviction control and never priced the protected set against the scorer. What qualified is the null arm and the magnitudes. Eval tasks cwe-t1, cwe-t2.*
+
+Pinning the entire prompt and then evicting **uniformly at random, per
+attention head, computing no score at all** is comparable to the strongest
+training-free cache evictor across four models and six reasoning tasks, and
+significantly ahead in 31 of 60 baseline comparisons (Random Attention, claim
+78), while serving **32 to 43 percent more tokens per second** for skipping the
+scoring pass.
+
+The ablation is the part to keep. Give every method the same rule, keep the
+prompt, and most of the difference between methods disappears: the method
+retaining the least of the question **gains up to 22.5 points**, the one already
+retaining the most **never gains more than 2** (claim 79). Random eviction
+scores as low as 0.231 unprotected and is the best policy in all four of those
+settings once protected.
+
+The decision rule: a compaction scorer is an optimisation with a control, and
+the control is protected-random at the same budget. Run it first.
+
+1. Pin the system prompt, task statement and user question unconditionally, not
+   as a scoring bonus. Outside the score.
+2. Build the null arm: same budget, same protection, uniform random eviction per
+   head for the rest.
+3. Adopt the scorer only if it beats the null by more than the **32 to 43
+   percent throughput** the null hands you for free.
+4. Expect the question to be unrecoverable and the trace nearly free to cut,
+   because the trace restates itself (claims 80, 280).
+
+## Delta 2: for multi-hop, re-query in parallel rounds; map-reduce once is not it
+
+*Validation: no trial and no consumer report. Bare-arm screen cwe-c3, 2026-09-30: partial. The bare subject diagnosed the serial recurrence and volunteered the shuffle-and-reverse test, so the diagnostic is not a delta; it then prescribed one-shot parallel extraction into a retrieval index, losing the iterative conditioning that carries multi-hop. Eval tasks cwe-t4, cwe-t5.*
+
+Bind one frozen lightweight subagent to each chunk, give a lead agent the
+question but **never the document**, and run scatter-gather rounds: the lead
+broadcasts a focused query, each subagent reads its own chunk in parallel and
+returns a finding or abstains, and the lead conditions its next query on what
+came back (PARSER, claim 291). On multi-hop QA from 7K to 896K tokens this beat
+the strongest sequential-memory baseline by **5.7 points on average with a 4B
+backbone, 12.0 at 896K**, and a 9B version beat a frontier model with a native
+million-token window by **6.3 points** (claim 292).
+
+Varying evidence position, dependency order and distance independently over 512
+questions each, sequential memory swings on all three and parallel reading stays
+flat, because every chunk is re-read under a fresh query each round (claim 293).
+
+The decision rule: one-shot map-reduce into an index gives up the property that
+matters. The lead's second query must be able to depend on the first round.
+
+1. Chunk, and keep chunks small. One reader over the whole document loses
+   accuracy, worst on the long subsets.
+2. Put a frozen reader on each chunk. **Floor is 4B**: 2B costs six points of
+   average accuracy, 9B saturates, a frontier model here is wasted spend.
+3. Run rounds, not one pass; the lead never sees the document.
+4. Train only the lead if you train anything (claim 295).
+5. Require a quoted span with every finding (ours, not the paper's): a subagent
+   sees only its chunk, so an underspecified query yields an unverifiable
+   finding the lead may over-trust.
 
 ## Caveats
 
-The cache-eviction evidence covers decode-phase eviction on four models, three
-of them one family, all using grouped-query attention with eight or ten
-key-value heads per layer. Architectures where per-head independence is
-unavailable, such as multi-head latent attention or multi-query attention, were
-not tested, so the floor for the cross-head half of the argument is
-grouped-query attention with eight key-value heads per layer; below that there
-are no independent per-head copies to sample within, and only the prompt
-protection carries over. The regime is short prompts and traces of several thousand to 32K
-tokens at 10 to 50 percent compression. Workloads where the input itself fills
-the cache fall outside that regime. Significance is per-comparison with no correction for
-multiple comparisons.
+- Cache-eviction evidence is decode-phase eviction, short prompts, traces of
+  several thousand to 32K tokens at 10 to 50 percent compression, four models,
+  three of one family, all grouped-query attention with 8 or 10 key-value heads
+  per layer. **That is the floor for the per-head half**: under multi-query or
+  latent attention only the prompt protection carries over. Workloads where the
+  input itself fills the cache are outside the regime.
+- Claim 79 reads flatter than its paper, which establishes that random eviction
+  is *competitive*, not that scores carry no information. Four comparisons in its
+  tables favour a baseline significantly, code reasoning is the systematic
+  exception on the two larger models, the throughput figure inverts at short
+  generations, and claim 80's text-level redundancy is inferred, not measured.
+- Parallel-reading evidence is multi-hop QA on two datasets, 4B and 9B backbones
+  from one family, and says nothing about tasks where a chunk cannot be judged in
+  isolation. Claim 280's paper was read in abstract only; arXiv serves no HTML.
 
-The parallel-reading evidence is multi-hop question answering on two datasets,
-one in-distribution and one out, with 4B and 9B backbones from one family. It
-establishes robustness to evidence placement and an accuracy gain over
-sequential memory on that task shape. It does not establish that the pattern
-holds for tasks where a chunk cannot be judged in isolation at all. The floor
-for the reading seat is a 4B frozen open model: 2B costs about six points of
-average accuracy, 9B saturates, and a frontier model in that seat is wasted
-spend. Only the lead agent needs training.
+## What this file no longer carries
 
-The memory-as-plans evidence is robot manipulation in simulation and on one
-real arm, with 50 demonstrations per task, and it depends on segment boundaries
-the benchmark already provides. Automatic segment discovery is named as
-unfinished work by the authors, which matters for any agent setting where the
-segmentation would have to be invented. So the floor for this pattern is a
-setting that already has a natural segment boundary, a completed subtask, a
-merged pull request, a closed ticket. Where there is none, the missing
-prerequisite is the segmenter and not a tuning detail.
-
-The two streaming systems are multimodal video, and every number in them is a
-video benchmark. Nothing here measures a text agent. The tiering floor, if you
-carry the shape across anyway, is the tested configuration: three levels of
-short, mid and long term under one fixed total budget, with consolidation
-running on arrival rather than when the window fills.
-
-This skill revises when its evidence does. If a source claim is contradicted by
-later work, or if a claim row listed above is corrected in the library, the
-section resting on it is rewritten or removed rather than left standing.
+Read-once protected regions and the planner-executor history boundary were cut
+2026-09-30 because the bare subject gave both unprompted and better; streaming
+ingestion was cut because its papers are video and nobody measured the transfer.
+Still do the first two. Receipts, with the bare answers, in
+`skills/_validation/results/2026-09-30-bare-arm-differential-screen.md`.
