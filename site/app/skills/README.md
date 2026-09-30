@@ -58,6 +58,34 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `policy` | object | the task file's pre-registered policy, copied verbatim |
 | `per_task` | array | one row per task: `id`, `control`, `scored_by`, `with_mean`, `without_mean`, `delta`, the raw scores, and a note per repetition |
 | `harness` | string | the runner that produced it |
+| `version` | string | the `version` in the skill's frontmatter when this result was measured |
+| `trigger` | string | what asked for this run: one of ADR-37's four triggers, or `asked for by hand` |
+| `history` | array | one entry per measured version, oldest first. The version history ADR-37 asks for |
+
+### `history`, and what the page owes it
+
+ADR-37's publish clause: the skill's page shows the new version, its eval, and
+the trigger that caused the revision. `history` is where the last of those three
+lives, because a result document describes one run and the reason for a revision
+is a fact about the sequence.
+
+Each entry carries `version`, `date`, `subject_model`, `judge_model`, `verdict`,
+`trigger`, `skill_md_sha256`, `delta` as `{ mean, ci95 }`, and
+`controls_unchanged`. Entries are appended, never rewritten, and an entry never
+contains `per_task` or a nested `history`: the file has to stay a file rather
+than growing by its own square.
+
+Two things a page can now say that it could not before. It can show this
+version's number next to the previous one, which is the honest way to render a
+revision, and it can name the trigger in the reader's words: a claim the skill
+cited was overturned, a newer and narrower result arrived, the field's citations
+moved, or the model the number was measured on changed. A skill whose history
+has one entry is a skill that has been measured once, and the page says that
+rather than implying a trend.
+
+A document written before the history existed has no `history` key. The reader
+treats its top-level fields as a single entry, which is what
+`tools/skill_triggers.py` does, so no page ever has to render a gap.
 
 An arm summary:
 
@@ -120,6 +148,20 @@ never read as a regression.
 The other clauses of that gate are the ban list, the trigger test, the diff
 scope and whether the page still renders. This command does not check them and
 says so in its own output.
+
+`python3 tools/skill_gate.py` is the whole gate, and it is the one a pull request
+runs: scope, the kill switch, provenance against the claim graph, the eval clause
+above, the ban list, the trigger test, and the page. It prints the verdict with
+the reason for every clause and writes the comment the workflow posts.
+`.github/workflows-pending/skill-gate.yml` is that workflow, waiting for a hand.
+
+Two of its clauses are deltas against the base branch rather than absolutes, and
+a page or a piece of copy that quotes the gate should quote it that way. The
+trigger test exits 1 on main today with three standing failures out of 43 cases,
+and every skill in the library carries mechanical ban-list findings, mostly em
+dashes inside its own `papers:` list. So the clauses are that the revision breaks
+no case that passed before it and adds no new tell. Written as absolutes they
+would block every revision of every skill on a debt no revision created.
 
 ## An example task file
 
