@@ -187,6 +187,36 @@ monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
 period, so a seat that follows its naming rule exactly will eventually reuse
 a name. The suffix is how you follow the rule and stay unique.
 
+## Survey the pull requests before you build (company standard L-E10, synced 2026-09-30)
+
+`docs/standards/lessons.md` L-E10: an open card is not evidence that nobody
+built it, so a builder surveys the pull requests before it writes code. Every
+run of this seat starts from `main` with no memory, and `main` is the one
+place where work that is built but unmerged is invisible. A backlog card says
+only that the work has not landed. It says nothing about whether it has been
+done.
+
+So before you write a line of code, two commands, and the results go in the
+PR description as named numbers.
+
+```bash
+gh pr list --state open --json number,title,headRefName
+gh pr list --state closed --limit 50 --search '<the feature in your own words>'
+```
+
+Read every hit whose scope overlaps yours, then pick one of three moves in
+the open: extend the existing branch, propose closing it with a reason, or
+land the stack. Writing another implementation of something that already has
+a branch is never one of the three. A survey nobody can see is
+indistinguishable from a survey nobody ran, which is why the numbers go in
+the description rather than in your reasoning.
+
+This clause exists because the standard arrived here on 2026-09-30 and no
+charter in this repository named it, so nothing made it fire at the moment it
+applies. The generic instruction to read your role's section of the lessons
+file is real and it is not a gate: it tells a seat to read a page, not to run
+a command before a specific act.
+
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a

@@ -1025,6 +1025,66 @@ under ADR-38 as written.
 
 ---
 
+### 13. The skill seat's dispatch prompt names the trigger test and no measurement
+
+**Queued 2026-09-30 by the ExO agent.** This is the §2 charter-versus-prompt
+check, run because this PR edits that charter's run section. It is incident
+25's shape exactly: a duty the charter has that the inline prompt omits.
+
+**Why.** Every seat's charter is two files. There is
+`prompts/skill-agent.md`, which the seat can edit, and there is the inline
+`prompt:` block in `.github/workflows/agent-skill.yml`, which it cannot. The
+inline prompt arrives last and closest, so when the two disagree the run most
+likely obeys the workflow. The live block says:
+
+> draft one evidence-backed skill under skills/ with provenance frontmatter
+> and claim-id citations, include the trigger test in the PR
+
+**The trigger test is the only evidence the dispatch asks for.** After this
+PR the charter requires a differential eval suite, a bare-first pass, a
+measured delta and a status decision, and the prompt still names the one
+measurement that cannot say whether a skill helps. It also predates ADR-37,
+so it says nothing about maintenance coming before creation, and it predates
+ADR-35's reading requirement in everything but spirit.
+
+A seat reading both files has to guess which one governs. That guess is what
+incident 25 cost when the writer's prompt forbade the duty its charter
+assigned, and that item (4a) has been on this page since 2026-09-21.
+
+**How.** Replace the prompt body between `prompt: |` and the
+`Owner instructions` line in `.github/workflows/agent-skill.yml`. This is an
+edit to an existing workflow, so it stays a diff on this page rather than a
+full file in the pending lane.
+
+```diff
+-            skills/ with provenance frontmatter and claim-id citations,
+-            include the trigger test in the PR, and open exactly one pull
+-            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
+-            create`. Write only under skills/, prompts/skill-extract.md,
++            skills/ with provenance frontmatter and claim-id citations.
++            Maintenance comes before creation (ADR-37): read every new
++            consumer report under skills/*/reviews/ and the reading queue
++            first. Meet the bar in the charter's "the bar a skill has to
++            clear" section (ADR-38): deltas the bare model does not already
++            give, procedures with their thresholds, the checklist first,
++            under 120 lines. Ship the skill's differential eval suite with
++            it and put the measured delta in the PR, or write the word
++            unmeasured and say which credential is missing. A trigger test
++            says the skill is found and never that it helps, so report both
++            and never one as the other. Open exactly one pull
++            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
++            create`. Write only under skills/, prompts/skill-extract.md,
+```
+
+**Ordering.** Independent of items 11 and 12, which touch the `claude_args`
+line and the `env:` block of the same file. All three can be applied in one
+hand. Item 11's warning about its non-unique anchor still holds.
+
+**Cost.** $0, and it will raise the seat's turn demand, which is why item 11
+was re-measured to 250 in the same run.
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
