@@ -6115,3 +6115,83 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-standing-defect-unverified-for-three-grades — a defect with a law, two ban-list entries, an incident id and a ledger recommendation was still printed on day four, and the two grades in between never opened the page (2026-09-30, writer seat)
+
+**What repeated.** Incident 20's pattern, which is that recording a ruling is
+not enforcing it, in the form that is hardest to see: everything was
+recorded, by the right seat, in the right register, correctly, and the reader
+still read the false line.
+
+On 2026-09-26 the masthead's claim that the library reads every paper in full
+was cut from `MASTHEAD` in `pipeline/weekly.py`, and canon law 15 was written
+from that specimen. On 2026-09-27 the writer seat found the claim still live
+on the published issue, appended ban list 64 for exactly that failure mode,
+registered `INC-2026-09-27-law-15-live-in-the-archive`, and filed a ledger
+entry for the engineer stating two repairs and a recommendation.
+
+On 2026-09-30, `site/content/issues/2026-W39.md` line 3 still reads:
+
+> *The latest in AI research, read in full and distilled weekly: what's new,
+> what's gaining acceptance, and what newer evidence has overturned.*
+
+Four days. Four registers. Nothing wrong in any of them.
+
+**The second half, which is this seat's own failure.** The editorial grades of
+2026-09-28 and 2026-09-29 both ran against the `digests` row and neither one
+mentions the masthead. The canon's grading procedure said "read the issue" and
+never said which of the three copies of an issue that is: the stored row, the
+page, or the email. The row is the copy a grade reaches most easily and it is
+the only one the standing lines are not in, because `add_masthead` splices the
+constant in on the write path. So the instruction sent both grades to the one
+artifact where the defect is invisible, and both grades were accurate.
+
+**Evidence that the file was open that morning.** Run 18 measured the stored
+row at 1,106 words. This run measures the page at 1,105, with every other
+measurement identical (27 blocks, longest paragraph 141 words, four over 100,
+eight numbers in the heaviest, six link instances over four URLs). The
+difference is the close: the owner's ruling of 2026-09-30 replaced a nine-word
+line with an eight-word one, and the page carries the new one. The page was
+edited that day, to apply that day's ruling, four lines from the bottom of a
+file whose third line breaks a law recorded four days earlier.
+
+**Why it is a class and not a slip.** The ban list's standing rule of
+2026-09-25 requires every new entry to end either in the prompt change that
+enforces it or in the ledger entry saying why no prompt change can reach it.
+Both endings are written once and neither runs again. For an entry the
+generator can be taught that is enough, because the next issue either commits
+the tell or does not. For an entry whose fix belongs to another seat it is not,
+because a ledger filing is a request and a request has no failing state. It
+sits at `proposed`, the artifact stays broken, and nothing turns red. L-A22 in
+docs/standards/lessons.md is the same finding from the other side: a rule
+enforced by a sentence in a file is enforced at the reliability of a model
+reading it.
+
+**Fixes, in the pull request that registered this.**
+
+1. The canon's grading procedure names the artifact by path. The grade reads
+   the page, reads the row as well where the database is reachable and reports
+   any difference between them, and reads the reader-facing constants in
+   `pipeline/` in the same pass. That last duty was written into ban list 61 on
+   2026-09-26 and given to no seat in particular, which is why two runs did
+   not do it.
+2. The grading procedure gains a sixth pass. Every ban-list entry whose ending
+   is a ledger filing is re-verified against the live artifact by every grade
+   until the artifact is clean, and the grade prints the check, its output and
+   how many days the entry has been open. A standing defect that is still true
+   is a FAIL line in every review with the weight of a law.
+3. The ban list's standing rule gains a third ending for that case, and entry
+   75 records the tell.
+4. All three of those are a model reading a file, so the command version is
+   filed in docs/ideas.md for the engineer: a grep for the withdrawn string
+   scoped to `site/content/issues/` and the stored bodies. The scoping is the
+   reason the command did not already exist, because the same grep over the
+   repository fires on the eleven registers that quote the defect while doing
+   their job.
+
+**Blameless note.** No seat in this chain did anything careless. The writer
+runs of 2026-09-28 and 2026-09-29 each found real defects, graded harshly, and
+patched the generator. The 2026-09-27 filing is the most complete ledger entry
+in the file. The defect survived all of it because every artifact produced was
+a description, and the only thing that would have caught it is something that
+runs again and fails.

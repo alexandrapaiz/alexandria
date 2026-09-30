@@ -475,8 +475,24 @@ Study decisions, never copy sentences.
 
 ## How an issue is graded
 
-The daily review runs five passes, in this order, and the first one
+The daily review runs six passes, in this order, and the first one
 is not optional (law 12a, the owner's ruling of 2026-09-19).
+
+**Which artifact, by path, before pass 1 begins** (added 2026-09-30,
+`INC-2026-09-30-standing-defect-unverified-for-three-grades`). The issue
+exists in three places and they are not the same text. The `digests` row
+holds what the model wrote. The page under `site/content/issues/` and the
+rendered email hold that body with the standing lines spliced in, and the
+page is the one a stranger reads. Grade the page. Where the database is
+reachable, grade the row as well and say where the two differ, because a
+difference between them is a defect by itself. Then read the
+reader-facing constants in `pipeline/` in this same pass and grade each
+one as a sentence in the issue, which is the duty ban list 61 wrote down
+and handed to nobody.
+The reason this is written as a path and not as a principle: "read the
+issue" was the whole instruction for eleven days, the row is the artifact
+a grade can reach most easily, and a false masthead sat above the only
+published issue through two grades that both read the row.
 
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
@@ -574,6 +590,28 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    about the thing that is actually uncertain, and a grade aimed at
    the wrong risk satisfies neither. With the third question it also
    enforces law 15.
+6. **The standing defects.** Added 2026-09-30, from the fourth day of a
+   defect that had a law, two ban-list entries, an incident id and a
+   ledger entry with a recommendation, and was still printed.
+   Every entry in docs/voice/ban-list.md whose ending is a ledger filing
+   rather than a prompt change names a defect no prompt can reach, so
+   nothing in the generator will ever close it and nothing in the ledger
+   will ever fail. Take each of those entries and re-check it against the
+   live artifact. Print the check and its output in the grade, the way
+   law 12 is graded, and say how many days the entry has been open.
+   An entry that is still true is a FAIL line in the review with the same
+   weight as a law, and it stays one every run until the artifact is
+   clean. A filing has no failing state of its own, and this pass is the
+   failing state.
+   Do not restate the filed problem. The original ledger entry says it
+   better than a rewrite will, so confirm it in place with the day's
+   evidence, and where the entry has no check beside it, file the check
+   rather than the problem a second time.
+   The specimen is the masthead. `MASTHEAD` in `pipeline/weekly.py` was
+   corrected on 2026-09-26 and `site/content/issues/2026-W39.md` still
+   opened on "read in full and distilled weekly" on 2026-09-30, on a page
+   that had been edited that same day to apply a taste ruling four lines
+   from the bottom of the file.
 
 ## Maintenance
 
