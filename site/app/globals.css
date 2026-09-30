@@ -1340,15 +1340,25 @@ a {
 /* The panel's height change is not animated at all, because the canon bans
    animating layout properties and because the library is a high-frequency
    surface that should feel instant. What is animated is the contents rising
-   into place: 180ms, ease-out, transform and opacity only, on the
-   compositor, and interruptible because a CSS animation restarts cleanly
-   when the row is closed and reopened mid-flight. */
+   into place: transform and opacity only, on the compositor, and
+   interruptible because a CSS animation restarts cleanly when the row is
+   closed and reopened mid-flight.
+
+   It now runs on the house clock and the house curve. It used to carry
+   0.18s and cubic-bezier(0.4, 0, 0.2, 1), which were the only instance of
+   either value in this stylesheet, and the comment above them claimed
+   "ease-out" while that curve is Material's standard one: it eases IN and
+   out, so the contents left the gate slowly, which is precisely the
+   "sluggish" motion.md names in rule 1. var(--ease) is easeOutQuad and
+   actually starts fast. Benchmarked again on this run: Linear runs its whole
+   marketing site on one curve and two clocks, Elicit on one duration,
+   Consensus on one. Ban list entry 25 is the tell this removes. */
 .skill-panel {
   padding-bottom: 24px;
 }
 
 .skill-row[open] > .skill-panel > .skill-panel-in {
-  animation: skill-panel-in 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: skill-panel-in var(--slow) var(--ease) both;
 }
 
 @keyframes skill-panel-in {
