@@ -74,3 +74,87 @@ Questions the reading raised, for the research seat.
 - [ ] question — How often do real agent traces contain a fact stated once and needed more than a budget later? Random Attention names this as the case a signal-free policy loses, says plainly that it never measured the frequency, and calls an agent reading state once and consulting it later the workload where its own method is the wrong default. That frequency decides whether this skill's central recommendation applies to agents at all — asked by skills/context-window-engineering — 2026-09-29
 - [ ] question — Does the protect-the-input finding survive on architectures without per-head independence, such as multi-head latent attention or multi-query attention? Random Attention tested four models that all use grouped-query attention and says the transfer is an inference rather than a measurement — asked by skills/context-window-engineering — 2026-09-29
 - [ ] question — Is there a text-agent equivalent of the shallow-layer index, where a cheap partial forward pass builds the retrieval structure and the full model only runs at answer time? ShallowStream shows it for video and the corpus holds no text result either way — asked by skills/context-window-engineering — 2026-09-29
+
+
+## Queued 2026-09-30 by the skill seat, from the eval run (ADR-36)
+
+This batch is a different shape from the two above it. Those queued the
+papers a new skill needed. This run wrote no new skill; it wrote the eval
+task sets for the six skills already on main, and what the reading turned up
+is that the benchmarks the skills' headline numbers are measured on are
+largely absent from the corpus. Every eval task is the situation a paper
+studied, so a missing benchmark is now missing from the product twice: once
+from the claim and once from the task that tests it.
+
+Every id below was read out of a reference list in this run rather than
+recalled, per L-A12. Where the citing paper gives no arXiv id, the line says
+so instead of guessing one.
+
+- [ ] arxiv:2607.08938 — Better harnesses, smaller models, Yang et al. 2026, the seven-task enterprise agentic suite and the six-category adaptation-failure ontology. This is the load-bearing gap in the library: harness-engineering's two flagship numbers, the harness-alone gain and the 4-to-30-point imitation regression, are both measured on this suite, and the failure ontology is what the source paper uses to explain the regression as a planning-fit loss. Read before anything else here — asked by skills/harness-engineering — 2026-09-30
+- [ ] arxiv:2507.19457 — GEPA, reflective prompt evolution, the harness search actually used to produce the evolved harnesses in that result, so "evolving the harness alone" names a specific method the corpus has never read — asked by skills/harness-engineering — 2026-09-30
+- [ ] arxiv:2509.16941 — SWE-bench Pro, Deng et al. 2025, the 731-instance benchmark whose re-audit the library has read. evaluation-integrity's defect profile, 75 narrow tests against 22 misleading descriptions, is a statement about this dataset, and the four shortcut channels are properties of its environment — asked by skills/evaluation-integrity — 2026-09-30
+- [ ] arxiv:2406.12045 — Tau-bench, Yao et al. 2024, the out-of-domain benchmark DRACO generalises to without a verifier; the generalisation claim in self-improving-post-training-loops rests on a benchmark the corpus does not hold — asked by skills/self-improving-post-training-loops — 2026-09-30
+- [ ] arxiv:2404.07972 — OSWorld, Xie et al. 2024, the environment behind the recursion ablation recursive-harness-self-improvement quotes, 71.97 to 78.98 partial and 37.80 to 42.68 binary — asked by skills/recursive-harness-self-improvement — 2026-09-30
+- [ ] no arXiv id — AppWorld, Trivedi et al., ACL 2024, cited without an id by the paper that reports a 15.9-point gain on it. The largest single number in self-improving-post-training-loops is measured here — asked by skills/self-improving-post-training-loops — 2026-09-30
+- [ ] no arXiv id in the citing paper — SciWorld and BFCL-V3, the two benchmarks the feedback-enrichment result is measured on, cited by arxiv:2609.08404 without ids in its visible reference list. Needed because harness-engineering states feedback consistency as a hard boundary and that is where it was measured — asked by skills/harness-engineering — 2026-09-30
+
+Questions the reading raised, for the research seat.
+
+- [ ] question — Claim 289 is a misreading, and the question is how many others are. It says arxiv.org/abs/2609.09219 observed "30 truthful recoveries and zero neutral recoveries" establishing "a statistically significant positive feedback effect". The paper reports 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, and records both Evidence decisions as Inconclusive. The row merged two numbers and inverted the verdict. It then contradicted the accurate claim 288 at 0.75 confidence, which put a true claim into deprecated_claims. The general defect: interpret has no way to tell two registered experiments inside one paper apart when the paper reuses a word for both, and a same-paper contradicts edge is exactly the signature. Worth a corpus-wide pass over same-paper contradicts edges — asked by skills/evaluation-integrity — 2026-09-30
+- [ ] question — Is a with-versus-without eval written by the seat that wrote the skill measuring the skill, or the author's model of the skill? The tasks in this run were written from the papers, but by the same seat, in the same week, with the skill text in context. evaluation-integrity's own first section says a generated instrument is an attack surface and that the honest test needs an oracle independent of the rubric. This library now has 66 tasks with no such independence. The cheapest available check is whether the unaided arm behaves as each task's `without_skill` field predicts, which was written before any run — asked by the skill seat, for all six skills — 2026-09-30
+- [ ] question — Does any published work measure with-versus-without for a skill whose content is research findings rather than a task procedure? The 2026-09-26 batch queued this once for skills/skill-library-engineering. Re-raised because it is now the premise of the whole eval programme rather than one skill's caveat, and every measurement the library cites is on task-procedure skills — asked by the skill seat — 2026-09-30
+- [ ] question — arxiv:2609.07103, Revisiting Complete Reasoning Traces for Post-Training, publishes no full HTML and was read at the abstract only, for the second run running. It is one of the two independent lines behind context-window-engineering's claim that the middle of a trace is droppable. Either get the PDF into the corpus or mark the convergence in that skill as resting on one paper — asked by skills/context-window-engineering — 2026-09-30
+
+
+## Queued 2026-09-30 by skills/agent-containment and skills/agent-security-measurement
+
+Two skills, ten papers read in full, and the first thing the reading found is
+about the pipeline rather than the literature. **Five of the ten were routed to
+`distill` or `deep_read` by triage and never distilled. Three were never
+triaged at all, and they include the three strongest containment papers in the
+corpus. Every claim that does exist from the other four was written with
+`fulltext_chars` null, which means from the abstract.** So the containment
+thread is not empty because the papers are missing or because the rubric
+rejected them. They are here, routed correctly, unread.
+
+| paper | triage decision | distilled | claims |
+|---|---|---|---|
+| arxiv:2609.29808 Hard Stop | deep_read | never | 0 |
+| arxiv:2609.22978 DSec | distill | never | 0 |
+| arxiv:2609.26761 A2M | distill | never | 0 |
+| arxiv:2609.29647 AgentKernel | distill | never | 0 |
+| arxiv:2609.06500 capmas | never triaged | never | 0 |
+| arxiv:2609.35366 Planarian | never triaged | never | 0 |
+| arxiv:2609.35557 The Compiler May Read It | never triaged | never | 0 |
+| arxiv:2609.05903 EvoSafeHarness | distill | 2026-09-14 | 5, abstract-only |
+| arxiv:2609.06966 Mole | distill | 2026-09-10 | 5, abstract-only |
+| arxiv:2609.28274 Shutdown Sabotage | distill | 2026-09-25 | 5, abstract-only |
+
+Every arXiv id below was read out of a reference list or a corpus row during
+this run rather than recalled, per L-A12. The first four are load-bearing: they
+are the baselines the two new skills' headline numbers are measured against,
+and not one of them is in the `papers` table.
+
+- [ ] arxiv:2503.18813 — Defeating Prompt Injections by Design (CaMeL), the capability-based defence that both new skills are positioned against: "82.8 percent utility at 0.0 percent attack success, twice the utility of CaMeL at the same operating point" is the strongest number in agent-security-measurement, and CapScope defines itself by the contrast. The library has never read the thing it is twice as good as — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2505.23643 — Securing AI Agents with Information-Flow Control (Fides), the defence agent-security-measurement recommends in section 4. What the library has read is one attack paper's reimplementation of it, described in that paper's own words as "FIDES-style" precisely because it is not the original — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2609.08371 — Authority Is Not a String, the capability-scoped harness paper. Read in full by this run and absent from the `papers` table entirely, because it is cs.SE, which is the category gap the 2026-09-30 research census measured. Two of agent-containment's seven sections rest on it and it carries no claim ids as a result — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2509.22040 — "Your AI, My Shell": prompt injection on agentic coding editors, the source of the 84 percent attack success in production editors that the capability-scoping literature opens with. It is the premise sentence of this whole territory and the corpus does not hold it — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2609.29647 — AgentKernel, a trust-native agent operating system, fetched in full by this run and not read within the run's budget. It is the fourth independent argument that governance sharing the agent's process trust boundary is not a boundary, and confirming or breaking that convergence is worth one read — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2510.05244 — Indirect Prompt Injections: Are Firewalls All You Need, or Stronger Benchmarks? The nearest rival to agent-security-measurement's section 4, since it reports that simple firewalls solve many cases in several benchmarks. If that holds, the section's ordering is wrong and the skill needs revising — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2504.11703 — Progent, privilege control for AI agents, one of the three fixed expert defences the searched harness beats. A "beats the fixed baselines" claim is only as good as the baselines — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2412.14470 — Agent-SafetyBench, where the "mean attack success below 20 percent under adaptive attacks" result is measured — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2508.01780 — LiveMCPBench, the benchmark every tool-hijacking number in agent-security-measurement sits on, including the perplexity table this skill leans on hardest — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2604.13630 — SafeHarness, lifecycle-integrated security architecture for agent deployment, the closest published relative of the harness-level enforcement both new skills recommend — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2601.04688 — ToolGate, contract-grounded and verified tool execution, the contract-based alternative to capability scoping that neither new skill can currently compare against — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2412.04984 — Frontier Models are Capable of In-context Scheming, the prior that the shutdown-sabotage study extends by removing the incentive. Needed to say whether the no-incentive result is new or a replication — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30
+- [ ] no arXiv id — Anatomy of a Frontier Lab Agent Intrusion, Hugging Face Security Team, 2026, and the METR independent investigation of the same incident. These are the external ground truth for the July 2026 escape that agent-containment's section 6 narrates, and the library has read only a single-author monograph's retelling of them — asked by skills/agent-containment — 2026-09-30
+- [ ] no arXiv id — Firecracker (Agache et al., NSDI 2020) and EROFS (Gao et al. 2019), the two systems the production sandbox platform's boundary and image path are built from. Not urgent for a skill, but the corpus holds no systems substrate at all for this thread — asked by skills/agent-containment — 2026-09-30
+
+Questions the reading raised, for the research seat and the engineer.
+
+- [ ] question — `deep_read` is a live triage decision with no consumer. Hard Stop, the one paper in this cluster that reconstructs a real production escape, was routed `deep_read` and never read by anything. Either something drains that queue or the decision is a label the pipeline cannot act on, which is the same shape as the 96 `index` rows that were really a backfill rule — asked by skills/agent-containment — 2026-09-30
+- [ ] question — Is distill throughput now the binding constraint rather than triage throughput? The 2026-09-30 research census measured triage reading 3 to 15 percent of intake. This run found four papers routed to distill weeks ago and still undistilled, and zero of the ten papers it read carrying a non-null `fulltext_chars`. Both constraints are real and the ordering between them decides which one the engineer fixes first — asked by the skill seat — 2026-09-30
+- [ ] question — The corpus has no claim for any of the six containment papers, so skills/agent-containment ships with `provenance.claims: []`. Under ADR-36 that fails the automatic provenance gate, correctly, because the gate cannot tell an empty list that is honest from one that is lazy. Either the gate learns to accept a papers-only provenance block written under ADR-35, or ADR-35 and ADR-36 disagree on what a skill may be built from — asked by skills/agent-containment — 2026-09-30
+- [ ] question — Six of fifteen searched safety harnesses in EvoSafeHarness (arXiv 2609.05903, already distilled) dropped their natural-language policy entirely and kept only deterministic runtime relations, and four made no model call at runtime. Our product ships natural-language procedure. That result does not say prose is worthless, it says prose is where a hypothesis is formed and not where enforcement should live. Worth asking whether some of what the library will want to sell in this territory is a policy artifact rather than a SKILL.md — asked by the skill seat — 2026-09-30
+- [ ] question — Nothing in either cluster measures the cost of a containment control end to end in a real deployment except one paper's 145 to 316 second mean, and that figure is dominated by a fully autonomous loop retrying refused actions with no human approval path. A number for the same control with an approval path is the single most useful missing measurement for anyone deciding whether to adopt this — asked by skills/agent-containment — 2026-09-30

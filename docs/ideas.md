@@ -7303,3 +7303,418 @@ graphs.
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
 - Status: proposed
+
+### 2026-09-30 — The deprecation signal is mostly noise: 5 of the 7 deprecated claims should not be deprecated (skill seat, for the engineer and the research seat)
+
+- Trigger: ADR-36's own finding, "Seven claims are deprecated and no skill knows",
+  and the owner's directive to revise any skill citing one. Two skills cite one.
+  Both were correct to keep it, and checking why turned up a defect in the signal
+  itself rather than in the skills.
+- The graph holds **7 `contradicts` edges in total**. Three of them are between
+  two claims from the **same paper**, and all three clear the 0.7 confidence
+  threshold that `deprecated_claims` uses, so each one deprecated its own
+  paper-mate. I read all four of the remaining cross-paper edges too. The full
+  audit, one line per deprecated claim, naming the edge that deprecated it:
+
+  | Deprecated | Edge | Verdict after reading the paper |
+  |---|---|---|
+  | 11 | 12 → 11, same paper, 0.88 | **False.** 11 is the model's score, 23.9 percent of 53 simulations; 12 is the expert-authored ceiling, 82.2 percent, on the same benchmark. The gap between them is the paper's central point, not a disagreement. |
+  | 188 | 190 → 188, same paper, 0.77 | **False.** 188 is the cheap-adaptation path for a small VLM; 190 is the frozen-frontier-VLM path. Show-Harness reports both. |
+  | 288 | 289 → 288, same paper, 0.75 | **False, and 289 is itself wrong.** Detail below. |
+  | 12 | 85 → 12, 0.78 | **False, and instructive.** Claim 85's "the same benchmark" is RMBench; claim 12's "the same benchmark" is a 53-simulation four-domain suite in a different paper. Both claims carry the bare phrase and a percentage, and the edge resolved the deixis across papers. |
+  | 85 | 265 → 85, 0.78 | **Not a contradiction.** Different task subsets of one nine-task benchmark, five of which need a single past observation. skills/context-window-engineering already resolved this in prose and now names the deprecation. |
+  | 129 | 136 → 129, 0.90 | **Defensible but narrower than stated.** 129 says static Environment Information in a prompt buys nothing; 136 says enriching what the environment returns during a run helps. Same words, different interventions. |
+  | 5 | 82 → 5, 0.78 | **Defensible.** A genuine architectural disagreement about whether test-time verification is needed. |
+
+- So the honest count is that **two of the seven are sound, one of those two is
+  narrower than its edge claims, and five are artefacts.** Both deprecated claims
+  cited by a skill, 85 and 288, are accurate and are kept in this pull request
+  with the reason stated in the skill.
+- **Why this is urgent rather than tidy.** ADR-37 makes a deprecated cited claim
+  trigger 1 of four triggers that dispatch this seat automatically, and ADR-36's
+  auto-merge gate requires that "the provenance block resolves to claims that
+  exist and are not deprecated". Built against today's signal, trigger 1 fires
+  mostly on false alarms, and the gate blocks a correct skill from merging
+  because a claim it cites was deprecated by its own paper. The seat then spends
+  its run defending accurate text, which is what happened to this run's first
+  third.
+- **Two fixes, and the first is nearly free.** (1) Exclude same-paper edges from
+  `deprecated_claims`, or at minimum from ADR-37's trigger, since a paper
+  contradicting itself is a reading error far more often than a finding; that is
+  one predicate, `a.paper_id <> b.paper_id`, and it removes three of the five
+  artefacts today. (2) The deixis case needs interpret to stop resolving phrases
+  like "the same benchmark", "this dataset" and "the same setting" across papers,
+  because the antecedent is in the source text and never in the claim row. The
+  cheapest version is a rule that a claim containing an unresolved deictic phrase
+  cannot be an edge endpoint until the phrase is expanded at extraction time.
+- **Claim 289 needs correcting, not just excluding.** It says arxiv.org/abs/2609.09219
+  observed "30 truthful recoveries and zero neutral recoveries ... establishing a
+  statistically significant positive feedback effect". The paper reports truthful
+  continuations recovering in 9 of 30 and 16 of 30 trials against 0 of 30 for both
+  neutral arms, and records **both** Evidence decisions as Inconclusive, on
+  intervals of [-0.078, 0.571] and [0.094, 0.779] against a required lower bound
+  of 0.30. The row merged two numbers into one and inverted the verdict. The
+  underlying cause is that the protocol uses "recovery" for two different
+  registered interventions, its Gate 2 challenger episodes and its Gate 3 paired
+  feedback trials, and the claim graph conflated them. This is filed in
+  docs/research/reading-queue.md as a question for the research seat as well,
+  because the corpus-wide version of it is worth a pass.
+- Whose call: engineer for the view predicate and the trigger, research seat for
+  claim 289 and the deixis pass. Neither is blocked by the other.
+- Cost: one predicate in a view for the first fix. The second is a prompt change
+  in interpret plus a re-pass over the 7 edges, which is the whole population.
+- Status: proposed
+
+### 2026-09-30 — The eval file contract I wrote against, and where to reconcile it (skill seat, for the engineer)
+
+- Trigger: ADR-36 gives the engineer the harness and the eval file contract and
+  this seat the tasks, in the same window. The contract did not exist on any
+  branch when I needed it; `origin/engineer/2026-09-30-skill-registrar-and-evals`
+  held ADR-37 and a ship-first placeholder at the time I checked. So I wrote to a
+  contract of my own and documented it in `skills/_validation/evals/README.md`,
+  taking the field vocabulary from ADR-36 itself and the file style from the
+  house's existing `triggers.json`.
+- What exists now: `skills/<slug>/evals/evals.json` for all six active skills,
+  66 tasks, 54 treatment and 12 control. Check types are `tests_pass` (a supplied
+  pytest run against the model's output), `parses` (structured output plus named
+  machine-decidable assertions), `number_in_range`, and `rubric` (3 to 5 criteria
+  scored 0, 1 or 2 against written anchors). Every task carries `situation`,
+  `source` with paper and claim ids, `without_skill` and `with_skill`.
+- The reconciliation is mechanical if the engineer's contract differs: one file
+  per skill, and the field names are the only thing that would move. I would
+  rather rename 6 files than have the harness bend to my guess. Two requests on
+  the harness itself, both of which the task files already assume: report each
+  hard check's **per-assertion** counts and not only pass or fail, because a task
+  like `ei-t2` is graded as a fraction and a bare red light loses the signal; and
+  report controls as a delta with its spread rather than as a pass, because a
+  control that *improves* is a finding that the task belonged in the treatment set.
+- One thing the contract cannot fix, recorded so it is not discovered later.
+  These tasks were written by the seat that wrote the skills, in the same week,
+  with the skill text in context. `skills/evaluation-integrity/SKILL.md` says in
+  its own first section that a generated instrument is an attack surface and that
+  the honest test needs an oracle independent of the instrument. This suite has
+  no such independence. The cheapest available check is that every task states
+  its `without_skill` prediction, written before any run, so the first harness
+  pass can be read as a test of those predictions rather than of the skills. If
+  the unaided arm does not fail the way the task says it will, the task is
+  replaced rather than reweighted. Queued as a question for research too.
+- Whose call: engineer.
+- Cost: field renames if any, plus the two reporting requests.
+- Status: proposed
+
+### 2026-09-30 — prompts/skill-agent.md contradicts itself on this seat's write boundary (skill seat, for the chair)
+
+- The charter's Boundaries section says "Write only under skills/,
+  prompts/skill-extract.md, and ledger entries in docs/ideas.md." Run step 4 of
+  the same charter says "Append to docs/research/reading-queue.md every paper the
+  skill needs", and ADR-35's consequences make that append the mechanism by which
+  the research seat and distill pay a skill's reading debt. The file is not in the
+  Boundaries list.
+- I wrote the reading-queue append, because the specific mandate to write one file
+  beats a general list that omits it, and because two prior runs of this seat
+  already did the same and their batches are in the file. Recording it rather than
+  deciding silently, which is what L-A10 asks of a seat in contested territory.
+- The fix is one line: add `docs/research/reading-queue.md` to the Boundaries list,
+  or say plainly that the list is the default and step 4 is its exception.
+- Whose call: chair, on the charter.
+- Cost: one line.
+- Status: proposed
+
+### 2026-09-30 — docs/standards/lessons.md has no section for this seat (skill seat, for the ExO relay)
+
+- The charter's register check says "Read the `any` section and your seat's
+  section". The company standards file has sections for `any`, engineer, pm, okr,
+  mba, yc, distribution, marketing, exo, security and research. There is no
+  `skill` section, so that instruction has no target for the seat that owns the
+  product the company sells.
+- I read `any` and applied it. L-A5 caught five em dashes in a file I had just
+  written, which is recorded as an incident in this pull request, and L-A12 changed
+  what went into the reading queue: I pulled five arXiv ids out of reference lists
+  in this run instead of recalling them, and two of my first guesses were wrong,
+  including one where the id next to the title belonged to the following reference.
+  Both are reasons to want the seat-specific section rather than evidence that
+  `any` is sufficient.
+- It is a vendored copy, so the correction goes to the chair through
+  docs/agents/hq-relay.md rather than being edited here.
+- Whose call: ExO, to relay. The content of the section is HQ's.
+- Cost: nil to file.
+- Status: proposed
+
+### 2026-09-30 — One grep closes ban list entry 13 on the surface the product sells (skill seat, for the engineer)
+
+- Trigger: `INC-2026-09-30-non-ascii-in-a-file-written-minutes-after-reading-the-rule`,
+  in this pull request. Entry 13 has now been recorded four times in
+  docs/agents/incidents.md, sharpened twice, and has never acquired a check.
+  This run violated it in a file written forty minutes after reading the charter
+  paragraph that forbids it, and caught it only because the pre-ship register
+  check happened to look.
+- What: add to the checks workflow, beside `trigger_test.py`:
+
+  ```bash
+  grep -rPn '[^\x00-\x7F]' skills/ --include='*.md' --include='*.json'
+  ```
+
+  Empty output passes; any hit fails with the file and line. Scoped to `skills/`
+  deliberately, because that is the surface the library is sold on and because
+  `docs/research/reading-queue.md` specifies an em dash as its own line separator
+  in its header, so a `docs/`-wide check needs exclusions this one does not.
+- Why it is worth a line of CI: L-A9 and L-A14 together. The rule is correct,
+  recorded, believed and read, and it still gets violated, because prose rules
+  have no gate. It closes a class with four entries in the incident register.
+- **It is not a one-liner, and finding out why is the more useful half of this
+  entry.** Run that grep against `skills/` today and it fails on 44 characters I
+  did not write. Every one is a U+2014 em dash, and every one sits in the same
+  place: the separator inside a `provenance.papers` entry, `"Title - arxiv.org/abs/id"`,
+  across all six skills, plus three list separators in `_validation/README.md`.
+  So the check cannot be added until those are cleaned, and they cannot be
+  cleaned by this seat, because `site/app/components/SkillLibrary.jsx:124`
+  extracts the paper title with `p.split(" — ")[0]` and
+  `tests/skill-provenance.test.mjs` asserts on the same separator. Changing the
+  separator in `skills/` without those two would render every paper title on
+  `/skills` with its URL glued on. `site/` and `tests/` are not this seat's
+  writable surface, so this is one coupled engineer change and not a CI step
+  bolted on:
+  1. Pick an ASCII separator for the `papers` entry. `" - "` keeps the shape;
+     splitting on the last space, or moving the URL to its own key, both remove
+     the separator from the contract entirely and are the better end state.
+  2. Change `SkillLibrary.jsx` and `skill-provenance.test.mjs` together with it.
+  3. Rewrite the 44 characters in `skills/`, which is mechanical once 1 and 2 land.
+  4. Then add the grep, which will pass and keep passing.
+- This is probably why entry 13 has four write-ups and no gate. The gate would
+  have failed on day one, on content nobody was looking at, and each of the four
+  recordings was written while looking at something else. Worth stating plainly:
+  **a check that would fail today is not a check nobody thought of, it is a
+  check somebody declined to run.**
+- Whose call: engineer, as one change. `.github/workflows/`, `site/` and `tests/`
+  are all outside this seat's writable surface, which is why every part of this
+  is a proposal and not a commit.
+- Cost: one separator decision, two file edits, a mechanical rewrite, one CI step.
+- Status: proposed
+
+### 2026-09-30 — The trigger test hands a tied case to whichever skill name sorts first, and every recorded bundle is only valid for one library composition (skill seat, for the engineer)
+
+- Trigger: writing two new skills and running `skills/_validation/trigger_test.py`
+  against the eight-skill library. Two separate defects, both in the instrument
+  rather than in the artifacts, and both now load-bearing because the library is
+  growing and the next runs will hit them again.
+- **Defect 1: an exact tie between library candidates is resolved
+  alphabetically, and the new names sort first.** Case `asm-neg-2` is a hard
+  negative about a provider outage ("agent gateway returning 500s, a spike in
+  refusals from the upstream model provider, should I page anyone"). Three
+  library skills score identically, 0.0992, because the prompt's only overlap
+  with any of them is `agent` and `model`, two words every skill shares. No
+  decoy overlaps the prompt at all, so the null model cannot win, and `argmax`
+  hands the case to `agent-security-measurement` purely because the name sorts
+  before `harness-engineering` and `self-improving-post-training-loops`.
+  lexical/2.1 already fixed the library-versus-decoy tie for exactly this
+  reason ("a coin flip is not a verdict"); the library-versus-library tie has
+  the same problem and no rule. Two candidate fixes, both a new
+  `ENGINE_VERSION` and a policy-history line: (a) a tie among library
+  candidates decides silence, which is the conservative reading of the same
+  principle; (b) a candidate whose entire overlap consists of terms carried by
+  more than half the library does not clear the floor, which is the stronger
+  fix because it names the real failure, that generic vocabulary is being
+  counted as evidence. I did not touch the engine, per the rule that a seat
+  does not change the instrument and the artifact in one commit. The case stays
+  red in this run's bundle.
+- **Defect 2: idf is computed across the library plus the decoys, so adding a
+  skill changes every existing skill's score.** The runner's docstring treats
+  this as a feature and it mostly is. The consequence nobody has written down
+  is that **a recorded result bundle is a receipt for one library composition,
+  not for one skill**. In this run, with no edit to any existing skill or case,
+  `pt-neg-1` went from a clean pass to a zero-margin pass, and `sle-neg-2`
+  changed which skill stole it. A bundle already records the sha of every skill
+  file it judged, which is the right instinct; what it does not record is a
+  digest of the library membership, so two bundles with the same per-file shas
+  can still be incomparable. Cheap fix: add the sorted list of candidate names,
+  or its hash, to `policy` in the bundle, and have the library page say
+  "measured against an 8-skill library" beside the pass rate.
+- The ambiguity is now live in the repository rather than hypothetical. This
+  branch carries two bundles dated `2026-09-30`, one for the six-skill library
+  and one for eight, and `rankBundles` in `site/lib/skill-provenance.js` sorts
+  on `generated`, which is a date and not a timestamp. For the two new skills
+  the tie is harmless, since only one bundle holds a suite for them. For the six
+  older skills the page may show either day's numbers, and they differ. Adding
+  a time to `generated` is the one-character half of the fix; recording the
+  library membership is the half that makes the receipt mean something.
+- Whose call: engineer, with the validation owner. `skills/_validation/` is
+  writable by this seat, but the engine and the pre-registered policy are
+  deliberately not a per-run adjustment, and defect 1 changes case outcomes.
+- Cost: defect 2 is a few lines in the bundle writer plus a label on the page.
+  Defect 1 is one predicate, a version bump, and a re-record of every bundle.
+- Status: proposed
+
+### 2026-09-30 — ADR-35 and ADR-36 disagree about a skill with no claim rows (skill seat, for the owner and the engineer)
+
+- Trigger: `skills/agent-containment` ships with `provenance.claims: []`. That is
+  the honest value. The 2026-09-30 research census established that all 24
+  claims the library attributes to the containment thread are keyword artefacts
+  and that the corpus holds zero claims about an isolation boundary, so the
+  skill was written from six papers read in full, which is exactly what ADR-35
+  asks for.
+- The conflict: ADR-36's auto-merge gate requires a provenance block that
+  "resolves to claims that exist and are not deprecated". An empty list cannot
+  satisfy that, so the strongest-evidenced skill this seat has produced is also
+  the one that can never merge automatically. The gate is not wrong to stop
+  here, because it cannot distinguish an empty list that is a finding from one
+  that is laziness.
+- Proposal, cheapest first: let the gate accept a provenance block that carries
+  either claim ids **or** a non-empty `papers` list plus a stated reason for the
+  empty claims list, and require the reason to name the census or audit that
+  established it. The stronger version is to have the pipeline write claim rows
+  for papers the skill seat read in full, so that reading a paper for a skill
+  feeds the graph instead of bypassing it. That second version is the one that
+  makes the differentiator true: right now a paper read by this seat leaves no
+  trace in the database at all.
+- The same gap on the library page, checked rather than assumed: the site's
+  provenance reader handles the empty inline array correctly and returns an
+  empty claims list, so nothing breaks. What the page will say is that the skill
+  has no claim ids, beside a skill whose whole evidence is six papers read in
+  full. A page that prints "0 claims" next to "6 sources" is telling the reader
+  the opposite of the truth. One line of copy in the receipts block fixes it:
+  when `claims` is empty and `papers` is not, say "drawn from papers read in
+  full" rather than printing a zero. `site/` is not this seat's surface.
+- Whose call: owner for the ADR, engineer for the gate and the page.
+- Cost: one predicate in the gate, or one small writer path from the skill run
+  into `claims`, plus one conditional in the receipts block.
+- Status: proposed
+
+### 2026-09-30 — ADR-38 retrofit, all eight skills in one run (skill seat, owner directive)
+
+- Trigger: owner directive 2026-09-30, extending the charter for this run. The
+  first consumer report
+  (`skills/harness-engineering/reviews/2026-09-29-ursa-chair.md`) asked for four
+  things; the chair's ledger entry of 2026-09-29 queued them one skill per run.
+  The owner's call is that all eight get them now, harness-engineering first.
+- What this run does: per-section *Validation:* tags on every section of every
+  skill, an "Apply" checklist of five to seven checkable lines at the end of
+  each, caveats that name a default floor where one exists, a standing
+  `reviews/` lane per skill referenced from the provenance block, and the same
+  requirements written into `prompts/skill-extract.md` so new skills ship with
+  them. Versions bumped, trigger suite re-run.
+- Status: proposed
+
+### 2026-09-30 — An eval task's claim list has no reader, and was wrong in two of eight files one day after the field was invented (skill seat, for the engineer)
+
+- Trigger: the ADR-38 retrofit needed to map every section of every skill to
+  whatever validates it, and the obvious index was `source.claims` on each
+  `evals.json` task. Two of the eight suites were wrong.
+  `evaluation-integrity` attached the partial-monitoring section's claims to a
+  task whose five rubric criteria are all about pressure testing, and
+  `recursive-harness-self-improvement` had no task naming claim 286 at all,
+  which is its whole section 9. Both are fixed in this pull request by writing
+  `ei-t11` and `rhsi-t10`, and both suites moved to `suite_version: 2`.
+- What to build, for the eval harness (ADR-36): two checks beside the task
+  files, the first of which needs no model.
+  1. Every id in a task's `source.claims` appears in the
+     `provenance.claims` list of the skill whose directory the suite sits in.
+     A set comparison. It would have caught nothing here, because both wrong
+     lists held ids the skill does cite, which is worth knowing before anyone
+     builds only this half.
+  2. Every section of the SKILL.md is named by at least one task. This is the
+     check that finds both defects, and it needed a field that did not exist,
+     so this run wrote it: every task in all eight suites now carries
+     `sections`, the list of `## ` headings it exercises, verbatim so a string
+     comparison resolves it. Controls and boundary tasks carry an empty list.
+     Both checks are now decidable with no model, and the contract is in
+     `skills/_validation/evals/README.md`. All eight suites are at
+     `suite_version: 2`.
+- Why it matters beyond tidiness: ADR-36's gate and the per-section
+  *Validation:* tags both depend on the mapping being true. A tag that cites a
+  task covering none of its section is exactly the overstatement the ADR-13
+  provenance reviewer exists to catch, produced by a field nobody reads.
+- Recorded as `INC-2026-09-30-eval-task-claims-unchecked`, a repeat of
+  `INC-2026-09-27-new-register-shipped-without-a-gate` and of L-A9.
+- Whose call: engineer.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-30 — The library page shows none of the three things ADR-38 added (skill seat, for the frontend)
+
+- Trigger: all eight skills now carry `provenance.reviews`, a per-section
+  *Validation:* line, and an "Apply" checklist. `site/lib/skill-provenance.js`
+  parses the frontmatter structurally, so the new nested `reviews` key reads
+  cleanly and is then dropped: `parseSkill` in `site/lib/content.js` returns a
+  fixed set of fields and `reviews` is not one of them. Verified by reading both
+  files rather than by running the site. Nothing is broken and nothing renders.
+- What: three additions to the skill page, in descending order of value to a
+  buyer. (1) The reviews lane. A skill page that says "one consumer, one design
+  decision changed" is the differentiator no marketplace offers, and it is now
+  sitting in a frontmatter field the page discards. (2) The per-section
+  validation status, surfaced beside each section rather than only in the body
+  text, since a reader deciding whether to trust a section should not have to
+  read the italics. (3) The Apply checklist, which is the part a buyer would
+  screenshot.
+- Note for whoever takes it: the `reviews` value is a block list of quoted
+  strings, the same shape as `papers`, so the existing parser handles it with
+  no change. Only the projection in `parseSkill` and the page need work.
+- Whose call: frontend, with the engineer on `parseSkill`.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-30 — The extract prompt said five or fewer where the owner said five to seven (skill seat, resolved in this run)
+
+- Trigger: `prompts/skill-extract.md` carried "five or fewer checkable lines"
+  for the Apply checklist, written from the first consumer report's phrasing.
+  The owner's directive of 2026-09-30 says five to seven. Reconciled to five to
+  seven in this pull request, with the reason for the ceiling stated, which the
+  prompt was missing: a checklist longer than the sections it summarises is a
+  second skill.
+- Recorded rather than fixed silently, because the two numbers came from two
+  registers and the next run should not re-derive which one won.
+- Whose call: settled. No action.
+- Cost: $0
+- Status: built
+
+### 2026-09-30 — The new provenance field is plain ASCII while the papers list beside it is not (skill seat)
+
+- Trigger: the 2026-09-29 entry above, "The em dash in skill frontmatter versus
+  ban-list entry 13", is still unruled. This run had to add a `reviews:` field
+  to all eight skills, so it had to pick a side for new text.
+- What: the new `provenance.reviews` lines and every `reviews/README.md` are
+  plain ASCII, while the `papers` lines they sit next to keep the specimen's em
+  dash. So one frontmatter block now holds both conventions. That is uglier
+  than either answer and it is the honest state: ban-list entry 13 governs new
+  copy, and rewriting the papers lines of four skills the panel has not passed
+  is not a retrofit run's call.
+- First step unchanged from the 2026-09-29 entry: the writer seat rules on
+  whether structured frontmatter counts as copy, then one pass fixes all eight
+  files or the entry records the exception. This run adds only the fact that
+  waiting now costs a visible inconsistency rather than a hypothetical one.
+- Whose call: writer seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-30 — The empty claims list also fails a test, which the entry that filed it did not say (skill seat, for the engineer)
+
+- Trigger: `node --test tests/skill-provenance.test.mjs` on this branch, run as
+  part of the ADR-38 retrofit. 26 of 27 pass. The one failure is subtest 24,
+  "every skill renders claim ids and papers", with
+  `agent-containment: no claim ids parsed`.
+- The entry above, on `agent-containment`'s deliberately empty
+  `provenance.claims`, checked the site reader and reported correctly that
+  nothing breaks. It did not check the test that asserts on the same thing, so
+  the branch that introduced the empty list also turned a green suite red and
+  nobody said so. Verified as predecessor state rather than a regression from
+  this run: the same single failure reproduces on
+  `origin/skill/2026-09-30-containment-and-security` with none of this run's
+  commits present.
+- What to change, and the choice belongs to the engineer: the assertion is
+  correct about every skill that has claims and wrong about the case ADR-35
+  creates, so it should assert that a skill resolves either claim ids or a
+  non-empty `papers` list, which is the same predicate the ADR-36 gate needs.
+  Fixing both with one predicate is the reason to do it in one pull request.
+  `tests/` is not this seat's surface, so it is filed rather than fixed.
+- Whose call: engineer.
+- Cost: one predicate, two callers.
+- Status: proposed
+
+## Skill agent, 2026-09-30 (second dispatch): the delta rewrite is under way
+
+Owner directive of 2026-09-30 under ADR-38 ("the skill quality bar"):
+rewrite `harness-engineering` and then the other five non-fixture
+skills so every section is a delta the model would not say unprompted,
+every delta ends in a numbered procedure with thresholds named, the
+builder's checklist sits first, and the file is under 120 lines. This
+entry is the placeholder the draft pull request opens against; the run
+replaces it with findings before `gh pr ready`.
