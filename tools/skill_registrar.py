@@ -176,7 +176,8 @@ class Row:
     """One `promotions` row, derived from one SKILL.md. Never typed by hand."""
 
     def __init__(self, slug: str, path: str, claim_ids: list[int],
-                 name: str, version: str, status: str, sha: str):
+                 name: str, version: str, status: str, sha: str,
+                 extracted: str = ""):
         self.slug = slug
         self.path = path
         self.claim_ids = claim_ids
@@ -184,6 +185,12 @@ class Row:
         self.version = version
         self.skill_status = status      # the SKILL.md's own `status:` field
         self.sha = sha
+        # `provenance.extracted`, the date this skill's claims were pulled out
+        # of the corpus. Not in the promotions row and not written by this file:
+        # ADR-37's trigger 2 asks for edges recorded since the skill's version
+        # date, and this is the only date every skill in the library carries.
+        # tools/skill_triggers.py reads it.
+        self.extracted = extracted
 
     def as_dict(self) -> dict:
         return {
@@ -270,6 +277,7 @@ def read_skills(skills_dir: pathlib.Path | None = None) -> tuple[list[Row], list
             version=str(parsed.get("version") or ""),
             status=str(parsed.get("status") or ""),
             sha=hashlib.sha256(raw.encode()).hexdigest(),
+            extracted=str(provenance.get("extracted") or ""),
         ))
 
     seen: dict[str, str] = {}
