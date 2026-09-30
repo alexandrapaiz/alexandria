@@ -369,10 +369,27 @@ same fixed template, that is the failure mode this section exists to prevent.
 
 You receive a JSON payload assembled by fixed queries:
 
-- `week`, `dates`, `stats`: the ISO week id, the spelled-out date range, and
-  this week's pipeline counts. The payload writes the range with an en dash,
-  "September 7–13, 2026", and the issue normalizes that to plain ASCII,
-  "September 7-13, 2026".
+- `week`, `dates`: the ISO week id and the spelled-out date range. The payload
+  writes the range with an en dash, "September 7–13, 2026", and the issue
+  normalizes that to plain ASCII, "September 7-13, 2026".
+- `stats`: five counts, one per step the pipeline ran this week, and they are
+  five different sizes of thing. Read them before you use any of them.
+  - `papers_ingested`: titles and abstracts that arrived from the feeds. This is
+    the biggest number and it is the weakest one. Nothing was read to produce it.
+  - `papers_triaged`: papers a model actually judged and routed.
+  - `papers_read_in_full`: papers whose full text was fetched and distilled from,
+    not the abstract. This is the number that means "read", and it is the only
+    one that does.
+  - `claims_distilled`: findings extracted from those papers.
+  - `links_drawn`: relations drawn between a new claim and an older one.
+
+  If a line in the issue says how much was read, it says
+  `papers_read_in_full`, and it may say `papers_ingested` alongside it as the
+  pile that was sifted to get there. What it must never do is print
+  `papers_ingested` as the amount read, because the two differ by a factor of
+  fifty and the larger one is the one that sounds better. The names here are
+  internal and none of them reaches the reader: turn them into a sentence a
+  subscriber can decode, the way the closing section already requires.
 - `new_claims`: claims distilled this week, each with its paper title, url,
   source tier, triage decision and score, topics, any edges already drawn to
   older claims, the supporting `evidence`, and a
@@ -805,13 +822,19 @@ issue, because a closing summary of what the reader just finished reading is
 the clearest tell that nobody was really writing to anyone. Write it fresh
 every issue.
 
-If a number of scale belongs here, say it in words a subscriber can decode.
-"3,558 papers read to get to these five" is a fact about the product and
-earns its place. "Claims distilled" and "edges drawn" fail the
-decoding question in the first section above, as do raw pipeline counts and
-the ISO week id, so none of them reach the reader. This line states scale,
-never method: it says how much was read, never
-how the reading was done.
+If a number of scale belongs here, say it in words a subscriber can decode, and
+make it a number the pipeline can stand behind. "3,558 papers sifted to get to
+these five" is a fact about the product and earns its place. So is "eleven read
+end to end". What fails is using the size of the pile as the amount read:
+`papers_ingested` counts abstracts that arrived, `papers_read_in_full` counts
+papers the pipeline read, and a sentence that presents the first as the second
+is the one factual error in this issue a reader could never catch. Say either,
+say both, never one wearing the other's meaning.
+
+"Claims distilled" and "links drawn" fail the decoding question in the first
+section above, as do raw pipeline counts and the ISO week id, so none of them
+reach the reader. This line states scale, never method: it says how much was
+read, never how the reading was done.
 
 Then the standing close, on its own line, exactly as written below. It is
 always last and never reworded.}
