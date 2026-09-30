@@ -19,6 +19,28 @@ findings from that grade into the generator, and neither of them reached it.
 A tell that only gets written down is a tell the next issue is free to
 commit.
 
+**A third ending, for the entry a prompt cannot reach (writer seat,
+2026-09-30).** Both endings above are written once and neither of them
+runs again. That is enough for an entry the generator can be taught,
+because the next issue either commits the tell or does not. It is not
+enough for an entry whose fix belongs to another seat, because a ledger
+filing is a request and a request has no failing state: it sits at
+"proposed", the artifact stays broken, and nothing anywhere turns red.
+Entry 64 is the proof. It carries the second ending correctly and
+completely, with the incident id beside it, and the false line it
+describes was still the second line of the only published issue four
+days later.
+So an entry of that kind carries the filing and a check. The check is
+pass 6 of the canon's grading procedure: the entry is re-verified against
+the live artifact by every grade until the artifact is clean, and the
+grade prints the check, its output, and how many days the entry has been
+open. A standing defect that is still true is a FAIL line in every
+review, not a note in one. Where the check can be a command rather than a
+reading, the command is filed too, scoped to the published surfaces,
+because a grep for a defect's own words over the whole repository fires
+on every register that records it (L-A22, and the scoping is the reason
+nobody wrote the command earlier).
+
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
 The text of both is untouched, and only the numerals moved, into the
@@ -917,3 +939,145 @@ gap that the same collision had left empty (incident 25).
     now run off one list, and filed in docs/ideas.md for the pre-send gate,
     where both are arithmetic and belong in a command rather than in a reading
     (`L-A22`).
+
+75. The finding handed to another seat, with nothing that checks whether it
+    is still true. Entry 61 is the reader-facing string no pass grades, and
+    entry 64 is the correction that reaches the next issue and not the
+    published one. This is the third failure in that chain and it happens
+    after both of those entries have been acted on correctly. By
+    2026-09-30 the masthead's false reading claim had a canon law written
+    from it (law 15), two entries in this list, an incident id
+    (`INC-2026-09-27-law-15-live-in-the-archive`), and a ledger entry for
+    the engineer stating two repairs and a recommendation. Every one of
+    those artifacts is accurate and none of them is wrong about anything.
+    The line was still printed, above the fold, on the only published
+    issue, and the two editorial grades that ran in between say nothing
+    about it. The page had even been edited that morning, to apply a taste
+    ruling given that morning, four lines from the bottom of the same file.
+    The tell is not a phrase and it is not in the prose at all, which is
+    why this list is where it belongs: every other entry here is checked
+    by reading the artifact, and this one is checked by reading the
+    register's own tail for entries that are still true. The question to
+    ask of any entry ending in a ledger filing is whether anything that
+    runs again would notice if the fix never arrives. Where the answer is
+    no, the entry is a description and not a defence, and the register has
+    confused writing something down with doing something about it (L-A9
+    at one remove, because the rule was recorded and the recording was
+    itself the enforcement anybody expected).
+    Added 2026-09-30 from the grade of the published 2026-W39. Enforced
+    the same day in the canon's grading procedure, which gains a sixth
+    pass re-verifying every entry of this kind against the live artifact
+    and printing the check, and in the standing rule at the top of this
+    file, which gains a third ending. Both are enforced at the reliability
+    of a model reading a file, which is the weak enforcement L-A22 names,
+    so the command form is filed for the engineer in docs/ideas.md in the
+    same pull request: a grep for the withdrawn string scoped to
+    `site/content/issues/` and the stored bodies, which has no false
+    positives and fails until the archive is correct
+    (`INC-2026-09-30-standing-defect-unverified-for-three-grades`).
+
+76. The specimen that fits the payload. Entry 53 is the prohibition that
+    quotes the string, entry 56 is the example that supplies the frame, and
+    entry 65 is the test that asks for the banned sentence. All three were
+    answered with the same remedy, which is to hold specimens at the end of
+    the generator where finished output is read rather than where a line gets
+    written. That remedy is not the rule, and this entry is the proof.
+    The heading gate added on 2026-09-28 to enforce entry 69 sits at the very
+    end of prompts/digest.md, exactly where those three entries say a specimen
+    is safe, and it quoted the offending heading verbatim. The print of
+    2026-09-30, written by the prompt carrying that sentence, printed that
+    heading verbatim over the same self-dismantling body, on the same two
+    numbers. Meanwhile the four slot names are quoted eight times in the same
+    file, several of them in the same gate, and have never printed once.
+    So position is not what makes a specimen dangerous. Aboutness is. The slot
+    names are about nothing a paper could be, so there is no moment where
+    writing one is the obvious next move. "The 82.2% ceiling was not a
+    ceiling" is a well-formed heading about a result sitting in the payload,
+    so at the instant the model reaches that section it is not a warning, it
+    is the best available draft. The test, and it applies to any prompt and
+    any register: ask whether the specimen could be true of the material the
+    writer is holding. Where it could, the specimen is a draft however loudly
+    the sentence around it says otherwise, and no amount of moving it down the
+    file helps.
+    **The count, because one case is an anecdote and this is three for three.**
+    The generator held exactly three worked examples about a real paper in the
+    payload: the heading above, the claims pass's specimen of two results that
+    share only a percent sign, and the same-measure pair of one method printed
+    with two scores. All three defects appear in the print of 2026-09-30. Every
+    other specimen in the file is about nothing a paper could be, including the
+    four slot names quoted eight times and the number line's invented night
+    shift, and not one of those has ever printed. The correlation is total and
+    it runs the opposite way from position, since the heading gate and the slot
+    names sit in the same paragraph block at the end of the file.
+    The generator already knew the fix and used it in one place, at the number
+    line, whose example is written "in a subject no payload will ever hand
+    you, so that copying it is obviously wrong." Added 2026-09-30 from the
+    grade of the newest print. Enforced the same day: all three specimens are
+    rewritten in invented subjects, the heading gate states the aboutness test
+    in its own text, and no worked example anywhere in the generator names a
+    real result (`INC-2026-09-30-gate-supplied-its-own-banned-heading`).
+    **A footnote that is really the entry's best evidence.** The run that wrote
+    this entry broke it about an hour later, in the same pull request, by
+    putting two real arrival counts into the instruction that tells the
+    generator which count to print. It was caught by re-reading the diff
+    against this entry and struck in the next commit. The pull is toward the
+    concrete example, it does not spare the person writing the rule, and the
+    only defence that has worked is a mechanical sweep of the file for figures
+    and quoted output.
+
+77. The evidence grade built on a frame rather than a stem. Entry 70 is the
+    grade as a stamp, where three accurate grades opened on "The evidence is"
+    and the third had stopped being read. Its fix named the stem: the gate
+    forbids opening on the word "evidence" or on any stem already used, and
+    requires the grade folded into a sentence doing other work.
+    The print of 2026-09-30 obeyed that and produced four grades shaped the
+    same way anyway: "One team, three domains, and the effect is large
+    enough...", "One benchmark suite, one model family, and the forgetting is
+    measured...", "One team, one benchmark, and the latency numbers are
+    self-measured", "One benchmark, four models, and the CCE metric is...".
+    Two of them open on the same two words, so the print also fails the 2026-09-28
+    gate as literally written. All four are one frame with the nouns swapped, and
+    the fourth is not a grade at all, because what follows its "and" is a
+    compliment rather than a limit.
+    The unit is the tell. Entry 70's gate reads the opening words, and a form
+    survives every change to its opening words. This is entry 72 inverted: not a
+    gate whose unit is wider than the thing it governs, but one whose unit is
+    narrower, checking a phrase where the reader sees a pattern. The general
+    test: lift every grade out of the issue and line them up. If they read as a
+    matching set, they are furniture, whatever their first words are.
+    Added 2026-09-30. Enforced the same day: the grade check's unit becomes the
+    whole sentence and forbids two grades built on one frame, meaning the same
+    parts in the same order however the words change, with the lift-them-out
+    test written into the gate.
+
+78. The scale sentence that prints a zero. Entry 60 is a count printed with
+    the neighbouring count's verb, and canon law 15 was written from it: the
+    library never claims to have read what it only ingested. The law worked.
+    The print of 2026-09-30 closed on the week's arrivals with the correct
+    verb and then reported, accurately, that none of them had been read in
+    full. Every number was right, every verb was right, and the line told a
+    reader deciding whether to pay twenty dollars that the product had read
+    nothing.
+    This is what an honesty law looks like when it is obeyed with no zero case
+    written. The instruction offered both numbers in one sentence as the honest
+    shape and said nothing about what to do when the second number is zero, so
+    the generator printed the zero, which is the one reading of the law that
+    damages the product while satisfying it. Law 15 already carries the answer
+    in its own text, that an issue saying nothing about its own scale has lost
+    nothing a reader came for, and the standing repair for a claim that cannot
+    be made is to drop it rather than soften it. Printing its absence is a
+    third option the law never offered and it is worse than either.
+    A second half rides with it, about reach rather than value. The sentence
+    said none were read in full "for this issue", which a subscriber reads as a
+    statement about the papers in front of them. Three of the eight papers that
+    print carried twelve thousand characters of full text each, and they were
+    precisely the three in the reading list. Their distillation timestamps are
+    03:18, 03:19 and 03:20 against a payload gathered at 03:13, so the count is
+    taken before the reading it counts and understates by the reading list's
+    size every single time. The sentence was true for five minutes and false
+    before anybody could read it.
+    Added 2026-09-30. Enforced the same day in two parts: the close prints no
+    scale line at all when the full-read count is zero, and the count is stated
+    about the week and never about the items below it. The sampling order is
+    the engineer's, filed in docs/ideas.md the same day, because no wording can
+    make a number true that was measured before the work it measures.
