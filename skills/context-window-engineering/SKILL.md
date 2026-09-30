@@ -1,11 +1,14 @@
 ---
 name: context-window-engineering
 description: The subject is the finite token budget an agent runs inside, and which tokens earn a place in it. Use when a fixed cache budget forces you to pick an eviction rule and you are weighing a scoring heuristic against a cheaper one; when an agent's accumulated history has outgrown its window and you must decide what the acting step sees as opposed to what the planning step sees; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a run has to use a value it read once and did not repeat, many steps later, and a compaction step may already have discarded it.
-version: 1
+version: 2
 status: active
 provenance:
   extracted: 2026-09-29
+  revised: 2026-09-30
   validated: ""
+  revisions:
+    - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 85 entered deprecated_claims, contradicted at 0.78 by claim 265, which this skill also cites. Re-read both papers. The claim is kept and the skill is unchanged in substance, because the two rows measure different task subsets of one benchmark and neither refutes the other. The section 'A contradiction inside the cluster' already carried that resolution and now names the deprecation explicitly."
   claims: [78, 79, 80, 280, 291, 292, 293, 295, 265, 266, 267, 268, 85, 111, 112, 115, 68, 69, 70, 71]
   papers:
     - "Random Attention: Rethinking KV Cache Eviction for Efficient Reasoning — arxiv.org/abs/2609.03430"
@@ -201,8 +204,12 @@ bounded context it can cache.
 
 Our claim graph records a contradiction here, between the 83.3 percent above and
 a second paper reporting 12.5 percent average success on memory-dependent tasks
-from the same benchmark (EmbodiedSkills). Reading both papers resolves it, and
-the resolution is worth more than the edge was.
+from the same benchmark (EmbodiedSkills). As of 2026-09-30 that edge carries
+enough confidence, 0.78, to put the 12.5 percent row in the library's
+`deprecated_claims` view, which is the signal that normally retires a sentence
+from a skill. This one is not retired, and the reason belongs in the skill
+rather than in a commit message. Reading both papers resolves the edge, and the
+resolution is worth more than the edge was.
 
 The numbers are measured on different task sets. The 12.5 percent is a
 macro-average over the four tasks that require multiple past observations, where
@@ -212,7 +219,10 @@ nine tasks, five of which require only a single past observation. On the same
 four multi-observation tasks, the memory-as-plans system reports 82, 94, 100 and
 96 percent (Memory as Plans), against 19, 9, 6 and 16 percent (EmbodiedSkills).
 
-So the two rows do not contradict each other as propositions. They compare two
+So the two rows do not contradict each other as propositions, and the
+deprecation is a fact about the graph rather than about the evidence. Both
+numbers are reported accurately by their papers, and both are still true after
+reading. They compare two
 architectures on one benchmark, and the comparison survives the correction: an
 executor conditioned directly on task-adapted history scores in the low tens on
 the tasks that need history, and an executor handed a planner-written plan

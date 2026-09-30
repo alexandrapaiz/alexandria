@@ -1,0 +1,554 @@
+{
+  "skill": "harness-engineering",
+  "suite_version": 1,
+  "written": "2026-09-30",
+  "author": "skill agent (ADR-22)",
+  "adr": "ADR-36",
+  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+  "judge": "a model other than the subject; rubric tasks only",
+  "note": "Nine treatment tasks and two controls, each reproducing a situation one of the five cited papers actually studied (ADR-35). Contract: skills/_validation/evals/README.md.",
+  "tasks": [
+    {
+      "id": "he-t1",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "A harness was evolved around a weaker model on seven verifiable enterprise tasks, a stronger expert does even better under that same harness, and the team wants to close the gap by fine-tuning the weaker model on the expert's trajectories.",
+      "source": {
+        "paper": "Co-Evolving Harnesses and Models",
+        "arxiv": "arxiv.org/abs/2609.09134",
+        "claims": [
+          199,
+          200,
+          201,
+          202,
+          203
+        ]
+      },
+      "prompt": "We run a support-operations agent on seven verifiable internal tasks: payroll auditing, budget approval, stock alerting, IoT anomaly detection, browser automation, website management, and code refactoring. Over the last month we ran an automated prompt-and-tool search against our own 9B model and the harness it produced is a big win, test success is up across all seven. Out of curiosity we pointed the same harness at a frontier model and it scores higher still, so there is clearly headroom left in the model rather than the scaffold. Plan for next sprint: collect about 8,000 frontier-model trajectories on these seven tasks, convert them to our model's tool-call format, and LoRA-SFT our 9B on them so it learns the expert's planning style inside the harness we already built. We have the GPUs. Write me the implementation plan, and tell me if you would do anything differently.",
+      "without_skill": "Endorses the plan and returns a competent SFT recipe: data cleaning, format conversion, LoRA rank and schedule, a held-out split. This is the recorded behaviour of the unaided arm in the 2026-09-12 A/B trial already in this skill's provenance.",
+      "with_skill": "Refuses the plan as written, names the measured regression, and prescribes on-policy expert correction instead: run the 9B in its own harness, find the single failing turn, have the expert rewrite only that turn, train on the corrected rollout.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "declines",
+            "criterion": "Declines wholesale imitation of the expert's trajectories under a harness evolved for the weaker model, and gives the mechanism (the expert's planning style is transplanted into a model that cannot execute it, breaking model-harness fit).",
+            "anchors": {
+              "0": "Endorses the plan, or hedges without naming a risk.",
+              "1": "Raises a generic distillation caveat (distribution shift, capacity gap) without connecting it to the harness.",
+              "2": "Declines and names the model-harness fit mechanism explicitly."
+            }
+          },
+          {
+            "id": "magnitude",
+            "criterion": "States that the expected direction is a loss rather than a smaller gain, with a magnitude attached.",
+            "anchors": {
+              "0": "Treats the outcome as uncertain or mildly positive.",
+              "1": "Says it may regress, no magnitude.",
+              "2": "Says it regressed on all seven tasks in the source study, by roughly 4 to 30 points."
+            }
+          },
+          {
+            "id": "repair",
+            "criterion": "Prescribes minimal on-policy correction as the alternative, with the per-turn structure intact.",
+            "anchors": {
+              "0": "No alternative, or only 'collect more data' / 'try RL'.",
+              "1": "Suggests on-policy data generally, without the single-failing-turn structure.",
+              "2": "Gives the four steps: own rollout, locate the one failing turn, expert rewrites only that turn, train on the corrected rollout."
+            }
+          },
+          {
+            "id": "no_overreach",
+            "criterion": "Does not overstate the finding into a general claim against distillation, and preserves the boundary that imitation can help on an unevolved baseline harness.",
+            "anchors": {
+              "0": "Generalises to 'imitation fine-tuning does not work'.",
+              "1": "Silent on the boundary.",
+              "2": "Explicitly scopes the warning to weaker models under harnesses evolved for them, and notes imitation helps on baseline harnesses."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-t2",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "The paper's first result: evolving the harness alone, same weaker model, realised substantial gains on the seven-task suite before any training was done.",
+      "source": {
+        "paper": "Co-Evolving Harnesses and Models; Show-Harness",
+        "arxiv": "arxiv.org/abs/2609.09134",
+        "claims": [
+          199,
+          190
+        ]
+      },
+      "prompt": "Our agent gets 41 percent on our internal task suite and we need it above 60 to ship. I have budget for exactly one of these next quarter: (a) a fine-tuning effort on our 8B model, roughly one engineer-quarter plus GPU time, or (b) an automated search over the system prompt, tool definitions, execution hooks and context management, roughly the same engineer time and much less compute. The team is split. Which do I buy, and what is the first week's work either way?",
+      "without_skill": "Treats it as a balanced trade-off and asks for more diagnostic information, or splits the difference, without an evidence-backed default ordering.",
+      "with_skill": "Picks the harness search as the default and says why, then gives the harness checklist (action interface, feedback richness, feedback consistency) as the first week's work, keeping training as the later lever.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "ordering",
+            "criterion": "Recommends exhausting harness work before weights, as a default rather than a coin flip.",
+            "anchors": {
+              "0": "Recommends fine-tuning, or declares it a genuine toss-up.",
+              "1": "Leans harness on cost grounds only.",
+              "2": "Recommends harness first on evidence that harness evolution alone produced substantial gains with the model unchanged."
+            }
+          },
+          {
+            "id": "interface",
+            "criterion": "Names the action interface as a first-order lever, not a detail.",
+            "anchors": {
+              "0": "Not mentioned.",
+              "1": "Mentions tools vaguely.",
+              "2": "Asks whether the model can state its intent in one unit of the interface, and prefers fewer semantic actions to many low-level ones."
+            }
+          },
+          {
+            "id": "feedback",
+            "criterion": "Names environment feedback quality and its consistency as levers.",
+            "anchors": {
+              "0": "Neither.",
+              "1": "Richer errors only.",
+              "2": "Both richer feedback and consistency of feedback shape across similar states."
+            }
+          },
+          {
+            "id": "week_one",
+            "criterion": "The first-week plan is executable and measures before it changes anything.",
+            "anchors": {
+              "0": "No plan or an unbounded one.",
+              "1": "A plan with no measurement step.",
+              "2": "Baseline and trajectory logging first, then one lever at a time."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-t3",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "Feedback-Enriched Environments: long-horizon RL on SciWorld and BFCL-V3 under severe reward sparsity, where the fix was environment-side rather than agent-side, and the ordering was action guidance early, observation enrichment later.",
+      "source": {
+        "paper": "Environments as Scaffold",
+        "arxiv": "arxiv.org/abs/2609.08404",
+        "claims": [
+          136,
+          140
+        ]
+      },
+      "prompt": "We are training a Qwen3-8B agent with GRPO on a long-horizon household-simulation benchmark. Episodes run 30 to 60 steps and the reward is terminal and binary, so almost every rollout in a group scores zero and the advantage is degenerate. The obvious move is an SFT warm-up, but we have only about 300 human demonstrations and the exploration they induce is narrow. What should we change?",
+      "without_skill": "Reaches for agent-side fixes: more SFT data, synthetic demonstrations, curriculum on episode length, reward shaping invented ad hoc, or a switch of RL algorithm.",
+      "with_skill": "Moves the intervention to the environment, enriches what the environment returns, and gets the ordering and the consistency constraint right.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "env_side",
+            "criterion": "Proposes changing the environment's feedback rather than only the agent's data or the algorithm.",
+            "anchors": {
+              "0": "Agent-side only.",
+              "1": "Mentions reward shaping but not what the environment returns to the agent.",
+              "2": "Makes feedback-enriched environments the primary proposal."
+            }
+          },
+          {
+            "id": "ordering",
+            "criterion": "Gets the phase ordering right: more directive action guidance early, shifting to observation enrichment in the later stages of exploration and of training.",
+            "anchors": {
+              "0": "No ordering, or enrichment held constant.",
+              "1": "Notes that help should taper, without the two kinds.",
+              "2": "Distinguishes action guidance from observation enrichment and shifts from the first to the second."
+            }
+          },
+          {
+            "id": "consistency",
+            "criterion": "Names feedback consistency within a rollout group as a hard constraint.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions consistency in passing.",
+              "2": "States that inconsistently shaped or graded feedback across similar states destabilises training, and treats it as a boundary."
+            }
+          },
+          {
+            "id": "keeps_standard",
+            "criterion": "Keeps the ordinary practice that still applies rather than discarding it.",
+            "anchors": {
+              "0": "Discards the SFT warm-up entirely or keeps only it.",
+              "1": "Silent.",
+              "2": "Keeps the warm-up as useful but subordinate, and keeps full trajectory logging."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-t4",
+      "kind": "treatment",
+      "form": "project",
+      "situation": "The paper's feedback-design axis, reduced to the harness surface where it is decided: a tool that answers failures with a bare verdict, which the skill calls the worst feedback a harness can give.",
+      "source": {
+        "paper": "Environments as Scaffold",
+        "arxiv": "arxiv.org/abs/2609.08404",
+        "claims": [
+          136,
+          140
+        ]
+      },
+      "prompt": "The file tools.py is the tool layer our agent calls. Our long-horizon runs stall: the agent retries the same failing call for a dozen turns. Rewrite tools.py so the agent can act on what comes back. Keep the three function names and their signatures exactly as they are, and keep returning a dict from each. Write the whole file to answer.py.",
+      "files": {
+        "tools.py": "# The tool layer the agent calls. Do not change the three names or signatures.\n\nINVENTORY = {\"SKU-1\": 4, \"SKU-2\": 0}\nBUDGETS = {\"ops\": 500, \"eng\": 0}\n\n\ndef reserve_stock(sku: str, qty: int) -> dict:\n    if sku not in INVENTORY:\n        return {\"ok\": False, \"error\": \"failed\"}\n    if INVENTORY[sku] < qty:\n        return {\"ok\": False, \"error\": \"failed\"}\n    INVENTORY[sku] -= qty\n    return {\"ok\": True}\n\n\ndef charge_budget(team: str, amount: int) -> dict:\n    if team not in BUDGETS:\n        return {\"ok\": False, \"error\": \"failed\"}\n    if BUDGETS[team] < amount:\n        return {\"ok\": False, \"error\": \"failed\"}\n    BUDGETS[team] -= amount\n    return {\"ok\": True}\n\n\ndef submit_order(sku: str, team: str, qty: int) -> dict:\n    r = reserve_stock(sku, qty)\n    if not r[\"ok\"]:\n        return {\"ok\": False, \"error\": \"failed\"}\n    c = charge_budget(team, qty * 10)\n    if not c[\"ok\"]:\n        return {\"ok\": False, \"error\": \"failed\"}\n    return {\"ok\": True}\n"
+      },
+      "without_skill": "Improves the error strings to be human-readable ('insufficient stock') and stops there: still one flat string per failure, different shapes across the three functions, and no signal about how far a partial operation got.",
+      "with_skill": "Returns structured, uniformly shaped failures that name the cause and the observed state, keeps the shape identical across all failure classes and all three tools, and reports partial progress on the composite call.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_feedback.py -q",
+        "pass_condition": "exit code 0; the harness reports the count of passing assertions in both arms so a partial improvement is visible",
+        "files": {
+          "test_feedback.py": "import answer as t\n\n\ndef _fail(r):\n    assert r[\"ok\"] is False\n    return r\n\n\ndef test_unknown_and_insufficient_are_distinguishable():\n    a = _fail(t.reserve_stock(\"SKU-9\", 1))\n    b = _fail(t.reserve_stock(\"SKU-2\", 1))\n    assert a != b, \"an unknown sku and an empty sku must not return the same failure\"\n\n\ndef test_failure_names_cause_and_observed_state():\n    r = _fail(t.reserve_stock(\"SKU-1\", 99))\n    flat = repr(r)\n    assert \"4\" in flat, \"the failure must report the quantity actually available\"\n    assert \"99\" in flat, \"the failure must report the quantity requested\"\n\n\ndef test_failure_shape_is_identical_across_classes():\n    keys = [\n        set(_fail(t.reserve_stock(\"SKU-9\", 1)).keys()),\n        set(_fail(t.reserve_stock(\"SKU-1\", 99)).keys()),\n        set(_fail(t.charge_budget(\"nope\", 1)).keys()),\n        set(_fail(t.charge_budget(\"eng\", 5)).keys()),\n    ]\n    assert len(set(map(frozenset, keys))) == 1, f\"failure dicts differ in shape: {keys}\"\n\n\ndef test_shape_is_identical_across_tools():\n    a = set(_fail(t.reserve_stock(\"SKU-9\", 1)).keys())\n    b = set(_fail(t.submit_order(\"SKU-9\", \"ops\", 1)).keys())\n    assert a == b, \"two tools must fail in the same shape\"\n\n\ndef test_composite_failure_reports_partial_progress():\n    r = _fail(t.submit_order(\"SKU-1\", \"eng\", 2))\n    flat = repr(r).lower()\n    assert \"reserve\" in flat or \"stock\" in flat, \"must say which step succeeded\"\n    assert \"budget\" in flat or \"charge\" in flat, \"must say which step failed\"\n\n\ndef test_success_path_unchanged():\n    assert t.reserve_stock(\"SKU-1\", 1)[\"ok\"] is True\n    assert t.charge_budget(\"ops\", 10)[\"ok\"] is True\n"
+        }
+      }
+    },
+    {
+      "id": "he-t5",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "AgentGrad's target-prompt identification problem: a multi-agent system fails and prior methods pick a prompt to blame without verifying that it is the responsible one.",
+      "source": {
+        "paper": "AgentGrad",
+        "arxiv": "arxiv.org/abs/2609.08572",
+        "claims": [
+          243,
+          244
+        ]
+      },
+      "prompt": "Our document-processing pipeline is four LLM agents in sequence: a planner, a retriever, a synthesiser and a formatter. It fails on about 30 percent of inputs, usually with a plausible-looking but wrong final answer. Each agent has its own system prompt. I want to spend two days on this and come out with better prompts. How should I actually spend those two days?",
+      "without_skill": "Proposes reading the traces and rewriting all four prompts, or adding a critic agent, or running an off-the-shelf prompt optimiser on the whole system at once.",
+      "with_skill": "Localises by sequential single-agent intervention, pins reproducibility first, goes upstream-first, and uses the corrected output as the supervision signal for the prompt edit.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "reproducible",
+            "criterion": "Makes the failure reproducible before intervening: pinned inputs, environment or corpus snapshot, seeds where available, full trajectory logs.",
+            "anchors": {
+              "0": "Starts editing prompts.",
+              "1": "Mentions logging.",
+              "2": "Pins inputs and corpus and states that an intervention you cannot replay tells you nothing."
+            }
+          },
+          {
+            "id": "one_at_a_time",
+            "criterion": "Changes exactly one agent's prompt per rerun, with everything else held fixed, and reverts before moving on.",
+            "anchors": {
+              "0": "Changes several prompts at once, or optimises the system jointly.",
+              "1": "Says to isolate, without the revert-and-advance loop.",
+              "2": "Gives the loop: substitute one candidate, rerun the whole system, revert if the failure persists, advance."
+            }
+          },
+          {
+            "id": "attribution",
+            "criterion": "Identifies the responsible agent as the first one whose change makes the failure disappear, and keeps its corrected output.",
+            "anchors": {
+              "0": "Attributes by reading traces and judging.",
+              "1": "Uses intervention but discards the corrected output.",
+              "2": "Records the corrected output and uses it as the supervision signal for the prompt update."
+            }
+          },
+          {
+            "id": "upstream_first",
+            "criterion": "Orders the sweep upstream first, on the ground that upstream errors present as downstream ones.",
+            "anchors": {
+              "0": "No ordering or starts at the formatter.",
+              "1": "Arbitrary order stated.",
+              "2": "Planner first, with the masquerading reason given."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-t6",
+      "kind": "treatment",
+      "form": "project",
+      "situation": "AgentGrad's semantic gradient abstraction: many textual corrections accumulated from failures, which prior methods concatenate and which the paper clusters by semantic similarity and abstracts into generalized corrections.",
+      "source": {
+        "paper": "AgentGrad",
+        "arxiv": "arxiv.org/abs/2609.08572",
+        "claims": [
+          243,
+          244
+        ]
+      },
+      "prompt": "corrections.json holds 18 textual corrections our failure-analysis job produced for one agent's system prompt over the last month. We are about to append all 18 to the prompt, which has already grown past 4,000 tokens. Do something better with them. Write your answer to answer.json as an object with one key, \"groups\", whose value is a list. Each element must be an object with \"members\" (a list of the correction ids it covers) and \"generalized\" (one instruction that captures what the whole group is asking for). Every id must appear in exactly one group. Output JSON only.",
+      "files": {
+        "corrections.json": "[\n {\"id\": 1, \"text\": \"When the user gives a date without a year, do not assume the current year.\"},\n {\"id\": 2, \"text\": \"Quantities written as '1.5k' must be expanded before arithmetic.\"},\n {\"id\": 3, \"text\": \"Do not answer before every retrieved passage has been read.\"},\n {\"id\": 4, \"text\": \"If two retrieved passages disagree, say so rather than picking one.\"},\n {\"id\": 5, \"text\": \"Percentages in the source are of the subtotal, not the total.\"},\n {\"id\": 6, \"text\": \"Never return a citation to a document that was not in the retrieved set.\"},\n {\"id\": 7, \"text\": \"Relative dates like 'next quarter' need the anchor date stated.\"},\n {\"id\": 8, \"text\": \"Stop and ask when the request names a field that does not exist in the schema.\"},\n {\"id\": 9, \"text\": \"Currency amounts must keep two decimal places through every intermediate step.\"},\n {\"id\": 10, \"text\": \"Do not invent a section heading that is absent from the source document.\"},\n {\"id\": 11, \"text\": \"When the retrieved set is empty, return no answer rather than a guess.\"},\n {\"id\": 12, \"text\": \"Fiscal quarters here start in February, not January.\"},\n {\"id\": 13, \"text\": \"Round only at the final step, never between steps.\"},\n {\"id\": 14, \"text\": \"A missing required argument is a question for the user, not a default.\"},\n {\"id\": 15, \"text\": \"Timestamps arrive in UTC and must be rendered in the user's timezone.\"},\n {\"id\": 16, \"text\": \"Do not fill an unknown numeric field with zero.\"},\n {\"id\": 17, \"text\": \"Sums across line items must reconcile to the stated total before reporting.\"},\n {\"id\": 18, \"text\": \"Quote the passage you relied on, not a paraphrase of it.\"}\n]\n"
+      },
+      "without_skill": "Appends or lightly rewrites all 18, or produces one flat summary paragraph, losing the distinction between the three failure modes present in the set.",
+      "with_skill": "Groups by semantic similarity so the three planted failure modes stay unmixed, abstracts each group into one instruction, and hands back the generalized corrections rather than the raw pile.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "The output is an object with key 'groups', a list, and every element has 'members' (list of integers) and 'generalized' (non-empty string)."
+          },
+          {
+            "id": "partition",
+            "statement": "The union of all 'members' is exactly the integers 1 through 18, with no id appearing twice."
+          },
+          {
+            "id": "count",
+            "statement": "len(groups) is between 3 and 6 inclusive. Concatenating all 18 as one group, or emitting 18 groups of one, both fail."
+          },
+          {
+            "id": "no_mixing",
+            "statement": "No group mixes two of the three planted failure modes under this key: date-and-time handling {1,7,12,15}, numeric handling {2,5,9,13,16,17}, grounding-and-abstention {3,4,6,8,10,11,14,18}. Scored as the number of groups that are pure, over the number of groups."
+          },
+          {
+            "id": "abstraction",
+            "statement": "No 'generalized' string is a verbatim copy of a single input correction's text."
+          }
+        ],
+        "pass_condition": "schema, partition, count and abstraction all hold, and no_mixing is 1.0"
+      }
+    },
+    {
+      "id": "he-t7",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "RevPropBench's cost analysis: nine revision methods including sequential reflection and parallel sampling variants, compared under a fixed LLM-call budget on conversationally generated JSON artifacts.",
+      "source": {
+        "paper": "What Else Needs Fixing",
+        "arxiv": "arxiv.org/abs/2609.03254",
+        "claims": [
+          102,
+          103
+        ]
+      },
+      "prompt": "Our product builds a JSON configuration with the user over a long chat. When the user asks for a local change late in the conversation, we have to propagate it to every dependent field, and we get this wrong often enough that users notice. We can afford three model calls per revision instead of one. I was going to implement a reflect-and-revise loop: generate the patch, have the model critique its own patch, revise, repeat. Give me the design, as config.json, with keys \"strategy\", \"n_samples\", \"selector\", \"uses_conversation_history\", and \"rationale\".",
+      "without_skill": "Implements the reflection loop the user proposed, because self-critique is the more familiar idiom and the user asked for it.",
+      "with_skill": "Replaces it with parallel sampling plus a cheap selection step, keeps the conversation history in context, and reserves reflection for the case where a verifier gives real signal between attempts.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "strategy",
+            "statement": "config.strategy denotes parallel sampling with a selection step, not sequential self-reflection or self-critique."
+          },
+          {
+            "id": "budget",
+            "statement": "config.n_samples is an integer >= 3 and the design stays within the three-call budget."
+          },
+          {
+            "id": "selector",
+            "statement": "config.selector names either an LLM judge or medoid / most-similar-to-the-others selection."
+          },
+          {
+            "id": "history",
+            "statement": "config.uses_conversation_history is true."
+          },
+          {
+            "id": "rationale",
+            "statement": "config.rationale states that parallel sample-and-select beat sequential reflection at equal or lower cost, and does not claim reflection is always wrong."
+          }
+        ],
+        "pass_condition": "all five assertions hold"
+      }
+    },
+    {
+      "id": "he-t8",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "The boundary the source paper's method section fixes: medoid selection needs at least three samples and an embedding model, so the two-sample case is a different answer.",
+      "source": {
+        "paper": "What Else Needs Fixing",
+        "arxiv": "arxiv.org/abs/2609.03254",
+        "claims": [
+          102,
+          103
+        ]
+      },
+      "prompt": "We took your advice and moved from reflection to parallel sampling with medoid selection, and it worked. Now finance has cut the inference budget and we can afford exactly two samples per hard step, not three. Also, the embedding endpoint we were using for the medoid has been decommissioned and we are not allowed to add a new vendor this quarter. Keep the two samples. What is the selection step now?",
+      "without_skill": "Keeps medoid on two samples, which is undefined, or falls back to first-sample-wins, or spends the second call on a reflection pass.",
+      "with_skill": "Switches the selector to an LLM judge, states that medoid needs at least three samples and an embedding model, and keeps the parallel structure.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "judge",
+            "criterion": "Selects an LLM judge as the two-sample selector.",
+            "anchors": {
+              "0": "Keeps medoid, or drops selection.",
+              "1": "Suggests a judge among several options without choosing.",
+              "2": "Chooses the judge and explains it needs no embedding model."
+            }
+          },
+          {
+            "id": "why_not_medoid",
+            "criterion": "States the reason medoid is unavailable here.",
+            "anchors": {
+              "0": "No reason.",
+              "1": "Cites only the missing embedding endpoint.",
+              "2": "Cites both that medoid needs at least three samples and that it needs an embedding model."
+            }
+          },
+          {
+            "id": "keeps_parallel",
+            "criterion": "Keeps parallel sampling rather than reverting to sequential reflection under the tighter budget.",
+            "anchors": {
+              "0": "Reverts to reflection.",
+              "1": "Ambiguous.",
+              "2": "Keeps two parallel samples plus the judge, within budget."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-t9",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "Show-Harness: a compact semantic action interface let unmodified frontier VLMs control robots zero-shot, outperforming trained task-specific baselines, which is the interface-over-capacity result.",
+      "source": {
+        "paper": "Show-Harness",
+        "arxiv": "arxiv.org/abs/2609.10522",
+        "claims": [
+          190
+        ]
+      },
+      "prompt": "Our warehouse agent drives a pick-and-place arm through 41 tool calls: joint_move, gripper_open, gripper_close, wrist_rotate, cartesian_nudge, and so on down to per-axis jogs. A frontier VLM behind it plans badly, producing long fragile sequences that fail midway, so the proposal on the table is to collect demonstrations and fine-tune a small open-source VLM on this action space, which the team estimates at a few GPU-hours. What do you think?",
+      "without_skill": "Accepts the framing and helps plan the fine-tune, treating the failure as a model-capacity problem, which is also the direction of a claim from this very paper that our graph has since deprecated.",
+      "with_skill": "Reframes the failure as an interface problem, redesigns toward fewer semantic actions, and tries the unmodified model against the better interface before spending on training.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "reframe",
+            "criterion": "Identifies the 41 low-level actions as the likely cause rather than model capacity.",
+            "anchors": {
+              "0": "Accepts the capacity framing.",
+              "1": "Mentions the interface as one possibility among many.",
+              "2": "Names the interface as the first suspect and explains why long composed sequences are fragile."
+            }
+          },
+          {
+            "id": "redesign",
+            "criterion": "Proposes a concrete compact semantic interface, testing whether one intent maps to one call.",
+            "anchors": {
+              "0": "No redesign.",
+              "1": "Says 'use higher-level tools'.",
+              "2": "Proposes specific semantic primitives (for example pick(object), place(location)) and applies the one-intent-one-unit test."
+            }
+          },
+          {
+            "id": "order",
+            "criterion": "Measures the unmodified model on the new interface before committing to training.",
+            "anchors": {
+              "0": "Proceeds to fine-tuning.",
+              "1": "Suggests doing both in parallel.",
+              "2": "Insists on the zero-shot measurement first, citing that a good interface unlocked capability without extra model capacity."
+            }
+          },
+          {
+            "id": "no_deprecated",
+            "criterion": "Does not rest the recommendation on the cheap-fine-tune-of-a-small-VLM result, which is claim 188 and sits in deprecated_claims as of 2026-09-30.",
+            "anchors": {
+              "0": "Recommends the cheap fine-tune as the answer.",
+              "1": "Repeats the few-GPU-hours framing uncritically while also suggesting interface work.",
+              "2": "Does not lean on it, or explicitly declines to treat the cost estimate as the deciding factor."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "he-c1",
+      "kind": "control",
+      "form": "project",
+      "situation": "Ordinary client-library engineering. It borrows this skill's vocabulary (tool, failure, retry, feedback, flaky) and needs none of its content.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "http_client.py wraps a third-party API that fails intermittently with 429 and 503. Add retry with exponential backoff and jitter, cap the total wait, and do not retry anything that is not transient. Keep the public function name and signature. Write the whole file to answer.py.",
+      "files": {
+        "http_client.py": "import time\n\n\nclass Response:\n    def __init__(self, status, body):\n        self.status = status\n        self.body = body\n\n\nclass Transport:\n    \"\"\"Injected for tests. call() returns a Response or raises.\"\"\"\n\n    def __init__(self, statuses):\n        self._statuses = list(statuses)\n        self.calls = 0\n        self.sleeps = []\n\n    def call(self, path):\n        self.calls += 1\n        status = self._statuses.pop(0) if self._statuses else 200\n        return Response(status, {\"path\": path})\n\n\ndef fetch(transport: Transport, path: str, sleep=time.sleep) -> Response:\n    \"\"\"Return the response. Currently gives up on the first failure.\"\"\"\n    return transport.call(path)\n"
+      },
+      "without_skill": "A correct backoff implementation: bounded retries on 429 and 503 only, exponential delays with jitter, a total-wait cap, no retry on 400 or 404.",
+      "with_skill": "The same. The skill must not intrude: no advice about agent loops, semantic action interfaces, richer structured feedback for a model to read, or parallel sampling.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_client.py -q",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass rate is not below the without-skill arm's, outside the spread",
+        "files": {
+          "test_client.py": "import answer\nfrom http_client import Transport\n\n\ndef _run(statuses):\n    t = Transport(statuses)\n    sleeps = []\n    r = answer.fetch(t, \"/v1/thing\", sleep=sleeps.append)\n    return t, r, sleeps\n\n\ndef test_succeeds_without_retry():\n    t, r, sleeps = _run([200])\n    assert r.status == 200 and t.calls == 1 and sleeps == []\n\n\ndef test_retries_transient_then_succeeds():\n    t, r, sleeps = _run([429, 503, 200])\n    assert r.status == 200 and t.calls == 3 and len(sleeps) == 2\n\n\ndef test_backoff_is_exponential_and_jittered():\n    _, _, sleeps = _run([429, 429, 429, 200])\n    assert len(sleeps) == 3\n    assert sleeps[1] > sleeps[0] and sleeps[2] > sleeps[1]\n    assert len(set(sleeps)) == 3, \"jitter should make the delays distinct\"\n\n\ndef test_total_wait_is_capped():\n    _, _, sleeps = _run([503] * 12 + [200])\n    assert sum(sleeps) <= 60\n\n\ndef test_does_not_retry_client_errors():\n    t, r, sleeps = _run([404, 200])\n    assert r.status == 404 and t.calls == 1 and sleeps == []\n\n\ndef test_gives_up_and_returns_last_response():\n    t, r, _ = _run([503] * 40)\n    assert r.status == 503\n"
+        }
+      }
+    },
+    {
+      "id": "he-c2",
+      "kind": "control",
+      "form": "prompt",
+      "situation": "Ordinary CI engineering. The hardest control in this suite: it contains failure, feedback, flaky, parallel and a loop, every one of which this skill uses, and the correct answer is standard test-suite hygiene with no model in it.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "Our Python test suite takes 41 minutes on every pull request and about 3 percent of runs fail on tests that pass on a retry. Developers have started merging on a second attempt without reading the failure. Get the suite under 10 minutes and make a failure mean something again.",
+      "without_skill": "Standard and correct: profile the slowest tests, parallelise with xdist, split unit from integration, cache dependencies and fixtures, find the shared mutable state behind the flakes, quarantine with a tracked deadline rather than a permanent skip.",
+      "with_skill": "The same answer. A skill that intrudes here will start talking about agent harnesses, richer feedback for a model to consume, or parallel sampling with a selector, none of which is what is being asked.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "on_subject",
+            "criterion": "The answer is about a human-facing test suite and its runtime.",
+            "anchors": {
+              "0": "Reframes it as an agent or LLM problem.",
+              "1": "Mixes in agent-harness advice.",
+              "2": "Stays on CI throughout."
+            }
+          },
+          {
+            "id": "speed",
+            "criterion": "Gives a real path to the runtime target: measurement first, then parallelism, splitting and caching.",
+            "anchors": {
+              "0": "Generic advice.",
+              "1": "Some concrete steps.",
+              "2": "Profiles first, then names specific mechanisms and what each is expected to buy."
+            }
+          },
+          {
+            "id": "flakes",
+            "criterion": "Treats the 3 percent as a diagnosable cause rather than something to retry harder.",
+            "anchors": {
+              "0": "Adds retries.",
+              "1": "Quarantines with no root-cause path.",
+              "2": "Hunts shared state, ordering and time dependence, and quarantines with a tracked deadline."
+            }
+          },
+          {
+            "id": "no_intrusion",
+            "criterion": "Imports no vocabulary from harness engineering: no action interfaces, no feedback enrichment for a model, no parallel sample-and-select, no fine-tuning.",
+            "anchors": {
+              "0": "Two or more such intrusions.",
+              "1": "One.",
+              "2": "None."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

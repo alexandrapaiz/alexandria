@@ -1,11 +1,14 @@
 ---
 name: recursive-harness-self-improvement
 description: Evidence-backed method for loops where an agent reads its own failed runs, rewrites its own scaffold unattended, then keeps or reverts each edit on measured evidence. The editor is the agent, not a person, and no weights are trained. Use when an automated loop edits its own prompts, tool code or memory and keeps what measures better, when unattended self-edits raise the score on the tasks the loop evolves against while real work does not, when choosing the gate that accepts or reverts a proposed edit, when bounding how much one edit may touch, when attributing a failure to one function inside a long execution log, when the loop's own diagnosis costs more than its edits gain, when several automated workers rewrite one shared repository and converge on a single idea, or when an unattended run reports a win you have to judge.
-version: 1
+version: 2
 status: active
 provenance:
   extracted: 2026-09-22
+  revised: 2026-09-30
   validated: ""
+  revisions:
+    - "2026-09-30 (ADR-35, the paper wins): re-read arxiv.org/abs/2609.09219 in full while revising evaluation-integrity, and narrowed section 9. The third gate is optional in the protocol and returned Inconclusive on both of its real-data audits, which the section had presented as a gate to adopt alongside the other two. No claim this skill cites is deprecated."
   claims: [411, 412, 413, 414, 415, 335, 336, 337, 338, 392, 393, 395, 535, 537, 538, 539, 354, 355, 147, 148, 150, 593, 594, 597, 462, 465, 466, 286]
   papers:
     - "ModularRSI: Modular and Generalizable Recursive Harness Self-Improvement — arxiv.org/abs/2609.14857"
@@ -252,6 +255,18 @@ The middle gate is the one most builders have no analogue for, and it is the
 one worth adding first (ours, not the paper's). It asks whether a comparable
 agent handed the same task reaches the same result without your loop. If it
 does, the loop is not what produced the gain.
+
+Take the three gates in that order and not as a set, because the third is the
+expensive one and the protocol itself marks it optional (Discovery
+Certification Protocol). On both of its real-data audits the feedback gate
+returned Inconclusive: truthful continuations reached the target level in 9 of
+30 and 16 of 30 paired trials against 0 of 30 for the neutral arms, and the
+99 percent effect intervals still straddled or undershot the required lower
+bound of 0.30 (Discovery Certification Protocol). The first two gates passed in
+the same audits. So a loop that can state a baseline improvement and a zero
+recovery bound has most of the available evidence, and a loop waiting to prove
+its feedback effect at 30 pairs will probably be waiting a while (ours, not the
+paper's).
 
 Pre-register the analysis before the run, not after, which is the discipline
 the whole protocol rests on (Discovery Certification Protocol).

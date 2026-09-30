@@ -1,11 +1,14 @@
 ---
 name: evaluation-integrity
 description: Evidence-backed method for judging whether an evaluation can be trusted when the instrument is itself generated: a model-written rubric, a pipeline-assembled benchmark, an LLM judge, or a pass-or-fail verdict standing in for correctness. The subject is the instrument, not the system it scores. Use when stress-testing a model-written rubric or grading checklist, when an agent reaches the graded outcome through the repository history, workspace files, task metadata or open network instead of doing the task, when a checker's verdict cannot separate a faithful candidate from one that merely preserves it, when a judge learns from other judgments and its scores start clustering, when benchmark items turn out to be ambiguous, narrow or wrong, when deciding how many independent judgments an accept should require, when a scored gain might be noise or leakage, when a single-turn evaluation promises reliability that multi-turn pressure does not, or when auditing a discovery an agent claims.
-version: 1
+version: 2
 status: active
 provenance:
   extracted: 2026-09-24
+  revised: 2026-09-30
   validated: ""
+  revisions:
+    - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 288 entered deprecated_claims, contradicted at 0.75 by claim 289 from the same paper. Re-read arxiv.org/abs/2609.09219 in full. Claim 288 is accurate and is kept; claim 289 is a misreading of the paper's Gate 3 table and is filed for correction. The section 'Auditing a result you did not produce' now separates the protocol's two senses of recovery, which is the overload that produced the false edge, and adds that both of the paper's real-data feedback decisions were Inconclusive."
   claims: [476, 477, 478, 479, 480, 260, 261, 262, 263, 237, 238, 239, 240, 645, 646, 228, 557, 559, 560, 561, 269, 272, 273, 386, 387, 388, 664, 286, 288, 290]
   papers:
     - "ImpossibleRubrics: Stress-Testing Generated Rubrics as Reward Signals — arxiv.org/abs/2609.16816"
@@ -310,11 +313,52 @@ Two practical properties of that protocol transfer to lighter audits. Zero
 recoveries across 96 independent challenger episodes translated into a
 finite-sample upper bound of 0.0468 on the recovery probability, which is the
 honest way to report an absence of failures rather than calling it impossible
-(Discovery Certification Protocol). And the whole decision was reproducible by
-a deterministic verifier with no model in it, replaying frozen evidence
+(Discovery Certification Protocol). That bound is an exact one-sided
+Clopper-Pearson limit, 1 minus alpha to the power of 1 over n, and the audit
+size was chosen to reach a registered target rather than picked for
+convenience: a 5 percent bound at 1 percent error needs 90 episodes, and 96
+were registered (Discovery Certification Protocol). Copy the order. Decide the
+bound you want to be able to state, then derive the episode count, because the
+count is the thing you have to pay for. And the whole decision was reproducible
+by a deterministic verifier with no model in it, replaying frozen evidence
 bundles (Discovery Certification Protocol). Freezing the bundle is the cheap
 part, and it is what makes the verdict auditable later by someone who does not
 trust your judge.
+
+### Two different things are called recovery, and conflating them is a real error
+
+Read the protocol carefully, because it uses one word for two measurements and
+they support opposite kinds of conclusion (Discovery Certification Protocol).
+
+- **Gate 2 recovery** is a challenger episode. A fresh agent gets the starting
+  information packet and the observed web content, with the run history and any
+  new measurements withheld, and either reaches the outcome or does not. This is
+  the one that vetoes a certificate. On the two real-data audits, the best
+  challengers scored 0.4641 and 0.4171 against recovery lines of 0.7177 and
+  0.6051, so zero of 96 episodes recovered, alongside 45 of 45 channel controls.
+- **Gate 3 recovery** is a paired feedback trial. Continuations branch from a
+  frozen checkpoint that already contains the run, with one arm getting truthful
+  feedback from its own actions and the other a registered neutral policy. It
+  measures whether feedback helps, not whether the result was reachable without
+  the method.
+
+The numbers are nothing alike, and the second set is the one usually quoted
+wrongly. Truthful continuations reached the target level in 9 of 30 and 16 of 30
+trials while both neutral arms reached it in 0 of 30, and even so **both
+Evidence decisions came back Inconclusive**, on intervals of [-0.078, 0.571] and
+[0.094, 0.779] against a required lower bound of 0.30 (Discovery Certification
+Protocol). So the paper that defines the feedback gate did not pass it on either
+real-data audit, once for an incomplete audit and once for plain statistical
+uncertainty.
+
+Two things follow, and the second is the more useful one (ours, not the paper's).
+Budget for Gate 3 to come back inconclusive rather than negative, because 30
+pairs is not many and a wide interval is the normal result at that size. And
+never let "recovered" appear in an audit report unqualified. Our own claim graph
+made exactly this mistake on exactly this paper: an edge was recorded asserting
+that the feedback effect was established, drawn from the Gate 3 row, and it
+contradicted the accurate Gate 2 row hard enough to deprecate it. One overloaded
+word cost a true claim its standing.
 
 ## Caveats
 
