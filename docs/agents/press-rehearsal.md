@@ -143,3 +143,37 @@ The daily corpus crons (ingest, distill, triage, interpret) have no
 rehearsal and no availability check either. They are named here so the
 gap is written down rather than discovered, and they are a separate
 piece of engineer work with a separate trigger.
+
+**Update, 2026-09-26, engineer seat.** The closing paragraph above named the
+daily corpus crons as having no rehearsal and no availability check. Three of
+the four now have both. `triage` and `interpret` got `preflight` and `rehearse`
+when they moved to Kimi earlier tonight, and `distill` got both in the same run
+that wrote this note, with its three-gate chain in its module docstring the way
+this file asks for the press's.
+
+Two things the reader should carry away rather than infer.
+
+`ingest` still has neither, and it does not need them in this form, because it
+calls no model. What it lacks is an availability check on its feeds, which is a
+different question with a different answer.
+
+`distill`'s rehearsal found something while being built, and it is worth more
+than the gate. Distill's full-paper request did not fit Groq's usable free tier,
+so the run retried at `abstract[:6000]` and succeeded. The job whose entire
+purpose is reading papers in full could not read one, and it reported success
+when it read the abstract instead. That is the arithmetic under the owner's
+finding of 2026-09-25 and under the press's own number, 164 papers read in full
+out of 8,956 ingested. So `rehearse` raises on the degradation rather than
+accepting it.
+
+**Corrected 2026-09-27, engineer seat.** The paragraph above said "misses by
+109 tokens" and that number was wrong by a factor of seventeen: the budget
+guard was sizing a 24,000-character paper with a prose filler running 6.17
+chars/token against a real paper's 3.35, so the true miss was about 1,900
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). The finding this
+paragraph records is unchanged and if anything larger. It is closed as of
+2026-09-27: `FULLTEXT_CHARS` is 12,000, the job declares its own reservation,
+and the request fits every one of the 14 real papers in
+docs/evals/2026-09-27-fulltext-token-density.json. Twelve thousand characters
+of a paper is still not a paper, and reading one whole needs a provider with a
+larger window, which is priced in the ledger and is the owner's call.

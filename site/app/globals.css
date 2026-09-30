@@ -1399,6 +1399,89 @@ a {
   max-width: 600px;
 }
 
+/* The receipts, inside the open row. A definition list because that is what
+   it is: a label and the fact behind it. The labels carry the same uppercase
+   treatment as the section heads above them, one step smaller, so the block
+   reads as a table of evidence rather than as more prose.
+
+   A stale receipt, one measured against a revision of the file the visitor is
+   not reading, is the only state here that could mislead anyone, so it is the
+   only state that is marked. It is marked with a hairline rule in ink and with
+   the sentence saying so, and NOT with --contra: the :root comment reserves
+   that red for `contradicts` edges and their legend swatch on the owner's
+   dispatch of 2026-09-25, and says in its own words that it enters nothing
+   else. The colour law holds on this page too. */
+.skill-receipts {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--gray);
+  max-width: 600px;
+  display: grid;
+  gap: 10px;
+}
+
+.skill-receipts > div {
+  display: grid;
+  grid-template-columns: 148px 1fr;
+  gap: 4px 16px;
+  align-items: baseline;
+}
+
+.skill-receipts dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray);
+  padding-top: 2px;
+}
+
+.skill-receipts dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.skill-receipts dd span {
+  display: block;
+}
+
+/* Every sentence after the first is a qualifier on the one above it, so it is
+   set back in grey rather than given the same weight as the result. */
+.skill-receipts dd span + span {
+  color: var(--gray);
+}
+
+.skill-receipts dd.is-stale {
+  border-left: 1px solid var(--ink);
+  padding-left: 10px;
+  margin-left: -11px;
+}
+
+/* The ids themselves are tabular so a long row of them scans as numbers, and
+   the sentence under them is the one ban list entry 14 requires: a reader who
+   has never seen the codebase can find out what 199 refers to. */
+.skill-claims > span:first-child {
+  font-variant-numeric: tabular-nums;
+  word-spacing: 0.08em;
+}
+
+.skill-claims-note {
+  margin-top: 4px;
+}
+
+.skill-claims-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .skill-receipts > div {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* The entitlement is stated in words inside the open row. The button that
    used to sit here is now the one at the foot of the page. */
 .skill-row-lock {

@@ -25,6 +25,15 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: verdict schema and the provenance reviewer
 - Cost: $0
 - Status: accepted
+- Groomed 2026-09-28 (PM): accepted 11 days ago, still unbuilt, and
+  larger than a day as written (O3 KR1 names 2026-11-15 for it live).
+  Split for whoever takes it: (1) the verdict schema and the provenance
+  reviewer alone, against already-open promotion PRs, read-only, no
+  merge action; (2) the adversary and validator reviewers added to the
+  same pass; (3) unanimous-verdict merge automation, which is blocked
+  regardless on the owner minting a PR-merge-scoped token
+  (docs/sprints/pending.md item 7). (1) and (2) do not need that token
+  and can ship independently of it.
 
 ### 2026-09-17 — Institution backfill, then regenerate and resend digest
 - Trigger: known gap; scratchpad script `backfill_institutions.py` exists
@@ -435,7 +444,12 @@ herself.
   "Accelerate every builder to frontier speed." alone, everywhere, no
   subtitle or companion line (one was considered and deleted).
   Recorded at the top of vision.md §0. This entry is done.
-- Status: proposed
+- Groomed 2026-09-28 (PM): this entry carried a stray duplicate
+  "Status: proposed" line after the owner's outcome above, a
+  duplication artifact rather than a second status. Removed, since it
+  did not represent a status the owner set (the real, current status
+  stays "built" two lines up) and it was making the entry read as a
+  live proposal to any grep-based grooming pass.
 
 ## Security agent findings (first run, 2026-09-18)
 
@@ -606,6 +620,11 @@ build.
   work the same way gh pr create already does for every other seat
 - Cost: $0
 - Status: proposed
+- Groomed 2026-09-28 (PM): superseded. ADR-25 renamed this line of work
+  to the research seat, `.github/workflows/agent-research.yml` exists
+  and has run on a Monday cadence since 2026-09-19, and
+  docs/agents/org-chart.md already lists it. Marking stale rather than
+  leaving it readable as still-open; no action owed.
 
 ### 2026-09-18 — Store each paper's arXiv category (engineer agent)
 - Trigger: same doc. The arXiv firehose can only ever confirm categories
@@ -700,6 +719,11 @@ build.
   week going forward
 - Cost: $0
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. `skills/_validation/trigger_test.py`
+  and per-skill `triggers.json` fixtures exist and run against the
+  whole library on every skill-agent PR (most recently PR #83, 27 of 27
+  cases). Marking stale rather than leaving it readable as still-open;
+  no action owed.
 
 ### 2026-09-18 — Self-application step for prompts/weekly-agent.md (engineer agent, charter-text proposal)
 - Trigger: owner's architecture-run directive, verbatim: "the big things
@@ -934,6 +958,13 @@ build.
   doc, engineer seat
 - Cost: $0
 - Status: accepted
+- Groomed 2026-09-28 (PM): still unbuilt 10 days on. Already correctly
+  day-sized via its own "First step"; the audit-plus-design-doc is the
+  right slice to schedule, not the full upgrade. Lower leverage this
+  week than the corpus-stall finding in the 2026-09-24 curation brief
+  (edges have stopped forming at all since 2026-09-12, a supply
+  problem the graph-quality audit would just measure more precisely),
+  so carried rather than scheduled this sprint.
 
 ### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
 - Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
@@ -1555,6 +1586,18 @@ owning seat rather than assumed. Arguments in docs/sales/.
   not-yet-costed item, so this is worth re-checking once that figure
   exists rather than assumed free of any real cost.
 - Status: proposed
+- Groomed 2026-09-28 (PM): flagging a self-contradiction rather than
+  resolving it, since it needs the ExO or the owner, not this seat.
+  This entry's own "Decision" line above says "adopted", but the
+  Status field here still says "proposed", and neither
+  `prompts/skill-agent.md` nor `.github/workflows/agent-skill.yml` nor
+  docs/agents/org-chart.md's skill row (still "Tue 8:00 ET" only) has
+  been changed in the 10 days since. Either the charter-and-workflow
+  edit is still owed (in which case Status should read "accepted, not
+  yet applied" rather than "proposed"), or the owner has not actually
+  ratified the PM's adoption call and Status is the accurate one. This
+  seat cannot edit prompts/ or .github/workflows/ to close the gap
+  either way.
 
 ### 2026-09-18 — Let a skill declare its own shelf and its own summary (frontend proposal)
 
@@ -1987,6 +2030,9 @@ owning seat rather than assumed. Arguments in docs/sales/.
   so tight that "Claude Opus 5" reads as "ClaudeOpus5" in a mail client.
 - Cost: $0. No new dependency, no new service, no new font.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. PR #90 (2026-09-24) wired
+  `site/emails/digest.html` into the send path. Marking stale rather
+  than leaving it readable as still-open; no action owed.
 
 ### 2026-09-19 — The writing model emits narrow no-break spaces (frontend observation, for the writer)
 
@@ -2129,6 +2175,10 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the engineer, with the frontend seat, since it is the
   rendering path.
 - Status: urgent
+- Groomed 2026-09-28 (PM): built. PR #69 (2026-09-22, merged 2026-09-24)
+  is the live XSS break-fix, sanitizing the digest body before it
+  renders. Marking stale rather than leaving an urgent item reading as
+  still-open; no action owed.
 
 ### 2026-09-19 — Pin the embedding model, and stop sharing its cache with the MCP server (security agent)
 - Trigger: the owner's incident 19 dispatch and the 2026-09-19 audit.
@@ -3548,6 +3598,9 @@ needs an owner decision or an owner push, not an engineer build.
   table in Postgres and it is about a day.
 - Cost: $0.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. A 2026-09-25 engineer run shipped
+  single-use enforcement on MCP authorization codes. Marking stale
+  rather than leaving it readable as still-open; no action owed.
 
 ### 2026-09-24 — The MCP metadata endpoints let the caller choose the host they advertise (security agent)
 
@@ -3658,6 +3711,10 @@ needs an owner decision or an owner push, not an engineer build.
   way.
 - Cost: $0.
 - Status: proposed
+- Groomed 2026-09-28 (PM): built. PR #105 (2026-09-25, merged
+  2026-09-26) gave the MCP synthesis path incident 24's fallback list.
+  Marking stale rather than leaving it readable as still-open; no
+  action owed.
 
 ### 2026-09-22 — interpret drains 11 claims a day while distill adds 40, so the graph can never reach the newest research (skill agent)
 - The measurement, read-only against Neon this run: 661 claims, 222 of
@@ -3700,6 +3757,16 @@ needs an owner decision or an owner push, not an engineer build.
 - Cost: unknown until the per-claim interpret cost is stated. Everything
   else in this entry is free.
 - Status: proposed
+- Groomed 2026-09-28 (PM): the fix shipped. PR #110 (2026-09-26) moves
+  triage and interpret onto Kimi K2, replacing Groq's shared
+  8,000-tokens-a-minute ceiling with a per-job spend cap, and the
+  2026-09-24 curation brief's numbers (interpret at 11/day against a
+  40/day inflow, the graph frozen since 2026-09-12) are this entry's
+  own finding restated with a week more data. Not closing the entry:
+  per PR #110's own words, "nothing is live... the change is written,
+  tested and dormant" until the chair runs
+  `modal deploy pipeline/triage.py` and `pipeline/interpret.py`. See
+  docs/sprints/pending.md and this sprint's item 1.
 
 ### 2026-09-22 — The trigger test has no length normalisation, so the wordiest description wins (skill agent)
 - Trigger: this run's draft skill, on its first complete pass, took two
@@ -5200,3 +5267,2015 @@ press does with a 503.
 - First step: none needed. This is a note on the record.
 - Cost: $0
 - Status: observation
+
+### 2026-09-26 — Craft scan: Paperguide (paperguide.ai)
+
+- Trigger: today's work was the owner's finding that the corpus is not
+  being read, so the rotation went to the one product in
+  docs/market/landscape.md whose entire job is reading papers and which
+  no craft scan has covered yet. Added to the landscape 2026-09-18,
+  never scanned.
+- **One thing worth stealing: the claim lands on the sentence, not the
+  paper.** Their copy is "click any claim and land on the exact sentence
+  in the source paper it came from", and per extracted value, "every
+  value in the table cites the statement it came from, confirmed by a
+  verifier before synthesis". Alexandria already stores the evidence
+  sentence in `claims.evidence`, and as of this PR distill records
+  `papers.fulltext_chars`, which means the full HTML text is in hand at
+  the moment the evidence is written. The offset of that sentence inside
+  the text is therefore free to record and nobody is recording it. See
+  the separate entry below.
+- **One thing alexandria does better: it says which one it read.** Their
+  own description of the screening step is "pulls the relevant
+  statements from the abstract or full text". Abstract or full text. For
+  a product whose pitch is traceability that is the one place the trace
+  stops, because a reader cannot tell whether a given finding came from
+  a paper that was read or from a paragraph that was skimmed, and those
+  are different claims about the same paper. From this PR onward
+  alexandria answers it per row: `fulltext_chars` is a number or it is
+  NULL, and the weekly issue states papers read in full separately from
+  papers ingested. Depth is a fact on the row rather than a capability
+  in a marketing sentence.
+- Numbers on the page, for the landscape: 200M+ peer-reviewed papers
+  indexed across PubMed, arXiv, OpenAlex and Semantic Scholar, 974,000+
+  researchers claimed, case studies at "83% faster review across 100
+  papers". No pricing disclosed, only "start for free" and a demo
+  booking, with GDPR, SOC 2 and ISO 27001 listed as coming soon.
+- Read against alexandria's own scale honestly: 200M papers indexed
+  against 8,956 ingested. That comparison is not the one that matters,
+  which is the point of the entry above. Their 200M are indexed and
+  ours are ingested, and neither number is papers read.
+
+### 2026-09-26 — Distill is the next job on the free tier, and now it is the bottleneck
+
+- Trigger: the owner's own count, read again after today's change. 164
+  papers read in full out of 8,956 ingested. Distill is the only step
+  that fetches arXiv HTML, it is still on Groq's free tier
+  (`PRODUCTION_PROVIDER = "groq"`, `openai/gpt-oss-120b`), and
+  `FULLTEXT_MAX_PER_RUN` is 15 with a comment that says the cap exists
+  because "triage routes ~3-6 papers/day to distill, so this fits the
+  Groq budget". That premise is what today's PR ends. Triage is about to
+  judge 700 to 900 papers a day instead of 20, so the flow into
+  `distill_queue` goes up by more than an order of magnitude and hits a
+  15-paper-a-day ceiling sized for the old rate.
+- What: move distill to Kimi as primary with Groq behind it, exactly as
+  triage and interpret moved in this PR, reusing `pipeline/llm.py` so
+  there is no second client. Then raise `FULLTEXT_MAX_PER_RUN` to
+  whatever the cap and the slot allow. Distill's request is the biggest
+  of the three by far, because it sends up to `FULLTEXT_CHARS` of 24,000
+  characters of paper, which is roughly 6,000 tokens in and a few
+  thousand out, so the real arithmetic has to be done before a cap is
+  chosen rather than after. Note the constraint that decides the shape:
+  a full-text distill request does NOT fit Groq's 6,800 usable tokens,
+  so unlike triage and interpret, distill's Groq fallback can only work
+  on the abstract. That is a real fallback with a stated cost rather
+  than a fake one, and the code should say so where it falls back.
+  Distill also needs the fourth Kimi window, and 13:00 to 14:00 UTC is
+  the gap `pipeline/llm.py` KIMI_WINDOWS deliberately left empty.
+- Why it was not in this PR: the owner's directive named triage and
+  interpret and said what to do with each. Widening a funded provider
+  move past the two jobs named, on the same day, without the arithmetic,
+  is how a $27 ceiling becomes a number nobody projected.
+- First step: count the tokens in a real 24,000-character full text with
+  `tiktoken`, add a `CRON_REQUESTS` entry for distill to
+  `pipeline/budget.py`, and read the projected monthly cost off the
+  guard before writing any of the rest.
+- Cost: a proposal, not $0. Order of magnitude at 30 papers a day of
+  full text, $0.01 a call, is about $9 a month, which would take the
+  Kimi line to roughly $13 expected. The owner's call, and it needs
+  docs/finance/opex.md in the same commit.
+- Status: proposed
+
+### 2026-09-26 — Anchor each claim's evidence to its offset in the full text
+
+- Trigger: two observations that met today. Paperguide's "click any
+  claim and land on the exact sentence in the source paper it came
+  from", and the fact that this PR makes distill record how many
+  characters of full text it read. The text is already in memory in
+  `distill()` at the moment the model returns the evidence sentence, and
+  the sentence is already being stored. Only the position is thrown
+  away.
+- What: one integer column, `claims.evidence_offset`, set at distill by
+  finding the model's evidence string in the body it was given. The
+  match will often be inexact, because a model paraphrases, so the
+  honest version stores the offset only on an exact or near-exact
+  substring match and leaves it NULL otherwise, which also makes it a
+  free measurement of how often the distiller quotes rather than
+  paraphrases. That number is worth having on its own: an evidence
+  sentence that appears verbatim in the paper is a different kind of
+  evidence from one the model composed, and nothing in the corpus
+  currently distinguishes them. The payoff a reader sees is a digest
+  link that opens arXiv's HTML at the paragraph rather than at the top
+  of the paper, and the payoff the pipeline sees is a verbatim-quote
+  rate it can watch.
+- First step: add the column to db/schema.sql and compute the offset in
+  distill without using it anywhere, then run one week and report what
+  share of claims matched verbatim. Decide whether to deep-link after
+  seeing that number, not before.
+- Cost: $0. No model call, no new service; it is a `str.find` on text
+  the run already holds.
+- Status: proposed
+
+### 2026-09-26 — The site's live counter says "papers ingested", which is the flattery the issue just stopped committing
+
+- Trigger: found while changing the press's stats line. `site/lib/metrics.js`
+  reads a JSON endpoint answering `{"papers_ingested": n}` and renders it
+  as the hero's live metric. The owner's directive today was that "read N
+  papers" is the wrong stat because ingested and read differ by a factor
+  of fifty. The issue is fixed in this PR. The site's hero number is the
+  same claim in a larger font, and it faces every visitor rather than
+  only subscribers.
+- What: point the hero metric at papers read in full, or show both with
+  the relationship visible ("8,956 sifted, 164 read end to end"), which
+  is a stronger line than either number alone because the ratio is the
+  product. The column that makes this answerable, `papers.fulltext_chars`,
+  lands in this PR, so the endpoint can start returning a second number
+  as soon as the schema is applied. This is the frontend seat's surface
+  and not this seat's, which is why it is a ledger entry and not an edit.
+- First step: whoever owns the endpoint returns
+  `{"papers_ingested": n, "papers_read_in_full": m}`, then the frontend
+  seat decides the copy. The query for m is in `gather()` in
+  pipeline/weekly.py as of this PR and can be copied.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The engineer charter describes the press rehearsal as unbuilt, and it shipped two days ago
+
+- Trigger: the charter's own "Check the register before you ship" step
+  says of docs/agents/press-rehearsal.md that "it does not exist as code
+  yet, and until it does the ladder has two working links and a
+  paragraph", and instructs this seat to take building it "when the
+  sprint has room". It is built. `pipeline/weekly.py` has `rehearse()`,
+  it writes a scratch row to `press_rehearsals`, it holds a receipt
+  check against the head of the fallback list, `db/schema.sql` has the
+  table, `tests/test_press_rehearsal.py` has the tests, and the commits
+  are in main from 2026-09-24 (ad86a26, 02b8fc1, d79fef1, 81b706c,
+  e7af19c). This run read that paragraph, believed it, and spent turns
+  confirming otherwise before building the corpus jobs' rehearsals on
+  the pattern that already existed.
+- What: update that paragraph in prompts/engineer-agent.md to say the
+  press rehearsal is built and to point at `rehearse()` as the pattern a
+  new runtime's rehearsal should follow. This is a charter edit, so it is
+  the owner's merge and never this seat's PR, which is why it is here.
+- Why it matters more than a stale sentence usually does: the same
+  paragraph is what tells this seat what the third gate of the ladder is.
+  A charter that describes a built gate as unbuilt invites the next run
+  to build it a second time, and a second rehearsal implementation on the
+  same provider is exactly the collision
+  INC-2026-09-24-kimi-org-concurrency is about.
+- First step: the owner replaces the two sentences. One line.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Register conflict filed, not fixed: model-routing.md goes stale on this merge
+
+- Trigger: `docs/agents/model-routing.md` line 15 says "the entire daily
+  pipeline: triage, distill, interpret on gpt-oss-120b via Groq's free
+  tier (ADR-5)", and its routing table says the same. The moment this PR
+  merges, two thirds of that sentence is wrong. L-A10 in
+  docs/standards/lessons.md says one file has exactly one owning charter
+  and a seat in contested territory yields and files the conflict rather
+  than winning the race, and docs/agents/registers.md line 62 names the
+  ExO as that file's owner. So this seat is not editing it.
+- What makes it worth filing rather than leaving to the next Sunday read:
+  registers.md already recorded this exact failure for this exact file.
+  Its own row says routing changed in 18 hours and the file is gated
+  weekly, and that the ExO's read "found it stale on arrival". The ExO
+  runs Sundays. This merge lands Friday, so the stale window is about
+  four days, and the file that goes stale is the one a seat reads to
+  learn which provider serves which job.
+- What: the ExO's next run updates the routing table to triage and
+  interpret on kimi-k2.6 with Groq behind them, distill still on Groq,
+  and adds the line INC-2026-09-24-kimi-org-concurrency asked for in its
+  own text: Moonshot's organization concurrency is 1, and the windows are
+  in `pipeline/llm.py` KIMI_WINDOWS. The durable fix is the one
+  registers.md is already arguing for: a file whose content is derivable
+  from code should be generated from it. `budget.cron_model_lists()`,
+  `budget.cron_caps()` and `llm.KIMI_WINDOWS` between them hold every
+  fact in that table, so `python3 pipeline/budget.py` could print the
+  routing table and a check could fail when the file disagrees. That
+  turns a weekly read into a gate in a command, which is the closing
+  argument of docs/agents/runtime-changes.md.
+- First step: the ExO edits the two stale lines. The generator is a
+  second, separate day of work for this seat, and it needs the ExO's
+  agreement first because it changes who writes that file.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Competitive scan: Undermind publishes a number for the quality of its own retrieval
+
+- Trigger: this run's craft scan, rotating through docs/market/landscape.md
+  to Undermind.ai, whose entry was search-snippet confidence only. Fetched
+  the real page this run.
+- What is worth stealing: Undermind puts a measured claim about its own
+  retrieval on the product page and links the method. "Our v1 search engine
+  delivered 10x better results than Google Scholar" and "our v2 engine
+  outperforms frontier agents with web search by a wide margin", each behind
+  a "see the benchmark" link. The claim is about the machinery rather than
+  about the output, and it is the machinery a buyer cannot otherwise
+  inspect. alexandria has never published a number about its routing, and as
+  of today it owns the apparatus to produce one: the re-triage writes a
+  second decision for 47 papers already judged by the old rubric, so the
+  disagreement rate between two rubrics on one corpus is now a computable
+  fact rather than an intuition. The idea below is that number.
+- What alexandria does better: Undermind answers a question you brought.
+  Its "keep up" step is a notification on a saved interest, which means the
+  standing corpus is a feature of the search product. In alexandria the
+  standing corpus is the product and the terminal state of a paper is an
+  artifact, not an answer: a skill an agent loads without asking anything,
+  carrying claim-id provenance and an evidence grade per claim. Undermind
+  also cannot tell you what it decided not to read, and the triage log is
+  exactly that record.
+
+### 2026-09-26 — Distill misses Groq's free tier by 109 tokens, which is why 164 of 8,956 papers were read in full
+
+**CORRECTED 2026-09-27, and left standing rather than edited.** The 109 is
+wrong by a factor of seventeen: the budget guard was sizing an arXiv paper
+with a prose filler, so the real miss was about 1,900 tokens
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). The finding this
+entry records is right and was larger than it knew. Its proposed fix is
+not: dropping the reservation to 1,400 leaves the request short by roughly
+1,300. Closed by the 2026-09-27 run, which set `FULLTEXT_CHARS` to 12,000
+and declared the reservation. Read the 2026-09-27 entries below before
+acting on anything in this one.
+
+- Trigger: L-E6 in docs/standards/lessons.md binds this seat when a prompt
+  grows, and two prompts grew this run. `prompts/distill.md` gained the
+  `reasoning` topic's definition, and distill was the one corpus job absent
+  from `budget.CRON_REQUESTS`, so nothing measured it. It is in the table now,
+  and the arithmetic is not what was expected. Distill's full-text request is
+  **6,909 tokens against 6,800 usable** on Groq's free tier: prompt 990,
+  payload 3,887 for `FULLTEXT_CHARS` of a real paper, a 2,000-token output
+  reservation, 32 of envelope. It misses by **109 tokens**, and it has missed
+  by roughly that for the whole life of the pipeline.
+- What this explains: the job then does exactly what its code says, retries the
+  same call with `abstract[:6000]`, and writes claims from the abstract. The
+  run succeeds. Nothing fails. "164 of 8,956 papers read in full" has been the
+  visible symptom of those 109 tokens, and the library has been distilling
+  summaries while its own docstring says the procedure is the product and an
+  abstract does not contain one. `python3 pipeline/budget.py` now prints this
+  under its own heading, "reads less than it asked for (not a failure, a
+  quality ceiling)".
+- What: the cheapest fix is one number. Distill sends **no output reservation at
+  all**, so the 2,000 tokens above is this guard's assumption about a job that
+  never declared one. Declaring `max_completion_tokens` at 1,400 puts the
+  full-text request at 6,309 tokens with 491 to spare, and 1,400 is comfortably
+  above the ~1,500-token measured output only if the claims are few, so the
+  honest version of this proposal is to measure a real distill response first
+  and then set the number. The alternative, moving distill to Kimi, costs money
+  and is the second proposal, not the first.
+- Why it is not in this PR: a token reservation on a scheduled job is a runtime
+  change by name in docs/agents/runtime-changes.md, and distill has no
+  `rehearse` function, so the ladder has no third rung for it. Building one is
+  the day-sized unit of work, and it is the same shape as the two written for
+  triage and interpret on 2026-09-26.
+- First step: `modal run pipeline/distill.py::rehearse` that exists, sends one
+  real full-text request with a declared reservation, prints the finish reason
+  and the token counts, and writes nothing. Then the number is chosen from a
+  measurement instead of from this paragraph.
+- Cost: $0. Distill stays on the free tier under this proposal.
+- Status: proposed
+
+### 2026-09-26 — The 47 re-triaged papers are the first real eval set for a prompt change
+
+- Trigger: the re-triage built this run appends a second `triage_log` row per
+  paper instead of editing the first, so after the chair runs it the table
+  holds 47 pairs where two rubrics judged the same paper with everything else
+  held constant. `triage_log` has carried `human_verdict` and `human_note`
+  columns since the schema's first day, and db/schema.sql says the table
+  doubles as the eval set for the recursive loop. Nothing has ever written a
+  verdict into either column.
+- What: a disagreement report over the pairs. Every paper where the rubric
+  changed its answer, with both decisions, both reasonings, and the title, in
+  one email to the owner, ranked by how far the decision moved. Twenty
+  verdicts from her would be the first labelled data the meta-review loop has
+  ever had, and the loop's whole design (ADR-25) assumes labels it has never
+  been given. The same report is the evidence for the number the Undermind
+  scan above says the product is missing.
+- First step: a `modal run pipeline/triage.py::disagreements` that prints the
+  pairs and writes nothing, reusing the email path the press already owns
+  only once the owner says she wants it as mail rather than as output.
+- Cost: $0, no model call. It is a join over one table.
+- Status: proposed
+
+### 2026-09-26 — Title-only priority misses the survey that argued for the priority
+
+- Trigger: the new `lilianweng` feed was smoke-tested through the real
+  `ingest.fetch_feeds` this run, 53 entries, and one of them is "Why We
+  Think", the test-time-compute survey the research brief names as the piece
+  the corpus has exactly one claim about. `triage.is_priority` does not match
+  it, because the reasoning priority reads titles only and that title carries
+  no term in the list. The limit is deliberate, since half the corpus mentions
+  reasoning in an abstract and a priority that covers everything is not a
+  priority, but this is the cost of it stated concretely.
+- What: a bounded second pass. A query that finds untriaged papers whose
+  ABSTRACT matches the reasoning terms while the title does not, ranked by
+  how many distinct terms match, capped at 50 papers, and appended to the
+  drain plan rather than run as its own job. The cap is what keeps it a
+  priority: a pass that promotes 3,000 papers has promoted nothing.
+- First step: add it to `triage.py::drain`, the dry run that spends nothing,
+  and look at what the top 50 actually are before any of them is judged. If
+  the top of that list is noise, the title-only rule was right and the idea
+  closes with evidence.
+- Cost: $0 to measure, and about $0.04 to judge 50 papers if the list is good.
+### 2026-09-26 — Competitive scan: Linear, the product this board replaces
+- Linear's most copied idea is not its keyboard shortcuts, it is that the
+  issue's status set is a property of the team rather than of the issue, and
+  nobody can type a status that does not exist. Every list, filter and
+  automation downstream is total because of it. Its second idea, the one that
+  looks like a small thing, is that every issue carries a short stable
+  identifier a human says out loud, so the artifact and the conversation about
+  the artifact share a name.
+- **Worth stealing, and half of it shipped today.** The closed status set is
+  exactly the mechanism the owner asked for when she said seats cannot create
+  views: this board refuses an item whose status is not one of
+  `board/views.json`'s columns, and the refusal names the file and who can
+  change it. The half not built is the stable spoken id. Board items take an id
+  a seat types (`board-ui`), which is legible and not collision-proof, where
+  Linear would issue `ALX-214`. The board is the org's own coordination surface,
+  so two seats inventing the same slug in one night is a real case and not a
+  hypothetical.
+- **Where alexandria is better, and it is the reason we left.** Linear cannot
+  be read by the thing doing the work. Every one of our twelve seats starts in
+  a fresh sandbox with a git checkout and no browser, so a board in a vendor's
+  database is a board the workers cannot read, and the state that actually
+  drove our runs lived in markdown files, pull request descriptions and a
+  dispatch queue instead. This board is one `git archive` away from any seat and
+  one JSON file per event, so an agent reads its own history with the same
+  command a human does. That is L-E0's "agents as first-class citizens of
+  anything we build", and it is the one axis on which a $0 file store beats a
+  funded product.
+
+### 2026-09-26 — Board items need a stable id the org issues, not one a seat types
+- Trigger: today's scan of Linear, and the first two items this board holds.
+  Both were named by hand in this run (`board-store`, `board-ui`). Nothing stops
+  the next seat from choosing `board-ui` again for a different piece of work,
+  and because item events are patches folded by id, a collision does not error.
+  It silently merges two different pieces of work into one card.
+- What: issue ids from the board rather than from the caller. `board.py item`
+  with no `--id` allocates the next `ALX-<n>` by reading the highest id on the
+  ref, and `--id` stays available for a deliberate update to an existing item.
+  The allocator has the collision problem this repo has already hit four times
+  with sequential incident numbers, and the same answer applies: the allocation
+  happens against the ref at write time rather than against a branch, and the
+  write is a create that fails when the path exists, so two seats racing for the
+  same number means one of them retries with the next one. That is a real check
+  rather than a convention, unlike the incident register's numbering.
+- First step: `next_id()` in `tools/board.py` over the folded state, and the
+  create-fails-when-exists path is already the behaviour `write_event` has.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The board should fold into a snapshot the site can read in one fetch
+- Trigger: writing docs/board.md's read path for the frontend seat, which is
+  dispatched next. The honest instruction today is "fetch a tarball of the ref
+  and fold 9,000 files a year in the render path", and the whole board is 1,029
+  bytes gzipped right now, so the cost is invisible and will not stay that way.
+  The alternative the site would otherwise reach for, the trees API plus one
+  request per file, exhausts an unauthenticated 60-an-hour limit on its first
+  render.
+- What: `tools/board.py` writes `board/state.json` on the same ref after each
+  event, holding the folded state and the fold's input count. The site then
+  reads one unauthenticated file. The reason this was not built today is that it
+  is the first mutable path in an append-only store, so two seats reporting in
+  the same second can lose an update, and doing it correctly means a
+  compare-and-swap on the blob's sha with a re-fold on conflict. The event log
+  stays the source of truth and the snapshot stays derived, so a lost update is
+  repaired by the next writer rather than by a human.
+- First step: `fold_to_snapshot()` and a `--snapshot` flag on `report`, with a
+  test that a stale sha forces a re-fold instead of overwriting.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — A seat's first bullet is now a contract with two consumers and no owner
+- Trigger: the owner's two direct pushes to main tonight made the Slack run
+  report the first five bullets of a pull request description, and the board's
+  run report built today derives its one-line result from the first bullet of
+  the same description. Two independent consumers now depend on a convention no
+  charter states, which is the shape L-E6 describes and the reason incident 22
+  cost a week's issue.
+- What: state the convention where the seats read it rather than where the two
+  consumers implement it. One line in each charter's Act section, that the first
+  bullet of a pull request description is one sentence naming what the run
+  shipped, because two systems quote it. Then a check that can see it:
+  `tools/check_registers.py` already runs in front of `&&` in seat commands and
+  could warn when the head of a branch's pull request has no bullet in its first
+  screen. The charters are the owner's merge, so this is a proposal and not a
+  patch.
+- First step: the charter line, in her words, on the next charter edit she
+  makes. The check is a day's work after that and worth nothing before it.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — docs/backlog.md and the board are two boards, and the PM owns the choice
+- Trigger: building the board today and then reading README.md's layout, where
+  `docs/backlog.md`'s own first line is "the consolidated board". It is the PM's
+  file, rebuilt each Monday during grooming, and it holds the launch runway and
+  every seat's proposals in leverage order. The owner's ruling tonight was that
+  the board replaces Linear, and Linear held exactly what backlog.md holds. So
+  the org now has two boards, and the one built today is the machine-readable
+  one while the one that has been used for nine days is the narrative one.
+- What: the PM decides which survives, because the PM grooms it. The case for
+  migrating: items become folds over an append-only log, a seat can read the
+  board without parsing a 450-line markdown file, and the run reports sit beside
+  the work they were for. The case against, and it is real: the ordered narrative
+  of a week reads better as prose than as cards, and the launch runway table
+  carries dependencies the board has no field for. A reasonable middle is that
+  backlog.md stops holding item state and becomes what it is good at, the
+  week's ordered argument over items the board holds by id.
+- First step: not code. The PM's Monday grooming reads docs/board.md and rules.
+  If the ruling is to migrate, `tools/board.py item` takes the rows and the
+  first step after that is the dependency field the runway table needs.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The report step is broken in production and only a hand can fix it (engineer, run 4)
+
+- Trigger: this run's gate-0 machinery diff. The `Post run report` step added to
+  all twelve `agent-*.yml` at 01:14 and 01:23 UTC fails on every run, because
+  the step declares no `shell:` and the container's `sh` is dash, whose builtin
+  `echo` expands the escaped newlines inside the pull request body before `jq`
+  reads it. Verified against four seats' real pull requests: `dash-exit=4` on
+  every one, `exit=0` on the same command under bash.
+- What: the code half is fixed on this branch. `tools/run_report.py` replaces
+  the embedded shell, eighteen tests hold it, and one of them runs it under
+  `sh -e` so the container's shell is under test rather than in production. The
+  workflow half cannot come from a seat, because `GITHUB_TOKEN` cannot push
+  `.github/workflows/`. It is written out ready to apply as item 10 in
+  docs/agents/pending-workflow-changes.md, one line per file.
+- Why it is urgent rather than proposed: until the hand moves, every run of
+  every seat is recorded as `failure` after doing its whole job. Two runs
+  already are, #115 and #116. Run health is read off those statuses by the PM's
+  standup, by delivery-health.md and by the ExO's weekly audit, so the fleet's
+  health signal is currently inverted.
+- First step: apply item 10. It is a one-line replacement of a step body in
+  twelve identical files.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-26 — No workflow step should contain logic a test cannot reach (engineer, run 4)
+
+- Trigger: the same incident, read as a class rather than as a bug. Twenty lines
+  of shell lived in twelve YAML files. Nothing in the repository could execute
+  them, so the first execution was production, in all twelve seats at once. The
+  two-character fix (`shell: bash`) would have ended the bug and left the class
+  standing.
+- What: a rule and a check. The rule is that a workflow step is either a single
+  command or a call into `tools/`, never a script. The check is a test that
+  parses every `.github/workflows/*.yml` and fails when a `run:` block exceeds
+  a small number of lines, naming the file and the step, so the next author
+  meets the rule before a reviewer does. The remaining offender today is the
+  `No-ship tripwire`, about twenty-five lines in each of the twelve files, which
+  is untested and which already has a known sharp edge: its `exit 1` makes a run
+  red for shipping nothing, a fingerprint the ExO's own notes say is easy to
+  misread. Moving it to `tools/` would let that behaviour be tested and would
+  let the two red causes be told apart.
+- First step: `tools/noship.py` plus its tests, behaviour-identical, and the
+  parser test set to the line count that leaves it as the only thing to fix.
+  The workflow edit itself queues behind a hand like everything else.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Distill cannot read a paper in full, and the gap is 109 tokens (engineer, run 4)
+
+**CORRECTED 2026-09-27, and left standing rather than edited.** The 109 is
+wrong by a factor of seventeen: the budget guard was sizing an arXiv paper
+with a prose filler, so the real miss was about 1,900 tokens
+(INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). The finding this
+entry records is right and was larger than it knew. Its proposed fix is
+not: dropping the reservation to 1,400 leaves the request short by roughly
+1,300. Closed by the 2026-09-27 run, which set `FULLTEXT_CHARS` to 12,000
+and declared the reservation. Read the 2026-09-27 entries below before
+acting on anything in this one.
+
+- Trigger: `python3 pipeline/budget.py` with tiktoken installed, run while giving
+  distill the gates it never had. Verbatim: `prompt 990 + payload 3887 + output
+  reservation 2000 + envelope 32 = 6909 tokens against 6800 usable (8000 TPM
+  less 15% margin); DOES NOT FIT, headroom -109. It falls back to
+  abstract[:6000], which fits, so the run succeeds and the paper is read from
+  its abstract instead of in full.` This is the arithmetic under the owner's
+  finding of 2026-09-25 and under the number in the press: 164 papers read in
+  full out of 8,956 ingested. The job whose entire purpose is reading in full
+  misses by 109 tokens and reports success.
+- What: three ways to close it, and they are not equivalent. Drop the assumed
+  2,000-token output reservation to something measured, since the job sends no
+  reservation at all today and 2,000 is a documented guess, which is the only
+  option that is free and might alone be enough. Shrink `FULLTEXT_CHARS` from
+  24,000, which costs coverage of the paper. Or move distill to Kimi the way
+  triage and interpret moved tonight, which removes the ceiling entirely and
+  costs money. The first is measurement, the third is a proposal.
+- First step: measure the real output size of a distill call. `modal run
+  pipeline/distill.py::rehearse` now makes exactly that call and prints the
+  claims it got back, so the reservation can be set from the provider's own
+  usage block instead of from a guess. If a measured reservation clears 109
+  tokens with margin, the fix is free and the deploy chain proves it.
+- Cost: $0 for the measurement and for the reservation change. Moving distill to
+  Kimi is the proposal, and it is the owner's call: at triage's measured rates it
+  is single-digit dollars a month against the $30 ceiling in
+  docs/finance/opex.md, but it is new spend and this seat does not create it.
+- Status: proposed
+
+### 2026-09-26 — Craft scan: Cloudflare's security-audit-skill (github.com/cloudflare/security-audit-skill)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18 as a signal rather than a competitor and no craft scan has covered
+  it, and today's work was entirely about the difference between instructions
+  that are written down and instructions something enforces, which is the axis
+  this artifact is interesting on.
+- **The thing worth stealing: the skill ships validators for its own output, and
+  the validators ship with tests.** Alongside the prose (`SKILL.md`,
+  `HUNTING.md`, `ATTACK-CLASSES.md` and ten domain guides) the repository carries
+  `report-schema.json`, `validate-findings.cjs`, `validate-coverage-ledger.cjs`,
+  and, the part that matters, `validate-findings.test.cjs` and
+  `validate-coverage-ledger.test.cjs`. Zero dependencies, so the validator runs
+  wherever the skill does. The skill's outputs are files with a schema
+  (`findings.json` with `confirmed` / `needs_validation` / `rejected` verdicts,
+  `coverage-ledger.json`, `architecture.md`), and a machine checks them rather
+  than a reader trusting the prose. Their coverage ledger is a validated file
+  where ours, docs/agents/registers.md, is a page. That is the second gate
+  incident 20 says the org keeps forgetting, shipped inside a skill.
+- **What alexandria does better: provenance.** Their attack classes are
+  hand-written expertise with nothing behind them a reader can re-verify, so a
+  stale entry looks exactly like a fresh one. Every claim in our corpus carries
+  its paper, its evidence string, its grade and its `prompt_sha`, which is how
+  this org found an interpret prompt seven days stale rather than inferring it.
+  Their own users' top complaint on the 205-point HN thread was token bloat from
+  unscoped context, which is the failure mode of shipping ten domain guides with
+  no gate on which one loads.
+- First step, as a ledger idea: every skill alexandria publishes ships a
+  validator for its own output plus a test for that validator, and the skill's
+  coverage claim becomes a file a validator checks. This seat does not write
+  into `skills/` (ADR-13), so this is a proposal to the reviewer panel and to
+  the skill seat rather than work this seat can take.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Every assumed number in the guard gets a provenance line and a way to re-measure it (engineer, run 5)
+
+- Trigger: `INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper`. The budget
+  guard reported distill's request as missing Groq's free tier by 109 tokens.
+  The real miss was about 1,900, because the guard sized an arXiv paper with a
+  filler made of English prose. Nothing was careless: the filler was chosen
+  deliberately, its docstring warns against exactly this failure mode in its
+  crudest form, and no mechanism existed that would ever compare it to a real
+  payload. The number was then quoted, correctly, by four documents.
+- What: `pipeline/budget.py` carries a dozen numbers that are assumptions
+  rather than measurements, and they do not look different from the measured
+  ones when you read them. `MARGIN = 0.15`. `ENVELOPE_TOKENS = 32`, "measured
+  generously". `FALLBACK_CHARS_PER_TOKEN = 3.0`. Every `floor` in
+  `PAYLOAD_CAPS`, which the file itself calls "editorial judgment, not
+  arithmetic". Each should carry two things the new
+  `FULLTEXT_CHARS_PER_TOKEN` carries: one line saying how it was derived, and
+  the name of the command that re-derives it. Where no such command can exist,
+  say that too, because "this is a judgment" is a provenance line and a good
+  one. The org already grades the evidence behind every claim it publishes; it
+  does not grade the evidence behind the numbers it runs on.
+- First step: a table at the top of `budget.py` listing each constant, its
+  provenance in one phrase, and either the command that re-measures it or the
+  word `judgment`. Then one test asserting every module-level numeric constant
+  appears in the table, so a new number cannot be added without saying where it
+  came from. `tools/fulltext_density.py` is the shape the re-measuring commands
+  take.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — A whole paper costs four cents, and the free tier will never read one (engineer, run 5)
+
+- Trigger: measuring 14 real papers for today's fix
+  (docs/evals/2026-09-27-fulltext-token-density.json). Their cleaned full texts
+  run 26,796 to 367,520 characters, median 122,738. Groq's free tier leaves
+  distill 3,778 tokens of payload, which is about 12,000 characters. So the
+  free tier reads the first 10% of a median paper, and no amount of tuning
+  changes the order of magnitude. Today's change took that from 6,000
+  characters of abstract to 12,000 characters of the paper's body, which is
+  real and is not the same as reading it.
+- What: distill moves to Kimi the way triage and interpret did on 2026-09-26,
+  and sends the whole paper. A median paper is about 36,638 tokens of payload;
+  at kimi-k2.6's list price with a 2,000-token reservation that is **$0.0438 a
+  call**. Triage routes 3 to 6 papers a day, so **$3.94 to $7.88 a month**, and
+  the 15-paper backlog cap would be $19.70 in a month where it fired every day.
+  Kimi's 262,144-token context takes every one of the 14 papers whole, so the
+  truncation disappears rather than moving.
+- The part that makes this the owner's call and not this seat's: the corpus
+  already projects **$27.00 a month against the $30.00 ceiling** in
+  docs/finance/opex.md. Adding distill breaches it at any of those rates. The
+  decision is not "is four cents cheap", it is "which of triage's cap,
+  interpret's cap and the ceiling itself moves", and all three are the owner's.
+- First step: nothing is built until that call is made. When it is, the work is
+  the shape `pipeline/triage.py` already established and is under a day: the
+  `llm.py` client, a spend cap, the three gates, and `FULLTEXT_CHARS` raised
+  with `tools/fulltext_density.py` re-run at the new window.
+- Cost: $3.94 to $7.88 a month at the current routing rate, against a ceiling
+  that is already $27.00 of $30.00. A proposal, never an action.
+- Status: proposed
+
+### 2026-09-27 — "Read in full" is now a claim the database can contradict (engineer, run 5)
+
+- Trigger: today's change writes `papers.fulltext_chars = 12000` for a paper
+  whose cleaned text is 122,738 characters. `pipeline/weekly.py` counts
+  `papers_read_in_full` as rows where that column is not null, and the digest's
+  own standing line is "The latest in AI research, read in full and distilled
+  weekly". Before today the number was smaller and the overstatement was
+  larger, at 24,000 characters attempted and 6,000 actually read, so this is
+  not a new problem. It is a problem that just became easy to measure, which is
+  the only reason it is worth raising now.
+- What: the fix is arithmetic the database can already do. `fulltext_chars`
+  holds what was read per paper; nothing holds how long the paper was, so the
+  fraction cannot be computed. One column, `paper_chars`, written by
+  `fetch_fulltext` from `len(text)` before it truncates, makes
+  "read 12,000 of 122,738 characters" a fact the issue could print instead of a
+  binary it has to round. Then the writer and the owner decide what the line
+  says. PR #112 is the writer seat making exactly this kind of correction, that
+  the library never claims to have read what it only ingested, and this is the
+  same claim one level down.
+- Why it is not in today's PR: the column is a schema change and a pipeline
+  change, both of which this seat can make, but the sentence on the front of
+  the product is the writer's surface and the owner's call, and shipping the
+  measurement without the ruling would leave a number nobody had agreed to
+  print. It is flagged in today's pull request for that ruling.
+- First step: `alter table papers add column if not exists paper_chars integer`
+  in db/schema.sql, one assignment in `fetch_fulltext`, and one line in
+  `gather()`'s stats block. Under an hour once the wording is decided.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Craft scan: AlphaSignal (alphasignal.ai)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18, last observed the same day, and no craft scan has covered it. It
+  is also the closest thing in the comparison set to what alexandria's digest
+  would look like if the digest published continuously instead of weekly, which
+  makes its item format the interesting part rather than its business.
+- **The thing worth stealing: the headline is the finding, with the number in
+  it.** Every item on the front page states a result and a comparison rather
+  than a subject. Verbatim from today's fetch: "StarDoc-AI's TeleOCR Beats
+  Gemini 3 Pro at Document Parsing With 1.2B Parameters." "TypeLLM Forces LLMs
+  to Return Valid JSON Every Time, 5.8x Faster." "Exa's Agent Ultra Beats
+  OpenAI and Anthropic at Web Research for 54% Less." "Alibaba Shrinks
+  Qwen3-32B to Fit on a 24GB Consumer GPU." Not one is a paper title and not
+  one is a topic. A reader who reads only the headlines has still learned
+  twelve things, and the cost of that is a sentence per item.
+  alexandria already extracts exactly this object and calls it a claim, with an
+  evidence grade and an edge to the paper that supports it, and then leads its
+  digest items with something closer to a title. The steal is one line in
+  `prompts/digest.md`: the item's heading is its strongest graded claim, stated
+  with its number, and the paper title moves to the attribution.
+- **A second, cheaper one:** every item carries a topic from what is visibly a
+  closed list (Open Source, Llms, Image, Agents, Benchmarks, Retrieval, Audio)
+  and an upvote count. alexandria closed its own topic list on 2026-09-26 in
+  `pipeline/topics.py`, so the first half is already done. The second half is a
+  reader signal the library has none of, and it is free: no measurement of
+  whether an item landed exists anywhere in this product.
+- **What alexandria does better: the evidence is reachable.** "Beats Gemini 3
+  Pro at Document Parsing" is a strong claim with nothing on the page that
+  supports it, and roughly half the items are attributed to AlphaSignal itself
+  rather than to a paper or a lab, so the claim's origin is the newsletter.
+  Most are also Pro-gated, so the reader who wants the basis pays before seeing
+  whether there is one. alexandria's equivalent claim carries an evidence grade
+  and an edge to a cited paper, and `semantic_search` and `sql_query` will
+  answer "what supports this" for anyone who asks. That is the difference
+  between a feed and a library, and it is the whole of the positioning.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — The board's run log is missing three runs in four, and nothing compares it to the fleet (engineer, run 6)
+
+- Trigger: folding the live board this run. It holds one run report,
+  `engineer-36208446311`, and `gh run list` shows this seat alone has finished
+  four runs since that one, each of which pushed a branch and opened a pull
+  request (#118, #120, and the two that became #115 and #116). The board says
+  the fleet ran once. The reason is known and filed
+  (`INC-2026-09-26-run-report-dash-echo`: the workflow step is broken in
+  production and only a hand can apply the fix), but that is not the finding.
+  The finding is that a board nobody checks against the fleet cannot tell the
+  difference between a quiet week and a broken reporter, and it read as a quiet
+  week for two days.
+- What: `tools/board.py` grows a command that compares the board's run log
+  against the runs the fleet actually had, `board.py drift`, reading
+  `gh run list --json databaseId,name,conclusion,createdAt` and printing every
+  run with no report on the ref. Then the same command can repair what it
+  finds: a report written after the fact from the Actions API carries the same
+  seat, run id, status and pull request the step would have written, and the
+  path is keyed on the run id so a late report and the step's own report are
+  the same file. This is the missing half of "every run reports onto the
+  board": the reporting is best-effort by design, so something has to notice
+  when best-effort produced nothing, the same way the press has an email that
+  fires when no issue printed (ADR-32).
+- First step: `drift()` over the folded runs and one `gh run list` call, print
+  only. The backfill write is the second step and it needs no new field.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — The digest grades its evidence and never shows the grade (engineer, run 6)
+
+- Trigger: today's craft scan of Latent Space's AINews, below. Its top story
+  labels every bullet with the kind of statement it is, in bold, before the
+  sentence: "**Launch claims.**", "**Artificial Analysis cost breakdown.**",
+  "**What that means.**", and, the one that matters most, "**Model size
+  (speculation).** @theo claimed ... This was not confirmed in official posts."
+  A skimmer who reads only the labels still knows which lines are measurements
+  and which are somebody's guess. alexandria holds exactly this distinction in
+  a column with a CHECK constraint on it, `claims.evidence_grade` in
+  `db/schema.sql`, one of `controlled`, `field_measured`, `asserted`,
+  `anecdote`, and `prompts/digest.md` spends the grade as prose instead, "how
+  good that evidence is, graded in the same breath rather than in a footnote."
+  In the same breath is invisible to a skimmer, which is most readers.
+- What: print the grade as the bullet's visible label rather than dissolving it
+  into the sentence. `asserted` is the one that earns the feature on its own:
+  it is what "the lab says so, and nobody independent has checked" looks like
+  in the database, and the issue currently reads identically whether a number
+  is `controlled` or `asserted`. The change is in `prompts/digest.md` and the
+  email template's item slot, so it is the writer's surface and the frontend's,
+  not this seat's. What this seat can say is that the data is there, it is
+  constrained, and nothing renders it.
+- First step: count this week's claims by `evidence_grade` with `sql_query`
+  before anything is written, because if the corpus is nearly all one grade
+  then the label is noise and the finding is about distill instead.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Print the corpus the issue swept, the way AINews prints "544 Twitters" (engineer, run 6)
+
+- Trigger: the same scan. Every AINews issue carries one line before the
+  content: "AI News for 9/21/2026-9/22/2026. We checked 12 subreddits, 544
+  Twitters and no further Discords." It costs a sentence, it is checkable, and
+  it tells the reader what the absence of an item means, which is the thing a
+  digest can never otherwise say. alexandria's issue says "The latest in AI
+  research, read in full and distilled weekly" and prints no number for what
+  was swept, while `pipeline/weekly.py` already computes several in its stats
+  block and throws them away after the log line.
+- What: one provenance line per issue, built from numbers the database already
+  holds: papers ingested this week, sources in `sources.yaml` actually
+  fetched, papers triaged, claims extracted, and how many of those claims are
+  `controlled` or `field_measured`. It pairs with the open flag from run 5
+  ("read in full" is a claim the database can contradict): a line that states
+  the corpus honestly is worth more than an adjective that overstates it, and
+  it is the same fix one level up. The writer owns the sentence and the owner
+  owns the claim, so this is a proposal with the numbers attached.
+- First step: the `sql_query` that produces all five numbers for 2026-W39, in
+  the pull request that proposes the line, so the sentence is argued against
+  real values rather than against placeholders.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Craft scan: Latent Space and its AINews section (latent.space)
+
+- Trigger: the rotation. It has been on docs/market/landscape.md since
+  2026-09-18, last observed the same day, and no craft scan has covered it. It
+  is also the closest audience match in the comparison set, "AI engineers
+  specifically," and the structural precedent the landscape entry already
+  tracks: AINews folded into Latent Space under one subscription, which is the
+  free-roundup-plus-paid-brand shape alexandria is building. The front page is
+  JavaScript-gated, so this scan was taken from `https://www.latent.space/feed`
+  (HTTP 200, 1.4 MB, 20 items) and read the full body of the AINews issue of
+  2026-09-23.
+- **The thing worth stealing: a bold label on every bullet saying what kind of
+  statement it is.** The Opus 5.5 story runs as "**Launch claims.**",
+  "**Where it leads.**", "**Speed and cost.**", "**List price.**",
+  "**Offset by higher token use.**", "**What that means.**", "**Model size
+  (speculation).**" Facts, interpretations and guesses are the same length and
+  the same font, and the label is the only thing separating them, so it does
+  all the work. The section heading even says "(facts)" out loud. alexandria
+  has a stronger version of this distinction sitting in a graded column and
+  spends it as prose. The ledger entry above is the steal.
+- **A second one, cheaper:** the issue states its own sweep. "We checked 12
+  subreddits, 544 Twitters and no further Discords," with the date range, above
+  the content. It converts silence into information, since a reader who knows
+  the sweep knows what an empty section means. Also the second ledger entry
+  above.
+- **What alexandria does better: the citation goes somewhere.** Every claim in
+  that issue is attributed to a handle, and the handles are mostly the vendor
+  announcing its own product: the top story's three headline numbers cite
+  `@claudeai`, `@AnthropicAI` and `@ClaudeDevs`. The independent numbers, from
+  Artificial Analysis and Vals, are the best material in the issue and they sit
+  in the same list as `@theo` speculating about parameter counts. A reader who
+  wants the basis for a number gets a link to a tweet about it. alexandria's
+  equivalent claim carries an edge to a cited paper and a grade for the
+  evidence behind it, and `semantic_search` and `sql_query` answer "what
+  supports this" for anyone who asks. Note what the comparison implies about
+  the steal: the label is worth taking precisely because AINews needs it more
+  than alexandria does, and alexandria can make it mean more.
+- **One thing not to steal.** The issue's own editorial voice runs hot in a way
+  the house voice bans outright: "today was always going to belong to", "HUGE
+  double digit gains", "Team Zuck is absolutely on fire." It works there
+  because the author is a known person with a podcast. It is ban-list entry 5
+  and entry 12 here.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-27 — Triage records why it screened a paper out, criterion by criterion
+
+- Trigger: this run built the reading-queue drain and ran it against the twelve
+  lines the skill seat wrote on 2026-09-26. Five of the first six ids were not
+  in `papers` at all, so they were ingested from arXiv during the smoke run.
+  The corpus had never seen the papers a skill of ours is built on, and nothing
+  anywhere records whether that is because the firehose missed them or because
+  triage discarded them. Today's craft scan, below, sells the missing half as a
+  feature: Paperguide's screening writes per-criterion evidence for every
+  include and exclude, and its own reviewer quote credits that, not the model,
+  for consistency.
+- What: `triage_log` already has `reasoning`, one prose blob per decision.
+  Replace it, or sit a column beside it, with the three or four criteria the
+  decision actually turns on, each with a verdict and the sentence from the
+  paper behind it: does it measure something, is it about agents or the
+  pipeline that builds them, is there a procedure a skill could carry, is the
+  evidence controlled or asserted. A discard then answers "why not this one"
+  in a query rather than in a paragraph, and the answer can be wrong in a way
+  somebody can see. It also gives the reading queue a counterpart: a paper a
+  seat asks for that triage discarded is a labelled disagreement, which is the
+  cheapest evaluation data the pipeline can produce about its own screening.
+- First step: one `sql_query` over the last 200 triage decisions asking how
+  many `reasoning` blobs already name a criterion explicitly, so the change is
+  argued from what the model writes today rather than from what it could.
+- Cost: $0. Same call, same model, a wider JSON object.
+- Status: proposed
+
+### 2026-09-27 — The reader that could not read a paper writes the queue line itself
+
+- Trigger: building `tools/read_paper.py` today. It ends with an exit code that
+  says precisely what the reading queue exists to record: 3 means arXiv served
+  no HTML and the seat got an abstract. The seat then has to notice that, open
+  docs/research/reading-queue.md, and hand-write a line in the documented
+  format. Every step between the fact and the record is a step that can be
+  skipped, and incident 20 is the standing proof that the skipped step is the
+  recording one.
+- What: `--queue --asked-by skills/<slug> --why "<one clause>"` appends the
+  line itself, in the file's own format, only on an abstract-only or
+  unavailable read, and never twice for the same id. The seat's reading step
+  becomes one command that both reads and records, and the queue stops
+  depending on a seat remembering a format.
+- First step: the append, plus a test that a second run for the same id is a
+  no-op and that a full-text read writes nothing.
+- Cost: $0
+- Status: proposed
+- Not built today on purpose: the queue's format and its append rule are
+  ADR-35's, and prompts/skill-agent.md is the file that would have to name the
+  new command. Charters are owner-merged, so a tool that writes into another
+  seat's register belongs in a proposal before it belongs in the tree.
+
+### 2026-09-27 — Ingest cannot tell an empty arXiv from a refused one
+
+- Trigger: while building the reader, every form of
+  `export.arxiv.org/api/query` answered **HTTP 406** from this runner, over
+  http and https, with and without headers, while `arxiv.org/abs/<id>` answered
+  200 from the same process a second later. `pipeline/ingest.py:fetch_arxiv`
+  calls that same API through feedparser, once per category, and feedparser
+  returns an empty `entries` list for a refusal exactly as it does for a
+  category with no new papers. The function appends nothing, prints nothing,
+  and the run ends on "fetched N items, inserted M new papers" with the blog
+  feeds making up N. A day of arXiv returning nothing looks like a quiet day.
+- What: count per source, print per source, and fail the run when a category
+  that has never been empty comes back empty. The same two-path fallback the
+  reader now carries (`tools/read_paper.py:fetch_metadata`) is the repair, and
+  the loud failure is the part that matters more, because the pipeline's whole
+  input is one API that nothing watches.
+- First step: `print(f"arxiv {cat}: {len(feed.entries)} entries")` per category
+  and a raise when every category is empty, which is four lines and can ship
+  with the next ingest change.
+- Cost: $0
+- Status: proposed
+- Unverified from here: this run holds no Modal credential and no database URL,
+  so whether Modal's egress sees the same 406 is unknown. The corpus is at
+  8,956 papers, so it was working recently.
+
+### 2026-09-27 — Craft scan: Paperguide (paperguide.ai)
+
+- Trigger: the rotation. Paperguide has sat on docs/market/landscape.md since
+  2026-09-18 with a two-line entry and no craft scan, and today's build is
+  about reading papers in full, which is the thing Paperguide sells. Read from
+  `https://paperguide.ai/` and `https://paperguide.ai/pricing`, both HTTP 200
+  on 2026-09-27.
+- **The thing worth stealing: it screens against a named external standard, and
+  it sells the standard rather than the model.** The top two tiers carry "PRISMA
+  grade dual reviewer screening", PRISMA being the reporting standard for
+  systematic reviews, and the customer quote under it credits per-criterion
+  evidence for making decisions "more consistent, not less" while cutting
+  abstract screening from three weeks to one. alexandria's triage is a single
+  model verdict with a score and a prose reason, judged against nothing a
+  reader outside the repo has heard of. The ledger entry above is the steal,
+  and the cheap half of it is that a named criterion makes a wrong screening
+  visible, which is the failure mode our own reading queue exists to catch.
+- **A second one, about pricing rather than craft.** The ladder is $0, $19,
+  $49, $149 per seat, and every tier is metered in AI credits with the caps
+  written out: 2,000, 12,500, 50,000, 150,000, plus Search API requests as a
+  separate line, 10 a month free and 1,500 at the top. A research tool can
+  publish per-unit limits without the page reading as an invoice, which is
+  worth knowing while alexandria's own price ladder is still being argued at
+  $20.
+- **What alexandria does better: we say what we did not read.** Paperguide's
+  landing claims 200M+ papers and 974,000+ researchers and states no coverage
+  or failure number anywhere on either page. alexandria records
+  `papers.fulltext_chars` per paper, prints how many papers a run read in full
+  against how many it read from the abstract, and, from this PR, puts what it
+  could not read into a file any seat can act on. The number that made this
+  seat's 2026-09-27 runs uncomfortable, 164 papers read in full out of 8,956,
+  is a number a competitor would not print. Publishing it is why it got fixed.
+- **One thing not to steal:** the free tier gates "Chat with PDF" and caps an
+  extraction table at 10 papers, so the first thing a new user does is meet a
+  limit. alexandria's equivalent surface is the weekly issue, which has to be
+  good before it is scarce.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — The board clause belongs in all twelve charters, not in one seat's run
+- Trigger: `docs/standards/pm.md` §14 (owner, 2026-09-27) says "every seat
+  reads it at the start of a run and writes to it as it works," and commit
+  6820ac1 put `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` into all twelve seat
+  workflows. This run built the door and used it. The other eleven charters do
+  not name the board, so eleven seats now hold credentials for a register they
+  have no instruction to open. The board's `runs` array was empty when this run
+  read it, a day and a half after the board was seeded.
+- What: one paragraph, identical in all twelve charters, in the Observe step
+  rather than the ship check, because the board is read before the work and not
+  before the merge: read the board first with `python3 tools/board.py show
+  --seat <seat>`, move the item you are about to work on to In progress, create
+  one if none exists, comment the pull request url when you ship, and let the
+  final workflow step post the run report. The pull-request-collision rule and
+  the dispatch-queue rule both already have this shape, so the wording can be
+  lifted from them. A twelve-charter edit is the owner's merge by definition
+  (charters are edited only by her), which is why this is a ledger entry and not
+  a commit.
+- First step: draft the paragraph once and put it in this ledger entry's own
+  text, so her merge of the charters is a copy rather than a writing task. The
+  engineer charter is the one seat that may not receive it from here, since a
+  seat never edits its own charter.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — A run report cannot be posted twice, and right now it can
+- Trigger: found while building the board client. The board's HTTP server
+  implements GET and POST; PATCH, PUT and DELETE all answer 501. So a posted run
+  report is permanent, and two blank rows this run created while mapping the
+  undocumented `POST /api/runs` endpoint are on `alexandria`'s board forever
+  (`INC-2026-09-28-probe-wrote-two-permanent-rows`). The step that will call
+  `report` runs under `if: always()`, which is right, but a re-run of a job
+  fires it a second time for the same run and files a second row nobody can
+  remove.
+- What: `tools/board.py report` reads the company's board before it posts and
+  refuses when a run row already carries this run's `run_url`, printing what it
+  found instead of posting. That turns an append-only endpoint into an
+  idempotent one from the client's side, which is the only side this repository
+  controls. The same read makes a second, better thing possible: the report can
+  carry `item_ids` for the items the run actually touched, by matching the
+  branch against the items a seat moved this run, instead of the seat having to
+  pass them by hand.
+- First step: the guard, which is one board read and one comparison, plus the
+  test that a second `report` for one `run_url` posts nothing. The `item_ids`
+  half is separate and can wait.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — Craft scan: Ben's Bites (bensbites.com)
+- Trigger: today's craft scan, rotating through docs/market/landscape.md. Ben's
+  Bites was added 2026-09-24, last observed the same day, and no craft scan has
+  covered it. It is also the landscape's closest content-brand price comp to the
+  $20 tier, so the entry is load-bearing for positioning.md's price ladder.
+- What: three findings, all from the live site and its public archive API on
+  2026-09-28, and the first one changes what the landscape entry means.
+- **Every post is free, and there are no exceptions.** All 15 of the newest
+  posts in `bensbites.com/api/v1/archive`, back to 2026-08-21, carry
+  `"audience": "everyone"`. A newsletter the landscape records as selling an $80
+  community and a $150 Pro tier publishes 100% of its content to everybody. Its
+  paid product is not gated writing at all. That is alexandria's exact shape,
+  free digest plus a paid spine, running at 171,000 subscribers, which is the
+  best evidence yet that the 2026-09-17 pricing decision is a normal shape in
+  this category rather than a concession.
+- **The thing worth stealing: a numbered series inside the same list.** The
+  archive alternates roughly three news posts a week with one "Ben's session
+  #N", numbered #3 through #7 over five weeks. The number is the whole trick. A
+  reader sees a series rather than a post, knows there are six earlier ones, and
+  can start anywhere. alexandria publishes one weekly format and its only
+  reader-visible serial marker is the ISO week code, which ban-list entry 14
+  already names as internal vocabulary a subscriber cannot decode. The skill
+  library is the obvious series and has no serial form at all: a skill lands on
+  a page and nothing tells a reader it is the fourth of anything. This is the
+  writer's and the frontend's to build, not this seat's, which is why it is here
+  as a proposal.
+- **What alexandria does better: it owns its archive and its evidence.** Ben's
+  Bites is on Substack, so its archive URLs, its rendering and its list belong to
+  a vendor. alexandria's archive is its own site reading its own Postgres. And
+  every Ben's Bites item is a link plus a take, with no citation, no claim
+  structure and nothing an agent can load, while alexandria's items each cite a
+  claim-graph edge.
+- **One number to hand to the market seat rather than use.** The landscape
+  records ~120,000 subscribers as of 2026-09-24 and the site says "Over 171,000"
+  today. A 42% move in four days is far likelier to be two incomparable figures
+  than real growth, so positioning.md should not be updated from this until the
+  market seat decides which number it trusts.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — URGENT: the board accepts every write except the one pm.md §14 is about
+- Trigger: observed live during this run, and it broke inside the run. Early in
+  the session `POST /api/runs` worked twice (those are the two blank probe rows
+  in `INC-2026-09-28-probe-wrote-two-permanent-rows`). Roughly an hour later the
+  same call answers `503 the board's database is unreachable` on four
+  consecutive attempts, so this run's real report never landed. At the same
+  moment, on the same token: `GET /api/health` returns
+  `{"ok": true, "companies": 6, "token_configured": true}`, `GET
+  /api/board/alexandria` serves the full board, and `POST
+  /api/items/<id>/comments` succeeds. Reads work, item writes work, comment
+  writes work, move writes work. Only run reports fail.
+- What: one endpoint on the board is down while the service reports healthy, and
+  it is the endpoint the owner's directive of 2026-09-27 is specifically about.
+  `docs/standards/pm.md` §14's own summary of the board is "items in columns, in
+  sprints, per company; run reports beside them," and the run-reports half has
+  been dropping writes for at least an hour. The board server is on the host and
+  is not in this repository, so no seat can fix it.
+- Two things make this worse than one broken route. **`GET /api/health` reports
+  `ok` while a write path is down**, so any monitor built on it is blind to this
+  exact failure, and the PM's delivery-health sweep would have called the board
+  green. And **the client is designed to swallow it**, correctly: a run report is
+  not the work, so `tools/board.py report` prints `::warning::` and exits 0
+  rather than failing a run over a notification, which is the whole lesson of
+  `INC-2026-09-26-run-report-dash-echo`. Put those together and the workflow step
+  queued as item 5 in `docs/agents/pending-workflow-changes.md` would have run
+  twelve times a day, printed a warning nobody reads, landed nothing, and left
+  the board's `runs` array empty while every other part of the board filled up.
+  The fleet would look like it was reporting.
+- First step: the owner's, on the host, because that is where the board is.
+  Worth checking whether the run-report write touches something the item and
+  comment writes do not, since the same credential and the same process serve
+  both. On this side there is one thing worth building and it is already in the
+  ledger as this run's idempotence-guard entry: the same board read that guard
+  needs also makes it possible for `report` to verify its own row landed and say
+  so loudly when it did not.
+- Cost: $0
+- Status: urgent
+
+### 2026-09-28 — URGENT: nobody in this org can tell whether the press printed today
+- Trigger: sprint 2026-09-28's first item asks for a definitive answer on this
+  Monday's send, and this run could not give one. `docs/agents/delivery-health.md`
+  guardrail 4 names the evidence exactly, which is the newest row in `digests`,
+  and no seat holds a credential for that table. `DATABASE_URL` lives in the
+  `neon` Modal secret and in no GitHub Actions environment, so every seat that
+  has ever been asked this question has substituted a proxy. This morning's
+  standup substituted commits under `site/content/issues/`, which cannot answer
+  it at any time: nothing in this repository publishes a digest to the site, so
+  that signal reads the same on a perfect week as on a dead one.
+- What: the press is the product. Launch is 2026-10-13, fifteen days out, and
+  the org's ability to answer "did this week's issue reach a reader" is
+  currently a guess. `tools/delivery_health.py` shipped in this run and answers
+  the two public surfaces, the site and the MCP server, with no credential at
+  all. It answers the two that matter most with `unknown`, and prints exit
+  status 2 rather than 0 so that no reader mistakes it for green. The gap is one
+  environment variable.
+- First step: the owner's, and it is small. Create a read-only role in Neon,
+  put its connection string in a repository secret, and add that secret to the
+  seat workflows the same way `BOARD_API_URL` was added on 2026-09-27. Read-only
+  matters: a seat that can drop a table does not need to be able to, and the
+  MCP server already models the pattern with its own restricted query path.
+  After that, `python3 tools/delivery_health.py` answers all four surfaces and
+  guardrail 4 has a reader for the first time since it was written.
+- Cost: $0. Neon roles are free and this adds no service and no account.
+- Status: urgent
+
+### 2026-09-28 — A public status page, split into what we run and what we rent
+- Trigger: today's craft scan of Elicit, below, and one thing this repo already
+  knows. Elicit publishes three uptime groups, and the second is "Model
+  providers we use" at 99.54% against 100% for its own service. alexandria has
+  been broken by a rented dependency three times in one week (incident 24's
+  withdrawn model, the Kimi migration's four failures, the board's `POST
+  /api/runs` returning 503 today) and has no surface anywhere that separates
+  "our code failed" from "the thing we rent failed". The board's own
+  `/api/health` is the counter-example in miniature: it returned `ok` today
+  while one write path was down.
+- What: a `/status` page on the site, generated from
+  `tools/delivery_health.py --json`, with the surfaces grouped the way Elicit
+  groups them. What we run is the press, the corpus pipeline, the site and the
+  MCP server. What we rent is Moonshot, Groq, Neon, Modal and Gmail. Two
+  properties are worth being stubborn about, and both come out of this week.
+  A dependency group whose failures are visible is the honest version of a $0
+  product built on free tiers, and a page that says `unknown` where it cannot
+  see is worth more than one that says `ok` by default, which is the error the
+  board's health endpoint makes.
+- First step: the JSON already exists. One static route reading the output of a
+  scheduled `delivery_health` run, rendered with the three states the tool
+  already distinguishes. No new backend and no new service.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — The press reports onto the board like every other scheduled job
+- Trigger: `tools/board.py` landed on this seat's chain yesterday and every
+  agent seat now posts a run report. The press does not, and the press is the
+  only scheduled job in this org that ships something to a customer. So the one
+  job whose silence costs a reader is the one job the board cannot see, which is
+  a straight restatement of `docs/agents/delivery-health.md`'s definition error: every
+  health surface the org keeps watches the agents and none of them watches the
+  product.
+- What: `weekly()` posts a run report to `BOARD_API_URL` on every path out of
+  the run, including the two alarm paths, carrying the week, the model that
+  wrote it, the word count and the subscriber count. The board is then the
+  outside observer guardrail 4 asks for, and it is one every seat can already
+  read with a token every seat already has. This does not replace the
+  `DATABASE_URL` proposal above, because a job that never starts cannot report
+  either. It closes the other half, which is a job that starts and dies.
+- First step: pass the board's URL and token into the `weekly` Modal function
+  as one more secret, and call the same client `tools/board.py` already
+  implements. Worth waiting on the board's 503, recorded above as urgent, since
+  `POST /api/runs` is the exact endpoint this needs.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-28 — Craft scan: Elicit (elicit.com, status.elicit.com)
+The flagship of the category alexandria competes in, and the last one this seat
+had not scanned this week. Fetched today: the home page, the help center, and
+the status page linked from its "About Elicit" collection.
+
+**Worth stealing: a status page that names the dependency, not just the
+service.** status.elicit.com carries three groups over ninety days. Elicit
+itself at 100%, "Infrastructure we run on" at 100%, and "Model providers we
+use" at 99.54%. The third group is the interesting one. Elicit is a product
+built on somebody else's models, exactly as alexandria is, and rather than
+hiding that it gives the dependency its own public uptime line. A reader who
+sees a bad answer on a bad day can tell which layer failed. alexandria has the
+same exposure and publishes nothing: three of this week's production failures
+were rented dependencies changing under the product, and a reader had no way to
+know that any of them happened. The ledger entry above is this, made concrete.
+
+**Worth noting, separately: Elicit ships a page called "Elicit's limitations"
+and one called "Elicit's reliability", both in its customer-facing help
+center.** A research tool that publishes where it is weak is making the same
+bet alexandria makes with claim grades and deprecated claims, and it is making
+it one level further out, in the sales surface rather than in the product.
+
+**What alexandria does better: the failure is designed not to reach the
+reader.** Elicit's status page is how you find out that a model provider had a
+bad day. alexandria's press answers the same event with guardrails 1 and 2,
+which are an availability check at run start against the provider's own
+`/models` endpoint and an ordered fallback list spread across two providers,
+every entry verified by the same check. The design intent is that a withdrawn
+model costs the reader nothing, because the issue is written by the next model
+in the list instead. That is a stronger promise than transparency about the
+outage, and this week is evidence it was needed: incident 24 is precisely a
+provider withdrawing a model with no notice. The honest caveat is that the
+promise is younger than the scan makes it sound, since it was built on
+2026-09-24 in response to that incident and has had one Monday to prove itself.
+
+### 2026-09-29 — A claim id in the graph's URL, so a receipt links instead of instructing
+- Trigger: building the receipts block on `/skills` today, ban list entry 14
+  named claim ids as internal vocabulary printed at the reader, and its amended
+  test is whether someone who has never seen the codebase could say what the
+  number refers to. The sprint item required the ids on the page, so they now
+  ship with a sentence that decodes them. That sentence has to end in an
+  instruction, "search for it on the graph", because `/graph` holds its search
+  in `useState` and reads nothing from the URL. Twelve numbers on the page, and
+  every one of them is a copy-and-paste for the reader.
+- What: `site/app/graph/page.jsx` reads a `claim` search parameter and passes it
+  to `GraphExplorer` as the initial query, which already matches on `c.id`. Every
+  claim id on the skills page then becomes a link straight to the finding and the
+  paper behind it, and the decoding sentence becomes unnecessary. It also makes
+  the graph linkable from anywhere else, which nothing in the org can do today:
+  an issue, a brief and a skill all cite claim ids and none of them can point at
+  one.
+- First step: one `searchParams` read in the graph page and one `useState`
+  initialiser in the explorer, then turn the ids in `SkillReceipts` into links.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The skill frontmatter a customer reads is not written to the voice a customer is owed
+- Trigger: the receipts block put `provenance.validated` on a public page for
+  the first time today, and harness-engineering's reads "bare Claude endorsed
+  imitation fine-tuning on a stronger model's trajectories; with this skill
+  loaded it refused". That is a semicolon join, which L-A5 in
+  docs/standards/lessons.md bans in owner-facing prose and the house voice bans
+  in user-facing prose. It was written on 2026-09-12 as an internal note in a
+  file no visitor could see, and it was correct as one. Today it is sales copy.
+- What: the field's contract changed the moment it rendered, and nothing told the
+  skill seat. Either prompts/skill-agent.md states that `validated`, `extracted`
+  and the skill `description` are customer-facing strings governed by
+  docs/voice/ban-list.md, or the page stops printing the raw field and prints a
+  date plus a rewritten line. The first is better, because the raw sentence is
+  the most persuasive thing on the page: it is a real A/B trial with a real
+  outcome, and no rewrite of it will beat it for evidence.
+- First step: a check in `tests/test_skill_receipts.py` that every string the
+  page renders from frontmatter is free of semicolon joins and stylistic em
+  dashes, which fails today on one skill and tells the skill seat exactly what
+  to fix. The check belongs to this seat and the repair belongs to the skill
+  seat, which is why it is filed rather than merged: a test that fails on a file
+  this charter forbids it to edit is a red suite with no owner.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The shelves are named for the research, and a buyer arrives looking for the job
+- Trigger: today's craft scan of skillbay.sh, below, read against the page this
+  run spent the day on. skillbay sorts its catalogue into twelve categories that
+  are job names: coding, writing, content, research, data, devops, design, sales,
+  legal, operations, productivity, other. alexandria's six shelves are research
+  areas: agent harnesses, context engineering, multi-agent systems, training
+  loops, serving and inference, multi-modal systems. Four of the six have been
+  empty since the page was built, and the resting page shows all six, so the
+  first thing a cold visitor sees is four statements that the library has
+  nothing for them.
+- What: this is not an argument for renaming the shelves, because the research
+  taxonomy is the honest one and docs/vision.md §2 is where it comes from. It is
+  an argument that the taxonomy is the wrong index for a buyer's first ten
+  seconds. A second axis, "what were you about to do", over the same skills, with
+  the shelves kept as the structural view. The claim-graph work means the org
+  already has the material for it: a skill's `triggers.json` positives are
+  literally the jobs it is for, written as prompts, and they are already tested
+  against a decoy panel.
+- First step: derive a job-shaped facet from each skill's positive trigger cases
+  and render it as a filter above the shelves, before writing any new taxonomy by
+  hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Craft scan: skillbay.sh, the paid skill marketplace
+The closest product in the landscape to the page this run rebuilt, and one
+carried in docs/market/landscape.md since 2026-09-18 without ever being opened.
+Fetched today: the catalogue home page.
+
+**Worth stealing: the price is on the row, at rest.** Every listing states its
+price as a field, beside the date, the category and the seller, with "free" said
+in the same place a number would go. alexandria states its entitlement once, in
+an open row and once more at the foot of the page, which is the owner's ruling of
+2026-09-18 and a good one for fifty rows. The stealable part is narrower than the
+whole pattern: skillbay makes the commercial fact a field rather than a sentence,
+so a buyer scanning twelve rows never wonders about any of them.
+
+**What alexandria does better, and today it is not close.** skillbay's entire
+trust claim is six words in its header, "curated by @skeptrune", and a listing
+carries no version, no date of last check, no test result and no statement of
+what curation meant. The buyer is asked to trust a person's taste and given
+nothing to check it against. That is exactly the objection the HN thread on its
+launch raised and the founder conceded, recorded in the landscape entry: why buy
+a markdown file when a model will write you one. As of this run every skill on
+`/skills` answers that with a dated trigger-test result, an engine version, a
+pass count rather than a percentage, and a sha that pins the result to the exact
+text on the page. The one that was measured against an eight-case suite says
+eight cases. The one with a narrow decision says so rather than rounding it into
+a hundred percent.
+
+**The honest caveat, because the scan cuts both ways.** skillbay is selling
+twelve categories of skill to anyone with a job to do, and alexandria is selling
+four skills about agent engineering. A trust apparatus is cheap to build for four
+files and its cost is not linear. The receipts shipped today are generated from
+the instrument's own output with no hand-written step, which is the property that
+has to survive fifty skills, and it is the reason the block was built off
+`skills/_validation/results/` rather than off anything a seat types.
+
+### 2026-09-29 — Every labelled edge is kept, so precision becomes a trend
+- Trigger: today's craft scan of Semantic Scholar, below, read against the
+  worksheet that shipped this run. Its Highly Influential Citations feature,
+  the one edge weight in the largest research graph anybody runs, rests on a
+  dataset of roughly 450 hand-annotated citations released with Valenzuela,
+  Ha and Etzioni's "Identifying Meaningful Citations" (AAAI Scholarly Big Data
+  workshop, 2015). Not a prompt. A labelled set. This repository already knows
+  that pattern in one place: `triage_log.human_verdict` makes every routing
+  decision an eval row, and the charter calls that table the eval set for the
+  recursive loop. `claim_links` has no equivalent, so the precision worksheet
+  `tools/graph_audit.py --sample` produces is a measurement that evaporates
+  the moment somebody closes the file.
+- What: keep the labels. A filled worksheet is committed under
+  `docs/evals/graph-precision/YYYY-MM-DD-seed.json`, and because the seed
+  determines the draw, a later audit under a new prompt re-labels the same
+  edges and the two files are directly comparable. Once three or four sheets
+  exist the interesting artifact is not any one precision number, it is the
+  series, and the series is what tells you whether slice 3's confidence
+  anchoring actually worked. The stronger version puts the verdicts in
+  Postgres next to the edge, exactly as `human_verdict` sits next to a triage
+  decision, which also lets the graph page show a reader that an edge was
+  checked by a person. That is a schema change and belongs to the owner.
+- First step: label the first 40-edge sheet the day the credential lands, and
+  commit it. The directory and the naming are the whole mechanism.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — /graph reports what has been judged, not only what is linked
+- Trigger: writing section 3 of docs/product/graph-quality.md. Two live
+  readings of the same database on 2026-09-26 sit in this repository and say
+  different things. `site/lib/graph-live.js` records 214 of 746 claims
+  carrying no link, so 532 do, and the page reports that as "linked". The
+  owner's own Neon count the same day, recorded in `pipeline/interpret.py`,
+  says 487 claims were still in `interpret_queue`, so only 259 had ever been
+  judged at all. Both are true. A claim counts as linked when something newer
+  pointed at it, which is not the same as anything having asked what it
+  relates to, so at least 273 linked claims are claims the judge never
+  reached. The page's number reads as a healthy graph over a corpus that is
+  two thirds unjudged.
+- What: one more count on `/graph`. The query already fetches four totals in a
+  single round trip, and `select count(*) from claims where interpreted_at is
+  not null` is a fifth line in the same statement. The page then says how much
+  of the library has been judged beside how much of it is on screen, which is
+  the honest version of the same sentence it already tells. Worth a taste
+  ruling on the label, because "interpreted" is the pipeline's word and entry
+  14 of the ban list is about exactly that.
+- First step: frontend seat, one line in `loadGraph()`'s counts query and one
+  entry in the page's count list.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A CI step no path can reach is a guard that cannot fire
+- Trigger: found in this run, in my own seat's work from this morning. The
+  skill-receipts step was added to `.github/workflows-pending/checks.yml` at
+  02:56 today, correctly written and correctly reasoned, and not one of the
+  files it guards was added to the workflow's `paths`. Editing a `SKILL.md`
+  would not have run it. The step was fixed in this run's own commit, and the
+  near miss is the point: a check can be written, reviewed, merged and still
+  never execute, and nothing about reading the file tells you which. That is
+  incident 20's shape once more, one level down. The register map already says
+  recording is not enforcing, and this says installing is not firing.
+- What: a check that reads every workflow under `.github/`, takes each step's
+  pytest target, and asserts that the test file itself and the modules it
+  imports are matched by at least one entry in that workflow's `paths`. It is
+  a small static analysis and it would have caught this morning's gap in the
+  same pull request that made it. `tools/check_registers.py` is the natural
+  home, because it is already the command that asks whether the shared files
+  survived everybody appending to them, and it already sits in front of an
+  `&&` printing nothing when all is well.
+- First step: the parser and one assertion over the five steps
+  `checks.yml` already carries, engineer seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Craft scan: Semantic Scholar (semanticscholar.org)
+- Trigger: today's craft scan, rotating through docs/market/landscape.md.
+  Semantic Scholar was last observed 2026-09-18 and no craft scan has covered
+  it. It is also the right product to read on the day the claim graph gets its
+  first instrument, because it is the working answer to the question the
+  owner's directive asks. If "industry standard" means anything for a research
+  graph, it means this one.
+  Fetched today: [the citation-intent FAQ](https://www.semanticscholar.org/faq/citation-intent)
+  and the record for
+  [Identifying Meaningful Citations](https://www.semanticscholar.org/paper/Identifying-Meaningful-Citations-Valenzuela-Escarcega-Ha/1c7be3fc28296a97607d426f9168ad4836407e4b).
+
+**Worth stealing: the relation vocabulary and the edge weight are both
+learned, and the labelled set is small.** Semantic Scholar's edges carry an
+intent from three classes, and the FAQ defines them in its own words: Background
+citations "provide historical context, justification of importance, and/or
+additional information", Method citations "use the previously established
+procedures or experiments", and Result citations "extend on findings from
+research that was previously conducted". Separately, an edge may be marked
+highly influential, and that flag comes from a supervised model trained on
+about 450 hand-annotated citations. Neither number came out of a prompt. The
+part worth stealing is the scale rather than the technique: 450 labels bought
+the edge weight on a graph with billions of edges, and
+`tools/graph_audit.py --sample 40` draws forty at a time. Two afternoons of
+reading puts this project in the same order of magnitude as the reference
+implementation, which is not a sentence that is true of many comparisons in
+this ledger.
+
+**What alexandria does better: the vocabulary can say a finding is wrong now.**
+Background, Method and Result all describe why one paper reached for another.
+None of the three can record disagreement, so a graph of 2.4 billion citation
+edges cannot tell a reader that what they learned last year has since been
+overturned. Citation intent answers "how was this used". alexandria's four
+verbs include `contradicts`, the edge carries a confidence, and
+`deprecated_claims` turns a confident incoming contradiction into the
+Left-Behind Index. That is a product the larger graph structurally does not
+have, and today's audit is partly about whether ours is calibrated well enough
+to deserve it, since the 0.7 gate under that page is currently a threshold
+applied to a number nothing anchors.
+
+**The caveat.** Semantic Scholar is infrastructure at a scale this project will
+never need, its classifier is trained on a published dataset rather than asked
+at inference time, and its edges are between papers where ours are between
+claims. The scale comparison above is a comparison of labelling effort, not of
+graphs.
+
+### 2026-09-26 — Four claim rows overstate their papers; file for revision (skill seat)
+
+- Trigger: the first run under ADR-35 read all five papers of the
+  skill-library cluster in full (arXiv HTML) before drafting
+  skills/skill-library-engineering. Four of the twenty rows it cited read
+  stronger than the paper behind them. The skill says so in its own
+  "Where the full text narrows what our claim rows say" section, which is
+  what ADR-35 asks for, but the rows themselves are still in silver as
+  written.
+- What: revise or annotate these four claims. (a) Claim 566, structured
+  multi-file skill packages outperform monolithic files, is 2.85 points
+  and the smallest of that paper's three ablations; the row carries no
+  magnitude. (b) Claim 328, diversity-aware routing improves recall and
+  full coverage with larger gains on multi-skill queries, is 1.4 and 1.3
+  points at the only cutoff where both systems were actually compared,
+  and ties plain embedding retrieval exactly on single-skill queries; the
+  large numbers come from a cutoff at which the baseline's released output
+  is truncated, which the paper states outright. (c) Claim 400 names
+  Claude Code as a system the native router beat. The paper's table does
+  not contain Claude Code. It lists four open models running in Codex,
+  with their numbers quoted from the benchmark's own paper, and the router
+  runs in a different harness. This one is a misattribution, not a
+  magnitude problem. (d) Claim 320, strongest average performance among
+  compared methods, is a 2.2 to 2.5 point margin over its own ablations
+  inside a method whose gain over no-skill is 13 to 27 points; the row
+  invites crediting the search rather than the grounding.
+- Whose call: research seat to re-read and rewrite, or the engineer if
+  the fix belongs in prompts/distill.md's instructions about hedges.
+  ADR-10 makes the claim graph append-only, so this is a re-judgment, not
+  an edit, and the mechanism for that is the part that needs deciding.
+- First step: decide whether a narrowed claim is a new row with a
+  `refines` edge to the old one, or an annotation column. Nothing in the
+  schema answers this today, which is why this entry exists rather than a
+  patch.
+- Cost: $0 beyond the re-read.
+- Status: proposed
+
+### 2026-09-26 — harness-engineering fires on tool-registry routing prompts (skill seat)
+
+- Trigger: case `sle-neg-2` in skills/skill-library-engineering/triggers.json
+  fails. The prompt is about picking the wrong tool from thirty registered
+  on an MCP server, and skills/harness-engineering wins it at 0.1638
+  against a decoy panel, so a skill fires on a request it does not cover.
+- What: verified this is not the new draft stealing a case. Removing
+  skills/skill-library-engineering from the tree entirely and re-running
+  the same prompt still fires harness-engineering, at margin +0.027
+  against the null panel rather than +0.037. The draft ranks second and
+  is not the cause. Left failing per prompts/skill-extract.md, which says
+  a validated skill is not the extracting run's to edit.
+- Whose call: skill seat, on a run whose artifact is not also being judged
+  by the same instrument. The fix is one clause of
+  skills/harness-engineering's description, not a body change.
+- First step: harness-engineering's description says "the scaffold around
+  a model - tools, prompts, loop structure, feedback", and "tools" there
+  means the interface an agent acts through, not a registry the agent
+  selects from. Qualify that clause and re-run the suite.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The skill literature's foundational papers are absent from the corpus (skill seat)
+
+- Trigger: every one of the twelve works the five read papers build on is
+  missing from the `papers` table. Checked by id, not inferred: a select
+  over the twelve arXiv ids returns zero rows.
+- What: the corpus holds the 2026 results of the agent-skill cluster and
+  none of the work those results are measured against. Concretely,
+  alexandria now asserts in a shipped skill that an ill-suited skill
+  leaves a task worse off than no skill at all, on the say-so of three
+  papers that all cite SkillsBench (arxiv:2602.12670) for it, which the
+  library has never read. The same holds for SkillRouter
+  (arxiv:2603.22455), the routing benchmark two of the five use as their
+  baseline, and for SkillOpt (arxiv:2605.23904), the optimizing baseline
+  every "+4.01 percent" in the corpus is relative to. All twelve, with
+  reasons, are queued in docs/research/reading-queue.md under this run's
+  heading.
+- Whose call: engineer, since ADR-35 gives the engineer the job of feeding
+  queued arXiv ids to distill ahead of the daily intake. Research seat
+  drains the rest.
+- First step: the twelve ids are 2602.12670, 2603.22455, 2608.04828,
+  2605.23904, 2602.12430, 2603.25158, 2605.05726, 2604.24594, 2604.01687,
+  2606.03056, 2607.25853, 2603.02766. They are all cs.AI or cs.LG arXiv
+  preprints from 2026, so the normal ingest path reaches them.
+- Cost: twelve distill runs.
+- Status: proposed
+
+### 2026-09-26 — prompts/skill-extract.md's already-gold check reads an empty table (skill seat)
+
+- Trigger: the extract prompt tells the seat to check `select path from
+  promotions where status = 'approved'` so a run never re-extracts a
+  cluster the library already carries. That table has zero rows, against
+  four skills on disk.
+- What: the `promotions` table has never been written to. The only guard
+  against re-extracting a cluster is reading `skills/` on disk and the
+  provenance blocks in it, which is what this run actually did. This is
+  not urgent while the library is four skills and one seat writes them.
+  It is load-bearing the moment the ADR-13 panel exists, because the panel
+  writes its verdicts as `promotions` rows and the OKR file counts on that
+  path. Filed rather than patched in the prompt, because the right fix is
+  to start writing the rows, not to delete the check.
+- Whose call: engineer, alongside the reviewer panel (ADR-13, O3 KR1).
+  This run patched prompts/skill-extract.md to say the check is currently
+  dead and to read the disk instead, which is a note, not a fix.
+- First step: decide whether a merged skill PR writes its own `promotions`
+  row, or whether the panel does it at verdict time.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Three claim rows in the long-context cluster read stronger than their papers; file for revision (skill seat)
+
+- Trigger: the second ADR-35 run read five of the seven papers behind
+  skills/context-window-engineering in full. Three rows from one paper,
+  Random Attention (arxiv:2609.03430), state flatly what the paper itself
+  hedges, scopes, or marks as inferred. The skill says so in its own
+  "Where the full text narrows our claim rows" section, which is what
+  ADR-35 asks for, and the rows are still in silver as written.
+- What: revise or annotate these three. (a) Claim 79 says the selection
+  signal used by existing cache compression methods contributes almost
+  nothing to performance. The paper's limitations section says the wins
+  "establish that Random Attention is competitive, not that scores carry
+  no information," restricts the claim to decode-phase eviction with short
+  prompts and long traces against training-free evictors, calls it a claim
+  about the aggregate rather than every cell, and warns that a
+  non-significant cell is not evidence of equality. (b) Claim 78 reports a
+  match across four models and six tasks with no exception named. Four
+  comparisons across the paper's two accuracy tables favour a baseline
+  significantly, code reasoning on the two larger models is the systematic
+  one, and the throughput figure inverts at short generations, where every
+  compressed method serves less than uncompressed attention. (c) Claim 80
+  states that reasoning traces protect themselves through redundancy in the
+  text and across attention heads. Cross-head pooling is shown only in a
+  planted-fact probe on one 4B model where the text is non-redundant by
+  construction, and the paper says text-level redundancy is inferred rather
+  than measured.
+- Whose call: research seat, which owns distill and interpret output.
+- First step: decide whether a revision rewrites `claims.claim` in place or
+  adds a scope annotation beside it, since the skill's provenance cites the
+  id and a silent rewrite would break the receipt.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A contradicts edge that compares an overall average to a subset average (skill seat)
+
+- Trigger: the graph records claim 265 contradicting claim 85, at 0.78
+  confidence, from `openai/gpt-oss-120b@fbe080261d6b`. It is the only
+  contradiction in the long-context cluster's neighbourhood and the reason
+  the cluster was picked, because a contradiction inside a cluster is part
+  of the skill.
+- What: reading both papers in full shows the two rows are not opposed.
+  Claim 85 reports 12.5 percent average success on the four RMBench tasks
+  that require multiple past observations, where that paper leads every
+  published baseline it lists, the best of which reaches 7.3 percent. Claim
+  265 reports 83.3 percent overall across RMBench's full nine tasks, five of
+  which need only a single past observation. On the same four tasks the
+  second paper reports 82, 94, 100 and 96 percent, so the architectures do
+  differ sharply, and the edge still does not say that. Neither row carries
+  its denominator, and the linker had only the rows.
+- Why it matters beyond this edge: a contradiction detector that reads claim
+  text without task counts will keep producing this shape, and it produces it
+  in the direction that looks most interesting, because two numbers far apart
+  on a shared benchmark name is exactly what scores highest. The cluster
+  survey treats contradictions as signal, so a false one steers a whole run.
+- Whose call: engineer, alongside the graph-quality instrument in PR #134.
+- First step: check whether the linker prompt can require the evaluated
+  population, in words, on both sides before it may emit `contradicts`, and
+  whether a sample of existing contradicts edges shows the same defect.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A skill fires on a GPU sizing question because its boundary sentence sits at the end of its description (skill seat)
+
+- Trigger: this run's hard negative for the new skill, "We serve a 70B model
+  and GPU memory is our bottleneck at peak. Should we quantize the weights to
+  4-bit or add two more GPUs and shard across them?", expects silence and
+  routes to `self-improving-post-training-loops` at 0.138 against a best
+  decoy of 0.080. The new skill does not appear in the top four, so this is
+  not a draft defect.
+- What: the whole over-fire rests on two tokens, `model` and `weight`. The
+  word `weight` reaches that description only through its closing sentence,
+  "this skill covers the training loop that updates the weights," which is a
+  boundary sentence placed after the "Use when" clause. `activation_clause()`
+  weights everything from the first "Use when" to the end of the field by
+  1.25, so that sentence is inside the boosted span. This is the exact defect
+  prompts/skill-extract.md already documents, learned 2026-09-22, and the
+  library's own gold skill commits it.
+- Why it matters: the rule was recorded in the prompt and never checked
+  against the skills already on disk, which is L-A9 and incident 20's shape.
+  The fix is one sentence moved, not a rewrite.
+- Whose call: skill seat, but not this run. That description belongs to a
+  validated skill and a validated skill is not a drafting run's to edit.
+- First step: move the boundary sentence of
+  `skills/self-improving-post-training-loops/SKILL.md` ahead of its "Use
+  when" clause, re-run the suite, and check the other four descriptions for
+  the same placement in the same pass.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Two near-paraphrases of one multi-agent debugging question route to two different skills (skill seat)
+
+- Trigger: this run's confusion case, "Our five-agent research pipeline gets
+  about a third of its tasks wrong and we cannot localise which agent is
+  responsible," expects `harness-engineering` and routes to
+  `evaluation-integrity` at 0.239 against harness-engineering's 0.172. The
+  library's own `he-pos-1` case is the same need in different words, "Our
+  customer-support agent fails about a third of its multi-step tickets and we
+  cannot tell which of the five sub-agents is at fault," and it passes to
+  `harness-engineering`.
+- What: the flip is carried by one word. `evaluation-integrity` matches
+  `agent`, `task` and `wrong`, where `wrong` enters its description through
+  "when benchmark items turn out to be ambiguous, narrow or wrong," which is
+  about benchmark items rather than about an agent getting tasks wrong.
+  `harness-engineering` matches only `agent` and `pipeline`. A router this
+  sensitive to surface wording passes its own suite and would not survive a
+  user's phrasing.
+- Why it matters: every trigger result the library publishes is a lower bound
+  by the runner's own admission, and this is a concrete measurement of how
+  loose that bound is. It is an argument for the model-in-the-loop engine
+  (slice 2) rather than for editing either description.
+- Whose call: engineer and the ADR-13 validator, since the fix is the engine.
+- First step: add paraphrase pairs to the suite deliberately, one per gold
+  skill, so the next engine change is measured against wording sensitivity
+  rather than against case count.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The graph's edged region and its procedure-rich region are still mostly disjoint, and the gap is closing (skill seat)
+
+- Trigger: prompts/skill-extract.md tells the seat to measure whether the
+  cross-supported criterion can be applied at all before ranking on it. On
+  2026-09-22 the numbers were 439 of 661 claims waiting on interpret and no
+  edge above id 221. On 2026-09-26 the run recorded 15 claims carrying both a
+  procedure and an edge.
+- What: measured 2026-09-29. 846 claims, 545 waiting on interpret, highest
+  id carrying any edge 301, 524 claims carrying a procedure, and 66 claims
+  carrying both. The overlap has gone from 15 to 66 in three days, which is
+  real progress, and the edged frontier has moved only from 221 to 301 while
+  the corpus grew by 185 claims, so interpret is still falling behind
+  distill. This run could satisfy both criteria at once, which the 2026-09-26
+  run could not, and it could only do so by working inside the first 301 ids.
+- Whose call: engineer, who owns the interpret backlog.
+- First step: record the three measurements as a series somewhere the OKR
+  seat can read, because the ratio, not the absolute count, is what decides
+  whether a skill run can use the graph as designed.
+- Cost: $0
+- Status: observation
+
+### 2026-09-29 — The em dash in skill frontmatter versus ban-list entry 13 (skill seat)
+
+- Trigger: every SKILL.md in the library separates a paper title from its URL
+  with an em dash, following the gold specimen. Ban-list entry 13, as amended
+  on 2026-09-21, is the class of every character outside plain ASCII, and
+  since the owner's 2026-09-19 ruling the list governs site copy. The papers
+  list renders on the skill's library page.
+- What: this run followed the specimen rather than the ban list, because
+  diverging in one skill would make one library page render unlike the other
+  five, and the four validated skills are not a drafting run's to edit. The
+  charter's own register check names the ban list for skill descriptions
+  specifically, and this description is plain ASCII. Recorded so the next run
+  does not re-derive the question.
+- Whose call: writer seat, which owns the ban list.
+- First step: rule on whether structured frontmatter fields count as copy
+  under entry 13, then fix all six files in one pass or record the exception
+  in the entry.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — Three self-checks in the generator cannot prove they ran, and three of them are regular expressions (writer seat, for engineer)
+
+- Trigger: the rehearsal print (`press_rehearsals` id 1, `prompt_sha`
+  `ea2d678d86e9`, 2026-09-26) was written by a prompt that contained all
+  three of these checks, each already strengthened once, and broke all
+  three. The ASCII gate, patched 2026-09-21 in `51400c1` to ask the class
+  question rather than name three characters, produced five em dashes.
+  The evidence-grade rule, patched 2026-09-24 in `68cea4c` to carry a
+  count, produced zero grades on three items that print numbers. The
+  first-use pass, patched 2026-09-25 in `ff61b26` to count the term the
+  reader meets, produced `NQ`, `SFT`, `VLMs` and `RRSI` bare. Run 12
+  filed the first-use pass alone on this reasoning. This entry supersedes
+  that one by generalizing it, because the cause is the same for all
+  three and one of them is now on its third rewrite.
+- What: the cause is where the check lives, not how it is worded. Nothing
+  in the finished text distinguishes an issue whose self-check ran from
+  one whose did not, so the model's only evidence that it ran the pass is
+  its recollection of intending to, and that evidence always comes back
+  positive. The contrast is inside the same prompt and it is decisive:
+  the link rule and the grade rule sit two lines apart, the same model
+  read both, and links came in at seven of seven while grades came in at
+  zero of three. Links are countable in the output by something other
+  than the writer. Grades are not.
+  So move the countable slice out of the prompt and into the pipeline, as
+  a post-generation check that fails loudly before the issue is written
+  to `digests` or sent. Three slices are decidable with no language model
+  at all:
+  1. **Non-ASCII characters.** `[^\x00-\x7F]` over the body, with the one
+     exception the prompt already names, which is a person's or an
+     institution's name as the payload spells it. Five em dashes shipped
+     through a hard gate that asks for plain ASCII.
+  2. **Bare capitalised acronyms.** A token of two or more capitals with
+     no expansion within the same sentence. Ban list 26 bans these
+     outright, and four shipped.
+  3. **Shapes on the page.** A parse of the block kinds in the markdown,
+     which are paragraphs, bulleted lists, lines standing alone and
+     headings. Canon law 14 as tightened on 2026-09-26 makes one kind a
+     failing issue, and both prints of 2026-W39 are at one and two. This
+     is the owner's enjoyability ruling and it is the one part of it a
+     machine can decide.
+  The fourth, whether every item carrying a number carries a grade, needs
+  judgment about what counts as a grade and is left in the prompt.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface and this is a specification rather than a patch. Worth checking
+  against PR #60, the pre-send quality gate, which has been open since
+  2026-09-20 and may be the right place for all three rather than a new
+  module.
+- First step: read PR #60 and say whether these three belong in it. If
+  they do, this entry is a list of three assertions to add rather than a
+  new piece of work.
+- Cost: $0 at runtime. Three regular expressions and a markdown block
+  parse.
+- Status: proposed
+
+### 2026-09-26 — The stats line's five fields, and a register that holds every print a reader sees (writer seat, for engineer)
+
+- Trigger: the owner's dispatch of 2026-09-25. Tonight's print said "the
+  library read 1,289 papers" when the number is the ingestion count, and
+  164 papers have ever been read in full. The prose side is fixed in this
+  pull request: `prompts/digest.md` now names the act each count records
+  and binds a verb of reading to the full-read count alone, and canon law
+  15 is the law. Two things in the pipeline are needed to finish it, and
+  neither is this seat's surface.
+- What, first: **`gather()` emits five counts with the acts as their
+  names.** Today `stats` is three numbers under one label,
+  `{"papers_ingested": ..., "claims_distilled": ..., "edges_drawn": ...}`,
+  where `papers_ingested` is `count(*) from papers where fetched_at >
+  now() - interval '7 days'`. The owner named the five the press should
+  emit: ingested, triaged, read in full, claims, links. The fourth is the
+  one that does not exist yet and it is the only one a sentence with
+  "read" in it may cite. `count(*) from papers where distilled_at is not
+  null` is 166 all-time, and the weekly figure is the same predicate
+  inside the seven-day window. The prompt already reads both the current key
+  names and the new ones, so the rename can land in either order.
+  Worth deciding once and recording: whether each count is the seven-day
+  window or the all-time total. Both are legitimate and a sentence that
+  mixes them silently is the same defect in a new coat. The close reads
+  best with the window for what arrived and the total for what has been
+  read, and it has to say which, in the reader's words.
+- What, second: **every print a reader sees belongs in a register this
+  seat can read.** The graded sentence in tonight's dispatch is not in
+  `digests` (newest row 2026-09-24) or in `press_rehearsals` (one row,
+  which carries no scale line). The writer seat grades the newest issue
+  cold every run, and tonight it graded a sentence it could only see
+  because the owner quoted it. Whatever path produced that print should
+  write to `press_rehearsals` like the rehearsal does, and every run
+  should be a row rather than a log line.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface. The one exception in this pull request is the `MASTHEAD`
+  constant, whose wording the owner gave to this seat on 2026-09-25, and
+  no other line of `pipeline/weekly.py` is touched.
+- First step: PR #110 says it "makes the press's stats line say what
+  actually happened", so these two items may already be half done there.
+  Read #110 first, and take the field names and the masthead wording from
+  #112 rather than rewording them, because the wording is a register
+  matter and the fields are not.
+- Cost: $0. Two queries and one insert.
+- Status: proposed
+
+### 2026-09-26 — Four exact strings the press can refuse to send (writer seat, for engineer)
+
+- Trigger: `## Read these yourself` printed as the reading list's heading in
+  the published 2026-W39 issue, in its site reprint, and in the rehearsal
+  print of `press_rehearsals` id 1. That string is one of the four internal
+  framework names, and the owner has flagged printing one twice, the second
+  time in the word "AGAIN" (docs/voice/taste.md 2026-09-19, incident 20,
+  canon law 12).
+- Why this is not another prompt patch: the prompt that wrote the rehearsal
+  already carried both defences. The heading slot had been cleared of the
+  phrase on 2026-09-24 so it could not be copied from the writing position,
+  and a tripwire at the end of the file named all four strings and told the
+  model to check its own headings against them. Both were present, correct
+  and ineffective. The writer charter's structure watch says a structural fix
+  that has failed twice through prompt changes goes to the engineer instead
+  of being written a third time.
+- What: one assertion on the finished markdown, before it is stored or sent.
+  No heading line, meaning any line matching `^#{1,3}\s`, equals any of
+  "Trailblazing", "Gaining traction", "Left behind" or "Read these yourself",
+  compared case-insensitively and ignoring trailing punctuation. This is a
+  closed set of four literals and it needs no model and no judgment.
+- Where: the same place as the three checks filed on 2026-09-26 above, which
+  is PR #60's pre-send quality gate if that is where they land. This is a
+  fourth assertion in the same list and not a new piece of work.
+- What it should do on a hit: refuse the send and report, rather than repair.
+  A heading is written from the day's items and the press cannot write one.
+- Cost: $0. One regular expression over the body.
+- Status: proposed
+
+### 2026-09-26 — The home page's weekly full-read count (writer seat, for engineer and frontend)
+
+- Trigger: `site/app/page.jsx` line 49 prints "**4,243** papers read this
+  week" from `weeklyIngestCount()`, which reads `papers_ingested`. That field
+  counts rows that arrived in seven days, and a row is a title and an
+  abstract. Canon law 15 and ban list 60: the count is the ingestion count and
+  the verb is the act performed on a far smaller set. Read at 2026-09-26,
+  8,999 papers held, 4,243 in the last seven days, 174 ever read in full, 55
+  read in full this week. The masthead carrying the same defect was repaired
+  on 2026-09-26 and this surface was not, which is
+  `INC-2026-09-26-law-15-fixed-on-one-surface`.
+- What: expose the weekly full-read count wherever `INGEST_COUNT_URL` is
+  served, beside `papers_ingested`, as `read_in_full` with the same seven-day
+  window: `count(*) from papers where distilled_at > now() - interval '7
+  days'`. The field name matches the one the stats-line entry above asks the
+  press to emit, so the prose and both surfaces agree on one vocabulary.
+- Then, frontend seat: the repaired line is drafted in
+  `docs/voice/home-metric-line-2026-09-26.md`, with the fallback for the case
+  where the second count is not yet served. `site/` is not the writer seat's
+  surface and no line of it is touched in that pull request.
+- Whose call: engineer for the field, frontend for the line. Both after the
+  owner rules on the wording.
+- First step: check whether PR #110's stats work already emits this count
+  under another name, and reuse rather than add.
+- Cost: $0. One query added to an endpoint that already runs one.
+- Status: proposed
+
+### 2026-09-27 — The masthead is fixed and every published issue keeps the false line (writer seat, for engineer)
+
+- Trigger: `MASTHEAD` in `pipeline/weekly.py` was corrected on 2026-09-26 to
+  drop the claim that the library reads every paper in full. On 2026-09-27 the
+  only published issue still opens on the old line, in its second line, above
+  the fold: "*The latest in AI research, read in full and distilled weekly...*".
+  That is canon law 15, the one claim in an issue a reader cannot check against
+  a linked paper, live on the whole public archive.
+- Why a prompt change cannot reach it: the model does not write this string.
+  `add_masthead` splices the constant into the body before the body is stored,
+  so the sentence is baked into the artifact at write time. `site/lib/content.js`
+  serves the stored body whole, from the markdown fixture locally and from Neon
+  in production. Editing the constant governs the next issue and cannot reach
+  one that already exists. Every issue keeps the masthead it was printed with,
+  and the archive grows.
+- What, option A, the narrow fix: correct the stored bodies. One update over
+  `digests`, replacing the old masthead line with the current one, plus the
+  same edit to `site/content/issues/2026-W39.md`. Two rows exist and one is
+  hidden, so this is minutes of work today and it does not stop the next
+  occurrence.
+- What, option B, the one that stops this recurring: stop baking the line in.
+  Remove the `add_masthead` splice from the write path and have the renderers
+  compose the masthead when a page or an email is built, so the constant is the
+  single source and correcting it corrects every issue at once. Stored bodies
+  then hold only what the model wrote, which is also what the pre-send checks
+  already filed want to assert over.
+- Recommended: B, with A as the one-time backfill for the bodies already
+  stored. B alone leaves the old string in the stored text of 2026-W39, which a
+  grep for the defect's own words will keep finding.
+- Whose call: the owner decides whether an issue already sent to subscribers is
+  altered at all. The engineer owns the write path either way, and the archive
+  page is the frontend seat's surface.
+- Related: `INC-2026-09-27-law-15-live-in-the-archive`, ban list 61 and 64. The
+  general form is worth one line in its own right, because it is not only the
+  masthead: any reader-facing string spliced into output before storage is
+  beyond the reach of every later correction, which includes the preheader, the
+  edition label and the footer if those travel the same way.
+- Cost: option A is one UPDATE and one file edit. Option B is one function
+  removed from the write path and one call added in each renderer.
+- Status: proposed
+
+### 2026-09-27 — Ban list entries 1 to 50 have never been swept for enforcement (writer seat, own lane)
+
+- Trigger: entry 46 named the heading gate's collection step as the reason its
+  six specimens got through, named the fix in the same sentence, and the gate
+  was unchanged three days and three editorial runs later. Two more specimens
+  of that shape are live on the site. Fixed in this pull request, and the
+  reason it went unfixed is the backlog rather than the entry.
+- The gap: the standing rule at the top of `docs/voice/ban-list.md`, that an
+  entry ends in the change to `prompts/digest.md` that enforces it or in the
+  ledger entry saying why none can, was written on 2026-09-25. Entry 46 was
+  written on 2026-09-24. The rule binds new entries, so nothing has ever asked
+  whether entries 1 to 50 landed anywhere. The register that was fixed kept its
+  backlog, which is the shape of
+  `INC-2026-09-25-tell-recorded-never-enforced` one level out.
+- What: one pass over entries 1 to 50, one question each. Is there a change in
+  `prompts/digest.md` that would stop this tell, and if not, can there be? Each
+  entry then gains one of the two endings the standing rule already defines.
+  Entry 51's case is the one to watch for: an ending can name a place in the
+  file where the rule is now written and still not name the gate the defect
+  would pass through, which is a note wearing a fix's clothes.
+- Expected shape of the answer: most entries are word tells that the voice
+  section already covers, and the interesting ones are the entries that
+  diagnose machinery, because those are the ones whose fix is a specific change
+  and whose absence is invisible. Entry 46 was one. Expect a handful.
+- Why not done in this run: fifty entries is a pass of its own, and doing it
+  badly beside a grade would produce fifty endings that say "covered" without
+  anyone having checked. This is the one register this seat owns outright, so
+  the work is this seat's and wants its own run.
+- Whose call: writer seat, next run, no dependency on anyone.
+- Cost: one editorial run, no code.
+- Status: proposed
+
+### 2026-09-28 — An editorial repair takes effect only when the owner merges, and the cron prints daily into the gap (writer seat, needs the owner and the engineer)
+
+- Trigger: the print of 2026-09-28 committed five defects whose repairs were
+  already written, reviewed and sitting in open pull requests, one of them for
+  two days. Traced in `docs/voice/reviews/2026-09-28.md` and recorded as
+  `INC-2026-09-28-repair-written-never-deployed`.
+- The gap: this seat writes every editorial repair and can deploy none of them.
+  The charter forbids merging its own pull request, which is right. The
+  consequence is that the interval between a fix being written and a fix taking
+  effect is set by an owner review, it has no upper bound, and a daily cron
+  prints into it. The five undeployed repairs of this morning were the tense of
+  the opening (canon law 13), the masthead's false reading claim (law 15),
+  44.3% against 30% (ban list 63), "Worth the hour if you are" on every
+  reading-list entry (ban list 44), and the reading list's generic heading (ban
+  list 62). The masthead case is the sharpest: the constant was corrected on
+  2026-09-26 under the owner's own order, and this morning's run wrote a new row
+  carrying the false sentence, because the correction is on a branch and the
+  cron runs from main.
+- Two candidate fixes, neither this seat's to build, and they are not
+  alternatives.
+  1. **Make an undeployed fix loud.** The press send already compares the
+     deploying model and prompt against the rehearsal row. Add the same
+     comparison against main: if `prompt_sha` is not the hash of
+     `prompts/digest.md` at `origin/main`, or if a writer branch is open whose
+     diff touches `prompts/digest.md`, say so in the send report. Today an
+     undeployed fix costs a daily issue silently. This turns it into a line
+     somebody reads. Cheap, and it is the engineer's lane.
+  2. **Shorten the gate for enforcement diffs.** The owner's merge gate exists
+     to protect her voice from a seat inventing structure. A diff that enforces
+     a ruling she has already given is a different object from a diff that
+     proposes one. If the two could be separated, the first could merge on a
+     faster gate. This is a governance change and it is hers alone.
+- What this seat did instead, and why it is not enough: stacked, so one merge
+  deploys four days of work. That works exactly once and does nothing about the
+  interval.
+- Whose call: the owner on the gate, the engineer on the send report.
+- Cost: the send report is small. The gate change is a decision, not work.
+- Status: proposed
+
+### 2026-09-28 — The four framework names want a regular expression, and now so do three more checks (writer seat, for the engineer)
+
+- Trigger: ban list 62 filed the four-string heading check for the engineer on
+  2026-09-26, because a closed set of exact strings is decided by a regular
+  expression outside the model. That gate held this morning, greped clean, and
+  the law leaked anyway through "compounding evidence" and "the genuinely new
+  work" in two section intros.
+- What: the pre-send quality gate (open in #60) is the right home for the
+  checks in this morning's grade that are arithmetic rather than judgment, and
+  three of them are new. The four framework names anywhere in the body, not only
+  in headings. Every reader-facing count against the items under it, which
+  caught a heading saying two over a section listing three and holding two. And
+  every institution or system named in the contents line appearing again below,
+  which caught a third of the opening's promise never being delivered.
+- Why outside the model: each one is a count or a string match, and each has
+  now been asked of the model in `prompts/digest.md` and got a wrong answer. A
+  gate the model runs on itself is a gate that has to be believed. These can be
+  decided without belief.
+- **The company standard now requires this to be said out loud.** `L-A22` in
+  `docs/standards/lessons.md`, which reached main in the sync of 2026-09-28,
+  says a rule enforced by a sentence is enforced at the reliability of a model
+  reading a file, that writing a failed law more clearly is not the fix, and
+  that where putting the check in a command is impossible a seat says so plainly
+  and records the rule as enforced at the reliability of reading. Ten of the
+  eleven changes in the writer pull request of 2026-09-28 are enforced at the
+  reliability of reading. It is impossible for this seat to do otherwise,
+  because `pipeline/`, `tools/` and the press command are outside its writable
+  surface. This entry is the plain saying-so, and it now also covers a fourth
+  check: a semicolon or any non-ASCII character in the body, which is canon law
+  1 and ban list 13 and is one `grep` away from being decided by a shell.
+- Not urgent: all three are enforced in the prompt in this pull request, which
+  is the right first move. This entry is for when one of them fails twice.
+- Whose call: engineer, after #60 lands.
+- Cost: small, inside a gate that already exists.
+- Status: proposed
+
+### 2026-09-28 — For the ExO relay: the unmerged-branch citation is now on record in two products, so L-A18 belongs to HQ (writer seat, for the ExO seat to carry)
+
+- Trigger: `docs/standards/lessons.md` L-A18 says a rule cites only records
+  reachable where it says they are, and that a citation pointing into an
+  unmerged branch reads as evidence and is not one. Its own evidence is HQ's
+  incident register running 1, 2, 3, 5 while L-A14 cites an incident 4 "still
+  sitting in unmerged HQ PR #15". That is the parent committing the defect the
+  standard describes.
+- The second occurrence, here, measured this morning: on `origin/main` this
+  repository's ban list ends at entry 54 and `docs/voice/canon.md` has no law
+  15. Law 15 is the law the masthead printed above this morning's issue breaks.
+  Entries 55 to 64 do not exist on main. All of them are law, all were written
+  by this seat on 2026-09-26 and 2026-09-27, and all live only in open pull
+  requests. Every charter check that tells a seat to grade against the ban list
+  is pointing into a branch.
+- Why this is HQ's and not ours to fix twice: L-A11 says a defect appearing in
+  a second product is owed to this register and the standard it governs, rather
+  than to the second product's copy, and that fixing it per product a second
+  time is the same failure L-A4 names. Alexandria fixing its own register drift
+  locally is exactly the move L-A11 forbids.
+- What the relay note should carry: L-A18 names the defect and prescribes
+  nothing for it. It tells a seat not to cite an unreachable record, which is
+  advice to the author, and both occurrences are the register itself being
+  unreachable, which no author can fix from inside a branch. The missing half
+  is L-A14's own shape applied to L-A18: the safe form beside the prohibition.
+  Candidates worth HQ deciding between are a register whose entries are appended
+  by a merge-gated path that runs on a faster gate than product review, and a
+  check that a seat runs at ship time comparing the register on its branch
+  against the register on main and reporting the gap.
+- Why this seat is not writing the relay entry: `docs/agents/hq-relay.md` says
+  the ExO seat writes entries and the chair carries them, and it is not in this
+  seat's writable surface (L-A10, one file one owning charter). This ledger
+  entry is the handoff, written to be copied with no editing.
+- Companion local record: `INC-2026-09-28-repair-written-never-deployed`.
+- Whose call: ExO seat next run, then the chair.
+- Cost: one relay entry.
+- Status: proposed
+
+### 2026-09-29 — Two more counts for the pre-send gate, and the one question that finds the next gate before it fails (writer seat, for the engineer)
+
+- Extends the 2026-09-28 entry above, which filed four checks against #60. Same
+  gate, same reason, two more checks and one standing question. Append after
+  that entry. Nothing in it changes.
+- **Check 5, link coverage as arithmetic.** Count every named piece of research
+  in the body, meaning every paper, benchmark result, method or system whose
+  number the issue prints, and every older belief it says fell. Count the
+  markdown links. They match. The print of 2026-09-28 named three results in
+  one fell-behind item and linked none of them, and the editorial grade of that
+  print recorded law 8 as a pass, because it inspected the four links that
+  existed. This is the owner's own ruling of 2026-09-19, "you didn't show me
+  the paper", and it is decidable by a shell.
+- **Check 6, evidence grades as arithmetic.** Off the same list: the entries
+  whose number the issue prints, against the count of in-line grades. Same
+  print scored three grades against five items, and three benchmark numbers in
+  the fell-behind section carried none.
+- Why outside the model: both are counts, both have now been asked of the model
+  in `prompts/digest.md`, and both got a wrong answer from the model and then a
+  wrong answer from the grade. Two readings agreeing is not a check. `L-A22`.
+- **The standing question, which is the part worth more than either count.**
+  `INC-2026-09-29-gate-unit-three-more` records four gates in
+  `prompts/digest.md` failing the same way: the check is phrased in the
+  singular because it was written from one specimen, and the material arrives
+  in groups, so the gate answers for one member and reports a pass on the
+  group. The question that finds this without running anything is: **name the
+  unit this check inspects, then name the unit the defect lives in, and say
+  whether they are the same size.** It found three live failures in one pass
+  on 2026-09-29. Worth running against every check in the pre-send gate as it
+  is built, and worth a line in whatever file describes that gate, because a
+  gate with the wrong unit is `L-A21` and reports success while protecting
+  nothing.
+- Not urgent in the sense that all four fixes are in the prompt in this pull
+  request. Urgent in the sense that the writer seat has now patched this class
+  four times in four runs and its charter's structure watch forbids a fifth.
+- Whose call: engineer, after #60 lands.
+- Cost: two `grep`-and-count links in a chain that already exists, plus one
+  question asked while writing the others.
+- Status: proposed

@@ -37,7 +37,23 @@ For each claim provide:
   Null when the paper is a finding with no actionable mechanism.
 - `topics` — tags from: skills, context-engineering, harness-engineering,
   loop-engineering, memory, retrieval, multi-agent, evals, post-training,
-  serving, systems, tooling, other.
+  reasoning, serving, systems, tooling, other.
+
+  `reasoning` covers how a model's reasoning is TRAINED or SPENT, never the
+  bare fact that a model reasoned. It holds reasoning-trace supervision and
+  chain-of-thought training, process and outcome rewards, verifiable-reward RL
+  (RLVR, GRPO and its variants), test-time compute and how the budget is
+  allocated, distillation of reasoning into smaller models, and synthetic
+  reasoning or preference data. Tag it beside `post-training` when the claim is
+  about the recipe, and beside `serving` when it is about what the reasoning
+  costs at inference. A paper that only measures reasoning ability is `evals`,
+  not `reasoning`; this tag is for method, and it stops being useful the moment
+  it is applied to every paper that uses the word.
+
+  For a reasoning claim, `procedure` is where the recipe goes: the reward, the
+  data, the curriculum, the budget rule, with the thresholds the source states.
+  A `reasoning` claim with a null `procedure` and no number in its evidence is
+  usually an `evals` claim that took the wrong tag.
 
 Extract 1–5 claims per paper. If a distill-routed paper yields zero claims, say so —
 that is a triage error worth logging, not a failure to invent claims.

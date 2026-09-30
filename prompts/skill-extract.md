@@ -55,9 +55,13 @@ under- or over-groups). Score each candidate cluster:
   (docs/sprints/, newest file) or the current quarter's OKRs
   (docs/okrs/, newest file) — a skill the business needs this month beats
   one that is merely available.
-- **Not already gold.** Check `skills/` on disk and `select path from
-  promotions where status = 'approved'` so the run never re-extracts a
-  cluster the library already carries.
+- **Not already gold.** Check `skills/` on disk, reading each existing
+  SKILL.md's `provenance.claims` list, and exclude every id it names. The
+  `promotions` table is the intended index for this and is empty: it
+  returned zero rows on 2026-09-26 against four skills on disk, because
+  nothing has ever written to it (ledger, 2026-09-26). Query it if you
+  like, but the disk is the authority until the ADR-13 panel starts
+  writing verdict rows.
 
 Before you rank anything on `supports` edges, measure whether that criterion
 can be applied at all:
@@ -73,8 +77,18 @@ from claims;
 least 2026-09-22, when 439 of 661 claims were waiting and no claim above id
 221 carried a single edge (incident 23, docs/agents/incidents.md). The
 `procedure` column was added to the schema after `interpret` had passed that
-region, so the edged claims and the procedure-rich claims are today almost
-disjoint sets: 15 claims carry both, 262 carry procedure and no edges.
+region, so the edged claims and the procedure-rich claims have been close to
+disjoint sets.
+
+Run the query rather than trusting the numbers in this paragraph, because the
+overlap is moving fast in the right direction and any figure written here goes
+stale within the week. The series so far, each measured by the run that
+recorded it in docs/ideas.md: 2026-09-22, no edge above id 221; 2026-09-26, 15
+claims carrying both a procedure and an edge; 2026-09-29, 66 of 846, with the
+edged frontier at id 301 and 545 claims still waiting on interpret. The ratio
+is the thing to read, not the count. While it is low, working inside the edged
+id range is what lets a run satisfy both criteria at once, and that is a real
+constraint on which clusters are available to you.
 
 When the two criteria cannot both be satisfied, procedure-rich wins and
 cross-paper breadth is satisfied by topic and embedding grouping instead. Say
@@ -87,6 +101,57 @@ If the strongest available cluster still fails the procedure-rich test,
 that is the run's finding, not a license to draft anyway. Record it in
 docs/ideas.md (status `proposed`, one line: which topic is thin and why)
 and stop step 2 for this run.
+
+## 1b. Reading the papers (ADR-35, owner's ruling 2026-09-25)
+
+A skill written from claim rows alone is a summary of a summary, so the run
+does not proceed to drafting until the cluster's papers have been read. This
+section is the method; the ruling itself is in prompts/skill-agent.md.
+
+Fetch each paper's full text yourself. arXiv HTML works and is cheap:
+
+```bash
+curl -sS -L --max-time 45 "https://arxiv.org/html/<id>" -o /tmp/<id>.html
+```
+
+A tag-stripping pass in python turns that into readable text; the five papers
+of the 2026-09-26 cluster came to roughly 50,000 words in total, which is one
+comfortable read, so budget for the whole cluster rather than for excerpts.
+`tools/read_paper.py` does not exist yet and may when you run; check first.
+Fall back to the abstract page (`/abs/`) when there is no HTML rendering, and
+record that fallback as a paper you could not read in full.
+
+Read for four things, in this order, because they are what the claim rows
+cannot carry:
+
+1. **The setup.** How many tasks, which models, which harness. Almost every
+   overstatement this method catches is a number reported without its n.
+2. **The ablation table.** A row that says a component helps rarely says how
+   much it helps relative to the paper's other components. The 2026-09-26 run
+   found a structural finding that was real, cited approvingly in our claim
+   row, and the smallest of its own paper's three ablations.
+3. **The baseline the comparison rests on.** Check that the baseline was
+   measured the same way at the same cutoff. One claim row in that run
+   reported large gains that came from a cutoff at which the baseline's
+   released output was truncated, which the paper said plainly and the row
+   did not.
+4. **Limitations and negative results.** These are where the skill's caveats
+   section comes from, and they are almost never distilled into claims.
+
+Two rules fall out of this.
+
+- **The paper wins.** Where the full text narrows or contradicts a claim row,
+  say so in the skill in its own section, and file the row for revision in
+  docs/ideas.md. Do not quietly write the narrower version and leave the row
+  standing.
+- **Read the references too.** Every paper this cluster is measured against
+  and the library has not read goes to docs/research/reading-queue.md, with
+  its arXiv id taken from the reference list of the paper you just read. The
+  2026-09-26 run found that all twelve works its cluster built on were absent
+  from the corpus, which no amount of querying silver would have revealed.
+
+Say in the pull request, paper by paper, whether you read it in full or could
+not, and where the reading changed what you would have written from the rows.
 
 ## 2. Drafting the skill
 
@@ -227,6 +292,24 @@ beyond the five prompts:
 - **`kind` on every case**, one of `positive`, `negative`, or `confusion`,
   since the report scores the three separately and a suite that passes only
   because its negatives are easy should be visible as such.
+
+**Record the bundle last, after the final edit to SKILL.md.** The recorded
+result carries the sha256 of every skill file it judged, which is what makes it
+a receipt for exactly that text, and the library page matches a receipt to a
+skill by name and by that hash (site/lib/skill-provenance.js, PR #133). So a
+run that records the bundle and then fixes one sentence has published a receipt
+for text that no longer exists, and the page will say so. The order is: revise
+the description until the suite is as green as it is going to get, make every
+remaining edit to the body, then delete the bundle and re-run with `--json` as
+the last thing before the commit. Re-checking costs one command:
+
+```bash
+python3 skills/_validation/trigger_test.py --json skills/_validation/results/<date>-lexical-2.1.json
+python3 -c "import hashlib;print(hashlib.sha256(open('skills/<slug>/SKILL.md','rb').read()).hexdigest()[:16])"
+```
+
+and the second line must appear in the first line's bundle. Learned 2026-09-29,
+where the bundle was recorded before a two-semicolon fix to the body.
 
 Run `python3 skills/_validation/trigger_test.py` before opening the PR and
 paste the output into the PR body. A failing case is a finding worth
