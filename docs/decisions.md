@@ -1431,3 +1431,103 @@ The engineer's harness (ADR-36) gains the bare-first differential pass
 and the two-subject run. The evidence page shows deltas on differential
 tasks only, with the task count that qualified. ExO folds the finding into
 the learning log: measuring first would have found this on 2026-09-12.
+
+## ADR-39: Distill reads the whole paper, on Kimi, under three ceilings
+
+**Status.** Accepted 2026-09-30, owner-directed: "the fact that we have
+so many papers, only ~1 was read, and no skill was created is the issue
+to fix. Reading is the bottleneck."
+
+**Context.** ADR-32 bought the Moonshot account for the press.
+ADR-2026-09-26 moved triage and interpret to it. Distill stayed on
+Groq's free tier, which is 8,000 tokens a minute, which is less than one
+paper. Everything downstream is shaped by that one fact:
+`FULLTEXT_CHARS` was 12,000 characters because 12,000 was what fit,
+`FULLTEXT_MAX_PER_RUN` was 15 because fifteen was what the budget
+allowed, and the product's masthead said "read in full" above a corpus
+where that was true of 164 papers out of 8,956. ADR-35 made reading a
+precondition of skill creation and ADR-38 made a skill's deltas the
+measure of it, so a reading stage that reads the first thirteen per cent
+of a paper is now the constraint on the product's central claim.
+
+**Decision.**
+
+1. **Distill calls Kimi through `pipeline/llm.py`,** the same client
+   triage and interpret use, with the same fallback walk to Groq's free
+   tier, the same spend cap measured from the provider's usage block,
+   and the same pacing. It was the last corpus job calling a provider by
+   hand.
+2. **The window is 250,000 characters,** chosen by measuring rather than
+   dividing. Thirteen of the fourteen papers in
+   `docs/evals/2026-09-30-fulltext-token-density.json` arrive complete;
+   at 12,000 it was none of them. Expected cost stops moving past this
+   size because most papers are shorter than it, and only the ceiling
+   keeps climbing.
+3. **Full text is the default and the abstract is the documented
+   fallback.** The per-run fetch budget is gone. `papers.fulltext_chars`
+   records exactly how much was sent per paper, the run prints how many
+   arrived complete as well as how many were read from full text at all,
+   and a paper that fell back to its abstract is recorded as NULL rather
+   than counted generously.
+4. **Three ceilings, each named when it binds.** `CAP_USD` is money.
+   `TOKENS_PER_RUN` is this job's share of Moonshot's tier-0 daily token
+   allowance. `MAX_PAPERS_PER_RUN` is the clock. Each is checked before
+   a call, so the run stops at its limit rather than one call past it,
+   and each prints which one stopped it, because "raise the cap", "raise
+   the Moonshot tier" and "raise the paper count" are three different
+   fixes and the wrong one is expensive.
+5. **The reading queue first, then the four standing threads, then the
+   intake.** `pipeline/priority.py` is the one term list, shared with
+   triage. A standing thread outranks triage's `deep_read`, because
+   `deep_read` is triage's opinion about one paper and a thread is the
+   owner's standing instruction about a subject.
+6. **The slot is 15:00-16:30 UTC.** Moonshot's organization concurrency
+   is 1 and the schedule is the only enforcement there is, so distill
+   takes the band after interpret rather than the 13:00 gap, which stays
+   unclaimed as the margin. `llm.KIMI_WINDOWS` is the table and
+   `budget.check_kimi_windows()` fails CI on an overlap.
+
+**What it costs.** $0.042 a paper expected, $0.103 at the ceiling; $1.50
+a run capped, ~$25/month expected, $45/month at the cap.
+`budget.MONTHLY_CAP_CEILING_USD` moves from $30 to $75 with
+docs/finance/opex.md in the same commit, which is the mechanism the
+2026-09-26 ADR put there working as intended.
+
+**The limit this does not lift.** Twenty full papers a day is 140 a
+week, and that is what a tier-0 Moonshot account can read, not what a
+drained triage queue will produce. The binding constraint is the
+1,500,000-token daily allowance rather than the money: the three Kimi
+jobs together expect 1,195,090 tokens a day, 80% of it.
+`budget.check_kimi_tpd()` is new and holds that arithmetic; `modal run
+pipeline/distill.py::drain` compares 140 a week against the live queue
+and says plainly when the queue has outgrown it. Lifting it is a tier
+upgrade, which is money, which is the owner's call.
+
+**Two defects found in the measuring, both older than this change.**
+`budget.count_tokens` raised on any text containing `<|endoftext|>`,
+which a cleaned arXiv paper contains whenever it quotes a prompt
+template; a 12,000-character window never reached one and the first
+measurement at 250,000 hit it on the first paper. And
+`FULLTEXT_CHARS_PER_TOKEN` was 3.35, measured over a paper's first
+12,000 characters, where a whole paper runs 2.53, because a paper opens
+with a title block and an abstract and only later reaches its equations.
+A density constant is only valid for the window it was measured at, and
+that generalises past this number: changing `FULLTEXT_CHARS` always
+means re-running `tools/fulltext_density.py`.
+
+**Rejected.** A 400,000-character window that takes every measured paper
+whole: it raises the ceiling by half and the expectation by 6%, and what
+it buys is the appendices of the longest three. Keeping the Groq
+fallbacks off the list because they cannot read a paper: they can still
+keep a run alive on an abstract with `fulltext_chars` null, which is
+worth having as long as nothing downstream calls it a full read.
+Claiming the 13:00-14:00 gap to get a same-day triage-to-interpret flow:
+one day of latency is cheaper than a boundary two Kimi jobs can contend
+over.
+
+**Gates.** A provider change, so the three gates of
+docs/agents/runtime-changes.md apply and the chair runs them:
+`python3 pipeline/budget.py`, `modal run pipeline/distill.py::preflight`,
+`modal run pipeline/distill.py::rehearse`, then `modal deploy`. Triage
+is redeployed in the same chain, because its priority terms moved into
+the shared module.

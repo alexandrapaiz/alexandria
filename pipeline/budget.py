@@ -83,6 +83,10 @@ PROVIDERS = {
 
 PRIMARY_PROVIDER = "moonshot"
 
+#: The Kimi id every job reaches for first. Named once so the daily-allowance
+#: guard below does not have to guess which model's `tpd` is the shared one.
+PRIMARY_MODEL = "kimi-k2.6"
+
 
 def provider_of(model: str) -> str:
     """Which provider serves `model`. Raises rather than guessing from the id."""
@@ -432,9 +436,21 @@ def _encoder():
 
 
 def count_tokens(text: str) -> int:
+    """Tokens in `text`, counting a special-token spelling as ordinary text.
+
+    `disallowed_special=()` is load-bearing and was added on 2026-09-30. By
+    default tiktoken RAISES on any text containing `<|endoftext|>`, and a
+    cleaned arXiv paper contains it often enough to matter: a paper about
+    tokenizers prints the string, and so does any paper quoting a prompt
+    template. At a 12,000-character window the guard never reached one, so the
+    crash was invisible for the life of this module; the first measurement at a
+    larger window hit it on the first paper. A token counter that throws is a
+    guard that fails closed on exactly the papers the corpus most wants to read,
+    and the provider counts those characters as ordinary text anyway.
+    """
     enc = _encoder()
     if enc is not None:
-        return len(enc.encode(text))
+        return len(enc.encode(text, disallowed_special=()))
     return int(len(text) / FALLBACK_CHARS_PER_TOKEN) + 1
 
 
@@ -525,21 +541,30 @@ def _filler(n: int) -> str:
 # tokens; sized with real papers it missed by about 1,900, and the free fix the
 # ledger proposed off the first number would not have worked.
 #
-# 3.35 is arxiv:2407.21783, the Llama 3 paper, whose opening pages are mostly
-# tables. It is the densest of the 14 and not an average of them, because the
-# request this number sizes either fits or is refused, and an average request
-# does not exist.
+# 2.53 is arxiv:2501.19393, the s1 paper, over its whole 198,125 characters. It
+# is the densest of the 14 and not an average of them, because the request this
+# number sizes either fits or is refused, and an average request does not exist.
 #
-# Measured AT THE WINDOW THE JOB SENDS, which is `FULLTEXT_CHARS` and not the
-# whole paper. Density is not uniform: the same 14 papers run 3.65 over their
-# first 24,000 characters and 3.35 over their first 12,000, because a paper
-# opens with its title block, authors, abstract and contents and only then
-# settles into prose. Measuring the wrong window is how the first version of
-# this constant was still wrong after the bug it exists to fix was found — at
-# 13,000 characters the guard said fits and a real paper missed by 5 tokens.
+# Measured AT THE WINDOW THE JOB SENDS, which is `FULLTEXT_CHARS`. Density is
+# not a property of papers, it is a property of the window: the same 14 papers
+# run 3.65 chars/token over their first 24,000 characters, 3.35 over their
+# first 12,000, and 2.53 over their whole bodies, because a paper opens with a
+# title block, authors, an abstract and a contents list and only later reaches
+# its equations. Measuring the wrong window is how the first version of this
+# constant was still wrong after the bug it exists to fix was found — at 13,000
+# characters the guard said fits and a real paper missed by 5 tokens.
+#
+# It was 3.35 until 2026-09-30, measured at a 12,000-character window, and the
+# move of distill to Kimi widened that window to 250,000. Re-measuring found the
+# constant 32% too loose for the new window, which would have under-sized every
+# distill request. Receipt: docs/evals/2026-09-30-fulltext-token-density.json,
+# reproduced by `python3 tools/fulltext_density.py --window 250000
+# --model kimi-k2.6`. The lesson generalises past this number: a density
+# constant is only valid for the window it was measured at, so changing
+# FULLTEXT_CHARS always means re-running the tool.
 #
 # Lower it when a measurement says lower. Never raise it to make a request fit.
-FULLTEXT_CHARS_PER_TOKEN = 3.35
+FULLTEXT_CHARS_PER_TOKEN = 2.53
 
 
 def _filler_tokens(n: int) -> str:
@@ -824,6 +849,11 @@ def check_synthesis(available: set[str] | None = None) -> list[str]:
 CRON_MODELS = {
     "triage (pipeline/triage.py)": "pipeline/triage.py",
     "interpret (pipeline/interpret.py)": "pipeline/interpret.py",
+    # Distill joined on 2026-09-30. Until then it was the one corpus job with a
+    # PROVIDERS dict instead of a MODELS list, and that difference is the whole
+    # reason `distill_models` existed as a special case: a guard that cannot
+    # read a job's settings does not guard it.
+    "distill (pipeline/distill.py)": "pipeline/distill.py",
 }
 
 #: What one run of each corpus job may spend, read out of the job. The cap is a
@@ -833,13 +863,21 @@ CRON_MODELS = {
 CRON_CAPS = {
     "triage (pipeline/triage.py)": ("pipeline/triage.py", "CAP_USD"),
     "interpret (pipeline/interpret.py)": ("pipeline/interpret.py", "CAP_USD"),
+    "distill (pipeline/distill.py)": ("pipeline/distill.py", "CAP_USD"),
 }
 
-#: Together the two corpus caps plus the press. The ceiling finance books is the
-#: sum of every cap firing every day, which is the worst case and not the
+#: Together the three corpus caps plus the press. The ceiling finance books is
+#: the sum of every cap firing every day, which is the worst case and not the
 #: expectation; docs/finance/opex.md carries both numbers and the difference
 #: between them. Raise this only with that file in the same commit.
-MONTHLY_CAP_CEILING_USD = 30.0
+#:
+#: $30 until 2026-09-30, when distill moved to Kimi on the owner's directive of
+#: 2026-09-29 and brought a $1.50 cap with it. Reading a paper in full is
+#: twenty times the tokens of judging one, so this is the number that moved
+#: most, and it moved because the owner asked for the thing it buys. The
+#: expectation behind it is ~$28/month, not $75; docs/finance/opex.md has the
+#: gap and the reasoning.
+MONTHLY_CAP_CEILING_USD = 75.0
 
 
 def cron_model_lists() -> dict[str, list[str]]:
@@ -877,31 +915,16 @@ def cron_models() -> dict[str, str]:
 
 
 def distill_models() -> list[str]:
-    """Distill's models, production first, read out of its PROVIDERS table.
+    """Distill's models, production first.
 
-    Distill is the one corpus job that never moved to `pipeline/llm.py`, so it
-    has a PROVIDERS dict instead of a MODELS list and `cron_model_lists` cannot
-    read it. That difference is why it went unchecked, which is the whole reason
-    this function exists rather than a copy of the two model ids.
+    A special case until 2026-09-30, when distill had a PROVIDERS dict rather
+    than a MODELS list and `cron_model_lists` could not read it. That
+    difference is why it went unchecked for as long as it did. It reads the
+    same table as every other corpus cron now, and this function stays only
+    because `CRON_REQUESTS` has two distill entries against one model list and
+    the indirection has to point somewhere.
     """
-    source = (ROOT / "pipeline" / "distill.py").read_text()
-    tree = ast.parse(source)
-    providers = production = None
-    for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        name = getattr(node.targets[0], "id", "")
-        if name == "PROVIDERS":
-            providers = ast.literal_eval(node.value)
-        elif name == "PRODUCTION_PROVIDER":
-            production = ast.literal_eval(node.value)
-    if not providers or production not in providers:
-        raise LookupError(
-            "pipeline/distill.py no longer defines PROVIDERS and "
-            "PRODUCTION_PROVIDER where this guard looks for them. A guard that "
-            "cannot read the settings it checks is worse than no guard.")
-    order = [production] + [k for k in providers if k != production]
-    return [providers[k]["model"] for k in order]
+    return cron_model_lists()["distill (pipeline/distill.py)"]
 
 
 def cron_caps() -> dict[str, float]:
@@ -994,6 +1017,29 @@ CRON_REQUESTS = {
         # falls back to errs toward calling the fallback too big, which is the
         # safe direction for a number whose whole job is to be conservative.
         "degrades_to_chars": 6_000,
+        "models": "distill",
+    },
+    # The practices variant, added 2026-09-30 with the field-report split. Its
+    # own entry rather than a second key on the entry above, because the two
+    # requests differ in both halves and sizing one of them would have measured a
+    # request the job never sends. The prompt is larger, because a field report
+    # has to be told what NOT to extract, and a prompt that grows is exactly what
+    # L-E6 put this table here to catch. The payload is smaller and fixed:
+    # `tools/read_paper.py::fetch_fulltext` returns None for every `blog:` id
+    # without a fetch, so a field report is read at `abstract[:6000]`, which for
+    # a feed row is the item summary. There is no degradation below that, so no
+    # `degrades_to_chars`: this request is the one that must fit.
+    "distill practices (pipeline/distill.py)": {
+        "path": "pipeline/distill.py",
+        "prompt": "prompts/distill-practices.md",
+        "reservation": "MAX_COMPLETION_TOKENS",
+        "payload_chars": 6_000,
+        # The paper density, deliberately, and it is not a measurement of blog
+        # prose. 3.35 chars/token is the densest thing the org has measured, so
+        # it over-counts a blog post's tokens rather than under-counting them,
+        # which is the safe direction for a guard. A measured field-report
+        # density would be a better number and nobody has one yet.
+        "chars_per_token": FULLTEXT_CHARS_PER_TOKEN,
         "models": "distill",
     },
 }
@@ -1179,6 +1225,105 @@ def check_cron_spend() -> list[str]:
             "one-line edit to a job."
         ]
     return []
+
+
+#: What each Kimi job draws from the account's day, in tokens, at the size it
+#: is capped to run. These are EXPECTED draws at measured request sizes, not
+#: worst cases, and that is the right basis here: a daily token allowance is
+#: consumed by what is actually sent, and a worst case that assumes every paper
+#: is the longest paper would condemn a schedule that works every day.
+#:
+#: Each entry is (calls a run, tokens a call, how we know).
+KIMI_DAILY_DRAW = {
+    "triage (pipeline/triage.py)": (
+        70, 4_713,
+        "70 calls is the $0.60 cap at the measured ceiling price; 3,513 prompt "
+        "+ 1,200 reply measured in docs/finance/opex.md"),
+    "interpret (pipeline/interpret.py)": (
+        60, 1_000,
+        "one claim and five candidates a call, measured small"),
+    "distill (pipeline/distill.py)": (
+        ("pipeline/distill.py", "MAX_PAPERS_PER_RUN"), 40_259,
+        "the paper count read out of the job, at the mean payload of the "
+        "fourteen papers in "
+        "docs/evals/2026-09-30-fulltext-token-density.json, plus the prompt "
+        "and a measured reply"),
+}
+
+
+def _calls(spec) -> int:
+    """A call count, either a literal or `(path, constant)` read out of the job.
+
+    Distill's is read rather than copied, for the reason `cron_caps` gives
+    about spend caps and `cron_model_lists` gives about model ids: it is the
+    number that will move, it dominates this table by an order of magnitude,
+    and a guard holding its own copy of a number is a guard that stops
+    guarding the moment somebody edits the job. Triage's and interpret's are
+    still literals because neither is a constant in its job; triage's 70 is
+    its cap divided by its worst-case call price, and derivation belongs in
+    the comment beside it rather than in a regex.
+    """
+    if isinstance(spec, int):
+        return spec
+    path, name = spec
+    source = (ROOT / path).read_text()
+    match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} no longer defines {name} where this guard looks for it, "
+            "so the daily token draw this guard checks is not the draw the job "
+            "will make.")
+    return int(match.group(1).replace("_", ""))
+
+
+def kimi_daily_draw() -> tuple[int, list[str]]:
+    """Expected tokens per day across every Kimi job, and the lines behind it."""
+    total, lines = 0, []
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        calls = _calls(spec)
+        draw = calls * per_call
+        total += draw
+        lines.append(f"  {label}: {calls} x {per_call:,} = {draw:,} tokens "
+                     f"({how})")
+    return total, lines
+
+
+def check_kimi_tpd() -> list[str]:
+    """The Kimi jobs together stay inside the account's daily token allowance.
+
+    New on 2026-09-30, and it is the ceiling nobody was watching. Until distill
+    moved to Kimi, every request this org sent was a few thousand tokens and
+    `tpd` in the table below was decoration. One paper at `FULLTEXT_CHARS` is
+    about 40,000 tokens, so twenty-five papers is most of a tier-0 day on their
+    own, and the money cap would not have noticed: $1.50 buys far more tokens
+    than 1,500,000.
+
+    A daily allowance is not a per-request limit, so busting it is not a 413.
+    It is every Kimi call in the org failing for the rest of the UTC day, which
+    would take the press down with distill. That asymmetry is why this is a
+    guard and not a comment.
+
+    Held against `MARGIN`, the same headroom the request guard keeps, because
+    a retry, a rehearsal run by hand, or a manual `modal run` all spend out of
+    the same day.
+    """
+    spec = MODELS.get(PRIMARY_MODEL)
+    if not spec or not spec.get("tpd"):
+        return []
+    allowance = spec["tpd"]
+    budgeted = int(allowance * (1 - MARGIN))
+    total, lines = kimi_daily_draw()
+    if total <= budgeted:
+        return []
+    return [
+        f"the Kimi jobs together expect to draw {total:,} tokens a day against "
+        f"{PRIMARY_MODEL}'s {allowance:,} daily allowance, of which "
+        f"{budgeted:,} is budgeted after the {MARGIN:.0%} margin. Over the "
+        "allowance is not a 413 on one request, it is every Kimi call in the "
+        "org failing for the rest of the UTC day, press included. Lower a "
+        "job's per-run cap, or raise the Moonshot tier, which is money and "
+        "therefore the owner's call.\n" + "\n".join(lines)
+    ]
 
 
 def check_kimi_windows() -> list[str]:
@@ -1608,6 +1753,20 @@ def main() -> int:
     for problem in check_kimi_windows():
         failures.append(problem)
         print(f"  CONCURRENCY: {problem}")
+    print()
+
+    # And the other shared Moonshot ceiling, which is the account's DAY rather
+    # than its minute. Nothing checked it until distill started sending whole
+    # papers, because until then no request was big enough for it to matter.
+    print(f"Kimi daily tokens ({PRIMARY_MODEL} allowance "
+          f"{MODELS[PRIMARY_MODEL]['tpd']:,} a day, shared by every job)")
+    total, lines = kimi_daily_draw()
+    print("\n".join(lines))
+    print(f"  total expected: {total:,} tokens a day, "
+          f"{total / MODELS[PRIMARY_MODEL]['tpd']:.0%} of the allowance")
+    for problem in check_kimi_tpd():
+        failures.append(problem)
+        print(f"  DAILY TOKENS: {problem}")
     print()
 
     if failures:

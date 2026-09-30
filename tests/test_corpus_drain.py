@@ -27,6 +27,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
 import budget                                                    # noqa: E402
+import distill                                                   # noqa: E402
 import evidence                                                  # noqa: E402
 import interpret                                                 # noqa: E402
 import llm                                                       # noqa: E402
@@ -515,15 +516,27 @@ def test_neither_preflight_computes_a_price_by_bare_division():
 # ---------------- distill, the job the guard could not see ----------------
 
 def test_the_guard_reads_distills_models_out_of_distills_own_table():
-    # Distill never moved to pipeline/llm.py, so it has PROVIDERS instead of
-    # MODELS and cron_model_lists cannot read it. That difference is exactly why
-    # it went unchecked, so the reader has to be real rather than a copy.
+    # Distill had a PROVIDERS dict rather than a MODELS list until 2026-09-30,
+    # so `cron_model_lists` could not read it and it went unchecked for as long
+    # as it did. It is in the shared table now, and the reader still has to be
+    # real rather than a copy.
     models = budget.distill_models()
     source = (ROOT / "pipeline" / "distill.py").read_text()
-    assert models[0] == "openai/gpt-oss-120b", models
+    assert models[0] == "kimi-k2.6", models
+    assert models == budget.cron_model_lists()["distill (pipeline/distill.py)"]
     for model in models:
-        assert f'"model": "{model}"' in source
+        assert f'"{model}"' in source
         assert model in budget.MODELS, f"{model} has no limits in budget.MODELS"
+
+
+def test_every_corpus_cron_leads_with_the_funded_account():
+    # The whole of the 2026-09-26 and 2026-09-30 migrations in one assertion:
+    # a corpus job whose head is a free-tier model is a job that takes a 429
+    # after two calls and calls it a day's work.
+    for label, models in budget.cron_model_lists().items():
+        assert models[0] == budget.PRIMARY_MODEL, (
+            f"{label} leads with {models[0]}, not the funded account. "
+            "That is the shape of 'the corpus is not being read'.")
 
 
 def test_every_corpus_job_is_in_the_request_table():
@@ -534,7 +547,7 @@ def test_every_corpus_job_is_in_the_request_table():
         assert job in labels, job
 
 
-def test_the_full_text_request_fits_now_and_nothing_degrades():
+def test_the_full_text_request_fits_on_the_model_the_job_calls():
     pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # This test asserted the opposite on 2026-09-26, and said so: "the full-text
     # path fits now; update this test and opex.md". It fits now. The 2026-09-26
@@ -546,10 +559,23 @@ def test_the_full_text_request_fits_now_and_nothing_degrades():
     # MAX_COMPLETION_TOKENS, and a measured density. The degradation to
     # abstract[:6000] stays in the code as an error path and is no longer the
     # common one.
-    assert budget.cron_degradations() == [], (
-        "distill degrades again: a full-text request stopped fitting, so the "
-        "job is back to writing claims from abstracts while reporting success. "
-        "Run `python3 tools/fulltext_density.py` and lower FULLTEXT_CHARS.")
+    # Rewritten 2026-09-30. This asserted `cron_degradations() == []`, which
+    # was the right assertion while every model on distill's list could take a
+    # 12,000-character paper. At 250,000 the Groq fallbacks cannot, and saying
+    # so is the point of that function rather than a regression: what they
+    # degrade to is the abstract, which is the documented fallback.
+    #
+    # The invariant that survives is the one that actually protected the
+    # product: the model the job CALLS must not degrade. A degradation there is
+    # "read in full" quietly becoming "read the abstract", which is the owner's
+    # finding of 2026-09-25.
+    head = budget.distill_models()[0]
+    degraded = [note for note in budget.cron_degradations() if head in note]
+    assert degraded == [], (
+        "distill degrades on the model it actually calls, so the job is back "
+        "to writing claims from abstracts while reporting success. Run "
+        "`python3 tools/fulltext_density.py` and lower FULLTEXT_CHARS.\n"
+        + "\n".join(degraded))
     assert [p for p in budget.check_cron_requests() if "distill" in p] == []
 
 
@@ -575,7 +601,7 @@ def test_the_measured_density_matches_the_committed_receipt():
     # tools/fulltext_density.py rewrites this receipt against live arXiv; CI
     # reads the receipt because CI does not get to depend on arxiv.org.
     receipt = json.loads((ROOT / "docs" / "evals"
-                          / "2026-09-27-fulltext-token-density.json").read_text())
+                          / "2026-09-30-fulltext-token-density.json").read_text())
     assert budget.FULLTEXT_CHARS_PER_TOKEN <= receipt["worst_chars_per_token"], (
         "the guard assumes a paper is looser than the worst paper measured")
     assert receipt["window_chars"] == budget.request_payload_chars(
@@ -615,3 +641,509 @@ def test_a_job_with_nowhere_left_to_go_is_still_a_failure(monkeypatch):
     assert problems, "a retry that does not fit either has to fail the gate"
     assert budget.cron_degradations()[0].endswith(
         "does NOT fit either, so the run cannot write a claim at all.")
+
+
+# ---------------- distill on Kimi (2026-09-30, owner's directive) ----------------
+
+def test_the_reading_queue_and_the_threads_are_ordered_ahead_of_the_intake():
+    """The owner's order of 2026-09-29, read out of the SQL that implements it.
+
+    The reading queue is `first` in the merge, so it cannot be outranked. What
+    this checks is the half that was missing: inside the intake, a standing
+    thread sorts ahead of `deep_read`, which sorts ahead of recency. Triage had
+    honoured the threads since 2026-09-26 and distill had not, which is a
+    priority with a hole in it — a thread promoted in the morning could wait
+    weeks behind the day's intake in the reading stage.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    order = source[source.index("order by case when title ilike any(%s)"):]
+    order = order[:order.index("limit %s")]
+    assert order.index("title ilike any") < order.index("deep_read"), (
+        "a standing thread must sort ahead of triage's deep_read; the owner's "
+        "instruction about a subject outranks triage's opinion about a paper")
+    assert order.index("deep_read") < order.index("published_at"), (
+        "deep_read must still break the tie inside a thread")
+
+
+def test_both_jobs_read_the_same_thread_list():
+    """One list, or the threads triage promotes are not the threads distill reads.
+
+    It was a constant in pipeline/triage.py until 2026-09-30. Two copies of a
+    list like this drift in silence: nothing prints a disagreement, and the
+    symptom is a thread that looks prioritised at one stage and is not at the
+    next.
+    """
+    import priority
+    import triage
+    assert triage.PRIORITY_TERMS is priority.PRIORITY_TERMS
+    assert triage.PRIORITY_PATTERNS == priority.PRIORITY_PATTERNS
+    for job in ("pipeline/triage.py", "pipeline/distill.py"):
+        source = (ROOT / job).read_text()
+        assert '.add_local_file("pipeline/priority.py"' in source, (
+            f"{job} uses the shared list and does not carry it into its image, "
+            "so the deployed job will fail at import")
+
+
+def test_every_ceiling_distill_can_stop_on_names_itself():
+    """Three ceilings, three different fixes, so three different messages.
+
+    Money, the account's daily token allowance, and the paper count each stop
+    the run, and they want different responses: raise the cap, raise the
+    Moonshot tier, raise MAX_PAPERS_PER_RUN. A single "stopped" line would hide
+    which, and the wrong fix for a token-allowance stop is more money.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    body = source[source.index("def distill("):]
+    assert 'stopped = f"the ${cap_usd:.2f} spend cap"' in body
+    assert 'stopped = f"the {TOKENS_PER_RUN:,}-token daily share"' in body
+    assert 'print(f"stopped on: {stopped}")' in body
+
+
+def test_the_three_ceilings_are_checked_before_the_call_not_after():
+    """A drain loop that checks afterwards always overshoots by one call.
+
+    On a 262,144-token model one call is not a rounding error: a single paper
+    is about 40,000 tokens and $0.04. `llm.Cap.allows()` exists for this and
+    the token check has to sit beside it.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    body = source[source.index("for pid, title, abstract, decision, source in papers:"):]
+    first_call = body.index("out, answered_by = extract_claims(")
+    assert body.index("if not cap.allows():") < first_call
+    assert body.index("if drawn >= TOKENS_PER_RUN:") < first_call
+
+
+def test_the_daily_token_allowance_is_a_guard_and_not_a_comment():
+    """The ceiling nobody was watching until a request got big.
+
+    Busting a per-request limit is a 413 on one call. Busting the account's
+    daily allowance is every Kimi call in the org failing for the rest of the
+    UTC day, press included, so it is the more dangerous of the two and it had
+    no check at all until distill started sending whole papers.
+    """
+    assert budget.check_kimi_tpd() == [], budget.check_kimi_tpd()
+    total, lines = budget.kimi_daily_draw()
+    allowance = budget.MODELS[budget.PRIMARY_MODEL]["tpd"]
+    assert total <= allowance * (1 - budget.MARGIN), (
+        f"{total:,} tokens a day against a {allowance:,} allowance")
+    for label in budget.cron_model_lists():
+        assert label in budget.KIMI_DAILY_DRAW, (
+            f"{label} calls Kimi on a schedule and draws from the account's "
+            "day, and nothing counts it")
+
+
+def test_distills_cap_buys_more_than_one_paper_at_the_worst_case_price():
+    """A cap smaller than one call is a job that never runs.
+
+    Triage has the same test and distill needs it more: one paper at the
+    ceiling is $0.10, which is sixteen times a triage batch, so the margin
+    between a working cap and a useless one is much thinner here.
+    """
+    job = distill
+    ceiling = budget.cost_usd(
+        int(job.FULLTEXT_CHARS / budget.FULLTEXT_CHARS_PER_TOKEN) + 990,
+        job.MAX_COMPLETION_TOKENS, job.MODELS[0])
+    assert ceiling > 0
+    assert job.CAP_USD / ceiling >= 5, (
+        f"${job.CAP_USD:.2f} buys {job.CAP_USD / ceiling:.1f} papers at the "
+        f"worst-case price of ${ceiling:.4f}. A cap that buys almost nothing "
+        "is a job that reports success after one paper.")
+
+
+def test_the_density_constant_was_measured_at_the_window_the_job_sends():
+    """A density is only valid for the window it was measured at.
+
+    The same fourteen papers run 3.35 chars/token over their first 12,000
+    characters and 2.53 over their whole bodies, because a paper opens with a
+    title block and an abstract and only later reaches its equations. Widening
+    FULLTEXT_CHARS without re-measuring would have under-sized every request by
+    about a third.
+    """
+    job = distill
+    receipt = json.loads((ROOT / "docs" / "evals"
+                          / "2026-09-30-fulltext-token-density.json").read_text())
+    assert receipt["window_chars"] == job.FULLTEXT_CHARS
+    assert receipt["model"] == job.MODELS[0]
+    assert budget.FULLTEXT_CHARS_PER_TOKEN <= receipt["worst_chars_per_token"]
+
+
+def test_the_token_counter_survives_a_paper_that_prints_a_special_token():
+    """The crash that a small window hid for the life of the guard.
+
+    tiktoken raises by default on text containing `<|endoftext|>`, and a
+    cleaned arXiv paper contains it whenever it quotes a prompt template or
+    discusses tokenizers. At 12,000 characters the guard never reached one; the
+    first measurement at 250,000 hit it on the first paper. A token counter
+    that throws is a guard that fails closed on exactly the papers the corpus
+    most wants to read.
+    """
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
+    assert budget.count_tokens("before <|endoftext|> after") > 0
+    assert budget.count_tokens("<|im_start|><|endofprompt|>") > 0
+
+
+# ================ the day's run, driven end to end (2026-09-30) ================
+#
+# Every distill test above and in tests/test_distill_gates.py checks a gate, a
+# constant or a query. None of them runs the loop, and on 2026-09-30 the loop
+# is the part that changed most: it moved to the shared client, it gained three
+# ceilings that each have to stop it cleanly, it lost the per-run fetch budget,
+# and it has to tell the truth about which papers arrived whole.
+#
+# This section is what the engineer seat could run in place of a smoke run. A
+# real smoke run is `modal run pipeline/distill.py --max-papers 1 --cap-usd
+# 0.15` and it needs the Moonshot key, which lives in Modal and which no seat
+# sandbox has. So the provider and the database are fakes here and everything
+# between them is the real code: the real ordering, the real cap accounting out
+# of a real usage block, the real fulltext_chars write, the real stop
+# conditions. What it cannot prove is that Moonshot answers a
+# 250,000-character paper well, which is gate 3's question and the chair's to
+# ask.
+#
+# It lives in this file rather than its own because checks.yml names test files
+# one by one and no seat can push a workflow. A test CI does not run is
+# enforced at the reliability of somebody running it locally, which is L-A22,
+# and this section is too load-bearing for that.
+
+class Row(list):
+    """psycopg hands back tuples; the fake cursor hands back these."""
+
+
+class FakeCursor:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def fetchall(self):
+        return self._rows
+
+    def fetchone(self):
+        return self._rows[0] if self._rows else None
+
+
+class FakeConn:
+    """Answers the handful of queries the run makes, and records every write.
+
+    Deliberately literal rather than clever: it matches on a distinctive
+    fragment of each statement, so a query that changes shape fails here loudly
+    instead of silently answering something else.
+    """
+
+    def __init__(self, papers, queue_depth=0):
+        self.papers = papers
+        self.queue_depth = queue_depth
+        self.inserts = []
+        self.fulltext_writes = {}
+        self.statements = []
+
+    def execute(self, sql, params=()):
+        self.statements.append(" ".join(sql.split()))
+        low = sql.lower()
+        if "information_schema.columns" in low:
+            return FakeCursor([(1,)])          # every optional column exists
+        if "from distill_queue" in low and "count(*)" in low:
+            return FakeCursor([(self.queue_depth,)])
+        if "from distill_queue" in low:
+            return FakeCursor(self.papers)
+        if low.strip().startswith("insert into claims"):
+            self.inserts.append((sql, params))
+            return FakeCursor([])
+        if "fulltext_chars = %s" in low:
+            self.fulltext_writes[params[1]] = params[0]
+            return FakeCursor([])
+        if "where embedding is null" in low:
+            return FakeCursor([])              # nothing left to embed
+        return FakeCursor([])
+
+    def commit(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def paper_reply(status=200, claims=None, prompt_tokens=40_000):
+    body = {
+        "choices": [{"message": {"content": json.dumps(
+            {"claims": claims or [], "institutions": []})},
+            "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": 900},
+    }
+
+    class R:
+        status_code = status
+        text = ""
+        headers: dict = {}
+
+        def json(self):
+            return body
+
+        def raise_for_status(self):
+            pass
+
+    return R()
+
+
+CLAIM = {
+    "claim": "Two-stage distillation raises pairwise win rate to 71.3%.",
+    "evidence": "Held-out split, three annotators, Krippendorff alpha 0.81.",
+    "procedure": "1. SFT on 12,400 demonstrations. 2. Distil with KL 0.02.",
+    "topics": ["reasoning"],
+}
+
+PAPERS = [
+    ("arxiv:1", "Chain of thought prompting at scale", "an abstract",
+     "deep_read", "arxiv"),
+    ("arxiv:2", "A sandbox for untrusted agent tools", "an abstract",
+     "distill", "arxiv"),
+    ("arxiv:3", "A fast Fourier transform variant", "an abstract",
+     "distill", "arxiv"),
+]
+
+
+@pytest.fixture
+def loop_env(monkeypatch, no_sleep):
+    """Everything the loop reaches for, faked at its own edge."""
+    monkeypatch.setenv("MOONSHOT_API_KEY", "moonshot-key")
+    monkeypatch.setenv("GROQ_API_KEY", "groq-key")
+    monkeypatch.setenv("DATABASE_URL", "postgres://fake")
+    monkeypatch.setattr(distill, "load_prompt",
+                        lambda kind="paper": ("a prompt", f"sha-{kind}"))
+    monkeypatch.setattr(distill, "reading_queue", lambda: _NoQueue())
+    monkeypatch.setattr(distill, "read_paper", lambda: _NoFetch())
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: response(
+        200, claims=[]) if False else _catalog())
+    # setitem rather than assignment, so the fakes are removed when the test
+    # ends. A `psycopg` left in sys.modules would follow the suite into every
+    # file collected after this one.
+    monkeypatch.setitem(sys.modules, "sentence_transformers",
+                        _fake_sentence_transformers())
+    monkeypatch.setitem(sys.modules, "psycopg", _fake_psycopg())
+    return None
+
+
+def _catalog():
+    class R:
+        status_code = 200
+        text = ""
+        headers: dict = {}
+
+        def json(self):
+            return {"data": [{"id": m} for m in distill.MODELS]}
+
+    return R()
+
+
+class _NoQueue:
+    QUEUE_PATH = "docs/research/reading-queue.md"
+    MAX_PER_RUN = 6
+
+    def read_file(self, path):
+        return None
+
+    def pending(self, text, limit=None):
+        return []
+
+    def resolve(self, conn, requested, fetch_metadata=None):
+        return []
+
+    def merge(self, first, intake, max_papers):
+        return (list(first) + list(intake))[:max_papers]
+
+
+class _NoFetch:
+    """arXiv serves no HTML, so the run takes the documented fallback."""
+
+    def fetch_fulltext(self, pid, max_chars=None):
+        return None
+
+    def fetch_metadata(self, pid):
+        return None
+
+
+class _WholePaper(_NoFetch):
+    def __init__(self, length):
+        self.length = length
+
+    def fetch_fulltext(self, pid, max_chars=None):
+        body = "x" * self.length
+        return body[:max_chars] if max_chars else body
+
+
+def _fake_sentence_transformers():
+    import types
+    mod = types.ModuleType("sentence_transformers")
+    mod.SentenceTransformer = lambda name: None
+    return mod
+
+
+def _fake_psycopg():
+    import types
+    mod = types.ModuleType("psycopg")
+    mod.connect = lambda url: CONN["conn"]
+    return mod
+
+
+CONN: dict = {}
+
+
+def drive(monkeypatch, papers, responses, reader=None, **kwargs):
+    conn = FakeConn(papers, queue_depth=kwargs.pop("queue_depth", 0))
+    CONN["conn"] = conn
+    if reader is not None:
+        monkeypatch.setattr(distill, "read_paper", lambda: reader)
+    queue = list(responses)
+    monkeypatch.setattr(httpx, "post",
+                        lambda *a, **k: queue.pop(0) if len(queue) > 1
+                        else queue[0])
+    # The Modal stub gives `hf_cache` as None, and the embedding sweep only
+    # touches it when there is something to embed, which the fake database
+    # says there is not.
+    distill.distill(**kwargs)
+    return conn
+
+
+# ---------------- the loop writes what it read ----------------
+
+def test_a_complete_paper_is_recorded_as_the_number_of_characters_read(
+        loop_env, monkeypatch, capsys):
+    """`papers.fulltext_chars` is what the masthead's number is counted from.
+
+    So it has to be the real length, and a paper cut at the window has to be
+    distinguishable from one that arrived whole. The run prints both counts and
+    the column carries the per-paper number behind them.
+    """
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+                 reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] == 40_000
+    assert "read 1 of 1 papers from their full text, 1 of those complete" in out
+
+
+def test_a_paper_longer_than_the_window_is_read_but_not_counted_complete(
+        loop_env, monkeypatch, capsys):
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+                 reader=_WholePaper(distill.FULLTEXT_CHARS + 50_000))
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] == distill.FULLTEXT_CHARS
+    assert "0 of those complete" in out
+    assert f"cut at {distill.FULLTEXT_CHARS}" in out
+
+
+def test_a_paper_with_no_html_falls_back_to_the_abstract_and_says_null(
+        loop_env, monkeypatch, capsys):
+    """The documented fallback, and the honest marker that goes with it.
+
+    A stat the weekly issue prints cannot be generous about what was read, so
+    an abstract-only paper writes NULL rather than the abstract's length.
+    """
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])])
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] is None
+    assert "1 from the abstract alone" in out
+
+
+# ---------------- the three ceilings ----------------
+
+def test_the_spend_cap_stops_the_run_and_names_itself(loop_env, monkeypatch, capsys):
+    """Less than one paper's allowance, three papers queued.
+
+    A paper here bills $0.0416, so a $0.03 cap is spent by the first one and
+    the second is refused before it is sent. That is the shape `llm.Cap` is
+    built for: the check is BEFORE the call, so a run stops at its cap rather
+    than one call past it, and on a 262,144-token model one call past it is
+    four cents rather than a rounding error.
+    """
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000), cap_usd=0.03)
+    out = capsys.readouterr().out
+    assert "stopped on: the $0.03 spend cap" in out
+    assert out.count("claims (paper)") == 1, (
+        "the cap is checked before the call, so the run stops AT it rather "
+        "than one paper past it")
+
+
+def test_the_daily_token_share_stops_the_run_and_names_itself(
+        loop_env, monkeypatch, capsys):
+    """A different ceiling with a different fix, so a different message.
+
+    Running out of the account's day is not a cost problem, and answering it
+    with more money buys nothing. The line has to say which one it was.
+    """
+    monkeypatch.setattr(distill, "TOKENS_PER_RUN", 50_000)
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the 50,000-token daily share" in out
+    assert "the next run resumes" in out
+
+
+def test_the_paper_count_is_what_normally_stops_the_run(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the queue ran out" in out
+    assert out.count("claims (paper)") == 3
+
+
+# ---------------- what the run tells the reader ----------------
+
+def test_the_run_prints_the_measured_cost_per_paper(loop_env, monkeypatch, capsys):
+    """The owner asked for this number by name, so the run prints the realised
+    version of it beside the projection the preflight printed."""
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "cost per paper this run: $" in out
+    assert "spend: $" in out
+
+
+def test_the_run_says_which_model_answered(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert f"answered by: {distill.MODELS[0]} x1" in out
+
+
+def test_a_run_answered_only_by_a_fallback_warns_that_it_read_abstracts(
+        loop_env, monkeypatch, capsys):
+    """The quiet failure this whole change exists to end.
+
+    A Groq fallback answers, the run succeeds, claims are written, and every
+    one of them came from an abstract. That is the owner's finding of
+    2026-09-25 in one run, so the log has to name it rather than report a
+    normal day.
+    """
+    drive(monkeypatch, PAPERS[:1],
+          [paper_reply(404), paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert f"NOTE: {distill.MODEL} answered nothing this run" in out
+    assert "came from abstracts" in out
+
+
+def test_the_run_forecasts_the_remaining_queue(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000), queue_depth=400)
+    out = capsys.readouterr().out
+    assert "400 papers still queued" in out
+    assert "OVER A WEEK" in out, (
+        "a queue that cannot clear in a week is the condition the owner's "
+        "directive named, so the run has to say so rather than print a number")
+
+
+def test_the_daily_draw_reads_the_paper_count_out_of_the_job():
+    """The number that will move is the number the guard reads, not a copy.
+
+    Distill dominates this table by an order of magnitude, so raising
+    MAX_PAPERS_PER_RUN without the guard following would be a job quietly
+    drawing more of the account's day than anything checks. That is the same
+    argument `cron_caps` makes for spend caps, applied to the other ceiling.
+    """
+    spec, per_call, _ = budget.KIMI_DAILY_DRAW["distill (pipeline/distill.py)"]
+    assert budget._calls(spec) == distill.MAX_PAPERS_PER_RUN
+    # And the arithmetic downstream of it actually uses that number.
+    total, _ = budget.kimi_daily_draw()
+    assert distill.MAX_PAPERS_PER_RUN * per_call <= total
