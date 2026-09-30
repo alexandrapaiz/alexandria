@@ -157,6 +157,11 @@ image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "sentence-transformers")
     .add_local_file("prompts/distill.md", "/root/prompts/distill.md")
+    # The practices variant travels with it. A field report routed to a prompt
+    # that is not in the image fails at the open(), one paper at a time, so
+    # `rehearse` loads both and refuses to report success on one.
+    .add_local_file("prompts/distill-practices.md",
+                    "/root/prompts/distill-practices.md")
     .add_local_file("pipeline/evidence.py", "/root/evidence.py")
     # The taxonomy travels with the job, so the list the tests check is the list
     # the insert enforces.
@@ -242,8 +247,42 @@ def reading_queue():
     return _sibling("reading_queue")
 
 
-def load_prompt() -> tuple[str, str]:
-    """The distill prompt and the first 12 hex of its sha256.
+# Which prompt reads which source. `paper` is the original: an arXiv preprint or
+# a Hugging Face daily pick, written to be checked. `practices` reads a field
+# report, where the contribution is a mechanism somebody runs in production and
+# the most valuable paragraph is the one about what broke. pipeline/evidence.py
+# already decides which of the two a row is, for the grade, and routing off that
+# same function means a row cannot be graded `field` and read as a paper.
+PROMPTS = {
+    "paper": "distill.md",
+    "practices": "distill-practices.md",
+}
+
+
+def prompt_path(kind: str) -> pathlib.Path:
+    """Where `kind`'s prompt is, in the image or in a checkout.
+
+    Modal drops prompts at /root/prompts; a local run or a test reads the
+    working copy. The same two-path trick `evidence()` and `topics()` use, for
+    the same reason: the prompt the tests check has to be the prompt the run
+    sends.
+    """
+    name = PROMPTS[kind]
+    deployed = pathlib.Path("/root/prompts") / name
+    try:
+        if deployed.exists():
+            return deployed
+    except OSError:
+        # /root is not readable by the CI user, and pathlib raises rather than
+        # answering False. Caught rather than avoided, because the alternative is
+        # deciding "am I on Modal" from an environment variable, and that answer
+        # goes stale the first time the image changes.
+        pass
+    return pathlib.Path(__file__).resolve().parent.parent / "prompts" / name
+
+
+def load_prompt(kind: str = "paper") -> tuple[str, str]:
+    """One distill prompt and the first 12 hex of its sha256.
 
     Written onto every claim as `claims.prompt_sha`, the way triage writes it
     onto every decision and the press writes it onto every issue. Until this
@@ -251,9 +290,30 @@ def load_prompt() -> tuple[str, str]:
     inference from the shape of the output: the research seat's brief of
     2026-09-26 found the interpret prompt seven days stale that way, after the
     stale prompt's output had already reached readers.
+
+    Two prompts as of 2026-09-30, so the sha now identifies which one as well as
+    which version of it. That is the whole audit trail for the practices split:
+    `select prompt_sha, count(*) from claims group by 1` says how much of the
+    corpus was read as a paper and how much as a field report.
     """
-    text = open("/root/prompts/distill.md").read()
+    text = prompt_path(kind).read_text()
     return text, hashlib.sha256(text.encode()).hexdigest()[:12]
+
+
+def _text_or_none(value) -> str | None:
+    """A model's optional string field, or None.
+
+    JSON from a model is not always typed and "null" arrives as often as null,
+    so an absent field has four spellings. `claims.broke` being NULL is read as
+    "the source reported no failure", which is a claim about the source, so it
+    has to mean that and not "the model wrote the word null".
+    """
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text or text.lower() in {"null", "none", "n/a", "na"}:
+        return None
+    return text
 
 
 def has_column(conn, table: str, column: str) -> bool:
@@ -302,13 +362,14 @@ def fetch_fulltext(paper_id: str) -> str | None:
     return read_paper().fetch_fulltext(paper_id, max_chars=FULLTEXT_CHARS)
 
 
-def extract_claims(provider: str, title: str, abstract: str) -> list[dict]:
+def extract_claims(provider: str, title: str, abstract: str,
+                   kind: str = "paper") -> list[dict]:
     import os
 
     import httpx
 
     p = PROVIDERS[provider]
-    prompt, _ = load_prompt()
+    prompt, _ = load_prompt(kind)
     for attempt in range(4):
         resp = httpx.post(
             p["url"],
@@ -489,6 +550,16 @@ def rehearse(allow_abstract_only: bool = False) -> str:
     import httpx
 
     prompt, sha = load_prompt()
+    # Gate 3 for the second prompt is weaker than for the first and this is the
+    # honest form of it: the practices prompt is LOADED here, so a deploy whose
+    # image is missing it fails the chain instead of failing on the first blog
+    # post of the next run, and it is not CALLED, because the request that must
+    # fit is the 12,000-character paper below and one rehearsal call is the
+    # budget. What this proves is that the file is in the image and its sha is
+    # the one about to be deployed. What it does not prove is that the provider
+    # answers it well, and the first field report of the next run is where that
+    # shows.
+    practices, practices_sha = load_prompt("practices")
     taxonomy = topics()
 
     # The worst case by construction: exactly what the daily run sends when
@@ -498,6 +569,8 @@ def rehearse(allow_abstract_only: bool = False) -> str:
     print("distill rehearsal:")
     print(f"  model: {PROVIDERS[PRODUCTION_PROVIDER]['model']}   prompt_sha: {sha}   "
           f"payload: {len(body)} chars (FULLTEXT_CHARS)   timeout: 180s")
+    print(f"  practices prompt loaded, not called: {practices_sha} "
+          f"({len(practices)} chars)")
 
     read_in_full = True
     started = time.monotonic()
@@ -663,16 +736,30 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
             print("papers.fulltext_chars is missing, so the weekly issue cannot "
                   "say how much was read in full; run db/schema.sql")
         grading = has_evidence_grade(conn)
-        grader = evidence() if grading else None
+        # evidence() is loaded whether or not the column is there, because it now
+        # does two jobs: it grades a claim, and it decides which prompt reads the
+        # source. Routing must not switch off just because the grade column is
+        # missing, or an un-migrated database would read every blog post with the
+        # paper prompt and no log line would say so.
+        router = evidence()
+        grader = router if grading else None
         if not grading:
             print("claims.evidence_grade is missing; run db/schema.sql to start grading")
+        keeping_broke = has_column(conn, "claims", "broke")
+        if not keeping_broke:
+            print("claims.broke is missing, so what a field report says went wrong "
+                  "is read and then dropped; run db/schema.sql")
         stamping = has_column(conn, "claims", "prompt_sha")
         if not stamping:
             print("claims.prompt_sha is missing, so nothing records which distill "
                   "prompt wrote a claim; run db/schema.sql")
         taxonomy = topics()
-        _, sha = load_prompt()
-        print(f"prompt_sha {sha} ({len(taxonomy.TOPICS)} topics accepted)")
+        # Both prompts are loaded before the first paper, so a missing or
+        # unreadable practices prompt fails the run at the top rather than on
+        # whichever paper happens to be the first field report.
+        shas = {kind: load_prompt(kind)[1] for kind in PROMPTS}
+        print(f"prompt_sha paper {shas['paper']}, practices {shas['practices']} "
+              f"({len(taxonomy.TOPICS)} topics accepted)")
         off_list: dict[str, int] = {}
 
         wrote_any = False
@@ -680,7 +767,16 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
         fulltexts_used = 0     # the fetch budget: how many HTML pulls were tried
         read_in_full = 0       # how many papers' claims actually came from one
         graded: dict[str, int] = {}
+        by_kind: dict[str, int] = {}
+        broke_reported = 0     # field claims that named a failure
         for pid, title, abstract, decision, source in papers:
+            # A field report is read by the practices prompt. Same call, same
+            # JSON contract, different questions: what they did, why, and what
+            # broke. source_class is the grader's own function, so the prompt a
+            # row is read with and the grade it is given can never disagree.
+            kind = "practices" if router.source_class(pid, source) == "field" \
+                else "paper"
+            by_kind[kind] = by_kind.get(kind, 0) + 1
             body = None
             if fulltexts_used < FULLTEXT_MAX_PER_RUN:
                 body = fetch_fulltext(pid)
@@ -691,7 +787,7 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
             if body is None:
                 body = (abstract or "")[:6000]
             try:
-                out = extract_claims(PRODUCTION_PROVIDER, title, body)
+                out = extract_claims(PRODUCTION_PROVIDER, title, body, kind)
             except httpx.HTTPStatusError as exc:
                 if exc.response.status_code == 429:
                     print("rate limited by Groq; stopping — next run resumes")
@@ -703,10 +799,16 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
                     # issue prints cannot be generous about what was read.
                     print(f"  provider rejected full text ({exc.response.status_code}); retrying with abstract")
                     used_fulltext = False
-                    out = extract_claims(PRODUCTION_PROVIDER, title, (abstract or "")[:6000])
+                    out = extract_claims(PRODUCTION_PROVIDER, title,
+                                        (abstract or "")[:6000], kind)
                 else:
                     raise
             claims = out.get("claims", [])
+            # The practices prompt is allowed to return nothing, and says why in
+            # `skipped`. A launch post yielding zero claims is the right answer,
+            # and it is also the only signal that says a feed is being routed
+            # here when it should be discarded at triage, so it is printed.
+            skipped_why = _text_or_none(out.get("skipped")) if not claims else None
             institutions = [i for i in (out.get("institutions") or []) if i][:3]
             if institutions:
                 conn.execute(
@@ -737,9 +839,15 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
                     graded[row_grade] = graded.get(row_grade, 0) + 1
                     cols.append("evidence_grade")
                     vals.append(row_grade)
+                if keeping_broke:
+                    broke = _text_or_none(c.get("broke"))
+                    if broke:
+                        cols.append("broke")
+                        vals.append(broke)
+                        broke_reported += 1
                 if stamping:
                     cols.append("prompt_sha")
-                    vals.append(sha)
+                    vals.append(shas[kind])
                 conn.execute(
                     f"insert into claims ({', '.join(cols)}) "
                     f"values ({', '.join(['%s'] * len(cols))})",
@@ -761,7 +869,9 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
                 conn.execute("update papers set distilled_at = now() where id = %s", (pid,))
             conn.commit()
             finished.append(pid)
-            print(f"  {len(claims)} claims <- {title[:60]}")
+            print(f"  {len(claims)} claims ({kind}) <- {title[:60]}")
+            if skipped_why:
+                print(f"    declined: {skipped_why}")
             time.sleep(PROVIDERS[PRODUCTION_PROVIDER]["pause"])
 
         # The research seat strikes the queue line, and it strikes what this
@@ -781,6 +891,14 @@ def distill(max_papers: int = 30, queue_text: str | None = None):
         if graded:
             tally = ", ".join(f"{g} {n}" for g, n in sorted(graded.items()))
             print(f"evidence grades this run: {tally}")
+        # Which prompt read what, every run. The practices split is only worth
+        # having if field reports are actually reaching it, and this line is how
+        # a reader of the log knows they are without querying anything.
+        print("read as: " + ", ".join(f"{k} {n}" for k, n in sorted(by_kind.items())))
+        if by_kind.get("practices"):
+            print(f"  field reports named a failure in {broke_reported} claims. "
+                  "Zero, run after run, means the practices prompt is being "
+                  "answered like a paper prompt.")
         # The off-list rate, printed every run. It was 3.9% for the pipeline's
         # whole life and nobody could have known, because nothing counted it.
         if off_list:

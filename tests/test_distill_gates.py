@@ -66,9 +66,17 @@ GOOD_CLAIM = {
 
 @pytest.fixture(autouse=True)
 def prompt_on_disk(monkeypatch):
-    """`load_prompt` reads /root inside Modal. Point it at the repo's own file."""
+    """`load_prompt` reads /root inside Modal. Point it at the repo's own file.
+
+    It takes a `kind` as of 2026-09-30, when distill grew a second prompt for
+    field reports, and the stub takes one too. A stub with the old arity made
+    every test in this file fail with a TypeError rather than an assertion,
+    which is the failure mode that tells you the stub is the thing that is
+    stale.
+    """
     text = (ROOT / "prompts" / "distill.md").read_text()
-    monkeypatch.setattr(distill, "load_prompt", lambda: (text, "abc123def456"))
+    monkeypatch.setattr(distill, "load_prompt",
+                        lambda kind="paper": (text, "abc123def456"))
     monkeypatch.setenv("GROQ_API_KEY", "groq-key")
 
 

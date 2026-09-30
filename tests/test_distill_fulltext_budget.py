@@ -107,7 +107,8 @@ def test_the_reservation_is_actually_sent(monkeypatch):
 
     monkeypatch.setenv("GROQ_API_KEY", "test-key")
     # load_prompt reads /root inside Modal; point it at the repo's own file.
-    monkeypatch.setattr(distill, "load_prompt", lambda: (PROMPT, "abc123def456"))
+    monkeypatch.setattr(distill, "load_prompt",
+                        lambda kind="paper": (PROMPT, "abc123def456"))
     import httpx
     monkeypatch.setattr(httpx, "post", fake_post)
     distill.extract_claims("groq", "a title", "a body")
