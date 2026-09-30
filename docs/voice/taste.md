@@ -230,3 +230,33 @@ the chair and the PM record her rulings.
   the claims that support, refine, or contradict it."); hints are
   instructions, not invitations ("Click a claim to read it."). No
   personification of the graph, no slogans on tool pages.
+- 2026-09-29 — SITE COPY, the rounds that landed (owner: "good. i like
+  this."). The rulings that produced them, binding on the writer and on
+  every site line:
+  (1) LONGER, UNDECORATED SENTENCES. "all the subtitles are too choppy.
+  prefer longer undecorated sentences." No fragments, no staccato, no
+  colon-led devices, no bold inside body copy, no "For you, ..." rhythm.
+  A paragraph is two to four long plain sentences.
+  (2) SELL THE VALUE, FROM SCRATCH WHEN ASKED. Definitional copy ("A skill
+  is a file that...") was rejected twice for the skills page. What sold:
+  the builder's situation first (knowing which techniques work, noticing
+  when that changes), then what the library does about it, then what the
+  builder keeps.
+  (3) THE FRONTIER ANGLE, WITH TRACTION. "keeping your agents at the
+  frontier. they direct themselves at the pace of the research that gains
+  the most traction." The word "frontier" is allowed again when it names
+  the builder's position, not as marketing ("the frontier your agents can
+  load" stays rejected).
+  (4) COMPOUNDING. "id like you to include some self-recursive or
+  exponential aspect. moores law, s curves..." Landed as: the gap
+  compounds; the record gets more valuable with each paper rather than
+  merely longer; "the only pace that keeps up with an exponential".
+  Moore and S-curves are NOT named; the compounding is stated, not
+  borrowed.
+  (5) HEADINGS ARE BARE NOUNS: "Every issue", "Skill library", "Claim
+  graph"; the mission keeps its statement heading.
+  (6) NEVER "read" FOR INGESTED, on the site as in the issue.
+  The approved texts are on the site (commit of 2026-09-29/30, home,
+  library, skills, graph, mission) and are the positive examples for the
+  writer's site-copy work from here on.
+

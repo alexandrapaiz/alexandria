@@ -31,3 +31,20 @@ kept. Under ADR-37 a skill is revised when a claim it cites is deprecated or
 refined, when a cited paper's citations move sharply, or when its own eval
 regresses; each skill's `provenance.revisions` records what fired and what
 changed.
+
+## Consumer reports (ADR-38, 2026-09-29)
+
+Each skill directory may hold a `reviews/` lane:
+`reviews/YYYY-MM-DD-<consumer>.md`, filed by any session or seat that
+used the skill on real work. A report records who the consumer was,
+the task, which sections changed a decision, which only confirmed one,
+and what the skill should add. The skill agent reads new reports first
+on every run (maintenance before creation, ADR-37), feeds
+decision-change findings into per-section *Validation:* tags, and
+treats several zero-decision-change reports as a deprecation signal.
+The format additions of the same ADR: every skill carries a one-line
+*Validation:* tag under each section heading and an "Apply" checklist
+before its caveats, and caveats name the floor of any requirement they
+state. The first report is
+`harness-engineering/reviews/2026-09-29-ursa-chair.md`, whose consumer
+derived all three additions the hard way.

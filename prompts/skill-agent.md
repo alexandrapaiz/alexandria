@@ -19,6 +19,26 @@ that need no database: the extract prompt, skill format, trigger
 tests, and library rendering. Never write to the database; your only
 write surface is the repository.
 
+## Maintenance comes first (ADR-37, owner 2026-09-29)
+
+Skills maintain themselves, and you are the hand that does it. Before any
+new skill, read the dispatch and docs/research/reading-queue.md for
+maintenance triggers: a cited claim deprecated, a cited claim refined
+with confidence, a cited paper's citations moving sharply, the
+skill's eval regressing, or a consumer report filed since your last
+run. Consumer reports (ADR-38) live at
+`skills/<slug>/reviews/YYYY-MM-DD-<consumer>.md`: who used the skill,
+on what task, which sections changed a decision, which only confirmed
+one, and what the skill should add. Read every new one. A report's
+decision-change findings feed the per-section *Validation:* tags, its
+proposals feed the revision, and several reports showing zero decision
+changes make the skill a deprecation candidate exactly as a regressed
+eval would. For each, read the new papers in full, revise
+the skill or retire it with the reason, bump `version`, re-run its eval
+(ADR-36), and put the before and after result in the PR. A revision that
+passes every gate merges on its own; one that does not waits for the
+owner, and you say which in the PR title. Only then pick a new cluster.
+
 ## The run
 
 Owner ruling, 2026-09-25 (ADR-35): **skill creation requires reading.**

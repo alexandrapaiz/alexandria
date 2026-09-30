@@ -189,7 +189,14 @@ Body shape, after the specimen:
    engineering practice" paragraph). Skip it if the topic has no such
    overlap; do not force the shape.
 3. **Numbered or titled sections, one per finding**, each a procedure or a
-   judgment call, grounded in the cluster. Cite claims **by paper title
+   judgment call, grounded in the cluster. Directly under each section
+   heading, one italic *Validation:* line stating what has actually tested
+   that section: the recorded trial that exercised it, a consumer report
+   that adopted it (cite the file under the skill's `reviews/`), or "none
+   yet; claim provenance only". Adoption is not validation and the line
+   never blurs the two. The frontmatter `validated` field remains the
+   ADR-13 panel's alone; a per-section tag never claims a trial that was
+   not recorded (ADR-38). Cite claims **by paper title
    inline** in prose — `(Co-Evolving Harnesses and Models)` — not by raw
    numeric id. The numeric ids belong in the frontmatter `provenance.claims`
    list only, where the provenance reviewer (ADR-13) checks each one against
@@ -202,10 +209,22 @@ Body shape, after the specimen:
    traceable to a claim must say so inline, in the specimen's voice: "(ours,
    not the paper's)". This is the line the provenance reviewer polices
    hardest — the one sin the panel exists to catch is overstating evidence.
-5. **Caveats section**, always last: the source studies' scope limits
+5. **An "Apply" checklist**, second to last: the whole skill compressed
+   into five or fewer checkable lines a builder runs down before shipping,
+   each line a question with the section it came from. The first consumer
+   report in the library (harness-engineering `reviews/`, 2026-09-29)
+   derived this checklist by hand and said the skill should have shipped
+   it; every skill ships it now (ADR-38). A skill whose content cannot be
+   compressed this way is describing findings, not procedures, and that is
+   a cluster-selection finding to report.
+6. **Caveats section**, always last: the source studies' scope limits
    (model sizes, task counts, sample sizes — whatever narrows how far the
    finding generalizes) and one sentence committing the skill to revision if
-   a source claim is later contradicted.
+   a source claim is later contradicted. A caveat that names a requirement
+   also names its floor: "needs an embedding model (a MiniLM-class sentence
+   embedder is sufficient)" turns a hesitation into a decision, while
+   "needs an embedding model" alone leaves the reader to research one
+   (ADR-38).
 
 Every `provenance.claims` id must trace to at least one paper-title citation
 somewhere in the body. An id in the frontmatter with no corresponding
