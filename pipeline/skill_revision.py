@@ -88,6 +88,13 @@ import modal
 QUEUE_PATH = "docs/research/reading-queue.md"
 QUEUE_BRANCH = "main"
 
+# Guardrail 2 of ADR-37's amendment of 2026-09-29: a file at this path on main
+# pauses automatic skill maintenance. Any seat may create it with a reason and
+# only the owner or the chair removes it. This job is where the loop starts, so
+# this is the cheapest place for the switch to be read: no dispatch, no queue
+# line, and the run says whose reason stopped it.
+PAUSE_PATH = "skills/MAINTENANCE_PAUSED"
+
 # The seat that does the revising, and the input its workflow declares.
 SKILL_WORKFLOW = "agent-skill.yml"
 DISPATCH_INPUT = "owner_instructions"
@@ -128,6 +135,19 @@ def registrar():
 # Everything below this line is testable with no database, no network and no
 # Modal, which is the only way any of it is tested at all: this organization runs
 # no Postgres in CI and the dispatch it sends is a real dispatch.
+
+
+def paused(gh, ref: str) -> str:
+    """The reason maintenance is paused, or an empty string.
+
+    Read from `main` rather than from the image, for the same reason the skills
+    are: a switch that only takes effect at the next deploy is not a switch.
+    """
+    try:
+        text, _ = gh.read_file(PAUSE_PATH, ref)
+    except RuntimeError:
+        return ""
+    return " ".join(text.split()) or "no reason given in the file"
 
 
 def pair_key(skill_path: str, claim_id: int) -> str:
@@ -352,6 +372,17 @@ def run(dry_run: bool = False) -> str:
     log.append(f"skills_needing_revision returns {len(pending)} pairs")
     if not pending:
         return "\n".join(log + ["nothing needs revision today"])
+
+    # Guardrail 2, before anything is written or dispatched. Registration in
+    # step 1 still ran, because knowing which skills exist is not maintenance.
+    if gh is not None:
+        why = paused(gh, QUEUE_BRANCH)
+        if why:
+            return "\n".join(log + [
+                f"PAUSED: {PAUSE_PATH} is on {QUEUE_BRANCH}, so nothing was "
+                f"queued and nobody was dispatched. The file says: {why}",
+                "Only the owner or the chair removes it (ADR-37, amended "
+                "2026-09-29, guardrail 2)."])
 
     # Step 3, the queue.
     if gh is None:

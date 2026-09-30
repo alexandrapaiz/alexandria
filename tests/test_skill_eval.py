@@ -647,3 +647,72 @@ def test_the_default_repetitions_fit_inside_the_default_cap():
         f"{biggest_suite * ev.DEFAULT_REPS * 2} calls and ${ev.CAP_USD} buys "
         f"{affordable}. Raise CAP_USD in the same commit as "
         "docs/finance/opex.md, or lower DEFAULT_REPS.")
+
+
+# ------------------------------------------- ADR-37's gate, the measurable part
+
+def result_of(**over):
+    base = {"subject_model": "kimi-k2.6", "verdict": "gain",
+            "delta": {"mean": 0.5, "ci95": [0.2, 0.8]},
+            "controls": {"tasks": 2, "delta": 0.0, "unchanged": True},
+            "unmeasured_tasks": []}
+    base.update(over)
+    return base
+
+
+def test_a_clean_gain_clears_the_gate():
+    assert ev.gate_problems(result_of(), None) == []
+
+
+def test_a_verdict_that_is_not_a_gain_does_not_merge_itself():
+    for verdict in ("no gain", "regression", "gain too small to matter"):
+        problems = ev.gate_problems(result_of(verdict=verdict), None)
+        assert any("rather than a gain" in p for p in problems)
+
+
+def test_controls_that_moved_block_the_merge():
+    result = result_of(controls={"tasks": 2, "delta": 0.4, "unchanged": False})
+    assert any("not supposed to touch" in p
+               for p in ev.gate_problems(result, None))
+
+
+def test_an_incomplete_or_unmeasured_run_never_merges_itself():
+    assert any("did not finish" in p for p in
+               ev.gate_problems(result_of(incomplete="cap reached at t3"), None))
+    assert any("could not be measured" in p for p in
+               ev.gate_problems(result_of(unmeasured_tasks=["t3"]), None))
+
+
+def test_a_delta_below_the_previous_version_s_own_lower_bound_blocks_it():
+    previous = result_of(delta={"mean": 0.6, "ci95": [0.4, 0.8]})
+    assert ev.gate_problems(result_of(delta={"mean": 0.45,
+                                             "ci95": [0.2, 0.7]}),
+                            previous) == [], (
+        "inside the previous result's spread is not a regression")
+    problems = ev.gate_problems(result_of(delta={"mean": 0.1,
+                                                 "ci95": [0.05, 0.2]}),
+                                previous)
+    assert any("below the previous result's own lower bound" in p
+               for p in problems)
+
+
+def test_a_model_change_is_never_read_as_a_regression():
+    """`claude plugin eval` says to pin the model in CI for exactly this reason."""
+    previous = result_of(subject_model="claude-opus-5",
+                         delta={"mean": 0.6, "ci95": [0.4, 0.8]})
+    problems = ev.gate_problems(result_of(delta={"mean": 0.1,
+                                                 "ci95": [0.05, 0.2]}),
+                                previous)
+    assert any("not comparable" in p for p in problems)
+    assert not any("fell from" in p for p in problems), (
+        "a delta measured on a different model must not be compared at all")
+
+
+def test_the_gate_says_what_it_did_not_check():
+    import inspect
+
+    text = inspect.getdoc(ev.gate_problems)
+    for elsewhere in ("ban list", "trigger test", "diff scope", "page render"):
+        assert elsewhere in text, (
+            "a gate that implies it checked everything is how a partial gate "
+            "becomes a full one in somebody's memory")

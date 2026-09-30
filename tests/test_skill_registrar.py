@@ -333,3 +333,34 @@ def test_the_schedule_sits_outside_every_reserved_window():
     for label, (start, end) in llm.KIMI_WINDOWS.items():
         assert not (start <= minute_of_day < end), (
             f"the revision job starts inside {label}'s window")
+
+
+def test_the_kill_switch_stops_the_loop_before_anything_is_written():
+    """Guardrail 2 of ADR-37's amendment, 2026-09-29.
+
+    `skills/MAINTENANCE_PAUSED` on main pauses automatic maintenance. This job is
+    where the loop starts, so it is the cheapest place to read the switch: no
+    queue line, no dispatch, and the run prints whose reason stopped it.
+    """
+    class Fake:
+        def __init__(self, text):
+            self.text = text
+
+        def read_file(self, path, ref):
+            assert path == job.PAUSE_PATH
+            if self.text is None:
+                raise RuntimeError("404")
+            return (self.text, "sha")
+
+    assert job.paused(Fake(None), "main") == ""
+    assert job.paused(Fake("  the graph is wrong\n\n"), "main") == \
+        "the graph is wrong"
+    assert job.paused(Fake("   \n"), "main") == "no reason given in the file"
+
+
+def test_the_pause_path_is_where_the_amendment_put_it():
+    assert job.PAUSE_PATH == "skills/MAINTENANCE_PAUSED"
+    source = (ROOT / "pipeline" / "skill_revision.py").read_text()
+    assert "guardrail 2" in source.lower()
+    # Read before the queue append and the dispatch, never after.
+    assert source.index("PAUSED:") < source.index("# Step 3, the queue.")

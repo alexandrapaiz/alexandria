@@ -224,6 +224,49 @@ def bootstrap_delta(per_task: list[dict], draws: int = BOOTSTRAP_DRAWS,
     return (round(point, 4), round(low, 4), round(high, 4))
 
 
+def gate_problems(result: dict, previous: dict | None) -> list[str]:
+    """Why this result does not clear ADR-37's gate. Empty means it does.
+
+    Only the clauses this harness measures. The amendment of 2026-09-29 names
+    six and this file can speak to three: the delta is not worse than the
+    previous version's within its spread on the same subject model, the control
+    tasks are unchanged, and nothing was left unmeasured. The ban list, the
+    trigger test, the diff scope and the page render belong elsewhere, and this
+    function says so rather than implying it checked them.
+    """
+    problems = []
+    if result.get("incomplete"):
+        problems.append(f"the run did not finish: {result['incomplete']}")
+    if result.get("unmeasured_tasks"):
+        problems.append("tasks could not be measured at all, so the comparison "
+                        f"is against a smaller suite: {result['unmeasured_tasks']}")
+    controls = result.get("controls")
+    if controls and not controls.get("unchanged"):
+        problems.append(f"the control tasks moved by {controls['delta']:+.2f}, "
+                        "so the skill is changing answers it is not supposed to "
+                        "touch")
+    if result["verdict"] != "gain":
+        problems.append(f"the verdict is {result['verdict']!r} rather than a gain")
+
+    if previous:
+        if previous.get("subject_model") != result["subject_model"]:
+            problems.append(
+                f"the previous result was measured on "
+                f"{previous.get('subject_model')!r} and this one on "
+                f"{result['subject_model']!r}, so the two deltas are not "
+                "comparable and a model rollout must not read as a regression")
+        else:
+            before = (previous.get("delta") or {}).get("mean", 0.0)
+            spread = (previous.get("delta") or {}).get("ci95") or [0.0, 0.0]
+            floor = min(spread[0], before)
+            if result["delta"]["mean"] < floor:
+                problems.append(
+                    f"the delta fell from {before:+.2f} to "
+                    f"{result['delta']['mean']:+.2f}, below the previous "
+                    f"result's own lower bound of {floor:+.2f}")
+    return problems
+
+
 def verdict_of(delta: float, low: float, high: float, min_delta: float) -> str:
     """What the numbers are allowed to be called.
 
@@ -1248,17 +1291,34 @@ def main(argv=None) -> int:
     if args.reps:
         result["repetitions_overridden"] = True
     out = results_path(args.skill)
+    # Read before writing. The gate compares against the previous version's
+    # measured delta, and this is the only moment the previous one still exists.
+    previous = None
+    if out.exists():
+        try:
+            previous = json.loads(out.read_text())
+        except json.JSONDecodeError:
+            print(f"warning: {out.name} is not JSON, so there is nothing to "
+                  "compare this run against")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print()
     print(json.dumps(result, indent=2, sort_keys=True) if args.json
           else render(result))
     print(f"\nwritten to {out.relative_to(ROOT)}")
-    if args.gate and result["verdict"] != "gain":
-        print("gate: this revision does not merge on its own. ADR-37 lets a "
-              "skill revision merge without the owner only when the harness "
-              f"measured a gain, and this run measured {result['verdict']!r}.")
-        return 1
+    if args.gate:
+        problems = gate_problems(result, previous)
+        for line in problems:
+            print(f"gate: {line}")
+        if problems:
+            print("gate: this revision does not merge on its own. It stays a "
+                  "draft pull request for the owner, which is what ADR-37's "
+                  "amendment of 2026-09-29 says happens to anything the gate "
+                  "does not clear.")
+            return 1
+        print("gate: clear on the clauses this harness can measure. The rest of "
+              "ADR-37's gate is the ban list, the trigger test, the diff scope "
+              "and the page render, and they are not this file's to check.")
     return 0
 
 

@@ -107,6 +107,20 @@ the skill moved answers it was not supposed to touch, which is the signal that
 something other than the taught behaviour did the work. It outranks a good
 headline delta.
 
+## The gate, for whoever builds the auto-merge workflow
+
+`python3 tools/skill_eval.py --skill <slug> --gate` exits 1 unless the result
+clears the clauses of ADR-37's gate that a harness can measure: the verdict is a
+gain, the control tasks are unchanged, nothing was left unmeasured, the run
+finished, and the delta is not below the previous `results.json`'s own lower
+bound on the same subject model. A subject model that changed since the last
+result blocks the gate rather than being compared, because a model rollout must
+never read as a regression.
+
+The other clauses of that gate are the ban list, the trigger test, the diff
+scope and whether the page still renders. This command does not check them and
+says so in its own output.
+
 ## An example task file
 
 `skills/<slug>/evals/evals.json`, written by the skill seat, never by the
