@@ -47,7 +47,7 @@ flowchart TB
         ING["Ingest<br/>daily 11:00 UTC"]
         BR[("Bronze<br/>raw papers")]
         TRI["Triage<br/>12:00 UTC<br/>routes four ways"]
-        DIS["Distill<br/>11:30 UTC<br/>claims, not summaries"]
+        DIS["Distill<br/>15:00 UTC<br/>whole papers, claims not summaries"]
         SIL[("Silver<br/>claims + embeddings")]
         INT["Interpret<br/>14:00 UTC"]
         GR[("Claim graph<br/>supports · refines<br/>contradicts")]
@@ -154,13 +154,13 @@ The logical diagram above survives any vendor swap. This one names the vendors.
 flowchart TB
     FEEDS["arXiv · HF daily papers · lab blog feeds"]
     NEON[("Neon: serverless Postgres + pgvector<br/>bronze · silver + claim graph · gold<br/>triage log · digests · subscribers")]
-    GROQ["Groq free tier, gpt-oss-120b<br/>distill and rag_answer<br/>plus the fallback list behind every Kimi job"]
-    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's writing call, triage, interpret<br/>256K context, one call at a time"]
+    GROQ["Groq free tier, gpt-oss-120b<br/>rag_answer<br/>plus the fallback list behind every Kimi job"]
+    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press, triage, interpret, distill<br/>256K context, one call at a time"]
 
     subgraph MODAL["Modal: scheduled jobs, scale to zero"]
         direction TB
         INGEST["Ingest, 11:00 UTC"]
-        DISTILL["Distill, 11:30 UTC"]
+        DISTILL["Distill, 15:00 UTC<br/>250,000 chars of paper a call"]
         DAILY["Triage 12:00 · Interpret 14:00<br/>separate slots: one Kimi call at a time"]
         WK2["Weekly job, Mondays 09:00<br/>digest · citations · newsletter send"]
         MCP2["MCP server, OAuth 2.1"]
@@ -176,7 +176,8 @@ flowchart TB
     DAILY <--> NEON
     WK2 <--> NEON
     MCP2 <--> NEON
-    DISTILL --> GROQ
+    DISTILL --> KIMI
+    DISTILL -.->|"fallback, abstract only"| GROQ
     DAILY --> KIMI
     DAILY -.->|"fallback, and it fits"| GROQ
     WK2 --> KIMI
@@ -198,8 +199,8 @@ flowchart TB
 |---|---|---|
 | Compute | [Modal](https://modal.com), scheduled functions, scale to zero | Per-second billing matches a system that works minutes per day, and free credits cover it entirely |
 | Database | [Neon](https://neon.tech), serverless Postgres + pgvector | Scale to zero, and one DB holds vectors *and* structured data, so hybrid queries are single statements |
-| Judgment models | `openai/gpt-oss-120b` via Groq free tier, for triage, distill, interpret, and RAG | Won the blind distill bake-off 4-1-3, open, $0, with 10x headroom over our volume |
-| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), for the weekly issue and nothing else (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
+| Judgment models | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai) for triage, distill and interpret, with `openai/gpt-oss-120b` on Groq's free tier behind them and for RAG | The free tier is 8,000 tokens a minute, which is two calls and then a 429 for the rest of the day, and which is less than one paper. That ceiling is the whole explanation for 4,973 untriaged papers and 164 read in full. Kimi is 262,144 tokens of context on a prepaid account, so triage finishes and distill reads the paper (ADR-2026-09-26, ADR-39). The Groq entries stay because one provider is one point of failure |
+| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), the first job to move there (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
 | Embeddings | Qwen3-Embedding-0.6B, in-process on Modal | Top open family on MTEB, and batch jobs need no serving endpoint |
 | Interactive search | MCP tools over Postgres: `semantic_search`, `rag_answer`, `sql_query`, `get_digest`, `discovery_report`, `propose_skill`, `propose_change` | Agentic retrieval for humans and agents, hardwired retrieval for batch |
 | Agent org | GitHub Actions cron + `anthropics/claude-code-action`, on the owner's existing subscription token | Actions minutes are free on a public repo, so the org's heartbeat costs nothing and does not depend on a laptop being open (ADR-18) |
@@ -269,7 +270,7 @@ The pipeline, built bottom-up.
 - [x] Tiered sources (sources.yaml), daily ingest cron live
 - [x] Triage job live: batched, rate-limit-aware, tiers drained by interleaved quota
 - [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
-- [x] Distill job live: bake-off winner gpt-oss-120b + Qwen3 embeddings, daily 11:30 UTC
+- [x] Distill job live: Qwen3 embeddings, daily 15:00 UTC
 - [x] First claims in silver, first edges in the claim graph
 - [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
       first edition 2026-W37, written to the `digests` table as the record
@@ -312,8 +313,21 @@ The pipeline, built bottom-up.
       list with Moonshot at the head, a per-run spend cap measured from the
       provider's usage block, and preflight and rehearsal functions. Nothing is
       live until the chair runs the three gates and deploys; the commands are in
-      each module's docstring and in the ADR. Distill stays on Groq
-      (docs/ideas.md, 2026-09-26, proposes moving it next)
+      each module's docstring and in the ADR
+- [ ] **Distill reads the whole paper, written and not yet deployed**
+      (ADR-39, owner-directed 2026-09-29). It was the last corpus job on Groq's
+      free tier, where 8,000 tokens a minute is less than one paper, so it read
+      12,000 characters of each one and "read in full" was true of 164 papers
+      out of 8,956. It now calls Kimi through the same client triage and
+      interpret use, at a 250,000-character window that takes thirteen of
+      fourteen measured papers whole, ordered reading queue first, then the
+      owner's four standing threads, then intake. Three ceilings stop a run and
+      each names itself: money, this job's share of Moonshot's daily token
+      allowance, and the clock. $0.042 a paper, ~$25 a month expected.
+      Nothing is live until the chair runs the three gates and deploys; triage
+      is redeployed in the same chain, because the thread list moved into
+      `pipeline/priority.py` and both jobs read it
+
 - [ ] **Reasoning-model research reaches the corpus, written and not yet
       deployed** (ADR-2026-09-26b). 209 papers in the corpus have "reasoning" in
       the title, 147 were never triaged, and of the 62 that were, 47 went to
