@@ -285,8 +285,25 @@ purely by being longer:
   mentions more things wins more prompts, including prompts that belong to a
   neighbour. Verbosity reads as relevance to the instrument and as vagueness
   to a router. One clause per section of the body is the working test: if two
-  clauses point at the same section, delete one. The engine fix is a ledger
-  entry (2026-09-22); until it lands, the discipline is yours.
+  clauses point at the same section, delete one.
+
+  **This is now measured rather than trusted (2026-09-30).** The rule above
+  failed twice while it lived only in this file, on 2026-09-22 and again on
+  2026-09-24, because you read this prompt at step 2 and write the
+  description at step 3. Incident 31 records both. `trigger_test.py` now
+  counts the words and warns past 150, and it records the count in every
+  result bundle under `length_audit`, so the number travels with the
+  receipt. You do not have to hold the budget in your head. Run the trigger
+  test and read its warnings, which you were doing anyway at step 5.
+
+  **The engine fix still has not landed, and the reason is now a measurement
+  rather than a plan.** Both engines were tested on 2026-09-30 with
+  candidate, prompt and topic fixed and only length varied. lexical/2.1 pays
+  a candidate +0.1353 for going from 41 words to 123. lexical/3 fines it
+  -0.1227 for the same change. Neither is length-invariant, so no engine
+  choice available today removes this discipline from you. The proposal for
+  one that would is lexical/4 in `docs/ideas.md`, and the evidence is
+  `skills/_validation/results/2026-09-30-panel-v2-engine-decision.md`.
 - **Put the "distinct from X" boundary sentence before the "Use when" clause,
   never after it.** `activation_clause()` takes everything from the first
   "Use when" to the end of the field and weights it 1.25, so a boundary

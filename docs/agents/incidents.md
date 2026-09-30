@@ -6347,3 +6347,110 @@ cite. The check that sees them is the one that asks whether every section of
 the SKILL.md is named by a task, and that needs a `section` field on the task
 which does not exist yet. Recorded so the cheaper check does not ship alone and
 get mistaken for coverage.
+
+## INC-2026-09-30-conflict-markers-on-main-in-the-register-map — the file every seat is told to check before shipping is unreadable on the default branch, and the test that says so is red (2026-09-30, skill seat, found in passing)
+
+**A repeat, which is why it is here.** Merge damage in a register is a class
+this file already carries: incident 6 (two ledger appends at one anchor,
+conflict on the second merge), incident 14 (two runs of one dispatch racing on
+one branch), and this file's own 2026-09-24 header note about duplicate
+entries arriving "from a merge that appended entries the file already held".
+What is new is where the damage landed and that it survived onto main.
+
+**What happened.** The skill seat ran the test suite before shipping, which is
+not a step its charter names, and
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed. `docs/agents/registers.md` holds nine conflict markers on the working
+branch. Six of them are on **main**, at lines 59, 61, 66, 86, 88 and 90 of
+main's copy. The remaining three are a large unresolved block arriving with
+PR #152.
+
+**Why it is worse than a missing gate.** `registers.md` is the map the org's
+own "check the register before you ship" step sends every seat to. Two of its
+rows currently cannot be read without a reader mentally resolving a merge. And
+the test that detects this is not missing. It exists, it is correct, and it is
+red, which means it has been stepped over rather than overlooked. A present
+and failing gate is the harder half of L-A21: a gate is judged by what it can
+see, and nothing requires this one to be seen. Of the org's checks, the ones
+that have never broken are the ones wired into an `&&` chain (L-A22), and this
+one is not.
+
+**Not fixed here.** `registers.md` is outside the skill charter's write
+surface, which names `skills/`, `prompts/skill-extract.md` and ledger entries
+only. Repairing it from this seat would be the L-A10 violation, one file one
+owning charter. Filed in `docs/ideas.md` for the seat that owns it, with the
+second half of the fix stated there: put the register test where it blocks.
+
+## INC-2026-09-30-skill-seat-window-run-had-no-database — the credential the workflow wires is absent when the same seat is invoked another way, which silently demotes a gold-production run (2026-09-30, skill seat)
+
+**A repeat of a recorded class.** The 2026-09-22 entry in this file records a
+seat unable to perform a charter duty because `NEON_RO_URL` was absent, across
+four engineer runs, and closes with the observation that the secret "is wired
+into the research and skill workflows only". This run is the skill seat, the
+workflow does wire it, and it was still absent.
+
+**What happened.** This run was triggered as a resident-runtime work window
+rather than by `agent-skill.yml`. `NEON_RO_URL` was not in the environment.
+Under the charter's data-access clause that is a defined outcome rather than a
+failure, and the run said so at the top of its PR and spent itself on the
+parts that need no database. So no work was lost. The defect is that nothing
+announced the demotion except the seat's own check.
+
+**Why it is worth an entry anyway.** The skill seat's charter has two modes,
+and which one it is in is decided by an environment variable it does not
+control and no caller sets deliberately. A window invocation cannot extract a
+claim, read a cluster, or draft a skill, which is the seat's entire reason to
+exist under O2. It can only do maintenance. That is a useful mode and it is
+what this run did, but a scheduler, a dispatcher or an owner asking for a
+weekly skill has no way to know in advance that a window-triggered run will
+return maintenance instead. This is L-A16, configured is not in effect: the
+workflow states the intent, and the gap between intent and effect is silent by
+construction because the fallback path succeeds.
+
+**What would close it.** Either pass `NEON_RO_URL` into resident-runtime
+sessions for this seat from the same secret `agent-skill.yml` already reads, or
+have the dispatcher state the mode in the trigger so the seat is not the first
+thing to discover it. Both are runtime changes
+(`docs/agents/runtime-changes.md`) and neither is this seat's to make.
+
+## INC-2026-09-30-a-length-only-rewrite-narrowed-the-null — changing one property of an instrument quietly changed another, caught only because a case that had passed for twelve days started failing (2026-09-30, skill seat)
+
+**A first occurrence, recorded under L-A17** because the diagnosis took
+several minutes and the failure mode is the kind that gets rediscovered. It
+was found and fixed inside the same run, before shipping.
+
+**What happened.** Sprint item 4 asked for one change to
+`skills/_validation/decoys.json`: bring the eight decoys to the library's word
+budget so the null model stops being systematically shorter than the library
+it nulls. Length was the only property meant to change. Rewriting each decoy
+from scratch at three times its former length also rewrote its content, and
+the first v2 draft of `decoy-product-copy` dropped a clause v1 had carried,
+"a chatbot persona and its system prompt".
+
+Case `he-neg-2` is the prompt "Write me a system prompt for a support chatbot
+that always ends its reply by offering to escalate to a human". It had passed
+since the panel was written, because that decoy clause matched it almost
+verbatim and the null won. With the clause gone the null lost, a library skill
+won a case it should have stayed silent on, and `he-neg-2` failed under both
+engines. The first reading was tempting and wrong: that a richer panel had
+changed the idf weights. The actual cause was a hole in the panel's domain
+coverage that the rewrite had opened.
+
+**Why it is the interesting kind of defect.** The rewrite was measured
+carefully on the axis it was changing. Word counts before and after, the
+library-to-decoy ratio, the shared-vocabulary percentage in both directions,
+all checked. None of those measurements could see a dropped clause, because
+every one of them was about length. **An instrument has more properties than
+the one you are editing, and the measurements you add to prove the edit
+correct are all pointed at that one.** This is the scope half of L-A21 at the
+level of a single file: name a change that would break what the check governs,
+then ask whether the check would have seen it.
+
+**The fix, and the line it sits behind.** The clause was restored, `he-neg-2`
+passes again, and `decoys.json` now carries a `coverage_note` recording that
+domain coverage is held fixed from v1 on purpose and that this regression is
+why. The distinction the note draws is the one that keeps this honest:
+restoring coverage v1 already had is fidelity to the instrument, while adding
+coverage v1 never had, to turn a red case green, is tuning the test until it
+passes. Only the first was done. Anyone editing the panel later needs that
+sentence more than they need the word counts.

@@ -7730,3 +7730,90 @@ has now been missed twice: rewrite the decoy panel to the library's own
 word budget, add the length-warning check to `trigger_test.py`, and
 re-measure lexical/2.1 against lexical/3 with the length confound
 removed. This run does that work.
+
+### lexical/4: a length-invariant scoring function, because neither engine is
+
+**Proposed by:** skill seat, 2026-09-30. **For:** the engineer seat, or a
+later skill run. **Evidence:**
+`skills/_validation/results/2026-09-30-panel-v2-engine-decision.md`.
+
+This run measured both engines with candidate, prompt and topic held fixed
+and only the candidate's length varied. lexical/2.1 pays a candidate
++0.1353 for going from 41 words to 123. lexical/3 fines it -0.1227 for the
+same change. The biases are mirror images of nearly equal size, which is
+why the two engines land on the same 48 of 57 once the decoy panel is
+length-matched, and why the four-case gap between them at the old panel
+measured the panel's defect rather than either engine's quality.
+
+The consequence is the reason to file this. Adopting lexical/3 would not
+have made the instrument length-invariant. It would have reversed the sign
+of the bias and left every negative case resting on how long the decoys
+happen to be. The panel-symmetry guard added to `trigger_test.py` in this
+PR holds that steady, but it holds it by policing the panel rather than by
+removing the dependence.
+
+What lexical/4 would need: a score that is invariant to concatenating a
+candidate description with itself, since doubling a description changes no
+topical fact about it and must not change its rank. Neither current engine
+passes that test. lexical/2.1 rises, lexical/3 falls. That single property
+is a cheap unit test and a better specification than any prose about
+verbosity, so it is the thing to write first.
+
+Not adopted in this PR on purpose. A seat does not change the instrument
+and the artifact in one commit and call the result a pass, which is the
+same reason lexical/3 was never made default.
+
+### Merge damage in docs/agents/registers.md, on main, with a passing-looking test that fails
+
+**Found by:** skill seat, 2026-09-30, while running the suite before
+shipping. **Owner:** not this seat. `registers.md` is outside the skill
+charter's write surface, so this is reported rather than fixed.
+
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+fails. `docs/agents/registers.md` carries nine conflict markers on this
+branch, and **six of them are on main**: lines 59, 61, 66, 86, 88, 90 of
+main's copy. So the register map, the file the org's own "check the
+register before you ship" step points every seat at, is currently
+unreadable in at least two places on the default branch.
+
+The test that catches this exists and is red. That is the L-A9 shape
+again, and it is worse than a missing gate, because a gate that is present
+and failing is one somebody has learned to step over. Two things are
+needed and neither is mine: repair the file, and put the register test
+somewhere that blocks, since a red test nobody is required to run is the
+"gate that saw nothing" half of L-A21.
+
+### agent-containment ships with no claim ids, which is the differentiator missing
+
+**Found by:** skill seat, 2026-09-30. **Blocked on:** a run with
+`NEON_RO_URL`, which this run did not have.
+
+`skills/agent-containment/SKILL.md` carries `claims: []`. Every other
+skill in the library carries between 7 and 30 claim ids. The
+node test `tests/skill-provenance.test.mjs` names it exactly:
+`agent-containment: no claim ids parsed`, and it is red on the branch the
+owner is being asked to merge.
+
+**Already known, and that changes what this entry is for.**
+`docs/research/reading-queue.md` carries this as an open question from the run
+that created the skill, and it frames it well: the ADR-36 provenance gate
+cannot tell an honest empty list from a lazy one, so either the gate learns to
+accept a papers-only provenance block written under ADR-35, or ADR-35 and
+ADR-36 disagree about what a skill may be built from. That framing is right and
+this entry does not replace it. What it adds is the consequence nobody has
+stated yet, below, plus the fact that a red test is now carrying the
+disagreement rather than a decision.
+
+Why this is more than a red test. The differentiator this seat exists to
+serve is that every alexandria skill traces to claim ids and revises when
+the evidence changes. A skill that cites six arXiv papers and zero claim
+ids cites its reading honestly and still cannot participate in the
+revision machinery at all, because ADR-36 and ADR-37 trigger on claims
+being deprecated or refined, and a skill with no claim ids can never fire
+a maintenance trigger. It is permanently unmaintainable by construction,
+which makes it the one kind of skill the library should not hold.
+
+The fix needs the database, so it is the first thing the next credentialed
+run should do, ahead of any new cluster. Filed here rather than patched
+because inventing claim ids without reading the rows is the exact sin the
+provenance reviewer exists to catch.
