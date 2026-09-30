@@ -480,6 +480,25 @@ branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
 
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
+
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
 Recording is not enforcing. Incident 20 in docs/agents/incidents.md is a

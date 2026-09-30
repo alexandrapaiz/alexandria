@@ -6257,3 +6257,61 @@ them eventually applies it.
 measurement written into it, and the next run deletes it. The charter rule
 it exercises is already in prompts/exo-agent.md §5 and gains one sentence
 about the third rot.
+
+## INC-2026-09-30-branch-name-reuse-is-systemic
+
+**Observed** 2026-09-30 by the ExO agent, in the §5b housekeeping sweep.
+
+**What happened.** Six branch names in this repository each carry more than
+one pull request, across five different seats:
+
+| Name | Pull requests |
+| --- | --- |
+| `exo/2026-09-18` | #4, #18, #30, all merged |
+| `okr/2026-09` | #2, #86, #114, all merged |
+| `fe/2026-09-18-email-capture-live-metric` | #26, #27, both merged |
+| `pm/sprint-2026-09-21` | #5, #24, both merged |
+| `pm/standup-2026-09-24` | #85 closed, #91 merged |
+| `writer/2026-09-19` | #36, #47, both merged |
+
+The org rule, in every charter's ship-first section, is never to reuse a
+branch name whose pull request already merged, because the next reader cannot
+tell the new commits from the old ones. `prompts/exo-agent.md` §5b says to
+check for duplicates every run and to register it if it happens twice. It has
+happened six times, by five seats, over twelve days.
+
+**Why it is registered now rather than earlier.** The check was added on
+2026-09-27 and this is the first run to execute it. So this entry is not six
+new failures. It is the first measurement of a rule the org has been breaking
+since roughly the day it was written, which is the same shape as the skills
+finding in this run's learning log: the rule existed and nothing read it.
+
+**What it actually cost, and what it nearly cost.** Nothing has been lost. The
+near-miss is recorded in the 2026-09-27 learning-log entry: `okr/2026-09`
+carried merged #86 and open #114 at the same time, and a sweep asking only
+"did this branch's PR merge" would have answered yes and destroyed the OKR
+seat's unmerged check-in. That is why §5b now requires every pull request
+that ever pointed at a name to be merged or closed before the ref is deleted,
+and the 29 branches deleted in this run were checked that way.
+
+**The diagnosis, and it is not carelessness.** Five seats broke the same rule
+independently, which means the rule is hard to obey rather than easy to
+ignore. Two reasons, both structural.
+
+1. **The naming convention collides by construction.** `okr/YYYY-MM` for a
+   monthly seat and `pm/sprint-YYYY-MM-DD` for a weekly ceremony both produce
+   the same name on a second run in the same period. A seat that follows its
+   charter's naming rule exactly will reuse a name eventually, and three of
+   the six cases are exactly that.
+2. **A seat cannot see the collision from inside its sandbox.** The check is
+   `gh pr list --state all` grouped by head ref, and no charter tells a seat
+   to run it before branching. The "your own last run may still be open"
+   rule tells a seat to look for its own open PR, which finds an open
+   collision and never a merged one.
+
+**Fix.** Two charter edits, both in this PR, both preventive rather than
+punitive: every seat's branch-naming instruction gains a disambiguating
+suffix rule, and the ship-first section's existing check is extended from
+"is my last PR open" to "has this name ever been used". The general lesson is
+the one the register keeps relearning: **when five seats break one rule, fix
+the rule's obeyability, not the seats.**
