@@ -5170,3 +5170,119 @@ to run the two deploy commands PR #110 is still waiting on.
 **Not yet done.** The guard itself does not exist yet; this entry
 records the second occurrence of the pattern per the standing rule, the
 same run that schedules the fix rather than only naming it.
+
+## INC-2026-09-28-kind-test-quoted-and-violated - The generator named the rule it was breaking, in the sentence that broke it (2026-09-28, research seat)
+
+**This is a repeat in the L-A9 / L-A22 class ("recording a rule is not
+enforcing it"; "the gate goes in the command, not in the charter"), recorded
+at the moment it repeated, per the standing rule at the top of this file. It
+also carries the fourth consecutive sighting of the interpret-stale pattern,
+after INC-2026-09-26-interpret-stale-third-sighting.**
+
+### What happened
+
+`prompts/digest.md` was revised on 2026-09-24 by commit fbc0886, "Generator:
+an edge must pass the kind test, and a hedge you have to write is a finding
+you do not have". The passage names the failure it exists to stop, using the
+published 2026-W39 issue as its worked example:
+
+> The published 2026-W39 opened this section on a benchmark success rate of
+> 82.2% for building agents and a win rate of 87% for simulated fighter
+> aircraft, and declared a ceiling broken. The two numbers share a percent
+> sign and nothing else, and nothing was broken.
+
+and closes with a hard rule: "If you find yourself writing the concession,
+you do not have the finding. [...] Delete the sentence, not the hedge."
+
+The `digests` row for 2026-W39 was written on 2026-09-28 at 09:01 with
+`prompt_sha = ea2d678d86e9`, which is the sha of `prompts/digest.md` at HEAD,
+including that passage. The issue it produced contains a section headed "The
+82.2% ceiling was not a ceiling", pairing the same 82.2% agent-construction
+number with the same 87% air-combat win rate, and containing this sentence:
+
+> The problem is that these numbers share a percent sign and little else.
+> [...] The edge between them fails the kind test, and the ceiling that was
+> not a ceiling is better understood as a category error.
+
+The generator applied the test, reached the correct verdict, named the test
+by its own internal name, wrote the concession the rule forbids, and printed
+the section anyway. The rule was deployed. It was read. It was quoted. It
+did not fire.
+
+### Why this is different from a prompt that never ran
+
+Every prior entry in this class is a fix that was merged and never deployed,
+and the remedy was always "deploy it". This one was deployed. The sha on the
+row matches HEAD, and the output demonstrates the model had the passage in
+context, because it reproduced the passage's own vocabulary. So the failure
+cannot be closed by a deploy, and it cannot be closed by clearer wording
+either, which is exactly what L-A22 predicts: a rule enforced by prose in a
+prompt is enforced at the reliability of a model reading a file, and this run
+is the demonstration that the reliability is not 1.
+
+The research charter's meta-review step would ordinarily answer a defect in
+`digest.md` by proposing sharper text into `digest.md`. That was declined
+this week for this reason, and the decline is recorded in
+docs/research/briefs/2026-09-28.md section 11.
+
+### Fourth sighting of the interpret-stale pattern
+
+Recorded here rather than as a separate entry, because it is the same
+pattern as INC-2026-09-26-interpret-stale-third-sighting and the standing
+rule asks for the repeat, not a new investigation.
+
+`prompts/interpret.md` at HEAD hashes to `6706ec7bffee`. All 257 rows in
+`claim_links`, created 2026-09-08 through 2026-09-28, carry method
+`openai/gpt-oss-120b@fbe080261d6b`, the file as it stood on 2026-09-07. The
+2026-09-19 revision has produced zero edges in nine days. The third sighting
+reported 238 edges at seven days; the count has grown by 19 and the sha has
+not changed.
+
+New evidence this sighting, which the earlier ones could not have: edge
+265 `contradicts` 85 was created on **2026-09-26**, seven days after the fix
+merged. It links MaP-WAM at 83.3% on RMBench to EmbodiedSkills at 12.5% on an
+RMBench subset, which is "different systems measured on the same benchmark",
+the case the merged text names as never a contradiction. The undeployed fix
+is not only failing to repair old edges; the stale prompt is still producing
+the specific errors the fix names, after it merged.
+
+### The consequence, measured
+
+Six `contradicts` edges exist in the graph. Four are wrong, two of those are
+between two claims of one paper, and all six targets are marked deprecated,
+because `deprecated_claims` requires only `relation = 'contradicts'` and
+`confidence >= 0.7`, with no check that the contradicting claim is newer or
+from a different paper, though the view's own comment says "a newer claim
+contradicts it".
+
+Both issues ever sent published false supersessions off this graph. 2026-W37
+built four of its five "Left behind" bullets on mis-typed edges, including
+one that inverted a paper's finding: it told readers that an expert reference
+reaching 82.2% showed an earlier 23.9% ceiling "was far too low", when both
+numbers are from one table in one paper and the paper's point is that agents
+fall far short of a human expert. 2026-W39 published the same claim-12
+cluster again. Detail in docs/research/briefs/2026-09-28.md sections 4 and 5.
+
+### The general form
+
+The org now has three distinct failure modes for one rule, and it has seen
+all three in nine days:
+
+1. The rule is merged and the image is frozen, so it never runs
+   (`interpret.md`, four sightings).
+2. The rule runs and the model does not comply (`digest.md`, this entry).
+3. The record that would tell you which of the two happened is itself
+   unreliable: `digests` is upserted on `week`, so the row reports the last
+   generation rather than the one subscribers received, and `claims` records
+   no prompt sha at all.
+
+Mode 2 is the one with no remedy currently designed anywhere. A gate in the
+deploy chain fixes mode 1. Nothing fixes mode 2 except a check on the output
+after the model has written it, which is the pre-send quality gate's
+territory (PR #60, open since 2026-09-20) and not a prompt's.
+
+### Not fixed in this PR, and why
+
+The deploy chain and `pipeline/` are engineer lane. Routed in
+docs/research/briefs/2026-09-28.md section 10, items 2, 4 and 6. This run
+spent no system diff at all, for the reasons in section 11 of that brief.
