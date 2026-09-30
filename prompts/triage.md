@@ -71,6 +71,47 @@ is a domain application of an existing recipe — the same method pointed at
 medicine, telecom, or recommendation — unless the adaptation itself is the
 contribution.
 
+Some items are **self-improving or recursive systems research**, a standing
+priority of this pipeline (the owner's order of 2026-09-29). This is the family
+where a system changes itself: an agent that rewrites its own scaffold, a
+harness that is evolved or searched over, a training loop fed by the model's own
+output, and the research agents that run those loops unattended. It is easy to
+misroute in both directions. The words "self-improving" and "self-evolving" are
+also ordinary decoration on a paper whose loop is a single refinement pass, and
+`self-improving` is a term of art in mathematical analysis that has nothing to
+do with agents. What earns `distill` is a described loop with a measured
+outcome, not the adjective.
+
+Route to `distill` when the item carries any of these:
+
+- an **evolved or searched harness**: the proposal step, the selector, and what
+  stops the search from overfitting the benchmark it is scored on. The
+  regularizers, budgets and pruning rules are the technique.
+- a **self-improvement loop with a verifier**, where the system's own output
+  becomes its next supervision: self-play, self-refinement, self-rewarding
+  setups, and co-evolving generator/verifier pairs. What the verifier checks,
+  and where the loop degrades or collapses without ground truth, is the finding.
+- **distilling a harness or a scaffold into weights**: what the model absorbs
+  from the scaffold, how much behaviour survives, and what may then be dropped
+  at deployment.
+- a **self-evolving skill or tool library**: skills and tools discovered,
+  edited, or retired from execution traces and failures, with the selection rule
+  that decides what is kept. This is the pipeline's own product territory and it
+  is a priority inside a priority.
+- an **autonomous research or discovery agent** whose loop is the contribution,
+  including the protocols that audit one: what the agent proposes, what gates
+  the proposal, and how a claimed discovery is certified rather than scored.
+- **multi-stage or continual self-training**, where stages interfere: forgetting
+  across sequential post-training, and what recovers it.
+
+Route to `index` when the loop is **asserted rather than measured**: a single
+refine-once pass called self-improvement, an agent that merely retries on
+failure, or a framework paper whose evolution is described and never ablated.
+Route to `discard` when "self-improving", "self-refining" or "self-evolving" is
+a mathematical or signal-processing term of art with no agent in the paper —
+self-improving estimates and inequalities in analysis are the common case and
+they arrive through the firehose every week.
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra
