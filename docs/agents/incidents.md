@@ -6193,3 +6193,73 @@ records that they are now suspect. The check is
 is null on all 846 rows, so for distill this check cannot be run at all.
 Filed for the engineer as a re-interpretation pass and a populated column in
 `docs/ideas.md`, 2026-09-30.
+
+## INC-2026-09-30-source-added-never-checked-for-output - two feeds added to close a reach gap have delivered 18 rows of zero information for five months, and nothing ever looked (2026-09-30, research seat)
+
+**This is a repeat of the class the register already carries several times over
+- a remediation applied, recorded as done, and never verified to produce the
+outcome it was written for (`INC-2026-09-27-gate-unit-is-the-line`,
+`INC-2026-09-30-interpret-deployed-history-unrevised`, and L-A9 in
+`docs/standards/lessons.md`, "recording a rule is not enforcing it"). Recorded
+at the moment it repeated per the standing rule. It is this seat's own
+addition, so the failure to check is this seat's.**
+
+**What happened.** Incident 21 recorded that the first agent user of this
+corpus found nothing on agent identity or portability. The remediation, in
+`sources.yaml`, was two feeds under a comment naming the cause -- "this
+territory lives in standards bodies and protocol repos, not arXiv":
+
+```
+- {name: gh-a2a-protocol, url: ".../a2aproject/A2A/releases.atom", tier: d}
+- {name: gh-spiffe,       url: ".../spiffe/spiffe/releases.atom",  tier: d}
+```
+
+plus `gh-mcp-spec` on the same pattern. Unlike the `cs.CR` addition of the same
+era, this one was not blocked by the image-bake problem. It reached production
+and it ingested. Measured tonight in `papers`:
+
+- `gh-a2a-protocol`: 10 rows. Titles: `v1.0.1`, `v1.0.0`, `v1.0.0-rc`,
+  `v0.3.0`, `v0.2.6`, `v0.2.5`, `v0.2.4`, `v0.2.3`, `v0.2.2`, `v0.2.1`.
+- `gh-mcp-spec`: 9 rows. Titles: `2026-07-28 RC`, `2026-07-28`, `2025-11-25`,
+  `2025-11-25-RC`, `2025-06-18`, `2024-11-05-final`, `2024-11-05`,
+  `2025-03-26`, `2024-10-07`.
+- All 19: `abstract` empty, `fulltext_chars` null, decision `index`.
+- Claims produced by all 19, across five months: **0**.
+
+**The mechanism, which is not a bug in triage.** `releases.atom` on a
+*specification* repository returns the git tag. The normative content of an MCP
+revision lives in the repo's spec tree and its numbered Specification
+Enhancement Proposals; the A2A specification lives in its `specification/`
+directory. A triage model handed the title `2026-07-28 RC` with no body can
+only index it, and it did, correctly, nineteen times. The remediation pointed
+at the one artifact of that repository that carries no information.
+
+**What it cost, concretely.** The protocols thread holds 1 claim from 100
+papers, and that claim mentions MCP as deployment furniture. In the five months
+the feed reported version strings, **SEP-2640 "Skills Extension" went to status
+Final** (created 2026-04-23): a standard for serving Agent Skills over MCP, the
+`skill://` scheme, `skills/list` and `skills/get`, delegating the skill format
+to the Agent Skills specification at `agentskills.io`. This project's terminal
+asset is a skills library. A Final standard on its own product was one feed
+away for five months and the corpus holds nothing about it.
+
+**Why nobody noticed, which is the part worth fixing.** Nothing measures a
+source's yield. `sources.yaml` records a tier as a prior and the register
+records the addition as done; no run asks "how many claims has this feed
+produced since it was added". The charter's meta-review step asks for
+"sources whose papers are always discarded (candidates for demotion)" and that
+query would not catch this one, because these papers are not discarded, they
+are indexed - the terminal state that looks like success in a decision-mix
+report. A feed that ingests rows and yields nothing reads as a healthy
+low-volume source.
+
+**Blameless postmortem.** The seat that added these feeds reasoned correctly
+about where the territory lives, chose the repositories correctly, and picked
+the wrong URL on each of them, then wrote a comment asserting the gap was
+closed. The verification that would have caught it - open the feed, read one
+item - takes under a minute, and no charter step asks for it at the moment a
+source is proposed. The fix in this run's PR adds the three path-scoped
+changelog feeds and, more importantly, records the yield of the ones it keeps,
+so the next census can see it. The durable fix is a per-source yield column in
+the meta-review's evidence list, which is the engineer's to build and is
+routed in `docs/research/briefs/2026-09-30.md` section 20.

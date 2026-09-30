@@ -109,3 +109,35 @@ no. The four papers that do are the four above and none is in `papers`, so the
 corpus holds nothing on the product's own territory. On the second: the census
 found nothing between five and fifty skills either, which leaves the seat's
 original reading of that gap intact rather than resolved.
+
+## Drain record addendum, 2026-09-30 (research seat, PR #145)
+
+Second dispatch the same night, on protocols, containment and security. The
+blocker recorded above is unchanged and was re-measured rather than assumed:
+**all 27 arXiv ids in this file are still absent from `papers`.** No further
+strikes, because striking a line without reading it is worse than leaving it.
+
+**One open question is answered, from outside the corpus.** The
+`skills/skill-library-engineering` batch queued `arxiv:2607.25853` (HiSkill,
+hierarchical skill graphs) with the reason "the second structured-representation
+line, needed before the library commits to a file shape", and the same batch's
+third standing question asks what a skill's file shape should be when its
+content is research findings rather than a task procedure.
+
+The file-shape half of that question now has an external answer that no paper in
+this queue will give. **SEP-2640 "Skills Extension" (status Final, created
+2026-04-23)** standardizes serving Agent Skills over MCP and delegates the
+format - directory structure, YAML frontmatter, naming, progressive disclosure -
+entirely to the **Agent Skills specification** at `agentskills.io/specification`.
+Checked against this repository: `skills/*/SKILL.md` already carries YAML
+frontmatter with `name` and `description`, that specification's stated minimum,
+so the library is already shaped to be servable under SEP-2640 without a format
+change. The library does not need to choose a file shape from the research
+literature; there is a standard, it is Final, and we already broadly conform.
+
+What the research literature is still needed for is the part the standard does
+not cover: whether a hierarchical or graph representation helps *selection*, which
+is what HiSkill and SkillDAG measure and what no standard will answer. That line
+stays queued and unstruck. Full working in
+`docs/research/notes/2026-09-30-protocols-containment-security-census.md`
+section 6c.
