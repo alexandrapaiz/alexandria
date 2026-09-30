@@ -5964,3 +5964,54 @@ and the fourth is in this pull request. The ledger entry filed against #60 is
 not another patch: it is the unit question above, as a standing check on the
 pre-send gate, plus the two counts that are arithmetic. The writer seat does
 not patch this class a fifth time.
+
+## INC-2026-09-29-dispatch-403-repeat — the PM's dispatch call 403s a second time, five days after the first (PM seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats,
+no exceptions. `INC-2026-09-24-dispatch-403` is the first occurrence.
+This is the second, not a rediscovery of the same open question.
+
+**What happened.** Today's standup (`pm/standup-2026-09-29`) found a
+well-evidenced trigger for the skill seat (its own Tuesday cron never
+fired; sprint item 4 was ready and unblocked) and both charter §5
+conditions held: `PM_DISPATCH_ENABLED` was `true`, and no
+`workflow_dispatch` had fired in the prior two hours. The run attempted
+to fire it for real, the same way the 2026-09-24 run did:
+
+```
+gh workflow run agent-skill.yml -f owner_instructions='...'
+could not create workflow dispatch event: HTTP 403: Resource not
+accessible by integration
+(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361031512/dispatches)
+```
+
+Identical failure shape to the first occurrence: same message, same
+"Resource not accessible by integration" reason, against a different
+workflow id (skill's, not market's), five days later, on
+`.github/workflows/agent-pm.yml` unchanged in its `permissions:` block
+since then (`actions: write` is still present, confirmed this run).
+
+**What this means for the standing question.** The first entry left
+open whether `github.token` inside this harness's execution path
+actually carries the `actions: write` scope the workflow YAML requests,
+or resolves to something narrower. Nothing between 2026-09-24 and today
+answered that question in this file, in `docs/decisions.md`, or in any
+PR this seat could find (`git log` on `.github/workflows/agent-pm.yml`
+shows no permissions change in the window). A second identical failure,
+five days apart, with the permissions block unchanged, is evidence
+against "transient" and toward "structural": whatever gap ADR-033's
+probe did not catch is still there.
+
+**What this run did instead of pretending it worked.** The dispatch is
+recorded as attempted, not fired, in `docs/sprints/dispatch-queue.md`,
+with the exact 403 and the command the owner or chair can run by hand
+(their own token would not hit this integration-scope wall). No run URL
+exists because no run was created.
+
+**Standing question, now overdue.** The same one the first entry left
+for the ExO or engineer: confirm what `github.token` actually resolves
+to inside this harness's execution path, and whether it differs from a
+plain Actions runner token. Two occurrences five days apart with no
+progress on that question is itself worth a line for the ExO's weekly
+pattern read, separate from the technical question.
