@@ -1246,3 +1246,52 @@ check, and the harness; the skill seat writes evals for the existing
 skills and every new one; frontend renders results on the skill page;
 market and writer use only what the harness printed. ADR-13's panel
 (provenance, adversary, validator) becomes the harness's three checks.
+
+## ADR-37: Skills maintain themselves
+
+**Status.** Accepted 2026-09-29, owner-directed: "i want skills to
+self-maintain."
+
+**Decision.** A skill's life after merge runs without the owner. Four
+triggers, one loop, one gate that is a harness rather than a person.
+
+**Triggers**, all read from the corpus by a daily job:
+1. A claim the skill cites is deprecated (`skills_needing_revision`).
+2. A claim the skill cites gains a `refines` neighbor with confidence, so
+   the procedure the skill teaches has a newer, narrower form.
+3. A cited paper's citation trajectory moves sharply, up or down, over the
+   slow loop's window, so the skill's weight in the library is stale.
+4. The skill's eval regresses on the current subject model, or a new
+   model version is set as the subject.
+
+**Loop.** The job appends the trigger to `docs/research/reading-queue.md`
+and dispatches the skill seat with the skill and the trigger. The skill
+seat reads the new papers in full (ADR-35), revises the skill or retires
+it with the reason, bumps `version`, and re-runs the skill's eval
+(ADR-36). The PR carries the before and after eval result.
+
+**Gate.** A revision merges on its own when every check passes: the
+provenance block resolves to claims that exist and are not deprecated, the
+eval's with-versus-without delta is not worse than the previous version's
+within its spread, the control tasks are unchanged, the ban list and the
+trigger test pass, and the diff touches `skills/<slug>/` only. Anything
+else stays a draft PR for the owner. This is the one class of change in
+the repository that merges without her, and it is bounded to skill files
+that a harness has measured.
+
+**Publish.** The skill's page shows the new version, its eval, and the
+trigger that caused the revision. Retired skills stay on the page with
+their reason. The issue's "what the library changed" line draws from the
+same record.
+
+**Why.** The site says a skill is revised when the research moves and
+retired with an explanation when it is overturned. ADR-36 found that
+sentence had no machinery under it. A skill that waits for a human to
+notice is not maintained, it is abandoned slowly.
+
+**Consequences.** Engineer: the trigger job, the gate as a checks
+workflow with auto-merge on the skill path, the version bump and results
+history. Skill seat: revisions before new skills, always with the eval.
+Frontend: version, trigger, and result on the skill page. Security: the
+auto-merge path is reviewed at the 1st-of-month run for what a poisoned
+paper could push through it.
