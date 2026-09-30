@@ -71,6 +71,34 @@ is a domain application of an existing recipe — the same method pointed at
 medicine, telecom, or recommendation — unless the adaptation itself is the
 contribution.
 
+Four more threads are standing priorities of this pipeline, by the owner's
+order of 2026-09-29, and the construction-technique criterion is misapplied
+to all of them in the same way it was to reasoning: their contribution is a
+mechanism with a measured effect, not a building block, and indexing them is
+how the library came to hold hundreds of their papers while reading almost
+none. Route to `distill` when the item carries any of these:
+
+- **agent standards and protocols**: a protocol or spec change (MCP, A2A,
+  agent identity, tool-calling conventions, interoperability) with a
+  measured effect on agent behavior, cost, or failure rate, or a deployment
+  that measures what the protocol bought.
+- **agent containerization and sandboxing**: an isolation design (sandbox,
+  microVM, wasm, capability-based permission, runtime isolation) with a
+  measured escape, a measured cost, or a measured preconditions-for-escape,
+  and any agent-state or agent-runtime design that is evaluated.
+- **agent safety and cybersecurity**: an attack (prompt injection, tool
+  poisoning, jailbreak, exfiltration, sabotage) with a measured success
+  rate, or a defense (guardrail, containment, permission model) with a
+  measured attack-success reduction and its cost.
+- **self-improving and recursive systems**: an agent or harness that
+  improves itself (self-evolution, recursive self-improvement, self-play,
+  self-refinement, autonomous research) with the loop described and its
+  gain measured against a fixed baseline.
+
+What stays `index` in these threads is the same as for reasoning: a
+benchmark or survey with no mechanism and no measured intervention.
+
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra
