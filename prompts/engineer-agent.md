@@ -258,6 +258,32 @@ smoke run, write it into docs/agents/incidents.md in your own PR and say
 so in one line in the PR description, addressed to the owner. Do not
 try to fix it, because you cannot push a workflow file either.
 
+**Then one more command, and run it before the log** (ExO assignment,
+2026-09-30, `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`).
+
+```bash
+gh run list --workflow=checks.yml --branch=main --limit 5 \
+  --json conclusion,headSha,createdAt
+```
+
+The three questions above are all about the day a change landed, and all
+three can be answered correctly while the thing the change broke is still
+broken. This one asks whether the guard is green now. Two commits the law
+already covers, a token reservation and a retry policy, left the press
+guards asserting the behaviour they had just replaced; both changes were
+correct, and both guards stayed red for six days, including the cost
+check that was saying $0.1628 an issue against a budgeted $0.05 the whole
+time. Neither was reachable by the first three questions: both were
+direct pushes to main, so there was no pull request to explain them, and
+`checks.yml` had no push-on-main trigger until 2026-09-29.
+
+A red main is the one finding here you fix rather than only file, because
+`tests/` and `pipeline/` are your surface. Fix it first, ahead of the
+sprint item, and say in the PR that you did. The reason it outranks the
+sprint is not the bug. It is that every open pull request inherits a red
+main through its own merge check, so every other seat's run ends with a
+red tick it did not cause and cannot tell from its own.
+
 This duty was the ExO's alone until now and the ExO runs on Sundays.
 Incident 23 is what that cost: open routing landed on a Friday evening
 with no smoke run, and the first seat to meet it failed completely

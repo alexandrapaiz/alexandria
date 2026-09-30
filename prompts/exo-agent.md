@@ -52,7 +52,41 @@ rehearsal behind it.** The law now names a provider or model change as a
 runtime change, and the press as a runtime, so these commits are in
 scope for exactly the same reasons workflow commits are.
 
-The evidence for this clause is that its absence cost four production
+**And ask a fourth question, which is the only one about today** (added
+2026-09-30). The three above are answered by reading the record of the
+day a change landed, and all three can be answered correctly while the
+thing the change broke is still broken. So before you read a single
+commit:
+
+```bash
+gh run list --workflow=checks.yml --branch=main --limit 5 \
+  --json conclusion,headSha,createdAt
+```
+
+A `failure` on main is a finding in its own right. Report it in your PR
+description whether or not fixing it is yours, because a red main is not
+one bug: every open pull request inherits it through its own merge check,
+so every seat's run ends with a red tick it did not cause, and the one
+seat whose failure is real cannot tell its own from the noise.
+
+The evidence is `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`.
+Two commits already named by the law, a token reservation and a retry
+policy, left the guards in `tests/test_press_resilience.py` asserting the
+behaviour they had just replaced. Both changes were correct. Both guards
+went red on the day of the change and stayed red for six days, including
+the cost check whose own comment says that a drift here means finance's
+books are wrong. It said so, at $0.1628 an issue against a budgeted
+$0.05, into nothing. Neither commit was ever going to be caught by the
+first three questions: both were direct pushes to main by the owner, so
+there was no pull request to explain them and no PR check to fail, and
+`checks.yml` had no push-on-main trigger until 2026-09-29.
+
+Read that last sentence as the general rule rather than as a detail. **A
+gate scoped to pull requests is not a gate on a repository whose owner
+commits directly,** and no seat can notice this from the inside, because
+seats only ever open pull requests.
+
+The evidence for the pipeline clause is that its absence cost four production
 failures in one evening. ADR-32 moved the press to a new provider, the
 change touched no file under `.github/`, and it was therefore invisible
 to the only audit that enforces the runtime law. See
