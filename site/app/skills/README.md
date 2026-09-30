@@ -44,6 +44,8 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `control_tasks` | number | tasks the skill is supposed to leave alone |
 | `indicator_tasks` | number | tasks only the skill could pass, reported and never scored |
 | `unmeasured_tasks` | array | ids of tasks that could not be run at all, so they are not scored either |
+| `incomplete` | string | present only when the run stopped early, saying where and why. A page showing an incomplete result says so |
+| `repetitions_overridden` | boolean | present when the run used more or fewer repetitions than the task file registered |
 | `scored_by_hard_check` | number | of `tasks`, how many were scored deterministically rather than by a judge |
 | `spend_usd` | number | what the run cost, from the provider's own usage block |
 | `with_skill` | object | the arm summary, below |

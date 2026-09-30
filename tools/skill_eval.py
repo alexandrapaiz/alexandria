@@ -99,7 +99,14 @@ CONTRACT = 1
 # against the provider's live catalog by the same machinery the crons use.
 DEFAULT_SUBJECT = "kimi-k2.6"
 DEFAULT_JUDGE = "openai/gpt-oss-120b"
-DEFAULT_REPS = 5
+# Three, not five, and the arithmetic is the reason. The skill seat's real suites
+# hold 10 to 12 tasks. At five repetitions per arm that is 110 to 120 subject
+# calls, and the $0.75 cap below buys about 92 on kimi-k2.6, so a five-repetition
+# run on a real suite stops at the cap partway through. Three is 66 to 72 calls,
+# which fits with room, and it is also the default `claude plugin eval` chose for
+# the same reason. A suite may pre-register more in its own `policy`, and then the
+# cap is the thing to raise, in the same commit as docs/finance/opex.md.
+DEFAULT_REPS = 3
 
 # What one eval run may spend, measured from the provider's own usage block by
 # pipeline/llm.py's Cap and never estimated. At kimi-k2.6's list price a
@@ -1210,13 +1217,36 @@ def main(argv=None) -> int:
 
     base = tasks_path(args.skill).parent
     per_task = []
+    stopped = ""
     for task in spec["tasks"]:
         print(f"  {task['id']}...")
-        per_task.append(run_task(subject, judge, task, body, reps, base))
+        try:
+            per_task.append(run_task(subject, judge, task, body, reps, base))
+        except llm.CapReached as exc:
+            # The cap is not a failure and a run that hits it must not throw away
+            # what it measured. The tasks already finished are a smaller eval,
+            # honestly labelled, and the result says where it stopped.
+            stopped = (f"the ${args.cap:.2f} cap was reached at {task['id']}, "
+                       f"after {len(per_task)} of {len(spec['tasks'])} tasks "
+                       f"({exc})")
+            print(f"  {stopped}")
+            break
+        except llm.NoModelAnswered as exc:
+            stopped = f"no model answered at {task['id']}: {exc}"
+            print(f"  {stopped}")
+            break
+    if not per_task:
+        print("nothing was measured, so nothing was written")
+        return 1
 
     result = summarize(args.skill, sha, spec, per_task, subject_model,
                        judge_model, reps, cap.spent,
                        dt.date.today().isoformat())
+    if stopped:
+        result["incomplete"] = stopped
+        result["verdict"] = "incomplete: " + result["verdict"]
+    if args.reps:
+        result["repetitions_overridden"] = True
     out = results_path(args.skill)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")

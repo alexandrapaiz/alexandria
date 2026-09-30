@@ -627,3 +627,23 @@ def test_evals_json_is_preferred_and_tasks_json_still_works(tmp_path,
     assert ev.tasks_path("s").name == "tasks.json"
     (evals / "evals.json").write_text("{}")
     assert ev.tasks_path("s").name == "evals.json"
+
+
+def test_the_default_repetitions_fit_inside_the_default_cap():
+    """The arithmetic the default is set by, asserted so it cannot drift apart.
+
+    A real suite is 10 to 12 tasks. `reps` repetitions in each of two arms is
+    `tasks * reps * 2` subject calls, and the cap has to buy them, or a run stops
+    partway through and writes a partial result. This test is the thing that
+    fails when someone raises the default and not the cap.
+    """
+    import llm
+
+    cost = llm.budget().cost_usd(3_500, ev.SUBJECT_MAX_TOKENS, ev.DEFAULT_SUBJECT)
+    affordable = int(ev.CAP_USD / cost)
+    biggest_suite = 12
+    assert biggest_suite * ev.DEFAULT_REPS * 2 <= affordable, (
+        f"{ev.DEFAULT_REPS} repetitions on a {biggest_suite}-task suite is "
+        f"{biggest_suite * ev.DEFAULT_REPS * 2} calls and ${ev.CAP_USD} buys "
+        f"{affordable}. Raise CAP_USD in the same commit as "
+        "docs/finance/opex.md, or lower DEFAULT_REPS.")
