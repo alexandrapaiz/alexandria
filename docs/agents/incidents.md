@@ -6115,3 +6115,132 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-engineer-run-twice-again
+
+**A repeat, recorded because the standing rule at the top of this file has no
+exceptions.** This is INC-2026-09-26-engineer-run-twice-in-one-window happening
+again, four days later, with the queued fix still unapplied.
+
+**What happened.** Two engineer-agent runs were alive at the same moment on
+2026-09-30: a `workflow_dispatch` at 01:58:40Z carrying the owner's ADR-36
+directive, and the ordinary `schedule` at 02:00:00Z carrying nothing. `gh run
+list` shows both `in_progress`. Two skill-agent runs were also alive in the same
+window, one dispatched at 01:58:42Z and one that had run at 17:08 the previous
+evening, though only one of those was live.
+
+**Why it is the same incident.** `docs/agents/pending-workflow-changes.md` item
+9 is the fix. It is a four-line `concurrency:` block per seat workflow, with
+`cancel-in-progress: false` so the second run queues rather than dies, and it
+was queued on 2026-09-26 by the engineer seat with this exact failure as its
+evidence. No seat's token can push a file under `.github/workflows/`, so it has
+sat waiting for a hand for four days. The guardrails that do exist are all one
+layer above the runtime: the PM's charter forbids dispatching into a seat with
+an open pull request, and neither of these dispatches was the PM's.
+
+**What it cost this time.** Less than last time, and the reason is worth
+recording. The dispatched run branched from `origin/main` under a slug naming
+its own work (`engineer/2026-09-30-skill-registrar-and-evals`) and opened its
+draft pull request in its first few turns, so the two runs could not land on one
+branch. What they can still collide on is `docs/ideas.md`, which both append to
+at the same anchor, and that is incident 6 exactly. The dispatched run names the
+expected merge order in its pull request, which is the charter's mitigation and
+not a fix.
+
+**What would actually fix it.** Item 9, applied. Nothing else in the repository
+can, and this seat cannot apply it.
+
+**One thing the owner should know that is not in item 9.** A dispatch and a cron
+firing ninety seconds apart is not a coincidence: the owner dispatches when she
+has a directive, and the directive usually arrives shortly before the daily
+cron. So the two-runs case is the normal case on any day she dispatches, rather
+than an unlucky one, and the concurrency block is worth more than its evidence
+count suggests.
+
+## INC-2026-09-30-conflict-markers-merged-to-main
+
+**Unresolved merge conflict markers were committed to `main`** in
+`docs/agents/registers.md`, and `checks` has been red on `main` since
+2026-09-30T01:43Z as a result.
+
+**What was in the file.** Three conflicts. Two were single table rows, where
+both sides described the same register at different dates. The third spanned 176
+lines and held two whole sections appended by two different runs, `## The
+gate-3 row, corrected (engineer seat, 2026-09-26)` and `## The 2026-09-27
+sweep`, with neither of them lost and neither of them readable.
+
+**Why this one is worse than an ordinary red build.** The file is the org's map
+of which register has a gate that fires before something ships, and the rule it
+serves is the one every charter's ship check points at. So the artifact that
+tells twelve seats what to read before shipping was itself unreadable, at the
+exact place where the reading happens. Incident 20 is the ruling written into
+the right register and violated by the next artifact anyway because nothing
+opened the file. This is the same failure one layer down: the file was open and
+said `<<<<<<< HEAD`.
+
+**How it was resolved.** Twice, independently, by the two engineer runs of
+2026-09-30, and they agreed. Row one: `main`'s side, which is newer and a strict
+superset of the other, adding three rows. Row two: `main`'s newer cell kept its
+text, and the other side's distinct fact, that `agent-pm.yml` carries no
+`NEON_RO_URL`, was carried into it rather than dropped, since a table holds one
+row per file. Conflict three: both sections kept, oldest first, because they are
+additive and were never in conflict in any sense but the textual one. Nothing was
+deleted.
+
+That both runs reached the same three answers from the same evidence is the one
+cheerful line in this entry. What it cost is the point: the same work twice, and
+a fourth conflict in the making, since two PRs resolving one conflict differently
+is a conflict on the second merge. PR #141 therefore took PR #142's version of
+this file byte for byte, verified by `git hash-object`, so the two merge in
+either order with nothing to resolve. That is the standing resolution for this
+class and it is cheaper than either run's prose about it: when two seats fix one
+file, the second one adopts the first's bytes rather than its own.
+
+**The systemic half.** A repository whose tests can detect this already did:
+`tests/test_check_registers.py` fails on a conflict marker and has for some
+time. It runs in `pytest tests/`, and `pytest tests/` is not a step in
+`checks.yml`; the workflow runs eleven named test files and this is not one of
+them. So the guard existed, was correct, and was not wired to anything that runs
+on a merge. That is this org's most repeated shape, and it is the same sentence
+as PR #110 sitting merged and inert and as incident 24.
+
+## INC-2026-09-30-two-checks-steps-red-on-main-for-days
+
+**Two steps of `checks.yml` were failing on `main` and neither was a code
+defect.** Both were tests asserting behaviour the organization had deliberately
+changed, which is the failure mode where a red build teaches nobody anything
+because everyone already knows it is red.
+
+**The press's backoff.** `tests/test_press_resilience.py` asserted
+`slept == [1.0, 1.0]` under a provider answering `retry-after: 1` twice. The
+press was corrected on 2026-09-24 to treat `retry-after` as a floor and wait 30
+then 60 seconds, because Moonshot answers a concurrency refusal with
+`retry-after: 1`, the other call takes minutes, and a press that honours the
+header burns every retry in three seconds. That is failure 2 of
+INC-2026-09-24-press-provider-migration. The code is right, the test was left
+behind, and the step has been red since.
+
+**The run report's stdout.** `tests/test_run_report.py` parsed the whole of
+stdout as JSON. `tools/run_report.py` prints `::warning::` lines to stdout on
+purpose, because that is where GitHub Actions reads annotations, and it warns
+when `gh pr list` refuses. `checks.yml` passes no `GH_TOKEN`, so `gh` always
+refuses there, so the warning always landed in front of the JSON. The test
+passed on every machine holding a token and failed in the only place it ran.
+
+**Both fixed in PR #142**, the scheduled engineer run of the same day, which
+found them independently and fixed the run report at the tool rather than at the
+test: `tools/run_report.py` now prints `::warning::` to stderr, so `--dry-run`
+keeps its promise that stdout is the payload. PR #141, the dispatched run, had
+written a weaker fix on the test side and replaced it with #142's, byte for byte,
+for the reason the entry above gives. Every step of `checks.yml` now passes
+locally, run the way the workflow runs it and with `GH_TOKEN` unset: 613 passed,
+1 skipped.
+
+**The lesson is about who reads a red build.** `checks.yml` went live on
+2026-09-29 and its first two runs on `main` were red. A workflow that is red on
+its first day is indistinguishable from a workflow that is red forever, and the
+only seat positioned to notice is the one that runs daily. Worth a guardrail:
+the engineer seat's §0 machinery check reads `git log` over `.github/` and
+`pipeline/`, and it should also read `gh run list --workflow=checks.yml
+--branch=main`, because a merged workflow that fails is a runtime change that
+announced itself and nobody answered.

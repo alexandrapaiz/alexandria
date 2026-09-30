@@ -913,6 +913,82 @@ budget.
 
 ---
 
+### 12. Skill registration, checked on the pull request that adds a skill
+
+**Queued 2026-09-30 by the engineer seat. ADR-36 part 1.**
+
+Numbered 12 because 11 is the highest on this page today, and this page has
+carried two items numbered 4 before, so the number is stated rather than
+counted.
+
+ADR-36 asks for "a check that fails when a skill on main has no row". That check
+has to be in two halves, and the split is not a weakening.
+
+The database half cannot run in GitHub Actions. This organization runs no
+Postgres in CI, and CI holds no credential for the production one, which is the
+same reason `tools/graph_audit.py`'s ten SELECTs are parsed rather than executed
+in `checks.yml`. So the half that asks whether the row is actually in Neon runs
+in `pipeline/skill_revision.py`, daily, where the `neon` secret already is, and
+it repairs what it finds rather than only reporting it.
+
+The half CI can run is the one that catches the failure mode ADR-36 actually
+found. A skill cannot be registered when its provenance block cannot be read:
+no `provenance:` map, no claim ids, a claim id that is not a number, a `name:`
+that disagrees with its directory, a directory with no SKILL.md. Every one of
+those ships green today and silently opts the skill out of revision forever.
+`python3 tools/skill_registrar.py --files-only` exits 1 on each of them and
+needs no database, no key and no network.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` and `db/schema.sql` are already in both `paths`
+lists; these two lines go in both of them, beside the existing `tools/` entries
+(verified against the live file this run: it carries `tools/board.py`,
+`tools/run_report.py` and `tools/graph_audit.py` in that order, in both lists).
+
+```yaml
+      - "tools/skill_registrar.py"
+      - "tests/test_skill_registrar.py"
+```
+
+Second, the step. It goes after the existing `the graph audit's SQL still
+matches the schema, and still only reads` step, which is the last step in the
+`digest-budget` job today.
+
+```yaml
+      # 2026-09-30, ADR-36 part 1. `skills_needing_revision` has been in
+      # db/schema.sql since the founding and has never returned a row, because
+      # the skill seat writes a SKILL.md and nothing writes the promotions row
+      # the view joins. Seven claims are deprecated and no skill knows.
+      #
+      # Two things are held here. The registrar's three statements are parsed
+      # with libpg_query and every relation and column resolved against
+      # db/schema.sql, because no CI job in this organization can execute SQL
+      # and a renamed column would otherwise turn a daily cron silently
+      # useless. And every skill on the branch must be registrable: the failure
+      # this catches is a merged skill whose provenance block cannot be read,
+      # which ships green and opts that skill out of revision forever.
+      - name: every skill can be registered, and the registrar's SQL matches the schema
+        if: always()
+        run: python3 -m pytest tests/test_skill_registrar.py -q
+
+      - name: no skill on this branch is missing its provenance
+        if: always()
+        run: python3 tools/skill_registrar.py --files-only
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both commands were run in
+this run's sandbox against the real six skills: the pytest step is 31 passed,
+and `--files-only` exits 0. Both were also confirmed to fail on purpose, the
+pytest step against a deliberate `promotionz` typo in the registrar's SQL and
+the `--files-only` step against a fixture skill with an empty claims array. The
+step cannot be smoke-tested on a branch as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database.
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
