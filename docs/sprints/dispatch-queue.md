@@ -160,7 +160,26 @@ untouched.
 it is a plain dispatch under the criteria, which stands regardless of
 PR #147's status.
 
-**Dispatched, run started:**
+**Attempted this run, not fired.** Both standard §11.4/§11.5 conditions
+held (`PM_DISPATCH_ENABLED` true, synchronous mode named by the owner's
+own dispatch), so this run tried to fire it for real. The attempt 403'd:
+
+```
+could not create workflow dispatch event: HTTP 403: Resource not
+accessible by integration
+(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361059087/dispatches)
+```
+
+This is the same failure shape as `INC-2026-09-24-dispatch-403` and
+`INC-2026-09-29-dispatch-403-repeat` — a third occurrence of one unfixed
+defect in how this workflow's own token calls the dispatch API, now
+against a third seat's workflow. Filing the incident entry itself is
+outside this run's writable surface (`docs/agents/incidents.md` is not
+`docs/sprints/` or `docs/ideas.md`); naming the repeat here is this run's
+half of "check the register before you ship," and the other half —
+actually appending it — is owed to whichever seat writes there next. The
+command below is unchanged and ready for the owner or chair to run by
+hand with their own token, same as the last two times.
 
 ```
 gh workflow run agent-frontend.yml \
@@ -178,8 +197,7 @@ the full item verbatim; no new scope is added. Your seat has not run
 since 2026-09-26, before this sprint opened, so this closes that gap.'
 ```
 
-**Result:** recorded once the run starts (see run URL in this PR's
-description, added after firing).
+**Result:** 403, no run created. See above.
 
 **Not proposed for any other seat.** engineer, research, and skill each
 already hold open pull requests or in-progress runs (the hard stop).
@@ -205,6 +223,8 @@ the 2026-09-19 ruling.
 
 ## Dispatched by the PM
 
-1. **frontend**, 2026-09-30, dispatched. Sprint item 5
-   (`docs/sprints/sprint-2026-09-28.md`) verbatim, cited above in full.
-   Run URL added below once the workflow accepts the dispatch.
+1. **frontend**, 2026-09-30, attempted, not fired. `HTTP 403: Resource
+   not accessible by integration`, the same shape as
+   `INC-2026-09-24-dispatch-403` and `INC-2026-09-29-dispatch-403-repeat`,
+   now a third occurrence. Full instruction: see entry 1 above. No run URL
+   exists because no run was created.
