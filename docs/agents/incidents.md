@@ -6115,3 +6115,97 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-launch-copy-two-weeks-behind-four-rulings — every launch asset was stale against four dated copy rulings, and the first one due to go out was due this week (2026-09-30, sales seat)
+
+### What happened
+
+The launch assets in `docs/sales/launch/` were written on 2026-09-18. Between
+that day and 2026-09-30 the owner issued four dated rulings that govern exactly
+this copy, four more skills shipped, the site grew a working email capture, and
+the skill library got its first measured retrieval score. No run opened the
+drafts against any of it.
+
+Read on the morning of 2026-09-30, the drafts said one skill was live when six
+were, offered "12 claims, 5 papers" as the whole library's receipt, used em
+dashes and a middle dot inside reader-facing bodies, opened on fragments, and
+closed the launch email on a thank-you that her ruling of that same morning had
+replaced.
+
+The rulings the drafts had fallen behind, all of them dated after the drafts:
+site copy round one on 2026-09-20 (serious register, no cute asides, no
+colon-led constructions), the reading verb on 2026-09-25 (canon law 15, which
+says in its own text that it binds the email and the site and not only the
+issue), the tool-page rules on 2026-09-25, the sentence-form rulings of
+2026-09-29 (longer undecorated sentences, which reverse the short-sentence
+preference of 2026-09-20), and the new standing close on 2026-09-30.
+
+### Why it is a repeat and not a first
+
+This is incident 20 at a different seat. That entry records a taste ruling
+written into the right register, by the right seat, within the hour, and
+violated by the very next artifact, because nothing between the ruling and the
+artifact ever opened the file. The registers map, `docs/agents/registers.md`,
+already names this seat's surface as gap 6: reader-facing copy outside the
+newsletter, written by sales, governed by no voice register until that sweep.
+The gap was closed in the charter on 2026-09-19. The first sales run after that
+closure is this one, eleven days later, and it found every asset stale.
+
+So the charter gate worked exactly as designed, on its first firing, which is
+the good half. The bad half is the eleven days, because a gate that only fires
+when a seat happens to run is not a gate on the artifact, it is a gate on the
+seat.
+
+### The part that makes it more than bookkeeping
+
+`docs/sales/calendar.md` scheduled teaser 2 for the week of 2026-09-29. That is
+the week this run happened in. The asset was due to be sent, by hand, from a
+file that named one skill and twelve claims, three days after five more skills
+had shipped and one day after the retrieval measurement landed. Nothing stood
+between the stale file and the public except that the owner had not got to it
+yet.
+
+Every previous instance of this class was caught before a reader saw it. This
+one was caught by the calendar's own timing rather than by any check.
+
+### Related, and the same shape again
+
+`site/app/page.jsx` still prints "papers read this week" above the count of
+papers that arrived. Canon law 15 is the owner's ruling of 2026-09-25, the
+writer seat drafted the exact repair on 2026-09-26 in
+`docs/voice/home-metric-line-2026-09-26.md`, and the false line was still live
+on the first screen of the site on 2026-09-30, four days later and thirteen
+days before launch. The candidate was written, reviewed against the registers,
+and never set. Same disease, different seat: the repair is recorded and the
+artifact is unchanged.
+
+### The fix, and where it goes
+
+In this pull request, `docs/sales/claim-ledger.md`. Every claim any draft makes
+now has a row naming the command or the file that settles it, and a five-command
+pre-send gate. The gate's sixth step has no command and is the one this run was
+nearly caught by: open `docs/voice/taste.md` and read from the bottom up to the
+date of the draft you are about to send, because a ruling dated after the draft
+governs the draft.
+
+What the ledger does not fix, and what this entry is the argument for: the check
+still runs when a sales run runs. The cheap version of a real gate is a
+timestamp comparison, which is that any file in `docs/sales/launch/` older than
+the newest dated ruling in `docs/voice/taste.md` is stale until a run says
+otherwise. That is one command and it could live in the same pre-send check any
+seat runs, or in CI, where it would not depend on a seat's schedule at all.
+Filed for the ExO and the engineer in `docs/ideas.md` in this pull request,
+because it is a workflow change and this seat's writable surface does not reach
+it.
+
+### Blamelessly
+
+Nobody skipped a step. The 2026-09-18 run wrote good drafts and flagged its own
+blocking dependencies honestly, in a list that was accurate the day it was
+written. Four of those dependencies have since changed state, two of them in the
+product's favour, and a dependency list is exactly the kind of artifact that
+looks current forever because nothing about it announces its own age. The
+lesson is small: **a file that records the state of something else needs the
+date it was read printed next to every line, and a campaign asset needs to
+name the rulings it was written under, so that the next reader can tell
+staleness from agreement.**
