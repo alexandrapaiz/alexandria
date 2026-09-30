@@ -1,103 +1,134 @@
 # Hacker News — Show HN (launch day, 2026-10-13)
 
-Venue read: HN distrusts hype, rewards receipts, and will test every
-claim by clicking through. It just gave a hand-curated skill
-marketplace (skillbay.sh, Show HN 2026-09-17) a skeptical reception —
-top comment: "Why would I buy a markdown file that someone most likely
-got an LLM to generate while I can just simply get my own LLM to
-generate a similar one for me for free?" (news.ycombinator.com/item?id=49743459).
-The founder conceded AI-generated skills "are usually pretty bad." That
-thread is this post's best pre-mortem: lead with verification, not
-volume, or expect the same comment.
+Rewritten 2026-09-30. The 2026-09-18 version offered one skill and its twelve
+claims as the library's whole receipt, which is now wrong by five skills, and
+it did not have the retrieval measurement or the usage review to point at.
+Every number has a row in `../claim-ledger.md`.
 
-**Post as Show HN**, not Ask HN or a plain link — the product has a
-working repo and a shipped artifact, which is what Show HN is for.
+## The venue read, and what changed about it
 
-**Timing:** weekday, mid-morning ET, per general HN front-page
-convention. Avoid Friday/weekend.
+Hacker News distrusts a pitch and rewards a thing that can be opened. It gave
+a hand-curated skill marketplace a cold reception on 2026-09-17, and the top
+comment on that thread is the pre-mortem for this post: "Why would I buy a
+markdown file that someone most likely got an LLM to generate while I can just
+simply get my own LLM to generate a similar one for me for free?"
+(news.ycombinator.com/item?id=49743459). The founder conceded in the thread
+that AI-generated skills "are usually pretty bad."
 
----
+That comment is correct about the file and wrong about the product, and the
+post has to answer it before anyone asks. The answer on 2026-09-18 was a
+promise about an evidence trail. The answer today is two measurements and one
+outside review, which is a different kind of answer and the reason this draft
+is shorter than the one it replaces.
 
-**Title:**
+**One place this venue and the company standard pull against each other.** The
+standing rule on public copy says sell the outcome and do not explain the
+mechanism, and it was written from her line-by-line verdicts on landing-page
+copy. On this venue the mechanism is the outcome, because a reader here buys
+the method or nothing. This draft keeps the mechanism and obeys the two rules
+that carry no venue exception, which are the serious register and the sentence
+form. Flagged rather than decided: see the run note in this pull request.
+
+**Post as Show HN**, weekday, mid-morning Eastern. There is a working repo and
+shipped artifacts, which is what Show HN is for.
+
+## Title, her call
 
 ```
-Show HN: Alexandria – an AI research org that publishes its own decisions
+Show HN: Alexandria - six agent skills, each citing the papers behind them
 ```
 
-(Alternate, more literal: `Show HN: A research pipeline that turns AI
-papers into Claude skills, with citations`. Owner's call on which title
-undersells less — the first leads with the unusual-org hook, the second
-leads with the mechanism. Test with the first; it's the harder claim to
-ignore.)
+```
+Show HN: An agent-run research library that publishes what it got wrong
+```
 
-**Body:**
+The second is the title only if the Obsolescence Report runs, and in that case
+it is much the better of the two, because it is the one claim on the front page
+that day that nobody else can make. Use a plain hyphen in either, never a dash
+character.
+
+## Body
 
 ```
-Alexandria is a small AI research pipeline I've been running:
-it reads arXiv and lab blogs daily, distills claims, tracks which
-ones get contradicted or supported over time (a claim graph, not
-a link list), and turns the ones that hold up into Claude Agent
-Skills — procedure files an agent can load, each one citing the
-papers and claims behind it.
+Alexandria reads AI research and turns the findings that hold up into skill
+files an agent can load. It runs as a set of autonomous agents with written
+charters, each opening pull requests against a public repository, and I merge
+them or I do not.
 
-Two things about it that I think are actually unusual, and that I'd
-rather show than claim:
+Six skills are live. Each one lists the claims it was taken out of and the
+papers behind those claims, so you can follow any recommendation in a skill
+back to the work it came from and disagree with it on the evidence.
 
-1. Every decision the project has made is a public, timestamped ADR
-   in the repo (docs/decisions.md) — including the ones that didn't
-   work. Nothing is retconned after the fact.
+Two measurements, because I would rather hand you those than describe the
+library.
 
-2. The org running it is mostly autonomous agents, each with a
-   written charter, each opening its own pull request. I merge them
-   or I don't. This post you're reading was drafted by the sales
-   agent (prompts/sales-agent.md) under a charter that says, in its
-   own words, "you prepare, I send" — I'm sending it now, unedited
-   except for whatever I choose to cut before I hit submit.
+A retrieval test on 2026-09-29 scored 40 of 43 cases, reliability 0.93 with a
+95 percent interval from 0.81 to 0.99. It measures whether the right skill gets
+picked for a question and whether the others stay quiet, against eight decoy
+skills, with the scoring policy written down before the run. The three failures
+are in the output with their prompts and their scores, in
+skills/_validation/results/.
 
-The skill that's actually live today —
-skills/harness-engineering/SKILL.md — carries the format I want every
-skill to have before I call this a library: 12 claims, 5 papers, and
-a dated A/B result (loading the skill changed what the model
-recommended, logged in the frontmatter, not asserted in a landing
-page).
+One of the six also carries a recorded trial from 2026-09-12 where loading the
+skill changed the model's recommendation. Bare, it endorsed fine-tuning a
+smaller model on a stronger one's trajectories. With the skill loaded it
+refused, cited the regression the papers report, and prescribed a different
+approach. The other five skills do not have that trial yet. That gap is real
+and it is the next thing I am working on.
 
-I bring this up because I think it's the actual answer to the
-skillbay.sh thread from last week ["Why buy a markdown file an LLM
-could write"] — you're right not to pay for the file. The file isn't
-the product. The evidence trail behind it, and the graph that keeps
-checking whether it still holds, is what a prompt can't generate for
-you on the spot.
+There is also one independent review of a skill in actual use, from a session
+that was not mine, on a three-stage build plan. It records one design decision
+changed, one procedure adopted, two decisions confirmed, and it records that
+its own baseline was not clean because the reviewer had read the file four days
+earlier. I left that caveat in the file rather than out of it.
 
-The digest (the same claim graph, written up weekly) is free, full
-issues, no paywall on the writing itself — that part's genuinely
-commoditized and I'm not pretending otherwise. What's paid, $20/mo,
-starting today, is the operational layer: the skills, the queryable
-claim graph, and the automations built from digest findings. One
-skill live so far, more shipping weekly — I'd rather undersell that
-number than round it up.
+On the market-a-markdown-file objection, which I think is the right objection:
+you are right not to pay for the file. The file is not the product. What a
+prompt cannot produce for you is a record of which claims later got
+contradicted, because that is made of edges accumulated over months against
+papers as they arrive. You can generate a skill today. You cannot generate the
+part that tells you next March that one of its recommendations stopped being
+supported.
+
+The weekly digest is free and arrives in full, and I am not paywalling the
+writing, because a written summary of the week is genuinely a commodity. What
+costs money is the library, at $20 a month. The archive holds two issues today,
+which is a small number and the true one.
 
 Repo: github.com/alexandrapaiz/alexandria
 Site: [SITE_URL]
-Happy to answer anything, including "why should I trust a claim
-graph I can't audit" — the repo's public specifically so you don't
-have to take my word for it.
+
+Happy to take the hard questions, including why you should trust a record
+graded by the thing that built it. The repository is public so that you do not
+have to take my word for any of it.
 ```
 
-**Anticipated pushback and how to answer in comments (owner's call on
-tone, drafted for reference):**
+## Answers to prepare, hers to use or ignore
 
-- *"This is just a skill marketplace with extra steps."* → No
-  marketplace: one seller, one evidence standard, applied to every
-  entry. Point at the provenance block in SKILL.md directly.
-- *"Why would agents/companies trust an evidence trail an LLM
-  wrote?"* → Honest answer: the same way you'd trust any citation —
-  check it. The claims cite real arXiv IDs; the contradicts/supports
-  edges are checkable against the papers. Don't oversell this one.
-- *"One skill isn't a library."* → Agree plainly. "Correct, it's one
-  skill and a pipeline that's supposed to produce more — judge us on
-  whether it does, not on the pitch."
+- **"Six skills is not a library."** Agree without softening it. Six files, one
+  evidence standard applied to all of them, and a target of twelve by the end
+  of the year that is a target rather than a fact. Judge the pipeline on
+  whether it produces more.
+- **"Only one has the A/B result, so the other five are unproven."** Correct,
+  and it is in the post because of that. The retrieval score covers all six and
+  measures a different thing. Do not blur the two under pressure; the blur is
+  the only way this thread goes badly.
+- **"An LLM wrote the evidence trail, so why trust it."** The claims cite real
+  arXiv identifiers and the edges are checkable against the papers. Say that
+  and stop. Do not oversell it, and do not claim outside verification, which
+  the library does not have.
+- **"Agents writing marketing copy about themselves."** True, and the charter
+  saying the agent never sends anything is in the repository at
+  prompts/sales-agent.md. The interesting part is not that an agent wrote it,
+  it is that the charter is readable and you can check whether it was followed.
+- **"How is this different from a paper-search tool."** Different job rather
+  than a better one at theirs. Elicit and Consensus find papers. This decides
+  which findings to act on and ships the acting procedure. Never claim to beat
+  them at search.
 
-**What not to say:** no subscriber counts (there aren't real ones
-yet), no "growing fast," no comparison claiming to beat Elicit/Consensus
-outright — the honest claim is a different job (orchestration/systems,
-not paper search), not a better one at their job.
+## Never in this thread
+
+No subscriber count and nothing that implies one. No paper count carrying the
+verb "read" unless it is the full-read count beside the arriving count. No
+"growing fast", no roadmap stated as present tense, and no comparison that
+claims to beat a research tool at its own job.

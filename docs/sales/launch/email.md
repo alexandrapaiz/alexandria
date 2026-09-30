@@ -1,68 +1,106 @@
 # Launch email — to the free list (2026-10-13)
 
-Recipients today: the comped-friends list from sprint 1
-(roadmap.md), not a public subscriber base yet. Small, known, warm —
-write to them as people who already agreed to read this, not as a cold
-acquisition audience. Send via whatever the current Gmail SMTP send
-mechanism is (roadmap.md, "Phase 1 newsletter"); this file is the copy,
-not the send mechanism.
+Rewritten 2026-09-30. The 2026-09-18 version said one skill was live when six
+are, and it closed on a thank-you that her ruling of 2026-09-30 replaced. Every
+number below has a row in `../claim-ledger.md`; re-verify with that file's
+pre-send gate on the morning of the send.
 
-**Subject line options** (owner's call):
-- `We launched. Here's exactly what that means.`
-- `Alexandria is live — free digest, and the part that isn't`
+Recipients: the comped friends from sprint 1, not a public subscriber base.
+Small, known, and warm. Write to people who already agreed to read this. No
+count of them appears anywhere in the copy, and none is implied.
 
----
+Send mechanism is out of scope here. This file is the copy.
 
-**Body:**
+## Subject lines, her call
+
+The ruling of 2026-09-24 governs all three: a proper title, no week code, no
+bracketed system tag.
+
+- `Alexandria is live, and here is what you can check`
+- `The library opens today`
+- `Six skills, one of them proven, and the part that costs money`
+
+The third is the most honest and the least comfortable, which on this list is
+probably an argument for it.
+
+## Body
 
 ```
-Hi —
+Hi,
 
-Alexandria is live today. You've been getting the digest as a friend;
-this note is about what changes now that it's a real product and not
-just something I send you.
+Alexandria is live today. You have been getting the digest as a friend, and
+this note is about what changes now that there is a product behind it and a
+price on part of it.
 
-Three things, plainly:
+The digest stays free and it stays whole. Every issue arrives in full, and
+that is a decision rather than an introductory offer, because a summary of the
+week's research is a thing you can get in several places and charging you for
+it would misdescribe what it is worth. What costs money is the layer
+underneath, which is the skill library at twenty dollars a month.
 
-1. The digest stays free. Full issues, always — that's not changing,
-   and it's not a bait-and-switch tease. News and summary are
-   commodities; charging for them would be dishonest about what
-   they're worth.
+Six skills are live today, and each one names the claims and the papers it was
+taken out of, so you can open any of them and follow a recommendation back to
+the work it came from. I would rather give you the two real measurements than
+describe the library in adjectives. A retrieval test run on 2026-09-29 put it
+at forty of forty-three cases, which measures whether the right file gets
+picked up for a question and whether the wrong ones stay quiet. Separately, one
+of the six carries a recorded trial showing that loading it changed what the
+model recommended, and the other five do not carry that yet. I am telling you
+about the gap because you are going to find it, and because the five are the
+next thing I am fixing rather than the thing I am hoping you skim past.
 
-2. What's new and paid ($20/month) is the operational layer: Claude
-   Agent Skills distilled from the research — not summaries, files an
-   agent can load and use — plus the claim graph they're built from
-   and automations that turn a digest finding into a working tool.
-   One skill is live today (harness-engineering, in the public repo,
-   with its sources and a recorded validation test attached). More
-   are coming out of the pipeline weekly, and I'd rather tell you
-   that honestly than round the number up.
+You also get to choose how the subscription behaves. It can renew itself, or
+it can stop at the end of each month until a reminder arrives and you decide to
+continue. Plenty of subscription businesses are built on being forgotten, and I
+would rather earn the renewal than collect it.
 
-3. The whole thing runs more in the open than most products do.
-   Every decision — including the ones that didn't work — is a
-   public, dated entry in the project's repo. If you're curious how
-   any of this actually works, you can just go look:
-   github.com/alexandrapaiz/alexandria
+The whole thing runs in public, which I mention because it is the part you can
+verify without trusting me. Every decision this project has made is a dated
+entry in the repository, including the ones that did not work, and so is every
+failure the agents running it have caused. This email was drafted by one of
+those agents under a charter that forbids it from sending anything, and you can
+read the charter.
 
-You've been reading this before it was a business, which means your
-opinion on whether the paid layer is actually worth $20/month is worth
-more to me than a stranger's. If you try it and it's not, tell me —
-that's not a rhetorical offer.
+github.com/alexandrapaiz/alexandria
 
-And if you know one or two people who'd actually want this — not
-"might click a link," but would actually use a claim-graph-backed
-skill or want the digest in their inbox — forwarding this email is the
-whole referral program right now. [REFERRAL_MECHANIC_LINE — see
-docs/sales/launch/referral.md; insert once the mechanic below is wired
-or decide to run the manual version at this small a list size.]
+You have been reading this since before it was a business, which makes your
+answer to whether the paid layer is actually worth twenty dollars a month
+worth more to me than a stranger's. If you try it and it is not, say so
+plainly and I will take it as the most useful thing you could send me.
 
-Thank you for reading this before there was anything to sell.
+If you know one or two people who would use a skill file rather than merely
+click a link about one, forwarding this is the entire referral program at the
+moment.
 
-[SITE_URL]
+Accelerate every builder and agent to frontier speed.
 ```
 
-**Note on honesty:** no "as a valued subscriber" boilerplate, no fake
-scarcity ("first 100 only"), no claim of a subscriber count — the list
-is small and named as such on purpose, because pretending otherwise to
-this specific warm, small audience would be caught immediately and
-would cost exactly the trust this whole pitch rests on.
+## If the Obsolescence Report runs
+
+See `../campaigns/obsolescence-report/README.md`. In that case the opening two
+paragraphs are replaced by this, and the rest of the body stands unchanged.
+
+```
+Hi,
+
+Alexandria is live today, and the first thing it published is a list of the
+claims we got wrong.
+
+That is not modesty and it is not a stunt. The library keeps a record of which
+research findings later got contradicted, and a record like that is worth
+nothing if it never returns a verdict against the people who built it. So we
+ran it against our own two issues and our own six skills first, and what it
+found is on the page below with the paper that overturned each one.
+```
+
+## What this email must never say
+
+- Any subscriber count, or any phrase that lets one be inferred. The list is
+  comped friends.
+- Any number of papers with the verb "read" attached, unless it is the
+  full-read count and it appears beside the arriving count. Her ruling of
+  2026-09-25 and section B of the claim ledger.
+- "Every week" about the archive. Two issues are in it and one week is missing
+  between them.
+- Any urgency that is not real. No first-hundred, no closing-soon, no founding
+  price that is not actually a price that changes.
