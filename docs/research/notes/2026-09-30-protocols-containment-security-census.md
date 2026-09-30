@@ -405,3 +405,244 @@ this vocabulary for the Layer 3a priority and the observed distribution shows
 it in use. The measured need for these three is §3a — 21 claims already reach
 for `safety`, `security` or a hyphen-variant the prompt does not sanction.
 
+## 6. Sources: the reach gap, measured against external ground truth
+
+Method, the same one ADR-29's monthly census mandates and the same one the
+2026-09-19 containment brief used on cs.CR: query the live arXiv API for
+September 2026 submissions on each thread's terms, sample the 400 most recent,
+and diff their ids against `papers`.
+
+September 2026 on arXiv, by `totalResults`:
+
+| thread terms | September arXiv papers | in our corpus (of a 400 sample) |
+|---|---|---|
+| model context protocol / agent-to-agent / agent interoperability / agent identity / MCP / A2A | 1,778 | **28 (7%)** |
+| sandbox / sandboxing / microVM / capability-based / agent isolation / least privilege | 1,285 | **36 (9%)** |
+| prompt injection / tool poisoning / agent hijacking / jailbreak / exfiltration | 2,703 | **55 (13%)** |
+
+### 6a. The gap is not a category gap, with one exception
+
+The obvious inference from 7-13% is that we are missing arXiv categories. The
+data says otherwise. Of the missed papers in the sample, the share carrying a
+cross-list into a category `sources.yaml` already ingests:
+
+| thread | missed | cross-listed into a category we ingest | structurally unreachable |
+|---|---|---|---|
+| protocols | 372 | 296 (80%) | 76 |
+| containment | 364 | 318 (87%) | 46 |
+| security | 345 | 319 (92%) | **26** |
+
+For the security thread, 92% of what we missed was already inside our
+subscription. No source diff reaches it. The throughput finding in §1 is the
+whole story there, and adding feeds to a pipeline that reads 3-15% of its intake
+makes the arithmetic worse, not better. **Ordering matters: throughput before
+sources.** This is stated plainly because the directive asks for sources and the
+evidence says sources are the second problem.
+
+The one real category gap, consistent across all three threads, is **cs.SE**.
+Primary categories of the structurally unreachable papers, combined:
+`cs.SE=82, cs.CV=56, cs.RO=30, cs.CY=21, cs.HC=15`. cs.CV and cs.RO are noise
+for us (knee-MRI foundation models, robot navigation, chart-to-code). cs.SE is
+not. It is where the empirical protocol literature lives, and every one of
+these is unreachable today:
+
+```
+2609.14721  A Two-Dimensional Study of the Model Context Protocol: Publication and Adoption
+2607.25635  An Empirical Study of Model Context Protocol Applications
+2606.09182  Understanding How Enterprises Adopt the Model Context Protocol for LLM-Driven SE
+2609.00072  Can MCP Clients Decide What to Do After Failure? A Result-Only Actionability Audit
+2608.24944  Secret MCP: Evidence-Bounded and Context-Isolated Design Specification Generation
+2607.17012  Schema-Bound LLM Control of Scientific Instrumentation through Model Context Protocol
+2608.23084  ARGUS: MCP-Grounded Root Cause Analysis for Kubernetes Incidents
+2606.25257  How Do Developers Maintain and Evolve Their Agents' Instructions? An Empirical Study
+```
+
+The protocols thread has one claim, and the reason is visible right there: the
+people measuring MCP in the field publish in cs.SE, and we do not read cs.SE.
+This is the cs.CR finding of 2026-09-19 repeating in a different category.
+
+cs.SE also carries containment work — `2609.08371` "Authority Is Not a String:
+A Capability-Scoped Harness for Prompt-Injection-Resistant..." (the
+capability-scoping sub-area by name), `2607.27294` "AgentS4D: Benchmarking
+Runtime Risks across the Execution Lifecycle of LLM-Based Workspace [agents]",
+`2606.19409` "OpenRath: Session-Centered Runtime State for Agent Systems",
+`2608.05521` "Reasoning from Traces: Divergence-Guided Agentic Repair of
+WebAssembly Discrepancies" — and security work: `2609.27263` "Specifying and
+Maintaining Agentic Workflows: An Empirical Study of GitHub Agentic Workflows".
+
+Volume, so the tier is a measurement and not a guess: cs.SE ran **639 papers in
+September**, about 21 a day, against cs.CR's 1,106 (37 a day) which
+`sources.yaml` already carries at `a-low`. 270 of the 639 (42%) mention "agent"
+in the abstract, a better agent density than cs.CR's. cs.SE at `a-low` is
+therefore the conservative placement, not a generous one.
+
+### 6b. The two protocol feeds we have are 18 rows of nothing
+
+§2a established this: `gh-a2a-protocol` and `gh-mcp-spec` point at
+`releases.atom`, which on a specification repository returns the tag and
+nothing else. Eighteen rows, every title a bare version or date string, every
+abstract empty, every `fulltext_chars` null, every one indexed.
+
+The fix the directive names — spec changelogs, not only releases — exists as a
+path-scoped GitHub commits feed, and it works. Verified 2026-09-30, HTTP 200
+with 20 entries each, and the path filter genuinely narrows (the spec-path feed
+returns different, spec-only commits than the whole-branch feed):
+
+```
+https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/docs/specification.atom
+https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/seps.atom
+https://github.com/a2aproject/A2A/commits/main/specification.atom
+```
+
+What they buy, stated honestly: the commit messages are mostly spec-text
+maintenance ("Fix 'Serves' typo in resources capability text", "docs: fix
+invalid JSON in two example code blocks"), which triage should discard. The
+`seps.atom` feed is the higher-signal one, because MCP's normative change runs
+through a numbered Specification Enhancement Proposal process, and its commits
+name the substance: "Add Agent Skills backward-compatibility requirement",
+"align capability wording with ext-skills", "Require WG/IG discussion before
+SEP submission". A feed whose good items are one in five is still infinitely
+better than a feed whose items are the string "v1.0.1".
+
+### 6c. What the protocol blind spot has already cost this project
+
+Following `seps.atom` to its source produced the most product-relevant finding
+of this run, and it is not a paper.
+
+**SEP-2640, "Skills Extension", status Final, created 2026-04-23**, defines a
+convention for serving Agent Skills over MCP. It specifies the `skill://` URI
+scheme, the `skills/list` and `skills/get` methods, the extension identifier
+`io.modelcontextprotocol/skills`, and an optional
+`resources/directory/read`. It was written by a "Skills Over MCP Working
+Group". It delegates the skill format itself — directory structure, YAML
+frontmatter, naming, and the progressive-disclosure model that governs how
+hosts stage content into context — entirely to the **Agent Skills
+specification** at `agentskills.io/specification`, and requires that clients
+honour that specification's own backward-compatibility mechanisms.
+
+alexandria's terminal asset is a skills library. There is a Final standard for
+how skills are served and a separate standard for how they are formatted,
+neither is in `sources.yaml`, and the corpus holds zero claims about either.
+The one feed pointed at that repository reports version dates.
+
+The good news, checked rather than assumed: `skills/*/SKILL.md` in this
+repository already carries YAML frontmatter with `name` and `description`, which
+is the Agent Skills specification's stated minimum. The library is
+shaped to be servable under SEP-2640 without a format change. What is missing is
+that nothing in this system knew the standard existed. That is the skill seat's
+and the PM's call to act on, not this seat's; it is routed in the brief.
+
+`agentskills.io` publishes no feed (checked: `/feed.xml` and `/rss.xml` both
+404). `https://github.com/modelcontextprotocol/ext-skills/commits/main.atom`
+returns 200 and is the working proxy for that specification's development.
+
+### 6d. Containment: the isolation engineering is on vendor blogs, not arXiv
+
+The containment thread's rubric asks for a measured escape or a measured cost.
+arXiv mostly does not carry that; the people who run isolation at scale write it
+up themselves. Verified 2026-09-30, all HTTP 200 with parseable entries:
+
+- `https://gvisor.dev/blog/index.xml` — 10 entries spanning 2023-2026, and the
+  titles are the rubric: "Scaling Agentic-RL Sandboxes to the Millions with
+  gVisor at Tencent" (2026-04-23), "Multi-Agent gVisor Isolation (MAGI)"
+  (2026-04-15), "Optimizing seccomp usage in gVisor", "Safe Ride into the
+  Dangerzone: Reducing attack surface with gVisor", "Who needs VMs? Run systemd
+  and full Linux desktop apps in gVisor" (2026-09-17). Low volume, so it costs
+  the triage budget almost nothing, which matters given §1.
+- `https://github.com/firecracker-microvm/firecracker/releases.atom` — microVM,
+  the named sub-area, 10 entries.
+- `https://github.com/bytecodealliance/wasmtime/releases.atom` — the wasm
+  runtime, 10 entries.
+
+Declined after checking, and named so the next census does not re-examine them:
+`kata-containers` releases (200, but the release notes are dependency bumps);
+`cncf.io/feed/` (200, and far too broad — general cloud-native news at a volume
+that would crowd the queue); `e2b.dev/blog/rss.xml` and `modal.com/blog/feed.xml`
+(both 404, so the agent-sandbox vendors are unreachable by feed today, which is
+worth a recheck next month).
+
+### 6e. Security: one standards body, and one declined
+
+- `https://genai.owasp.org/feed/` — 200, 10 entries, and the content is the
+  thread: "OWASP GenAI Security Project Unveils 2026 Top 10 for LLM
+  Applications, New Agent Control Standard", "Memory Is a Feature. It Is Also
+  an Attack Surface", "OWASP GenAI Exploit Round-up Report Q1 2026". A standards
+  body shipping agent-security substance, and the "New Agent Control Standard"
+  is exactly the artifact-with-method the charter admits. Propose.
+- `https://openid.net/feed/` — 200, but **declined**. Its 10 most recent items
+  are OpenID4VP/OpenID4VCI certification, age assurance, post-quantum OIDC and
+  workshop notices. Nothing agent-specific in the sample. Agent identity as a
+  principal is a real charter sub-area and this feed is not currently where it
+  is happening; adding it would spend triage budget on credential-format news.
+  Recheck next census.
+
+## 7. Radar: the first skill each thread deserves
+
+Step 3 of the charter, kept to targets rather than drafts (ADR-22). None of
+these is proposable this week, and the reason is the same each time.
+
+**Security — `agent-defense-evaluation`, and it is close.** The claims exist and
+they measure the right things: EvoSafeHarness's ASR-versus-utility operating
+points (306-310), MOLE's monitor detection gap (166-170), DDO's cost ratio
+(420-424), Shutdown Sabotage's collusion frequencies (742-746), PACT's
+pressure effect (557-561). That is five independent papers converging on one
+procedure: how to measure whether a defense works, what utility you pay, and
+what your monitor misses. **Blocker:** the graph holds zero edges between any
+two of them (§3b), so the charter's own "cluster of mutually supporting claims"
+test cannot be satisfied, and a skill asserting the cluster on this seat's
+reading rather than on evidenced links is the padded skill the charter forbids.
+Re-run the interpret pass over these 34 claims and this becomes the strongest
+skill target in the corpus.
+
+**Containment — `agent-isolation-boundaries`, and it is empty.** Zero claims
+(§2b). Nothing to build on. The first ingredient is not a skill proposal, it is
+the gVisor material in §6d and the cs.SE capability-scoping papers in §6a
+reaching distill. Named here so the shelf has a name before it has contents.
+
+**Protocols — `mcp-server-design`, and it is a one-claim thread.** The material
+exists in cs.SE (§6a) and in the SEP process (§6c), and none of it is in the
+corpus. The skill this deserves first is not about MCP in general but about the
+one piece with a Final standard and direct product bearing: serving skills over
+MCP under SEP-2640. That is a skill the skill seat could write from the
+specification itself rather than from claims, which is a different evidence
+route than ADR-22 contemplates, and therefore a question for the owner rather
+than an assumption by this seat.
+
+## 8. Meta-review: what reaches production, and what this run will not propose
+
+The charter requires checking deploy state before spending the week's proposal.
+Measured tonight against `sha256(prompts/<file>.md)[:12]`:
+
+| file | main | HEAD (this branch) | deployed | verdict |
+|---|---|---|---|---|
+| `interpret.md` | `6706ec7bffee` | `6706ec7bffee` | `6706ec7bffee` on 3 edges; `fbe080261d6b` on 271 | current, but almost no output yet |
+| `triage.md` | `32252384ecd7` | `a9e16aa25ba6` | `32252384ecd7`, 180 rows today | **main is live** |
+| `digest.md` | `5db6c08aba9e` | `5db6c08aba9e` | `ea2d678d86e9`, `83a0aa3be13c` | **stale; the deployed press prompt is in no commit** |
+| `distill.md` | `819694a98603` | `819694a98603` | unknowable — `claims.prompt_sha` is null on 846 of 846 rows | **unverifiable** |
+
+Three consequences for this run's one proposal.
+
+**Not `interpret.md`.** Every one of the 7 bad `contradicts` edges and all 6 of
+the bad `supports` edges carry `method = openai/gpt-oss-120b@fbe080261d6b` — a
+prompt that no longer runs. The current prompt is deployed and has produced 3
+edges, which is not enough evidence to say whether it fixed the problem. A
+proposal here would be evidence against a prompt that is already gone. What the
+271 stale edges need is a re-interpret pass, which is the engineer's job, not a
+prompt diff.
+
+**Not `distill.md`,** even though §3a's evidence is strong and points straight
+at it. `claims.prompt_sha` is null on every row, so the column that exists to
+answer "is the deployed distiller current" answers nothing, and PR #138 found
+independently tonight that the distill image is behind (the reading queue's 27
+arXiv ids have been parseable since 2026-09-27 and none is ingested). Proposing
+the topic-vocabulary extension into an image whose state cannot be verified is
+incident 25's shape exactly. The definitions are written in §5 and held for the
+week after the deploy lands. **That distill writes no `prompt_sha` is itself the
+finding to route**, because it disables the charter's own safety check.
+
+**So: `sources.yaml`,** which the directive asks for by name and which the
+evidence in §6 supports with external measurement. It is image-baked and
+frozen until `modal deploy`, and the triage evidence above shows deploys are
+happening (main's `triage.md` went live today), so the diff will reach
+production on the next one. The brief routes the deploy.
+
