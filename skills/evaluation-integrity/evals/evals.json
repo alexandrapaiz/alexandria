@@ -1,12 +1,12 @@
 {
   "skill": "evaluation-integrity",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Ten treatment tasks and two controls from the ten cited papers (ADR-35). Three carry machine checks, including one where the paper's own procedure is directly executable: construct the mutants a verdict gate cannot see.",
+  "note": "Ten treatment tasks and two controls from the ten cited papers (ADR-35). Three carry machine checks, including one where the paper's own procedure is directly executable: construct the mutants a verdict gate cannot see. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found that the skill's partial-monitoring section had its claims attached to ei-t8 and no rubric criterion testing it, so ei-t11 was added and the suite is version 2. Eleven treatment tasks and two controls.",
   "tasks": [
     {
       "id": "ei-t1",
@@ -610,6 +610,65 @@
               "0": "Combines them into a weighted score.",
               "1": "Unclear.",
               "2": "States explicitly that they do not trade off."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "ei-t11",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "SchemeArena's result that action-only monitoring increased scheming in closed-source models, so partial oversight acts as an optimization constraint rather than a deterrent, alongside the suite properties that make its nulls interpretable: 400 factorized scenarios varying one factor at a time, and a realism score of 3.21 on a 4-point scale with 0.97 internal consistency from human and model judges together.",
+      "source": {
+        "paper": "SchemeArena",
+        "arxiv": "arxiv.org/abs/2609.08126",
+        "claims": [
+          269,
+          272,
+          273
+        ]
+      },
+      "prompt": "We are standing up a scheming eval for our tool-using agent. To keep the harness cheap we will log and score tool calls only, not the reasoning that preceded them, since reasoning traces are large and we would have to store them. Thirty scenarios, each one a bespoke situation our red team invented, and we will report the fraction in which the agent took a covert action. If the number comes back near zero I want to publish that our agent does not scheme. Anything wrong with the design?",
+      "without_skill": "Treats action-only logging as a reasonable cost saving and the storage argument as sound, suggests more scenarios, and accepts that a near-zero rate would support the claim.",
+      "with_skill": "Says action-only monitoring is an intervention on the thing being measured rather than a cheaper view of it, so the number is not comparable to a full-visibility number and may be worse than it; requires reasoning and action traces scored together, factorized scenarios, and a realism measurement before any null can be published.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "partial_is_intervention",
+            "criterion": "Identifies that monitoring actions but not reasoning changes the behaviour being measured, rather than merely observing less of it.",
+            "anchors": {
+              "0": "Accepts action-only logging as a cost saving.",
+              "1": "Says reasoning traces are useful for diagnosis, which is an argument about convenience and not about validity.",
+              "2": "States that action-only monitoring increased scheming in closed-source models, so partial oversight acts as an optimization constraint, and that the measured rate is therefore a property of the monitoring regime and must be stated in the result."
+            }
+          },
+          {
+            "id": "score_both_traces",
+            "criterion": "Prescribes scoring reasoning and action traces together against explicit criteria before aggregating a verdict.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to keep reasoning traces without saying what to do with them.",
+              "2": "Applies criteria for instrumental goal pursuit, covert planning and deceptive rationalization to both trace types, then aggregates, and notes a detector built that way reached an F1 of 90.73 percent against human validation."
+            }
+          },
+          {
+            "id": "factorized",
+            "criterion": "Requires the scenario suite to be factorized so one factor at a time can be varied, rather than a set of bespoke situations.",
+            "anchors": {
+              "0": "Absent, or asks only for more scenarios.",
+              "1": "Suggests categories or tags for the scenarios.",
+              "2": "States that bespoke scenarios cannot attribute a result to any cause and prescribes a factorized design, the reference suite being 400 scenarios built that way."
+            }
+          },
+          {
+            "id": "realism_before_null",
+            "criterion": "Blocks the publication of a near-zero rate until the scenarios carry a realism measurement.",
+            "anchors": {
+              "0": "Accepts that a near-zero rate supports the claim.",
+              "1": "Mentions that scenarios should be realistic.",
+              "2": "States that an implausible scenario explains a null as well as a safe agent does, so a suite with no realism score has uninterpretable negative results, and names the reference measurement of 3.21 on a 4-point scale with 0.97 internal consistency from human and model judges."
             }
           }
         ]
