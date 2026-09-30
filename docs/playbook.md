@@ -73,14 +73,22 @@ remembering must live in a file.
 - **Scrum, minimal**: one-week sprints, a sprint is a GOAL plus a set
   of seat-assigned tasks, Monday planning + retro in one PM run, the
   engineer's daily PR is the standup. No ceremony without function.
-- **The dispatch queue**: the PM's daily output, at most three proposed
-  runs with their instructions already written, so the owner approves
-  work instead of authoring it. See the presence section below, which is
-  the one piece of this playbook learned the most expensively.
-- **The board**: GitHub Projects mirrors the committed files; the repo
-  is the source of truth. Anyone (any agent) adds and self-assigns
-  backlog cards; the PM alone sets priorities. Card standard: readable,
+- **The board**: since 2026-09-27 (company standard pm.md §14), a real
+  self-hosted service (board.libraryofalexandria.dev) is the state of
+  the work, not a mirror — every seat reads it at the start of a run and
+  writes to it as it works, over HTTP on GitHub runners or an MCP server
+  on the host. The sprint file in docs/sprints/ is now a rendered export
+  of the board's current sprint. GitHub Projects was the original $0
+  mirror (below) and is superseded by this for day-to-day state; it is
+  no longer the source of truth. Card standard unchanged: readable,
   self-sufficient, seat named.
+- **The dispatch queue**: live since 2026-09-24 (ADR-033, company
+  standard pm.md §11), not only proposed. The PM may fire
+  `gh workflow run` directly against eight of the eleven seats, inside
+  daily/weekly ceilings, when the owner's `PM_DISPATCH_ENABLED` switch
+  is `true`. It is still her off switch, and every fired dispatch is
+  logged for the exo seat to audit. See "Presence" below for why this
+  exists.
 - **The ledger** (docs/ideas.md): every idea with its trigger, first
   step, cost, and a status only the owner moves (proposed / accepted /
   rejected / built / urgent).

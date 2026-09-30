@@ -1,3 +1,139 @@
+## Updated 2026-09-28 (Monday ceremony, full reconciliation)
+
+**Reconciliation against docs/decisions.md and docs/allhands/, done
+first per charter §1d.** No new all-hands since 2026-09-18. Newest
+ADRs since the last ceremony: ADR-33 (dispatch authority, active,
+already reconciled below and in dispatch-queue.md), ADR-34 (Clerk/Neon
+accounts, already shipped), ADR-35 (skill creation requires reading,
+2026-09-25 — already being followed: PR #111 is the first run under
+it, no open pending item was tied to this ADR to strike). Two items
+below are struck this pass:
+
+- ~~Item 1, Clerk keys + Neon connection string as Vercel env vars~~ —
+  **resolved.** The OKR seat's 2026-09-24 check-in verified the live
+  site directly (libraryofalexandria.dev, real archive, real skills
+  page), which is not reachable without these env vars being set. No
+  further action.
+- ~~Item 12, ten minutes of the owner's eyes on the new email capture
+  and live metric~~ — **superseded by time.** PR #26 merged three
+  weeks ago and multiple frontend visual sweeps have iterated on the
+  site since; asking for a look at that specific, long-superseded diff
+  no longer means anything. If the owner wants a fresh look at the
+  current site, that is a new ask, not this one.
+
+**Top three for you, this run, all launch-critical:**
+
+1. **Merge PR #60** — the pre-send quality checklist (sprint
+   2026-09-21 item 4), finished and open **8 days**, the oldest open PR
+   in the repository. Nothing further is owed from any seat; it is
+   waiting only on your merge.
+2. **The Polar Merchant-of-Record account (ADR-30) is now overdue.**
+   Due 2026-09-26 per this file's own prior entry; no live keys appear
+   anywhere in the codebase as of today, 2026-09-28. O1 KR1 needs the
+   $20 spine purchasable end-to-end by 2026-10-13 (15 days out), and
+   checkout wiring cannot start until this account and its keys exist.
+   This is now the single most launch-critical open item in this file.
+3. **Deploy PR #110** (merged 2026-09-26): `modal deploy
+   pipeline/triage.py` and `pipeline/interpret.py`. The fix for the
+   corpus stall the 2026-09-24 curation brief found (claim graph frozen
+   since 2026-09-12) is written, tested, and sitting inert on main,
+   because the engineer seat has no Modal CLI access. Same shape as
+   incident 24 and the 2026-09-19 triage-fix note below: merging is not
+   deploying.
+
+**New finding this run: this Monday's press send is unconfirmed.** This
+seat's sandbox has no database credential to query the `digests` table
+directly. Proxy evidence: no new commit to `site/content/issues/` today
+(2026-09-28) as of 18:13 UTC, 9+ hours past the cron's 09:00 UTC Kimi
+window, and the newest published issue is still 2026-W39 (2026-09-24).
+Sprint 2026-09-28 item 1 assigns the engineer seat to run the same
+one-click-style check incident 24 established (this time against the
+database, which this seat cannot reach, or `modal app logs
+alexandria-weekly`) and report a definitive answer. Not claiming a
+failure, only that this run could not confirm success and the
+delivery-health rule says to say so rather than stay silent.
+
+**Run health, this ceremony.** Fleet: three engineer-agent runs failed
+since the last PM run (36330209631, 36342225307, 36366360908), all the
+same already-registered defect (INC-2026-09-26-slack-notify-jq-control-
+chars, now a 5th-7th occurrence): the run's actual work and git push
+complete cleanly, then the PR-body-to-Slack notify step's second `jq`
+parse dies on a stray control character. Work survived in all three
+cases (PRs #122, #124, #127 opened minutes after each failure). No new
+incident filed; this is a repeat of an already-escalated, unfixed
+defect outside every seat's writable surface except the ExO's. All
+other runs since the last PM run were green. Delivery: the site is 2
+commits behind main (last deploy 2026-09-26T01:32:12Z, commit a8349f0,
+main now at 322e7da); the MCP server responds (probed directly, `/docs`
+200, `/mcp` 401 as expected under OAuth); the press is the unconfirmed
+finding above.
+
+**PM's own backlog, this run.** Four of this seat's own PRs were open
+when this ceremony started (#125, #121, #117, #113), spanning
+2026-09-26 to 2026-09-27, three of them touching files this ceremony
+also writes (pending.md, dispatch-queue.md). Merged into this branch
+rather than left to collide; this PR (pm/sprint-2026-09-28) supersedes
+all four. Close them without merging once this one lands, per the
+charter's own guidance for exactly this situation.
+
+**Dispatch, this run: none fired.** No candidate this run carries the
+evidence charter §4/§5 requires (a run, PR, ruling, or metric naming a
+specific seat with no run following). The one live board item that
+used to be this queue's standing frontend candidate ("the board client
+... on a GitHub runner") is now assigned to and in progress under
+`engineer`, not `frontend`, so that trigger is gone. Every dispatchable
+seat with an open PR (engineer #127, writer #126, okr #114) is excluded
+by the hard stop; the remaining seats (research, market, frontend,
+skill, security) have nothing evidenced beyond their normal cadence.
+See dispatch-queue.md.
+
+**Linear trial (charter §1e2): still on.** The board read this run
+carries Linear-sourced items (`source_url: "linear:ALE2-…"`) in the
+current sprint's board mirror, confirming the chair is still using it
+during working sessions. No verdict change since it was last noted.
+
+## Updated 2026-09-27, ~19:00 UTC (message-triggered session, a voice ruling)
+
+Owner, live, on how she wants to read every seat's output: she does not
+want to see codes, she wants good descriptions instead. Recorded in full
+in `docs/voice/taste.md`'s 2026-09-27 entry. The short form: never
+"ADR-", "L-", or "Incident N" in a line she reads (a Slack bullet, a PR's
+opening bullets, the board). Name the decision by what it decides. The
+codes stay inside the repo, where they still do their job of proving a
+judgment already exists rather than inventing one.
+
+**Not this run's to fix, and owed to the ExO:**
+
+- **prompts/pm-agent.md section 4's own example contradicts the ruling
+  the day it was recorded.** Its dispatch-queue template prints
+  "**Trigger.** ADR-29 class 3, a processing gap.", and that same
+  section requires the dispatch queue to go into the PM's PR
+  description in full, so the charter currently instructs the one
+  violation the owner just named. A charter edit is the ExO's to make,
+  never this seat's.
+- **At least two live specimens already on the record, evidence the
+  sweep should start from:** PR #113's own title, "PM sync session
+  2026-09-26: owner's live priority reorder (ADR-037)", and the
+  standing dispatch-queue.md text merged from the 2026-09-25 standup,
+  "in `docs/decisions.md`'s newest entries (ADR-32/33/34)". Neither is
+  this run's to edit; both are what a sweep for the pattern will find
+  first.
+- **A company-wide home may already exist.** `docs/standards/lessons.md`
+  carries L-A5, "House voice in owner-facing prose," with provenance
+  "alexandria house rule, owner-set, portfolio-wide." This ruling reads
+  as a concrete instance of that same law, which means it may belong in
+  `docs/agents/hq-relay.md` as well as in the local taste register, so
+  the rule reaches every product HQ runs, not only this one. That
+  judgment and that file are the ExO's, not the PM's.
+
+**Also worth naming rather than leaving quiet:** this tracker's most
+recent entry before this one was 2026-09-24. The 2026-09-25, 2026-09-26,
+and 2026-09-27 standups each replaced `docs/sprints/dispatch-queue.md`
+without a corresponding update here, which is the tracking gap section
+1d exists to prevent. Tomorrow (2026-09-28) is the Monday ceremony run;
+full reconciliation against everything that landed since 2026-09-24
+belongs there rather than in this narrow, reactive session.
+
 ## Updated 2026-09-24, ~16:00 UTC (message-triggered standup, deciding from market's brief)
 
 Owner directive relayed by the chair: when market's ranking brief lands,

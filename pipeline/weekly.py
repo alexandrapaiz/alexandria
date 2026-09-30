@@ -213,7 +213,9 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
         """
         select p.id
         from papers p
-        join triage_log t on t.paper_id = p.id
+        -- latest_triage, not triage_log: a re-triaged paper has two rows there
+        -- and would be checked for citations twice in one run.
+        join latest_triage t on t.paper_id = p.id
             and t.decision in ('index', 'distill', 'deep_read')
         left join lateral (
             select max(checked_at) as last_check
@@ -262,12 +264,50 @@ def check_citations(conn, max_papers: int = MAX_PAPERS_PER_RUN) -> int:
 
 def gather(conn) -> dict:
     """Fixed queries; the model never chooses what to retrieve."""
+    # The five numbers the pipeline can honestly account for, one per step.
+    #
+    # Owner's directive 2026-09-25: "the stats line in the issue says 'read N
+    # papers'; make the press's stats say what happened: ingested, triaged, read
+    # in full, claims, links". Three numbers could not do that. `papers_ingested`
+    # was being read as "papers read", which flattered the pipeline by a factor
+    # of fifty: 8,956 papers had been ingested and 164 had been read in full.
+    # Ingesting a title is not reading a paper, and an issue that says otherwise
+    # is making a claim about the product that the database contradicts.
+    #
+    # `read_in_full` counts papers.fulltext_chars, which distill writes when it
+    # actually used arXiv's HTML and leaves NULL when it fell back to the
+    # abstract. Rows distilled before that column existed are NULL, so the number
+    # undercounts for the first week after this ships and is exact afterwards.
+    # Undercounting what was read is the right direction for a number the issue
+    # prints.
+    #
+    # `papers_triaged` excludes rule:backfill, because a paper auto-indexed by
+    # date rule was never judged by anything and counting it as triaged would be
+    # the same flattery one step along.
     stats = conn.execute(
         """
         select
-          (select count(*) from papers where fetched_at > now() - interval '7 days'),
-          (select count(*) from claims where created_at > now() - interval '7 days'),
-          (select count(*) from claim_links where created_at > now() - interval '7 days')
+          (select count(*) from papers
+            where fetched_at > now() - interval '7 days'),
+          -- Papers judged for the FIRST time this week, not decisions written.
+          -- Re-triage under a revised rubric appends a second row per paper, and
+          -- counting rows would let the issue say it triaged 47 papers it had
+          -- already triaged in September. The issue never claims work it did not
+          -- do (writer's law 13).
+          (select count(*) from triage_log t
+            where t.created_at > now() - interval '7 days'
+              and t.model != 'rule:backfill'
+              and not exists (select 1 from triage_log e
+                               where e.paper_id = t.paper_id
+                                 and (e.created_at < t.created_at
+                                      or (e.created_at = t.created_at and e.id < t.id)))),
+          (select count(*) from papers
+            where distilled_at > now() - interval '7 days'
+              and fulltext_chars is not null),
+          (select count(*) from claims
+            where created_at > now() - interval '7 days'),
+          (select count(*) from claim_links
+            where created_at > now() - interval '7 days')
         """
     ).fetchone()
 
@@ -280,7 +320,10 @@ def gather(conn) -> dict:
                c.evidence, c.procedure, p.authors[1:3], p.institutions
         from claims c
         join papers p on p.id = c.paper_id
-        left join triage_log t on t.paper_id = c.paper_id
+        -- latest_triage: joining triage_log here would return a claim once per
+        -- decision its paper has ever had, so one re-triaged paper would put the
+        -- same claim in the digest payload twice.
+        left join latest_triage t on t.paper_id = c.paper_id
         left join claim_links l on l.from_claim = c.id
         where c.created_at > now() - interval '7 days'
         group by c.id, c.claim, c.topics, p.title, p.url, p.tier, t.decision, t.score,
@@ -366,7 +409,13 @@ def gather(conn) -> dict:
     ).fetchall()
 
     return {
-        "stats": {"papers_ingested": stats[0], "claims_distilled": stats[1], "edges_drawn": stats[2]},
+        "stats": {
+            "papers_ingested": stats[0],
+            "papers_triaged": stats[1],
+            "papers_read_in_full": stats[2],
+            "claims_distilled": stats[3],
+            "links_drawn": stats[4],
+        },
         "new_claims": [
             {
                 "claim_id": r[0], "claim": r[1][:280], "topics": r[2],
@@ -947,15 +996,42 @@ def notify_owner(subject: str, detail: str) -> str:
     return f"owner notified at {to}: {subject}"
 
 
-def week_just_ended() -> tuple[str, str]:
+def last_sunday(today: date) -> date:
+    """The most recent Sunday strictly before `today`.
+
+    One anchor for both halves of `week_just_ended`, which is the whole point.
+    The old code took two: yesterday for the week label and yesterday-minus-six
+    for the date range. On the Monday the cron runs those agree, because
+    yesterday is Sunday. On any other day they disagree, and the issue then
+    carries a week label and a date range describing different weeks.
+    """
+    # isoweekday(): Monday 1 ... Sunday 7. Monday is 1 day back, Tuesday 2,
+    # and Sunday is 7 rather than 0, because a Sunday run is reporting on the
+    # week that ended the Sunday before, not on the day it is standing in.
+    return today - timedelta(days=today.isoweekday())
+
+
+def week_just_ended(today: date | None = None) -> tuple[str, str]:
     """The ISO week label and the reader-facing date range, as one answer.
 
     Shared by `weekly` and `rehearse` rather than computed twice. The
     rehearsal's whole claim is that it runs the real thing against the real
     payload, and the week label is an input to that payload: a rehearsal that
     labels its own week differently is rehearsing a different issue.
+
+    The week this returns is always a week that has finished. That used to be
+    true only on Mondays, and 2026-W38 is what the difference cost. The cron
+    did not fire on Monday 2026-09-21 (incident 24), the recovery run went out
+    on Wednesday 2026-09-23, and it labelled its issue 2026-W39 because
+    "yesterday" that day was a Tuesday inside the in-progress week. So the run
+    that existed to recover the missing week wrote under the *next* week's
+    label, W38 was skipped for good, and the following Monday's scheduled run
+    upserted over what the recovery had written. A press whose week label
+    depends on the day someone happens to run it cannot be backfilled.
+
+    `today` is injectable so the tests can stand on a Wednesday.
     """
-    y = date.today() - timedelta(days=1)   # yesterday is Sunday on cron day
+    y = last_sunday(today or date.today())
     week = f"{y.isocalendar().year}-W{y.isocalendar().week:02d}"
     monday = y - timedelta(days=6)
     if monday.month == y.month:

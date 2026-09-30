@@ -14,7 +14,7 @@ per run. Seeded 2026-09-18 by the chair; the PM keeps it current.
 | skill | prompts/skill-agent.md | Tue 8:00 ET | skills/ gold production | skills-with-receipts (O2) |
 | frontend | prompts/frontend-agent.md | Wed 8:00 ET | site UI, visual quality | visual audit; mission on site |
 | market | prompts/market-agent.md | Fri 7:00 ET | docs/market/ | positioning under free+$20 |
-| pm | prompts/pm-agent.md | Mon 6:35 ET | sprints, backlog, board, org chart | Oct 13 launch runway |
+| pm | prompts/pm-agent.md | daily (Mon: ceremony, Tue-Sun: standup) | sprints, backlog, board, org chart, dispatch queue | Oct 13 launch runway |
 | research | prompts/research-agent.md | Mon 16:30 UTC | input curation: digest review, curation brief, meta-review | what deserves attention; source discovery |
 | exo | prompts/exo-agent.md | Sun 10:00 ET | charters, workflows, org | org learning; GitHub upkeep |
 | security | prompts/security-agent.md | 1st + 15th | debug + defensive audits | pre-launch hardening |
@@ -56,6 +56,29 @@ is a live question for the owner regardless (see pending.md).
    "weekly" seat as sole lead.
 4. **The org improves itself** — exo leads; okr guards purpose; security guards the boundaries.
 5. **Books and growth (dormant)** — finance and sales, when activated.
+
+## Dispatch authority (company standard pm.md §11, ADR-033, active since 2026-09-24)
+
+The PM seat may fire `gh workflow run` against engineer, research,
+market, writer, frontend, skill, security, and okr, inside the ceilings
+in prompts/pm-agent.md §5 and pm.md §11.4, when the repository variable
+`PM_DISPATCH_ENABLED` is `true`. It may never dispatch exo (its own
+auditor), itself, or a dormant seat. Every fired dispatch is logged in
+docs/sprints/dispatch-queue.md under "Dispatched by the PM". A standing
+defect (INC-2026-09-24-dispatch-403, repeated 2026-09-26 and
+2026-09-27) has 403'd every dispatch attempted from this seat's own
+scheduled run so far; the one dispatch that has actually fired
+(PR #113, 2026-09-26) went through a chair-directed synchronous session
+instead. Unresolved as of this run; see the incident register.
+
+## The board (company standard pm.md §14, since 2026-09-27)
+
+The company board at board.libraryofalexandria.dev (the `asc-board`
+service) is now the state of the work, not GitHub Projects. Every seat
+reads it at the start of a run and writes to it as it works, via
+`BOARD_API_URL`/`BOARD_RUNTIME_TOKEN` on GitHub runners. The sprint file
+in docs/sprints/ is a rendered export of the board's current sprint from
+now on, not the other way around.
 
 ## Operating modes (owner's rule, 2026-09-18)
 

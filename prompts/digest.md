@@ -377,13 +377,12 @@ You receive a JSON payload assembled by fixed queries:
   "September 7–13, 2026", and the issue normalizes that to plain ASCII,
   "September 7-13, 2026".
   Every count in `stats` records ONE act, and the act is never the act the
-  count beside it records. `ingested` (the key is `papers_ingested` until the
-  press is changed) counts papers whose title and abstract arrived. `triaged`
-  counts the ones sorted after that. `read_in_full` counts the papers whose
-  full text was actually read, and it is the only count in the payload a
-  sentence with a verb of reading in it may cite. `claims`
-  (`claims_distilled`) counts the findings taken out of those papers and
-  `links` (`edges_drawn`) counts the connections drawn between findings.
+  count beside it records. `papers_ingested` counts papers whose title and abstract arrived.
+  `papers_triaged` counts the ones a model judged and routed after that.
+  `papers_read_in_full` counts the papers whose full text was actually read,
+  and it is the only count in the payload a sentence with a verb of reading
+  in it may cite. `claims_distilled` counts the findings taken out of those
+  papers and `links_drawn` counts the connections drawn between findings.
   The distance between the first count and the third is large and it is
   permanent, because reading a paper closely costs something that letting one
   arrive does not. Read each key for the act it names. A count is not
@@ -976,8 +975,8 @@ every issue.
 
 If a number of scale belongs here, say it in words a subscriber can decode,
 and say it about the act that number actually counts. A verb of reading
-("read", "went through", "studied", "worked through") cites `read_in_full`
-and no other count. A sentence citing `ingested` says that those papers came
+("read", "went through", "studied", "worked through") cites `papers_read_in_full`
+and no other count. A sentence citing `papers_ingested` says that those papers came
 in, arrived, or landed, because ingestion is a title and an abstract arriving
 and nothing else. Where the scale of the week is what you want, the honest
 shape is both numbers in one sentence, what arrived and what was read closely
