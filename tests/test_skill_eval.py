@@ -1,0 +1,438 @@
+"""The with-versus-without eval harness.
+
+    python3 -m pytest tests/test_skill_eval.py -q
+
+Nothing here calls a model, spends a cent or touches a provider. What it holds
+is the half of the harness that decides what a number is allowed to say, which
+is the half that can be wrong without anyone noticing: the exact binomial
+interval, the clustered bootstrap, the verdict rule, the blinding of the judge,
+the refusal to grade a model with itself, and the refusal to start a run inside a
+window another Kimi job owns.
+
+The interval has a published check. `docs/product/skill-validation.md` says a
+perfect 6 of 6 bounds true reliability at 0.54 from below at 95 percent
+confidence. That number was computed by someone else, before this file existed,
+and `test_the_interval_matches_the_number_the_design_doc_published` is the
+assertion that this implementation agrees with it.
+"""
+
+from __future__ import annotations
+
+import json
+import pathlib
+import sys
+
+import pytest
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT / "pipeline"))
+
+import skill_eval as ev          # noqa: E402
+
+
+# ------------------------------------------------------------ the interval
+
+def test_the_interval_matches_the_number_the_design_doc_published():
+    low, high = ev.clopper_pearson(6, 6)
+    assert round(low, 2) == 0.54, (
+        "docs/product/skill-validation.md §6 says a clean sweep of six bounds "
+        "reliability at 0.54, and that number is quoted at the owner")
+    assert high == 1.0
+
+
+def test_zero_successes_reports_a_bound_rather_than_certainty():
+    low, high = ev.clopper_pearson(0, 6)
+    assert low == 0.0
+    assert 0.3 < high < 0.6, (
+        "zero of six does not mean the true rate is zero, and V5 of the design "
+        "requires the finite-sample bound rather than the point estimate")
+
+
+def test_the_interval_widens_as_n_falls():
+    narrow = ev.clopper_pearson(30, 60)
+    wide = ev.clopper_pearson(3, 6)
+    assert (wide[1] - wide[0]) > (narrow[1] - narrow[0])
+
+
+def test_a_half_and_half_result_straddles_a_half():
+    low, high = ev.clopper_pearson(5, 10)
+    assert low < 0.5 < high
+
+
+def test_an_empty_sample_is_the_whole_interval_rather_than_a_crash():
+    assert ev.clopper_pearson(0, 0) == (0.0, 1.0)
+
+
+def test_the_interval_never_leaves_zero_to_one():
+    for n in (1, 2, 7, 13, 40):
+        for k in range(n + 1):
+            low, high = ev.clopper_pearson(k, n)
+            assert 0.0 <= low <= high <= 1.0
+
+
+# ------------------------------------------------------------ the bootstrap
+
+def task(tid, with_scores, without_scores, control=False):
+    return {"id": tid, "control": control, "scored_by": "check",
+            "with_scores": with_scores, "without_scores": without_scores,
+            "with_mean": ev.mean(with_scores),
+            "without_mean": ev.mean(without_scores),
+            "delta": ev.mean(with_scores) - ev.mean(without_scores),
+            "notes": []}
+
+
+def test_the_same_data_gives_the_same_interval_twice():
+    rows = [task("a", [1, 1, 0], [0, 0, 1]), task("b", [1, 0, 1], [0, 1, 0])]
+    assert ev.bootstrap_delta(rows) == ev.bootstrap_delta(rows)
+
+
+def test_a_unanimous_result_has_no_spread():
+    rows = [task("a", [1, 1, 1], [0, 0, 0]), task("b", [1, 1, 1], [0, 0, 0])]
+    delta, low, high = ev.bootstrap_delta(rows)
+    assert (delta, low, high) == (1.0, 1.0, 1.0)
+
+
+def test_one_task_carrying_the_whole_gain_shows_it_in_the_spread():
+    """The failure this catches is the reason the bootstrap is clustered.
+
+    Two tasks, one of which the skill transforms and one it does not. The mean
+    delta is 0.5 either way. Resampling the six repetitions as if they were six
+    independent observations would report a tight interval around 0.5. Resampling
+    the tasks says what is actually true, which is that the evidence cannot rule
+    out zero.
+    """
+    rows = [task("moved", [1, 1, 1], [0, 0, 0]),
+            task("unmoved", [1, 1, 1], [1, 1, 1])]
+    delta, low, high = ev.bootstrap_delta(rows)
+    assert delta == 0.5
+    assert low == 0.0 and high == 1.0
+
+
+def test_a_regression_reads_as_a_negative_delta():
+    rows = [task("a", [0, 0, 0], [1, 1, 1]), task("b", [0, 0, 0], [1, 1, 1])]
+    delta, low, high = ev.bootstrap_delta(rows)
+    assert delta == -1.0 and high == -1.0
+
+
+def test_no_tasks_is_zero_rather_than_a_crash():
+    assert ev.bootstrap_delta([]) == (0.0, 0.0, 0.0)
+
+
+# ------------------------------------------------------------ the verdict
+
+@pytest.mark.parametrize("delta,low,high,expected", [
+    (0.5, 0.2, 0.8, "gain"),
+    (0.5, 0.0, 1.0, "no gain"),
+    (0.5, -0.1, 0.9, "no gain"),
+    (-0.4, -0.7, -0.1, "regression"),
+    (0.05, 0.01, 0.09, "gain too small to matter"),
+])
+def test_the_verdict_rule(delta, low, high, expected):
+    assert ev.verdict_of(delta, low, high, 0.15) == expected
+
+
+def test_a_lower_bound_at_exactly_zero_is_not_a_gain():
+    assert ev.verdict_of(0.9, 0.0, 1.0, 0.1) == "no gain"
+
+
+# ------------------------------------------------------------ the scoring
+
+def test_a_hard_check_needs_every_pattern():
+    t = {"check": {"type": "contains_all", "patterns": ["harness", "on-policy"]}}
+    assert ev.hard_check(t, "adapt the harness, then go on-policy",
+                         pathlib.Path("."))[0] == 1.0
+    assert ev.hard_check(t, "adapt the harness", pathlib.Path("."))[0] == 0.0
+
+
+def test_a_forbidden_pattern_fails_the_check():
+    t = {"check": {"type": "contains_none", "patterns": [r"fine.?tune"]}}
+    assert ev.hard_check(t, "adapt the harness", pathlib.Path("."))[0] == 1.0
+    assert ev.hard_check(t, "fine-tune it", pathlib.Path("."))[0] == 0.0
+
+
+def test_a_number_out_of_range_fails():
+    t = {"check": {"type": "number_in_range", "pattern": r"([\d.]+)\s*points",
+                   "low": 4, "high": 30}}
+    assert ev.hard_check(t, "a 12 points regression", pathlib.Path("."))[0] == 1.0
+    assert ev.hard_check(t, "a 90 points regression", pathlib.Path("."))[0] == 0.0
+    assert ev.hard_check(t, "no number here", pathlib.Path("."))[0] == 0.0
+
+
+def test_a_check_on_json_reads_the_keys():
+    t = {"check": {"type": "json_parses", "required_keys": ["plan"]}}
+    assert ev.hard_check(t, '{"plan": "x"}', pathlib.Path("."))[0] == 1.0
+    assert ev.hard_check(t, '{"other": "x"}', pathlib.Path("."))[0] == 0.0
+    assert ev.hard_check(t, "not json", pathlib.Path("."))[0] == 0.0
+
+
+def test_a_project_check_runs_the_command_in_a_fresh_copy(tmp_path):
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "check.py").write_text(
+        "import answer, sys; sys.exit(0 if answer.value == 42 else 1)\n")
+    t = {"kind": "project", "project": "proj", "answer_file": "answer.py",
+         "check": {"type": "command", "run": ["python3", "check.py"],
+                   "timeout": 30}}
+    good = ev.hard_check(t, "```python\nvalue = 42\n```", tmp_path)
+    bad = ev.hard_check(t, "```python\nvalue = 7\n```", tmp_path)
+    assert good[0] == 1.0 and good[1] == "exit 0"
+    assert bad[0] == 0.0
+    # The copy is fresh every time, so the first run cannot have left the second
+    # one a passing answer file.
+    assert not (project / "answer.py").exists()
+
+
+def test_a_project_check_that_hangs_costs_one_timeout(tmp_path):
+    project = tmp_path / "proj"
+    project.mkdir()
+    (project / "loop.py").write_text("while True: pass\n")
+    t = {"kind": "project", "project": "proj", "answer_file": "x.py",
+         "check": {"type": "command", "run": ["python3", "loop.py"],
+                   "timeout": 1}}
+    score, why = ev.hard_check(t, "anything", tmp_path)
+    assert score == 0.0 and "timed out" in why
+
+
+def test_the_fenced_block_is_what_a_project_check_writes():
+    assert ev.extract_code("here it is:\n```py\nx = 1\n```\nhope that helps"
+                           ) == "x = 1\n"
+    assert ev.extract_code("x = 1") == "x = 1"
+
+
+def test_a_rubric_scores_the_fraction_satisfied():
+    rubric = [{"id": "a", "asks": "?"}, {"id": "b", "asks": "?"}]
+    assert ev.rubric_score({"a": "yes", "b": "no"}, rubric)[0] == 0.5
+    assert ev.rubric_score({"a": "Yes", "b": "YES"}, rubric)[0] == 1.0
+    # A criterion the judge did not answer is not satisfied. Silence is never
+    # scored as a pass.
+    assert ev.rubric_score({}, rubric)[0] == 0.0
+
+
+# ------------------------------------------------------------ the blinding
+
+def test_the_judge_is_never_told_which_arm_it_is_grading():
+    t = {"ask": "what should we do?", "rubric": [{"id": "a", "asks": "does it?"}]}
+    prompt = ev.judge_prompt(t, "adapt the harness")
+    lowered = prompt.lower()
+    for leak in ("with the skill", "without the skill", "arm ", "skill under test",
+                 "baseline", "control"):
+        assert leak not in lowered, f"the judge prompt leaks {leak!r}"
+    assert ev.JUDGE_SYSTEM.count("do not know how the answer was produced")
+
+
+def test_both_arms_get_the_same_wrapper_and_only_the_skill_differs():
+    calls = []
+
+    class Recorder:
+        def ask(self, system, user, max_tokens):
+            calls.append((system, user, max_tokens))
+            return {"answer": "x"}
+
+    t = {"id": "t", "ask": "the question",
+         "check": {"type": "contains_all", "patterns": ["x"]}}
+    ev.run_task(Recorder(), Recorder(), t, "BODY OF THE SKILL", 1,
+                pathlib.Path("."))
+    systems = [c[0] for c in calls]
+    assert len(calls) == 2
+    assert {c[1] for c in calls} == {"the question"}
+    assert {c[2] for c in calls} == {ev.SUBJECT_MAX_TOKENS}
+    loaded = [s for s in systems if "BODY OF THE SKILL" in s]
+    bare = [s for s in systems if "BODY OF THE SKILL" not in s]
+    assert len(loaded) == 1 and len(bare) == 1
+    assert loaded[0].startswith(bare[0]), (
+        "the with-arm's system prompt has to be the without-arm's plus the "
+        "skill, or the two arms differ by more than the skill and the run is "
+        "measuring the harness")
+
+
+# ------------------------------------------------------------ the refusals
+
+def test_a_model_may_not_grade_itself(tmp_path, monkeypatch, capsys):
+    spec = {"contract": 1, "skill": "x", "policy": {"repetitions": 2},
+            "tasks": [{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": ["x"]}}]}
+    monkeypatch.setattr(ev, "load_tasks", lambda slug: (spec, []))
+    code = ev.main(["--skill", "x", "--subject", "kimi-k2.6",
+                    "--judge", "kimi-k2.6"])
+    assert code == 1
+    assert "grading its own answer" in capsys.readouterr().out
+
+
+def test_a_run_refuses_to_start_inside_another_kimi_job_s_window(monkeypatch,
+                                                                capsys):
+    import datetime as dt
+
+    import llm
+
+    spec = {"contract": 1, "skill": "x", "policy": {"repetitions": 2},
+            "tasks": [{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": ["x"]}}]}
+    monkeypatch.setattr(ev, "load_tasks", lambda slug: (spec, []))
+
+    start, _ = sorted(llm.KIMI_WINDOWS.values())[0]
+
+    class Inside(dt.datetime):
+        @classmethod
+        def utcnow(cls):
+            return dt.datetime(2026, 9, 30, start // 60, start % 60 + 5)
+
+    monkeypatch.setattr(ev.dt, "datetime", Inside)
+    assert ev.main(["--skill", "x"]) == 1
+    out = capsys.readouterr().out
+    assert "organization concurrency is 1" in out
+    assert "INC-2026-09-24-press-provider-migration" in out
+
+
+def test_the_window_check_names_the_job_that_owns_the_minute():
+    import datetime as dt
+
+    import llm
+
+    for label, (start, end) in llm.KIMI_WINDOWS.items():
+        middle = dt.datetime(2026, 9, 30, (start + 1) // 60, (start + 1) % 60)
+        assert ev.window_conflict(middle) == label
+    assert ev.window_conflict(dt.datetime(2026, 9, 30, 16, 30)) == ""
+
+
+def test_a_free_judge_is_not_blocked_by_a_kimi_window(monkeypatch):
+    """The refusal is about Moonshot's account, so a Groq subject runs anyway."""
+    import llm
+
+    assert llm.budget().provider_of(ev.DEFAULT_JUDGE) == "groq"
+    assert llm.budget().provider_of(ev.DEFAULT_SUBJECT) == "moonshot"
+
+
+def test_the_default_subject_and_judge_are_different_providers():
+    import llm
+
+    assert ev.DEFAULT_SUBJECT != ev.DEFAULT_JUDGE
+    guard = llm.budget()
+    assert ev.DEFAULT_SUBJECT in guard.MODELS
+    assert ev.DEFAULT_JUDGE in guard.MODELS
+    assert ev.DEFAULT_SUBJECT not in guard.DECOMMISSIONED
+    assert ev.DEFAULT_JUDGE not in guard.DECOMMISSIONED
+
+
+# ------------------------------------------------------------ conformance
+
+def base_spec(**over):
+    spec = {"contract": 1, "skill": "s", "policy": {"repetitions": 5},
+            "tasks": [{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": ["x"]}}]}
+    spec.update(over)
+    return spec
+
+
+def test_a_conformant_file_has_no_problems(tmp_path):
+    assert ev.conformance(base_spec(), "s", tmp_path) == []
+
+
+@pytest.mark.parametrize("spec,fragment", [
+    (base_spec(contract=99), "this harness speaks 1"),
+    (base_spec(skill="other"), "the file says skill"),
+    (base_spec(policy={}), "not pre-registered"),
+    (base_spec(policy={"repetitions": 3, "subject": "m", "judge": "m"}),
+     "the same model"),
+    (base_spec(tasks=[]), "no tasks"),
+    (base_spec(tasks=[{"id": "a", "ask": "?"}]), "neither a hard check nor a rubric"),
+    (base_spec(tasks=[{"id": "a", "check": {"type": "contains_all",
+                                            "patterns": ["x"]}}]), "no `ask`"),
+    (base_spec(tasks=[{"id": "a", "ask": "?",
+                       "check": {"type": "vibes"}}]), "is not one of"),
+    (base_spec(tasks=[{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": ["("]}}]),
+     "not a regular expression"),
+    (base_spec(tasks=[{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all", "patterns": []}}]),
+     "with no patterns"),
+    (base_spec(tasks=[{"id": "a", "ask": "?", "rubric": [{"id": "x"}]}]),
+     "needs an id and an `asks`"),
+    (base_spec(tasks=[{"id": "a", "ask": "?", "control": True,
+                       "check": {"type": "contains_all", "patterns": ["x"]}}]),
+     "every task is a control"),
+    (base_spec(tasks=[{"id": "a", "ask": "?", "kind": "project",
+                       "project": "nowhere", "answer_file": "x.py",
+                       "check": {"type": "command", "run": ["true"]}}]),
+     "does not exist"),
+])
+def test_conformance_catches(spec, fragment, tmp_path):
+    problems = ev.conformance(spec, "s", tmp_path)
+    assert any(fragment in p for p in problems), problems
+
+
+def test_two_tasks_with_one_id_is_caught(tmp_path):
+    spec = base_spec(tasks=[
+        {"id": "a", "ask": "?", "check": {"type": "contains_all", "patterns": ["x"]}},
+        {"id": "a", "ask": "?", "check": {"type": "contains_all", "patterns": ["y"]}},
+    ])
+    assert any("share the id" in p for p in ev.conformance(spec, "s", tmp_path))
+
+
+def test_a_missing_eval_file_is_unmeasured_and_never_a_failure(capsys):
+    """Exit 2, not 1. The skill seat writes the tasks, not this harness."""
+    code = ev.main(["--check"])
+    out = capsys.readouterr().out
+    assert code == 2
+    assert "unmeasured:" in out
+    assert "failing:" not in out
+
+
+# ------------------------------------------------------------ end to end
+
+def test_the_smoke_run_proves_the_whole_pipeline(capsys):
+    assert ev.smoke() == 0
+    assert "the harness measures what it should" in capsys.readouterr().out
+
+
+def test_a_result_carries_every_field_the_site_contract_names(tmp_path):
+    subject = ev.ScriptedSubject(with_answer="adapt the harness",
+                                 without_answer="fine-tune it")
+    spec = base_spec(tasks=[
+        {"id": "graded", "ask": "?",
+         "check": {"type": "contains_all", "patterns": ["harness"]}},
+        {"id": "held", "control": True, "ask": "?",
+         "check": {"type": "contains_none", "patterns": ["nonsense"]}},
+    ])
+    rows = [ev.run_task(subject, subject, t, "body", 4, tmp_path)
+            for t in spec["tasks"]]
+    result = ev.summarize("s", "a" * 64, spec, rows, "kimi-k2.6",
+                          "openai/gpt-oss-120b", 4, 0.12, "2026-09-30")
+    contract = (ROOT / "site" / "app" / "skills" / "README.md").read_text()
+    for field in ("contract", "skill", "skill_md_sha256", "date",
+                  "subject_model", "judge_model", "repetitions", "tasks",
+                  "control_tasks", "spend_usd", "with_skill", "without_skill",
+                  "delta", "verdict", "per_task", "controls"):
+        assert field in result, field
+        assert f"`{field}`" in contract, (
+            f"{field} is in the result and not in the contract the frontend "
+            "reads, so the page cannot know it exists")
+    assert result["delta"]["mean"] == 1.0
+    assert result["verdict"] == "gain"
+    assert json.loads(json.dumps(result)) == result, "the result must be JSON"
+
+
+def test_the_result_names_its_own_seed_so_a_reader_can_replay_it(tmp_path):
+    subject = ev.ScriptedSubject(with_answer="harness", without_answer="no")
+    rows = [ev.run_task(subject, subject, t, "body", 3, tmp_path)
+            for t in ev.SMOKE_SPEC["tasks"]]
+    result = ev.summarize("s", "b" * 64, ev.SMOKE_SPEC, rows, "m", "j", 3, 0.0,
+                          "2026-09-30")
+    assert str(ev.BOOTSTRAP_SEED) in result["delta"]["method"]
+    assert str(ev.BOOTSTRAP_DRAWS) in result["delta"]["method"]
+
+
+def test_no_number_prints_without_its_n(tmp_path):
+    subject = ev.ScriptedSubject(with_answer="harness", without_answer="no")
+    rows = [ev.run_task(subject, subject, t, "body", 3, tmp_path)
+            for t in ev.SMOKE_SPEC["tasks"]]
+    result = ev.summarize("s", "c" * 64, ev.SMOKE_SPEC, rows, "m", "j", 3, 0.0,
+                          "2026-09-30")
+    text = ev.render(result)
+    import re
+
+    # "95% CI" is the label on an interval and is allowed. A score rendered as a
+    # percentage is not: V5 of the design says "8 of 10" is a receipt and "80%"
+    # is marketing, and this is the assertion that keeps the second one out.
+    assert not re.search(r"\d+(\.\d+)?\s*%(?!\s*CI)", text), text
+    assert "3 repetitions" in text and "tasks" in text
