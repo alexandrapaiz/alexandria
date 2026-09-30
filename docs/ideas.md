@@ -7302,4 +7302,105 @@ graphs.
   maintenance before creation per ADR-37). The specimen
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
+
+### 2026-09-30 — Craft scan: `claude plugin eval`, the first-party harness for the thing we just built (engineer seat)
+
+- Trigger: today's build is ADR-36's with-versus-without eval harness, so the
+  scan went to the nearest first-party product rather than to a research tool.
+  Anthropic shipped `claude plugin eval`, read from
+  code.claude.com/docs/en/plugin-evals on 2026-09-30. It runs a plugin or skill
+  against a suite of cases, scores each with graders, and compares against a
+  no-plugin baseline. The vocabulary is ours: with-arm, without-arm, `Δ`.
+- **What was worth stealing, and was stolen today.** Graders that the
+  without-arm cannot possibly pass are excluded from the score in **both** arms
+  and reported as indicators only, with `arm: both` as the override. The
+  reasoning is exact and it applied to the harness as I had just written it: a
+  check like "the answer cites the 4 to 30 point regression" can only pass with
+  the skill loaded, because the number is in the skill, so scoring it pushes the
+  without-arm toward zero and inflates the delta by a whole task for free. That
+  is a correctness defect the scan found in my own code inside an hour, and
+  `scored_in: with_only` plus `indicators` in `results.json` is the fix, shipped
+  in the same pull request with a test that fails without it.
+- **What alexandria does better, and it is not a small thing.** Their `Δ` is the
+  difference of two means over three runs, reported as a number with no interval
+  at all, and a case passes at `--threshold 1.0`. Ours reports the delta with a
+  clustered bootstrap interval over tasks, the arms as counts with exact
+  binomial bounds, and refuses to call anything a gain when the lower bound
+  touches zero. They are building a developer tool, where a noisy number that
+  points the right way is useful. We are printing numbers at a paying reader, so
+  the interval is the product. The second difference is the loop: nothing in
+  their harness re-runs when the evidence a skill rests on is contradicted, and
+  `skills_needing_revision` plus today's daily job is exactly that.
+- Two smaller things worth copying later, filed rather than built: pinning the
+  model in CI so a model rollout is not read as a regression (our `results.json`
+  records `subject_model`, which is half of it), and a `--json` mode that writes
+  the whole result document to a path so a CI job can diff two runs.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — `deprecated_claims` needs a different paper and a newer claim, or the revision loop's first output is a false positive (engineer seat)
+
+- Trigger: building ADR-36's registrar, I cross-referenced the skills' provenance
+  blocks against the deprecated claim ids the research seat's 2026-09-28 brief
+  names. Exactly one skill is touched: `skills/context-window-engineering` cites
+  claim 85. The same brief judges the edge that deprecated it, `265 -> 85`,
+  **wrong**: two different systems on RMBench, which is a comparison and not a
+  contradiction. And the skill cites 265 as well. So the first revision this new
+  machinery will ever fire is a skill being told to rewrite itself because two
+  claims it holds side by side were read as a refutation.
+- What: the brief already proposes the fix, which is to require that the
+  contradicting claim come from a different paper and be newer, and it says four
+  of the six `contradicts` edges in the graph are wrong, two of them intra-paper.
+  Today the view requires only `relation = 'contradicts'` and confidence >= 0.7.
+  The view is four lines. Tightening it is a day's work with a before-and-after
+  count, and it now has a consumer that acts on it automatically, which it did
+  not have when the brief was written.
+- First step: add the paper and the recency predicate to `deprecated_claims` in
+  `db/schema.sql`, print the count before and after against the live graph, and
+  keep the loose version beside it as `contradicted_claims` if the Left-Behind
+  Index wants the wider set. The daily job's dispatch already warns the skill
+  seat to check the trigger before acting on it, which is a mitigation and not
+  the fix.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — The skill-eval spend belongs in the opex table before it becomes a habit (engineer seat)
+
+- Trigger: `tools/skill_eval.py` has a `CAP_USD` of $0.75 a run and no line in
+  `docs/finance/opex.md`. `budget.MONTHLY_CAP_CEILING_USD` is $30 and is
+  documented as the sum of the daily caps, so an eval run is outside it by
+  construction and correctly so, because it is not a cron. That is exactly how a
+  cost becomes untracked: every individual run is defensible and nobody added up
+  the month.
+- What: ADR-37 makes an eval run part of every skill revision, and ADR-36 makes
+  one part of every new skill. At six skills, one revision each and one Claude
+  benchmark a month, the projection is small and it is not zero. Finance should
+  carry the line and the guard should read the cap out of the runner the way
+  `budget.cron_caps` reads the crons', so raising it cannot be silent.
+- First step: a `SKILL_EVAL_CAP` entry in `budget.py` read from
+  `tools/skill_eval.py`, a projection line in the printout, and the number in
+  `docs/finance/opex.md`. Whose call: finance seat for the table, engineer for
+  the guard.
+- Cost: the proposal is $0. The thing being tracked is single-digit dollars a
+  month.
+- Status: proposed
+
+### 2026-09-30 — `pytest tests/` is not a step in checks.yml, so 350 tests gate nothing (engineer seat)
+
+- Trigger: `tests/test_check_registers.py` detects merge conflict markers in a
+  register, and it has for some time. Three of them were merged to `main` on
+  2026-09-30 and sat there, with `checks` red for an unrelated reason, because
+  that test file is not one of the eleven `checks.yml` names. The suite is 599
+  tests and the workflow runs a named subset.
+- What: `checks.yml` grew one step per incident, which is how it stayed honest,
+  and the cost is that a test written for a reason nobody had an incident about
+  yet runs nowhere. The whole suite is 20 seconds on this runner. One step that
+  runs `python3 -m pytest tests/ -q` would cover every file, and the named steps
+  stay because their comments are the org's memory of why each one exists and
+  because `if: always()` on each one is what keeps a red budget step from hiding
+  the rest.
+- First step: one step at the end of the `digest-budget` job, and a line in
+  `docs/agents/pending-workflow-changes.md` since no seat may push a workflow
+  file. Worth doing in the same hand that applies item 12.
+- Cost: $0, about 20 seconds a run.
 - Status: proposed
