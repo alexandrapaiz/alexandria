@@ -5353,3 +5353,614 @@ edge from a read paper to its own bibliography is the highest-precision
 ingestion signal the org has and it is currently carried by hand in a
 markdown checklist. Whether that is worth automating is the engineer's call
 and the reading-queue drain in PR #124 is the nearest existing path.
+
+## INC-2026-09-26-example-supplies-the-frame — a banned specimen's class recurred one day after the register recorded it and the generator enforced it (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the second occurrence of ban list 53's class, and the first
+occurrence was itself recorded and patched, which is what makes this
+worth an entry rather than a line in a review.
+
+**What happened, first time.** On 2026-09-24 the writer seat found that
+`prompts/digest.md` quoted the phrases it banned at the exact positions
+where the model writes. All four heading slots carried their own
+forbidden name inside the braces the model was told to replace, and the
+issue printed "## Read these yourself". Recorded as ban list 53 with a
+general test: read the instruction from the position the writer occupies
+when they obey it, and if the nearest quoted English at that position is
+the thing being banned, the sentence around it is not doing its job.
+Enforced on 2026-09-25 in the four heading slots. **The enforcement
+worked**, and the rehearsal print of 2026-09-26 prints none of the four
+framework names.
+
+**What happened, second time.** The same file's reading-list section
+offered "Worth the hour if you are choosing between one agent and a
+planner plus a separate verifier" as the model line, two sentences above
+its own instruction to "let no two entries take the same shape". Across
+the two prints of 2026-W39, five reading-list entries out of five open
+with "Worth the hour if you are", and one completes it as "choosing
+between shipping a complex harness or teaching its structure to the
+model". The section became a catalogue, which is the one thing the
+section's own rule says judgment was supposed to buy.
+
+**Why the first fix did not reach the second case, which is the part
+worth learning.** Entry 53 was written about a prohibition that quotes
+the banned STRING, and the fix was to move the string. This specimen
+copies no string. It copies the SHAPE, and every cure written for the
+first form leaves the shape intact: moving the example, changing its
+subject, or rewording it all preserve the frame. A register entry
+generalized to the level of its specimen rather than to the level of its
+cause, which is L-A4's shape one layer up.
+
+**What it means.** An example sitting at a writing position is a template
+whatever the instruction beside it says, so an example there earns its
+place only when repeating it would be obviously absurd. That is the
+general rule, it is now ban list 56, and it is enforced in this pull
+request: the reading list's line names the frame as spent, refuses three
+rewordings of it by name, and counts openings and grammatical shapes
+across the section's entries.
+
+**Second finding, filed rather than fixed.** Three rules that had already
+been patched failed anyway in the print `ea2d678d86e9` produced: the
+ASCII gate (five em dashes), the evidence grades (zero of three, with a
+count already in the rule), and the first-use pass (NQ, SFT, VLMs and
+RRSI bare). One cause covers all three and it is not a wording problem,
+so per charter step 4 it is in `docs/ideas.md` for the engineer seat
+rather than rewritten a third time. Not filed as three incidents here,
+because it is one finding.
+
+## INC-2026-09-26-fix-found-in-one-slot — the same file was patched twice in one day for a defect that belonged to the file, and the third instance printed a false claim about the product (2026-09-26, writer seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats.
+This is the third occurrence of ban list 56's class and the second entry
+about it today, which is itself the finding.
+
+**The class.** An example sitting at the position where a writer writes is
+a template, whatever the instruction beside it says. Recorded this morning
+as ban list 56, with the general test, after two occurrences in
+`prompts/digest.md`: the four heading slots quoting their own banned names
+(which printed "## Read these yourself"), and the reading list's model line
+(which produced five entries out of five opening "Worth the hour if you
+are"). Both were fixed where they were found.
+
+**The third instance.** The closing slot of the same file, four hundred
+lines below the second fix, read: `"3,558 papers read to get to these
+five" is a fact about the product and earns its place.` A finished
+sentence with a blank where a number goes, at the position where the
+close gets written. The print of 2026-09-26 substituted the payload's
+ingestion count and shipped "the library read 1,289 papers", which the
+owner read and corrected. On that day 164 papers had ever been read in
+full, out of 8,956 held.
+
+**Why this one is worth an entry when the class already has one.** The
+cost changed kind. The first two occurrences produced prose that read as
+a catalogue, which is a craft failure a reader forgives. This one
+produced a false statement about alexandria's own work, in the one
+sentence of an issue that carries no link and cannot be checked by the
+reader, and the email template promotes that exact line into its own
+styled block. A register entry that records a class by its cheapest
+instance will be read as being about prose.
+
+**The cause, and it is not that a third example existed.** Both fixes
+this morning were applied to the slot the specimen was found in. Neither
+run read the rest of the file for the same shape, and the rest of the file
+is where the third one was. A defect that is a property of a file's form,
+which this one is, is not fixed by fixing its instances: the fix is a
+pass over the whole file. That is L-A4 one level in, because the register
+entry generalized correctly and the enforcement did not.
+
+**What changes.** Ban list 56 stands as written. The enforcement changes:
+when a tell is a property of the file's form rather than of one sentence,
+the same run greps the whole file for the shape before it calls the fix
+done. In this file that means every quoted English sentence sitting inside
+a slot the model replaces. Fixed in this pull request for the closing slot,
+with the specimen moved to the reading gate at the end of the file, where
+finished output is read rather than written, per ban list 53's cure.
+
+**Second finding, in the same shape and filed rather than fixed.** The
+masthead carried the same false claim for the entire life of the product,
+in `pipeline/weekly.py` as a string constant, and no editorial pass had
+ever read it. Recorded as ban list 61. A reader-facing string in code is
+exempt from every gate this org has, because the gates read what the model
+writes. The owner gave this seat the masthead's wording on 2026-09-25 and
+it is repaired in this pull request. The general rule is in the ban list
+entry: every editorial run reads the reader-facing constants in code, and
+every such constant carries a comment naming the register that governs it.
+
+## INC-2026-09-26-grade-cleared-a-printed-violation — the editorial grade recorded a pass on a law the artifact visibly broke (2026-09-26, writer seat)
+
+**What happened.** The rehearsal print of 2026-09-26, `press_rehearsals` id
+1, carries `## Read these yourself` as its fourth heading. That string is one
+of the four internal framework names, and printing one is the violation the
+owner has flagged twice, in her words the second time "AGAIN", which is
+incident 20 and canon law 12. The published 2026-W39 issue in the `digests`
+table and the site reprint at `site/content/issues/2026-W39.md` both carry the
+same heading on their own line 54.
+
+Writer run 13 graded that print against all fourteen laws the same night. Its
+verdict on law 12 reads "Fail, reprint. Pass, rehearsal, and the patch is
+why." The rehearsal's heading is in the text. The grade cleared it.
+
+**Why it matters more than the heading does.** The heading is a repeat of a
+known violation and it is bad. The grade is worse, because the grade is the
+instrument the owner is relying on so she does not have to be the editor. A
+pass on a violation that is present in the artifact does not merely miss the
+defect. It reports that the fix for that defect worked, which is the signal
+that stops anyone looking again. Run 13's own words, "and the patch is why",
+are a claim about a patch's effect derived from a misread of the output.
+
+**Two causes, and the second is the reusable one.**
+
+First, the run held two artifacts at once, the rehearsal print and the site
+reprint, and graded the laws against both in one line each. A law with two
+verdicts in one sentence is a law where an attribution error is invisible,
+because both halves read as considered. Every other law that run graded
+"Fail, both" or "Pass, both" was right.
+
+Second, and this is the general form, no verdict in that review is checkable
+without rereading the artifact. "Pass" is a word. The five counts in the
+outsider pass were checkable, were checked, and were correct. The laws were
+not, because a law's verdict carries a quoted line only when it fails. A pass
+carries nothing, so a wrong pass looks exactly like a right one.
+
+**Why this is a repeat.** Incident 32 records the pre-send quality gate
+returning a pass on the issue the owner rejected. That was a tool and this is
+a seat, and the shape is identical: a gate reporting a pass on an artifact
+that fails, with nothing downstream able to tell the difference. L-A6 in
+`docs/standards/lessons.md` says judge a run by its artifacts and never its
+conclusion, and a grade is a conclusion.
+
+**The fix, in this pull request.** A pass on a law that names a closed set of
+strings cites the strings it checked and where it looked, the same way a fail
+cites the line that failed. Applied to canon law 12 in the grading procedure:
+the four names are grepped in the artifact and the grep is recorded, because
+this is the one law in the canon that can be decided without judgment. Run
+15's own grade of the same print does that and overturns the verdict.
+
+**What is still open, and it belongs to the engineer.** The heading tripwire
+naming those four strings was in the prompt that wrote the print. The slot
+the heading is written into had already been cleared of the phrase. Both
+in-model checks were correct, present and ineffective, so the string check
+moves out of the model, and the ledger entry in this pull request specifies
+it. The writer seat does not patch that gate a third time, per its charter's
+structure watch.
+
+## INC-2026-09-26-law-15-fixed-on-one-surface — the new law was applied to the sentence that produced it and left live on the home page (2026-09-26, writer seat)
+
+**What happened.** Canon law 15 was written on 2026-09-26 from a print that
+said "the library read 1,289 papers" over the ingestion count. The law says in
+its own text that it binds every surface, naming the masthead, the email, the
+site and any line of copy drafted under the canon. Writer run 14 repaired the
+masthead the same night and filed the site's archived 2026-W39 line for the
+frontend seat.
+
+`site/app/page.jsx` line 49 prints `**{papersThisWeek}** papers read this
+week`, and `weeklyIngestCount()` in `site/lib/metrics.js` reads the
+`papers_ingested` field. Read at 2026-09-26 that is 4,243 papers arrived in
+seven days, against 174 read in full in the life of the corpus and 55 read in
+full this week. It is the same false sentence as the one the law was written
+from, on the first screen a stranger sees, and it was live while the law was
+being written.
+
+**Why this is a repeat.** `INC-2026-09-26-fix-found-in-one-slot`, filed
+earlier the same day, records a defect fixed twice in the slot where each
+instance was found while a third instance sat elsewhere in the same file. This
+is that incident one level out. The unit was a file then and it is a surface
+now. Both times the run that generalized the defect correctly in the register
+enforced it only where it had been standing.
+
+**The cause.** A grep for the defect's own words would have found it in
+seconds, and run 14 ran no such grep. The law's scope sentence names four
+surfaces and the run read one of them, because the surface in front of it was
+the one the dispatch was about. There is no charter step that turns a new law
+into a sweep of the surfaces the law claims to bind.
+
+**The fix, in this pull request.** Two parts. The repaired line is drafted in
+`docs/voice/home-metric-line-2026-09-26.md` for the frontend seat to set, with
+the count it needs specified in the ledger. And the general step: when a
+writer run adds a law or a ban list entry, that run greps every reader-facing
+surface for the defect's own words before it calls the fix done, which is
+`pipeline/`, `site/` and the email templates, and reports what it found. A law
+written from one sentence is not enforced until the surfaces it names have
+been read. This run did that grep and this entry is what it returned.
+
+## INC-2026-09-27-gate-unit-is-the-line — a ban list entry named a gate's defect and its fix, and the gate was not changed (2026-09-27, writer seat)
+
+**This is a repeat of `INC-2026-09-25-tell-recorded-never-enforced`, recorded
+at the moment it repeated, per the standing rule at the top of this file. The
+seat is the same one, the register is the same one, and the entry that went
+unenforced is the entry that diagnosed the machine.**
+
+**What happened.** Ban list entry 46 was appended on 2026-09-24 by the grade
+that found it. It names the label welded to the front of a sentence, lists six
+specimens, and then does something a ban list entry rarely does. It names the
+gate that should have caught them and says precisely why the gate could not:
+
+> The gate missed them because it collects lines beginning with `#` and runs of
+> bold or italic sitting alone, and a label welded to the front of a sentence
+> sits alone in none of those ways.
+
+The collection step in `prompts/digest.md` on 2026-09-27 is word for word what
+that sentence describes. Three days, three editorial runs and eleven patches to
+that file later, the step is unchanged. Two labels of exactly this shape are
+live on the published 2026-W39, and neither is among entry 46's six: "For
+builders:" and "The procedure is extractable:". A third, "**The number that
+matters:**", is entry 51's own specimen.
+
+**Why the gate could not catch it, which is the transferable part.** The gate's
+question is correct. "Could this exact line sit over a different day's items
+without changing a word?" rejects all three labels on sight. The gate never
+asks it of them, because its unit of inspection is a line and a label is a
+fragment of a line. Asked of the whole of "For builders: sequential
+specialization is not free", the honest answer is no, that line is about
+today's material, so it passes. The half that would have failed is never held
+up on its own.
+
+That is a defect of a shape worth naming for every gate in the org, not only
+this one. **A gate has a question and a unit, and reviewing the question tells
+you nothing about the unit.** Every run that read this gate read a question
+that was getting sharper each time, and a correct question applied to the wrong
+unit returns a pass forever. The four disguises the gate lists are all
+line-shaped, so each rewrite widened the question inside a collection step that
+could not reach the new shape.
+
+**Why entry 46 went unenforced, and it is not carelessness.** The standing rule
+in `ban-list.md`, that an entry ends in the change to `prompts/digest.md` that
+enforces it or in the ledger entry saying why none can, was written on
+2026-09-25 by the incident this one repeats. Entry 46 was written on 2026-09-24.
+The rule binds new entries, so nothing ever asked whether entry 46 had landed,
+and entries 1 to 50 have never been swept. The register that was fixed kept its
+backlog.
+
+Entry 51 shows the second way this fails. Its ending says "Enforced
+2026-09-25", and that is true. The enforcement went into the
+internal-vocabulary test, which sits in the traction section's guidance, is
+advice to the writer composing a line, and has no reach over finished output.
+The gate that reads finished output still could not see the string. **An
+enforcement ending that names a place in the file rather than the gate the
+defect would pass through is a note wearing a fix's clothes.**
+
+**The fix, in this pull request.**
+
+- `prompts/digest.md`: the heading gate takes the text in front of any colon as
+  its own unit of inspection and puts the question to that fragment rather than
+  to the line around it.
+- Entry 46 gains its enforcement ending. Entry 51's ending is corrected to say
+  which change reaches the gate.
+- Ledger entry for this seat: sweep ban list entries 1 to 50 for enforcement
+  endings, which is the backlog the 2026-09-25 rule does not cover.
+
+**What is still open, for the ExO.** Two questions this entry raises and this
+seat cannot answer. Does every other gate in the org have a unit that nobody
+has reviewed, the way this one did? And do the other registers in
+`docs/agents/registers.md` carry the same pre-rule backlog, where a standing
+rule about endings binds entries written after the rule and leaves everything
+before it unchecked?
+
+## INC-2026-09-27-law-15-live-in-the-archive — the masthead was corrected in code and the false claim is still the second line a visitor reads (2026-09-27, writer seat)
+
+**This is a repeat of `INC-2026-09-26-law-15-fixed-on-one-surface`, and the
+third occurrence of law 15 being repaired on one surface while a live one keeps
+the claim. Recorded per the standing rule.**
+
+**What happened.** Run 14 cut the false reading claim from `MASTHEAD` in
+`pipeline/weekly.py` on 2026-09-26. On 2026-09-27 the only published issue,
+`site/content/issues/2026-W39.md` and the byte-identical body of `digests` row
+18, still opens on it:
+
+```
+*The latest in AI research, read in full and distilled weekly: what's new,
+what's gaining acceptance, and what newer evidence has overturned.*
+```
+
+2026-W37 is hidden, so that is the whole public archive.
+
+**Why the fix does not reach it, and this cause is new.** The two earlier
+occurrences were the same string standing in more than one place, and the fix
+for those is a grep. This one is not a second copy of the string. `add_masthead`
+splices the constant into the body before the body is stored, so the sentence is
+baked into the artifact at write time rather than composed when a page renders,
+and `site/lib/content.js` serves the stored body whole from either the markdown
+fixture or Neon. Changing the constant governs the next issue and cannot reach
+one that already exists. **A reader-facing string that joins its artifact before
+storage passes out of the reach of every later correction.** Every issue keeps
+the masthead it was printed with, permanently, and the archive is designed to
+grow.
+
+**The step added yesterday is what found this, and that is worth recording as
+plainly as the failure.** `INC-2026-09-26-law-15-fixed-on-one-surface` ends by
+requiring a writer run that adds a law or a ban list entry to grep `pipeline/`,
+`site/` and the email templates for the defect's own words before calling the
+fix done. This run ran that grep for "distilled weekly" and the archive file is
+what came back. The step works. What it does not yet cover is the difference
+between a surface that can be corrected by editing code and a surface that
+holds a copy no edit can reach, and that distinction is the new finding rather
+than the grep.
+
+**Not fixed here, and the boundary is why.** The stored bodies are the
+pipeline's and the page is the frontend seat's, and altering an issue that has
+already been sent to subscribers is the owner's call rather than a seat's.
+Filed in `docs/ideas.md` with both repairs stated: correct the stored bodies, or
+stop baking the line in and compose it when a page renders. The second is the
+one that stops this recurring.
+
+**One inherited boundary crossing, flagged rather than reverted.** Run 14's
+correction to `MASTHEAD` is a writer-seat edit to `pipeline/weekly.py`, and the
+writer charter's boundary list says never pipeline code. That commit is in this
+branch because this branch builds on it. Reverting it would restore a false
+claim about the product in order to satisfy a boundary, so it stands and the
+call is the owner's. The ledger entry above is where the correction would
+arrive through the engineer instead.
+
+## INC-2026-09-28-test-commissioned-the-banned-sentence — the struck opening printed a third time, out of a test list at the bottom of the slot that forbade it (2026-09-28, writer seat)
+
+**This is a repeat of `INC-2026-09-26-example-supplies-the-frame` and the third
+occurrence of one sentence shape the owner struck personally. Recorded per the
+standing rule.**
+
+**What happened.** `digests` row 18, written 2026-09-28 09:01:28 UTC by
+`kimi-k2.6` at prompt `ea2d678d86e9`, opens:
+
+```
+You have spent the week watching agents get faster by thinking less at test time.
+```
+
+The history of that sentence. The owner struck "You spent last week watching
+agents get faster by doing less at test time" on 2026-09-24 with the words
+"dont assume readers read each issue", which became canon law 13. On 2026-09-26
+the generator produced "You have spent the week watching the field argue about
+whether agents need a heavy harness at deployment", which became the 2026-09-25
+tightening of law 13 into a grammar rule, ban list 55, and
+`INC-2026-09-26-example-supplies-the-frame`. This morning is the third, and the
+first to be stored rather than caught in rehearsal.
+
+**Why it printed, and the cause is new.** The two earlier occurrences were
+diagnosed as a banned specimen quoted at the position where the line gets
+written, and the fix was to move every specimen to the gate at the end of the
+file. That fix held. No specimen is in the opening slot.
+
+The opening slot ends on a list of tests the opening has to pass, and one of
+them read:
+
+```
+the greeting sounds like a person who knows what the reader's week has been like
+```
+
+Two hundred lines above it, in the same slot, sits a hard rule with no
+exceptions: never a past-tense verb with "you" as its subject. **A prohibition
+is read as law and a test is read as the assignment, and the assignment was at
+the bottom of the slot, which is the position writing gets done from.** Asked
+for the reader's week, the only honest source for that noun is the reader's
+past, so the greeting came back as a report on what they had been doing.
+
+**The general form, for the ExO.** The three prior fixes in this chain all
+asked what a prompt FORBIDS and where the forbidden thing is quoted. None asked
+what it ASKS FOR. A file can forbid a shape in one paragraph and commission it
+in another, and the commissioning paragraph wins, because it is the brief and
+because position decides. **Auditing a prompt means reading its imperatives and
+its success criteria against its prohibitions, and the check is whether any two
+of them can both be satisfied.** This generalizes past prompts: any instruction
+set with a rules section and an acceptance-criteria section can contradict
+itself across the two, and the acceptance criteria are what the work aims at.
+
+**The deeper cause, found after merging main, and it is the company standard
+that arrived the same morning.** The opening slot also carried two quoted
+specimens six lines apart: the owner's struck sentence, and the canon's repair
+for it. Both verbatim, both at the position where the opening gets written. The
+print spliced them. The subject and tense came from the struck sentence, and
+"thinking less", "That trick has a ceiling" and "This week the field went
+after" all came from the repair, the last two word for word. Not one clause of
+that opening was written about the day's news.
+
+`L-A23` in `docs/standards/lessons.md`, which landed on main in the HQ sync of
+2026-09-28 (#128), states it exactly: read the instruction from the position of
+whoever obeys it, and if the nearest quoted example at that position is the
+thing being banned, the prohibition is a supply. The standard and its sharpest
+local specimen arrived on the same day. **A negative example beside a positive
+example, at the position of writing, is a menu.** Ban list 71.
+
+**Fixed in this PR.** The test now says the reader's JOB, which is knowable
+from where the generator sits. Both quotations left the opening slot: the
+struck sentence joined the two already held at the stands-alone gate, and the
+repair was rewritten about a subject no payload will hand the model. Ban list
+65 carries the test tell and 71 carries the menu.
+
+**This run committed the same failure in its own patches, and that is worth
+recording.** The first pass at fixing the greeting quoted the banned sentence
+inside the greeting slot. Four other patches did the same with their own
+specimens. They were caught only because merging main brought L-A23 in and the
+run applied it to itself before shipping. Four previous runs of this seat wrote
+patches to this file without that standard available. **A seat's own output
+needs the check it is writing into the generator**, and the cheap version of
+that is one question at ship time: for every specimen this run quoted, is it at
+a position where something gets written, or at a position where output gets
+read?
+
+## INC-2026-09-28-repair-written-never-deployed — four days of editorial fixes sat in open pull requests while the cron printed daily without them (2026-09-28, writer seat)
+
+**This is a repeat of the law 15 chain, `INC-2026-09-26-law-15-fixed-on-one-surface`
+and `INC-2026-09-27-law-15-live-in-the-archive`, and the fourth occurrence of a
+correction that does not reach the artifact a reader gets. Recorded per the
+standing rule.**
+
+**What happened.** The false reading claim was cut from `MASTHEAD` in
+`pipeline/weekly.py` on 2026-09-26. This morning's run wrote a brand new row,
+and its second line is:
+
+```
+*The latest in AI research, read in full and distilled weekly: what's new,
+what's gaining acceptance, and what newer evidence has overturned.*
+```
+
+`origin/main` still holds the uncorrected constant. The corrected one exists
+only on `writer/2026-09-26-b` and the branches stacked on it. The cron runs from
+main.
+
+**How far this reaches, traced.** Five of the defects graded in
+`docs/voice/reviews/2026-09-28.md` have a written repair that has never run:
+the tense of the opening (law 13), the masthead (law 15), 44.3% against 30%
+(ban list 63), "Worth the hour if you are" on every reading-list entry (ban
+list 44), and the reading list's generic heading (ban list 62). All five were
+fixed on 2026-09-26 or 2026-09-27. All five printed this morning.
+
+**Why, and this cause is different from the three before it.** The earlier
+occurrences were about where a string lives: a second copy that a grep would
+find, then a constant baked into an artifact before storage. This one is not
+about the code at all. **The repair was correct, complete and reviewed, and it
+was on a branch.** `#107`, `#112`, `#119` and `#126` are all open, in a stack,
+oldest for two days.
+
+The writer seat writes every editorial repair and cannot deploy one. Its
+charter forbids merging its own pull request, correctly. So the interval between
+a fix being written and a fix taking effect is set by an owner review, it is
+unbounded, and a daily cron prints into that interval. Ban list 64 named a fix
+that reaches only what prints next. This morning it did not reach that either.
+
+**The general form, for the ExO.** Every seat that writes a repair it cannot
+deploy has this gap, and the org measures the writing rather than the
+deploying. A fix is not a fix until the thing that runs has it. Two candidate
+gates, both outside this seat: the press send could refuse when the deployed
+`prompt_sha` does not match the prompt on main, which turns an undeployed fix
+into a loud failure instead of a quiet daily cost. And an editorial fix to a
+generator could merge on a faster gate than a full owner review, since the
+owner's gate exists to protect her voice and these diffs are enforcement of
+rulings she has already given. Filed in `docs/ideas.md` for the owner and the
+engineer.
+
+**The registers drifted with the prompt, and that is the part the company
+standard already had a rule for.** `docs/standards/lessons.md` L-A18: a rule
+cites only records reachable where it says they are, and a citation pointing
+into an unmerged branch reads as evidence and is not one. On `origin/main` the
+ban list ends at entry 54 and `docs/voice/canon.md` has no law 15. Law 15 is the
+law this morning's masthead breaks. Entries 55 to 64 do not exist. Every
+citation of them anywhere in this org, including in the charter checks that are
+supposed to gate a run, points into a branch.
+
+**Owed to HQ under L-A11.** L-A18's own evidence is HQ's register citing an
+entry "still sitting in unmerged HQ PR #15", which is this defect in the parent.
+L-A11 says a defect appearing in a second product belongs to HQ rather than
+being fixed per product. This is the second product and the fix is owed upward.
+Filed in `docs/ideas.md` for the ExO seat to carry into
+`docs/agents/hq-relay.md`, which that seat owns and this one does not (L-A10).
+
+**Not fixed in this PR, because no change to `prompts/digest.md` reaches it.**
+Recorded, traced, and filed. This pull request supersedes all four open writer
+branches so that one merge deploys four days of repairs and four days of
+registers together.
+
+## INC-2026-09-29-grade-cleared-link-coverage — a second editorial grade cleared a law the artifact visibly broke, and the law was the owner's own "you didn't show me the paper" (2026-09-29, writer seat)
+
+**This is a repeat of `INC-2026-09-26-grade-cleared-a-printed-violation`,
+recorded at the moment it repeated, per the standing rule at the top of this
+file. Same seat, same register, same shape: a pass reported on an artifact
+that fails.**
+
+**What happened.** Writer run 17 graded `digests` id 18 on 2026-09-28 and
+recorded, verbatim:
+
+> **Law 8, links reach the full text. PASS.** Four distinct URLs, all
+> `arxiv.org/html/`, no abstract landing pages.
+
+Every word of that is true. The issue has five items. Its fell-behind section
+names three separate pieces of research, the 82.2% RMBench reference
+implementation, MaP-WAM at 83.3% and DRG-MAPPO at 87%, and carries no link to
+any of them. Its second item links the newer paper and not the older claim it
+replaces, where the generator requires both. Two of the six link instances in
+the issue are the reading list reprinting links from sections one and two.
+
+The same grade recorded canon law 6's presence half as a pass on "all three
+items". There are five. The two in the fell-behind section carry no evidence
+grade, and they carry three benchmark numbers between them.
+
+**Why the verdict came out wrong, which is the reusable part.** The canon
+requires every verdict to carry a quoted line as evidence. That requirement is
+right and it has a blind spot nobody had named: **it steers a grade toward the
+laws that can produce a quotation.** Law 8 and law 6 both forbid an absence.
+An absence cannot be quoted. So the grade did the only thing quotation allows,
+which is to inspect the links that exist, and inspecting what exists is
+exactly the check that cannot find what is missing.
+
+The first occurrence had a different cause, two artifacts sharing one verdict
+line, and its fix was to make a pass carry evidence. This occurrence is what
+that fix does not reach. A pass with evidence is still a reading, and coverage
+is arithmetic.
+
+**Why it matters.** Law 8 is the owner's ruling of 2026-09-19 in her own
+words, "you didn't show me the paper". It failed on the fell-behind section,
+which the canon calls the product's only real difference from every other
+newsletter, and the instrument she relies on so she does not have to be the
+editor reported it clean. A grade that clears a law does not merely miss the
+defect. It reports that the generator is fine on that axis, which is what
+stops the next run from looking.
+
+**The fix, in this pull request.** Two halves and only the first is this
+seat's to build.
+
+In the canon's grading procedure: a law whose subject is "every item" or
+"every issue" is graded by a count, with the command written down, never by a
+reading. A pass on one of those with no number beside it has not been graded.
+This is the same escalation the first occurrence applied to canon law 12,
+which is graded by a grep, extended from the one law that names a closed set
+of strings to the class of laws that assert coverage.
+
+In `prompts/digest.md`: the link count and the grade count now run off one
+shared list, which is every named piece of work in the finished issue rather
+than every item. Recorded as ban list 72, 73 and 74.
+
+**What is still open, and it belongs to the engineer.** Both counts are
+arithmetic and both are therefore `L-A22` cases: enforced at the reliability
+of a model reading a file when they could be links in the pre-send gate's
+`&&` chain. Filed in `docs/ideas.md` against #60, beside the four run 17
+filed there for the same reason. This seat has now written the same class of
+check into the same prompt twice and does not get a third.
+
+## INC-2026-09-29-gate-unit-three-more — the defect that produced one incident produced three more in a single print (2026-09-29, writer seat)
+
+**This is a repeat of `INC-2026-09-27-gate-unit-is-the-line`, recorded at the
+moment it repeated, per the standing rule at the top of this file.**
+
+**What happened.** That incident found the heading gate in
+`prompts/digest.md` asking the right question of the wrong unit: it collected
+lines, and a label welded to the front of a sentence is a fragment of a line,
+so the gate's own question was never put to the half that would have failed
+it. The fix worked. The four framework names did not print on 2026-09-28 and
+the fragment half of the gate caught what it was written for.
+
+Grading that same print on 2026-09-29 turned up three more gates in the same
+file with the identical defect, all three reporting a pass:
+
+| Gate | Unit it inspects | Unit the defect lives in | What got through |
+|---|---|---|---|
+| Link coverage | the item | the named piece of work | one item naming three results, no link on any |
+| The kind test | "the two claims" | one old claim against several new | one refusal written over two pairings, the valid one discarded |
+| Reading-list overlap | the `new_claims` stream | any section of the issue | a pick covered in the traction section, recommended back |
+
+**The transferable finding, which is why this is worth an entry rather than
+three more ban-list lines.** The pattern is not in any of the four gates. It
+is in how a gate gets written in this file. A gate is written from the
+specimen that produced it, the specimen is always one instance, and the check
+comes out phrased in the singular: "the item", "the two claims", "the stream",
+"the line". The material arrives in groups. Every one of these gates then
+passes on the group by answering for one member of it, and a pass is
+indistinguishable from a real one, which is `L-A21` exactly.
+
+So the question to put to every gate in that file, and to every gate any seat
+writes: **name the unit this check inspects, then name the unit the defect
+lives in, and say whether they are the same size.** Where the check is
+singular and the material is plural, the gate will pass on the group. That
+question is cheap, it is answerable without running anything, and it found
+three live failures in one pass.
+
+**The fix, in this pull request.** All three gates now name their unit
+explicitly, and the two that are arithmetic count off one shared list. Ban
+list 72 carries the tell.
+
+**What is still open.** The charter's structure watch says that when the same
+structural fix fails twice through prompt changes alone, the pipeline change
+goes in the ledger instead of a third patch. Four gates, four prompt patches,
+and the fourth is in this pull request. The ledger entry filed against #60 is
+not another patch: it is the unit question above, as a standing check on the
+pre-send gate, plus the two counts that are arithmetic. The writer seat does
+not patch this class a fifth time.

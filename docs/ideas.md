@@ -6898,3 +6898,384 @@ graphs.
   in the entry.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-26 — Three self-checks in the generator cannot prove they ran, and three of them are regular expressions (writer seat, for engineer)
+
+- Trigger: the rehearsal print (`press_rehearsals` id 1, `prompt_sha`
+  `ea2d678d86e9`, 2026-09-26) was written by a prompt that contained all
+  three of these checks, each already strengthened once, and broke all
+  three. The ASCII gate, patched 2026-09-21 in `51400c1` to ask the class
+  question rather than name three characters, produced five em dashes.
+  The evidence-grade rule, patched 2026-09-24 in `68cea4c` to carry a
+  count, produced zero grades on three items that print numbers. The
+  first-use pass, patched 2026-09-25 in `ff61b26` to count the term the
+  reader meets, produced `NQ`, `SFT`, `VLMs` and `RRSI` bare. Run 12
+  filed the first-use pass alone on this reasoning. This entry supersedes
+  that one by generalizing it, because the cause is the same for all
+  three and one of them is now on its third rewrite.
+- What: the cause is where the check lives, not how it is worded. Nothing
+  in the finished text distinguishes an issue whose self-check ran from
+  one whose did not, so the model's only evidence that it ran the pass is
+  its recollection of intending to, and that evidence always comes back
+  positive. The contrast is inside the same prompt and it is decisive:
+  the link rule and the grade rule sit two lines apart, the same model
+  read both, and links came in at seven of seven while grades came in at
+  zero of three. Links are countable in the output by something other
+  than the writer. Grades are not.
+  So move the countable slice out of the prompt and into the pipeline, as
+  a post-generation check that fails loudly before the issue is written
+  to `digests` or sent. Three slices are decidable with no language model
+  at all:
+  1. **Non-ASCII characters.** `[^\x00-\x7F]` over the body, with the one
+     exception the prompt already names, which is a person's or an
+     institution's name as the payload spells it. Five em dashes shipped
+     through a hard gate that asks for plain ASCII.
+  2. **Bare capitalised acronyms.** A token of two or more capitals with
+     no expansion within the same sentence. Ban list 26 bans these
+     outright, and four shipped.
+  3. **Shapes on the page.** A parse of the block kinds in the markdown,
+     which are paragraphs, bulleted lists, lines standing alone and
+     headings. Canon law 14 as tightened on 2026-09-26 makes one kind a
+     failing issue, and both prints of 2026-W39 are at one and two. This
+     is the owner's enjoyability ruling and it is the one part of it a
+     machine can decide.
+  The fourth, whether every item carrying a number carries a grade, needs
+  judgment about what counts as a grade and is left in the prompt.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface and this is a specification rather than a patch. Worth checking
+  against PR #60, the pre-send quality gate, which has been open since
+  2026-09-20 and may be the right place for all three rather than a new
+  module.
+- First step: read PR #60 and say whether these three belong in it. If
+  they do, this entry is a list of three assertions to add rather than a
+  new piece of work.
+- Cost: $0 at runtime. Three regular expressions and a markdown block
+  parse.
+- Status: proposed
+
+### 2026-09-26 — The stats line's five fields, and a register that holds every print a reader sees (writer seat, for engineer)
+
+- Trigger: the owner's dispatch of 2026-09-25. Tonight's print said "the
+  library read 1,289 papers" when the number is the ingestion count, and
+  164 papers have ever been read in full. The prose side is fixed in this
+  pull request: `prompts/digest.md` now names the act each count records
+  and binds a verb of reading to the full-read count alone, and canon law
+  15 is the law. Two things in the pipeline are needed to finish it, and
+  neither is this seat's surface.
+- What, first: **`gather()` emits five counts with the acts as their
+  names.** Today `stats` is three numbers under one label,
+  `{"papers_ingested": ..., "claims_distilled": ..., "edges_drawn": ...}`,
+  where `papers_ingested` is `count(*) from papers where fetched_at >
+  now() - interval '7 days'`. The owner named the five the press should
+  emit: ingested, triaged, read in full, claims, links. The fourth is the
+  one that does not exist yet and it is the only one a sentence with
+  "read" in it may cite. `count(*) from papers where distilled_at is not
+  null` is 166 all-time, and the weekly figure is the same predicate
+  inside the seven-day window. The prompt already reads both the current key
+  names and the new ones, so the rename can land in either order.
+  Worth deciding once and recording: whether each count is the seven-day
+  window or the all-time total. Both are legitimate and a sentence that
+  mixes them silently is the same defect in a new coat. The close reads
+  best with the window for what arrived and the total for what has been
+  read, and it has to say which, in the reader's words.
+- What, second: **every print a reader sees belongs in a register this
+  seat can read.** The graded sentence in tonight's dispatch is not in
+  `digests` (newest row 2026-09-24) or in `press_rehearsals` (one row,
+  which carries no scale line). The writer seat grades the newest issue
+  cold every run, and tonight it graded a sentence it could only see
+  because the owner quoted it. Whatever path produced that print should
+  write to `press_rehearsals` like the rehearsal does, and every run
+  should be a row rather than a log line.
+- Whose call: engineer seat. `pipeline/` is not this seat's writable
+  surface. The one exception in this pull request is the `MASTHEAD`
+  constant, whose wording the owner gave to this seat on 2026-09-25, and
+  no other line of `pipeline/weekly.py` is touched.
+- First step: PR #110 says it "makes the press's stats line say what
+  actually happened", so these two items may already be half done there.
+  Read #110 first, and take the field names and the masthead wording from
+  #112 rather than rewording them, because the wording is a register
+  matter and the fields are not.
+- Cost: $0. Two queries and one insert.
+- Status: proposed
+
+### 2026-09-26 — Four exact strings the press can refuse to send (writer seat, for engineer)
+
+- Trigger: `## Read these yourself` printed as the reading list's heading in
+  the published 2026-W39 issue, in its site reprint, and in the rehearsal
+  print of `press_rehearsals` id 1. That string is one of the four internal
+  framework names, and the owner has flagged printing one twice, the second
+  time in the word "AGAIN" (docs/voice/taste.md 2026-09-19, incident 20,
+  canon law 12).
+- Why this is not another prompt patch: the prompt that wrote the rehearsal
+  already carried both defences. The heading slot had been cleared of the
+  phrase on 2026-09-24 so it could not be copied from the writing position,
+  and a tripwire at the end of the file named all four strings and told the
+  model to check its own headings against them. Both were present, correct
+  and ineffective. The writer charter's structure watch says a structural fix
+  that has failed twice through prompt changes goes to the engineer instead
+  of being written a third time.
+- What: one assertion on the finished markdown, before it is stored or sent.
+  No heading line, meaning any line matching `^#{1,3}\s`, equals any of
+  "Trailblazing", "Gaining traction", "Left behind" or "Read these yourself",
+  compared case-insensitively and ignoring trailing punctuation. This is a
+  closed set of four literals and it needs no model and no judgment.
+- Where: the same place as the three checks filed on 2026-09-26 above, which
+  is PR #60's pre-send quality gate if that is where they land. This is a
+  fourth assertion in the same list and not a new piece of work.
+- What it should do on a hit: refuse the send and report, rather than repair.
+  A heading is written from the day's items and the press cannot write one.
+- Cost: $0. One regular expression over the body.
+- Status: proposed
+
+### 2026-09-26 — The home page's weekly full-read count (writer seat, for engineer and frontend)
+
+- Trigger: `site/app/page.jsx` line 49 prints "**4,243** papers read this
+  week" from `weeklyIngestCount()`, which reads `papers_ingested`. That field
+  counts rows that arrived in seven days, and a row is a title and an
+  abstract. Canon law 15 and ban list 60: the count is the ingestion count and
+  the verb is the act performed on a far smaller set. Read at 2026-09-26,
+  8,999 papers held, 4,243 in the last seven days, 174 ever read in full, 55
+  read in full this week. The masthead carrying the same defect was repaired
+  on 2026-09-26 and this surface was not, which is
+  `INC-2026-09-26-law-15-fixed-on-one-surface`.
+- What: expose the weekly full-read count wherever `INGEST_COUNT_URL` is
+  served, beside `papers_ingested`, as `read_in_full` with the same seven-day
+  window: `count(*) from papers where distilled_at > now() - interval '7
+  days'`. The field name matches the one the stats-line entry above asks the
+  press to emit, so the prose and both surfaces agree on one vocabulary.
+- Then, frontend seat: the repaired line is drafted in
+  `docs/voice/home-metric-line-2026-09-26.md`, with the fallback for the case
+  where the second count is not yet served. `site/` is not the writer seat's
+  surface and no line of it is touched in that pull request.
+- Whose call: engineer for the field, frontend for the line. Both after the
+  owner rules on the wording.
+- First step: check whether PR #110's stats work already emits this count
+  under another name, and reuse rather than add.
+- Cost: $0. One query added to an endpoint that already runs one.
+- Status: proposed
+
+### 2026-09-27 — The masthead is fixed and every published issue keeps the false line (writer seat, for engineer)
+
+- Trigger: `MASTHEAD` in `pipeline/weekly.py` was corrected on 2026-09-26 to
+  drop the claim that the library reads every paper in full. On 2026-09-27 the
+  only published issue still opens on the old line, in its second line, above
+  the fold: "*The latest in AI research, read in full and distilled weekly...*".
+  That is canon law 15, the one claim in an issue a reader cannot check against
+  a linked paper, live on the whole public archive.
+- Why a prompt change cannot reach it: the model does not write this string.
+  `add_masthead` splices the constant into the body before the body is stored,
+  so the sentence is baked into the artifact at write time. `site/lib/content.js`
+  serves the stored body whole, from the markdown fixture locally and from Neon
+  in production. Editing the constant governs the next issue and cannot reach
+  one that already exists. Every issue keeps the masthead it was printed with,
+  and the archive grows.
+- What, option A, the narrow fix: correct the stored bodies. One update over
+  `digests`, replacing the old masthead line with the current one, plus the
+  same edit to `site/content/issues/2026-W39.md`. Two rows exist and one is
+  hidden, so this is minutes of work today and it does not stop the next
+  occurrence.
+- What, option B, the one that stops this recurring: stop baking the line in.
+  Remove the `add_masthead` splice from the write path and have the renderers
+  compose the masthead when a page or an email is built, so the constant is the
+  single source and correcting it corrects every issue at once. Stored bodies
+  then hold only what the model wrote, which is also what the pre-send checks
+  already filed want to assert over.
+- Recommended: B, with A as the one-time backfill for the bodies already
+  stored. B alone leaves the old string in the stored text of 2026-W39, which a
+  grep for the defect's own words will keep finding.
+- Whose call: the owner decides whether an issue already sent to subscribers is
+  altered at all. The engineer owns the write path either way, and the archive
+  page is the frontend seat's surface.
+- Related: `INC-2026-09-27-law-15-live-in-the-archive`, ban list 61 and 64. The
+  general form is worth one line in its own right, because it is not only the
+  masthead: any reader-facing string spliced into output before storage is
+  beyond the reach of every later correction, which includes the preheader, the
+  edition label and the footer if those travel the same way.
+- Cost: option A is one UPDATE and one file edit. Option B is one function
+  removed from the write path and one call added in each renderer.
+- Status: proposed
+
+### 2026-09-27 — Ban list entries 1 to 50 have never been swept for enforcement (writer seat, own lane)
+
+- Trigger: entry 46 named the heading gate's collection step as the reason its
+  six specimens got through, named the fix in the same sentence, and the gate
+  was unchanged three days and three editorial runs later. Two more specimens
+  of that shape are live on the site. Fixed in this pull request, and the
+  reason it went unfixed is the backlog rather than the entry.
+- The gap: the standing rule at the top of `docs/voice/ban-list.md`, that an
+  entry ends in the change to `prompts/digest.md` that enforces it or in the
+  ledger entry saying why none can, was written on 2026-09-25. Entry 46 was
+  written on 2026-09-24. The rule binds new entries, so nothing has ever asked
+  whether entries 1 to 50 landed anywhere. The register that was fixed kept its
+  backlog, which is the shape of
+  `INC-2026-09-25-tell-recorded-never-enforced` one level out.
+- What: one pass over entries 1 to 50, one question each. Is there a change in
+  `prompts/digest.md` that would stop this tell, and if not, can there be? Each
+  entry then gains one of the two endings the standing rule already defines.
+  Entry 51's case is the one to watch for: an ending can name a place in the
+  file where the rule is now written and still not name the gate the defect
+  would pass through, which is a note wearing a fix's clothes.
+- Expected shape of the answer: most entries are word tells that the voice
+  section already covers, and the interesting ones are the entries that
+  diagnose machinery, because those are the ones whose fix is a specific change
+  and whose absence is invisible. Entry 46 was one. Expect a handful.
+- Why not done in this run: fifty entries is a pass of its own, and doing it
+  badly beside a grade would produce fifty endings that say "covered" without
+  anyone having checked. This is the one register this seat owns outright, so
+  the work is this seat's and wants its own run.
+- Whose call: writer seat, next run, no dependency on anyone.
+- Cost: one editorial run, no code.
+- Status: proposed
+
+### 2026-09-28 — An editorial repair takes effect only when the owner merges, and the cron prints daily into the gap (writer seat, needs the owner and the engineer)
+
+- Trigger: the print of 2026-09-28 committed five defects whose repairs were
+  already written, reviewed and sitting in open pull requests, one of them for
+  two days. Traced in `docs/voice/reviews/2026-09-28.md` and recorded as
+  `INC-2026-09-28-repair-written-never-deployed`.
+- The gap: this seat writes every editorial repair and can deploy none of them.
+  The charter forbids merging its own pull request, which is right. The
+  consequence is that the interval between a fix being written and a fix taking
+  effect is set by an owner review, it has no upper bound, and a daily cron
+  prints into it. The five undeployed repairs of this morning were the tense of
+  the opening (canon law 13), the masthead's false reading claim (law 15),
+  44.3% against 30% (ban list 63), "Worth the hour if you are" on every
+  reading-list entry (ban list 44), and the reading list's generic heading (ban
+  list 62). The masthead case is the sharpest: the constant was corrected on
+  2026-09-26 under the owner's own order, and this morning's run wrote a new row
+  carrying the false sentence, because the correction is on a branch and the
+  cron runs from main.
+- Two candidate fixes, neither this seat's to build, and they are not
+  alternatives.
+  1. **Make an undeployed fix loud.** The press send already compares the
+     deploying model and prompt against the rehearsal row. Add the same
+     comparison against main: if `prompt_sha` is not the hash of
+     `prompts/digest.md` at `origin/main`, or if a writer branch is open whose
+     diff touches `prompts/digest.md`, say so in the send report. Today an
+     undeployed fix costs a daily issue silently. This turns it into a line
+     somebody reads. Cheap, and it is the engineer's lane.
+  2. **Shorten the gate for enforcement diffs.** The owner's merge gate exists
+     to protect her voice from a seat inventing structure. A diff that enforces
+     a ruling she has already given is a different object from a diff that
+     proposes one. If the two could be separated, the first could merge on a
+     faster gate. This is a governance change and it is hers alone.
+- What this seat did instead, and why it is not enough: stacked, so one merge
+  deploys four days of work. That works exactly once and does nothing about the
+  interval.
+- Whose call: the owner on the gate, the engineer on the send report.
+- Cost: the send report is small. The gate change is a decision, not work.
+- Status: proposed
+
+### 2026-09-28 — The four framework names want a regular expression, and now so do three more checks (writer seat, for the engineer)
+
+- Trigger: ban list 62 filed the four-string heading check for the engineer on
+  2026-09-26, because a closed set of exact strings is decided by a regular
+  expression outside the model. That gate held this morning, greped clean, and
+  the law leaked anyway through "compounding evidence" and "the genuinely new
+  work" in two section intros.
+- What: the pre-send quality gate (open in #60) is the right home for the
+  checks in this morning's grade that are arithmetic rather than judgment, and
+  three of them are new. The four framework names anywhere in the body, not only
+  in headings. Every reader-facing count against the items under it, which
+  caught a heading saying two over a section listing three and holding two. And
+  every institution or system named in the contents line appearing again below,
+  which caught a third of the opening's promise never being delivered.
+- Why outside the model: each one is a count or a string match, and each has
+  now been asked of the model in `prompts/digest.md` and got a wrong answer. A
+  gate the model runs on itself is a gate that has to be believed. These can be
+  decided without belief.
+- **The company standard now requires this to be said out loud.** `L-A22` in
+  `docs/standards/lessons.md`, which reached main in the sync of 2026-09-28,
+  says a rule enforced by a sentence is enforced at the reliability of a model
+  reading a file, that writing a failed law more clearly is not the fix, and
+  that where putting the check in a command is impossible a seat says so plainly
+  and records the rule as enforced at the reliability of reading. Ten of the
+  eleven changes in the writer pull request of 2026-09-28 are enforced at the
+  reliability of reading. It is impossible for this seat to do otherwise,
+  because `pipeline/`, `tools/` and the press command are outside its writable
+  surface. This entry is the plain saying-so, and it now also covers a fourth
+  check: a semicolon or any non-ASCII character in the body, which is canon law
+  1 and ban list 13 and is one `grep` away from being decided by a shell.
+- Not urgent: all three are enforced in the prompt in this pull request, which
+  is the right first move. This entry is for when one of them fails twice.
+- Whose call: engineer, after #60 lands.
+- Cost: small, inside a gate that already exists.
+- Status: proposed
+
+### 2026-09-28 — For the ExO relay: the unmerged-branch citation is now on record in two products, so L-A18 belongs to HQ (writer seat, for the ExO seat to carry)
+
+- Trigger: `docs/standards/lessons.md` L-A18 says a rule cites only records
+  reachable where it says they are, and that a citation pointing into an
+  unmerged branch reads as evidence and is not one. Its own evidence is HQ's
+  incident register running 1, 2, 3, 5 while L-A14 cites an incident 4 "still
+  sitting in unmerged HQ PR #15". That is the parent committing the defect the
+  standard describes.
+- The second occurrence, here, measured this morning: on `origin/main` this
+  repository's ban list ends at entry 54 and `docs/voice/canon.md` has no law
+  15. Law 15 is the law the masthead printed above this morning's issue breaks.
+  Entries 55 to 64 do not exist on main. All of them are law, all were written
+  by this seat on 2026-09-26 and 2026-09-27, and all live only in open pull
+  requests. Every charter check that tells a seat to grade against the ban list
+  is pointing into a branch.
+- Why this is HQ's and not ours to fix twice: L-A11 says a defect appearing in
+  a second product is owed to this register and the standard it governs, rather
+  than to the second product's copy, and that fixing it per product a second
+  time is the same failure L-A4 names. Alexandria fixing its own register drift
+  locally is exactly the move L-A11 forbids.
+- What the relay note should carry: L-A18 names the defect and prescribes
+  nothing for it. It tells a seat not to cite an unreachable record, which is
+  advice to the author, and both occurrences are the register itself being
+  unreachable, which no author can fix from inside a branch. The missing half
+  is L-A14's own shape applied to L-A18: the safe form beside the prohibition.
+  Candidates worth HQ deciding between are a register whose entries are appended
+  by a merge-gated path that runs on a faster gate than product review, and a
+  check that a seat runs at ship time comparing the register on its branch
+  against the register on main and reporting the gap.
+- Why this seat is not writing the relay entry: `docs/agents/hq-relay.md` says
+  the ExO seat writes entries and the chair carries them, and it is not in this
+  seat's writable surface (L-A10, one file one owning charter). This ledger
+  entry is the handoff, written to be copied with no editing.
+- Companion local record: `INC-2026-09-28-repair-written-never-deployed`.
+- Whose call: ExO seat next run, then the chair.
+- Cost: one relay entry.
+- Status: proposed
+
+### 2026-09-29 — Two more counts for the pre-send gate, and the one question that finds the next gate before it fails (writer seat, for the engineer)
+
+- Extends the 2026-09-28 entry above, which filed four checks against #60. Same
+  gate, same reason, two more checks and one standing question. Append after
+  that entry. Nothing in it changes.
+- **Check 5, link coverage as arithmetic.** Count every named piece of research
+  in the body, meaning every paper, benchmark result, method or system whose
+  number the issue prints, and every older belief it says fell. Count the
+  markdown links. They match. The print of 2026-09-28 named three results in
+  one fell-behind item and linked none of them, and the editorial grade of that
+  print recorded law 8 as a pass, because it inspected the four links that
+  existed. This is the owner's own ruling of 2026-09-19, "you didn't show me
+  the paper", and it is decidable by a shell.
+- **Check 6, evidence grades as arithmetic.** Off the same list: the entries
+  whose number the issue prints, against the count of in-line grades. Same
+  print scored three grades against five items, and three benchmark numbers in
+  the fell-behind section carried none.
+- Why outside the model: both are counts, both have now been asked of the model
+  in `prompts/digest.md`, and both got a wrong answer from the model and then a
+  wrong answer from the grade. Two readings agreeing is not a check. `L-A22`.
+- **The standing question, which is the part worth more than either count.**
+  `INC-2026-09-29-gate-unit-three-more` records four gates in
+  `prompts/digest.md` failing the same way: the check is phrased in the
+  singular because it was written from one specimen, and the material arrives
+  in groups, so the gate answers for one member and reports a pass on the
+  group. The question that finds this without running anything is: **name the
+  unit this check inspects, then name the unit the defect lives in, and say
+  whether they are the same size.** It found three live failures in one pass
+  on 2026-09-29. Worth running against every check in the pre-send gate as it
+  is built, and worth a line in whatever file describes that gate, because a
+  gate with the wrong unit is `L-A21` and reports success while protecting
+  nothing.
+- Not urgent in the sense that all four fixes are in the prompt in this pull
+  request. Urgent in the sense that the writer seat has now patched this class
+  four times in four runs and its charter's structure watch forbids a fifth.
+- Whose call: engineer, after #60 lands.
+- Cost: two `grep`-and-count links in a chain that already exists, plus one
+  question asked while writing the others.
+- Status: proposed
