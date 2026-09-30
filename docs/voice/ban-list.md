@@ -999,13 +999,31 @@ gap that the same collision had left empty (incident 25).
     writer is holding. Where it could, the specimen is a draft however loudly
     the sentence around it says otherwise, and no amount of moving it down the
     file helps.
+    **The count, because one case is an anecdote and this is three for three.**
+    The generator held exactly three worked examples about a real paper in the
+    payload: the heading above, the claims pass's specimen of two results that
+    share only a percent sign, and the same-measure pair of one method printed
+    with two scores. All three defects appear in the print of 2026-09-30. Every
+    other specimen in the file is about nothing a paper could be, including the
+    four slot names quoted eight times and the number line's invented night
+    shift, and not one of those has ever printed. The correlation is total and
+    it runs the opposite way from position, since the heading gate and the slot
+    names sit in the same paragraph block at the end of the file.
     The generator already knew the fix and used it in one place, at the number
     line, whose example is written "in a subject no payload will ever hand
     you, so that copying it is obviously wrong." Added 2026-09-30 from the
-    grade of the newest print. Enforced the same day: the heading gate's
-    specimen is rewritten in that invented subject, the gate now states the
-    aboutness test in its own text, and every worked example in it names no
+    grade of the newest print. Enforced the same day: all three specimens are
+    rewritten in invented subjects, the heading gate states the aboutness test
+    in its own text, and no worked example anywhere in the generator names a
     real result (`INC-2026-09-30-gate-supplied-its-own-banned-heading`).
+    **A footnote that is really the entry's best evidence.** The run that wrote
+    this entry broke it about an hour later, in the same pull request, by
+    putting two real arrival counts into the instruction that tells the
+    generator which count to print. It was caught by re-reading the diff
+    against this entry and struck in the next commit. The pull is toward the
+    concrete example, it does not spare the person writing the rule, and the
+    only defence that has worked is a mechanical sweep of the file for figures
+    and quoted output.
 
 77. The evidence grade built on a frame rather than a stem. Entry 70 is the
     grade as a stamp, where three accurate grades opened on "The evidence is"
