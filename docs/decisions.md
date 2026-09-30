@@ -1380,3 +1380,54 @@ they judge, where its maintenance run cannot miss them); counting
 confirmations as value equal to decision changes (a skill that only
 confirms is a candidate for deletion, and the metric must be able to
 say so).
+
+## ADR-38: The skill quality bar. A skill is its deltas, proven on tasks the bare model fails
+
+**Status.** Accepted 2026-09-30, owner-directed: "the skill evidence is
+worrying. we need to improve the skills a lot."
+
+**What the first measurement said** (skills/harness-engineering, subject
+qwen 27B, judge gpt-oss-120b, 4 target tasks, 2 reps): mean 5.4 without
+the skill, 5.3 with it. The bare model already gave most of the advice.
+The one section carrying a non-obvious delta (parallel sample-and-select)
+moved its task from 4 to 6 and is the same section that changed a design
+decision in the first consumer report. The longest procedural section made
+its task worse, 6 to 4. Two readings follow: a skill that restates what the
+model knows is worth nothing, and an essay in the system prompt is not a
+procedure.
+
+**Decision.**
+
+1. **A skill is its deltas.** Every section states the counterintuitive or
+   not-yet-common finding, the number behind it, and the decision rule it
+   changes. Anything a strong model says unprompted is cut. The "this adds
+   to standard practice" framing the consumer report praised becomes the
+   form of the whole file, not its preface.
+2. **Procedures, not prose.** Each delta ends in a numbered procedure or a
+   checklist line an agent can execute, with the thresholds named (how many
+   samples, which floor, what to pin). The builder's checklist from the
+   consumer report is mandatory and sits first, the reasoning under it.
+3. **Length is a cost.** A skill is under 120 lines. What does not fit is a
+   second skill or a link to the paper.
+4. **Tasks are differential.** An eval task counts only if the bare subject
+   model fails it or scores partial on it, measured before the with-arm
+   runs. Tasks the bare model already passes are dropped from the score
+   and kept as controls. The delta is computed on differential tasks only.
+5. **Hard checks over rubrics wherever possible.** A coding or
+   configuration task with a test that passes or fails outranks a judged
+   answer. Rubric judging stays for advice tasks, with the judge a
+   different model from the subject.
+6. **Two subjects.** The cheap open model runs on every change; the model
+   the product is used with (Claude) is the benchmark that decides
+   `status: active`. A skill is active only when it moves a differential
+   task on the benchmark subject.
+7. **Retire what does not move.** A skill with no positive differential
+   delta on the benchmark after its evals exist is retired with its
+   numbers on the page. The library is smaller and true.
+
+**Consequences.** The skill seat rewrites the six skills to this bar
+before writing new ones, in the order of the threads the owner named.
+The engineer's harness (ADR-36) gains the bare-first differential pass
+and the two-subject run. The evidence page shows deltas on differential
+tasks only, with the task count that qualified. ExO folds the finding into
+the learning log: measuring first would have found this on 2026-09-12.
