@@ -1,13 +1,16 @@
 ---
 name: context-window-engineering
 description: The subject is the finite token budget an agent runs inside, and which tokens earn a place in it. Use when a fixed cache budget forces you to pick an eviction rule and you are weighing a scoring heuristic against a cheaper one; when an agent's accumulated history has outgrown its window and you must decide what the acting step sees as opposed to what the planning step sees; when long-document accuracy falls as the input grows even though the window is not full; when evidence buried mid-input is overlooked while the same evidence near the start or the end is picked up; or when a run has to use a value it read once and did not repeat, many steps later, and a compaction step may already have discarded it.
-version: 2
+version: 3
 status: active
 provenance:
   extracted: 2026-09-29
   revised: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed; the additions say what has and has not tested each section, which the reader previously had to infer from one empty validated field."
     - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 85 entered deprecated_claims, contradicted at 0.78 by claim 265, which this skill also cites. Re-read both papers. The claim is kept and the skill is unchanged in substance, because the two rows measure different task subsets of one benchmark and neither refutes the other. The section 'A contradiction inside the cluster' already carried that resolution and now names the deprecation explicitly."
   claims: [78, 79, 80, 280, 291, 292, 293, 295, 265, 266, 267, 268, 85, 111, 112, 115, 68, 69, 70, 71]
   papers:
@@ -43,6 +46,8 @@ input and a short answer, has different evidence and is treated separately in
 the section on reading more than fits.
 
 ## Protect the input. Sample the rest.
+
+*Validation: no trial and no consumer report. Claim and paper provenance only, strengthened by the source paper's own controlled ablation, which is the section's evidence rather than ours. Eval tasks cwe-t1 and cwe-t2 cover it and have not been run.*
 
 The single largest effect anyone in this cluster measured is not a scoring
 function. It is a rule about what never gets evicted.
@@ -95,6 +100,8 @@ What to do with this:
 
 ## The exception is the one that describes most agents
 
+*Validation: no trial and no consumer report. The regime boundary is the paper's, the protected-region prescription is ours and untested anywhere. Eval task cwe-t3 covers it and has not been run.*
+
 The evidence above has a clean boundary, and the boundary is the part a builder
 needs most, because agent workloads sit inside it more often than reasoning
 benchmarks do.
@@ -129,6 +136,8 @@ and says plainly that it did not evaluate one, so the hybrid is a direction
 rather than a result.
 
 ## Read in parallel, reason in sequence
+
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval tasks cwe-t4 and cwe-t5 cover it and have not been run.*
 
 When the material is larger than the window, the common answer is to stream it
 through a compact memory: read a chunk, fold it into a running summary, repeat.
@@ -179,6 +188,8 @@ Four design details from the full text that the result depends on:
    every finding, so the aggregation step has something to check.
 
 ## Give history to the planner, not to the executor
+
+*Validation: no trial and no consumer report. The strongest generalisation in this skill and the least directly evidenced outside robotics, so treat the architecture as carried and the margin as not. Eval task cwe-t6 covers it and has not been run.*
 
 The third pattern is the one that generalizes furthest, and it is the reason
 this cluster holds together. In all three settings the winning move is the same:
@@ -241,6 +252,8 @@ better summarizer.
 
 ## Make the steady-state cost cheaper than the answer cost
 
+*Validation: no trial and no consumer report. Claim and paper provenance only, from two video systems. Nothing here has been measured on a text agent. Eval task cwe-t7 covers it and has not been run.*
+
 The last pattern is about when you pay. An agent that watches a stream has an
 asymmetric workload: material arrives continuously, and questions arrive
 occasionally. That makes per-item ingestion cost, not per-question cost, the
@@ -283,6 +296,8 @@ specifically works for text agents is untested here.
 
 ## Where the full text narrows our claim rows
 
+*Validation: this section is itself the validation of the three rows it narrows, done by reading the papers on 2026-09-29 under ADR-35. Eval task cwe-t8 checks that a reader carrying this skill pushes back on the flat version of the row, and has not been run.*
+
 Read the papers before quoting the rows. Three of the rows behind this skill
 read stronger than their source.
 
@@ -322,13 +337,39 @@ complete-reasoning-traces paper is the one paper in this cluster this skill's
 author could not read in full, because arXiv serves no HTML rendering for it. Only its abstract, which is
 peer-reviewed as an EMNLP 2026 Findings paper, was read. Weight both accordingly.
 
+## Apply: the builder's checklist
+
+Before shipping a compaction step, a long-context reader, or a long-running
+session this skill touched:
+
+1. Protected set: is the whole prompt, meaning the system prompt, the task
+   statement and the user's question, pinned unconditionally and never subject
+   to the score?
+2. Null arm: has your ranking heuristic been run against random selection at
+   the same budget with the same protection, and did it win by more than
+   latency?
+3. Read-once state: does every durable fact the agent learns get written to an
+   explicit protected region, rather than left to the compaction policy's luck?
+4. Order sensitivity: does accuracy move when you shuffle the input or reverse
+   the evidence order? If it does, the architecture is making document order
+   into dependency depth, and parallel reading under a fresh query per round is
+   the fix.
+5. History boundary: does only the planning step see accumulated history, with
+   the acting step handed a short explicit instruction and a bounded, cacheable
+   context?
+6. Ingestion asymmetry: when material arrives continuously and questions
+   arrive occasionally, is the ingestion path the deliberately cheap one?
+
 ## Caveats
 
 The cache-eviction evidence covers decode-phase eviction on four models, three
 of them one family, all using grouped-query attention with eight or ten
 key-value heads per layer. Architectures where per-head independence is
 unavailable, such as multi-head latent attention or multi-query attention, were
-not tested. The regime is short prompts and traces of several thousand to 32K
+not tested, so the floor for the cross-head half of the argument is
+grouped-query attention with eight key-value heads per layer; below that there
+are no independent per-head copies to sample within, and only the prompt
+protection carries over. The regime is short prompts and traces of several thousand to 32K
 tokens at 10 to 50 percent compression. Workloads where the input itself fills
 the cache fall outside that regime. Significance is per-comparison with no correction for
 multiple comparisons.
@@ -337,16 +378,25 @@ The parallel-reading evidence is multi-hop question answering on two datasets,
 one in-distribution and one out, with 4B and 9B backbones from one family. It
 establishes robustness to evidence placement and an accuracy gain over
 sequential memory on that task shape. It does not establish that the pattern
-holds for tasks where a chunk cannot be judged in isolation at all.
+holds for tasks where a chunk cannot be judged in isolation at all. The floor
+for the reading seat is a 4B frozen open model: 2B costs about six points of
+average accuracy, 9B saturates, and a frontier model in that seat is wasted
+spend. Only the lead agent needs training.
 
 The memory-as-plans evidence is robot manipulation in simulation and on one
 real arm, with 50 demonstrations per task, and it depends on segment boundaries
 the benchmark already provides. Automatic segment discovery is named as
 unfinished work by the authors, which matters for any agent setting where the
-segmentation would have to be invented.
+segmentation would have to be invented. So the floor for this pattern is a
+setting that already has a natural segment boundary, a completed subtask, a
+merged pull request, a closed ticket. Where there is none, the missing
+prerequisite is the segmenter and not a tuning detail.
 
 The two streaming systems are multimodal video, and every number in them is a
-video benchmark. Nothing here measures a text agent.
+video benchmark. Nothing here measures a text agent. The tiering floor, if you
+carry the shape across anyway, is the tested configuration: three levels of
+short, mid and long term under one fixed total budget, with consolidation
+running on arrival rather than when the window fills.
 
 This skill revises when its evidence does. If a source claim is contradicted by
 later work, or if a claim row listed above is corrected in the library, the
