@@ -6115,3 +6115,81 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-interpret-deployed-history-unrevised — the interpret fix reached production on its fourth sighting, and the 271 edges the stale prompt wrote are still what the digest reads (2026-09-30, research seat)
+
+**This is a repeat of incident 25 and the direct successor to
+`INC-2026-09-26-interpret-stale-third-sighting`, recorded at the moment it
+repeated per the standing rule at the top of this file. It is the fourth
+sighting of the same file and the first one where the deploy is no longer the
+problem.**
+
+**What happened, and the good half first.** `prompts/interpret.md` is finally
+running. `claim_links.method` now holds two values: `kimi-k2.6@6706ec7bffee`
+on 3 edges, all created 2026-09-30, and `6706ec7bffee` is
+`sha256(prompts/interpret.md)[:12]` at HEAD. The revision merged on 2026-09-19
+and reached production on 2026-09-30, eleven days and four sightings later.
+
+**What the deploy did not do.** The stale prompt,
+`openai/gpt-oss-120b@fbe080261d6b`, wrote **271 of the graph's 274 edges**
+between 2026-09-08 and 2026-09-29, including one on the last day before the
+deploy. Nothing in any run re-interprets an existing edge, so the graph still
+carries 271 edges from a judge the org has spent four runs establishing was
+wrong, and `deprecated_claims`, `site/lib/graph-live.js` and the digest all
+read them without knowing which prompt wrote what.
+
+Measured tonight, the defect the revision was written to stop is intact in the
+record:
+
+- Seven `contradicts` edges. **Six are wrong**, read against their papers:
+  `12 -> 11` and `289 -> 288` and `190 -> 188` each join two claims from the
+  same paper, `85 -> 12` links claims about two different benchmarks,
+  `136 -> 129` links two unrelated domains at confidence 0.9, and `265 -> 85`
+  compares two methods on different subsets. Only `82 -> 5` is arguable.
+- All seven carry confidence at or above 0.7, which is the gate
+  `deprecated_claims` applies, so **all seven targets are on the Left-Behind
+  Index** and six do not belong there.
+- Two of the seven are new since the 2026-09-26 entry read five, and both new
+  ones are wrong, one of them intra-paper. The rate did not fall while the fix
+  sat merged.
+- `tools/graph_audit.py`, run from this sandbox against the read-only corpus,
+  fails one bound: same-paper edges at 69.0 percent against 40 percent.
+
+**The consequence that reached a reader, which is new.** Digest `2026-W39`,
+published 2026-09-28, printed this:
+
+> The old claim held that an expert-authored reference implementation achieved
+> **82.2%** on RMBench, establishing a high ceiling for agent construction.
+
+The 82.2 percent is claim 12, from `arxiv:2609.04611`, which is
+`tau^tau-Bench`. That paper never mentions RMBench. The false attribution is
+inherited from edge `85 contradicts 12`, which joins an RMBench claim to a
+tau-tau-Bench claim, and the press harmonized the two benchmark names to make
+the edge readable. The 2026-09-26 entry recorded a deprecation reaching
+subscribers. This is the same mechanism producing a false fact rather than a
+false emphasis, which is worse, and it then propagated: the voice review of
+2026-09-29 read the passage, reasoned "on the issue's own words" as a voice
+grade correctly does, and concluded the 82.2-against-83.3 pair was a valid
+same-benchmark comparison wrongly discarded. Acting on that would print a
+cross-benchmark comparison as sound.
+
+**Why the existing gate did not catch it, which is the same answer as last
+time with one word changed.** The research charter's staleness gate worked
+again: this run compared five shas, found which files were current, and spent
+its one proposal on the only one it could verify. The 2026-09-26 entry said
+the missing piece is that detection has no destination. That is now half
+false and half worse. The destination existed and was used, and the deploy
+happened. What has no owner is **the record the stale prompt left behind**.
+Every gate in this org is written about the next artifact; none is written
+about the artifacts produced while a known-bad prompt was live. A fix that
+deploys and does not backfill leaves a corpus that disagrees with itself, and
+nothing counts that.
+
+**The general form, stated so the next seat can check it in one query.** When a
+prompt sha changes, the rows the old sha wrote do not change, and no register
+records that they are now suspect. The check is
+`select method, count(*) from claim_links group by 1` and the same shape for
+`triage_log.prompt_sha` and `claims.prompt_sha`, except that `claims.prompt_sha`
+is null on all 846 rows, so for distill this check cannot be run at all.
+Filed for the engineer as a re-interpretation pass and a populated column in
+`docs/ideas.md`, 2026-09-30.
