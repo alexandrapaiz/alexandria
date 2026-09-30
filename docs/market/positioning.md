@@ -38,7 +38,18 @@ critical-severity security flaw, and four independent founders (skillbay.sh,
 Bastionskill, Skillcop, and Skill Federation, spread from March through
 this week) have each spent their own time building trust or curation
 tooling on top of the open ecosystem rather than trusting it as-is
-(docs/market/landscape.md).
+(docs/market/landscape.md). As of 2026-09-30 the argument has a second,
+independent number behind it that is not about safety at all: SkillsBench,
+an academic benchmark of 47,150 public skills, found a mean quality score of
+6.2 out of 12, and found that curation alone lifts the pass rate on real
+tasks by 16.2 percentage points over the uncurated average. The ecosystem's
+own growth data makes the same point from the demand side: skills.sh's
+registry hit 1 million skills faster than any major software platform on
+record, and nearly half of those skills have exactly one install ever
+(docs/market/landscape.md). Three independent measurements in one month,
+of security, of quality, and of what readers actually choose, now say the
+same thing: raw skill distribution needs a filter, and alexandria's claim
+graph is that filter with evidence attached rather than a popularity count.
 
 ## The price ladder (observed, 2026-09-18)
 
@@ -65,16 +76,16 @@ $9/month for a skill catalog, UandAI at $0.99-$29.99 per agent) sit well
 below $20 but are selling raw, uncurated content, not a research-backed tool
 layer.
 
-The top of the ladder moved further away this week. OpenAI is reportedly
-preparing a $500/month "ChatGPT Pro Max" tier, discovered in Codex's
-public checkout configuration rather than confirmed by OpenAI directly
-(medium confidence, leak not launch), expected to be detailed at DevDay
-2026-09-29.
-[testingcatalog.com](https://www.testingcatalog.com/openai-prepares-new-500-month-pro-max-plan-for-chatgpt/),
-2026-09-24. Not a comp for alexandria's tier or shape (general-purpose
-chat/agent usage, not a research-and-skills layer), but it is more evidence
-that the market's subscription ceiling keeps rising, not falling, which
-argues against $20/month being read as expensive.
+The top of the ladder moved further away this week, and last week's leak is
+now confirmed. OpenAI launched "Pro 500" at DevDay on 2026-09-29, a real
+$500/month ChatGPT tier with the highest usage cap OpenAI sells and
+exclusive access to its fastest model speed. [The Next Web](https://thenextweb.com/news/openai-devday-pro-200-usage-cut-pro-500-plan),
+2026-09-29. Still not a comp for alexandria's tier or shape (general-purpose
+chat/agent usage, not a research-and-skills layer, and OpenAI cut the usage
+allowance on its existing $200 tier the same day it launched this one), but
+it closes last week's open question and confirms the read: the market's
+subscription ceiling is still rising, which argues against $20/month being
+read as expensive.
 
 **Reading the ladder for alexandria's $20/month:** it sits exactly at the
 boundary between "premium single-voice newsletter" ($15/mo cluster) and
@@ -166,3 +177,15 @@ proposal, not an evidenced conclusion.
   rising). Re-checked Elicit directly, unchanged; Consensus's pricing
   page now renders client-side and returned no confirmable figure this
   pass, unresolved rather than contradicted.
+- 2026-09-30 (regular ceremony, triggered by a synchronous work window):
+  confirmed last week's $500/month leak as a real launch (OpenAI's "Pro
+  500," DevDay, 2026-09-29) and added a second, non-security number to
+  the why-pay paragraph: SkillsBench's 6.2/12 mean skill-quality score
+  and its 16.2-point curation lift, alongside skills.sh's own install-
+  concentration data (docs/market/landscape.md). No change to $20/month.
+  The evidence keeps arriving from three separate directions in one
+  month (security, quality, and revealed reader preference) and all
+  three support the existing price rather than moving it. Re-checked
+  Elicit directly, unchanged; Consensus attempted again via its pricing
+  page and its own help-center article, both unconfirmable, third
+  attempt with the same result.
