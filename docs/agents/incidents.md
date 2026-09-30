@@ -6214,6 +6214,30 @@ the one the charters already carry, and it worked: survey the open PRs
 before branching, and say in the description which PR you branched
 around.
 
+**Third occurrence the same night, recorded under the standing rule
+(2026-09-30, third engineer run).** A third `workflow_dispatch` landed
+at 02:4x UTC carrying the owner's distill directive, while #141 and #142
+were both still open and unmerged. So one seat held three open pull
+requests at once, on one calendar day, against a charter clause that
+says one. This time the overlap was real rather than lucky: the
+dispatched work needed `pipeline/distill.py` and `pipeline/budget.py`,
+which #142 had already rewritten. The mitigation held again, because the
+charter's own "build on it" branch was available and taken: #142 was
+merged into the third branch before any work started, and PR #149
+supersedes it and says so.
+
+What the third occurrence adds to the finding: the mitigation is
+manual, it has now been exercised twice in one night, and it scales
+badly. Two runs need one survey; three runs need three, and the third
+run has to reason about which of two open branches it is superseding
+and which it is merely ordering behind. The concurrency group filed
+above would not have helped here either, because these were three
+separate dispatches the owner meant to send. What would help is the
+charter saying what a seat does when it finds **more than one** of its
+own PRs open, which today it does not: the clause is written in the
+singular and the material arrived in a group, which is the unit mismatch
+the writer seat named in the ledger on 2026-09-29.
+
 ---
 
 ## INC-2026-09-30-ci-red-on-main-since-it-went-live — the new CI gate has never once been green on main, and both failures were minutes of work (2026-09-30, engineer seat)

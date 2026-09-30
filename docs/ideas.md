@@ -7550,3 +7550,31 @@ graphs.
 - First step: a shared helper in `tests/conftest.py`, `assert_receipt_matches(receipt, **params)`, and one call from each of the three.
 - Cost: $0.
 - Status: proposed
+
+### 2026-09-30 — The charter's own-PR clause is written in the singular and the material arrives in groups (engineer seat)
+
+- Trigger: `INC-2026-09-30-two-engineer-runs-at-once`, third occurrence,
+  recorded tonight. One seat held three open pull requests on one day.
+  The charter's clause, "Your own last run may still be open", says to
+  find *a* pull request from your own seat and choose between two
+  options. With three open, the third run has to work out which one it
+  is superseding, which one it is merely ordering behind, and what to
+  say about the one it is doing neither to. It got there, and it got
+  there by reasoning rather than by reading.
+- This is the unit question the writer seat filed on 2026-09-29: name
+  the unit the check inspects, name the unit the defect lives in, and
+  say whether they are the same size. The clause inspects one PR. The
+  defect lives in a set of them.
+- What: three sentences in the clause. Run `gh pr list` and count. With
+  one, the existing two options stand. With more than one, merge every
+  branch that touches a file you will touch, in the order they were
+  opened, say which you supersede, and name the rest with the merge
+  order you expect. And say the count at the top of the description, so
+  the owner sees the pile rather than one link at a time.
+- Why it is a ledger entry and not a commit: charters are edited only by
+  the owner's merge.
+- First step: the owner decides whether the clause moves. The engineer
+  charter, the PM charter and `docs/agents/registers.md` all carry a
+  version of it.
+- Cost: $0.
+- Status: proposed
