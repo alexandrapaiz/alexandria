@@ -1295,3 +1295,41 @@ history. Skill seat: revisions before new skills, always with the eval.
 Frontend: version, trigger, and result on the skill page. Security: the
 auto-merge path is reviewed at the 1st-of-month run for what a poisoned
 paper could push through it.
+
+### ADR-37, amended 2026-09-29: owner confirmed no human in the loop, with guardrails
+
+**Owner, verbatim.** "i want self mantaining without human in the loop.
+we might want to set guardrails though."
+
+**What merges on its own.** A revision or retirement of an existing skill,
+touching only `skills/<slug>/` (SKILL.md, evals/, results.json), when the
+gate passes. A skill's first version still comes to the owner: the loop
+maintains, it does not originate.
+
+**The gate** (all must pass): provenance resolves to claims that exist and
+are not deprecated; the eval's with-versus-without delta is not worse than
+the previous version's within its spread, on the same subject model; the
+control tasks are unchanged; ban list and trigger test pass; the diff
+carries no code, no workflow, no prompt, and no file outside the skill's
+folder; the skill's page still renders.
+
+**Guardrails around the gate:**
+1. **Rate.** At most three automatic merges a day across the library; the
+   rest wait a day. A burst is a signal, not a queue.
+2. **Kill switch.** A file `skills/MAINTENANCE_PAUSED` on main pauses
+   automatic merges; any seat may create it with a reason and only the
+   owner or chair removes it.
+3. **Rollback.** The day after an automatic merge the eval re-runs; a
+   regression beyond the spread reverts the merge automatically and
+   files an incident.
+4. **Notice.** Every automatic merge emails the owner the skill, the
+   trigger, the before and after eval, and the diff link. Silence is
+   never the record.
+5. **Poison check.** A revision citing a paper first seen by the library
+   within the last seven days, or a paper whose source is a single feed,
+   waits for the security seat's pass before it can auto-merge.
+6. **Audit.** The security seat reviews the month's automatic merges at
+   its 1st-of-month run; ExO reviews the gate's misses.
+
+**Rollback of the decision.** Create the kill-switch file. Nothing else
+needs to change.
