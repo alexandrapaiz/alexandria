@@ -7529,6 +7529,14 @@ graphs.
   can still be incomparable. Cheap fix: add the sorted list of candidate names,
   or its hash, to `policy` in the bundle, and have the library page say
   "measured against an 8-skill library" beside the pass rate.
+- The ambiguity is now live in the repository rather than hypothetical. This
+  branch carries two bundles dated `2026-09-30`, one for the six-skill library
+  and one for eight, and `rankBundles` in `site/lib/skill-provenance.js` sorts
+  on `generated`, which is a date and not a timestamp. For the two new skills
+  the tie is harmless, since only one bundle holds a suite for them. For the six
+  older skills the page may show either day's numbers, and they differ. Adding
+  a time to `generated` is the one-character half of the fix; recording the
+  library membership is the half that makes the receipt mean something.
 - Whose call: engineer, with the validation owner. `skills/_validation/` is
   writable by this seat, but the engine and the pre-registered policy are
   deliberately not a per-run adjustment, and defect 1 changes case outcomes.
