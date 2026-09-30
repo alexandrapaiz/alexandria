@@ -1195,3 +1195,54 @@ as a uuid and refuses a column name, so every mover has to read the board
 first. The client does both for the caller. Reported to the owner in the pull
 request rather than patched into the vendored standard, per
 docs/agents/cross-repo-law.md.
+
+## ADR-36: Skills are proven, not asserted: with-versus-without evals, and revision that actually fires
+
+**Status.** Accepted 2026-09-29, owner-directed. "Can we make sure skills
+are good? Can we run unit tests and evals on them, comparing projects and
+prompts with and without the skills? Furthermore those results can serve
+in marketing our page."
+
+**Finding that forced it.** Skills do not self-update today. The
+`skills_needing_revision` view joins promoted skills' cited claims against
+`deprecated_claims`, but the skill seat writes skills straight into the
+repo without a `promotions` row, so the view has nothing to join, and no
+job reads it. Seven claims are deprecated and no skill knows. "Revised when
+the research moves" is a promise on the site with no machinery under it.
+
+**Decision, three parts.**
+
+1. **Every skill is registered.** A merged skill gets a `promotions` row
+   built from its SKILL.md provenance (claim ids, path, kind=skill,
+   status=approved), backfilled for the skills on main today and kept in
+   step by a check that fails when a skill on main has no row. A daily job
+   reads `skills_needing_revision` and, when it is non-empty, writes the
+   skill and the deprecating claim to the reading queue and dispatches the
+   skill seat. The skill seat's run begins with revisions before new skills.
+
+2. **Every skill carries an eval.** `skills/<slug>/evals/` holds tasks the
+   skill is meant to change: prompts and small projects with a hard check
+   where one exists (tests pass, output parses, a number lands in range)
+   and a rubric judged by a model where it does not. The harness runs each
+   task with and without the skill loaded, same model, same seed where the
+   provider allows, several repetitions, and reports the delta with its
+   spread. A skill with no eval is `status: draft`, never `active`. A skill
+   whose eval shows no gain is a finding, not a failure: it is retired with
+   the numbers, which is also what the site promised.
+
+3. **Results are published.** Each skill's page on the site shows its
+   with-versus-without result, the task count, the model, and the date.
+   The numbers are the market seat's material for the site and the
+   writer's for the issue, and they are never rounded up: the eval prints
+   what it measured.
+
+**Subject model.** Evals run on the funded open model (Kimi, ADR-32) by
+default so they are cheap enough to run on every skill change; a Claude
+run is the benchmark the OKR seat reports monthly. The judge is a
+different model from the subject.
+
+**Consequences.** Engineer builds the registration, the daily revision
+check, and the harness; the skill seat writes evals for the existing
+skills and every new one; frontend renders results on the skill page;
+market and writer use only what the harness printed. ADR-13's panel
+(provenance, adversary, validator) becomes the harness's three checks.
