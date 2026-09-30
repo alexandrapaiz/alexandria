@@ -300,6 +300,19 @@ The pipeline, built bottom-up.
       exact text on the page. The provenance had been in the files since
       2026-09-12 and reached no reader until today, because the frontmatter
       reader could not see an indented field
+- [ ] **Skills prove themselves and revise themselves, written and not yet
+      running** (ADR-36, ADR-37). `skills_needing_revision` has been in the
+      schema since the founding and had never returned a row, because a skill
+      reached `main` with no `promotions` row for the view to join, so seven
+      deprecated claims sat there and no skill knew.
+      `tools/skill_registrar.py` derives that row from each skill's own
+      provenance block, `pipeline/skill_revision.py` reads the view daily and
+      queues the reading and dispatches the skill seat, and
+      `tools/skill_eval.py` runs each skill's tasks with and without it loaded
+      on one model and prints the delta with an exact interval. Live when the
+      chair applies the CI step
+      ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
+      12) and deploys the daily job with a `github` secret
 - [ ] ADR-13 reviewer panel (provenance, adversary, validator) as the gate on gold.
       Until it exists, the owner's merge is that gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`

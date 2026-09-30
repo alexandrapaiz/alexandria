@@ -401,3 +401,23 @@ create table if not exists consumed_codes (
 );
 
 create index if not exists consumed_codes_expires_idx on consumed_codes (expires_at);
+
+-- ============ skill registration (ADR-36) ============
+-- `skills_needing_revision` above has existed since the founding and had never
+-- returned a row, because it reads `promotions` and nothing ever wrote a
+-- promotions row for a skill. The skill seat writes a SKILL.md into the
+-- repository and the owner merges it, and that was the whole promotion. So the
+-- view joined an empty table, seven claims went deprecated, no skill knew, and
+-- the site went on saying a skill is revised when the research moves.
+--
+-- `tools/skill_registrar.py` derives the row from the skill's own provenance
+-- block. This index is what lets it run every day without writing a second row
+-- for a skill it already registered: the skill's directory is its identity, so
+-- `on conflict (path) where kind = 'skill'` updates the claim ids in place when
+-- a revision adds a paper.
+--
+-- Partial rather than plain, on purpose. `promotions` also holds `pattern` and
+-- `system_diff` rows whose `path` is a pull request url, and two system diffs
+-- may well point at one PR. Only a skill's path is an identity.
+create unique index if not exists promotions_skill_path_idx
+    on promotions (path) where kind = 'skill';
