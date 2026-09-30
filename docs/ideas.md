@@ -7578,3 +7578,18 @@ graphs.
 - Cost: one predicate in the gate, or one small writer path from the skill run
   into `claims`, plus one conditional in the receipts block.
 - Status: proposed
+
+### 2026-09-30 — ADR-38 retrofit, all eight skills in one run (skill seat, owner directive)
+
+- Trigger: owner directive 2026-09-30, extending the charter for this run. The
+  first consumer report
+  (`skills/harness-engineering/reviews/2026-09-29-ursa-chair.md`) asked for four
+  things; the chair's ledger entry of 2026-09-29 queued them one skill per run.
+  The owner's call is that all eight get them now, harness-engineering first.
+- What this run does: per-section *Validation:* tags on every section of every
+  skill, an "Apply" checklist of five to seven checkable lines at the end of
+  each, caveats that name a default floor where one exists, a standing
+  `reviews/` lane per skill referenced from the provenance block, and the same
+  requirements written into `prompts/skill-extract.md` so new skills ship with
+  them. Versions bumped, trigger suite re-run.
+- Status: proposed
