@@ -996,6 +996,29 @@ CRON_REQUESTS = {
         "degrades_to_chars": 6_000,
         "models": "distill",
     },
+    # The practices variant, added 2026-09-30 with the field-report split. Its
+    # own entry rather than a second key on the entry above, because the two
+    # requests differ in both halves and sizing one of them would have measured a
+    # request the job never sends. The prompt is larger, because a field report
+    # has to be told what NOT to extract, and a prompt that grows is exactly what
+    # L-E6 put this table here to catch. The payload is smaller and fixed:
+    # `tools/read_paper.py::fetch_fulltext` returns None for every `blog:` id
+    # without a fetch, so a field report is read at `abstract[:6000]`, which for
+    # a feed row is the item summary. There is no degradation below that, so no
+    # `degrades_to_chars`: this request is the one that must fit.
+    "distill practices (pipeline/distill.py)": {
+        "path": "pipeline/distill.py",
+        "prompt": "prompts/distill-practices.md",
+        "reservation": "MAX_COMPLETION_TOKENS",
+        "payload_chars": 6_000,
+        # The paper density, deliberately, and it is not a measurement of blog
+        # prose. 3.35 chars/token is the densest thing the org has measured, so
+        # it over-counts a blog post's tokens rather than under-counting them,
+        # which is the safe direction for a guard. A measured field-report
+        # density would be a better number and nobody has one yet.
+        "chars_per_token": FULLTEXT_CHARS_PER_TOKEN,
+        "models": "distill",
+    },
 }
 
 
