@@ -2689,9 +2689,198 @@ looking, and it arrived within a day of the org starting to look.
 
 ---
 
-## Run 2026-09-30 (window, synchronous) — IN PROGRESS
+## Run 2026-09-30 (window, synchronous)
 
-This run opened its draft pull request before doing the work, per the
-ship-first rule. It builds on PR #148 (`exo/2026-09-30`), which was still
-open when this run started, and supersedes it. Findings follow below as
-they land.
+Second ExO run of the day. The morning run's PR #148 was still open when
+this session started and shares every file this work needed, so this run
+took the **build on it** option: #148 is merged in as the first commit,
+this PR supersedes it, and **#148 was closed by this seat rather than
+left for the owner**, which turned out to be the run's second finding.
+
+Branch `alexandria-exo/2026-09-30-window` rather than `exo/YYYY-MM-DD`,
+because the runtime that triggered this window named the branch. Worth
+noting for the next run: the charter's naming rule and the harness's
+naming rule now disagree, harmlessly, and the harness wins because it
+arrives last. That is the same shape as the charter-versus-prompt rule in
+section 2, in a place nobody had looked.
+
+### What this run found
+
+**1. The runtime law had the right scope and the wrong tense.**
+`main`'s checks had been red since 2026-09-24, six days. Two commits did
+it, and both are named verbatim by `runtime-changes.md`: `281d0af` raised
+the press's token reservation from 6,000 to 24,000, and `69a9e7f`
+replaced the retry policy on a concurrency 429. Both changes were
+correct. Both left a guard asserting the behaviour they had just
+replaced, and the second landed the same day the law gained the clause
+covering it.
+
+The audit could not catch it, and the reason is the finding rather than
+the bug. All three questions the law told an auditor to ask are about the
+past: did a merged PR explain it, was there a smoke run, was there a
+rehearsal. Each can be answered correctly while the thing the change
+broke is still broken. So the law now asks a fourth, and it is the only
+one in the present tense: **is the guard that covers this green right
+now?** One command, carried into ExO section 2 and the engineer's step 0.
+
+Two things underneath it that the next run should keep.
+
+- **A gate scoped to pull requests is not a gate on a repository whose
+  owner commits directly.** Both commits were direct pushes to main,
+  which is hers to do, and `checks.yml` had no push-on-main trigger until
+  `4ef55df` on 2026-09-29. No seat can notice this from inside a sandbox,
+  because seats only ever open pull requests. Any workflow filed in
+  `.github/workflows-pending/` that is meant to protect main now gets
+  both triggers before it is filed, and that is written into that
+  directory's README.
+- **A red main costs the signal on every branch, not one bug.** 28 failed
+  runs in 24 hours, 19 of them the same two inherited assertions. On PR
+  #146 the skill seat's one genuine failure sat between two it did not
+  cause.
+
+And the number nobody read: the cost guard, whose own comment says a
+drift here means "finance's books are wrong and this is where it should
+surface", was reporting **$0.1628 an issue against ADR-32's budgeted
+$0.05** the whole time. Finance has been working from a number the
+repository knew was wrong for six days.
+
+Credit where it is owed, because this seat is the backstop and not the
+detector: the PM standup (#150) found the red main this morning and
+handed it to the engineer (#158), who is fixing both tests. The detection
+chain worked on the day. The register entry is about the six days before
+it.
+
+**2. The merge queue converts latency into discarded work, and the rule
+that does it names the owner as the actor.**
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+Today's row is a snapshot of a day still running, and 2026-09-24 proves a
+27-PR day can clear, so volume is not the ceiling. The part that is not a
+snapshot: **ten of today's twenty-eight were superseded the same day** by
+a later run of the same seat, in chains up to five deep (skill: #140 to
+#146 to #151 to #152 to #159). Each link merges its predecessor and
+re-ships the accumulation, so the fifth carries five runs of diff for one
+run of review, which makes it slower to review, which deepens the chain.
+
+Every one of the ten was still open. Not one seat did anything wrong: the
+rule's own words were "you say so plainly **so the owner can close the
+older one**", and ten seats said so plainly. The chore assigned to the
+only actor with no cron was `gh pr close`, ten times. That is section
+3e's owner-as-seat class in its cheapest possible form, and **the general
+lesson is to check the verbs in a rule and not only the rule.**
+
+Fixed in all twelve charters: the seat closes its own superseded PR,
+after proving containment with `git log --oneline origin/<theirs> ^HEAD`
+printing nothing, and never deletes the branch. **The clause was probed
+before it was written** rather than assumed: this run closed its own #148
+and the seat token allowed it.
+
+The structural fix is HQ decision 041 (PM-owned Tier B merges), which
+arrived as PR #147 and is still open. **The fix for the merge queue is
+sitting in the merge queue.** Relayed upward with these numbers.
+
+**3. The ADR allocator has collided, and a convention would not have
+helped.** Confirmed from the morning run's next-run list, item 5: both
+`## ADR-38` headings are still on main and the ambiguous reference count
+has grown to 35.
+
+**One correction to the morning run's diagnosis, because it changes the
+fix.** That entry says the two were "written the same evening on
+different branches", which is the story the incident register tells about
+its own four numbering collisions. It is not what happened here. Both are
+direct commits to main by the owner, `ab2b601` at 20:31 and `6464f34` at
+20:39, eight minutes apart on one branch. The allocator is "read the
+file, add one" and the file was read once. A branch-snapshot convention
+would not have caught it.
+
+So the fix is a check rather than a sentence, which is
+`docs/agents/registers.md`'s own doctrine that **recording is not
+enforcing**, applied for once to the decision log itself.
+`.github/workflows-pending/adr-numbers.yml` is filed in the new-file
+lane. All three of its paths were exercised before filing: the live
+duplicate (exit 1, both line numbers printed, next free number named), a
+fixture renumbered to ADR-39 (exit 0), and a `decisions.md` with no ADR
+headings at all, which exits 1 rather than passing silently. It will fail
+on its first real run, on purpose. Renumbering is the chair's, because
+`docs/decisions.md` is not this seat's surface.
+
+### The standing sweeps
+
+- **Queue rot.** Every `-` anchor in every diff on
+  `pending-workflow-changes.md` re-checked mechanically against the live
+  files. Items 4a, 4, 7, 11 and 13 are clean. Item 2 is the known
+  cancelled one.
+- **But the rot was somewhere the grep does not reach.** Item 11's
+  ordering paragraph said "no other item on this page touches
+  `agent-skill.yml`". True when written on 2026-09-27, false from
+  2026-09-30 when item 13 was queued against that file, and it passed
+  every anchor check in between. It is the most load-bearing sentence on
+  the page, because it is the one that tells a reader they may stop
+  looking. Corrected, and the charter's rot rule now covers ordering
+  paragraphs with a command that finds every file named by two items.
+- **Housekeeping.** No branch deleted and none deletable: every remote
+  ref except `main` and `board` has an OPEN pull request. The six reused
+  branch names are the morning run's registered incident and none of
+  today's window branches add to it.
+- **Caps.** No `error_max_turns` and no cap hit since the last run, so no
+  re-derivation. The morning run's re-derivation stands.
+- **Registers.** `registers.md`'s table still covers the `docs/voice/`
+  and `docs/design/` files that the crude `Enforced at:` grep flags; the
+  table is the authority and it is current. No new GAP.
+- **Dispatch gradient, section 2c.** Eleven `workflow_dispatch` runs
+  since midnight, all `alexandrapaiz`. Unmoved, and the morning run's
+  count of 38 of 38 since 2026-09-24 stands.
+- **HQ origin, section 3f.** One hit, `181470f`, the lessons sync. Clean.
+  Decision 041 is inbound as PR #147 and is **not yet in
+  `docs/decisions.md`**, which is the question 2 shape: when it merges it
+  will change who may merge in this repository, and the record will be a
+  vendored standard and a workflow prompt. That entry is the chair's to
+  write.
+- **The relay outbox has never been emptied.** Four entries now, the
+  oldest written 2026-09-24 and still marked "not yet". A relay nobody
+  delivers is a drawer. Worth a decision next run: either the chair's
+  carrying of it becomes a named step somewhere, or the file admits it is
+  a reading list.
+
+### What the next run must check first
+
+1. **Is main green?** Run the section 2 fourth-question command before
+   anything else. If PR #158 merged, both press assertions and the
+   `run_report` stdout split should be fixed. If it did not merge, the
+   guards are still red and the six days are now more.
+2. **Did the ten superseded PRs get closed, and by whom?** The charter
+   now says the seat does it. If the owner did it instead, the charter
+   edit did not reach the runs and the reason is worth finding. Count
+   with `gh pr list --state all --limit 200 --json number,title,state`
+   filtered on "supersede".
+3. **Is `adr-numbers.yml` still in `workflows-pending/`?** If it moved
+   up, it should be failing on main until the chair renumbers ADR-38. A
+   red main from this check is the check working, and it must not be
+   confused with finding 1.
+4. **Did decision 041 (PR #147) merge, and did anything write it into
+   `docs/decisions.md`?** If it merged without a record, that is HQ
+   Incident 5's shape again and this time the subject is who may merge.
+5. **The morning run's list still stands and is not superseded by this
+   one.** Its items 1 through 4 and 6 through 8 were not worked here:
+   queue item 13, the cancelled item 2 deletion, the delivery-health
+   re-quoting, and the two out-of-cap fixes. Read that list as well as
+   this one.
+
+### One thing that is simply working
+
+The handoff chain ran end to end today without the owner in it. The PM
+standup found the red main, diagnosed both tests correctly by name,
+declined to dispatch the engineer because that seat was already at its
+open-PR hard stop, filed a board item so it would not be lost, and the
+engineer's next run picked it up and is fixing it. Detection, triage,
+deferral under a written rule, and handoff, with no human step. **The
+thing this run had to add was not the fix and not the detection. It was
+the six days before either.**
