@@ -1333,3 +1333,50 @@ folder; the skill's page still renders.
 
 **Rollback of the decision.** Create the kill-switch file. Nothing else
 needs to change.
+
+## ADR-38: Skills close the loop with their consumers
+
+**Date 2026-09-29. Owner's instruction, from the first consumer report: "let's make these improvements apply to all skills."**
+
+**Context.** The Ursa chair session loaded `harness-engineering` while
+planning a build, used it, and filed a detailed review: one section
+changed a design decision, one changed a stated procedure, two only
+confirmed existing choices. The review found the skill's content good
+and its measurement lacking: validation recorded at whole-skill
+granularity when only one section's advice was ever trialed, no
+compressed applied form, a caveat naming a requirement without its
+floor, and no structured place for the report itself to land. A skill
+library whose product is "skills with receipts" was collecting receipts
+for authorship and none for use.
+
+**Decision.** Four additions, binding on every skill in the library.
+
+1. **Per-section validation tags.** One italic *Validation:* line under
+   each section heading naming the trial that exercised it, the
+   consumer report that adopted it, or "none yet; claim provenance
+   only". Adoption is stated as adoption, never as validation. The
+   frontmatter `validated` field stays the ADR-13 panel's.
+2. **An "Apply" checklist** in every skill, before the caveats: the
+   procedures compressed to five or fewer checkable lines.
+3. **Caveats name floors.** A requirement stated in a caveat names the
+   cheapest sufficient thing ("MiniLM-class is sufficient").
+4. **A `reviews/` lane per skill** for consumer reports
+   (`reviews/YYYY-MM-DD-<consumer>.md`), read first on every skill-agent
+   run per ADR-37. Decision-change findings feed the tags; repeated
+   zero-decision-change reports are a deprecation signal.
+
+**Mechanics.** The format contract (prompts/skill-extract.md §2) and the
+skill agent's maintenance section carry the rules. The gold specimen,
+`harness-engineering`, is retrofitted in this change (version 2) so the
+specimen and the contract agree; its trigger bundle is re-recorded since
+bundles hash the file text. The remaining skills are retrofitted by the
+skill agent on their next maintenance pass, queued in the ledger, and
+never in bulk by one run, because each retrofit requires judgment about
+what its sections' honest tags and checklist are.
+
+**Rejected.** Whole-skill validation as sufficient (it overstates by
+construction); a central reviews file (reports belong beside the skill
+they judge, where its maintenance run cannot miss them); counting
+confirmations as value equal to decision changes (a skill that only
+confirms is a candidate for deletion, and the metric must be able to
+say so).

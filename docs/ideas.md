@@ -7294,3 +7294,12 @@ graphs.
   caveats name a default floor where one exists. (3) The skill page shows
   reports and the checklist. Status: accepted by the chair on the owner's
   behalf; the skill seat applies to harness-engineering first.
+- 2026-09-29 (chair): ADR-38 retrofit queue. `context-window-engineering`,
+  `evaluation-integrity`, `recursive-harness-self-improvement`,
+  `self-improving-post-training-loops`, `skill-library-engineering` each
+  need per-section *Validation:* tags, an "Apply" checklist, and
+  floor-named caveats on their next maintenance pass (skill agent,
+  maintenance before creation per ADR-37). The specimen
+  (`harness-engineering` v2) shows the target form. One skill per run.
+- Whose call: skill agent, next runs.
+- Status: proposed
