@@ -818,10 +818,14 @@ two claims measure the same thing.** Not the same topic and not the same
 percent sign. The same quantity, of the same kind of system, on a task a
 reader would accept as the same task. Where they do not, there is no edge at
 any strength, and the answer is to drop it rather than to print it carefully.
-The published 2026-W39 opened this section on a benchmark success rate of
-82.2% for building agents and a win rate of 87% for simulated fighter
-aircraft, and declared a ceiling broken. The two numbers share a percent sign
-and nothing else, and nothing was broken.
+The shape, in a subject no payload will ever hand you. A section opens on a
+delivery service completing 82% of its routes and a hospital winning 87% of
+its appeals, and declares a ceiling broken. The two numbers share a percent
+sign and nothing else, and nothing was broken. The specimen is invented on
+purpose: a real one stood here, and the section it described was written
+again four days later off the same two numbers, because a well-formed
+sentence about a paper in your payload is a draft no matter what the words
+around it say.
 
 **Ask it of one pairing at a time, because a group verdict is not a
 verdict.** The question above is written in the singular and the payload
@@ -1378,13 +1382,14 @@ the rule's question to the thing in front of you.
   describe. Inside a group, two numbers on the same named measure have to be
   the same number, or two setups the issue has told the reader apart in the
   sentence where the second one appears.
-  The specimen, from the print of 2026-09-26. An item said a distilled model
-  "hits 44.3%" on a macro-average across three kinds of task, and four
-  sentences later said the supervision method that produced it "produces 30%"
-  on the same macro-average. Both figures were in the payload and neither was
+  The specimen, invented so that copying it is obviously wrong, because the
+  real one stood here and the pair it described was printed again on
+  2026-09-30. An item says a night shift closes 44% of its tickets, and four
+  sentences later says the checklist that taught it to "closes 30%" of them,
+  on the same named measure. Both figures were in the payload and neither was
   wrong. The page made them contradict, because the second one came from a
-  smaller ablation the issue never named as one, so a reader is left holding
-  two scores for one method and no way to choose.
+  smaller test the issue never named as one, so a reader is left holding two
+  scores for one method and no way to choose.
   Two repairs and there is no third. Say in that sentence what makes the
   second number a different setup, in plain words. Or print one number and
   drop the other, which is usually the better issue, because an ablation is
