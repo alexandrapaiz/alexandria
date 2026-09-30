@@ -114,6 +114,40 @@ download, which is the entire point of baking it.
 Close the throwaway PR when the checklist is green. It is a receipt, not
 a contribution.
 
+## Clearing a change is itself a claim, so name the run that cleared it
+
+Added 2026-09-27, after `INC-2026-09-27-post-run-step-audited-from-inside`.
+Two clauses, and each one cost the org something.
+
+**1. A post-run step cannot be cleared from inside a run.** Anything that
+executes after a seat's agent step has, by construction, not yet run in
+the job doing the auditing. `job.status` reads `success` in the log of a
+run that is about to fail at its own last step. So the verdict on a
+change to a post-run step comes from `gh run view` on a job that has
+already concluded, and never from the run you are in.
+
+**2. And from a job of the same kind as the one at risk.** Reading a
+completed run is not enough if it is the wrong runtime. The engineer and
+the frontend seats run in `container:` and get `sh -e {0}`, where
+`/bin/sh` is dash, and the other ten run on the host and get
+`bash -e {0}`.
+The step that broke five engineer runs was cleared against a completed
+`okr-agent` run, read correctly, which could never have exercised the
+fault. Ten of twelve workflows would have cleared it forever.
+
+The mechanical form is one line, and it belongs in whatever writes the
+verdict:
+
+```bash
+# which runtimes does this change actually reach?
+grep -l "container:" .github/workflows/agent-*.yml   # these get sh, the rest get bash
+```
+
+**So never write "it is working" without a job id of the right kind
+beside it.** A verdict with no run behind it is the same defect as a
+runtime change with no smoke run behind it, one level up, and it is
+harder to see because it reads as diligence.
+
 ## The ladder for a provider or model change
 
 The five-step ladder above is written for the container, where the thing

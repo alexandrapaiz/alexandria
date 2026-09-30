@@ -2178,3 +2178,228 @@ these four, and read them first because they are this run's unpaid debt.
    reservation or a timeout, and for each one ask whether a rehearsal
    ran. This is the new half of step 2 and the first run to use it is
    the one that finds out whether the clause is written usefully.
+
+## 2026-09-27 — the audit that could not see itself, and the lane nobody wrote down
+
+Window: since the second cycle of 2026-09-24. Branch `exo/2026-09-27`,
+PR #123, branched from main because no ExO pull request was open.
+
+### The one-line version
+
+The org's detectors worked better than this seat did this week. The
+engineer's daily machinery check found both runtime changes within hours
+and diagnosed the fault in one of them completely, and the PM's daily
+standup carried the failure count with a register id on both days. This
+run found nothing they had missed. What it found instead were three
+things one level up: **an audit that cleared a broken step from inside
+the run the step was breaking, a duty assigned to a seat that lacks the
+credential its own evidence needs, and a working lane for workflow
+changes that the file governing workflow changes had never heard of.**
+
+### What was observed
+
+**Five failed engineer runs, all of them finished work.** 36208446311,
+36208644267, 36250253554, 36285149176, 36330209631, between
+2026-09-26T01:26Z and 2026-09-27T15:36Z. Every one shipped: #115, #116,
+#118, #120, #122. The fault is the `Post run report` step the owner added
+to twelve workflows on 2026-09-26, and it is fully diagnosed in
+`INC-2026-09-26-run-report-dash-echo`: `/bin/sh` in the agent container is
+dash, dash's builtin `echo` expands backslash escapes, so `echo "$json" |
+jq` turned every `\n` inside a JSON string into a real control character
+and jq refused it. Reproduced independently here before reading that
+entry, same error text, same line number. `printf '%s'` fixes it.
+
+**Only two seats can hit it**, and this is the part that made the original
+audit wrong: `grep -l "container:" .github/workflows/agent-*.yml` returns
+engineer and frontend, and nothing else. Ten workflows run on the host
+under bash and are immune. The frontend has not run on a schedule since
+the change, so it is the next to fail.
+
+**Three owner pushes to machinery, none with a pull request or a smoke
+run.** Two rewrote the Slack step in twelve files ten minutes apart, and
+the third, `1baeb7f`, changed how production deploys. All three are registered
+by the engineer seat. Twenty-six non-merge commits went straight to main
+from her hand in this window, and about eight of them are press fixes in
+`pipeline/`, which is the engineer's lane. Incident 22's pattern, again.
+
+**The remedy for that was also hers, which is the sharper observation.**
+Commit `451beeb` doubles the engineer's cadence, with the message "owner
+directive: products are not yet in users' hands; build cadence up". So the
+fix for the owner doing a seat's work was a cron change, and a cron change
+is a workflow file, and a workflow file is the one thing no seat can
+touch. **The presence gradient's own remedy is gated on her presence.**
+Carry that number forward: 12 of 12 `workflow_dispatch` runs in this
+window had `triggering_actor: alexandrapaiz`, unchanged, and now unchanged
+even though `PM_DISPATCH_ENABLED` reads `true`.
+
+**Copy rounds that reached her: one, on the graph page**, down from eight
+on 2026-09-20. And `docs/voice/value.md` now exists, 6.7KB on main, which
+is the positive artifact incident 25 said was missing. Both are progress
+and neither is yet proof, because no full copy round has run since the
+file landed.
+
+### What was decided, and the evidence behind each
+
+**1. The capability test, added to the unowned-duty audit (§3b).** A duty
+is owned when the naming seat can reach the evidence the duty is defined
+by. `docs/agents/delivery-health.md` guardrail 4 defines the press's
+delivery evidence as the newest row in `digests` and assigns the daily
+watch to the PM. `.github/workflows/agent-pm.yml` has never carried
+`NEON_RO_URL`, and research, writer and skill do. So the PM has said in every
+standup since 2026-09-24, honestly and in writing, that it could not query
+the table, and read the public library page instead, where a row written
+and never sent, a send that failed after the row landed, and a cached page
+all look healthy. Three audits scored that row `assigned`.
+
+The register had tests for wording, cadence and scope. This is the fourth
+and it is the cheapest of them: read the duty's evidence, then
+`grep -oE 'secrets\.[A-Z_]+'` the owning seat's workflow. Guardrail 5 of
+delivery-health.md states the general rule, which is **name the evidence
+and the credential in the same sentence**, and the fix is queued as item 6
+of the queue page beside the engineer's identical need, which had been
+sitting there since 2026-09-20 as one seat's problem rather than as a
+class.
+
+**2. A post-run step's verdict comes from a concluded run of the same
+kind.** `INC-2026-09-26-slack-report-step-no-smoke-run` is a careful,
+correct governance finding that concludes, in bold, "It is working." It
+had already failed twice, and the two runs it had failed were the two runs
+that wrote the sentence. The reasoning was sound: it read a real completed
+`okr-agent` run, correctly. That run is on the host and could never have
+exercised the fault, and the auditing run could not observe its own last
+step, because a post-run step has not executed at the moment the seat
+writes its verdict. `job.status` read `success` in the log of the run that
+then failed.
+
+So `docs/agents/runtime-changes.md` now says that clearing a change is
+itself a claim: the verdict comes from `gh run view` on a job that has
+concluded, and from a job of the same kind as the one at risk. Both
+clauses were needed. Ten of twelve workflows would have cleared this
+change forever. The postmortem is
+`INC-2026-09-27-post-run-step-audited-from-inside` and it is about the
+practice rather than the fault.
+
+**3. There are two lanes for workflow changes, and this charter knew about
+one.** The push is refused for `.github/workflows/` and nothing else. So a
+seat can commit a complete workflow file to `.github/workflows-pending/`
+and the owner's whole act of applying it is `git mv`. The engineer seat
+found this on 2026-09-19 and has used it four times. The queue page and
+this charter went on telling every seat that prose was the only lane for
+eight days.
+
+The division, and the reason it is not "use the better lane always": **new
+files take the pending directory, edits stay as diffs.** A full copy of a
+file the owner also edits applies cleanly and silently reverts everything
+she changed under it, while a diff's anchor stops matching and the item is
+visibly rotted. The owner edited those twelve files three times in one
+week without a pull request, so that is not hypothetical. Trading a loud
+failure for a silent one to save a keystroke is the wrong trade, and
+incident 26 is what the loudness is worth.
+
+Item 5 of the queue page, the HQ-origin notice, is a new file and has
+therefore moved lanes: it is now
+`.github/workflows-pending/hq-origin-notice.yml`, YAML-parsed, with
+`shell: bash` and a `timeout-minutes` added on the way across. Its trigger
+fired this week, which is the argument for moving it.
+
+### The queue, re-verified line by line, and what had rotted
+
+- **Item 1b is applied and deleted.** All four routed workflows have
+  `continue-on-error: true` and gate the Claude step on the open-routed
+  step's outcome. The chair shipped it stronger than the queued diff:
+  `!= 'success'` rather than `== 'failure'`, which also covers a cancelled
+  step, and a cancelled step has done no work either. The third edit in
+  that item, the tripwire summary line, was **not** applied, so the
+  failure is fixed and still invisible in `gh run list`. Not re-queued,
+  because nothing is currently routed and the line would report on a path
+  that cannot run. Re-queue it with the key.
+- **Item 2 is cancelled in part, on measurement.** The PM's standup is
+  measured for the first time: four runs, 62, 44, 81, 38 turns against a
+  cap of 300. The rule gives 162. There is no shortfall and no headroom
+  argument. What survives is the Monday ceremony, whose only number
+  predates the cron split and whose one Monday since failed at turn 30.
+  The 2026-09-28 run settles it. Apply nothing on item 2 until then.
+- **Items 4a and 4 are unrotted and unapplied.** Every anchor matches
+  exactly once. Item 4a is incident 25's second hand, and for six days now
+  the writer charter has told that seat to draft site copy while the
+  prompt it actually reads has forbidden it. Incident 13 sat through
+  sixteen pull requests, and this one is at six days.
+- **The page had two items numbered 4.** Renumbered. It is applied by hand
+  by one person and the numbers are how she refers to them.
+
+### Where this seat was wrong, in this run
+
+Two things, both worth a successor's attention because the pattern is
+generic.
+
+The first draft of the register-map row for `press-rehearsal.md` said
+"closed in code and unmerged", written after reading the engineer's branch
+and before checking main. Wrong: `rehearse()` is on main at
+`pipeline/weekly.py:1187` and the receipt is in the deploy chain at line
+54. The gap closed four days ago. **Grep main, then grep the branch, and
+say which one you are quoting.** A seat's working tree contains its own
+optimism and a seat reading another seat's branch inherits it.
+
+The second nearly did damage. §5b of this charter says to delete remote
+branches whose PRs merged, and `okr/2026-09` has a merged PR (#86) and an
+open one (#114) on the same ref. Deleting it would have closed the OKR
+seat's unmerged check-in and taken its work. Nineteen branches were
+deleted after checking that every PR ever pointing at each name was merged
+or closed, and the charter now carries that check and the command for it.
+
+### What the next run must check first
+
+The four items from the 2026-09-24 entry are settled, so they are retired
+here: the fourth print landed (`libraryofalexandria.dev/library` serves
+2026-W39, HTTP 200), `rehearse()` exists on main, the receipt is in the
+`&&` chain, and the provider commits since have their rehearsal gate. Note
+that the model column was **not** checked, because this seat has no
+`NEON_RO_URL` either, which is the same finding pointed at itself.
+
+New items, in order.
+
+1. **The Monday ceremony's turn count.** Run 2026-09-28's `agent-pm.yml`
+   ceremony through the `num_turns` command in `turn-caps.md`. Under 150,
+   delete item 2 from the queue and mark both PM rows ok. Over 200, the
+   raise becomes a shortfall rather than headroom. This is the only open
+   question on that item and one number answers it.
+2. **Did the frontend seat fail the same way?** It is the other
+   containerised workflow and it had not run since the Slack step landed.
+   If it failed, the count is six and the class is confirmed as
+   container-only rather than engineer-only. If the fix landed first, say
+   so, because that is the first time a queued workflow change beat the
+   next scheduled run.
+3. **Is `hq-origin-notice.yml` still sitting in `workflows-pending/`?**
+   Two files are parked there now, and `checks.yml` has waited since
+   2026-09-19. The second lane only helps if the `git mv` happens, and a
+   directory of unmoved guards is a queue with better formatting. If both
+   are still there after two runs, the finding is about the lane rather
+   than about the items.
+4. **Did the 403 get retried?** `PM_DISPATCH_ENABLED` is `true` and the
+   dispatch count is still 12 of 12 hers. The PM's log names
+   `INC-2026-09-24-dispatch-403` as the reason and nothing has tested it
+   since. An unexercised power and a broken one look identical from here,
+   and only a retry separates them.
+5. **The ten missing `Enforced at:` headers.** Every register under
+   `docs/voice/` and `docs/design/` lacks the line, though the map records
+   a real gate for each. Not ten gaps, one missing header ten times. Owners
+   are the writer and the frontend, so it is two charter edits, and this
+   run had no room for them.
+6. **Sixteen open pull requests, several superseding each other.** #122
+   contains #120, #118, #116, #115 and #110 by `merge-base` and says so.
+   #60 has been open since 2026-09-20. The binding constraint recorded on
+   2026-09-19 has not moved, and the engineer's note for the retro is the
+   sharpest statement of it: six days into a seven-day sprint, the queue
+   held no unfinished engineer item.
+
+### One thing that is simply working, said plainly
+
+Ship-first has now preserved the work in every failure this register has
+recorded since incident 3. Five runs were marked as crashes this week and
+five pull requests exist. The org's two daily detectors, the engineer's §0
+machinery diff and the PM's §1f run-health line, found this week's failures
+within hours of each landing, which is what the cadence-gap fixes of
+2026-09-20 and 2026-09-24 were for. This seat is a backstop now rather than
+the detector, which is exactly what §2 says it should have become, and a
+weekly audit that finds nothing new about the failures is the audit
+succeeding.

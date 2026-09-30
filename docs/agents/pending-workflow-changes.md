@@ -45,6 +45,42 @@ them. Nothing here is blocked on analysis. It is blocked on a hand.
 
 ---
 
+## Two lanes, and which change takes which
+
+**Added 2026-09-27, because this page described one lane for eight days
+after the org started using two.** The push is refused for paths under
+`.github/workflows/` and for nothing else. So there is a second lane, and
+it is better than this one wherever it applies.
+
+| The change | The lane | What the owner does |
+|---|---|---|
+| A **new** workflow file | commit it to `.github/workflows-pending/`, with a section in that directory's README | `git mv` it one directory up |
+| An **edit** to a workflow that already exists | a diff on this page, with every anchor verified against the live file | apply the diff by hand |
+
+The engineer seat found the second lane on 2026-09-19 and has used it
+four times since; `.github/workflows-pending/checks.yml` is the standing
+example and it is still waiting for the move. Nothing in that directory
+runs, which that README states plainly, so anything sitting there is a
+guard that is not guarding yet. Audit it every run the same way this page
+is audited.
+
+**Why an edit does not get the better lane, which is the part worth
+understanding before someone improves on this.** Pushing a full modified
+copy of an existing workflow would also work and would also reduce the
+owner's hand-work to a `git mv -f`. It trades a loud failure for a silent
+one. A diff's anchor stops matching the moment the live file moves under
+it, and the item is then visibly rotted, which is the entire mechanism of
+the re-verification rule in `prompts/exo-agent.md` §5 and the only reason
+incident 26 was caught before a hand applied it. A full copy taken on
+Monday and moved on Sunday applies cleanly and silently reverts every
+edit made in between. The owner edited these twelve files three times in
+one week without a pull request, so that is not a hypothetical here.
+
+Where a queued edit has grown too large to read as a diff, split the
+item. Do not switch its lane.
+
+---
+
 Applied items get deleted from this file by the next ExO run, which
 verifies against the workflow files themselves rather than trusting this
 page.
@@ -53,112 +89,32 @@ page.
 
 ## Pending, queued 2026-09-18 by the ExO agent
 
-### 1b. The open-routed step must fall back instead of failing the run
-
-**Queued 2026-09-20 by the ExO agent. Incident 23.**
-
-**RE-VERIFIED 2026-09-24, and its status has changed from urgent to
-conditional.** The owner took the alternative at the bottom of this
-item: the chair removed the OPENROUTE secrets from this repository on
-2026-09-23, so all four seats fall back to Sonnet today and nothing is
-currently failing. Every `-` line in the diffs below was grepped against
-the live files this run and each appears exactly once, in all four
-workflows, so the diffs are good.
-
-**What changed is what this item now means. It is a precondition rather
-than a fix.** The either/or shape is still in all four files. It is
-dormant only because a secret is absent, and a secret is the easiest
-thing in this org to put back. So:
-
-> **The OPENROUTE secrets do not go back into this repository until this
-> item is applied.** Re-adding the key today re-arms the identical
-> failure on the identical seat, and the PM is the seat that reports
-> every other failure.
-
-That sentence is the recommendation this seat carries to the owner, and
-it is also in the relay note to HQ, because HQ's copies have the same
-shape and HQ has not removed its key. The second precondition is the
-golden-set comparison this repo's routing law already requires, and the
-third is the ordering rule from incident 23's postmortem: the first seat
-routed is the one whose failure costs least, which is finance or okr,
-and never the PM.
-
-**Why.** Commit 609d7cc gave four workflows two run steps, chosen by a
-condition rather than by an outcome:
-
-```yaml
-      - name: Seat run (open-routed)
-        if: env.OPENROUTE != ''
-      - name: Seat run (Claude)
-        if: env.OPENROUTE == ''
-```
-
-That is an either/or, not a fallback. The Sonnet step is written into
-the file and can never execute while the secret exists, so a routing
-experiment that fails costs the org the entire run rather than a retry.
-Run 35493791740 is the proof: the PM seat produced nothing at all on
-2026-09-20 because its first model call errored, and the perfectly good
-Claude path sitting twelve lines below it was unreachable by
-construction.
-
-**How.** Two edits per file, in `agent-pm.yml`, `agent-market.yml`,
-`agent-okr.yml` and `agent-finance.yml`. Give the open-routed step an
-id and let it fail without failing the job, then gate the Claude step on
-its outcome instead of on the secret.
-
-```diff
-       - name: Seat run (open-routed)
-+        id: openrouted
-         if: env.OPENROUTE != ''
-+        continue-on-error: true
-         uses: anthropics/claude-code-action@v1
-```
-
-```diff
-       - name: Seat run (Claude)
--        if: env.OPENROUTE == ''
-+        # Runs when open routing is off, and also when it was on and
-+        # failed. Incident 23: an either/or between two run steps turns
-+        # a routing experiment into a lost run. This makes the open
-+        # model preferred rather than mandatory.
-+        if: env.OPENROUTE == '' || steps.openrouted.outcome == 'failure'
-         uses: anthropics/claude-code-action@v1
-```
-
-**What it does and does not do.** A failed open-routed attempt now costs
-three minutes and a warning, and the seat still does its job. It does
-not detect the worse case, which is an open-routed run that succeeds and
-does the work badly, because no condition in YAML can judge that. That
-case belongs to the three tests in
-[model-routing.md](model-routing.md) and to the owner's reading of the
-output.
-
-**One caveat, and it is now a live edit rather than a conditional one.**
-The fallback makes the run green whenever Claude rescues it, so the
-failure becomes invisible in `gh run list`. Keep it visible by reading the
-step outcome rather than the job conclusion, which is incident 8's lesson
-again. Item 1's tripwire was applied on 2026-09-20, so this is simply a
-third edit to the same four files. In the `No-ship tripwire` step, inside
-the summary block, after the `pull request:` line:
-
-```diff
-             echo "- pull request: ${pr:-none}"
-+            echo "- open-routed attempt: ${{ steps.openrouted.outcome || 'not attempted' }}"
-           } >> "$GITHUB_STEP_SUMMARY"
-```
-
-**Cost.** Two lines per file, $0. It spends a Claude run only on the
-days the open model fails, which is the days the org was losing a run
-entirely.
-
-**The alternative, which is the owner's and takes ten seconds.** Delete
-or rename the `OPENROUTE_API_KEY` secret. The four seats fall back to
-Sonnet immediately with no file edit at all, because the existing
-conditions already do that when the secret is absent. That is the right
-move if the experiment is not worth a failed Monday, and it is
-reversible.
-
 ### 2. The PM goes daily, so the org has a seat that is present
+
+**CANCELLED IN PART 2026-09-27. Read this paragraph and then decide
+whether to read any further.** The cadence half was applied on
+2026-09-23 and the README half has been applied too. The remaining half
+is the cap raise from 300 to 400, and the standup's share of it is now
+cancelled on measurement rather than on judgment. Four standup runs have
+completed since the split (2026-09-24, 25, 26, 27) and their turn demand
+is 62, 44, 81 and 38 against a cap of 300. The rule in
+[turn-caps.md](turn-caps.md) is twice the peak, which gives 162. There is
+no shortfall and there is no headroom argument left either.
+
+What survives is narrower and it is honest about being unmeasured: **the
+Monday ceremony run has not completed once since the cron split.** The
+last Monday, 2026-09-21, failed at turn 30. Its last good measurement is
+a peak of 141 from before the split, when the ceremony and the standup
+were one run, and the ceremony has since taken the grooming and the
+dispatch queue that the standup does not carry. So the ceremony's cap is
+the one open question on this item, and the next ExO run answers it from
+the 2026-09-28 run rather than from a feeling. **Until then, apply
+nothing on this item.** If 2026-09-28 comes in under 150 like the
+standups, delete the item.
+
+The two `-` anchors below still match the live file exactly once each, so
+the item is not rotted. It is simply not evidenced, which is a different
+and more common reason not to apply something.
 
 **Queued 2026-09-19 by the ExO agent, on the owner's order. THE CADENCE
 HALF WAS APPLIED 2026-09-23 by the chair, in commit 2ae2650, and the cap
@@ -190,7 +146,12 @@ was this seat's own on 2026-09-21. The two failed PM runs died at turn 1
 and turn 30 and contribute nothing in either direction.
 
 **What is now moot.** The cron diff and the two documentation lines
-below are superseded by what the chair shipped. They are left in place
+below are superseded by what the chair shipped, and as of 2026-09-27 the
+two documentation lines are moot for a second reason: README.md already
+reads `pm · daily, Mon is the ceremony` in the STEER node and
+`daily 6:35 ET standup, Mon is the ceremony` in the seat table, so both
+`-` anchors for those lines are gone from the live file. Verified this
+run. They are left in place
 rather than deleted so that the next reader can see what was proposed
 against what landed, and they are marked here rather than there.
 
@@ -356,6 +317,15 @@ instruction herself, because the queue had already drafted them.
 rest of this pull request work, and without it the charter edits are
 inert.**
 
+**RE-VERIFIED 2026-09-27, unchanged and still unapplied on its sixth
+day.** All three `-` lines below were grepped against the live
+`.github/workflows/agent-writer.yml` this run and each appears exactly
+once, at lines 40 to 42. Nothing has rotted. This item is the second
+hand that incident 25's fix needs, so for six days the writer charter has
+told that seat to draft site copy and the prompt it actually reads has
+forbidden it. Incident 13 is the precedent for what a correct fix costs
+while it waits, and it waited through sixteen pull requests.
+
 **Why.** `.github/workflows/agent-writer.yml` line 40 carries this
 sentence in the inline prompt the seat reads before anything else:
 
@@ -413,6 +383,13 @@ reading and this run has one confirmed case to fix.
 **Queued 2026-09-21 by the ExO agent.** Measured, not guessed. See the
 2026-09-21 duty-growth re-check in [turn-caps.md](turn-caps.md).
 
+**RE-VERIFIED 2026-09-27, unchanged.** The one `-` line below appears
+exactly once in the live file, at line 46. The writer has run daily since
+and its runs have all concluded `success`, so the evidence behind the
+raise has not moved in either direction. Still worth applying: a cap
+below the measured rule is a run that dies without warning, and the
+writer is the seat whose duties grew most this month.
+
 **Why.** The writer's cap of 150 was derived on 2026-09-19 from two runs
 whose peak was 53. The seat runs daily now and has run eight more times,
 peaking at **80 turns** in run 35459141039. The standing rule is twice the
@@ -444,6 +421,27 @@ items 1b and 2.
 budget.
 
 ### 5. An HQ-origin commit should announce itself when it lands
+
+**MOVED OUT OF THIS PAGE 2026-09-27. Do not apply it from here.** This is
+a new workflow file, so it takes the other lane. The file is now
+`.github/workflows-pending/hq-origin-notice.yml`, written out in full,
+YAML-parsed, and one command from live:
+
+    git mv .github/workflows-pending/hq-origin-notice.yml .github/workflows/hq-origin-notice.yml
+
+The prose below is kept as the reasoning behind it, and the file's own
+header comment carries the short version so the reasoning travels with
+the artifact. Two changes were made to the YAML on the way across, both
+recorded in the file: a `timeout-minutes: 5`, and an explicit
+`shell: bash` on the run step, because
+`INC-2026-09-26-run-report-dash-echo` is what an unstated shell cost the
+org five days after this item was queued.
+
+**Its trigger fired this week, which is the argument for moving it.**
+Commit `1baeb7f` on 2026-09-25 changed how this repository deploys to
+production, citing HQ Incident 5, and `grep -rn "HQ Incident 5" docs/`
+returns nothing. The marker grep in this job matches that commit's
+subject, verified against the live log this run.
 
 **Queued 2026-09-24 by the ExO agent. Incident 23, and the cadence gap
 recorded against the new row in unowned-duties.md.**
@@ -527,7 +525,11 @@ measured rule, and the pm raise proposed in item 2 above is duty growth
 rather than a shortfall. See the re-measured table in
 [turn-caps.md](turn-caps.md).
 
-### 4. The engineer seat needs the read-only database URL
+### 6. The read-only database URL, for the engineer seat and now the PM seat
+
+**Renumbered from 4 to 6 on 2026-09-27**, because this page carried two
+items numbered 4 and the owner applies it by hand. Nothing else about the
+engineer half changed.
 
 Queued 2026-09-23 by the engineer agent. One line, in
 `.github/workflows/agent-engineer.yml`, in the job's existing `env:`
@@ -537,9 +539,38 @@ block beside `GH_TOKEN` and `PROJECTS_TOKEN`:
       NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
 ```
 
-The secret already exists and the research and skill workflows already
-read it, so this adds no new credential to the org, only an existing one
-to a seat that cannot do its job without it.
+The secret already exists and the research, writer and skill workflows
+already read it, so this adds no new credential to the org, only an
+existing one to a seat that cannot do its job without it.
+
+**The same line, in `.github/workflows/agent-pm.yml`, added 2026-09-27 by
+the ExO agent.** Identical diff, identical `env:` block, and a stronger
+case than the engineer's, because the PM's is the only seat holding a
+duty that is *defined* by this table.
+
+```yaml
+      NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
+```
+
+Verified this run: `agent-pm.yml` does not contain `NEON_RO_URL`, and
+`agent-research.yml`, `agent-writer.yml` and `agent-skill.yml` each do.
+
+**Why the PM's need is the sharper one.** Guardrail 4 of
+[delivery-health.md](delivery-health.md) defines the press's delivery
+evidence as the newest row in `digests`, and assigns the daily watch to
+the PM's standup. That seat has never been able to run the query. Every
+standup since 2026-09-24 says so in the file, honestly, and substitutes
+`libraryofalexandria.dev/library`, which is a weaker signal in the
+direction that matters: a row written and never sent, a send that failed
+after the row landed, and a page served from cache all read as healthy
+there, and those are the three failures the guardrail exists to catch.
+The full finding is in [unowned-duties.md](unowned-duties.md) under the
+2026-09-27 rows, where it is the first example of a duty that passes the
+wording, cadence and scope tests and fails on capability.
+
+**Apply both at once.** They are one decision about one existing secret
+reaching two more seats, and applying one without the other leaves the
+question half answered. The scope note below covers both.
 
 **Why it is queued rather than proposed.** The engineer charter's Observe
 step assigns this seat pipeline health, and two ledger entries marked
@@ -551,8 +582,67 @@ repeat is recorded in [incidents.md](incidents.md) under 2026-09-23.
 
 **Scope, so the reader can judge the risk.** Read-only, no write path,
 and no secret value ever reaches a PR. It does widen what a compromised
-engineer run can read, which is the honest cost and the reason it is the
-owner's call rather than this seat's.
+run can read, and from three seats to five, which is the honest cost and
+the reason it is the owner's call rather than this seat's. Say no and the
+right consequence is not that the guardrail stays as it is: it is that
+`delivery-health.md`'s press row gets marked unwatched and the PM stops
+being asked for a number it cannot get.
+
+### 7. The ExO seat's own prompt grants it a lane the runtime refuses
+
+**Queued 2026-09-27 by the ExO agent.** Found by the check in §2 of that
+charter, which compares each seat's `prompts/<seat>-agent.md` against the
+inline `prompt:` block in its workflow, and which this charter requires
+whenever a run edits its own boundaries. This run edited §5.
+
+**Why.** `.github/workflows/agent-exo.yml` tells the seat to
+
+```
+            orchestrate them as edits to the agent layer only (charters,
+            agent workflows, org docs, your own charter included)
+```
+
+and `agent workflows` is not a lane this seat has. The push is refused,
+verified again this run on a throwaway branch:
+
+```
+! [remote rejected] exo-probe-throwaway -> exo-probe-throwaway (refusing
+to allow a GitHub App to create or update workflow
+`.github/workflows/agent-exo.yml` without `workflows` permission)
+```
+
+The inline prompt arrives last and closest, so a run that believes it will
+spend turns discovering incident 12 for itself. This is the same class as
+item 4a, in the opposite direction: 4a is a prompt forbidding a duty the
+charter grants, and this is a prompt granting a lane the runtime denies.
+
+**How.** One edit to `.github/workflows/agent-exo.yml`, in the inline
+prompt.
+
+```diff
+             decide at most three evidenced improvements, orchestrate them as
+-            edits to the agent layer only (charters, agent workflows, org
+-            docs, your own charter included), and write the learning log.
++            edits to the agent layer only (charters, org docs under
++            docs/agents/, and your own charter). You cannot push
++            .github/workflows/: queue edits to existing workflows as diffs
++            in docs/agents/pending-workflow-changes.md, and commit new
++            workflow files to .github/workflows-pending/ for a hand to move.
++            Then write the learning log.
+```
+
+Verified this run: the three `-` lines appear exactly once each in the live
+file, at the prompt block. The seat's other prohibition list in that
+prompt is consistent with the charter and is left alone, with one omission
+worth noting rather than fixing: the prompt does not carry the charter's
+"never set the ideas ledger's statuses", which is a narrowing the charter
+supplies and the prompt does not contradict.
+
+**Cost.** Six lines in one file, $0. It saves a run the turns it currently
+spends rediscovering a four-week-old incident, and it is the only place a
+seat is told the second lane exists at the moment it needs it.
+
+**Ordering.** Independent of every other item on this page.
 
 ### 5. Every seat run reports onto the board
 
@@ -833,6 +923,28 @@ applying an edit. `APP_ID` is already set.
 
 ## Applied and deleted
 
+- **The open-routed step falls back instead of failing the run** (queued
+  2026-09-20 as item 1b, incident 23, applied by the chair in commit
+  2d3902d on 2026-09-24, verified against all four routed workflow files
+  on 2026-09-27, and deleted from this page in the same run). Present in
+  `agent-pm.yml`, `agent-market.yml`, `agent-okr.yml` and
+  `agent-finance.yml`: each has `continue-on-error: true` on the
+  open-routed step and gates the Claude step on its outcome. **The chair
+  shipped it in a stronger form than the queued diff**, and the
+  difference is worth the next run's attention. The diff proposed
+  `steps.openrouted.outcome == 'failure'` and the live files read
+  `steps.openrouted.outcome != 'success'`, which also covers `cancelled`
+  and `skipped`. A step that is cancelled has done no work either, so
+  the queued version would have lost the run in exactly the case the
+  item was written to prevent. Recorded here because this page's habit is
+  to note where the hand improved on the proposal, and because the third
+  edit in the item, the `open-routed attempt:` line in the tripwire
+  summary, was **not** applied: the failure is therefore fixed and still
+  invisible in `gh run list`, which is incident 8's lesson left half
+  learned. It is not re-queued, because the OPENROUTE secrets are absent
+  from this repository and nothing is currently routed, so the line would
+  report on a path that cannot run. Re-queue it in the same run that
+  re-adds the key.
 - **Turn caps, re-derived from run logs** (queued 2026-09-18, applied by
   the chair in c6bc2c4, verified against the workflow files on
   2026-09-18). The chair went further than the queued numbers on several
