@@ -88,3 +88,40 @@ one directory up they stop it only for whoever remembers to run the command.
 
 One command, and it is the owner's or the chair's: a seat's token has no
 `workflows` permission, for the reason the top of this file gives.
+
+## skill-gate.yml — does this revision merge on its own?
+
+Filed by the engineer seat 2026-09-30 for ADR-37, amended the day before when
+the owner confirmed no human in the loop for skill maintenance. It runs
+`python3 tools/skill_gate.py` on every pull request that touches `skills/**`,
+labels the pull request `skill-gate/passed` or `skill-gate/failed`, and comments
+with the state of all seven clauses and the reason behind each one. One comment
+that it edits on each push, never a new one.
+
+**It does not merge anything, and that is deliberate.** ADR-37 allows a measured
+revision of an existing skill onto main without the owner, and the step that
+would act on this verdict is not queued here yet. The gate has to be seen to be
+right on real revisions first, and a label is reversible in a way a merge is not.
+When it is queued it will be a separate workflow with its own permissions, so
+that the thing which judges and the thing which acts are never one file.
+
+A pull request that edits a skill alongside code gets no label at all. The
+`paths:` filter can only say `skills/**`, and the question ADR-37 actually asks is
+whether the diff touches nothing else; the tool answers that one and reports the
+pull request as not applicable, because a red label on every engineer pull request
+that happens to edit a skill is how a label stops being read.
+
+`fetch-depth: 0` is load-bearing. Three clauses compare the revision against the
+base branch: the eval against the previous version's own lower bound, the ban list
+against what the revision adds, and the trigger test against which cases were
+already failing. On a shallow checkout those clauses report `unknown`, and an
+unmeasured clause is never a pass, so the gate would fail closed. That is the
+right direction to fail, and it is still worth not failing.
+
+Until it is moved, nothing enforces the gate on a pull request. The same clauses
+can be run by hand from a checkout, which is how the seven refusals were
+rehearsed on 2026-09-30 (a deprecated cited claim, a month-old claim-status
+snapshot, a SKILL.md edited after its eval, a delta below the previous version's
+lower bound, a version with no trigger, the kill switch set, and a revision that
+introduces a ban-list tell). No key, no network, no database: the graph clause
+reads `docs/research/claim-status.json`, which the daily Modal job writes.
