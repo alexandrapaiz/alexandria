@@ -43,6 +43,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `tasks` | number | graded tasks, excluding controls |
 | `control_tasks` | number | tasks the skill is supposed to leave alone |
 | `indicator_tasks` | number | tasks only the skill could pass, reported and never scored |
+| `unmeasured_tasks` | array | ids of tasks that could not be run at all, so they are not scored either |
 | `scored_by_hard_check` | number | of `tasks`, how many were scored deterministically rather than by a judge |
 | `spend_usd` | number | what the run cost, from the provider's own usage block |
 | `with_skill` | object | the arm summary, below |
@@ -86,6 +87,12 @@ the library than any pass. `no gain` means the interval includes zero, which is
 a statement about the evidence and not about the skill, so the copy is "measured,
 no gain we can distinguish from noise at n of 30" rather than "failed".
 
+**An unmeasured task is not a zero.** A task whose command could not run at all
+is listed in `unmeasured_tasks` and kept out of both arms. It is the difference
+between "the tests failed" and "there was no interpreter", and scoring the second
+as the first is symmetric across the arms, so it renders as "no gain" and reads
+as a finding about the skill.
+
 **An indicator is not a score and must never be rendered as one.** A task
 marked `scored_in: with_only` in the task file is one the without-arm cannot
 possibly pass, because what it checks for is in the skill. Counting it would
@@ -100,9 +107,16 @@ headline delta.
 
 ## An example task file
 
-`skills/<slug>/evals/tasks.json`, written by the skill seat, never by the
+`skills/<slug>/evals/evals.json`, written by the skill seat, never by the
 harness or by the skill's own author where the library can help it. The
 disjointness argument is in `docs/product/skill-validation.md` §2.
+
+The six suites on `skill/2026-09-30-skill-evals` are the real thing and they are
+the format of record: `suite_version`, `kind: treatment|control`, `form:
+prompt|project`, `prompt`, and rubric criteria carrying 0/1/2 anchors. The
+harness reads that shape and also the shorter one below, which it proposed on
+the same day. `tests/fixtures/skill-eval-suite/evals.json` holds one task of
+every form and check type the real suites use.
 
 ```json
 {

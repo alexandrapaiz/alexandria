@@ -128,10 +128,11 @@ SUBJECT_SYSTEM = (
 
 JUDGE_SYSTEM = (
     "You are grading one answer against a checklist. You do not know how the "
-    "answer was produced and you must not speculate about it. For each "
-    "criterion, answer strictly yes or no: does the answer satisfy it. Reply in "
-    "JSON as {\"verdicts\": {\"<criterion id>\": \"yes\"|\"no\"}, "
-    "\"why\": \"one sentence\"}."
+    "answer was produced and you must not speculate about it. Grade only what "
+    "the answer says. For a criterion that lists numbered anchors, return the "
+    "number of the anchor that describes the answer. For one that does not, "
+    "return yes or no. Reply in JSON as {\"verdicts\": {\"<criterion id>\": "
+    "<number>|\"yes\"|\"no\"}, \"why\": \"one sentence\"}."
 )
 
 
@@ -253,8 +254,21 @@ def read_skill(slug: str) -> tuple[str, str]:
     return body.strip(), hashlib.sha256(raw.encode()).hexdigest()
 
 
+# The skill seat writes `evals/evals.json`, which is also the name the
+# skill-creator plugin's own suites use. `evals/tasks.json` is accepted as an
+# alias because this harness proposed that name first, on 2026-09-30, in the same
+# window the skill seat was writing six suites under the other one. The suites
+# that exist win; a harness that cannot read the tasks that were written is worth
+# nothing.
+TASK_FILENAMES = ("evals.json", "tasks.json")
+
+
 def tasks_path(slug: str) -> pathlib.Path:
-    return skill_dir(slug) / "evals" / "tasks.json"
+    evals = skill_dir(slug) / "evals"
+    for name in TASK_FILENAMES:
+        if (evals / name).exists():
+            return evals / name
+    return evals / TASK_FILENAMES[0]
 
 
 def results_path(slug: str) -> pathlib.Path:
@@ -262,7 +276,55 @@ def results_path(slug: str) -> pathlib.Path:
 
 
 CHECK_TYPES = {"contains_all", "contains_none", "number_in_range",
-               "json_parses", "command"}
+               "json_parses", "command", "rubric", "tests_pass", "parses"}
+
+# A task the skill seat wrote and this harness had never heard of is a bug in
+# this harness, not in the task. `normalize` is the one place the two
+# vocabularies meet, and everything below it speaks only the second one.
+#
+#   skill seat            here
+#   ----------            ----
+#   suite_version         contract
+#   kind: control         control: true
+#   form: prompt|project  kind: prompt|project
+#   prompt                ask
+#   files: {name: text}   files, written into the project copy and shown to both arms
+#   check.criteria        rubric, with 0/1/2 anchors when the author gave them
+#   check.type: rubric    rubric
+#   check.type: parses    parses, a deterministic gate plus judged assertions
+#   check.type: tests_pass  tests_pass, an exit code
+#   check.type: number_in_range  the judge extracts, the range is arithmetic
+
+
+def normalize(spec: dict) -> dict:
+    """The skill seat's suite in this harness's vocabulary. Idempotent."""
+    out = dict(spec)
+    out["contract"] = spec.get("contract", spec.get("suite_version"))
+    policy = dict(spec.get("policy") or {})
+    policy.setdefault("repetitions", DEFAULT_REPS)
+    out["policy"] = policy
+    tasks = []
+    for raw in spec.get("tasks") or []:
+        task = dict(raw)
+        if task.get("kind") in ("treatment", "control"):
+            task["control"] = task["kind"] == "control"
+            task["kind"] = task.pop("form", "prompt")
+        task.setdefault("kind", task.pop("form", "prompt"))
+        if "ask" not in task and "prompt" in task:
+            task["ask"] = task["prompt"]
+        check = dict(task.get("check") or {})
+        if check.get("type") == "rubric":
+            task["rubric"] = [
+                {"id": c.get("id"), "asks": c.get("criterion") or c.get("asks"),
+                 "anchors": c.get("anchors")}
+                for c in (check.get("criteria") or [])
+            ]
+            task.pop("check", None)
+        elif check:
+            task["check"] = check
+        tasks.append(task)
+    out["tasks"] = tasks
+    return out
 
 
 def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
@@ -323,6 +385,30 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
                                         f"regular expression ({exc})")
                 if not check.get("patterns"):
                     problems.append(f"{slug}/{tid}: {kind} with no patterns")
+            if kind == "tests_pass":
+                if not check.get("command"):
+                    problems.append(f"{slug}/{tid}: tests_pass with no command")
+                if not check.get("answer_path"):
+                    problems.append(f"{slug}/{tid}: tests_pass needs "
+                                    "answer_path, the file the answer is "
+                                    "written to")
+            if kind == "parses":
+                if check.get("format") not in PARSES_FORMATS:
+                    problems.append(f"{slug}/{tid}: `parses` format "
+                                    f"{check.get('format')!r} is not one of "
+                                    f"{list(PARSES_FORMATS)}")
+                if not check.get("assertions"):
+                    problems.append(f"{slug}/{tid}: parses with no assertions "
+                                    "scores nothing but syntax")
+            if kind == "number_in_range" and check.get("range"):
+                low, high = check["range"]
+                if low > high:
+                    problems.append(f"{slug}/{tid}: range {check['range']} is "
+                                    "inverted")
+                if not check.get("extract"):
+                    problems.append(f"{slug}/{tid}: number_in_range needs "
+                                    "`extract`, which says what number to take "
+                                    "out of the answer")
             if kind == "command":
                 if task.get("kind") != "project":
                     problems.append(f"{slug}/{tid}: a command check needs "
@@ -344,11 +430,17 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
             problems.append(f"{slug}/{tid}: a control and an indicator at once. "
                             "A control is a task the skill must not change and "
                             "an indicator is one only the skill can pass.")
-        if task.get("kind") == "project":
+        # A workspace is needed by the checks that run a command, and by nothing
+        # else. A `project`-form task whose check is `parses` is the model
+        # writing a file from a description, and there is nothing to copy.
+        if (check or {}).get("type") in ("tests_pass", "command") \
+                and not task.get("files"):
             project = base / (task.get("project") or "")
             if not task.get("project") or not project.is_dir():
-                problems.append(f"{slug}/{tid}: project directory "
-                                f"{task.get('project')!r} does not exist")
+                problems.append(f"{slug}/{tid}: this check runs a command, so "
+                                "it needs inline `files` or a `project` "
+                                f"directory, and {task.get('project')!r} is "
+                                "neither")
     if real == 0:
         problems.append(f"{slug}: every task is a control, so there is nothing "
                         "the skill is being measured on")
@@ -358,13 +450,13 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
 def load_tasks(slug: str) -> tuple[dict, list[str]]:
     path = tasks_path(slug)
     if not path.exists():
-        return {}, [f"{slug}: no evals/tasks.json. Unmeasured, which is an "
+        return {}, [f"{slug}: no evals/evals.json. Unmeasured, which is an "
                     "honest state and is never a pass (ADR-36: a skill with no "
                     "eval is status draft, never active)."]
     try:
-        spec = json.loads(path.read_text())
+        spec = normalize(json.loads(path.read_text()))
     except json.JSONDecodeError as exc:
-        return {}, [f"{slug}: evals/tasks.json is not JSON ({exc})"]
+        return {}, [f"{slug}: {path.name} is not JSON ({exc})"]
     return spec, conformance(spec, slug, path.parent)
 
 
@@ -412,6 +504,141 @@ def hard_check(task: dict, answer: str, base: pathlib.Path) -> tuple[float, str]
     return (0.0, f"unknown check type {kind!r}")
 
 
+def workspace(task: dict, check: dict, base: pathlib.Path,
+              tmp: pathlib.Path) -> pathlib.Path:
+    """The task's project, materialized fresh. Inline files, then a directory.
+
+    Fresh every repetition, because a task that leaves state behind scores the
+    repetition after it, and these suites hand the model a reference
+    implementation and an acceptance gate that it must not be able to edit for
+    the next run.
+    """
+    work = tmp / "project"
+    if task.get("project") and (base / task["project"]).is_dir():
+        shutil.copytree(base / task["project"], work)
+    else:
+        work.mkdir(parents=True)
+    for source in (task.get("files") or {}, check.get("files") or {}):
+        for name, text in source.items():
+            target = work / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text(text)
+    return work
+
+
+# A command that could not run at all is not a failing test. `127` is the shell's
+# "command not found", and a harness that scored it 0 would report a broken
+# environment as a real result, symmetrically in both arms, which reads as "no
+# gain" and is the most expensive wrong answer this file can give. Such a task is
+# reported unmeasured instead, and `score_answer` returns None for it.
+UNRUNNABLE = 127
+
+
+def command_env() -> dict:
+    """The environment a suite's command runs in, with `python` made to exist.
+
+    The suites are written by an agent and say `python -m pytest`. Debian's
+    containers ship `python3` and no `python`, so every `tests_pass` task scored
+    `exit 127` on the first machine this harness ran on. A shim beats asking six
+    task files to spell the interpreter differently, and it is not a lie: the
+    interpreter it points at is the one running this file.
+    """
+    import os
+
+    shim = pathlib.Path(tempfile.mkdtemp()) / "bin"
+    shim.mkdir(parents=True)
+    link = shim / "python"
+    if not shutil.which("python"):
+        link.write_text(f'#!/bin/sh\nexec "{sys.executable}" "$@"\n')
+        link.chmod(0o755)
+    env = dict(os.environ)
+    env["PATH"] = f"{shim}:{env.get('PATH', '')}"
+    return env
+
+
+def tests_pass(task: dict, answer: str, base: pathlib.Path,
+               check: dict) -> tuple[float, str]:
+    """The answer is written to `answer_path` and `command` decides. Exit 0 wins.
+
+    The command runs through a shell because the suites write it as one string,
+    and it runs inside a temporary copy with a timeout. This is the cheapest and
+    least arguable score in the harness: the tests either pass or they do not,
+    and no judge is involved.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        work = workspace(task, check, base, pathlib.Path(tmp))
+        target = work / check["answer_path"]
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(extract_code(answer))
+        try:
+            done = subprocess.run(check["command"], cwd=work, shell=True,
+                                  capture_output=True, text=True,
+                                  env=command_env(),
+                                  timeout=check.get("timeout", 180))
+        except subprocess.TimeoutExpired:
+            return (0.0, "the command timed out")
+        except OSError as exc:
+            return (None, f"the command could not be run ({exc})")
+        if done.returncode == 0:
+            return (1.0, "exit 0")
+        tail = (done.stdout + done.stderr).strip().splitlines()[-3:]
+        detail = f"exit {done.returncode}: " + " | ".join(tail)
+        if done.returncode == UNRUNNABLE:
+            return (None, "UNMEASURED, " + detail)
+        return (0.0, detail)
+
+
+PARSES_FORMATS = ("python_module", "json")
+
+
+def parses(answer: str, check: dict) -> tuple[bool, str]:
+    """Does the answer parse in the format the task named. A gate, not a score.
+
+    A gate rather than a grader on purpose: an artifact that does not parse is not
+    a bad artifact, it is not an artifact, and averaging it against the prose
+    assertions would let a half-written file score for the half that reads well.
+    """
+    import ast
+
+    code = extract_code(answer)
+    fmt = check.get("format")
+    if fmt == "python_module":
+        try:
+            ast.parse(code)
+        except SyntaxError as exc:
+            return (False, f"does not parse as Python: {exc}")
+        return (True, "parses")
+    if fmt == "json":
+        try:
+            json.loads(code)
+        except json.JSONDecodeError as exc:
+            return (False, f"does not parse as JSON: {exc}")
+        return (True, "parses")
+    return (False, f"unknown format {fmt!r}")
+
+
+def statements_prompt(task: dict, answer: str, statements: list[dict],
+                      extract: str = "") -> str:
+    """The judge's message for prose assertions, and for one extraction.
+
+    The same blinding rule as the rubric: the judge is told the task and the
+    answer and nothing about which arm produced it.
+    """
+    lines = ["The task the answer was given:", "", task["ask"], "",
+             "The answer:", "", answer, ""]
+    if extract:
+        lines += [f"First, extract this number from the answer: {extract}. "
+                  "Report it as `value`, or null when the answer does not give "
+                  "one.", ""]
+    lines += ["Then decide each statement about the answer, strictly yes or no:",
+              ""]
+    for item in statements:
+        lines.append(f"- {item['id']}: {item['statement']}")
+    lines += ["", 'Reply as {"value": <number or null>, "verdicts": '
+              '{"<id>": "yes"|"no"}, "why": "one sentence"}.']
+    return "\n".join(lines)
+
+
 def run_project_check(task: dict, answer: str, base: pathlib.Path,
                       check: dict) -> tuple[float, str]:
     """Copy the project, drop the answer in, run the command, read the exit code.
@@ -452,10 +679,43 @@ def extract_code(answer: str) -> str:
     return fence.group(1) if fence else answer
 
 
+def criterion_score(verdict, anchors: dict | None) -> float:
+    """One criterion's score in [0, 1].
+
+    An anchored criterion is scored on its own scale and normalized by its top
+    anchor, which is how the skill seat's suites are written: 0, 1 and 2, where 2
+    is the behaviour the skill teaches. A criterion with no anchors is yes or no.
+    Anything the judge did not answer, or answered outside the scale, is zero.
+    Silence is never a pass.
+    """
+    text = str(verdict).strip().lower()
+    if anchors:
+        try:
+            keys = sorted(int(k) for k in anchors)
+        except (TypeError, ValueError):
+            keys = []
+        top = max(keys) if keys else 0
+        if top <= 0:
+            return 0.0
+        try:
+            value = float(text)
+        except ValueError:
+            # A judge that answered yes on an anchored criterion has not used
+            # the scale, and reading it as the top anchor would be generous by
+            # construction. Read it as the second-best, and never as full marks.
+            return (top - 1) / top if text.startswith("y") else 0.0
+        return max(0.0, min(value, top)) / top
+    return 1.0 if text.startswith("y") or text == "1" else 0.0
+
+
 def rubric_score(verdicts: dict, rubric: list[dict]) -> tuple[float, str]:
-    hits = [1.0 if str(verdicts.get(item["id"], "")).strip().lower()
-            .startswith("y") else 0.0 for item in rubric]
-    return (mean(hits), f"{int(sum(hits))} of {len(rubric)} criteria")
+    scores = [criterion_score(verdicts.get(item["id"]), item.get("anchors"))
+              for item in rubric]
+    got = sum(scores)
+    detail = ", ".join("{}={:.2f}".format(item["id"], value)
+                       for item, value in zip(rubric, scores))
+    return (mean(scores),
+            f"{got:.2f} of {len(rubric)} criteria ({detail})")
 
 
 # ------------------------------------------------------------------ the models
@@ -528,6 +788,8 @@ def judge_prompt(task: dict, answer: str) -> str:
              "The answer:", "", answer, "", "The criteria:", ""]
     for item in task["rubric"]:
         lines.append(f"- {item['id']}: {item['asks']}")
+        for key in sorted((item.get("anchors") or {}), key=lambda k: str(k)):
+            lines.append(f"    {key} = {item['anchors'][key]}")
     return "\n".join(lines)
 
 
@@ -552,27 +814,116 @@ def window_conflict(now: dt.datetime) -> str:
     return ""
 
 
+def render_ask(task: dict) -> str:
+    """The user message. Identical in both arms, files included.
+
+    A project task hands the model the files it is working against, and it has to
+    see them, so they go in the message rather than on a disk it cannot read. The
+    same text goes to both arms, which is the property the whole design rests on.
+    """
+    files = task.get("files") or {}
+    if not files:
+        return task["ask"]
+    parts = [task["ask"], "", "The files in the project:"]
+    for name in sorted(files):
+        parts += ["", f"{name}:", "```", files[name].rstrip(), "```"]
+    return "\n".join(parts)
+
+
+def score_answer(task: dict, answer: str, judge, base: pathlib.Path
+                 ) -> tuple[float, str]:
+    """One answer's score in [0, 1], by whichever instrument the task named.
+
+    The order matters. Everything deterministic is decided here without a model,
+    and the judge is asked only for what cannot be computed: a rubric verdict, a
+    prose assertion about an artifact, and the one extraction a
+    `number_in_range` task needs before its arithmetic can run.
+    """
+    check = task.get("check") or {}
+    kind = check.get("type")
+
+    if task.get("rubric"):
+        verdicts = judge.ask(JUDGE_SYSTEM, judge_prompt(task, answer),
+                             JUDGE_MAX_TOKENS).get("verdicts") or {}
+        return rubric_score(verdicts, task["rubric"])
+
+    if kind == "tests_pass":
+        return tests_pass(task, answer, base, check)
+
+    if kind == "parses":
+        ok, why = parses(answer, check)
+        statements = check.get("assertions") or []
+        if not ok:
+            return (0.0, why)
+        if not statements:
+            return (1.0, why)
+        reply = judge.ask(JUDGE_SYSTEM,
+                          statements_prompt(task, extract_code(answer),
+                                            statements),
+                          JUDGE_MAX_TOKENS)
+        verdicts = reply.get("verdicts") or {}
+        hits = [criterion_score(verdicts.get(a["id"]), None) for a in statements]
+        return (mean(hits), f"parses, {int(sum(hits))} of {len(hits)} assertions")
+
+    if kind == "number_in_range" and check.get("extract"):
+        # The suites describe the number in prose ("the count of challenger
+        # episodes the answer says to budget"), so extraction needs a reader and
+        # the comparison does not. The judge reads, the arithmetic decides, and
+        # the secondary assertions are scored beside it rather than folded in,
+        # because the suite's own pass condition says a right number with wrong
+        # reasoning has to stay visible.
+        statements = check.get("secondary_assertions") or []
+        reply = judge.ask(JUDGE_SYSTEM,
+                          statements_prompt(task, answer, statements,
+                                            extract=check["extract"]),
+                          JUDGE_MAX_TOKENS)
+        low, high = check.get("range") or [float("-inf"), float("inf")]
+        value = reply.get("value")
+        try:
+            in_range = 1.0 if low <= float(value) <= high else 0.0
+        except (TypeError, ValueError):
+            in_range = 0.0
+            value = None
+        verdicts = reply.get("verdicts") or {}
+        hits = [criterion_score(verdicts.get(a["id"]), None) for a in statements]
+        parts = [in_range] + hits
+        return (mean(parts),
+                f"value {value!r} against [{low}, {high}] ({'in' if in_range else 'out'}), "
+                f"{int(sum(hits))} of {len(hits)} secondary")
+
+    if check:
+        return hard_check(task, answer, base)
+
+    return (0.0, "nothing scores this task")
+
+
 def run_task(subject, judge, task: dict, skill_body: str, reps: int,
              base: pathlib.Path) -> dict:
     """One task, both arms, `reps` times each."""
     with_system = (SUBJECT_SYSTEM + "\n\n# The skill under test\n\n"
                    + skill_body)
+    deterministic = (task.get("check") or {}).get("type") == "tests_pass"
     rows = {"id": task["id"], "control": bool(task.get("control")),
             "indicator": is_indicator(task),
-            "scored_by": "check" if task.get("check") else "rubric",
-            "with_scores": [], "without_scores": [], "notes": []}
+            "scored_by": "rubric" if task.get("rubric")
+                         else ("hard check" if deterministic else "mixed"),
+            "with_scores": [], "without_scores": [], "notes": [],
+            "unmeasured": 0}
+    ask = render_ask(task)
 
     for arm, system, bucket in (("with", with_system, "with_scores"),
                                 ("without", SUBJECT_SYSTEM, "without_scores")):
         for rep in range(reps):
-            reply = subject.ask(system, task["ask"], SUBJECT_MAX_TOKENS)
+            reply = subject.ask(system, ask, SUBJECT_MAX_TOKENS)
             answer = str(reply.get("answer") or "")
-            if task.get("check"):
-                score, why = hard_check(task, answer, base)
-            else:
-                verdicts = judge.ask(JUDGE_SYSTEM, judge_prompt(task, answer),
-                                     JUDGE_MAX_TOKENS).get("verdicts") or {}
-                score, why = rubric_score(verdicts, task["rubric"])
+            score, why = score_answer(task, answer, judge, base)
+            if score is None:
+                # Unmeasured, not zero. The repetition is dropped from both the
+                # arm and the count, and the note says why, so a task that could
+                # not be run shows up as a smaller n rather than as a bad result.
+                rows["unmeasured"] += 1
+                rows["notes"].append(f"{arm} rep {rep + 1}: unmeasured ({why})")
+                continue
             rows[bucket].append(score)
             rows["notes"].append(f"{arm} rep {rep + 1}: {score:.2f} ({why})")
 
@@ -604,10 +955,12 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
               today: str) -> dict:
     """The result document. This shape is the contract site/app/skills/README.md
     describes, and nothing renders a number this function did not compute."""
-    graded = [t for t in per_task
+    measured = [t for t in per_task if t["with_scores"] and t["without_scores"]]
+    unmeasured = [t for t in per_task if t not in measured]
+    graded = [t for t in measured
               if not t["control"] and not t.get("indicator")]
-    controls = [t for t in per_task if t["control"]]
-    indicators = [t for t in per_task if t.get("indicator")]
+    controls = [t for t in measured if t["control"]]
+    indicators = [t for t in measured if t.get("indicator")]
     policy = spec.get("policy") or {}
     min_delta = float(policy.get("min_delta", 0.0))
 
@@ -636,8 +989,9 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         "tasks": len(graded),
         "control_tasks": len(controls),
         "indicator_tasks": len(indicators),
+        "unmeasured_tasks": [t["id"] for t in unmeasured],
         "scored_by_hard_check": sum(1 for t in graded
-                                    if t["scored_by"] == "check"),
+                                    if t["scored_by"] == "hard check"),
         "spend_usd": round(spend, 4),
         "with_skill": arm("with_scores"),
         "without_skill": arm("without_scores"),
@@ -788,7 +1142,7 @@ def main(argv=None) -> int:
         # The two are labelled differently on purpose, because a line reading
         # `failing` against a file nobody has written yet is how a report stops
         # being read.
-        malformed = [p for p in problems if "no evals/tasks.json" not in p]
+        malformed = [p for p in problems if "no evals/evals.json" not in p]
         for line in problems:
             print(("failing: " if line in malformed else "unmeasured: ") + line)
         if malformed:

@@ -354,7 +354,7 @@ def test_a_conformant_file_has_no_problems(tmp_path):
     (base_spec(tasks=[{"id": "a", "ask": "?", "kind": "project",
                        "project": "nowhere", "answer_file": "x.py",
                        "check": {"type": "command", "run": ["true"]}}]),
-     "does not exist"),
+     "is neither"),
 ])
 def test_conformance_catches(spec, fragment, tmp_path):
     problems = ev.conformance(spec, "s", tmp_path)
@@ -492,3 +492,138 @@ def test_a_suite_of_nothing_but_indicators_has_nothing_to_measure(tmp_path):
                                       "patterns": ["x"]}}])
     assert any("every task is a control" in p
                for p in ev.conformance(spec, "s", tmp_path))
+
+
+# --------------------------------------- the shape the skill seat actually wrote
+
+FIXTURE = ROOT / "tests" / "fixtures" / "skill-eval-suite"
+
+
+def fixture_suite():
+    return ev.normalize(json.loads((FIXTURE / "evals.json").read_text()))
+
+
+def test_the_skill_seat_s_vocabulary_is_read_without_a_single_problem():
+    """The suites were written in a different vocabulary than this harness proposed.
+
+    The skill seat wrote six suites under `evals/evals.json` on 2026-09-30, in the
+    same window this harness was written, with `suite_version` for `contract`,
+    `kind: treatment|control`, `form` for `kind`, `prompt` for `ask`, and rubric
+    criteria carrying 0/1/2 anchors. `normalize` is the one place the two meet.
+    This fixture holds one task of every form and check type those six use.
+    """
+    spec = fixture_suite()
+    assert ev.conformance(spec, "fixture-skill", FIXTURE) == []
+    assert spec["contract"] == ev.CONTRACT
+    ids = {t["id"] for t in spec["tasks"]}
+    assert ids == {"fx-t1", "fx-t2", "fx-t3", "fx-t4", "fx-c1", "fx-c2"}
+    controls = {t["id"] for t in spec["tasks"] if t.get("control")}
+    assert controls == {"fx-c1", "fx-c2"}
+    rubrics = {t["id"] for t in spec["tasks"] if t.get("rubric")}
+    assert rubrics == {"fx-t1", "fx-c2"}
+
+
+def test_normalize_is_idempotent():
+    once = fixture_suite()
+    assert ev.normalize(once) == once
+
+
+def test_an_anchored_criterion_is_scored_on_its_own_scale():
+    rubric = [{"id": "a", "asks": "?", "anchors": {"0": "no", "1": "half", "2": "yes"}}]
+    assert ev.rubric_score({"a": 2}, rubric)[0] == 1.0
+    assert ev.rubric_score({"a": 1}, rubric)[0] == 0.5
+    assert ev.rubric_score({"a": 0}, rubric)[0] == 0.0
+    # Out of scale is clamped, absent is zero, and a judge that answered `yes` on
+    # an anchored criterion has not used the scale and never gets full marks.
+    assert ev.rubric_score({"a": 9}, rubric)[0] == 1.0
+    assert ev.rubric_score({}, rubric)[0] == 0.0
+    assert ev.rubric_score({"a": "yes"}, rubric)[0] == 0.5
+
+
+def test_the_judge_sees_the_anchors():
+    task = [t for t in fixture_suite()["tasks"] if t["id"] == "fx-t1"][0]
+    prompt = ev.judge_prompt(task, "an answer")
+    assert "Declines and names the mechanism." in prompt
+    assert "0 = Endorses it." in prompt
+
+
+def test_an_artifact_that_does_not_parse_scores_zero_without_asking_a_judge():
+    """The gate is a gate. Half a file must not score for the half that reads well."""
+    for fmt, good, bad in (("python_module", "def mutant_1():\n    pass\n", "def ("),
+                           ("json", '{"chunk_tokens": 2048}', "{oops")):
+        assert ev.parses(good, {"format": fmt})[0] is True
+        assert ev.parses(bad, {"format": fmt})[0] is False
+
+    task = [t for t in fixture_suite()["tasks"] if t["id"] == "fx-t3"][0]
+
+    class NeverCalled:
+        def ask(self, *a, **kw):
+            raise AssertionError("the judge was asked about an artifact that "
+                                 "does not parse")
+
+    score, why = ev.score_answer(task, "not json at all", NeverCalled(), FIXTURE)
+    assert score == 0.0 and "does not parse" in why
+
+
+def test_the_real_pytest_file_in_a_control_decides_the_score():
+    """`tests_pass` end to end: the suite's own test file against two answers."""
+    task = [t for t in fixture_suite()["tasks"] if t["id"] == "fx-c1"][0]
+    good = "```python\ndef double(n):\n    return 2 * n\n```"
+    bad = "```python\ndef double(n):\n    return n\n```"
+    assert ev.score_answer(task, good, None, FIXTURE) == (1.0, "exit 0")
+    score, why = ev.score_answer(task, bad, None, FIXTURE)
+    assert score == 0.0 and "exit 1" in why
+
+
+def test_a_command_that_cannot_run_is_unmeasured_and_never_a_zero(tmp_path):
+    """The most expensive wrong answer this harness could give.
+
+    `python -m pytest` is what the suites write, and a container with `python3`
+    and no `python` answers 127 for every one of them. Scored as zero it is
+    symmetric in both arms, so it reads as "no gain", and a broken environment
+    becomes a finding about the skill. It is reported unmeasured instead.
+    """
+    task = {"id": "x", "files": {},
+            "check": {"type": "tests_pass", "answer_path": "a.py",
+                      "command": "definitely-not-a-real-command"}}
+    score, why = ev.score_answer(task, "x", None, tmp_path)
+    assert score is None
+    assert "UNMEASURED" in why
+
+
+def test_an_unmeasured_task_leaves_the_result_rather_than_dragging_it_down(tmp_path):
+    subject = ev.ScriptedSubject(with_answer="harness", without_answer="no")
+    spec = base_spec(tasks=[
+        {"id": "real", "ask": "?",
+         "check": {"type": "contains_all", "patterns": ["harness"]}},
+        {"id": "broken", "ask": "?", "files": {},
+         "check": {"type": "tests_pass", "answer_path": "a.py",
+                   "command": "definitely-not-a-real-command"}},
+    ])
+    rows = [ev.run_task(subject, subject, t, "body", 2, tmp_path)
+            for t in spec["tasks"]]
+    result = ev.summarize("s", "e" * 64, spec, rows, "m", "j", 2, 0.0,
+                          "2026-09-30")
+    assert result["tasks"] == 1
+    assert result["unmeasured_tasks"] == ["broken"]
+    assert result["delta"]["mean"] == 1.0
+
+
+def test_a_project_task_shows_both_arms_the_same_files():
+    task = [t for t in fixture_suite()["tasks"] if t["id"] == "fx-c1"][0]
+    ask = ev.render_ask(task)
+    assert "double(n) returns 2n." in ask, (
+        "a project task's files have to reach the model, or it is answering a "
+        "question about code it cannot see")
+    assert ask.startswith(task["ask"])
+
+
+def test_evals_json_is_preferred_and_tasks_json_still_works(tmp_path,
+                                                            monkeypatch):
+    monkeypatch.setattr(ev, "ROOT", tmp_path)
+    evals = tmp_path / "skills" / "s" / "evals"
+    evals.mkdir(parents=True)
+    (evals / "tasks.json").write_text("{}")
+    assert ev.tasks_path("s").name == "tasks.json"
+    (evals / "evals.json").write_text("{}")
+    assert ev.tasks_path("s").name == "evals.json"
