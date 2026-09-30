@@ -50,11 +50,12 @@ for orchestration essentially," not AI news.
   no orchestration/automation product; no AI-engineer-specific framing.
 - **Note:** a same-named, unrelated B2B sales-demo tool (goconsensus.com)
   exists — do not conflate in future notes.
-- **Last observed:** 2026-09-25. Attempted a direct re-check; the pricing
-  page now renders its tiers through client-side JavaScript, so no plain-
-  text price came back this pass. The medium-confidence ~$20/month figure
-  above is unconfirmed but not contradicted. Flagged for another attempt
-  next month rather than repeated this week.
+- **Last observed:** 2026-09-30. Attempted a direct re-check again; the
+  pricing page and its own help-center article both returned no plain-
+  text price (403 and a client-side-rendered page respectively). Third
+  attempt in three runs with the same result. The medium-confidence
+  ~$20/month figure above stays unconfirmed but not contradicted; no
+  further attempt planned until the page's rendering changes.
 
 ### Semantic Scholar (semanticscholar.org)
 - **What it is:** Free, nonprofit AI-powered academic search engine and
@@ -251,6 +252,21 @@ for orchestration essentially," not AI news.
     alternative to alexandria's skills layer, unchanged in direction
     from the 2026-09-18 reading but now with a number behind it.
     [skills.sh](https://skills.sh)
+    Re-checked 2026-09-30 against Vercel's own "State of agent skills"
+    report: the registry crossed 1 million skills in seven months from
+    launch, faster than GitHub took to reach 1 million repositories (27
+    months), the App Store took to reach 1 million apps (63 months), or
+    npm took to reach 1 million packages (117 months). Install activity
+    is sharply concentrated: nearly half of all listed skills have been
+    installed exactly once, while 0.04% of skills account for 62% of
+    all installs. [vercel.com/blog/state-of-agent-skills](https://vercel.com/blog/state-of-agent-skills)
+    **Reading for alexandria:** the concentration number is the more
+    important one. A registry where half the supply gets one install
+    ever is not a curation gap in theory, it is a measured fact about
+    this exact registry: readers are already filtering hard for
+    themselves, at a rate no listing mechanism here explains. That is
+    the demand-side twin of the SkillsBench quality finding below,
+    which measures the same registries from the supply side.
   - Smithery.ai (MCP-server infra, hosts skill-registry products on top).
   - Other catalogs: localskills.sh, SkillsMP, ClawHub,
     claudemarketplaces.com, mcpmarket.com.
@@ -361,6 +377,42 @@ for orchestration essentially," not AI news.
   have already spent their own time proving it, and now there is a
   citable number behind the pattern.
 - **Last observed:** 2026-09-25.
+
+### SkillsBench — the first benchmark for whether a skill actually helps, added 2026-09-30
+- **What it is:** an academic benchmark, published to arXiv, that measures
+  whether Agent Skills change task outcomes rather than whether they are
+  safe. 47,150 unique skills retained from 6,323 GitHub repositories after
+  deduplication, run against a shared set of agent tasks.
+  [arXiv 2602.12670](https://arxiv.org/abs/2602.12670)
+- **The number:** mean quality score across the whole ecosystem, 6.2 out of
+  12 (SD 2.8). Applying curation lifted the pass rate by a mean of 16.2
+  percentage points over uncurated skills on the same tasks.
+- **Why it matters for positioning:** every prior entry in this section
+  (Snyk's ToxicSkills, Skillcop, Skill Federation, skillbay.sh,
+  Bastionskill) argues the open ecosystem is unsafe or untrusted.
+  SkillsBench is the first number found that argues it is mediocre even
+  when it is not malicious: half the quality points on the table, on
+  average, sit unclaimed in the typical public skill. That is a second,
+  independent axis of evidence for alexandria's curation thesis, not a
+  restatement of the security one.
+- **Last observed:** 2026-09-30.
+
+### ComposioHQ's awesome-claude-skills — a free curated directory, added 2026-09-30
+- **What it is:** a hand-curated, community-maintained GitHub list of
+  1,000+ Claude Skills and plugins, trending on GitHub with 75,800+ stars.
+  [github.com/ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills)
+- **Weaknesses against alexandria:** curation here means inclusion in a
+  list, not evidence attached to a claim. No provenance, no claim graph,
+  no verification against research, and no business model — it is a
+  volunteer README, not a product.
+- **Why it matters:** it is free, popular, and solves a real piece of the
+  problem SkillsBench just measured (a reader does not have to sort 47,150
+  skills alone). It is also a second data point, after skills.sh's own
+  install concentration above, that the market is already curating for
+  itself for $0. Alexandria's differentiation has to rest on the
+  evidence attached to a skill, not on curation existing at all, since
+  curation-that-exists is now free in at least two independent places.
+- **Last observed:** 2026-09-30.
 
 ### Strands Harness (AWS) and the CMU message-passing paper — orchestration-pattern signal, added 2026-09-25
 - **What happened:** AWS's Strands Agents team shipped "Strands Harness,"
@@ -486,3 +538,19 @@ for orchestration essentially," not AI news.
   this week) and a Strands Harness / CMU message-passing-paper
   orchestration-signal entry. See docs/market/briefs/2026-09-25.md for
   this week's full brief.
+- 2026-09-30 (regular ceremony, triggered by a synchronous work window):
+  re-checked Elicit (unchanged) and Consensus (still unconfirmable, third
+  attempt) directly. Updated the skills.sh entry with Vercel's own "State
+  of agent skills" report: 1 million skills in seven months, the fastest
+  of any major software platform measured, and install activity
+  concentrated so sharply that half of all skills have exactly one
+  install. Added two new entries: SkillsBench, the first benchmark
+  measuring whether a public skill actually helps (mean quality 6.2/12,
+  curation lifts pass rate 16.2 points), and ComposioHQ's
+  awesome-claude-skills, a free curated directory at 75,800+ GitHub
+  stars. Both extend the skills-trust thread this doc has tracked since
+  the first run, from "is it safe" and "is it discoverable" to "is it any
+  good" and "is curation itself now free." See
+  docs/market/briefs/2026-09-30.md for this week's full brief, including
+  a major agent-safety event (OpenAI's GPT-6.1 Astra) named there rather
+  than here since it is not a competitor to alexandria.
