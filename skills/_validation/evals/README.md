@@ -1,4 +1,4 @@
-# Skill evals — the with-versus-without task sets
+# Skill evals: the with-versus-without task sets
 
 ADR-36 (owner-directed, 2026-09-29): every skill carries an eval. A skill's
 claim on a builder's context window is a claim that the builder does better
@@ -52,18 +52,18 @@ as one that regresses, because it means the task belonged in the treatment set.
 
 `check.type` is one of:
 
-- `tests_pass` — the harness writes `files` into a scratch directory, puts the
+- `tests_pass`. The harness writes `files` into a scratch directory, puts the
   model's output at `answer_path`, runs `command`, and reads the exit code.
   `pass_condition` states what counts. The test file is part of the task and is
   never shown to the subject model.
-- `parses` — the model's output must parse under `format` and satisfy every
+- `parses`. The model's output must parse under `format` and satisfy every
   predicate in `assertions`. Each assertion is a named, machine-decidable
   statement about the parsed object. This is the check to reach for when the
   task's answer is a config, a patch, or a structured plan.
-- `number_in_range` — `extract` names the quantity, and the answer passes when
+- `number_in_range`. `extract` names the quantity, and the answer passes when
   it lands within `range`. Used only where the paper fixes the number by
   arithmetic rather than by result, so the task is not a memory test.
-- `rubric` — 3 to 5 criteria, each scored 0, 1 or 2 by the judge against
+- `rubric`. 3 to 5 criteria, each scored 0, 1 or 2 by the judge against
   written anchors. `criteria[].id` is stable so a regression can be traced to
   one criterion rather than to a total. The task's score is the sum; the
   reported result is the with-minus-without delta on that sum.

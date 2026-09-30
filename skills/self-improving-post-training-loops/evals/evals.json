@@ -324,7 +324,7 @@
           42
         ]
       },
-      "prompt": "We are training a long-horizon agent on internal workflows, 20 to 40 tool calls per episode, and there is no verifier and no ground-truth final state we can check. We wrote 30 rubric criteria with a domain expert and we score the whole episode against them with a judge, then give that scalar to GRPO as the terminal reward. The policy is learning something but very slowly and it does not seem to know which of its actions mattered.",
+      "prompt": "We are training a long-horizon agent on internal workflows, 20 to 40 tool calls per episode, and there is no verifier and no ground-truth final state we can check. We wrote 30 rubric criteria with a domain expert and we score the whole episode against them with a judge, then give that scalar to GRPO as the terminal reward. The policy is learning something but slowly and it does not seem to know which of its actions mattered.",
       "without_skill": "Suggests more rubric criteria, a stronger judge, reward shaping by hand, or training a separate attribution model, and keeps the fixed expert rubric.",
       "with_skill": "Replaces the fixed rubric with dynamically generated ones and redistributes each rubric's score over the responsible steps in closed form.",
       "check": {
