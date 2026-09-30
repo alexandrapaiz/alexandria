@@ -61,6 +61,7 @@ import datetime as dt
 import json
 import os
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -362,12 +363,60 @@ def command_clause(name: str, argv: list[str], meaning: str) -> Clause:
                   ["  " + line for line in tail])
 
 
-def trigger_test_clause() -> Clause:
-    return command_clause(
-        "trigger test",
+FAILED_CASE = re.compile(r"^\s*\[FAIL\]\s+(\S+)")
+
+
+def trigger_test(tree: pathlib.Path) -> tuple[int, list[str], str]:
+    """(exit code, failing case ids, output) for the library in `tree`."""
+    proc = subprocess.run(
         [sys.executable, "skills/_validation/trigger_test.py"],
-        "every case in the library still fires, stays silent, and stays "
-        "distinct from its neighbours")
+        cwd=tree, capture_output=True, text=True)
+    out = proc.stdout + proc.stderr
+    return (proc.returncode,
+            [m.group(1) for line in out.split("\n")
+             if (m := FAILED_CASE.match(line))],
+            out)
+
+
+def trigger_test_clause(base: str) -> Clause:
+    """No case that passed before this revision may fail after it.
+
+    Not "the trigger test exits 0", and the reason is a measurement rather than a
+    preference. On 2026-09-30 the suite is 40 of 43 with three standing failures
+    (`sle-neg-2` among them) and it exits 1 on main. A clause written as "exits 0"
+    would therefore block every revision of every skill forever on a debt no
+    revision created, which is ADR-37's loop switched off by a detail. So the
+    clause is the delta: the revised library may not newly fail a case, and the
+    standing failures are named in the comment so they stay visible instead of
+    becoming invisible.
+    """
+    code, failures, out = trigger_test(ROOT)
+    import tempfile
+
+    scratch = pathlib.Path(tempfile.mkdtemp()) / "base"
+    made, _ = git("worktree", "add", "--detach", str(scratch), base)
+    if made != 0:
+        return Clause("trigger test", UNKNOWN, [
+            f"the trigger test could not be run against {base}, because a "
+            "worktree of it could not be created. A shallow checkout does that; "
+            "the workflow needs fetch-depth 0"], ["  " + line for line in
+                                                  out.strip().split("\n")[-6:]])
+    try:
+        _, before, _ = trigger_test(scratch)
+    finally:
+        git("worktree", "remove", "--force", str(scratch))
+
+    new = sorted(set(failures) - set(before))
+    notes = [f"{len(failures)} failing cases now, {len(before)} on {base}. "
+             f"Standing failures: {', '.join(sorted(before)) or 'none'}",
+             f"the runner exited {code}, and this clause is the delta rather "
+             "than that number"]
+    if new:
+        return Clause("trigger test", FAILING, [
+            "this revision newly breaks " + ", ".join(new)
+            + ". A skill whose text makes the router fire where it should stay "
+            "silent is a worse skill, whatever its eval says"], notes)
+    return Clause("trigger test", OK, [], notes)
 
 
 def page_clause() -> Clause:
@@ -386,13 +435,24 @@ def page_clause() -> Clause:
 
 # --------------------------------------------------------------- the report
 
+def applies(files: list[str]) -> bool:
+    """Is this pull request a candidate for the automatic path at all.
+
+    A skills-only diff is. An ordinary pull request that happens to touch a skill
+    alongside code is not, and the workflow says nothing about it rather than
+    labelling it failed: a red label on every engineer PR that edits a skill is
+    how a label stops being read.
+    """
+    return bool(files) and all(path.startswith("skills/") for path in files)
+
+
 def run(base: str, today: str) -> tuple[list[Clause], str]:
     files, error = changed_files(base)
     scope, slug = scope_clause(files, error, base)
     clauses = [scope, pause_clause()]
     if scope.state == OK:
         clauses += [provenance_clause(slug, today), eval_clause(slug, base),
-                    ban_list_clause(slug, base), trigger_test_clause(),
+                    ban_list_clause(slug, base), trigger_test_clause(base),
                     page_clause()]
     else:
         for name in ("provenance", "eval", "ban list", "trigger test", "page"):
@@ -519,6 +579,11 @@ def smoke() -> int:
     checks["a revision that adds slop is caught"] = (
         len(ban_list.check(after_slop)) > len(ban_list.check(before)))
 
+    checks["a mixed diff is not the automatic path at all"] = (
+        applies(["skills/a/SKILL.md"]) and
+        not applies(["skills/a/SKILL.md", "tools/skill_eval.py"]) and
+        not applies([]))
+
     passed = [Clause("a", OK, []), Clause("b", OK, [])]
     unknown = [Clause("a", OK, []), Clause("b", UNKNOWN, ["no credential"])]
     checks["an unmeasured clause is never a pass"] = (
@@ -539,6 +604,11 @@ def main(argv=None) -> int:
     ap.add_argument("--comment", metavar="PATH",
                     help="write the pull request comment here")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--github-output", metavar="PATH",
+                    help="append applies, verdict and skill as key=value lines. "
+                         "The workflow reads these, so the parsing lives here "
+                         "rather than in shell embedded in YAML, which is where "
+                         "INC-2026-09-26-run-report-dash-echo lived.")
     ap.add_argument("--smoke", action="store_true")
     args = ap.parse_args(argv)
 
@@ -546,11 +616,13 @@ def main(argv=None) -> int:
         return smoke()
 
     today = dt.date.today().isoformat()
+    files, _ = changed_files(args.base)
     clauses, slug = run(args.base, today)
     result = verdict(clauses)
     if args.json:
         print(json.dumps({"verdict": result, "skill": slug, "base": args.base,
-                          "date": today,
+                          "date": today, "applies": applies(files),
+                          "files": files,
                           "clauses": [c.as_dict() for c in clauses]},
                          indent=2, sort_keys=True))
     else:
@@ -558,6 +630,11 @@ def main(argv=None) -> int:
     if args.comment:
         pathlib.Path(args.comment).write_text(
             comment(clauses, slug, args.base, today) + "\n")
+    if args.github_output:
+        with open(args.github_output, "a") as handle:
+            handle.write(f"applies={str(applies(files)).lower()}\n")
+            handle.write(f"verdict={result}\n")
+            handle.write(f"skill={slug}\n")
     return 0 if result == "passed" else 1
 
 
