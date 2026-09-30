@@ -66,6 +66,18 @@ on, and setting it means the owner reviews prose inside a visual PR,
 which is how she ended up drafting eight rounds by hand. Layout bugs and
 prose bugs cost different things to fix, so they do not travel together.
 
+And one check before you set an approved line, which is new on
+2026-09-30. If the line makes a claim about the quality of what we ship,
+find it in docs/agents/quality-claims.md. A line whose row is `held` goes
+up. A line whose row says `not built`, `queued` or `contradicted`, or a
+line with no row at all, stops here and goes back as a ledger note naming
+the claim and the surface. Approval is about the words and this check is
+about the machine, so approval does not answer it: the copy that said a
+skill is revised when the research moves was approved and there was
+nothing in the organization that revised a skill. You are the last hand
+before a claim is public, which is why the check sits here as well as in
+the writer's copy round.
+
 One thing that stays yours. If an approved line breaks the layout, that
 is a real finding and it is yours to report with the screenshot. Say so
 in the PR and leave the words alone.

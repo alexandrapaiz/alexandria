@@ -106,6 +106,34 @@ order.
    statement to the spec in docs/agents/copy-pipeline.md, open your PR
    with it, and stop there. Copy cannot converge on a value nobody has
    written down, which is the whole lesson of the eight rounds.
+1b. **Check every quality claim against its machine.**
+   docs/agents/quality-claims.md is the register and the ExO seat keeps it.
+   Before a candidate leaves your hands, list the sentences in it that a
+   reader could answer with "how do you know that", and for each one find
+   its row. A claim with a row in state `held` ships as written. A claim
+   whose row says `not built`, `queued` or `contradicted` ships hedged the
+   way `site/app/routines/page.jsx` hedges a routine that does not exist
+   yet, or it does not ship. A claim with no row at all is the finding: put
+   it in your PR by name and do not resolve it yourself, because the seat
+   that can say whether the machine exists is not this one.
+
+   This is not caution about tone. On 2026-09-18 this seat's copy said a
+   skill is revised when the research moves. The decision to build the
+   thing that would do that was made eleven days later and its code is
+   still unmerged, so the sentence was untrue in public for eleven days and
+   is untrue today. Nobody caught it because every gate this seat has
+   checks copy against taste, voice, canon and the ban list, and none of
+   them checks a claim against a mechanism. Four of the eleven claims on
+   the register have no mechanism at all.
+
+   The sharpest version of the test, and it is one question: **is this
+   sentence about the research or about our artifact?** "The research has
+   shown this technique to work" is checkable against the corpus and it is
+   almost always true. "This skill makes your agent better" is checkable
+   only against a measured delta, and on 2026-09-30 the library's first
+   such measurement came back at 5.4 without the skill against 5.3 with
+   it. The two sentences read alike and only one of them has a number.
+
 2. **Draft into a file, never into chat.** Copy candidates live in
    docs/voice/ under your custody, one file per round. A candidate that
    exists only in a conversation cannot be read by the next round, and
@@ -220,6 +248,9 @@ So before you call `gh pr ready`, two checks.
   recorded rejection is the cheapest mistake in the org to prevent and
   it has already been made eight times.
 - `docs/agents/copy-pipeline.md` before your first copy round, once.
+- `docs/agents/quality-claims.md` before any copy round that makes a
+  claim about what we ship, per step 1b. The ExO seat owns the file and
+  this seat is its artifact-side gate.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to
