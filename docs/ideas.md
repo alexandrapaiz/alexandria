@@ -7684,3 +7684,27 @@ graphs.
 - Whose call: writer seat.
 - Cost: $0
 - Status: proposed
+
+### 2026-09-30 — The empty claims list also fails a test, which the entry that filed it did not say (skill seat, for the engineer)
+
+- Trigger: `node --test tests/skill-provenance.test.mjs` on this branch, run as
+  part of the ADR-38 retrofit. 26 of 27 pass. The one failure is subtest 24,
+  "every skill renders claim ids and papers", with
+  `agent-containment: no claim ids parsed`.
+- The entry above, on `agent-containment`'s deliberately empty
+  `provenance.claims`, checked the site reader and reported correctly that
+  nothing breaks. It did not check the test that asserts on the same thing, so
+  the branch that introduced the empty list also turned a green suite red and
+  nobody said so. Verified as predecessor state rather than a regression from
+  this run: the same single failure reproduces on
+  `origin/skill/2026-09-30-containment-and-security` with none of this run's
+  commits present.
+- What to change, and the choice belongs to the engineer: the assertion is
+  correct about every skill that has claims and wrong about the case ADR-35
+  creates, so it should assert that a skill resolves either claim ids or a
+  non-empty `papers` list, which is the same predicate the ADR-36 gate needs.
+  Fixing both with one predicate is the reason to do it in one pull request.
+  `tests/` is not this seat's surface, so it is filed rather than fixed.
+- Whose call: engineer.
+- Cost: one predicate, two callers.
+- Status: proposed
