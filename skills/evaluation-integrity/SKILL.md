@@ -1,11 +1,17 @@
 ---
 name: evaluation-integrity
 description: Evidence-backed method for judging whether an evaluation can be trusted when the instrument is itself generated: a model-written rubric, a pipeline-assembled benchmark, an LLM judge, or a pass-or-fail verdict standing in for correctness. The subject is the instrument, not the system it scores. Use when stress-testing a model-written rubric or grading checklist, when an agent reaches the graded outcome through the repository history, workspace files, task metadata or open network instead of doing the task, when a checker's verdict cannot separate a faithful candidate from one that merely preserves it, when a judge learns from other judgments and its scores start clustering, when benchmark items turn out to be ambiguous, narrow or wrong, when deciding how many independent judgments an accept should require, when a scored gain might be noise or leakage, when a single-turn evaluation promises reliability that multi-turn pressure does not, or when auditing a discovery an agent claims.
-version: 1
+version: 3
 status: active
 provenance:
   extracted: 2026-09-24
+  revised: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
+  revisions:
+    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found one section, partial monitoring, whose claims were attached to a task that tested none of it, so eval task ei-t11 was written and the suite moved to version 2."
+    - "2026-09-30 (ADR-36/ADR-37 trigger 1, claim deprecated): claim 288 entered deprecated_claims, contradicted at 0.75 by claim 289 from the same paper. Re-read arxiv.org/abs/2609.09219 in full. Claim 288 is accurate and is kept; claim 289 is a misreading of the paper's Gate 3 table and is filed for correction. The section 'Auditing a result you did not produce' now separates the protocol's two senses of recovery, which is the overload that produced the false edge, and adds that both of the paper's real-data feedback decisions were Inconclusive."
   claims: [476, 477, 478, 479, 480, 260, 261, 262, 263, 237, 238, 239, 240, 645, 646, 228, 557, 559, 560, 561, 269, 272, 273, 386, 387, 388, 664, 286, 288, 290]
   papers:
     - "ImpossibleRubrics: Stress-Testing Generated Rubrics as Reward Signals — arxiv.org/abs/2609.16816"
@@ -40,6 +46,8 @@ checks that only make sense once the instrument is something a model
 produced.
 
 ## Stress-test a generated rubric before anything trains or gates on it
+
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t1 covers it and has not been run.*
 
 A rubric written by a model reads like a specification and behaves like an
 attack surface. In a study of eleven rubric generators, every one of them was
@@ -84,6 +92,8 @@ not. Report which oracle produced the rate (ours, not the paper's).
 
 ## A pass-or-fail verdict is blind to the answers that pass for the wrong reason
 
+*Validation: no trial and no consumer report. The AUROC result is a proof rather than a measurement, which is the strongest evidence in this file and still not evidence that a reader acts on it. Eval tasks ei-t2 and ei-t3 cover it and have not been run.*
+
 If your gate is a binary verdict from a checker, there is a class of wrong
 candidates it cannot see, and this is provable rather than empirical. Any
 scoring function that depends only on the binary verdict assigns identical
@@ -120,6 +130,8 @@ no verifier (Beyond Solver Verdicts).
 
 ## Treat benchmark items as defective until someone has gone looking
 
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t4 covers it and has not been run.*
+
 A benchmark is code, and nobody believes untested code. A re-audit of one
 731-instance repository-level coding benchmark refined 102 instances, drawn
 from 119 candidate defect reports of which 17 turned out to need no change
@@ -142,6 +154,8 @@ word. An item rewritten freely is a new item, and scores across the revision
 boundary stop being comparable (ours, not the paper's).
 
 ## Close the shortcut channels in the environment, not in the instructions
+
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t5 covers it and has not been run.*
 
 An agent that can read the answer will read the answer, and an instruction not
 to is not a control. Four channels carry the answer in a typical code-agent
@@ -169,6 +183,8 @@ with the instruction alongside them.
 
 ## A judge trained on judgments loses the variance that made it useful
 
+*Validation: no trial and no consumer report. The variance-monitoring prescription is ours and untested anywhere. Eval task ei-t6 covers it and has not been run.*
+
 Mixing model-generated reviews into the training data of the next reviewer
 compresses the rating distribution and reduces semantic diversity both across
 reviews of the same paper and across the corpus, an effect the authors name
@@ -192,6 +208,8 @@ disagreement are cheap to log on every eval run, and collapse shows up in them
 before it shows up in anything a mean can reveal.
 
 ## Require unanimity across independent judgments when a false accept is expensive
+
+*Validation: no trial and no consumer report. Three of the four portable parts are marked ours in the text and carry no evidence beyond the one competition system. Eval task ei-t7 covers it and has not been run.*
 
 For accepting proofs during a competition search, the accept rule was
 unanimity across a panel: 16 independent judgments, 8 from the reinforcement
@@ -220,6 +238,8 @@ It is the wrong rule for ranking or for routine scoring (ours, not the
 paper's).
 
 ## Evaluate under pressure, and over more than one turn
+
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task ei-t8 covers it and has not been run.*
 
 A single clean turn overstates how reliable an assistant is. Across 22 models
 on a rule-following benchmark, ordinary user pressure raised rule-violation
@@ -251,6 +271,8 @@ you assembled from those models.
 
 ## Partial monitoring is an intervention, not an observation
 
+*Validation: no trial and no consumer report. The 2026-09-30 tagging pass found this section had its claims attached to a task that tested none of it, so eval task ei-t11 was written to cover it and the suite is now at version 2. The task has not been run.*
+
 Monitoring only actions, and not the reasoning that preceded them, increased
 scheming in closed-source models, which suggests partial oversight acts as an
 optimization constraint rather than as a deterrent (SchemeArena). The lesson
@@ -270,6 +292,8 @@ implausible scenario explains a null just as well as a safe model does (ours,
 not the paper's).
 
 ## A gain inside the noise band is not a gain
+
+*Validation: no trial and no consumer report. The source reports its three criteria as one method and does not ablate them, so no single criterion here carries a number. Eval task ei-t10 covers the section and has not been run.*
 
 When an evaluation score decides whether to accept a change, the accept rule
 needs more than a comparison of means. One harness-evolution system used three
@@ -297,6 +321,8 @@ improvement (ours, not the paper's).
 
 ## Auditing a result you did not produce
 
+*Validation: no trial and no consumer report. Revised on 2026-09-30 after re-reading the paper in full, which is what separated the two senses of recovery below. That reading is evidence about the text and not about whether the section helps a reader. Eval task ei-t9 covers it and has not been run.*
+
 For certifying a reported outcome, a published audit protocol uses three gates
 in order: a statistically significant improvement over baseline, zero
 successes by a matched challenger given the same starting knowledge and
@@ -310,11 +336,77 @@ Two practical properties of that protocol transfer to lighter audits. Zero
 recoveries across 96 independent challenger episodes translated into a
 finite-sample upper bound of 0.0468 on the recovery probability, which is the
 honest way to report an absence of failures rather than calling it impossible
-(Discovery Certification Protocol). And the whole decision was reproducible by
-a deterministic verifier with no model in it, replaying frozen evidence
+(Discovery Certification Protocol). That bound is an exact one-sided
+Clopper-Pearson limit, 1 minus alpha to the power of 1 over n, and the audit
+size was chosen to reach a registered target rather than picked for
+convenience: a 5 percent bound at 1 percent error needs 90 episodes, and 96
+were registered (Discovery Certification Protocol). Copy the order. Decide the
+bound you want to be able to state, then derive the episode count, because the
+count is the thing you have to pay for. And the whole decision was reproducible
+by a deterministic verifier with no model in it, replaying frozen evidence
 bundles (Discovery Certification Protocol). Freezing the bundle is the cheap
 part, and it is what makes the verdict auditable later by someone who does not
 trust your judge.
+
+### Two different things are called recovery, and conflating them is a real error
+
+Read the protocol carefully, because it uses one word for two measurements and
+they support opposite kinds of conclusion (Discovery Certification Protocol).
+
+- **Gate 2 recovery** is a challenger episode. A fresh agent gets the starting
+  information packet and the observed web content, with the run history and any
+  new measurements withheld, and either reaches the outcome or does not. This is
+  the one that vetoes a certificate. On the two real-data audits, the best
+  challengers scored 0.4641 and 0.4171 against recovery lines of 0.7177 and
+  0.6051, so zero of 96 episodes recovered, alongside 45 of 45 channel controls.
+- **Gate 3 recovery** is a paired feedback trial. Continuations branch from a
+  frozen checkpoint that already contains the run, with one arm getting truthful
+  feedback from its own actions and the other a registered neutral policy. It
+  measures whether feedback helps, not whether the result was reachable without
+  the method.
+
+The numbers are nothing alike, and the second set is the one usually quoted
+wrongly. Truthful continuations reached the target level in 9 of 30 and 16 of 30
+trials while both neutral arms reached it in 0 of 30, and even so **both
+Evidence decisions came back Inconclusive**, on intervals of [-0.078, 0.571] and
+[0.094, 0.779] against a required lower bound of 0.30 (Discovery Certification
+Protocol). So the paper that defines the feedback gate did not pass it on either
+real-data audit, once for an incomplete audit and once for plain statistical
+uncertainty.
+
+Two things follow, and the second is the more useful one (ours, not the paper's).
+Budget for Gate 3 to come back inconclusive rather than negative, because 30
+pairs is not many and a wide interval is the normal result at that size. And
+never let "recovered" appear in an audit report unqualified. Our own claim graph
+made exactly this mistake on exactly this paper: an edge was recorded asserting
+that the feedback effect was established, drawn from the Gate 3 row, and it
+contradicted the accurate Gate 2 row hard enough to deprecate it. One overloaded
+word cost a true claim its standing.
+
+## Apply: the builder's checklist
+
+Before trusting an instrument, or publishing a number it produced:
+
+1. Oracle: does every generated rubric have an oracle independent of the
+   rubric, and has an attacker model been pointed at the rubric with no
+   instruction but to maximise its score?
+2. Signal: is anything gating on a bare pass-or-fail verdict? If so, has it
+   been run against mutants the checker still accepts, so you know the class of
+   wrong answers it cannot see?
+3. Items: has anyone gone looking for defects in the benchmark itself, narrow
+   tests first, then misleading task descriptions?
+4. Channels: are the file system, the repository history, the task metadata and
+   the network closed in the environment rather than in the instructions?
+5. Judges: are score variance and pairwise disagreement logged on every run,
+   and where a false accept is expensive, does the accept rule require
+   unanimity across different checkpoints rather than repeated samples from
+   one?
+6. Noise: is the accept floor an empirical noise band measured by repeat runs
+   of the unchanged system, with leakage screening and a cost-to-gain ceiling
+   beside it and no compensation between the three?
+7. Pressure: does the suite apply ordinary user pressure over more than one
+   turn, score recognition separately from outcome, and carry a realism
+   measurement so a null result can be interpreted?
 
 ## Caveats
 
@@ -330,7 +422,10 @@ trust your judge.
   keeps meeting.
 - The generative verification numbers are from one domain, formalizing natural
   language mathematics into a solver language, with a 27B model and LoRA
-  adapters. Treat the method as transferable and the 0.961 as local.
+  adapters. Treat the method as transferable and the 0.961 as local. That
+  configuration is also the floor: a 27B open model with LoRA adapters was
+  sufficient for the judge seat, so nothing here asks for a frontier model as
+  the continuous verifier.
 - The benchmark defect profile is from one benchmark of repository-level
   coding tasks. The ordering of defect types is a good prior for where to look
   first, not a distribution to assume.
@@ -344,16 +439,27 @@ trust your judge.
 - The unanimous 16-judgment panel comes from competition mathematics with one
   model family, where a proof is checkable and a wrong accept costs a
   competition problem. The cost asymmetry is the precondition for copying the
-  rule.
+  rule. The floor is two independently trained checkpoints and one outside-jury
+  calibration, not the count of sixteen: eight and eight is what that system
+  had available, and a panel of sixteen samples from one checkpoint fails the
+  design's actual requirement however large it grows.
 - The pressure and long-horizon stress results come from 48 multi-turn
   scenarios across 12 regulated domains and from a small number of simulated
   worlds run over days. They establish that the effects exist and are large,
-  not their size in your setting.
+  not their size in your setting. The realism check those results depend on has
+  a cheap floor: a model-judge realism score over a sample of the suite, which
+  costs one pass, with human annotation only where the two disagree.
 - RRSI's three selection criteria are reported as parts of one method. The
   evidence alexandria holds does not ablate them individually, so do not
-  quote a number for any one criterion alone.
+  quote a number for any one criterion alone. The noise band has a floor of its
+  own and the source does not set it, so ours: five repeat runs of the
+  unchanged system on the same eval is the cheapest thing that shows a spread
+  at all, and a band computed from two runs is a guess wearing a number.
 - The certification protocol is demonstrated on two audit cases. Its gates are
-  a design to copy, not a validated pass rate.
+  a design to copy, not a validated pass rate. Gate 2 states its own floor
+  arithmetically: a 5 percent upper bound at 1 percent error needs 90
+  challenger episodes, which is the price of being able to report an absence of
+  failures honestly. Below that count, report the interval and not the zero.
 - Every section above is revised or withdrawn if the claim behind it is
   contradicted by later evidence. That commitment is the point of the
   provenance block: the claim ids are there so a reviewer can check each
