@@ -207,3 +207,201 @@ distill-worthy bar already:
 So the security thread does not need a rubric to become distill-worthy. It
 needs to be findable, and it is not, for two measured reasons in §3.
 
+## 3. Why the security thread is invisible even though it has good claims
+
+Two measured reasons, and neither is about the papers.
+
+### 3a. There is no topic tag for any of these three threads
+
+`prompts/distill.md` restricts `claims.topics` to a closed vocabulary: skills,
+context-engineering, harness-engineering, loop-engineering, memory, retrieval,
+multi-agent, evals, post-training, reasoning, serving, systems, tooling, other.
+`reasoning` is in that list because the owner made reasoning models a named
+priority on 2026-09-23 and the vocabulary was extended to match. Containment is
+a named priority of the same standing and got no tag.
+
+The consequence, measured over all 846 claims: the tag `containment` appears
+**0** times. `protocols` appears **0** times. And the model, handed the
+EvoSafeHarness claims, went outside the vocabulary rather than lose the
+information — `safety` appears 3 times and `security` 2 times, neither
+sanctioned by the prompt. Those 5 off-vocabulary tags are the distiller trying
+to say something the vocabulary forbids.
+
+So EvoSafeHarness's 0.0% attack-success-rate result is filed under
+`{evals, safety}` and `{evals, post-training}`. Shutdown Sabotage is filed
+under `{multi-agent, other}`. MOLE is `{evals, systems}`. A builder or a skill
+agent querying the library for agent security finds them only by luck.
+
+While counting tags, a second defect surfaced in the same column. **Six
+vocabulary tags exist in the corpus in two spellings, split by a non-ASCII
+hyphen (U+2011):**
+
+```
+post-training      290      post‑training        13
+harness-engineering 243     harness‑engineering   4
+loop-engineering   144      loop‑engineering      2
+context-engineering 102     context‑engineering   1
+task-refinement      1      task‑refinement       1
+                            data‑augmentation     1
+                            instruction‑tuning    1
+```
+
+Twenty-one claims carry a topic tag that no query for the spelling
+`prompts/distill.md` actually specifies will ever match. The same
+contamination runs through the claim text itself: **698 of 846 claims (82.5%)
+contain at least one non-ASCII character**, and 1 of the 2 digest bodies does.
+`docs/voice/ban-list.md` entry 13, amended after incident 27, bans exactly this
+class of character, and the writer seat scrubs it at the issue. It is entering
+at distill, upstream of every register that checks for it. §8 says why this run
+does not spend its proposal there.
+
+### 3b. Not one claim link joins two security claims
+
+Of the 274 edges in `claim_links`, the number with **both** ends in the
+security thread is **0**. Six have exactly one end in it, and all six run
+outward into claims about something else:
+
+| edge | verdict |
+|---|---|
+| 166 `supports` 16 — MOLE's "refusal does not predict completion" -> "rationale-only supervision reduces false refusals" | wrong. Agent-level behavioural measurement linked to a model-level refusal-training method because both say "refusal". |
+| 166 `supports` 15 — same MOLE claim -> "boilerplate refusal statements cause superficial cues" | wrong, same cause. |
+| 169 `supports` 88 — "selectively deploying a stronger monitor yields 10% budget-AUC" -> "the gains from the preservation instruction are not attributable solely to..." | wrong. Unrelated domains; the shared token is "gains". |
+| 168 `supports` 51 — "benchmark-guided search improves a mid-tier monitor" -> "coordinating specialized agents for query reformulation, graph traversal" | wrong. Unrelated. |
+| 306 `supports` 73 — EvoSafeHarness's policy-plus-code search -> "compile-by-training converts a natural-language specification into a reusable..." | defensible. Both are specification-to-artifact compilation. |
+| 306 `supports` 186 — EvoSafeHarness -> "Show-Harness provides a compact semantic interface..." | wrong. The shared token is "harness". |
+
+Five of six are lexical adjacency across unrelated domains. Meanwhile
+EvoSafeHarness (306-310) and MOLE (166-170) — two papers that both measure
+agent monitors and defenses against named attack benchmarks, and that plainly
+bear on each other — have no edge between them at all. The graph draws the
+spurious link and misses the real one.
+
+The charter's Step 3 tells the skill agent to find a cluster via
+`semantic_search` plus supports edges. In this territory that instruction
+returns nothing, because the cluster exists in the claims and not in the graph.
+
+### 3c. The `contradicts` edges, for the record
+
+All 7 `contradicts` edges in the corpus, judged:
+
+1. `12 -> 11` (0.88): "expert reference implementation achieves 82.2% on RMBench" vs "Claude Opus 5 under Claude Code passes 23.9%". **Comparison**, two systems on one benchmark, not a contradiction.
+2. `85 -> 12` (0.78): "12.5% on four memory-dependent RMBench tasks" vs the 82.2% reference. **Comparison** across different systems *and* different task subsets.
+3. `265 -> 85` (0.78): "MaP-WAM achieves 83.3% on RMBench" vs "the same execution approach attains only 12.5% on four memory-dependent tasks". **Refinement** — an aggregate and its own worst subset, which is where a headline number breaks down.
+4. `136 -> 129` (0.90): "Feedback-Enriched Environments improve self-evolving agents" vs "adding Desired Behavior and Motivation to prompts improves coding-agent performance". **Not a relation at all.** Two independent improvements from two mechanisms.
+5. `190 -> 188` (0.77): "a semantic interface alone unlocks capability from foundation VLMs" vs "small open-source VLMs can be adapted with a few GPU-hours". **Alternatives**, both can hold.
+6. `289 -> 288` (0.75): "30 truthful recoveries, zero neutral" vs "zero recoveries in 96 challenger episodes". Plausibly two conditions of one experiment; **refinement** rather than contradiction.
+7. `82 -> 5` (0.78): "a shared executable-skill interface with bounded VLA execution" vs "a single ReAct agent without sub-agents solves the hardest rollouts". **Defensible** — a real architectural tension.
+
+Six of seven are comparisons, refinements or non-relations. This is a pattern
+by the charter's own bar, and the 2026-09-28 digest reached the same verdict
+independently on the first of them, in its own prose: "these numbers share a
+percent sign and little else. The edge between them fails the kind test." The
+press caught the bad edge; the graph still carries it.
+
+## 4. Rubric text, per thread
+
+The directive asks for rubric text that makes each thread distill-worthy. Below
+is the text, written to drop into `prompts/triage.md` beside the reasoning
+rubric it already carries. Each one names the measurement that earns `distill`
+and the shape that earns `index`, with a worked example from this corpus.
+
+### 4a. Protocols
+
+> **Agent protocols and identity.** Route to `distill` a paper or artifact that
+> reports a **protocol change and its measured effect**: a specification
+> revision with a stated compatibility or failure consequence, an
+> interoperability measurement across independent implementations, a
+> measured cost of a transport or authorization choice, or an adoption study
+> that counts implementations and names what broke. The unit is a claim a
+> builder can act on when choosing or implementing a protocol.
+>
+> Route to `index` a paper that merely *uses* MCP or A2A as plumbing and
+> measures something else, and a release note that carries only a version
+> string or date.
+>
+> Accept: "An Empirical Study of Model Context Protocol Applications"
+> (2607.25635), which counts real MCP servers and characterises their failure
+> modes. Accept: "Can MCP Clients Decide What to Do After Failure? A
+> Result-Only Actionability Audit" (2609.00072), which measures whether clients
+> can act on a tool error. Reject: claim 656's source, *EvoOntology*, where the
+> MCP server is deployment furniture and the measurement is ontology quality.
+
+### 4b. Containment
+
+> **Agent containment and isolation.** Route to `distill` a paper or artifact
+> that reports an **isolation design together with a measured escape or a
+> measured cost**: an escape or bypass with its preconditions, a benchmark of
+> whether an agent can reach what it must not, the overhead a boundary imposes
+> (latency, cold start, syscall cost, throughput), a capability or
+> least-privilege scheme with the authority it actually withheld, or a
+> production report of running agents under isolation at scale with numbers.
+>
+> Route to `index` a paper that asserts a sandbox without measuring it, a
+> non-agent sandbox result with no transferable mechanism, and any isolation
+> claim whose only evidence is that no escape was attempted.
+>
+> Accept: "Scaling Agentic-RL Sandboxes to the Millions with gVisor at Tencent"
+> (gvisor.dev, 2026-04-23) — a production isolation design with scale numbers.
+> Accept: "Authority Is Not a String: A Capability-Scoped Harness for
+> Prompt-Injection-Resistant..." (2609.08371). Reject, and triage already did:
+> the antivirus sandbox-escape paper it declined with "no measured escape
+> rates, agent-state design, or evaluation of agent runtime isolation."
+
+### 4c. Security
+
+> **Agent safety and cybersecurity.** Route to `distill` a paper or artifact
+> that reports a **defense or an attack with a measured attack success rate**
+> against a named benchmark or a named baseline: ASR before and after, a
+> utility cost paid for the ASR reduction, a monitor's detection rate and what
+> it misses, or an attack with its success rate and preconditions. A postmortem
+> with measured preconditions qualifies on the same terms as a paper.
+>
+> Route to `index` a paper that reports only that a vulnerability exists, a
+> taxonomy or survey with no measurement of its own, and a benchmark paper that
+> introduces the harness without reporting a defense or attack result on it.
+>
+> Accept: EvoSafeHarness (claims 306-310), 45.6% to 10.0% ASR at a 3.3-point
+> utility cost, and 82.8% utility at 0.0% ASR on AgentDojo against CaMeL.
+> Accept: Shutdown Sabotage (742-746), 38.3% against an 8.4% control. Reject:
+> an agent-security survey that restates known attack classes without running
+> one.
+
+The honest caveat this run owes the directive: none of the three rubrics is why
+the threads are thin, and installing all three tonight would change the counts
+by roughly nothing, because triage reads 3-15% of what arrives (§1). The rubrics
+are worth writing now so that they are already in place when throughput is
+fixed; they are not the fix.
+
+## 5. Topic definitions
+
+Three tags for `prompts/distill.md`'s vocabulary, written in the same register
+as the entries already there, with the boundary against neighbouring tags
+stated because that is where the existing vocabulary leaks.
+
+> - `protocols` — the wire contract between agents, or between an agent and its
+>   tools: MCP, A2A, agent cards, task lifecycles, tool-calling schemas, agent
+>   identity as a principal (SPIFFE, per-agent OAuth, workload identity), and
+>   interoperability across independent implementations. Tag it when the claim
+>   is about the contract itself. A claim about what an agent *did* over a
+>   protocol is `tooling` or `multi-agent`, not this.
+>
+> - `containment` — the boundary an agent runs inside and what it costs:
+>   sandboxes, microVMs, wasm runtimes, containers and their pinned runtimes,
+>   capability and least-privilege schemes, measured escapes and their
+>   preconditions, and containment evaluation. Tag it when the claim is about
+>   the boundary. A claim about an agent's runtime performance inside a
+>   boundary is `systems`; a claim about the attack that crossed it is
+>   `security`, and claims about both take both tags.
+>
+> - `security` — adversarial pressure on agents and the defenses measured
+>   against it: prompt injection and indirect injection, tool poisoning,
+>   jailbreaks, exfiltration, sabotage and collusion between agents,
+>   guardrails and monitors, and attack success rates. Tag it whenever a claim
+>   carries an ASR, a detection rate, or a sabotage frequency. `evals` is for
+>   how capability is measured; a security benchmark takes both.
+
+Precedent for the addition, so it is not a novelty: `reasoning` was added to
+this vocabulary for the Layer 3a priority and the observed distribution shows
+it in use. The measured need for these three is §3a — 21 claims already reach
+for `safety`, `security` or a hyphen-variant the prompt does not sanction.
+
