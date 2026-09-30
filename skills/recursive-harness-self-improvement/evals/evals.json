@@ -1,12 +1,12 @@
 {
   "skill": "recursive-harness-self-improvement",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number.",
+  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls.",
   "tasks": [
     {
       "id": "rhsi-t1",
@@ -511,6 +511,63 @@
               "0": "Claims an automated diversity mechanism is proven.",
               "1": "Silent on provenance.",
               "2": "States that in the one recorded case the intervention was human, so the automated version is a design to test."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t10",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "The Discovery Certification Protocol's three gates, and the narrowing this skill made on 2026-09-30 after reading the protocol in full: the third gate is optional and returned Inconclusive on both real-data audits, at 9 of 30 and 16 of 30 truthful continuations against 0 of 30 neutral, with 99 percent intervals straddling or undershooting the required lower bound of 0.30, while the first two gates passed. The task tests whether a reader gets the order and the expectation right, which is where a skill most easily oversells a protocol it admires.",
+      "source": {
+        "paper": "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol",
+        "arxiv": "arxiv.org/abs/2609.09219",
+        "claims": [
+          286
+        ]
+      },
+      "prompt": "Our nightly self-improving loop has been editing its own scaffold for three weeks and reports a 9 point gain on our internal suite. Before I take this to the board I want an audit standard we can hold ourselves to, and I would rather adopt a published one than invent one. Give me the gates, in the order we should build them, and tell me what to expect from each so I can budget the engineering.",
+      "without_skill": "Proposes a sensible home-made audit, usually a held-out set, a significance test, and a human review, and treats a reported gain plus statistical significance as the standard to meet.",
+      "with_skill": "Names the protocol, puts the matched-challenger gate second and first in value, warns that the feedback gate is optional and that Inconclusive is the expected result at thirty pairs rather than a sign the loop failed, and requires pre-registration of the analysis before the run.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "challenger_gate",
+            "criterion": "Identifies the matched-challenger gate as the one an ordinary review lacks, and states what it asks.",
+            "anchors": {
+              "0": "Absent. Proposes significance testing and human review only.",
+              "1": "Mentions a baseline or a control arm without giving the challenger the same starting knowledge and observations.",
+              "2": "Requires a matched challenger with the same starting information and observations but not the answer, and states that a result a fresh equally equipped agent reaches without the loop is not evidence for the loop."
+            }
+          },
+          {
+            "id": "gate_order",
+            "criterion": "Gives the three gates in order and treats the third as optional rather than as a requirement to clear.",
+            "anchors": {
+              "0": "Presents three gates as a set that must all pass, or omits the ordering.",
+              "1": "Gives the order without saying the third is optional.",
+              "2": "Gives significance, then zero challenger recoveries, then the feedback effect, and says the protocol itself marks the third optional and the most expensive, so the first two carry most of the available evidence."
+            }
+          },
+          {
+            "id": "inconclusive_expected",
+            "criterion": "Sets the expectation that the feedback gate returns Inconclusive at small pair counts, with the source's own numbers.",
+            "anchors": {
+              "0": "Implies the feedback gate is routinely passable, or treats Inconclusive as a failure of the loop.",
+              "1": "Says the gate is hard to pass without numbers.",
+              "2": "Reports that both real-data audits in the source came back Inconclusive on this gate, 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, with intervals against a required lower bound of 0.30, and says a wide interval is the normal result at thirty pairs."
+            }
+          },
+          {
+            "id": "prereg_and_bound",
+            "criterion": "Requires pre-registration of the analysis before the run, and reports an absence of failures as a bound rather than as zero.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions writing the analysis plan down.",
+              "2": "Pre-registers the analysis before the run, decides the bound to be stated first and derives the episode count from it, and reports zero recoveries as a finite-sample upper bound rather than as impossibility."
             }
           }
         ]

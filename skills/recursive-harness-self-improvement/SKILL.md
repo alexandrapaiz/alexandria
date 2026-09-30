@@ -1,13 +1,16 @@
 ---
 name: recursive-harness-self-improvement
 description: Evidence-backed method for loops where an agent reads its own failed runs, rewrites its own scaffold unattended, then keeps or reverts each edit on measured evidence. The editor is the agent, not a person, and no weights are trained. Use when an automated loop edits its own prompts, tool code or memory and keeps what measures better, when unattended self-edits raise the score on the tasks the loop evolves against while real work does not, when choosing the gate that accepts or reverts a proposed edit, when bounding how much one edit may touch, when attributing a failure to one function inside a long execution log, when the loop's own diagnosis costs more than its edits gain, when several automated workers rewrite one shared repository and converge on a single idea, or when an unattended run reports a win you have to judge.
-version: 2
+version: 3
 status: active
 provenance:
   extracted: 2026-09-22
   revised: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   revisions:
+    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. The tagging pass found section 9 uncovered by the ADR-36 suite, so eval task rhsi-t10 was written and the suite moved to version 2."
     - "2026-09-30 (ADR-35, the paper wins): re-read arxiv.org/abs/2609.09219 in full while revising evaluation-integrity, and narrowed section 9. The third gate is optional in the protocol and returned Inconclusive on both of its real-data audits, which the section had presented as a gate to adopt alongside the other two. No claim this skill cites is deprecated."
   claims: [411, 412, 413, 414, 415, 335, 336, 337, 338, 392, 393, 395, 535, 537, 538, 539, 354, 355, 147, 148, 150, 593, 594, 597, 462, 465, 466, 286]
   papers:
@@ -44,6 +47,8 @@ ordinary refactor does not.
 
 ## 1. Write the freeze list before the first cycle
 
+*Validation: no trial and no consumer report. The three freeze designs are the papers', the file-in-the-repository prescription is ours. Eval task rhsi-t1 covers it and has not been run.*
+
 A self-improving loop that changes several things at once produces no signal
 about any of them. Every working design in this cluster splits the system
 into a part that moves and a part held still, and alternates.
@@ -69,6 +74,8 @@ list as a new experiment rather than a continuation of the old one.
 
 ## 2. The whole gain can come from the scaffold
 
+*Validation: no trial and no consumer report. Claim and paper provenance only, and the do-not-perfect-the-seed advice is ours. Eval task rhsi-t2 covers it and has not been run.*
+
 The reason to run this loop at all is that the scaffold carries more headroom
 than it looks like it does.
 
@@ -91,6 +98,8 @@ gates in section 5 instead, because a thin seed with good gates converges and
 a good seed with no gates decays.
 
 ## 3. Localize the failure before proposing an edit
+
+*Validation: no trial and no consumer report. The best-evidenced section here, with two independent mechanisms and a measured stop rule. Eval tasks rhsi-t3 and rhsi-t4 cover it and have not been run.*
 
 The signal an outcome gives you is one bit for a whole trajectory, and one
 bit cannot say which function to change. Two papers attack that gap from
@@ -123,6 +132,8 @@ constant.
 
 ## 4. Bound what one edit is allowed to touch
 
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task rhsi-t5 covers it and has not been run.*
+
 An unbounded edit cannot be attributed, cannot be reviewed, and cannot be
 reverted cleanly.
 
@@ -140,6 +151,8 @@ spans the loop and the tools at once, because section 5's gates can then only
 accept or reject the pair.
 
 ## 5. Gate every edit, and roll back by default
+
+*Validation: no trial and no consumer report. Two of the prescriptions, the adversarial diff-reviewer instruction and retaining rejected edits, are ours. Eval task rhsi-t6 covers it and has not been run.*
 
 This is the section that separates a loop that improves from one that drifts.
 
@@ -169,6 +182,8 @@ rediscovering the same bad idea.
 
 ## 6. Evolve on tasks the benchmark never sees
 
+*Validation: no trial and no consumer report. Claim and paper provenance only, from one system. Eval task rhsi-t7 covers it and has not been run.*
+
 A self-improving loop optimizes whatever it is scored on, so the tasks it
 evolves against are a training set and have to be treated as one.
 
@@ -186,6 +201,8 @@ evaluation tasks, your improvement curve is measuring memorization and you
 have no way to tell.
 
 ## 7. Make feedback cheap, and score tokens as well as accuracy
+
+*Validation: no trial and no consumer report. Claim and paper provenance only. Eval task rhsi-t8 covers the compaction arithmetic specifically, as a number, and has not been run.*
 
 Both costs in this loop, the cost of evaluating a candidate and the cost of
 running the resulting agent, are load-bearing, because a loop whose feedback
@@ -219,6 +236,8 @@ lifting directly:
 
 ## 8. When several agents evolve one shared artifact
 
+*Validation: no trial and no consumer report. The weakest evidence in this file, one run with a human intervention inside it. Eval task rhsi-t9 covers it and has not been run.*
+
 A population of self-editing agents on one codebase behaves differently from
 one agent on its own, and the difference is worth planning for.
 
@@ -241,6 +260,8 @@ for a diversity signal, and note that in the one recorded case the
 intervention was human.
 
 ## 9. Certify the gain before you believe it
+
+*Validation: no trial and no consumer report. Narrowed on 2026-09-30 after re-reading the protocol in full, which is evidence about the section's accuracy and not about whether it helps a reader. The 2026-09-30 tagging pass found the ADR-36 suite did not cover this section at all, so eval task rhsi-t10 was written and has not been run.*
 
 An automated loop reporting its own improvement is the weakest evidence in
 this whole cluster, and there is now a protocol for hardening it. The
@@ -271,25 +292,64 @@ paper's).
 Pre-register the analysis before the run, not after, which is the discipline
 the whole protocol rests on (Discovery Certification Protocol).
 
+## Apply: the builder's checklist
+
+Before turning an unattended self-editing loop on, and before believing what it
+reports:
+
+1. Freeze list: is there a file in the repository naming what is held still
+   this cycle, the diagnostician's version included, and is any change to that
+   file treated as a new experiment rather than a continuation?
+2. Bound: does one proposed edit touch one module or one scoped item, with a
+   schema check rejecting oversized candidates before any of them is evaluated?
+3. Evidence: is every edit motivated by a contrast, paired success and failure
+   trajectories of the same task, or by continual search over the log with the
+   turn count gated on log length rather than fixed?
+4. Gates: do a static check, a diff reviewer under an adversarial instruction
+   to find task-specific heuristics, and execution validation all run in series,
+   with rollback as the default, acceptance decided on held-out performance
+   rather than on the motivating diagnosis, and rejected edits kept on file?
+5. Contamination: can you name the filtering step that keeps the evolution
+   tasks disjoint from the evaluation tasks? If not, the improvement curve is
+   measuring memorisation.
+6. Cost: is candidate evaluation cheap enough to run many cycles, by replay
+   where replay is faithful, and is token traffic part of what the loop
+   optimises rather than an afterthought?
+7. Belief: before the gain is published, has a matched challenger with the same
+   starting knowledge failed to reach the same result, and was the analysis
+   pre-registered before the run?
+
 ## Caveats
 
 - The cost and mechanism results are single-system measurements on single
   benchmarks. SoL-Pi's savings are from one 51-task benchmark with a specific
   cache pricing ratio, and the compaction gate has to be recomputed against
-  your provider's prices before its arithmetic means anything.
+  your provider's prices before its arithmetic means anything. Its input floor
+  is small, which is the point: the current context size and your provider's
+  cache write-to-read price ratio are the two numbers the decision needs.
 - ModularRSI's transfer claim is reported without numeric scores in the
   evidence alexandria holds, so treat "improves and transfers" as directional
-  and check the paper before quoting a figure.
+  and check the paper before quoting a figure. Two of its gates have cheap
+  floors worth naming: execution validation ran on two randomly sampled tasks,
+  and the evolution set that licensed the transfer claim was 2,000 curated
+  tasks, where the load-bearing part is the named filtering step and not the
+  count.
 - The Agora population findings are one 12-day run with 13 workers and one
   target model, and the monoculture break is a single observed event with a
-  human in the loop. It is a design warning, not a measured effect size.
+  human in the loop. It is a design warning, not a measured effect size, and
+  the floor beneath which it says nothing is a population: at one or two
+  workers there is no monoculture to break and section 8 does not apply.
 - Dream-RSI's replay result covers algorithm engineering, mathematical
   optimization and GPU kernel engineering, all domains where a discovery can
   be re-executed cheaply (Dream-RSI). A domain where replay is not faithful
   loses the mechanism entirely.
 - The root-cause attribution numbers come from LLM judges reading execution
   logs with a median size of hundreds of thousands of tokens, and the stop
-  rule for short trajectories was observed on two benchmarks.
+  rule for short trajectories was observed on two benchmarks. The diagnostician
+  floor is the useful part: with four turns of continual search a lower-tier
+  judge matched or surpassed a higher-tier one, so the cheap model plus the
+  search turns is sufficient and the expensive model plus one pass is the worse
+  buy.
 - These findings are from 2026 papers and carry alexandria claim provenance.
   If a source claim is later contradicted, this skill will be revised or
   deprecated.
