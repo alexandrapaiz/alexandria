@@ -951,8 +951,12 @@ recommendation is 250 in one hand rather than two.
 
 ```diff
 -          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 250 --permission-mode bypassPermissions --model claude-opus-5"
 ```
+
+*The number in this diff was raised from 200 to 250 on 2026-09-30, on the
+re-derivation in [turn-caps.md](turn-caps.md). Twice the measured peak of
+114 rounded up to the next 50 is 250. Apply the diff as written above.*
 
 **No timeout change.** The measured run spent 743 seconds on 92 turns, so
 200 turns is about 27 minutes against the file's `timeout-minutes: 75`.

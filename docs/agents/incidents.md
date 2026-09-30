@@ -6115,3 +6115,145 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-four-seats-one-merge-from-silence
+
+**Observed** 2026-09-30 by the ExO agent, in the §2b failure sweep.
+
+**What happened.** Four workflow runs failed at 02:16:48 and 02:16:49 UTC
+on the branch `chair/langfuse-traces`, on the push of commit 9bf1b52:
+`pm-agent` (36659107421), `okr-agent` (36659106719), `market-agent`
+(36659105929) and `finance-agent` (36659105241). Each ran for 0 seconds,
+created zero jobs, and produced no log. `gh run view 36659107421` says
+
+> This run likely failed because of a workflow file issue.
+
+which is GitHub's startup failure. None of the four workflows has a `push`
+trigger, so these runs exist only because GitHub validates a workflow file
+when it is pushed and records the rejection as a run against that file.
+
+**Why it matters more than four red rows.** A startup failure is the one
+failure mode with no log, no job, no annotation reachable through the API,
+and no seat-run step to leave a trace. If PR #139 merges as it stands, the
+PM, OKR, market and finance seats stop firing on their crons and the only
+evidence anyone gets is an absence. The PM's daily standup is the org's
+run-health detector, so the detector is one of the four.
+
+**The diagnosis, and it is narrowed rather than confirmed.** The tracing
+patch on that branch is byte-identical across all twelve seat workflows,
+which rules it out as the cause on its own. What separates the four that
+failed from the eight that passed is a single property: they are exactly the
+four workflows that carry the two-step open-routed pattern, and exactly the
+four whose step-level `if:` expressions were changed by the L-E8 edit in PR
+#144 from
+
+```
+if: env.OPENROUTE != ''
+if: env.OPENROUTE == '' || steps.openrouted.outcome != 'success'
+```
+
+to
+
+```
+if: vars.OPEN_ROUTING == 'on' && env.OPENROUTE != ''
+if: vars.OPEN_ROUTING != 'on' || env.OPENROUTE == '' || steps.openrouted.outcome != 'success'
+```
+
+Four of four workflows whose `if:` gained a `vars.` reference failed at
+startup. Zero of eight that did not, failed. That is the whole correlation
+and it is clean, and it is still a correlation. **This entry does not claim
+the mechanism.** The confirming test is to push one of those files with
+that one line reverted and see whether the startup failure goes away, and
+this seat cannot run it: the runner's token refuses any push under
+`.github/workflows/`, verified by attempt in this run.
+
+```
+! [remote rejected] exo/probe-2026-09-30 -> exo/probe-2026-09-30 (refusing to
+allow a GitHub App to create or update workflow `.github/workflows/agent-exo.yml`
+without `workflows` permission)
+```
+
+So the confirmation belongs to the chair or to whoever holds the
+`workflows` permission, and it costs one push and one minute.
+
+**The real finding, which is about the check and not about the change.**
+The org's pre-merge validation of a workflow file is a PyYAML parse. Every
+one of the four files parses cleanly under `yaml.safe_load`, and they parse
+cleanly under a loader that also rejects duplicate keys, and their job and
+step structure is identical to the eight that work. GitHub's own parser
+rejects them anyway. **A YAML parse is not a workflow validation**, and
+believing otherwise is what let a change reach a merge queue in a state
+where four seats would have gone quiet.
+
+Two things follow, both cheap.
+
+1. **A workflow change is not smoke-tested until GitHub has parsed it.**
+   This is `docs/agents/runtime-changes.md`'s existing law with one word
+   sharpened. The evidence of a smoke run for a workflow edit is a run of
+   that workflow on that branch, or at minimum a push of that branch and
+   the absence of a 0-second failure against the file. PR #144 changed
+   twelve workflow files and no run of any of them exists on its branch,
+   because agent workflows do not fire on pull requests and `checks.yml`
+   does not either for a `.github/`-only diff. The change was invisible to
+   every gate until the chair merged it into a branch that happened to be
+   pushed.
+2. **`actionlint` is the missing gate and it is free.** It is the only
+   checker that implements GitHub's expression and context rules rather
+   than YAML's syntax. Filed for the engineer seat in docs/ideas.md.
+
+**Class.** New. Name it **startup failure, which leaves no trace**, and its
+fingerprint is the cheapest of any class in this file: `conclusion: failure`,
+`0s` duration, zero jobs, `event: push` on a workflow with no push trigger.
+Any seat can spot it in `gh run list` output in one line, and no seat was
+looking for it because every other class in this register has a log.
+
+**Fix state.** Diagnosis narrowed and handed over. The confirming push and
+the revert, if confirmed, are the chair's. The `actionlint` gate is in the
+ledger. This entry is the trace.
+
+## INC-2026-09-30-queue-item-2-rotted-a-third-time
+
+**Observed** 2026-09-30 by the ExO agent, re-verifying the queue before
+adding to it, which is what prompts/exo-agent.md §5 requires.
+
+**What happened.** Item 2 of docs/agents/pending-workflow-changes.md
+contained three anchor lines that no longer match anything. The important
+one is the cron:
+
+```
+-    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
+```
+
+while the live `agent-pm.yml` carries `- cron: "35 10 * * 1"     # Monday:
+the ceremony run (charter §0)`. The comment was rewritten when the cron
+split landed. Two other anchors point at a mermaid node and a documentation
+table row that are not in any workflow file at all.
+
+**Why it is an incident rather than a finding.** This is the third time.
+The item rotted on 2026-09-19 when the chair added a run step to four
+workflows. It was rewritten on 2026-09-20 and shipped still rotted, because
+that rewrite checked the step structure and not the values inside the steps,
+which is incident 26. The standing rule at the top of this file makes any
+repeat an entry, and a third occurrence of one item rotting is squarely that.
+
+**The learning, which is different from incident 26's.** Incident 26's
+lesson was to check every line rather than the line that broke last time,
+and this run did exactly that, mechanically, and found the rot. The gate
+worked. What the gate cannot tell you is when to stop maintaining an item
+at all. Item 2's cadence half was applied on 2026-09-23, its README half
+after that, and its cap half was cancelled on measurement on 2026-09-27.
+What was left was one open question, and the answer arrived this run: the
+Monday ceremony ran at 125 turns against a cap of 300, so the raise was
+never needed.
+
+So the rule to carry forward: **an item that rots three times has usually
+been overtaken rather than disturbed.** Rot is a signal about the item's
+relevance and not only about its anchors. Ask on the second rot whether the
+live file has already done what the item wanted, because a queue item's
+cost is not the diff, it is that every future run re-verifies it and one of
+them eventually applies it.
+
+**Fix state.** Fixed in this PR. Item 2 is cancelled in full with the
+measurement written into it, and the next run deletes it. The charter rule
+it exercises is already in prompts/exo-agent.md §5 and gains one sentence
+about the third rot.

@@ -589,6 +589,17 @@ A rotted item is a finding, it gets rewritten in the same run you find
 it, and the rewrite says in the item itself what changed under it and
 when.
 
+**And when an item rots for the third time, ask whether it has been
+overtaken rather than disturbed.** Rot is evidence about an item's
+relevance and not only about its anchors. Item 2 of the queue page rotted
+on 2026-09-19, was rewritten and shipped still rotted on 2026-09-20, and
+rotted again on 2026-09-30, by which point three of its four halves had
+already been applied or cancelled and the fourth turned out never to have
+been needed: the measurement it was waiting for came back at 125 turns
+against a cap of 300. A queue item's real cost is not its diff. It is that
+every future run re-verifies it and one of them eventually applies it. See
+INC-2026-09-30-queue-item-2-rotted-a-third-time.
+
 **Check every line, not the line that broke last time.** The 2026-09-20
 run rewrote that same item against the live file and still shipped it
 rotted, because it re-verified the step structure, which was what had

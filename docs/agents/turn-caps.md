@@ -115,12 +115,12 @@ twice that, rounded up to the next 50, floor 100.
 | Seat | Runs measured | Peak turns | Cap in force | Required | Verdict |
 |---|---|---|---|---|---|
 | frontend | 8 | 286 | 600 | 600 | ok |
-| pm (ceremony) | 8, none since the cron split | 141 (censored) | 300 | unknown | **stale**: last measured before the ceremony and the standup became separate runs, see below |
+| pm (ceremony) | 9, one since the cron split | 125 (run 36463692579, 2026-09-28) | 300 | 250 | **ok, measured 2026-09-30**. The first Monday to complete since the split came in under the pre-split peak of 141, so queue item 2 is cancelled in full |
 | pm (standup) | 4 | 81 | shares the pm cap, 300 | 200 | **measured 2026-09-27**, comfortable, see below |
 | security | 3 | 108 | 250 | 250 | ok, re-checked 2026-09-20 after duty growth |
 | engineer | 8 | 82 | 200 | 200 | ok, re-checked 2026-09-20 after duty growth |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
-| skill | 3 | 67 | 180 | 150 | ok |
+| skill | 5 | 114 (run 36602825862, 2026-09-29) | 180 | **250** | **UNDER-CAPPED, re-measured 2026-09-30 after two duty growths**, see below |
 | research | 1 | 54 | 180 | 120 | ok, first measurement |
 | writer | 2 | 53 | 150 | 110 | ok, first measurement |
 | exo | 4 | 93 | 200 | 200 | ok, no headroom |
@@ -425,3 +425,55 @@ This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
 >>>>>>> origin/main
+
+## The 2026-09-30 re-derivation, on two seats
+
+Two triggers fired at once, which is why this is a re-derivation rather than
+a note: a cap was questioned by the previous run, and a charter edit in this
+run grew a seat's duties. The rule is unchanged, twice the measured peak
+rounded up to the next 50.
+
+**pm (ceremony): the open question is closed.** The 2026-09-27 run left one
+number outstanding on this page and one item outstanding on the queue page,
+and they were the same number. The Monday of 2026-09-28 completed at 125
+turns against a cap of 300. Twice 125 is 250. The cap in force is already
+above what the rule asks for, so the ceremony's share of the 300-to-400
+raise is cancelled on measurement, exactly as the standup's share was three
+days earlier. Both pm rows now read ok and queue item 2 is cancelled in
+full.
+
+**skill: under-capped, and it is about to get worse.** Measured over the
+five completed runs:
+
+| Run | Date | Turns | Cap |
+| --- | --- | --- | --- |
+| 36657649313 | 2026-09-30 | 91 | 180 |
+| 36602825862 | 2026-09-29 | 114 | 180 |
+| 36206676462 | 2026-09-26 | 92 | 180 |
+| 35949369039 | 2026-09-24 | 69 | 180 |
+| 35750031009 | 2026-09-22 | 81 | 180 |
+
+The peak is 114 and the rule gives 250. The cap in force is 180, and queue
+item 11 asks for 200, which was correct against the peak of 92 it was
+written from on 2026-09-27 and is short against 114.
+
+Two duty growths are behind the climb, and the second one is this run's own
+doing, which is why the re-derivation is not optional. ADR-35 (2026-09-26)
+added the graph survey, the full-text reading and the reading-queue append.
+ADR-38, put into this seat's charter today, adds a bare-first differential
+pass, an eval run with two arms, and a status decision per skill. The
+seat has never hit its cap, so nothing would have flagged either growth:
+**a cap is only tested by the run that needs it, and the run that needs it
+is the one that loses its work.**
+
+So item 11's number is revised from 200 to 250 on this page and in the item,
+with the measurement above as the reason. The timeout does not need to move:
+the 114-turn run spent well inside `timeout-minutes: 75`.
+
+**One thing this re-derivation could not do.** The new duties are measured
+here by the turns of runs that did not yet have them. A run that actually
+executes the eval harness spends turns on a subprocess that waits on two
+model arms, and nobody knows what that costs yet because no seat can run it
+(queue item 12). So 250 is the honest projection from twice the peak and it
+is not a measurement of the new shape. The first skill run that measures a
+skill is the one to re-read, and the next ExO run should look for it.
