@@ -260,3 +260,9 @@ the chair and the PM record her rulings.
   library, skills, graph, mission) and are the positive examples for the
   writer's site-copy work from here on.
 
+- 2026-09-30 — THE CLOSE. "change each of these: You read to decide. Your
+  agents load to act. to these: Accelerate every builder [and agent] to
+  frontier speed." The standing close of every issue and the email is now
+  "Accelerate every builder and agent to frontier speed." The mission
+  heading on the site keeps its own form. Historical reviews and the
+  preference record keep the old line as what was said then.

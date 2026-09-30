@@ -33,7 +33,7 @@ IN_REPO = Path(__file__).resolve().parents[1] / "site" / "emails" / "digest.html
 
 # The closing line, from the 2026-09-19 design review. It is the one piece of
 # reader-facing copy this module owns, so it is a constant a writer can find.
-CLOSE = "You read to decide. Your agents load to act."
+CLOSE = "Accelerate every builder and agent to frontier speed."
 
 BULLET = re.compile(r"^(\s*)(?:[-*]\s+|(\d+)[.)]\s+)(.*)$")
 BOLD_ONLY = re.compile(r"^\*\*(.+?)\*\*[.:]?$")
