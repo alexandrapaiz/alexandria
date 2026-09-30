@@ -328,7 +328,10 @@ def serve():
                 with author_rows as (
                     select unnest(p.authors) as author, p.id, p.published_at
                     from papers p
-                    join triage_log t on t.paper_id = p.id
+                    -- latest_triage: a re-triaged paper has more than one row
+                    -- in triage_log, and counting rows would inflate an author's
+                    -- paper count without them writing anything.
+                    join latest_triage t on t.paper_id = p.id
                         and t.decision in ('distill', 'deep_read')
                     where p.authors is not null
                 ),
@@ -353,7 +356,10 @@ def serve():
                 with inst_rows as (
                     select unnest(p.institutions) as institution, p.id, p.published_at
                     from papers p
-                    join triage_log t on t.paper_id = p.id
+                    -- latest_triage: a re-triaged paper has more than one row
+                    -- in triage_log, and counting rows would inflate an author's
+                    -- paper count without them writing anything.
+                    join latest_triage t on t.paper_id = p.id
                         and t.decision in ('distill', 'deep_read')
                     where p.institutions is not null
                 ),
