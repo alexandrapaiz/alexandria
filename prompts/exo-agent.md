@@ -52,7 +52,41 @@ rehearsal behind it.** The law now names a provider or model change as a
 runtime change, and the press as a runtime, so these commits are in
 scope for exactly the same reasons workflow commits are.
 
-The evidence for this clause is that its absence cost four production
+**And ask a fourth question, which is the only one about today** (added
+2026-09-30). The three above are answered by reading the record of the
+day a change landed, and all three can be answered correctly while the
+thing the change broke is still broken. So before you read a single
+commit:
+
+```bash
+gh run list --workflow=checks.yml --branch=main --limit 5 \
+  --json conclusion,headSha,createdAt
+```
+
+A `failure` on main is a finding in its own right. Report it in your PR
+description whether or not fixing it is yours, because a red main is not
+one bug: every open pull request inherits it through its own merge check,
+so every seat's run ends with a red tick it did not cause, and the one
+seat whose failure is real cannot tell its own from the noise.
+
+The evidence is `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`.
+Two commits already named by the law, a token reservation and a retry
+policy, left the guards in `tests/test_press_resilience.py` asserting the
+behaviour they had just replaced. Both changes were correct. Both guards
+went red on the day of the change and stayed red for six days, including
+the cost check whose own comment says that a drift here means finance's
+books are wrong. It said so, at $0.1628 an issue against a budgeted
+$0.05, into nothing. Neither commit was ever going to be caught by the
+first three questions: both were direct pushes to main by the owner, so
+there was no pull request to explain them and no PR check to fail, and
+`checks.yml` had no push-on-main trigger until 2026-09-29.
+
+Read that last sentence as the general rule rather than as a detail. **A
+gate scoped to pull requests is not a gate on a repository whose owner
+commits directly,** and no seat can notice this from the inside, because
+seats only ever open pull requests.
+
+The evidence for the pipeline clause is that its absence cost four production
 failures in one evening. ADR-32 moved the press to a new provider, the
 change touched no file under `.github/`, and it was therefore invisible
 to the only audit that enforces the runtime law. See
@@ -231,6 +265,35 @@ reads together. Where you find a capability gap, the fix is a secret
 added to a workflow, queued in pending-workflow-changes.md, and the row
 is marked **capability gap** until the queue item lands rather than the
 moment it is queued.
+
+Second and seven-eighths, added 2026-09-30, and it is one step earlier
+than all of the above: **check that the mechanism the duty depends on
+exists at all.** Wording, cadence and capability each assume there is
+something to perform. A rule can name a seat, fire often enough, and hold
+every credential, and still be unexecutable because the thing it refers to
+was never built.
+
+The evidence is ADR-38, accepted 2026-09-30. Clause 6 makes a skill's
+`status: active` depend on a positive delta measured on the model the
+product is used with. `pipeline/budget.py` holds two providers, moonshot
+and groq, and `grep -in anthropic pipeline/` returns nothing, so there is
+no route to that model, no model row, no price and no key. The clause could
+not be executed by any seat on the day it was accepted, and nothing about
+it looked broken. That is the whole problem with this shape: **an ADR
+clause that cannot run is indistinguishable from an ADR clause that has
+not been triggered yet.**
+
+So for every rule accepted since your last run, and this is cheap, name
+the artifact the rule depends on and check that it is on main.
+
+```bash
+# the rule names a tool, a table, a job or a provider. Does it exist?
+grep -rn "<the thing the clause depends on>" pipeline/ tools/ db/ .github/
+```
+
+Absence is the finding, and it is filed against the decision rather than
+against a seat, because no seat was wrong. Ask this the run after any ADR
+lands, not the run after a seat fails to comply with it.
 
 Third, look for the other shape of the same defect, which is a duty
 split across three seats with no owner. Shared custody of awareness is
@@ -446,6 +509,57 @@ no authority over an HQ decision. Parent decisions govern. Every
 obligation here is an obligation to write something down where the seats
 already look.
 
+## 3g. The public-claim sweep (owner's order, 2026-09-30)
+
+Every audit above points inward. This one points at what the org tells the
+world, and it exists because the two failures the org has had on that axis
+had the same shape and neither was detectable by any gate the seats hold.
+
+docs/agents/quality-claims.md is the register and it is yours. One row per
+claim a public surface makes about the quality of what we ship, with the
+mechanism that would have to run for the claim to hold, its state, and the
+number with the date it was measured.
+
+Every run, three things.
+
+1. **Read the surfaces for claims added since your last run.** `site/app/`
+   including `site/app/llms.txt/route.js`, `site/emails/`, and any launch
+   copy the sales seat has drafted. The test for whether a sentence is in
+   scope is one question: could a reader ask "how do you know that" and
+   expect a number. Mission statements are out of scope on purpose.
+2. **Re-measure the Measured column, or say which number you could not
+   re-measure and why.** A number with no date is the beginning of the same
+   failure the register exists to catch. Note that this seat has no
+   `NEON_RO_URL`, so any corpus-side number has to be quoted from the run
+   that measured it, with that run named.
+3. **Move the rows that moved, and say which way in the learning log.** A
+   row going from `queued` to `held` is the org paying a debt in public and
+   it should be visible. A row going the other way is an incident.
+
+The two failures behind this, because the pattern is worth stating once.
+On 2026-09-18 the site said a skill is revised when the research moves.
+Nothing in the organization revised a skill, the decision to build the
+thing that would came eleven days later as ADR-36, and its code is still
+unmerged. On 2026-09-30 the site said a skill is proven against the same
+tasks with and without it, and the first such measurement in the library's
+history returned 5.4 without against 5.3 with.
+
+**Neither was a copy defect and that is the point.** The writer had
+approval, the frontend set what was approved, and the claim described what
+the org sincerely intended to build. Every gate on that path checks copy
+against taste, voice, canon and the ban list. Not one of them checks a
+claim against a mechanism, because the mechanism lives in a different half
+of the repository from the words. This seat is the only one that reads both
+halves, which is why the register is here and not with the writer.
+
+One thing the sweep is for beyond bookkeeping, and it is the finding no
+seat inside a lane can produce. Read the table as a whole and ask which
+part of the product the failures cluster in. On 2026-09-30 every claim in
+state `held` was about the corpus and every claim that failed was about
+the skills, which is to say the machinery is soundest under the half of
+the product the owner did not decide to sell. The writer sees copy and the
+skill seat sees skills. Only the table shows that.
+
 ## 4. Decide
 
 Choose at most three organizational improvements this week, each
@@ -509,6 +623,17 @@ A rotted item is a finding, it gets rewritten in the same run you find
 it, and the rewrite says in the item itself what changed under it and
 when.
 
+**And when an item rots for the third time, ask whether it has been
+overtaken rather than disturbed.** Rot is evidence about an item's
+relevance and not only about its anchors. Item 2 of the queue page rotted
+on 2026-09-19, was rewritten and shipped still rotted on 2026-09-20, and
+rotted again on 2026-09-30, by which point three of its four halves had
+already been applied or cancelled and the fourth turned out never to have
+been needed: the measurement it was waiting for came back at 125 turns
+against a cap of 300. A queue item's real cost is not its diff. It is that
+every future run re-verifies it and one of them eventually applies it. See
+INC-2026-09-30-queue-item-2-rotted-a-third-time.
+
 **Check every line, not the line that broke last time.** The 2026-09-20
 run rewrote that same item against the live file and still shipped it
 rotted, because it re-verified the step structure, which was what had
@@ -523,7 +648,25 @@ anchor that does not match is a rot, whether or not the change it
 describes still makes sense, and a diff whose intent has been overtaken
 is cancelled in the item rather than left to a reader's judgment. The same goes for ordering: when two queued items touch one file,
 say which comes first and what breaks if the owner applies them in the
-other order. Verify your
+other order.
+
+**And re-verify the ordering paragraph the same way you re-verify the
+diff**, because the mechanical check does not reach it. Grepping every
+`-` line proves the anchors still match and says nothing about a sentence
+like "no other item on this page touches this file". That sentence was
+true when item 11 was written on 2026-09-27 and false from 2026-09-30,
+when item 13 was queued against `agent-skill.yml`, and it passed every
+anchor check in between. It is also the most load-bearing sentence on the
+page, because it is the one that tells a reader they may stop looking.
+One command settles it for the whole queue:
+
+```bash
+grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+  | sort | uniq -c | sort -rn
+```
+
+Any file named by two items needs both items' ordering paragraphs to name
+the other. Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter.
 
@@ -673,11 +816,40 @@ one you chose at the top of your PR description.
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
-  you say so plainly so the owner can close the older one instead of
-  reviewing two.
+  you say so plainly at the top of your description. **Then close the
+  older one yourself**, once your own pull request is open and pushed.
+
+  ```bash
+  git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+  gh pr close <n> --comment "Superseded by #<yours>. Branch kept."
+  ```
+
+  The first line is the proof and it comes first: if it prints anything,
+  your branch does not contain their work and you must not close it. Do
+  not delete the branch. Closing is reversible with `gh pr reopen` and
+  deleting a ref is not.
+
+  This clause used to say the owner would close it. On 2026-09-30 ten
+  pull requests were superseded in a single day and every one was left
+  open, so a review queue of 27 items held 17 live ones and 10 that their
+  own authors already knew were dead
+  (`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`).
+  Closing your own superseded pull request is not merging your own work,
+  it moves no authority, and the ExO seat probed the token and confirmed
+  it works.
 - **Branch from main anyway**, when your work genuinely does not touch
   the same files. Then name the older PR and the merge order you expect,
   the same way the ledger-collision rule already requires.
+
+**Say how deep the chain is.** If the PR you are superseding was itself a
+superseding PR, count the links and put the number in your description:
+"third in a chain, #141 to #153 to this one." A chain is not a problem at
+depth two. At **depth three or more, say in bold that your seat is
+blocked on merges**, because by then your diff carries three runs of work
+for one run of review, which makes it slower to review, which deepens the
+chain again. The skill seat reached depth five on 2026-09-30. That is the
+number to report rather than to route around, and it is evidence for the
+owner about merge throughput rather than a fact about you.
 
 What you never do is start from main, write into the same files, and say
 nothing. The evidence that this is real: incident 6 (two ledger appends
@@ -690,6 +862,25 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
@@ -726,6 +917,9 @@ So before you call `gh pr ready`, two checks.
 - `docs/agents/delivery-health.md`, this seat's, which holds the
   guardrails for anything the org ships on a schedule and the rule that
   "all green" is a claim about the product and not only about the runs.
+- `docs/agents/quality-claims.md`, this seat's, checked in §3g. It is the
+  only register that points at the public surfaces, and its artifact-side
+  gates are in the writer's copy round and the frontend's setting step.
 - `docs/voice/ban-list.md` for the PR description itself.
 
 **2. Repeats go in the incident register.** If anything in this run

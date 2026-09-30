@@ -76,6 +76,7 @@ this state and the row it was found in is below.
 | **An HQ decision is read against local law** | exo (§3f, added 2026-09-24) | two HQ decisions in the week of 2026-09-21 | weekly Sun | assigned 2026-09-24, and it is a cadence gap on its face, see below |
 | **Evidence from here reaches HQ** | exo writes, chair carries (hq-relay.md) | as incidents implicate a parent decision | weekly to write, unbounded to deliver | assigned 2026-09-24, with the delivery half outside any seat's control |
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
+| **A skill's measured effect** | skill (the bar section, added 2026-09-30) | per skill shipped or revised, 6 in 18 days | weekly Tue | **capability gap, found 2026-09-30**: the seat has no `GROQ_API_KEY` and the benchmark subject has no provider route at all, see below |
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
@@ -571,6 +572,11 @@ work note and a register id. This seat found nothing that the daily seat
 had not already found. That is the division of labour in
 `prompts/exo-agent.md` §2b working as written.
 
+**2026-09-30 re-measurement of this row.** Thirty-eight
+`workflow_dispatch` runs since 2026-09-24 and the `triggering_actor` on all
+thirty-eight is `alexandrapaiz`. The state is unchanged and the gradient has
+not moved at all in six days. The 403 has still never been retried.
+
 **Opened by being enabled.** `vars.PM_DISPATCH_ENABLED` now reads `true`
 in the PM's run log, so §5 of that charter is live and the row "the org
 decides what to do next between Mondays" has an owner with the power to
@@ -588,3 +594,92 @@ the one recorded reason is a 403 that no seat has retried. **The next
 audit's first question about this row is whether the 403 was ever tested
 again, because an unexercised power and a broken one look identical from
 here.**
+
+## The 2026-09-30 row
+
+### A skill's measured effect, which six skills shipped without
+
+**The duty.** For every skill in the library, the number that says whether
+an agent holding it does better than the same agent without it. Not whether
+the papers behind it are real, which the ADR-13 provenance reviewer checks.
+Not whether a router finds it, which `skills/_validation/trigger_test.py`
+checks and has checked 27 cases at a time since the founding. Whether it
+helps.
+
+**Why the row exists.** Six skills were created between 2026-09-13 and
+2026-09-29. Every one of them was shipped with a trigger test in its PR and
+five of the six carry `validated: ""` to this day. The first with-and-without
+measurement in the library's history ran on 2026-09-30, on the oldest skill,
+and returned 5.4 without against 5.3 with. Eighteen days of production and
+the org's first number about its own product was that the product did
+nothing measurable. Nobody failed an audit on the way there, which is the
+signature this page was built to detect: the duty was in no charter, so
+every audit passed.
+
+**The wording test: now passes.** `prompts/skill-agent.md` carries "the bar
+a skill has to clear" as of 2026-09-30, and it names the duty in words a run
+can act on: measure the effect before you claim one, differential tasks
+only, two subjects, retire what does not move. `prompts/skill-extract.md`
+§2b carries the method. Before this run the vocabulary was absent from every
+charter in `prompts/`, which is the §3b grep and it returned nothing:
+
+```bash
+grep -ril "differential\|with-versus-without\|measured delta" prompts/   # nothing, 2026-09-29
+```
+
+**The cadence test: passes, barely.** The skill seat runs weekly and the
+duty's trigger is per skill shipped or revised. Six skills in eighteen days
+is roughly one every three days, which is faster than weekly, but the ADR-37
+maintenance-first rule and the one-skill-per-run rule together mean the seat
+sets its own trigger rate. A seat that ships one skill a week and measures
+one skill a week is in balance. The risk is the backlog rather than the
+cadence: six unmeasured skills at one retrofit per run is six weeks, and the
+row should be re-read when that queue is drained rather than weekly.
+
+**The capability test: fails, twice over, and this is the finding.**
+
+The duty's evidence is a delta produced by `tools/skill_eval.py`, which
+reaches its models through `pipeline/llm.py` and `pipeline/budget.py`.
+
+```bash
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-skill.yml | sort -u
+# BOARD_API_URL BOARD_RUNTIME_TOKEN CLAUDE_CODE_OAUTH_TOKEN
+# NEON_RO_URL PROJECTS_TOKEN SLACK_WEBHOOK_URL
+grep -n 'key_env' pipeline/budget.py
+# 70: "key_env": "MOONSHOT_API_KEY",
+# 77: "key_env": "GROQ_API_KEY",
+```
+
+*The cheap arm.* The default subject and judge in `tools/skill_eval.py` are
+`kimi-k2.6` and `openai/gpt-oss-120b`, and the measurement that produced 5.4
+against 5.3 used `qwen/qwen3.8-27b` as subject. Both of those models are
+served by groq in `budget.MODELS`, so the arm needs `GROQ_API_KEY` and the
+skill seat's workflow does not carry it. No workflow in the repository
+carries it.
+
+*The benchmark arm, which is worse.* ADR-38 clause 6 makes `status: active`
+depend on a positive delta measured on the model the product is actually
+used with. `budget.PROVIDERS` holds two entries, moonshot and groq, and
+`grep -in anthropic pipeline/llm.py pipeline/budget.py` returns nothing. So
+the benchmark arm has no provider, no model row, no price and no key. This is
+not a missing secret. It is a missing route, and a secret added to a workflow
+would not create it.
+
+The distinction matters for who fixes it. The cheap arm is one line in one
+workflow and it goes in `docs/agents/pending-workflow-changes.md`. The
+benchmark arm is pipeline work, which is the engineer seat's surface and not
+this seat's, so it is a ledger entry with the ADR clause it unblocks named.
+
+**The shape this row adds to the page.** The 2026-09-27 capability gap was a
+seat that could not reach its evidence. This one is a decision rule written
+into an accepted ADR that **no seat in the organization can execute**, on the
+day the ADR was accepted. The register's fourth test asks whether the naming
+seat's sandbox holds what the duty requires. The test this row adds is one
+step earlier and cheaper: **does the mechanism the rule depends on exist at
+all.** Ask it of a rule the moment it is accepted, because an ADR clause that
+cannot run does not announce itself. It reads exactly like a clause that
+runs and has not been triggered yet.
+
+So the state is `capability gap`, and it stays that way until the key lands
+and the route exists. Not until they are queued. The 2026-09-27 audit made
+that distinction and it holds here.

@@ -2403,3 +2403,484 @@ within hours of each landing, which is what the cadence-gap fixes of
 the detector, which is exactly what §2 says it should have become, and a
 weekly audit that finds nothing new about the failures is the audit
 succeeding.
+
+## 2026-09-30 — six skills, eighteen days, no measurement: the law the org had and never pointed at its product
+
+Owner's dispatch for this run, on the first skill measurement: "the skill
+evidence is worrying. we need to improve the skills a lot."
+
+### What the numbers are
+
+The library's first with-and-without evaluation ran on 2026-09-30 against
+`skills/harness-engineering`, on four target tasks at two repetitions,
+subject `qwen/qwen3.8-27b`, judged by `openai/gpt-oss-120b`. The mean was
+**5.4 without the skill and 5.3 with it.** One section moved its task from 4
+to 6, and it is the same section, parallel sample-and-select, that changed a
+design decision in the library's first consumer report. The longest
+procedural section moved its task from 6 down to 4.
+
+Around that number, four counts that matter more than the number.
+
+- **Six skills, eighteen days.** Created 2026-09-13, 09-18, 09-22, 09-24,
+  09-26 and 09-29.
+- **Five of the six carry `validated: ""` today.** The sixth carries a prose
+  A/B note from 2026-09-12, before the harness existed.
+- **Every one of them shipped on a trigger test.** A trigger test asks
+  whether a router finds the skill. The specimen passed 27 of 27 cases and
+  moved its eval mean by minus 0.1, so the two measurements are not merely
+  different, they are uncorrelated in the one case where both exist.
+- **All six exceed the length bar the owner has now set.** 137, 162, 276,
+  280, 343 and 361 lines against 120.
+
+### The law that should have fired, and the org already had it
+
+The law is **measure before you claim**, and the striking thing is that this
+organization is unusually good at it. Four places in the repository enforce
+it with teeth:
+
+- `docs/agents/turn-caps.md`, on the owner's directive of 2026-09-18: "Turn
+  caps are measured, never guessed." A cap hit is evidence about the cap.
+- `pipeline/budget.py`: "Every number here is read from the provider's live
+  documentation, and the date it was read is in the comment above its
+  block. Nothing in this table is remembered or inferred."
+- `docs/evals/2026-09-27-fulltext-token-density.json`, filed by the engineer
+  seat because the constant it replaced "was an assumption nothing ever
+  compared to a real paper".
+- `docs/product/graph-quality.md`, where every bound ships with the argument
+  for its number.
+
+So the law was not missing and nobody had to invent it. **It was pointed
+inward, at the org's own machinery, and never outward at the org's
+product.** Caps, budgets, token densities and graph bounds were all measured
+before they were asserted. The thing the company sells was asserted six
+times and measured on the nineteenth day. That is the finding, and it is
+worth saying in exactly that shape, because it is not a discipline problem.
+A seat with weak discipline would have guessed at its caps too.
+
+### Where the charters let it not fire
+
+Four mechanisms, each individually reasonable.
+
+**1. The skill charter had a step for findability and no step for effect.**
+Step 5 of the run section was "Test the trigger", with the market evidence
+that 69 percent of public skills never fire as its justification. That
+justification is real and the step is right. What was absent was any step
+asking whether the skill helped the agent that loaded it, so the only gate
+with teeth on the production line measured the wrong axis. A seat that
+passes every gate in its charter has done its job, and that is what
+happened six times.
+
+**2. `validated: ""` was designed as a field somebody else fills.** ADR-13
+gives the validated field to a three-reviewer panel, and
+`prompts/skill-extract.md` said, correctly and emphatically, "Never write a
+non-empty `validated` string." The panel does not exist. So the seat that
+produces skills was explicitly forbidden from filling the one field that
+records a measurement, and the field that was left empty reads as *pending*
+rather than as *missing*. **An empty field with a named future filler is the
+most durable way to not measure something**, because every reader assumes
+the gap is somebody else's queue. Five of six skills sat at `validated: ""`
+for eighteen days and no audit, including three runs of this seat's own
+unowned-duty audit, read it as a defect.
+
+**3. No register held the claim, so no gate could check it.** The site has
+said since 2026-09-18 that a skill is revised when the research moves, and
+that claim's machine was decided on 2026-09-29 and is still unmerged. The
+site now also says a skill is "proven against the same tasks with and
+without it." Every gate on the path from a sentence to a live page checks
+words against words: `docs/voice/taste.md`, `ban-list.md`, `canon.md`,
+`value.md`, the preference files. **Not one of them checks a claim against a
+mechanism**, because the words live in `site/` and `docs/voice/` and the
+mechanisms live in `pipeline/` and `tools/`, and no seat reads both halves.
+
+**4. The unowned-duty audit ran three times over this period and could not
+see it.** Its method is to grep every charter for the vocabulary a duty
+would have to use, and absence of the vocabulary is the finding. Run against
+main on 2026-09-29:
+
+```bash
+grep -ril "differential\|with-versus-without\|measured delta" prompts/   # nothing
+```
+
+The vocabulary was absent from all twelve charters, which is exactly the
+signal the audit exists to catch, and the audit never asked. The reason is
+in that section's own instructions: its suggested candidates are "anything
+the owner had to notice herself, anything a public page promises that no
+seat verifies, anything whose failure would be silent rather than loud."
+The second one names this row precisely. The audit had the right method, the
+right question written down, and pointed it at legal, privacy, backup, quota,
+providers and credentials. **It never pointed it at the product**, because
+the product felt like the one thing obviously owned: there is a skill seat,
+it ships skills, the row reads as covered from every direction.
+
+That is the sharpest lesson here for whoever runs this seat next. The
+unowned-duty audit is built to find duties at the edges of the org. Its
+blind spot is the center. A seat that visibly owns an artifact reads as
+owning every duty about that artifact, and "produce the thing" and "know
+whether the thing works" are two duties that look like one.
+
+### What this run changed
+
+Three improvements, each with the trigger above.
+
+**1. The bar is in the two files the skill seat actually reads.** ADR-38 was
+accepted at 02:39 UTC on 2026-09-30 and it lives in `docs/decisions.md`,
+which `docs/agents/registers.md` records as read by three seats out of
+twelve. A skill run that started at 02:33, six minutes earlier, shipped a
+432-line skill. That run was not wrong and it could not have known. But it
+is the evidence that an ADR is not an instruction: the next run would have
+done the same thing, because nothing the seat opens said otherwise. So
+`prompts/skill-agent.md` gains "the bar a skill has to clear" ahead of its
+run section, with the seven rules as checkable tests, and its run section is
+rewritten so the eval suite and the bare-first differential pass are steps 4
+and 5 rather than an afterthought. `prompts/skill-extract.md` §2 is rewritten
+around five tests, the first of which is the cut test: ask the bare model the
+question the section answers, and delete whatever the bare answer already
+contains. **That one test, run once on 2026-09-12, would have found this on
+2026-09-12.** §2b is new and drafts the eval with the skill, because writing
+a task the bare model fails is what forces a section to be a delta, and
+writing the eval afterwards lets a file full of restatement look finished.
+
+That file is the skill seat's own surface, not this seat's, and it is edited
+here only because the owner's dispatch said so.
+
+**2. The duty has an owner, a register row, and an honest state.**
+`docs/agents/unowned-duties.md` gains "a skill's measured effect", owned by
+the skill seat, state **capability gap**, because the wording test now passes
+and the capability test fails twice. The cheap arm needs `GROQ_API_KEY`,
+which no workflow in the repository carries, and that is queued as item 12.
+The benchmark arm has no provider at all: `pipeline/budget.py` holds
+moonshot and groq, and `grep -in anthropic pipeline/` returns nothing. So
+ADR-38 clause 6, which makes `status: active` depend on a delta measured on
+the model the product is used with, **could not be executed by any seat on
+the day it was accepted.**
+
+That produced a fifth test for §3b of this charter, one step earlier and
+cheaper than the four already there: **does the mechanism the rule depends
+on exist at all.** Wording, cadence, scope and capability all assume there
+is something to perform. An ADR clause that cannot run is indistinguishable
+from an ADR clause that has not been triggered yet, and the only cheap
+moment to ask is the run after the ADR lands.
+
+**3. The claims have a register and two readers.**
+`docs/agents/quality-claims.md` is new, owned by this seat, with one row per
+public claim, the mechanism that would have to run for it to hold, its state,
+and the number with its date. Eleven rows today: three hold, two are
+contradicted by our own measurement, four have no mechanism at all, two are
+waiting on unmerged code. Its artifact-side gates are step 1b of the writer's
+copy round and the frontend's setting step, because approval is about the
+words and this check is about the machine.
+
+**And the table says something no seat inside a lane could have said.**
+Every claim in state `held` is about the corpus. Every claim that fails is
+about the skills. The machinery is soundest under the half of the product
+the owner did not decide to sell, and the half she did decide to sell is the
+half whose promises have the least under them. The writer sees copy, the
+skill seat sees skills, and only a pass over the claims together shows it.
+
+### The other things this run found
+
+- **Four seats are one merge from silence.** Four workflow runs on
+  `chair/langfuse-traces` failed at startup with 0 seconds, no jobs and no
+  log: pm, okr, market and finance. If PR #139 merges as it stands, those
+  four seats stop firing and the only evidence is an absence, and one of the
+  four is the org's own run-health detector. The diagnosis is narrowed to a
+  clean 4-of-4 against 0-of-8 correlation with the `vars.` reference added
+  to those files' step-level `if:` expressions, and it is **not confirmed**,
+  because the confirming test is a push under `.github/workflows/` and this
+  seat's token refuses that. See
+  INC-2026-09-30-four-seats-one-merge-from-silence. The real finding there is
+  that **a YAML parse is not a workflow validation**: all four files parse
+  cleanly under `yaml.safe_load` and under a duplicate-key-rejecting loader,
+  and GitHub rejects them anyway. `actionlint` is the missing gate, it is
+  free, and it is filed for the engineer seat.
+- **The workflow push lane is still closed.** Probed by attempt, per §5. The
+  remote refused with the incident 12 message. PR #144 changes twelve
+  workflow files and was authored by a hand with the permission, not by this
+  seat.
+- **Queue item 2 rotted a third time and is cancelled.** The measurement the
+  2026-09-27 run asked for came back: the Monday ceremony of 2026-09-28 ran
+  at 125 turns against a cap of 300, so the raise was never needed. The rule
+  that falls out of it is that an item rotting three times has usually been
+  overtaken rather than disturbed, and rot is evidence about relevance rather
+  than only about anchors.
+- **The skill seat is under-capped at 180 against a measured peak of 114,**
+  and this run's charter edit grew its duties again, so queue item 11's
+  number is revised from 200 to 250 with the measurement behind it. Note the
+  honest limit: those turns were spent by runs that did not yet have the new
+  duties, so 250 is twice the peak and not a measurement of the new shape.
+- **`ADR-38` names two different decisions.** `docs/decisions.md` has two
+  sections with that heading, at lines 1337 and 1384, written the same
+  evening on different branches. The string appears 19 times elsewhere in
+  `prompts/`, `docs/` and `skills/` and every one of those references is now
+  ambiguous. This is the incident register's sequential-numbering defect
+  exactly, which was fixed by `INC-YYYY-MM-DD-slug` after four collisions,
+  and the same file already contains four ADRs that adopted a dated slug
+  informally. Filed for the chair, whose surface `docs/decisions.md` is.
+- **The dispatch gradient has not moved.** Nine `workflow_dispatch` runs
+  since the last ExO run and the `triggering_actor` on all nine is
+  `alexandrapaiz`. The PM's power has been live since 2026-09-24 and the
+  full count since that day is now **38 dispatches, 38 of them hers**,
+  measured by reading `triggering_actor` on every run rather than by adding
+  to the last report's number. The one recorded reason is still
+  `INC-2026-09-24-dispatch-403` and nothing has retried it.
+- **Owner-as-seat, §3e.** She authored eleven substantive commits on the
+  evening of 2026-09-29, including four ADRs, two site-copy commits, the HQ
+  lessons sync, and by-hand `Merge main into <branch>` resolutions for at
+  least four seat branches. Then she opened `chair/pm-merges`, PR #147, "PMs
+  own merges and failed-run triage". That is §3e's mechanism working in the
+  open: the work landed on the only actor with no cron, and she responded by
+  creating the seat rather than by absorbing it. The number worth carrying is
+  the merge-resolution count, four in one evening, and the next run should
+  check whether #147 merged and whether the count fell.
+
+### What the next run must check first
+
+1. **Did the startup failure get confirmed or ruled out?** One push with one
+   `if:` line reverted answers it. Until then, treat PR #139 and PR #144 as
+   changes that four seats' continued existence depends on. If either merged
+   without that test, look immediately for a seat whose cron stopped firing,
+   because that failure has no log to find you with.
+2. **Did `GROQ_API_KEY` land in `agent-skill.yml` (queue item 12)?** If yes,
+   the next skill run can produce a real number and the row in
+   unowned-duties.md moves from capability gap to assigned. If no, every
+   skill in the library is provisional by ADR-38's own rule and row 1 of
+   quality-claims.md stays contradicted.
+3. **Does a route to the benchmark subject exist yet?** That is the ledger
+   entry for the engineer seat. Until it does, ADR-38 clause 6 cannot mark
+   any skill active, and a skill marked active anyway is the finding.
+4. **Re-measure the quality-claims table.** Three rows should move if the
+   engineer's and skill seat's open PRs merge. Say which way in the log,
+   because a row going from `queued` to `held` is the org paying a public
+   debt and a row going the other way is an incident. This seat has no
+   `NEON_RO_URL`, so the corpus-side numbers (545 of 846 waiting, edged
+   frontier at 301) have to be re-quoted from whichever run measured them.
+5. **Was the ADR-38 collision resolved?** If both headings are still there,
+   the count of ambiguous references has grown rather than shrunk, and the
+   fix is the chair's.
+6. **Item 2 is cancelled and should be deleted.** It is kept for one run as
+   the record of why. Move it to "Applied and deleted" and delete the body.
+7. **Did queue item 13 land?** The skill seat's inline dispatch prompt still
+   asks only for a trigger test, so until it is applied the charter this run
+   rewrote and the prompt that actually reaches the run disagree about what
+   counts as evidence, and the prompt arrives last. This is incident 25's
+   shape and item 4a has sat on that page in the same shape since
+   2026-09-21.
+8. **Two findings this run took outside the three-improvement cap, both
+   because the fix was two sentences.** Branch-name reuse is systemic, six
+   names across five seats, and all twelve charters now carry the one command
+   that detects it plus the suffix rule that makes the naming convention
+   obeyable (INC-2026-09-30-branch-name-reuse-is-systemic). And company
+   standard L-E10, synced on 2026-09-30, had no reader in any charter here,
+   so the engineer and frontend charters now carry the pull-request survey as
+   a step rather than as a page to read. Check that both stuck.
+
+### One thing that is simply working
+
+The consumer-report lane is two days old and it has already done the thing
+it was built for. The Ursa chair session's review of `harness-engineering`
+found value only in the non-obvious deltas and said the skill should have
+shipped a builder's checklist. The first measurement then said the same
+thing in numbers: the section that changed a design decision is the section
+with a positive delta, and the section that was longest prose is the one
+that made its task worse. **Two independent instruments, one qualitative and
+one quantitative, agreed on which part of a skill was worth anything.** That
+is what a measurement is supposed to feel like when the org is finally
+looking, and it arrived within a day of the org starting to look.
+
+---
+
+## Run 2026-09-30 (window, synchronous)
+
+Second ExO run of the day. The morning run's PR #148 was still open when
+this session started and shares every file this work needed, so this run
+took the **build on it** option: #148 is merged in as the first commit,
+this PR supersedes it, and **#148 was closed by this seat rather than
+left for the owner**, which turned out to be the run's second finding.
+
+Branch `alexandria-exo/2026-09-30-window` rather than `exo/YYYY-MM-DD`,
+because the runtime that triggered this window named the branch. Worth
+noting for the next run: the charter's naming rule and the harness's
+naming rule now disagree, harmlessly, and the harness wins because it
+arrives last. That is the same shape as the charter-versus-prompt rule in
+section 2, in a place nobody had looked.
+
+### What this run found
+
+**1. The runtime law had the right scope and the wrong tense.**
+`main`'s checks had been red since 2026-09-24, six days. Two commits did
+it, and both are named verbatim by `runtime-changes.md`: `281d0af` raised
+the press's token reservation from 6,000 to 24,000, and `69a9e7f`
+replaced the retry policy on a concurrency 429. Both changes were
+correct. Both left a guard asserting the behaviour they had just
+replaced, and the second landed the same day the law gained the clause
+covering it.
+
+The audit could not catch it, and the reason is the finding rather than
+the bug. All three questions the law told an auditor to ask are about the
+past: did a merged PR explain it, was there a smoke run, was there a
+rehearsal. Each can be answered correctly while the thing the change
+broke is still broken. So the law now asks a fourth, and it is the only
+one in the present tense: **is the guard that covers this green right
+now?** One command, carried into ExO section 2 and the engineer's step 0.
+
+Two things underneath it that the next run should keep.
+
+- **A gate scoped to pull requests is not a gate on a repository whose
+  owner commits directly.** Both commits were direct pushes to main,
+  which is hers to do, and `checks.yml` had no push-on-main trigger until
+  `4ef55df` on 2026-09-29. No seat can notice this from inside a sandbox,
+  because seats only ever open pull requests. Any workflow filed in
+  `.github/workflows-pending/` that is meant to protect main now gets
+  both triggers before it is filed, and that is written into that
+  directory's README.
+- **A red main costs the signal on every branch, not one bug.** 28 failed
+  runs in 24 hours, 19 of them the same two inherited assertions. On PR
+  #146 the skill seat's one genuine failure sat between two it did not
+  cause.
+
+And the number nobody read: the cost guard, whose own comment says a
+drift here means "finance's books are wrong and this is where it should
+surface", was reporting **$0.1628 an issue against ADR-32's budgeted
+$0.05** the whole time. Finance has been working from a number the
+repository knew was wrong for six days.
+
+Credit where it is owed, because this seat is the backstop and not the
+detector: the PM standup (#150) found the red main this morning and
+handed it to the engineer (#158), who is fixing both tests. The detection
+chain worked on the day. The register entry is about the six days before
+it.
+
+**2. The merge queue converts latency into discarded work, and the rule
+that does it names the owner as the actor.**
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+Today's row is a snapshot of a day still running, and 2026-09-24 proves a
+27-PR day can clear, so volume is not the ceiling. The part that is not a
+snapshot: **ten of today's twenty-eight were superseded the same day** by
+a later run of the same seat, in chains up to five deep (skill: #140 to
+#146 to #151 to #152 to #159). Each link merges its predecessor and
+re-ships the accumulation, so the fifth carries five runs of diff for one
+run of review, which makes it slower to review, which deepens the chain.
+
+Every one of the ten was still open. Not one seat did anything wrong: the
+rule's own words were "you say so plainly **so the owner can close the
+older one**", and ten seats said so plainly. The chore assigned to the
+only actor with no cron was `gh pr close`, ten times. That is section
+3e's owner-as-seat class in its cheapest possible form, and **the general
+lesson is to check the verbs in a rule and not only the rule.**
+
+Fixed in all twelve charters: the seat closes its own superseded PR,
+after proving containment with `git log --oneline origin/<theirs> ^HEAD`
+printing nothing, and never deletes the branch. **The clause was probed
+before it was written** rather than assumed: this run closed its own #148
+and the seat token allowed it.
+
+The structural fix is HQ decision 041 (PM-owned Tier B merges), which
+arrived as PR #147 and is still open. **The fix for the merge queue is
+sitting in the merge queue.** Relayed upward with these numbers.
+
+**3. The ADR allocator has collided, and a convention would not have
+helped.** Confirmed from the morning run's next-run list, item 5: both
+`## ADR-38` headings are still on main and the ambiguous reference count
+has grown to 35.
+
+**One correction to the morning run's diagnosis, because it changes the
+fix.** That entry says the two were "written the same evening on
+different branches", which is the story the incident register tells about
+its own four numbering collisions. It is not what happened here. Both are
+direct commits to main by the owner, `ab2b601` at 20:31 and `6464f34` at
+20:39, eight minutes apart on one branch. The allocator is "read the
+file, add one" and the file was read once. A branch-snapshot convention
+would not have caught it.
+
+So the fix is a check rather than a sentence, which is
+`docs/agents/registers.md`'s own doctrine that **recording is not
+enforcing**, applied for once to the decision log itself.
+`.github/workflows-pending/adr-numbers.yml` is filed in the new-file
+lane. All three of its paths were exercised before filing: the live
+duplicate (exit 1, both line numbers printed, next free number named), a
+fixture renumbered to ADR-39 (exit 0), and a `decisions.md` with no ADR
+headings at all, which exits 1 rather than passing silently. It will fail
+on its first real run, on purpose. Renumbering is the chair's, because
+`docs/decisions.md` is not this seat's surface.
+
+### The standing sweeps
+
+- **Queue rot.** Every `-` anchor in every diff on
+  `pending-workflow-changes.md` re-checked mechanically against the live
+  files. Items 4a, 4, 7, 11 and 13 are clean. Item 2 is the known
+  cancelled one.
+- **But the rot was somewhere the grep does not reach.** Item 11's
+  ordering paragraph said "no other item on this page touches
+  `agent-skill.yml`". True when written on 2026-09-27, false from
+  2026-09-30 when item 13 was queued against that file, and it passed
+  every anchor check in between. It is the most load-bearing sentence on
+  the page, because it is the one that tells a reader they may stop
+  looking. Corrected, and the charter's rot rule now covers ordering
+  paragraphs with a command that finds every file named by two items.
+- **Housekeeping.** No branch deleted and none deletable: every remote
+  ref except `main` and `board` has an OPEN pull request. The six reused
+  branch names are the morning run's registered incident and none of
+  today's window branches add to it.
+- **Caps.** No `error_max_turns` and no cap hit since the last run, so no
+  re-derivation. The morning run's re-derivation stands.
+- **Registers.** `registers.md`'s table still covers the `docs/voice/`
+  and `docs/design/` files that the crude `Enforced at:` grep flags; the
+  table is the authority and it is current. No new GAP.
+- **Dispatch gradient, section 2c.** Eleven `workflow_dispatch` runs
+  since midnight, all `alexandrapaiz`. Unmoved, and the morning run's
+  count of 38 of 38 since 2026-09-24 stands.
+- **HQ origin, section 3f.** One hit, `181470f`, the lessons sync. Clean.
+  Decision 041 is inbound as PR #147 and is **not yet in
+  `docs/decisions.md`**, which is the question 2 shape: when it merges it
+  will change who may merge in this repository, and the record will be a
+  vendored standard and a workflow prompt. That entry is the chair's to
+  write.
+- **The relay outbox has never been emptied.** Four entries now, the
+  oldest written 2026-09-24 and still marked "not yet". A relay nobody
+  delivers is a drawer. Worth a decision next run: either the chair's
+  carrying of it becomes a named step somewhere, or the file admits it is
+  a reading list.
+
+### What the next run must check first
+
+1. **Is main green?** Run the section 2 fourth-question command before
+   anything else. If PR #158 merged, both press assertions and the
+   `run_report` stdout split should be fixed. If it did not merge, the
+   guards are still red and the six days are now more.
+2. **Did the ten superseded PRs get closed, and by whom?** The charter
+   now says the seat does it. If the owner did it instead, the charter
+   edit did not reach the runs and the reason is worth finding. Count
+   with `gh pr list --state all --limit 200 --json number,title,state`
+   filtered on "supersede".
+3. **Is `adr-numbers.yml` still in `workflows-pending/`?** If it moved
+   up, it should be failing on main until the chair renumbers ADR-38. A
+   red main from this check is the check working, and it must not be
+   confused with finding 1.
+4. **Did decision 041 (PR #147) merge, and did anything write it into
+   `docs/decisions.md`?** If it merged without a record, that is HQ
+   Incident 5's shape again and this time the subject is who may merge.
+5. **The morning run's list still stands and is not superseded by this
+   one.** Its items 1 through 4 and 6 through 8 were not worked here:
+   queue item 13, the cancelled item 2 deletion, the delivery-health
+   re-quoting, and the two out-of-cap fixes. Read that list as well as
+   this one.
+
+### One thing that is simply working
+
+The handoff chain ran end to end today without the owner in it. The PM
+standup found the red main, diagnosed both tests correctly by name,
+declined to dispatch the engineer because that seat was already at its
+open-PR hard stop, filed a board item so it would not be lost, and the
+engineer's next run picked it up and is fixing it. Detection, triage,
+deferral under a written rule, and handoff, with no human step. **The
+thing this run had to add was not the fix and not the detection. It was
+the six days before either.**
