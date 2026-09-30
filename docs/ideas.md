@@ -7302,4 +7302,197 @@ graphs.
   maintenance before creation per ADR-37). The specimen
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
+
+### 2026-09-30 — Craft scan: `claude plugin eval`, the first-party harness for the thing we just built (engineer seat)
+
+- Trigger: today's build is ADR-36's with-versus-without eval harness, so the
+  scan went to the nearest first-party product rather than to a research tool.
+  Anthropic shipped `claude plugin eval`, read from
+  code.claude.com/docs/en/plugin-evals on 2026-09-30. It runs a plugin or skill
+  against a suite of cases, scores each with graders, and compares against a
+  no-plugin baseline. The vocabulary is ours: with-arm, without-arm, `Δ`.
+- **What was worth stealing, and was stolen today.** Graders that the
+  without-arm cannot possibly pass are excluded from the score in **both** arms
+  and reported as indicators only, with `arm: both` as the override. The
+  reasoning is exact and it applied to the harness as I had just written it: a
+  check like "the answer cites the 4 to 30 point regression" can only pass with
+  the skill loaded, because the number is in the skill, so scoring it pushes the
+  without-arm toward zero and inflates the delta by a whole task for free. That
+  is a correctness defect the scan found in my own code inside an hour, and
+  `scored_in: with_only` plus `indicators` in `results.json` is the fix, shipped
+  in the same pull request with a test that fails without it.
+- **What alexandria does better, and it is not a small thing.** Their `Δ` is the
+  difference of two means over three runs, reported as a number with no interval
+  at all, and a case passes at `--threshold 1.0`. Ours reports the delta with a
+  clustered bootstrap interval over tasks, the arms as counts with exact
+  binomial bounds, and refuses to call anything a gain when the lower bound
+  touches zero. They are building a developer tool, where a noisy number that
+  points the right way is useful. We are printing numbers at a paying reader, so
+  the interval is the product. The second difference is the loop: nothing in
+  their harness re-runs when the evidence a skill rests on is contradicted, and
+  `skills_needing_revision` plus today's daily job is exactly that.
+- Two smaller things worth copying later, filed rather than built: pinning the
+  model in CI so a model rollout is not read as a regression (our `results.json`
+  records `subject_model`, which is half of it), and a `--json` mode that writes
+  the whole result document to a path so a CI job can diff two runs.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — `deprecated_claims` needs a different paper and a newer claim, or the revision loop's first output is a false positive (engineer seat)
+
+- Trigger: building ADR-36's registrar, I cross-referenced the skills' provenance
+  blocks against the deprecated claim ids the research seat's 2026-09-28 brief
+  names. Exactly one skill is touched: `skills/context-window-engineering` cites
+  claim 85. The same brief judges the edge that deprecated it, `265 -> 85`,
+  **wrong**: two different systems on RMBench, which is a comparison and not a
+  contradiction. And the skill cites 265 as well. So the first revision this new
+  machinery will ever fire is a skill being told to rewrite itself because two
+  claims it holds side by side were read as a refutation.
+- What: the brief already proposes the fix, which is to require that the
+  contradicting claim come from a different paper and be newer, and it says four
+  of the six `contradicts` edges in the graph are wrong, two of them intra-paper.
+  Today the view requires only `relation = 'contradicts'` and confidence >= 0.7.
+  The view is four lines. Tightening it is a day's work with a before-and-after
+  count, and it now has a consumer that acts on it automatically, which it did
+  not have when the brief was written.
+- First step: add the paper and the recency predicate to `deprecated_claims` in
+  `db/schema.sql`, print the count before and after against the live graph, and
+  keep the loose version beside it as `contradicted_claims` if the Left-Behind
+  Index wants the wider set. The daily job's dispatch already warns the skill
+  seat to check the trigger before acting on it, which is a mitigation and not
+  the fix.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — The skill-eval spend belongs in the opex table before it becomes a habit (engineer seat)
+
+- Trigger: `tools/skill_eval.py` has a `CAP_USD` of $0.75 a run and no line in
+  `docs/finance/opex.md`. `budget.MONTHLY_CAP_CEILING_USD` is $30 and is
+  documented as the sum of the daily caps, so an eval run is outside it by
+  construction and correctly so, because it is not a cron. That is exactly how a
+  cost becomes untracked: every individual run is defensible and nobody added up
+  the month.
+- What: ADR-37 makes an eval run part of every skill revision, and ADR-36 makes
+  one part of every new skill. At six skills, one revision each and one Claude
+  benchmark a month, the projection is small and it is not zero. Finance should
+  carry the line and the guard should read the cap out of the runner the way
+  `budget.cron_caps` reads the crons', so raising it cannot be silent.
+- First step: a `SKILL_EVAL_CAP` entry in `budget.py` read from
+  `tools/skill_eval.py`, a projection line in the printout, and the number in
+  `docs/finance/opex.md`. Whose call: finance seat for the table, engineer for
+  the guard.
+- Cost: the proposal is $0. The thing being tracked is single-digit dollars a
+  month.
+- Status: proposed
+
+### 2026-09-30 — `pytest tests/` is not a step in checks.yml, so 350 tests gate nothing (engineer seat)
+
+- Trigger: `tests/test_check_registers.py` detects merge conflict markers in a
+  register, and it has for some time. Three of them were merged to `main` on
+  2026-09-30 and sat there, with `checks` red for an unrelated reason, because
+  that test file is not one of the eleven `checks.yml` names. The suite is 599
+  tests and the workflow runs a named subset.
+- What: `checks.yml` grew one step per incident, which is how it stayed honest,
+  and the cost is that a test written for a reason nobody had an incident about
+  yet runs nowhere. The whole suite is 20 seconds on this runner. One step that
+  runs `python3 -m pytest tests/ -q` would cover every file, and the named steps
+  stay because their comments are the org's memory of why each one exists and
+  because `if: always()` on each one is what keeps a red budget step from hiding
+  the rest.
+- First step: one step at the end of the `digest-budget` job, and a line in
+  `docs/agents/pending-workflow-changes.md` since no seat may push a workflow
+  file. Worth doing in the same hand that applies item 12.
+- Cost: $0, about 20 seconds a run.
+- Status: proposed
+
+### 2026-09-30 — Competitive scan: Paperguide sells the decision trail, and we give ours away for free
+
+- Trigger: this run's craft scan, rotating through `docs/market/landscape.md`
+  to the entry added 2026-09-18 and never opened since. Paperguide's front page
+  now leads with a product that did not exist at that observation, Systematic
+  Review, and its pitch is not the search. It is the audit: a predefined
+  protocol, a documented search, recorded screening decisions, a PRISMA flow,
+  two reviewers with a conflict resolver, and one sentence that reads like our
+  own charter, "AI never decides, it prepares the cited evidence." The value
+  they charge for is that the trail survives peer review and a regulatory
+  audit.
+- **Worth stealing: the decision trail is a product surface, not an internal
+  log.** alexandria already keeps a stronger version of exactly that artifact
+  and shows none of it. `triage_log` records every routing decision with the
+  model's reasoning and the prompt sha that produced it, the re-triage appends
+  rather than updates, so a paper carries a decision history, and
+  `pipeline/triage.py`'s own comment says why that history is the most valuable
+  row in the set. A reader of the digest cannot see one line of it. Paperguide
+  is charging $24 a month for the auditability of a screening decision that we
+  compute daily and throw behind a table nobody can query.
+- **What alexandria does better, and it is the axis their product cannot
+  reach.** A systematic review is a snapshot dated at submission. Ours is not:
+  `deprecated_claims` marks a claim the frontier has overtaken, and the
+  terminal state of a paper here is a skill, a pattern note or a discard rather
+  than a citation in someone's manuscript. Their output is a document a human
+  reads once. Ours is something an agent loads every day, and it changes when
+  the research changes.
+- Ledger idea this produces, sized for one day: a public page over
+  `triage_log` answering "why this paper, and why not that one" for the week
+  the current issue covers. Every row already carries the decision, the
+  reasoning and the prompt sha. This is the same lever the sprint's item 5
+  pulls, product surface being the OKR benchmark's weakest axis at 2.0, and it
+  needs no new backend either.
+- Status: proposed
+
+### 2026-09-30 — checks.yml should run the suite, not a list of fourteen filenames
+
+- Trigger: building sprint item 2 this run. `.github/workflows/checks.yml`
+  names fourteen test files by hand in two identical `paths` lists, and a new
+  test file is invisible to CI until somebody edits a file no agent seat can
+  push. Three items on `docs/agents/pending-workflow-changes.md` are queued
+  behind that fact right now (12, 13 and the one this run added, 14), and every
+  one of them is the same two-line hand edit to both lists.
+- What: replace the enumerated test entries with `tests/**` and `tools/**` in
+  both `paths` lists, and replace the per-file pytest steps with one step that
+  runs `python3 -m pytest tests/ -q`. The suite is 638 tests, it took 15
+  seconds in this run's sandbox, it needs no key, no network and no database,
+  and `tests/conftest.py` already installs the Modal stub for all of it. The
+  four script-mode steps stay as they are, because they also prove the files
+  still work when run directly, which is what their own docstrings promise.
+- Why it is worth a day rather than a line: this closes a class, not a gap.
+  `INC-2026-09-29-receipts-step-had-no-paths` is a CI step written, reasoned
+  and queued in one morning that could not have fired, because nothing it
+  guarded was in the trigger paths. `tests/conftest.py`, the file that decides
+  whether the whole suite collects at all, was in neither list until item 13
+  queued it. Both are the same defect, and it recurs because the check's input
+  is declared by hand instead of derived. That is the same argument
+  `pipeline/runtime_sha.py` makes for parsing the image manifest out of the
+  module, and the same one `pipeline/budget.py` makes for reading `MODELS` out
+  of `triage.py`.
+- First step: queue the diff on `docs/agents/pending-workflow-changes.md`,
+  verified against the live file, and delete items 12, 13 and 14's path halves
+  in the same entry so the owner applies one edit rather than four.
+- Cost: $0. Actions minutes are free on a public repo and the step is seconds.
+- Status: proposed
+
+### 2026-09-30 — The MCP server and the site are outside the drift guard, and the site is the one a reader meets
+
+- Trigger: building sprint item 2 this run. The guard covers the three Modal
+  crons the sprint named, `triage`, `interpret` and `weekly`. It does not cover
+  `mcp/server.py`, which is a fourth Modal app and the paid spine's whole
+  interface, and it does not cover the site, which deploys through a Vercel
+  hook on merge to `site/`. Both can sit merged and unshipped in exactly the
+  way PR #110 did, and for the MCP server nothing anywhere would say so:
+  `tools/delivery_health.py` probes it for a 401, which proves it is up and
+  guarded and says nothing at all about which code answered.
+- What: extend `runtime_sha.APPS` to the MCP app and record its digest on cold
+  start rather than per request, so a scale-to-zero server writes one row per
+  container rather than one per call. The site is a different shape and wants a
+  different answer: the build already knows its commit, so the honest check is
+  the deployed commit against `HEAD` rather than a file digest, read from a
+  small JSON the site publishes.
+- Why not today: the sprint's own note on item 2 says to scope this to
+  detection and alerting for the three crons and not to let it grow into
+  rebuilding the deploy pipeline. This entry is that scope held, written down
+  so the next run does not have to rediscover the boundary.
+- First step: the MCP half alone. One `@modal.enter()` hook, one row, one more
+  app in the surface's loop, and the tests already exist in a shape that takes
+  a fourth app without changing.
+- Cost: $0.
 - Status: proposed

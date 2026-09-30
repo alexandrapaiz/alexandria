@@ -73,7 +73,9 @@ def test_a_missing_credential_is_unknown_not_failing():
     old = dh.os.environ.pop("DATABASE_URL", None)
     try:
         results = dh.database_surfaces()
-        check("both database surfaces answer", len(results) == 2)
+        check("every database surface answers",
+              {s.name for s in results} == {"press", "pipeline", "deploy"},
+              str(sorted(s.name for s in results)))
         check("press is unknown, not failing",
               all(s.state == dh.UNKNOWN for s in results),
               str([s.state for s in results]))
