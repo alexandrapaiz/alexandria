@@ -515,15 +515,27 @@ def test_neither_preflight_computes_a_price_by_bare_division():
 # ---------------- distill, the job the guard could not see ----------------
 
 def test_the_guard_reads_distills_models_out_of_distills_own_table():
-    # Distill never moved to pipeline/llm.py, so it has PROVIDERS instead of
-    # MODELS and cron_model_lists cannot read it. That difference is exactly why
-    # it went unchecked, so the reader has to be real rather than a copy.
+    # Distill had a PROVIDERS dict rather than a MODELS list until 2026-09-30,
+    # so `cron_model_lists` could not read it and it went unchecked for as long
+    # as it did. It is in the shared table now, and the reader still has to be
+    # real rather than a copy.
     models = budget.distill_models()
     source = (ROOT / "pipeline" / "distill.py").read_text()
-    assert models[0] == "openai/gpt-oss-120b", models
+    assert models[0] == "kimi-k2.6", models
+    assert models == budget.cron_model_lists()["distill (pipeline/distill.py)"]
     for model in models:
-        assert f'"model": "{model}"' in source
+        assert f'"{model}"' in source
         assert model in budget.MODELS, f"{model} has no limits in budget.MODELS"
+
+
+def test_every_corpus_cron_leads_with_the_funded_account():
+    # The whole of the 2026-09-26 and 2026-09-30 migrations in one assertion:
+    # a corpus job whose head is a free-tier model is a job that takes a 429
+    # after two calls and calls it a day's work.
+    for label, models in budget.cron_model_lists().items():
+        assert models[0] == budget.PRIMARY_MODEL, (
+            f"{label} leads with {models[0]}, not the funded account. "
+            "That is the shape of 'the corpus is not being read'.")
 
 
 def test_every_corpus_job_is_in_the_request_table():
@@ -534,7 +546,7 @@ def test_every_corpus_job_is_in_the_request_table():
         assert job in labels, job
 
 
-def test_the_full_text_request_fits_now_and_nothing_degrades():
+def test_the_full_text_request_fits_on_the_model_the_job_calls():
     pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     # This test asserted the opposite on 2026-09-26, and said so: "the full-text
     # path fits now; update this test and opex.md". It fits now. The 2026-09-26
@@ -546,10 +558,23 @@ def test_the_full_text_request_fits_now_and_nothing_degrades():
     # MAX_COMPLETION_TOKENS, and a measured density. The degradation to
     # abstract[:6000] stays in the code as an error path and is no longer the
     # common one.
-    assert budget.cron_degradations() == [], (
-        "distill degrades again: a full-text request stopped fitting, so the "
-        "job is back to writing claims from abstracts while reporting success. "
-        "Run `python3 tools/fulltext_density.py` and lower FULLTEXT_CHARS.")
+    # Rewritten 2026-09-30. This asserted `cron_degradations() == []`, which
+    # was the right assertion while every model on distill's list could take a
+    # 12,000-character paper. At 250,000 the Groq fallbacks cannot, and saying
+    # so is the point of that function rather than a regression: what they
+    # degrade to is the abstract, which is the documented fallback.
+    #
+    # The invariant that survives is the one that actually protected the
+    # product: the model the job CALLS must not degrade. A degradation there is
+    # "read in full" quietly becoming "read the abstract", which is the owner's
+    # finding of 2026-09-25.
+    head = budget.distill_models()[0]
+    degraded = [note for note in budget.cron_degradations() if head in note]
+    assert degraded == [], (
+        "distill degrades on the model it actually calls, so the job is back "
+        "to writing claims from abstracts while reporting success. Run "
+        "`python3 tools/fulltext_density.py` and lower FULLTEXT_CHARS.\n"
+        + "\n".join(degraded))
     assert [p for p in budget.check_cron_requests() if "distill" in p] == []
 
 
@@ -575,7 +600,7 @@ def test_the_measured_density_matches_the_committed_receipt():
     # tools/fulltext_density.py rewrites this receipt against live arXiv; CI
     # reads the receipt because CI does not get to depend on arxiv.org.
     receipt = json.loads((ROOT / "docs" / "evals"
-                          / "2026-09-27-fulltext-token-density.json").read_text())
+                          / "2026-09-30-fulltext-token-density.json").read_text())
     assert budget.FULLTEXT_CHARS_PER_TOKEN <= receipt["worst_chars_per_token"], (
         "the guard assumes a paper is looser than the worst paper measured")
     assert receipt["window_chars"] == budget.request_payload_chars(

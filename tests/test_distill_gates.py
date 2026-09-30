@@ -15,12 +15,17 @@ be about 1,900, because the guard was sizing a paper with a prose filler
 (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper). Either way the run
 retried at `abstract[:6000]` and succeeded, which is the owner's finding of
 2026-09-25 in miniature: 164 papers read in full out of 8,956. The request fits
-now, at `FULLTEXT_CHARS` of 12,000, and
+now, at `FULLTEXT_CHARS` of 250,000 on kimi-k2.6, and
 `tests/test_distill_fulltext_budget.py` is what holds it fitting.
 
-Nothing here calls a provider. `extract_claims` makes the one HTTP request the
-job makes, with a function-local `import httpx`, so these tests replace
-`httpx.post` and assert on what was sent and on what the caller did with it.
+Distill moved to Kimi through `pipeline/llm.py` on 2026-09-30, so the two gates
+now walk a fallback list, carry a spend cap and read each provider's catalog.
+These tests moved with it: the HTTP call is still one `httpx.post` and the
+catalog read is still one `httpx.get`, both made inside `pipeline/llm.py` with
+function-local imports, so replacing them here exercises the real walk rather
+than a stub of it.
+
+Nothing here calls a provider.
 """
 
 import json
@@ -41,6 +46,12 @@ SOURCE = (ROOT / "pipeline" / "distill.py").read_text()
 class FakeResponse:
     def __init__(self, status, *, claims=None, institutions=None, raw=None):
         self.status_code = status
+        # `pipeline/llm.py` prints the provider's own body on a refusal,
+        # because that is where the actual limit and the actual request size
+        # are stated and `raise_for_status()` throws it away. Incident 22 cost
+        # a day partly for that reason, so the fake carries one.
+        self.text = f"fake {status} body"
+        self.headers = {}
         if raw is not None:
             # `/models` answers with its own shape, not a chat completion.
             self._body = raw
@@ -78,6 +89,24 @@ def prompt_on_disk(monkeypatch):
     monkeypatch.setattr(distill, "load_prompt",
                         lambda kind="paper": (text, "abc123def456"))
     monkeypatch.setenv("GROQ_API_KEY", "groq-key")
+    monkeypatch.setenv("MOONSHOT_API_KEY", "moonshot-key")
+
+
+def catalog(monkeypatch, *ids):
+    """Answer every provider's `/models` with this id list.
+
+    The walk skips a model the provider does not list, without a request, so a
+    test that forgets this gets "no model answered" instead of the behaviour it
+    meant to exercise. Returns the urls that were asked.
+    """
+    asked = []
+
+    def fake_get(url, headers=None, timeout=None):
+        asked.append({"url": url, "headers": headers})
+        return FakeResponse(200, raw={"data": [{"id": i} for i in ids]})
+
+    monkeypatch.setattr(httpx, "get", fake_get)
+    return asked
 
 
 def post_returning(monkeypatch, *responses):
@@ -91,6 +120,22 @@ def post_returning(monkeypatch, *responses):
 
     monkeypatch.setattr(httpx, "post", fake_post)
     return sent
+
+
+def chat(claims=None, institutions=None, status=200):
+    """A chat completion the shared client will accept, with a usage block.
+
+    The usage block is not decoration: `llm.Cap` charges a response with no
+    usage at the model's whole context window, on purpose, so a fake without
+    one trips the spend cap after a single call and the test fails for the
+    wrong reason.
+    """
+    payload = {"claims": claims or [], "institutions": institutions or []}
+    return FakeResponse(status, raw={
+        "choices": [{"message": {"content": json.dumps(payload)},
+                     "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": 40_000, "completion_tokens": 900},
+    })
 
 
 # ---------------- the gate chain exists at all ----------------
@@ -128,8 +173,8 @@ def test_the_rehearsal_has_no_database_credential():
     a missing credential, not a missing function call, so it is asserted against
     the decorator rather than against behaviour.
     """
-    block = SOURCE[SOURCE.index("def rehearse") - 700:SOURCE.index("def rehearse")]
-    assert 'Secret.from_name("groq")' in block
+    block = SOURCE[SOURCE.index("def rehearse") - 900:SOURCE.index("def rehearse")]
+    assert 'Secret.from_name("moonshot")' in block
     assert 'Secret.from_name("neon")' not in block, \
         "a rehearsal with a Neon credential can write a claim, which is the one " \
         "thing it must not be able to do"
@@ -137,33 +182,43 @@ def test_the_rehearsal_has_no_database_credential():
 
 def test_the_rehearsal_sends_a_full_paper_worth_of_payload(monkeypatch):
     """The size is the whole question, so the payload is the real ceiling."""
-    sent = post_returning(monkeypatch, FakeResponse(200, claims=[GOOD_CLAIM]))
+    catalog(monkeypatch, *distill.MODELS)
+    sent = post_returning(monkeypatch, chat(claims=[GOOD_CLAIM]))
     distill.rehearse()
     content = sent[0]["json"]["messages"][1]["content"]
     assert len(content) >= distill.FULLTEXT_CHARS, \
         "a rehearsal that sends less than FULLTEXT_CHARS does not test the " \
         "request the daily run actually sends"
-    assert sent[0]["timeout"] == 180, "the real timeout, not a shorter one"
-    assert sent[0]["json"]["model"] == distill.PROVIDERS["groq"]["model"]
+    assert sent[0]["json"]["model"] == distill.MODELS[0]
+    assert sent[0]["json"]["max_completion_tokens"] == distill.MAX_COMPLETION_TOKENS
+    assert sent[0]["url"].startswith("https://api.moonshot.ai/"), \
+        "the head of the list is on Moonshot and the rehearsal must reach it"
 
 
 def test_the_rehearsal_uses_the_real_prompt_and_response_format(monkeypatch):
-    sent = post_returning(monkeypatch, FakeResponse(200, claims=[GOOD_CLAIM]))
+    catalog(monkeypatch, *distill.MODELS)
+    sent = post_returning(monkeypatch, chat(claims=[GOOD_CLAIM]))
     distill.rehearse()
     assert sent[0]["json"]["response_format"] == {"type": "json_object"}
-    assert sent[0]["json"]["temperature"] == 0.2
+    # Kimi reasons before it writes even with thinking disabled, and ADR-32
+    # disables it; Moonshot documents temperature as fixed on k2.6, so sending
+    # one would be a knob that does nothing.
+    assert sent[0]["json"]["thinking"] == {"type": "disabled"}
+    assert "temperature" not in sent[0]["json"]
     system = sent[0]["json"]["messages"][0]["content"]
     assert "claim" in system.lower(), "the real prompts/distill.md, not a stub"
 
 
 def test_a_successful_rehearsal_reports_that_it_wrote_nothing(monkeypatch, capsys):
-    post_returning(monkeypatch, FakeResponse(200, claims=[GOOD_CLAIM],
-                                             institutions=["DeepMind"]))
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, chat(claims=[GOOD_CLAIM],
+                                     institutions=["DeepMind"]))
     verdict = distill.rehearse()
     out = capsys.readouterr().out
     assert "wrote nothing" in out
     assert "read in full: True" in out
     assert "prompt_sha: abc123def456" in out
+    assert "spend: $" in out, "the rehearsal costs money now and must say so"
     assert "rehearsal ok" in verdict and "in full" in verdict
 
 
@@ -177,6 +232,7 @@ def test_a_refused_full_paper_stops_the_deploy(monkeypatch):
     today's provider limit, and all three move. A rehearsal that accepted the
     degradation would be green on the exact defect the owner named.
     """
+    catalog(monkeypatch, *distill.MODELS)
     post_returning(monkeypatch, FakeResponse(413))
     with pytest.raises(RuntimeError) as exc:
         distill.rehearse()
@@ -188,8 +244,12 @@ def test_a_refused_full_paper_stops_the_deploy(monkeypatch):
 
 def test_the_escape_hatch_says_what_it_is_forgiving(monkeypatch, capsys):
     """Opinionated default, escape hatch, and a receipt that does not lie."""
-    post_returning(monkeypatch, FakeResponse(413),
-                   FakeResponse(200, claims=[GOOD_CLAIM]))
+    catalog(monkeypatch, *distill.MODELS)
+    # Four refusals, one per model on the walk, then the abstract-sized retry
+    # succeeds. The walk tries every model before it gives up, which is the
+    # difference between this shape and the single-provider one it replaced.
+    post_returning(monkeypatch, *([FakeResponse(413)] * 4),
+                   chat(claims=[GOOD_CLAIM]))
     verdict = distill.rehearse(allow_abstract_only=True)
     out = capsys.readouterr().out
     assert "read in full: False" in out
@@ -197,24 +257,43 @@ def test_the_escape_hatch_says_what_it_is_forgiving(monkeypatch, capsys):
         "the receipt must say which of the two things was proved"
 
 
+def test_a_fallback_answering_is_not_a_receipt(monkeypatch):
+    """New on 2026-09-30, and it is the gate the fallback list made necessary.
+
+    Every model below kimi-k2.6 has a per-request budget smaller than one
+    paper, so a rehearsal a Groq model answered proves the opposite of what the
+    deploy needs to know. Triage's rehearsal has had this check since it moved;
+    distill could not have it while it had one provider.
+    """
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, FakeResponse(404), chat(claims=[GOOD_CLAIM]))
+    with pytest.raises(RuntimeError) as exc:
+        distill.rehearse()
+    assert distill.MODELS[0] in str(exc.value)
+    assert "Nothing was deployed" in str(exc.value)
+
+
 def test_an_empty_claims_list_stops_the_deploy(monkeypatch):
     """The silent failure: a paper marked processed with nothing written."""
-    post_returning(monkeypatch, FakeResponse(200, claims=[]))
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, chat(claims=[]))
     with pytest.raises(RuntimeError, match="no claim with text"):
         distill.rehearse()
 
 
 def test_a_claim_with_a_blank_text_does_not_count(monkeypatch):
-    post_returning(monkeypatch, FakeResponse(200, claims=[{"claim": "   ",
-                                                           "topics": ["reasoning"]}]))
+    catalog(monkeypatch, *distill.MODELS)
+    post_returning(monkeypatch, chat(claims=[{"claim": "   ",
+                                              "topics": ["reasoning"]}]))
     with pytest.raises(RuntimeError, match="no claim with text"):
         distill.rehearse()
 
 
 def test_an_off_list_topic_stops_the_deploy(monkeypatch):
     """Incident 30 and the 18 invisible claims, asked before a deploy."""
+    catalog(monkeypatch, *distill.MODELS)
     claim = dict(GOOD_CLAIM, topics=["not-a-real-topic"])
-    post_returning(monkeypatch, FakeResponse(200, claims=[claim]))
+    post_returning(monkeypatch, chat(claims=[claim]))
     with pytest.raises(RuntimeError) as exc:
         distill.rehearse()
     assert "off" in str(exc.value) and "closed list" in str(exc.value)
@@ -223,56 +302,83 @@ def test_an_off_list_topic_stops_the_deploy(monkeypatch):
 
 # ---------------- preflight ----------------
 
-def test_preflight_raises_when_the_production_model_is_gone(monkeypatch):
+def test_preflight_raises_when_every_model_is_gone(monkeypatch):
     """Incident 24: a model retired under a running schedule."""
-    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(
-        200, raw={"data": [{"id": "some/other-model"}]}))
+    catalog(monkeypatch, "some/other-model")
     with pytest.raises(RuntimeError) as exc:
         distill.preflight()
-    assert distill.PROVIDERS["groq"]["model"] in str(exc.value)
-    assert "Nothing was deployed" in str(exc.value)
+    assert "cannot read a single paper" in str(exc.value)
+    assert "pipeline/distill.py MODELS" in str(exc.value)
 
 
 def test_preflight_passes_when_the_production_model_is_listed(monkeypatch, capsys):
-    production = distill.PROVIDERS[distill.PRODUCTION_PROVIDER]["model"]
-    monkeypatch.setattr(httpx, "get", lambda *a, **k: FakeResponse(
-        200, raw={"data": [{"id": production}]}))
+    catalog(monkeypatch, *distill.MODELS)
     verdict = distill.preflight()
     out = capsys.readouterr().out
     assert "preflight ok" in verdict
-    assert "(production)" in out
-    # The non-production bake-off model is absent here, and that is a note.
+    assert distill.MODELS[0] in verdict
+    # The two numbers the owner asked for by name, printed where the deploy is.
+    assert "cost per paper" in out
+    assert "projected monthly" in out
+
+
+def test_preflight_warns_when_only_a_fallback_survives(monkeypatch, capsys):
+    """A fallback can judge nothing here, and the note has to say so.
+
+    Triage's equivalent note says the corpus drains at the free tier's pace.
+    Distill's is harsher and the difference is the point: one Groq model's
+    whole per-request budget is 6,800 tokens against a 98,800-token paper, so
+    falling back does not slow the reading down, it stops it and keeps writing
+    claims from abstracts.
+    """
+    catalog(monkeypatch, "openai/gpt-oss-120b")
+    verdict = distill.preflight()
+    out = capsys.readouterr().out
     assert "NOTE" in out
-    # Fit is gate 1's question and preflight says so rather than guessing.
-    assert "pipeline/budget.py" in out
+    assert "abstract" in out
+    assert "openai/gpt-oss-120b" in verdict
 
 
-def test_preflight_names_the_secret_and_never_the_value(monkeypatch):
+def test_preflight_names_the_secret_and_never_the_value(monkeypatch, capsys):
+    monkeypatch.delenv("MOONSHOT_API_KEY", raising=False)
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
-    with pytest.raises(RuntimeError) as exc:
+    distill.preflight_env_note = None
+    with pytest.raises(RuntimeError):
         distill.preflight()
-    assert "modal secret create groq" in str(exc.value)
+    out = capsys.readouterr().out
+    assert "MOONSHOT_API_KEY" in out
+    assert "moonshot-key" not in out and "groq-key" not in out
 
 
-def test_preflight_asks_the_provider_with_the_real_key(monkeypatch):
-    seen = {}
-
-    def fake_get(url, headers=None, timeout=None):
-        seen.update(url=url, headers=headers)
-        return FakeResponse(200, raw={"data": [
-            {"id": p["model"]} for p in distill.PROVIDERS.values()]})
-
-    monkeypatch.setattr(httpx, "get", fake_get)
+def test_preflight_asks_both_providers_with_the_real_keys(monkeypatch):
+    asked = catalog(monkeypatch, *distill.MODELS)
     distill.preflight()
-    assert seen["url"] == "https://api.groq.com/openai/v1/models"
-    assert seen["headers"]["Authorization"] == "Bearer groq-key"
+    urls = {a["url"] for a in asked}
+    assert "https://api.moonshot.ai/v1/models" in urls
+    assert "https://api.groq.com/openai/v1/models" in urls
+    by_url = {a["url"]: a["headers"]["Authorization"] for a in asked}
+    assert by_url["https://api.moonshot.ai/v1/models"] == "Bearer moonshot-key"
+    assert by_url["https://api.groq.com/openai/v1/models"] == "Bearer groq-key"
 
 
 def test_neither_gate_can_reach_the_claims_table():
     """Neither gate writes, and the reason is structural rather than careful."""
     start = SOURCE.index("def preflight")
-    end = SOURCE.index("def bake_off")
+    end = SOURCE.index("def drain_forecast")
     gates = SOURCE[start:end]
     for forbidden in ("insert into", "psycopg", "DATABASE_URL", "update "):
         assert forbidden not in gates.lower().replace("update the", ""), \
             f"a gate that can {forbidden!r} is not a gate"
+
+
+def test_the_dry_run_cannot_call_a_model_even_by_mistake():
+    """`drain` reads the queue and prices it. It must not be able to spend.
+
+    The same structural promise the rehearsal makes about the database, made in
+    the other direction: no provider secret in the container, so the plan
+    cannot become the thing it is planning.
+    """
+    block = SOURCE[SOURCE.index("def drain(") - 500:SOURCE.index("def drain(")]
+    assert 'Secret.from_name("neon")' in block
+    assert 'Secret.from_name("moonshot")' not in block
+    assert 'Secret.from_name("groq")' not in block

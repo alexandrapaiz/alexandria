@@ -27,6 +27,7 @@ Nothing here calls a provider or a database.
 """
 
 import json
+import os
 import pathlib
 import sys
 
@@ -208,9 +209,13 @@ def test_the_practices_prompt_reaches_the_provider(monkeypatch):
 
     class Response:
         status_code = 200
+        text = ""
+        headers: dict = {}
 
         def json(self):
-            return {"choices": [{"message": {"content": '{"claims": []}'}}]}
+            return {"choices": [{"message": {"content": '{"claims": []}'},
+                                 "finish_reason": "stop"}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 5}}
 
         def raise_for_status(self):
             return None
@@ -219,17 +224,24 @@ def test_the_practices_prompt_reaches_the_provider(monkeypatch):
         sent.update(json)
         return Response()
 
-    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
     monkeypatch.setattr(httpx, "post", fake_post)
 
-    distill.extract_claims("groq", "How we ran agents", "a body", "practices")
+    # Through the shared client since 2026-09-30, so the call takes a cap and
+    # an environment. The one thing this test is about is unchanged: which
+    # system message a field report is read with.
+    client = distill.llm()
+    distill.extract_claims("How we ran agents", "a body", "practices",
+                           env=os.environ, cap=client.Cap(1.0),
+                           models=[distill.MODELS[0]])
     assert sent["messages"][0]["content"] == PRACTICES, (
         "the practices kind did not reach the provider, so field reports are "
         "still being read as papers")
     assert sent["max_completion_tokens"] == distill.MAX_COMPLETION_TOKENS
 
     sent.clear()
-    distill.extract_claims("groq", "A paper", "a body")
+    distill.extract_claims("A paper", "a body", env=os.environ,
+                           cap=client.Cap(1.0), models=[distill.MODELS[0]])
     assert sent["messages"][0]["content"] == PAPER, (
         "the default is no longer the paper prompt")
 
