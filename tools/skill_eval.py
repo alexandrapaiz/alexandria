@@ -301,7 +301,7 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
         seen.add(tid)
         if not task.get("ask"):
             problems.append(f"{slug}/{tid}: no `ask`, so there is nothing to send")
-        if not task.get("control"):
+        if not task.get("control") and not is_indicator(task):
             real += 1
         check = task.get("check")
         rubric = task.get("rubric")
@@ -336,6 +336,14 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
                 if not item.get("id") or not item.get("asks"):
                     problems.append(f"{slug}/{tid}: a rubric item needs an id "
                                     "and an `asks`")
+        if task.get("scored_in") and not is_indicator(task):
+            problems.append(f"{slug}/{tid}: scored_in is "
+                            f"{task['scored_in']!r}, and the only value this "
+                            f"harness knows is {INDICATOR!r}")
+        if task.get("control") and is_indicator(task):
+            problems.append(f"{slug}/{tid}: a control and an indicator at once. "
+                            "A control is a task the skill must not change and "
+                            "an indicator is one only the skill can pass.")
         if task.get("kind") == "project":
             project = base / (task.get("project") or "")
             if not task.get("project") or not project.is_dir():
@@ -550,6 +558,7 @@ def run_task(subject, judge, task: dict, skill_body: str, reps: int,
     with_system = (SUBJECT_SYSTEM + "\n\n# The skill under test\n\n"
                    + skill_body)
     rows = {"id": task["id"], "control": bool(task.get("control")),
+            "indicator": is_indicator(task),
             "scored_by": "check" if task.get("check") else "rubric",
             "with_scores": [], "without_scores": [], "notes": []}
 
@@ -573,13 +582,32 @@ def run_task(subject, judge, task: dict, skill_body: str, reps: int,
     return rows
 
 
+# A task the without-arm cannot possibly pass. Stolen, with the reasoning, from
+# Anthropic's own `claude plugin eval`, which excludes such graders from the
+# score in BOTH arms and reports them in the with-arm as indicators only
+# (code.claude.com/docs/en/plugin-evals, read 2026-09-30). The argument is
+# exact and it applies to this harness as written: a check like "the answer
+# cites the 4 to 30 point regression" can only pass when the skill is loaded,
+# because the number is in the skill. Scoring it pushes the without-arm toward
+# zero and inflates the delta by however many such tasks the suite holds. The
+# task file declares it, because only the author knows which checks are of that
+# kind.
+INDICATOR = "with_only"
+
+
+def is_indicator(task: dict) -> bool:
+    return str(task.get("scored_in") or "").strip() == INDICATOR
+
+
 def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
               subject_model: str, judge_model: str, reps: int, spend: float,
               today: str) -> dict:
     """The result document. This shape is the contract site/app/skills/README.md
     describes, and nothing renders a number this function did not compute."""
-    graded = [t for t in per_task if not t["control"]]
+    graded = [t for t in per_task
+              if not t["control"] and not t.get("indicator")]
     controls = [t for t in per_task if t["control"]]
+    indicators = [t for t in per_task if t.get("indicator")]
     policy = spec.get("policy") or {}
     min_delta = float(policy.get("min_delta", 0.0))
 
@@ -607,6 +635,7 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         "repetitions": reps,
         "tasks": len(graded),
         "control_tasks": len(controls),
+        "indicator_tasks": len(indicators),
         "scored_by_hard_check": sum(1 for t in graded
                                     if t["scored_by"] == "check"),
         "spend_usd": round(spend, 4),
@@ -622,6 +651,12 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         "per_task": per_task,
         "harness": "tools/skill_eval.py",
     }
+    if indicators:
+        # Reported, never scored. `fires` is the with-arm rate, which is the only
+        # number an indicator can honestly produce.
+        result["indicators"] = [
+            {"id": t["id"], "fires": t["with_mean"],
+             "n": len(t["with_scores"])} for t in indicators]
     if controls:
         c_delta, c_low, c_high = bootstrap_delta(controls)
         result["controls"] = {"tasks": len(controls), "delta": c_delta,
@@ -729,6 +764,8 @@ def main(argv=None) -> int:
     ap.add_argument("--cap", type=float, default=CAP_USD)
     ap.add_argument("--force", action="store_true",
                     help="run inside a reserved Kimi window anyway")
+    ap.add_argument("--gate", action="store_true",
+                    help="exit 1 unless the verdict is a gain (ADR-37's gate)")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
@@ -833,6 +870,11 @@ def main(argv=None) -> int:
     print(json.dumps(result, indent=2, sort_keys=True) if args.json
           else render(result))
     print(f"\nwritten to {out.relative_to(ROOT)}")
+    if args.gate and result["verdict"] != "gain":
+        print("gate: this revision does not merge on its own. ADR-37 lets a "
+              "skill revision merge without the owner only when the harness "
+              f"measured a gain, and this run measured {result['verdict']!r}.")
+        return 1
     return 0
 
 

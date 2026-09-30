@@ -436,3 +436,59 @@ def test_no_number_prints_without_its_n(tmp_path):
     # is marketing, and this is the assertion that keeps the second one out.
     assert not re.search(r"\d+(\.\d+)?\s*%(?!\s*CI)", text), text
     assert "3 repetitions" in text and "tasks" in text
+
+
+# ------------------------------------------------- indicators, and the gate
+
+def test_an_indicator_task_cannot_inflate_the_delta(tmp_path):
+    """The defect this catches was in this harness until 2026-09-30.
+
+    A check that names something only the skill could supply, "the answer cites
+    the 4 to 30 point regression", scores 0 in the without-arm by construction.
+    Counting it does not measure the skill, it measures that the number is in the
+    skill, and it drags the headline delta up by one task's worth for free. The
+    task file declares such a task `scored_in: with_only`, and it is then reported
+    and never scored. Anthropic's own `claude plugin eval` excludes the same class
+    of grader from both arms for the same reason.
+    """
+    subject = ev.ScriptedSubject(with_answer="harness", without_answer="no")
+    spec = base_spec(tasks=[
+        {"id": "real", "ask": "?",
+         "check": {"type": "contains_all", "patterns": ["harness"]}},
+        {"id": "only-with", "ask": "?", "scored_in": "with_only",
+         "check": {"type": "contains_all", "patterns": ["harness"]}},
+    ])
+    rows = [ev.run_task(subject, subject, t, "body", 3, tmp_path)
+            for t in spec["tasks"]]
+    result = ev.summarize("s", "d" * 64, spec, rows, "m", "j", 3, 0.0,
+                          "2026-09-30")
+    assert result["tasks"] == 1, "the indicator must not be a graded task"
+    assert result["indicator_tasks"] == 1
+    assert result["with_skill"]["n"] == 3, (
+        "the indicator's repetitions must be out of the arm totals too")
+    assert result["indicators"] == [{"id": "only-with", "fires": 1.0, "n": 3}]
+
+
+def test_a_task_cannot_be_a_control_and_an_indicator(tmp_path):
+    spec = base_spec(tasks=[{"id": "a", "ask": "?", "control": True,
+                            "scored_in": "with_only",
+                            "check": {"type": "contains_all",
+                                      "patterns": ["x"]}}])
+    problems = ev.conformance(spec, "s", tmp_path)
+    assert any("at once" in p for p in problems)
+
+
+def test_an_unknown_scored_in_value_is_caught(tmp_path):
+    spec = base_spec(tasks=[{"id": "a", "ask": "?", "scored_in": "sometimes",
+                            "check": {"type": "contains_all",
+                                      "patterns": ["x"]}}])
+    assert any("only value this harness knows" in p
+               for p in ev.conformance(spec, "s", tmp_path))
+
+
+def test_a_suite_of_nothing_but_indicators_has_nothing_to_measure(tmp_path):
+    spec = base_spec(tasks=[{"id": "a", "ask": "?", "scored_in": "with_only",
+                            "check": {"type": "contains_all",
+                                      "patterns": ["x"]}}])
+    assert any("every task is a control" in p
+               for p in ev.conformance(spec, "s", tmp_path))

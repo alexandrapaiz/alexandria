@@ -42,6 +42,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `repetitions` | number | how many times each task ran in each arm |
 | `tasks` | number | graded tasks, excluding controls |
 | `control_tasks` | number | tasks the skill is supposed to leave alone |
+| `indicator_tasks` | number | tasks only the skill could pass, reported and never scored |
 | `scored_by_hard_check` | number | of `tasks`, how many were scored deterministically rather than by a judge |
 | `spend_usd` | number | what the run cost, from the provider's own usage block |
 | `with_skill` | object | the arm summary, below |
@@ -50,6 +51,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `min_delta_registered` | number | the threshold the task file pre-registered, before the run |
 | `verdict` | string | one of `gain`, `gain too small to matter`, `no gain`, `regression` |
 | `controls` | object | `{ tasks, delta, ci95, unchanged }`, absent when the eval has no control tasks |
+| `indicators` | array | `{ id, fires, n }` per indicator task, absent when there are none |
 | `policy` | object | the task file's pre-registered policy, copied verbatim |
 | `per_task` | array | one row per task: `id`, `control`, `scored_by`, `with_mean`, `without_mean`, `delta`, the raw scores, and a note per repetition |
 | `harness` | string | the runner that produced it |
@@ -83,6 +85,13 @@ shows no gain is retired with the numbers, and that is a stronger sentence about
 the library than any pass. `no gain` means the interval includes zero, which is
 a statement about the evidence and not about the skill, so the copy is "measured,
 no gain we can distinguish from noise at n of 30" rather than "failed".
+
+**An indicator is not a score and must never be rendered as one.** A task
+marked `scored_in: with_only` in the task file is one the without-arm cannot
+possibly pass, because what it checks for is in the skill. Counting it would
+inflate the delta by a task's worth for free, so the harness excludes it from
+both arms and reports the with-arm rate as `fires`. On the page it reads "the
+skill fired on 5 of 5", next to the delta and never inside it.
 
 **`controls.unchanged: false` is the most important false on the page.** It means
 the skill moved answers it was not supposed to touch, which is the signal that
@@ -122,6 +131,17 @@ disjointness argument is in `docs/product/skill-validation.md` §2.
         {"id": "names-the-tradeoff", "asks": "Does it say which of the two it would choose and why, rather than listing both?"},
         {"id": "cites-evidence", "asks": "Does it give a measured result or a specific finding rather than only reasoning from first principles?"}
       ]
+    },
+    {
+      "id": "cites-the-measured-regression",
+      "scored_in": "with_only",
+      "ask": "Our agent underperforms. Is imitation fine-tuning on a stronger model's trajectories a good first move, and what does the evidence say it costs?",
+      "check": {
+        "type": "number_in_range",
+        "pattern": "(\\d+)\\s*(?:to \\d+\\s*)?point",
+        "low": 4,
+        "high": 30
+      }
     },
     {
       "id": "control-unrelated-question",
