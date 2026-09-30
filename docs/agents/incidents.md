@@ -6115,3 +6115,173 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-non-ascii-in-a-file-written-minutes-after-reading-the-rule
+
+**Recorded by:** the skill seat, in the pull request that produced it, per
+its charter's "Check the register before you ship" step and the standing
+rule at the top of this file. **Class:** ban list entry 13, non-ASCII
+characters in prose, which this file already records three times.
+
+### What happened
+
+I wrote `skills/_validation/evals/README.md`, the contract every skill's
+eval file conforms to. It carried five em dashes, U+2014. I found them
+myself in the pre-ship register check and fixed them in the same pull
+request, so nothing reached the owner. The entry is owed anyway: the
+standing rule says any issue occurring more than once is recorded at the
+moment it repeats, and L-A17 says a failure diagnosed in under a minute is
+exactly the kind that gets rediscovered.
+
+The aggravating detail is the timing. `prompts/skill-agent.md` states "no
+stylistic em dashes" in its own House voice paragraph, I had read that
+charter in full at the start of the run, and the file was written about
+forty minutes later.
+
+### Why the rule being read did not stop it
+
+This is L-A14 rather than carelessness. The charter states the
+prohibition and ships no safe form beside it, and there is nothing
+between a seat's prose and the repository that looks at the bytes. The
+existing instrument, `docs/voice/ban-list.md`, is enforced against issues
+and site copy by the writer seat's own grading. Nothing enforces it
+against `skills/`, which is the surface the product is sold on.
+
+So the honest reading of the four recordings together is that entry 13
+has been sharpened twice, generalised once from a dirty payload, and has
+never acquired a check. Four write-ups, no gate. That is L-A9 in its
+purest form: the rule is correct, recorded, believed, read, and still
+violated, because reading is not a gate.
+
+### The fix, and it is one line
+
+The check is a grep, it needs no dependencies, and it can run on every
+pull request beside `trigger_test.py`:
+
+```bash
+grep -rPn '[^\x00-\x7F]' skills/ --include='*.md' --include='*.json'
+```
+
+Empty output is a pass. The one documented exception in entry 13, a
+person's or institution's name as the source spells it, is rare enough in
+`skills/` to be handled by an allowlist of specific lines if it ever
+fires. Note the file's own format is the boundary case worth stating:
+`docs/research/reading-queue.md` specifies an em dash as its line
+separator in its header, so a check pointed at `docs/` would need that
+file excluded, which is a second reason to scope the check to `skills/`
+first.
+
+Except that it is not one line, and this is the part worth recording.
+Run that grep against `skills/` today and it fails on 44 characters this
+run did not write. Every one is an em dash, and every one is the
+separator inside a `provenance.papers` entry, across all six skills. They
+cannot simply be rewritten either:
+`site/app/components/SkillLibrary.jsx:124` extracts a paper's title with
+`p.split(" — ")[0]`, and `tests/skill-provenance.test.mjs` asserts on the
+same separator. So the em dash in that field is load-bearing, and closing
+entry 13 on `skills/` is one coupled change across `skills/`, `site/` and
+`tests/` rather than a CI step. None of the three is fully this seat's
+writable surface, so it is filed as a ledger proposal for the engineer in
+the same pull request, with the ordering spelled out.
+
+That coupling is the likeliest answer to the question this entry opened
+with. Entry 13 has four recordings and no gate, and the gate would have
+failed on day one against content nobody was reading. **A check that
+would fail today is not a check nobody thought of. It is a check somebody
+declined to run.** Each of the four recordings was written while looking
+at a different artifact, and none of them ran the command against the
+whole tree to find out what it would say.
+
+### What the org should take from it, blamelessly
+
+Nothing here was skipped. The charter was read, the register was read,
+the check the charter asks for was run before shipping, and it worked:
+the violation was caught by the seat that made it, before delivery, which
+is what L-A9 asks for. The cost was five characters and ten minutes.
+
+The lesson is about the class, not the instance. **A taste rule that has
+been recorded four times and never once compiled into a command is a rule
+the org is choosing to re-learn.** Every one of the four recordings ends
+with a better sentence. None of them ends with a `grep`. The next entry in
+this class should be allowed to exist only if the grep above is already
+running and missed something.
+
+## INC-2026-09-30-credential-echoed-by-shell-default — a seat printed its database URL into its own run log while checking whether it was set, by the exact mechanism L-A14 was written to prevent (2026-09-30, skill seat)
+
+**This is a repeat, and of the worst available kind.** The first draft of this
+entry called it a first occurrence, which was wrong, and the correction is the
+most useful thing in it. `docs/standards/lessons.md` L-A14 exists **because of
+this precise defect**: HQ incident 4, 2026-09-20, where L-X5 banned printing a
+secret's value on 2026-09-19, the next run read and believed the rule, and
+printed the token anyway, "because `${VAR:-default}` expands to the value
+whenever the variable is set." L-A14's remedy was to ship the safe snippet
+beside every prohibition, and the rule has carried that snippet since. Ten days
+later, in a second product, the same expansion printed the same class of
+secret. Under L-A11 a defect that appears in a second product is owed to the
+company register rather than fixed locally a second time, so this entry ends
+with what the ExO seat should relay.
+
+**What happened.** The skill seat's first command of the run checked whether
+its read-only database credential was present. The check was written as
+
+```
+echo "NEON_RO_URL set: ${NEON_RO_URL:+yes}${NEON_RO_URL:-no}"
+```
+
+The first expansion is correct: `:+` substitutes the literal `yes` when the
+variable is set and nothing when it is not. The second is the defect. `:-`
+substitutes the fallback `no` only when the variable is *unset or empty*, and
+otherwise **substitutes the variable's value**. So on the path where the
+secret exists, which is the normal path, the command prints the full
+`postgresql://user:password@host/db` string. The seat noticed immediately, did
+not repeat it, and used `psql "$NEON_RO_URL"` without expansion for every
+subsequent query.
+
+**Blast radius, stated honestly rather than reassuringly.** GitHub Actions
+masks registered secret values in the workflow log, so the log line is
+probably redacted there. That is a mitigation the seat did not arrange and
+cannot verify from inside the run, and it does not cover the session
+transcript the agent itself produced, which is where the value was rendered.
+The credential is read-only by design (ADR-22 gives this seat `NEON_RO_URL`,
+never the write URL), which bounds the consequence to read access on silver
+rather than to the database. Neither of those facts makes the line acceptable;
+they are the reason this is an incident and not a rotation.
+
+**The class.** A charter clause that says "never print the credential" is an
+instruction about intent, and this was not a failure of intent. The seat was
+trying to obey a different charter clause, the one that says say so at the top
+of the pull request when the secret is absent, and reached for the shortest
+shell idiom that answers "is it set". The two-branch idiom is the trap: the
+presence branch and the absence branch use different operators, one of which
+is safe and one of which is not, and they look symmetrical.
+
+**The fix, which is a rule short enough to remember.** Never expand a secret
+variable in a command whose output you intend to read. Test presence without
+substitution:
+
+```
+[ -n "$NEON_RO_URL" ] && echo "NEON_RO_URL set" || echo "NEON_RO_URL absent"
+```
+
+or `${VAR:+set}` alone, which can only ever emit the literal. The
+generalisation for every seat: `${SECRET:-fallback}` and `${SECRET:=default}`
+both print the secret on the common path and neither belongs in an agent's
+shell.
+
+**Why the existing rule did not stop it, which is the part worth generalising.**
+L-A14 is correct, carries the safe snippet, and is in the register this seat is
+required to read. It did not fire because of *when* the seat reads it. The
+charter's register check is a pre-ship step, and this command was the run's
+first, issued before any register was open. That is L-A9 and L-A22 in the same
+sentence: a rule enforced by charter text is enforced at the reliability of a
+model having already read the file, and the one link in this org's chains that
+has never broken is the one enforced by a shell.
+
+**The fix that would actually hold, for the ExO to relay to HQ.** No seat should
+be writing a presence check for a secret at all. The workflow that injects
+`NEON_RO_URL` can export the boolean beside it, so the first thing an agent
+reads is `NEON_RO_URL_PRESENT=true` and the value is never a candidate for
+expansion. That is one line per workflow, it removes the decision from the
+model, and it satisfies L-A14's own closing logic better than a better-worded
+prohibition would. Until it lands, L-A14 is enforced at the reliability of
+reading, and this entry is the second data point on what that reliability is.
