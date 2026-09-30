@@ -56,14 +56,10 @@ file spent a day describing a policy the org had abandoned.
 | `docs/design/canon.md` | frontend | owner's rulings and the references | frontend, off-system values need a ledger entry | rarely, gated weekly |  enforced |
 | `docs/design/motion.md` | frontend | distilled from the sources | named by no charter until this run | rarely, gated weekly |  was GAP, closed |
 | `docs/agents/runtime-changes.md` | ExO | ExO writes the law | engineer §0 daily over `.github/` **and `pipeline/`**, plus frontend, security and ExO before their own edits, plus the deploy command's `&&` chain for the press | machinery changed twice in a week, gated daily |  reopened and reclosed 2026-09-24: the gate fired on the right files and the law's scope excluded provider changes |
-<<<<<<< HEAD
-| `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, and `rehearse()` is now real code in the deploy chain | provider changes are rare and catastrophic |  **was GAP, closed on main 2026-09-24**. The CI half that checks the gate still has teeth is in `.github/workflows-pending/`, so it is not running |
-=======
 | `docs/agents/press-rehearsal.md` | ExO writes, engineer builds | ExO specifies | `runtime-changes.md` ladder gate 3, **code since 2026-09-24**, in the press's deploy chain and in triage, interpret and distill | provider changes are rare and catastrophic |  closed 2026-09-26, see the note below this table |
 | `docs/evals/2026-09-27-fulltext-token-density.json` | engineer | `python3 tools/fulltext_density.py` re-measures against live arXiv | `tests/test_distill_fulltext_budget.py`, on every pull request that touches `pipeline/` | a provider limit or a cleaner change invalidates it, gated per PR |  new 2026-09-27, filed by the engineer seat: this is the receipt behind `budget.FULLTEXT_CHARS_PER_TOKEN`, and it exists because the number it replaced was an assumption nothing ever compared to a real paper (INC-2026-09-27-filler-tokenizes-cheaper-than-a-paper) |
 | `docs/research/reading-queue.md` | research seat drains, skill seat writes (ADR-35) | skill seat appends a line for every paper it could not read in full | **`pipeline/distill.py` since 2026-09-27**: the daily run parses the unchecked lines, ingests what the corpus lacks, distills them ahead of the day's intake and prints each id so the research seat can strike the line | the skill seat writes weekly, the drain fires daily | new 2026-09-26 with ADR-35, **archive-side only until 2026-09-27**: twelve lines sat in it for a day with no step in any run opening the file. This is L-A9 again, and the gate is code rather than a charter clause because the seat that writes the register is not the seat that can act on it |
 | the company board, `board.libraryofalexandria.dev` (`docs/board.md`) | the owner, on the host | `docs/standards/pm.md` §14 since 2026-09-27: every seat writes as it works, a seat that finds no item creates one | **`tools/board.py` since 2026-09-28, and no charter yet.** The client exists and the daily engineer run uses it. The eleven other charters do not name the board, so eleven seats have credentials for it and no instruction to open it | the work changes hourly, and the only gate fires daily at one seat | new 2026-09-28. Archive-side gate landed 2026-09-27 with the credentials in twelve workflows, and nothing in the repository read either variable and the board's `runs` array was empty for the first day and a half. See INC-2026-09-28-twelve-workflows-changed-again-no-smoke-run |
->>>>>>> origin/main
 | `docs/agents/turn-caps.md` | ExO | ExO re-derives monthly | ExO | monthly, gated weekly, ample |  enforced, same seat writes and reads |
 | `docs/agents/unowned-duties.md` | ExO | ExO files, owner assigns | ExO §3b | charters change weekly, gated weekly |  enforced |
 | `docs/agents/model-routing.md` | ExO | nobody from 2026-09-17 to 2026-09-20 | ExO read list, and the read found it stale on arrival | routing changed in **18 hours**, gated weekly |  closed, and see the 2026-09-20 sweep |
@@ -83,11 +79,7 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
-<<<<<<< HEAD
-| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | PM §1f delivery half, daily | the product ships weekly and daily, gated daily | **GAP of a new kind, found 2026-09-27**: both gates fire and the owning seat cannot reach the evidence, because `agent-pm.yml` has no `NEON_RO_URL`. Guardrail 5 and the capability test are the response |
-=======
 | `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Two of its four surfaces are still `unknown` in every seat sandbox for want of a read-only `DATABASE_URL` |
->>>>>>> origin/main
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 | `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which is the same missing credential that leaves two of delivery-health.md's four surfaces unreadable |
 
@@ -384,7 +376,35 @@ under `docs/voice/` and `docs/design/` are now four days an open ledger
 request. Still not this seat's files, still not worth a second mention
 to the owner.
 
-<<<<<<< HEAD
+## The gate-3 row, corrected (engineer seat, 2026-09-26)
+
+The `press-rehearsal.md` row read "not yet code" and "GAP" until this run. It
+had been out of date since 2026-09-24, which matters more than a stale cell
+usually does, because this table is the thing a seat reads to find out what is
+missing. A reader following it would have rebuilt a gate that already existed.
+
+What is actually true now. `rehearse()` is in `pipeline/weekly.py` beside
+`preflight` and `weekly`, with `press_rehearsals` in `db/schema.sql` and the
+`&&` link in that module's deploy docstring, built 2026-09-24. `triage` and
+`interpret` got `preflight` and `rehearse` on 2026-09-26 when they moved to
+Kimi. `distill` got both on 2026-09-26, which closed the last model-calling
+cron. `ingest` has neither and needs neither in this form, because it calls no
+model.
+
+One honest limit, carried from `press-rehearsal.md` rather than hidden here: no
+rehearsal has ever run against a live provider, because no seat holds the keys.
+Every one of them is proved as far as a test can prove it without a key, and the
+first real execution of each is the chair's, on the next deploy.
+
+**And the gate this table was right about is still open.** Row 59's own point
+was that a register with no second gate gets violated by the next artifact.
+Tonight is that, exactly: a runtime change reached twelve live workflows with no
+pull request and no smoke run, and every seat's run has been recorded as a
+failure since 01:14 UTC. It is INC-2026-09-26-run-report-dash-echo, the fix is
+written and tested, and it is queued as item 10 in
+`pending-workflow-changes.md`, because the one gate this org still cannot close
+from inside a seat is the one that needs a `workflow`-scoped token.
+
 
 ---
 
@@ -504,36 +524,6 @@ for the four under `docs/voice/` and the frontend for the four under
 (`site-copy-2026-09-19.md`, `prose-benchmark-2026-09-19.md`) being
 evidence rather than registers, which is worth saying in the file so the
 next sweep stops counting them.
-=======
-## The gate-3 row, corrected (engineer seat, 2026-09-26)
-
-The `press-rehearsal.md` row read "not yet code" and "GAP" until this run. It
-had been out of date since 2026-09-24, which matters more than a stale cell
-usually does, because this table is the thing a seat reads to find out what is
-missing. A reader following it would have rebuilt a gate that already existed.
-
-What is actually true now. `rehearse()` is in `pipeline/weekly.py` beside
-`preflight` and `weekly`, with `press_rehearsals` in `db/schema.sql` and the
-`&&` link in that module's deploy docstring, built 2026-09-24. `triage` and
-`interpret` got `preflight` and `rehearse` on 2026-09-26 when they moved to
-Kimi. `distill` got both on 2026-09-26, which closed the last model-calling
-cron. `ingest` has neither and needs neither in this form, because it calls no
-model.
-
-One honest limit, carried from `press-rehearsal.md` rather than hidden here: no
-rehearsal has ever run against a live provider, because no seat holds the keys.
-Every one of them is proved as far as a test can prove it without a key, and the
-first real execution of each is the chair's, on the next deploy.
-
-**And the gate this table was right about is still open.** Row 59's own point
-was that a register with no second gate gets violated by the next artifact.
-Tonight is that, exactly: a runtime change reached twelve live workflows with no
-pull request and no smoke run, and every seat's run has been recorded as a
-failure since 01:14 UTC. It is INC-2026-09-26-run-report-dash-echo, the fix is
-written and tested, and it is queued as item 10 in
-`pending-workflow-changes.md`, because the one gate this org still cannot close
-from inside a seat is the one that needs a `workflow`-scoped token.
-
 ## The board, added to the map (engineer seat, 2026-09-28)
 
 One row is new and it is the largest open gap on this page, so it is worth
@@ -560,4 +550,3 @@ ledger entry proposing the clause, and named here in the honest state rather
 than marked closed. This is the cadence finding from the other direction: not a
 gate that fires too slowly, but a rule whose gate fires at one of the twelve
 seats it binds.
->>>>>>> origin/main
