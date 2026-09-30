@@ -2686,3 +2686,12 @@ that made its task worse. **Two independent instruments, one qualitative and
 one quantitative, agreed on which part of a skill was worth anything.** That
 is what a measurement is supposed to feel like when the org is finally
 looking, and it arrived within a day of the org starting to look.
+
+---
+
+## Run 2026-09-30 (window, synchronous) — IN PROGRESS
+
+This run opened its draft pull request before doing the work, per the
+ship-first rule. It builds on PR #148 (`exo/2026-09-30`), which was still
+open when this run started, and supersedes it. Findings follow below as
+they land.
