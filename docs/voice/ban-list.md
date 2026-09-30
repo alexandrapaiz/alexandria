@@ -975,3 +975,91 @@ gap that the same collision had left empty (incident 25).
     `site/content/issues/` and the stored bodies, which has no false
     positives and fails until the archive is correct
     (`INC-2026-09-30-standing-defect-unverified-for-three-grades`).
+
+76. The specimen that fits the payload. Entry 53 is the prohibition that
+    quotes the string, entry 56 is the example that supplies the frame, and
+    entry 65 is the test that asks for the banned sentence. All three were
+    answered with the same remedy, which is to hold specimens at the end of
+    the generator where finished output is read rather than where a line gets
+    written. That remedy is not the rule, and this entry is the proof.
+    The heading gate added on 2026-09-28 to enforce entry 69 sits at the very
+    end of prompts/digest.md, exactly where those three entries say a specimen
+    is safe, and it quoted the offending heading verbatim. The print of
+    2026-09-30, written by the prompt carrying that sentence, printed that
+    heading verbatim over the same self-dismantling body, on the same two
+    numbers. Meanwhile the four slot names are quoted eight times in the same
+    file, several of them in the same gate, and have never printed once.
+    So position is not what makes a specimen dangerous. Aboutness is. The slot
+    names are about nothing a paper could be, so there is no moment where
+    writing one is the obvious next move. "The 82.2% ceiling was not a
+    ceiling" is a well-formed heading about a result sitting in the payload,
+    so at the instant the model reaches that section it is not a warning, it
+    is the best available draft. The test, and it applies to any prompt and
+    any register: ask whether the specimen could be true of the material the
+    writer is holding. Where it could, the specimen is a draft however loudly
+    the sentence around it says otherwise, and no amount of moving it down the
+    file helps.
+    The generator already knew the fix and used it in one place, at the number
+    line, whose example is written "in a subject no payload will ever hand
+    you, so that copying it is obviously wrong." Added 2026-09-30 from the
+    grade of the newest print. Enforced the same day: the heading gate's
+    specimen is rewritten in that invented subject, the gate now states the
+    aboutness test in its own text, and every worked example in it names no
+    real result (`INC-2026-09-30-gate-supplied-its-own-banned-heading`).
+
+77. The evidence grade built on a frame rather than a stem. Entry 70 is the
+    grade as a stamp, where three accurate grades opened on "The evidence is"
+    and the third had stopped being read. Its fix named the stem: the gate
+    forbids opening on the word "evidence" or on any stem already used, and
+    requires the grade folded into a sentence doing other work.
+    The print of 2026-09-30 obeyed that and produced four grades shaped the
+    same way anyway: "One team, three domains, and the effect is large
+    enough...", "One benchmark suite, one model family, and the forgetting is
+    measured...", "One team, one benchmark, and the latency numbers are
+    self-measured", "One benchmark, four models, and the CCE metric is...".
+    Two of them open on the same two words, so the print also fails the 2026-09-28
+    gate as literally written. All four are one frame with the nouns swapped, and
+    the fourth is not a grade at all, because what follows its "and" is a
+    compliment rather than a limit.
+    The unit is the tell. Entry 70's gate reads the opening words, and a form
+    survives every change to its opening words. This is entry 72 inverted: not a
+    gate whose unit is wider than the thing it governs, but one whose unit is
+    narrower, checking a phrase where the reader sees a pattern. The general
+    test: lift every grade out of the issue and line them up. If they read as a
+    matching set, they are furniture, whatever their first words are.
+    Added 2026-09-30. Enforced the same day: the grade check's unit becomes the
+    whole sentence and forbids two grades built on one frame, meaning the same
+    parts in the same order however the words change, with the lift-them-out
+    test written into the gate.
+
+78. The scale sentence that prints a zero. Entry 60 is a count printed with
+    the neighbouring count's verb, and canon law 15 was written from it: the
+    library never claims to have read what it only ingested. The law worked.
+    The print of 2026-09-30 closed on the week's arrivals with the correct
+    verb and then reported, accurately, that none of them had been read in
+    full. Every number was right, every verb was right, and the line told a
+    reader deciding whether to pay twenty dollars that the product had read
+    nothing.
+    This is what an honesty law looks like when it is obeyed with no zero case
+    written. The instruction offered both numbers in one sentence as the honest
+    shape and said nothing about what to do when the second number is zero, so
+    the generator printed the zero, which is the one reading of the law that
+    damages the product while satisfying it. Law 15 already carries the answer
+    in its own text, that an issue saying nothing about its own scale has lost
+    nothing a reader came for, and the standing repair for a claim that cannot
+    be made is to drop it rather than soften it. Printing its absence is a
+    third option the law never offered and it is worse than either.
+    A second half rides with it, about reach rather than value. The sentence
+    said none were read in full "for this issue", which a subscriber reads as a
+    statement about the papers in front of them. Three of the eight papers that
+    print carried twelve thousand characters of full text each, and they were
+    precisely the three in the reading list. Their distillation timestamps are
+    03:18, 03:19 and 03:20 against a payload gathered at 03:13, so the count is
+    taken before the reading it counts and understates by the reading list's
+    size every single time. The sentence was true for five minutes and false
+    before anybody could read it.
+    Added 2026-09-30. Enforced the same day in two parts: the close prints no
+    scale line at all when the full-read count is zero, and the count is stated
+    about the week and never about the items below it. The sampling order is
+    the engineer's, filed in docs/ideas.md the same day, because no wording can
+    make a number true that was measured before the work it measures.
