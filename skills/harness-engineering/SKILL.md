@@ -1,11 +1,13 @@
 ---
 name: harness-engineering
 description: Evidence-backed practices for designing, improving, and debugging agent harnesses (the scaffold around a model - tools, prompts, loop structure, feedback). Use when building an agent or multi-agent system, when an agent underperforms and the cause is unclear, when debugging a multi-agent pipeline, when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories, when deciding between improving the harness and training the model, or when deciding how to spend extra inference compute on a hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt.
-version: 2
+version: 3
 status: active
 provenance:
   extracted: 2026-09-12
   validated: "2026-09-12 A/B trial: bare Claude endorsed imitation fine-tuning on a stronger model's trajectories; with this skill loaded it refused, cited the 4-30 point regression, and prescribed harness adaptation plus on-policy single-turn correction"
+  reviews:
+    - "reviews/2026-09-29-ursa-chair.md, Ursa chair session, three-stage build plan for a deployed surface. 1 design decision changed (test-time compute), 1 procedure adopted (multi-agent debugging), 2 sections confirmatory. Verdict: keep active."
   claims: [199, 200, 201, 202, 203, 243, 244, 102, 103, 136, 140, 190]
   papers:
     - "Co-Evolving Harnesses and Models — arxiv.org/abs/2609.09134"
@@ -34,7 +36,7 @@ conflict (the fine-tuning warning below is the main such conflict).
 
 ## Order of operations: harness before weights
 
-*Validation: exercised by the 2026-09-12 A/B trial (the prescribed alternative to fine-tuning came from this section); confirmed without decision change by the first consumer report (reviews/2026-09-29-ursa-chair.md).*
+*Validation: exercised by the 2026-09-12 A/B trial, which took its prescribed alternative to fine-tuning from this section; confirmed without a decision change by the first consumer report (reviews/2026-09-29-ursa-chair.md). Eval tasks he-t1, he-t3, he-t4 and he-t9 cover it and have not been run.*
 
 When an agent underperforms, exhaust harness improvements before reaching for
 fine-tuning. Evolving the harness alone, with the same weaker model, produced
@@ -58,7 +60,7 @@ Concretely, before proposing training:
 
 ## Never break model-harness fit
 
-*Validation: the 2026-09-12 A/B trial tested exactly this section's warning; bare Claude endorsed the imitation fine-tune, the loaded skill refused and cited the regression.*
+*Validation: the 2026-09-12 A/B trial tested exactly this section's warning, where bare Claude endorsed the imitation fine-tune and the loaded skill refused and cited the regression. Eval task he-t2 covers it and has not been run.*
 
 A harness evolved around one model's behavior becomes part of that model's
 extended body. The clearest negative result in this cluster: fine-tuning a
@@ -83,7 +85,7 @@ observed failure over wholesale replacement with someone else's style.
 
 ## Debugging a multi-agent harness: intervene one agent at a time
 
-*Validation: none yet as a trial; adopted as procedure by the first consumer report (reviews/2026-09-29-ursa-chair.md), untested in action.*
+*Validation: no trial. Adopted as procedure by the first consumer report (reviews/2026-09-29-ursa-chair.md) and untested in action, which is adoption and not validation. Eval tasks he-t5 and he-t6 cover it and have not been run.*
 
 When a system of multiple agents fails, do not guess which agent is at fault
 and do not change several things at once. Localize by sequential intervention
@@ -120,7 +122,7 @@ wall-clock by 2.5x versus the next-fastest method.
 
 ## Spending test-time compute: sample in parallel, then select
 
-*Validation: none yet as a trial; changed a live design decision in the first consumer report (reviews/2026-09-29-ursa-chair.md): a distiller specified best-of-three with medoid selection instead of single-sample reflection.*
+*Validation: no trial. Changed a live design decision in the first consumer report (reviews/2026-09-29-ursa-chair.md), where a distiller specified best-of-three with medoid selection instead of single-sample reflection. Eval tasks he-t7 and he-t8 cover it and have not been run.*
 
 When the harness can afford extra inference for a hard step, parallel sampling
 with a cheap selection step beats asking the model to sequentially reflect on
