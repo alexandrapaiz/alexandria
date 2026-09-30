@@ -7490,3 +7490,75 @@ graphs.
   is a proposal and not a commit.
 - Cost: one separator decision, two file edits, a mechanical rewrite, one CI step.
 - Status: proposed
+
+### 2026-09-30 — The trigger test hands a tied case to whichever skill name sorts first, and every recorded bundle is only valid for one library composition (skill seat, for the engineer)
+
+- Trigger: writing two new skills and running `skills/_validation/trigger_test.py`
+  against the eight-skill library. Two separate defects, both in the instrument
+  rather than in the artifacts, and both now load-bearing because the library is
+  growing and the next runs will hit them again.
+- **Defect 1: an exact tie between library candidates is resolved
+  alphabetically, and the new names sort first.** Case `asm-neg-2` is a hard
+  negative about a provider outage ("agent gateway returning 500s, a spike in
+  refusals from the upstream model provider, should I page anyone"). Three
+  library skills score identically, 0.0992, because the prompt's only overlap
+  with any of them is `agent` and `model`, two words every skill shares. No
+  decoy overlaps the prompt at all, so the null model cannot win, and `argmax`
+  hands the case to `agent-security-measurement` purely because the name sorts
+  before `harness-engineering` and `self-improving-post-training-loops`.
+  lexical/2.1 already fixed the library-versus-decoy tie for exactly this
+  reason ("a coin flip is not a verdict"); the library-versus-library tie has
+  the same problem and no rule. Two candidate fixes, both a new
+  `ENGINE_VERSION` and a policy-history line: (a) a tie among library
+  candidates decides silence, which is the conservative reading of the same
+  principle; (b) a candidate whose entire overlap consists of terms carried by
+  more than half the library does not clear the floor, which is the stronger
+  fix because it names the real failure, that generic vocabulary is being
+  counted as evidence. I did not touch the engine, per the rule that a seat
+  does not change the instrument and the artifact in one commit. The case stays
+  red in this run's bundle.
+- **Defect 2: idf is computed across the library plus the decoys, so adding a
+  skill changes every existing skill's score.** The runner's docstring treats
+  this as a feature and it mostly is. The consequence nobody has written down
+  is that **a recorded result bundle is a receipt for one library composition,
+  not for one skill**. In this run, with no edit to any existing skill or case,
+  `pt-neg-1` went from a clean pass to a zero-margin pass, and `sle-neg-2`
+  changed which skill stole it. A bundle already records the sha of every skill
+  file it judged, which is the right instinct; what it does not record is a
+  digest of the library membership, so two bundles with the same per-file shas
+  can still be incomparable. Cheap fix: add the sorted list of candidate names,
+  or its hash, to `policy` in the bundle, and have the library page say
+  "measured against an 8-skill library" beside the pass rate.
+- Whose call: engineer, with the validation owner. `skills/_validation/` is
+  writable by this seat, but the engine and the pre-registered policy are
+  deliberately not a per-run adjustment, and defect 1 changes case outcomes.
+- Cost: defect 2 is a few lines in the bundle writer plus a label on the page.
+  Defect 1 is one predicate, a version bump, and a re-record of every bundle.
+- Status: proposed
+
+### 2026-09-30 — ADR-35 and ADR-36 disagree about a skill with no claim rows (skill seat, for the owner and the engineer)
+
+- Trigger: `skills/agent-containment` ships with `provenance.claims: []`. That is
+  the honest value. The 2026-09-30 research census established that all 24
+  claims the library attributes to the containment thread are keyword artefacts
+  and that the corpus holds zero claims about an isolation boundary, so the
+  skill was written from six papers read in full, which is exactly what ADR-35
+  asks for.
+- The conflict: ADR-36's auto-merge gate requires a provenance block that
+  "resolves to claims that exist and are not deprecated". An empty list cannot
+  satisfy that, so the strongest-evidenced skill this seat has produced is also
+  the one that can never merge automatically. The gate is not wrong to stop
+  here, because it cannot distinguish an empty list that is a finding from one
+  that is laziness.
+- Proposal, cheapest first: let the gate accept a provenance block that carries
+  either claim ids **or** a non-empty `papers` list plus a stated reason for the
+  empty claims list, and require the reason to name the census or audit that
+  established it. The stronger version is to have the pipeline write claim rows
+  for papers the skill seat read in full, so that reading a paper for a skill
+  feeds the graph instead of bypassing it. That second version is the one that
+  makes the differentiator true: right now a paper read by this seat leaves no
+  trace in the database at all.
+- Whose call: owner for the ADR, engineer for the gate.
+- Cost: one predicate in the gate, or one small writer path from the skill run
+  into `claims`.
+- Status: proposed
