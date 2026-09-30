@@ -2619,7 +2619,9 @@ skill seat sees skills, and only a pass over the claims together shows it.
 - **The dispatch gradient has not moved.** Nine `workflow_dispatch` runs
   since the last ExO run and the `triggering_actor` on all nine is
   `alexandrapaiz`. The PM's power has been live since 2026-09-24 and the
-  count is now 21 of 21 hers. The one recorded reason is still
+  full count since that day is now **38 dispatches, 38 of them hers**,
+  measured by reading `triggering_actor` on every run rather than by adding
+  to the last report's number. The one recorded reason is still
   `INC-2026-09-24-dispatch-403` and nothing has retried it.
 - **Owner-as-seat, §3e.** She authored eleven substantive commits on the
   evening of 2026-09-29, including four ADRs, two site-copy commits, the HQ

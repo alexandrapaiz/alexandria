@@ -572,6 +572,11 @@ work note and a register id. This seat found nothing that the daily seat
 had not already found. That is the division of labour in
 `prompts/exo-agent.md` §2b working as written.
 
+**2026-09-30 re-measurement of this row.** Thirty-eight
+`workflow_dispatch` runs since 2026-09-24 and the `triggering_actor` on all
+thirty-eight is `alexandrapaiz`. The state is unchanged and the gradient has
+not moved at all in six days. The 403 has still never been retried.
+
 **Opened by being enabled.** `vars.PM_DISPATCH_ENABLED` now reads `true`
 in the PM's run log, so §5 of that charter is live and the row "the org
 decides what to do next between Mondays" has an owner with the power to
