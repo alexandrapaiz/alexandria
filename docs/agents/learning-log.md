@@ -2404,8 +2404,269 @@ the detector, which is exactly what §2 says it should have become, and a
 weekly audit that finds nothing new about the failures is the audit
 succeeding.
 
-## 2026-09-30 — the six skills nobody measured (run in progress)
+## 2026-09-30 — six skills, eighteen days, no measurement: the law the org had and never pointed at its product
 
-Owner directive on the first skill measurement: "the skill evidence is
-worrying. we need to improve the skills a lot." This entry is being
-written during the run; the finished version replaces this line.
+Owner's dispatch for this run, on the first skill measurement: "the skill
+evidence is worrying. we need to improve the skills a lot."
+
+### What the numbers are
+
+The library's first with-and-without evaluation ran on 2026-09-30 against
+`skills/harness-engineering`, on four target tasks at two repetitions,
+subject `qwen/qwen3.8-27b`, judged by `openai/gpt-oss-120b`. The mean was
+**5.4 without the skill and 5.3 with it.** One section moved its task from 4
+to 6, and it is the same section, parallel sample-and-select, that changed a
+design decision in the library's first consumer report. The longest
+procedural section moved its task from 6 down to 4.
+
+Around that number, four counts that matter more than the number.
+
+- **Six skills, eighteen days.** Created 2026-09-13, 09-18, 09-22, 09-24,
+  09-26 and 09-29.
+- **Five of the six carry `validated: ""` today.** The sixth carries a prose
+  A/B note from 2026-09-12, before the harness existed.
+- **Every one of them shipped on a trigger test.** A trigger test asks
+  whether a router finds the skill. The specimen passed 27 of 27 cases and
+  moved its eval mean by minus 0.1, so the two measurements are not merely
+  different, they are uncorrelated in the one case where both exist.
+- **All six exceed the length bar the owner has now set.** 137, 162, 276,
+  280, 343 and 361 lines against 120.
+
+### The law that should have fired, and the org already had it
+
+The law is **measure before you claim**, and the striking thing is that this
+organization is unusually good at it. Four places in the repository enforce
+it with teeth:
+
+- `docs/agents/turn-caps.md`, on the owner's directive of 2026-09-18: "Turn
+  caps are measured, never guessed." A cap hit is evidence about the cap.
+- `pipeline/budget.py`: "Every number here is read from the provider's live
+  documentation, and the date it was read is in the comment above its
+  block. Nothing in this table is remembered or inferred."
+- `docs/evals/2026-09-27-fulltext-token-density.json`, filed by the engineer
+  seat because the constant it replaced "was an assumption nothing ever
+  compared to a real paper".
+- `docs/product/graph-quality.md`, where every bound ships with the argument
+  for its number.
+
+So the law was not missing and nobody had to invent it. **It was pointed
+inward, at the org's own machinery, and never outward at the org's
+product.** Caps, budgets, token densities and graph bounds were all measured
+before they were asserted. The thing the company sells was asserted six
+times and measured on the nineteenth day. That is the finding, and it is
+worth saying in exactly that shape, because it is not a discipline problem.
+A seat with weak discipline would have guessed at its caps too.
+
+### Where the charters let it not fire
+
+Four mechanisms, each individually reasonable.
+
+**1. The skill charter had a step for findability and no step for effect.**
+Step 5 of the run section was "Test the trigger", with the market evidence
+that 69 percent of public skills never fire as its justification. That
+justification is real and the step is right. What was absent was any step
+asking whether the skill helped the agent that loaded it, so the only gate
+with teeth on the production line measured the wrong axis. A seat that
+passes every gate in its charter has done its job, and that is what
+happened six times.
+
+**2. `validated: ""` was designed as a field somebody else fills.** ADR-13
+gives the validated field to a three-reviewer panel, and
+`prompts/skill-extract.md` said, correctly and emphatically, "Never write a
+non-empty `validated` string." The panel does not exist. So the seat that
+produces skills was explicitly forbidden from filling the one field that
+records a measurement, and the field that was left empty reads as *pending*
+rather than as *missing*. **An empty field with a named future filler is the
+most durable way to not measure something**, because every reader assumes
+the gap is somebody else's queue. Five of six skills sat at `validated: ""`
+for eighteen days and no audit, including three runs of this seat's own
+unowned-duty audit, read it as a defect.
+
+**3. No register held the claim, so no gate could check it.** The site has
+said since 2026-09-18 that a skill is revised when the research moves, and
+that claim's machine was decided on 2026-09-29 and is still unmerged. The
+site now also says a skill is "proven against the same tasks with and
+without it." Every gate on the path from a sentence to a live page checks
+words against words: `docs/voice/taste.md`, `ban-list.md`, `canon.md`,
+`value.md`, the preference files. **Not one of them checks a claim against a
+mechanism**, because the words live in `site/` and `docs/voice/` and the
+mechanisms live in `pipeline/` and `tools/`, and no seat reads both halves.
+
+**4. The unowned-duty audit ran three times over this period and could not
+see it.** Its method is to grep every charter for the vocabulary a duty
+would have to use, and absence of the vocabulary is the finding. Run against
+main on 2026-09-29:
+
+```bash
+grep -ril "differential\|with-versus-without\|measured delta" prompts/   # nothing
+```
+
+The vocabulary was absent from all twelve charters, which is exactly the
+signal the audit exists to catch, and the audit never asked. The reason is
+in that section's own instructions: its suggested candidates are "anything
+the owner had to notice herself, anything a public page promises that no
+seat verifies, anything whose failure would be silent rather than loud."
+The second one names this row precisely. The audit had the right method, the
+right question written down, and pointed it at legal, privacy, backup, quota,
+providers and credentials. **It never pointed it at the product**, because
+the product felt like the one thing obviously owned: there is a skill seat,
+it ships skills, the row reads as covered from every direction.
+
+That is the sharpest lesson here for whoever runs this seat next. The
+unowned-duty audit is built to find duties at the edges of the org. Its
+blind spot is the center. A seat that visibly owns an artifact reads as
+owning every duty about that artifact, and "produce the thing" and "know
+whether the thing works" are two duties that look like one.
+
+### What this run changed
+
+Three improvements, each with the trigger above.
+
+**1. The bar is in the two files the skill seat actually reads.** ADR-38 was
+accepted at 02:39 UTC on 2026-09-30 and it lives in `docs/decisions.md`,
+which `docs/agents/registers.md` records as read by three seats out of
+twelve. A skill run that started at 02:33, six minutes earlier, shipped a
+432-line skill. That run was not wrong and it could not have known. But it
+is the evidence that an ADR is not an instruction: the next run would have
+done the same thing, because nothing the seat opens said otherwise. So
+`prompts/skill-agent.md` gains "the bar a skill has to clear" ahead of its
+run section, with the seven rules as checkable tests, and its run section is
+rewritten so the eval suite and the bare-first differential pass are steps 4
+and 5 rather than an afterthought. `prompts/skill-extract.md` §2 is rewritten
+around five tests, the first of which is the cut test: ask the bare model the
+question the section answers, and delete whatever the bare answer already
+contains. **That one test, run once on 2026-09-12, would have found this on
+2026-09-12.** §2b is new and drafts the eval with the skill, because writing
+a task the bare model fails is what forces a section to be a delta, and
+writing the eval afterwards lets a file full of restatement look finished.
+
+That file is the skill seat's own surface, not this seat's, and it is edited
+here only because the owner's dispatch said so.
+
+**2. The duty has an owner, a register row, and an honest state.**
+`docs/agents/unowned-duties.md` gains "a skill's measured effect", owned by
+the skill seat, state **capability gap**, because the wording test now passes
+and the capability test fails twice. The cheap arm needs `GROQ_API_KEY`,
+which no workflow in the repository carries, and that is queued as item 12.
+The benchmark arm has no provider at all: `pipeline/budget.py` holds
+moonshot and groq, and `grep -in anthropic pipeline/` returns nothing. So
+ADR-38 clause 6, which makes `status: active` depend on a delta measured on
+the model the product is used with, **could not be executed by any seat on
+the day it was accepted.**
+
+That produced a fifth test for §3b of this charter, one step earlier and
+cheaper than the four already there: **does the mechanism the rule depends
+on exist at all.** Wording, cadence, scope and capability all assume there
+is something to perform. An ADR clause that cannot run is indistinguishable
+from an ADR clause that has not been triggered yet, and the only cheap
+moment to ask is the run after the ADR lands.
+
+**3. The claims have a register and two readers.**
+`docs/agents/quality-claims.md` is new, owned by this seat, with one row per
+public claim, the mechanism that would have to run for it to hold, its state,
+and the number with its date. Eleven rows today: three hold, two are
+contradicted by our own measurement, four have no mechanism at all, two are
+waiting on unmerged code. Its artifact-side gates are step 1b of the writer's
+copy round and the frontend's setting step, because approval is about the
+words and this check is about the machine.
+
+**And the table says something no seat inside a lane could have said.**
+Every claim in state `held` is about the corpus. Every claim that fails is
+about the skills. The machinery is soundest under the half of the product
+the owner did not decide to sell, and the half she did decide to sell is the
+half whose promises have the least under them. The writer sees copy, the
+skill seat sees skills, and only a pass over the claims together shows it.
+
+### The other things this run found
+
+- **Four seats are one merge from silence.** Four workflow runs on
+  `chair/langfuse-traces` failed at startup with 0 seconds, no jobs and no
+  log: pm, okr, market and finance. If PR #139 merges as it stands, those
+  four seats stop firing and the only evidence is an absence, and one of the
+  four is the org's own run-health detector. The diagnosis is narrowed to a
+  clean 4-of-4 against 0-of-8 correlation with the `vars.` reference added
+  to those files' step-level `if:` expressions, and it is **not confirmed**,
+  because the confirming test is a push under `.github/workflows/` and this
+  seat's token refuses that. See
+  INC-2026-09-30-four-seats-one-merge-from-silence. The real finding there is
+  that **a YAML parse is not a workflow validation**: all four files parse
+  cleanly under `yaml.safe_load` and under a duplicate-key-rejecting loader,
+  and GitHub rejects them anyway. `actionlint` is the missing gate, it is
+  free, and it is filed for the engineer seat.
+- **The workflow push lane is still closed.** Probed by attempt, per §5. The
+  remote refused with the incident 12 message. PR #144 changes twelve
+  workflow files and was authored by a hand with the permission, not by this
+  seat.
+- **Queue item 2 rotted a third time and is cancelled.** The measurement the
+  2026-09-27 run asked for came back: the Monday ceremony of 2026-09-28 ran
+  at 125 turns against a cap of 300, so the raise was never needed. The rule
+  that falls out of it is that an item rotting three times has usually been
+  overtaken rather than disturbed, and rot is evidence about relevance rather
+  than only about anchors.
+- **The skill seat is under-capped at 180 against a measured peak of 114,**
+  and this run's charter edit grew its duties again, so queue item 11's
+  number is revised from 200 to 250 with the measurement behind it. Note the
+  honest limit: those turns were spent by runs that did not yet have the new
+  duties, so 250 is twice the peak and not a measurement of the new shape.
+- **`ADR-38` names two different decisions.** `docs/decisions.md` has two
+  sections with that heading, at lines 1337 and 1384, written the same
+  evening on different branches. The string appears 19 times elsewhere in
+  `prompts/`, `docs/` and `skills/` and every one of those references is now
+  ambiguous. This is the incident register's sequential-numbering defect
+  exactly, which was fixed by `INC-YYYY-MM-DD-slug` after four collisions,
+  and the same file already contains four ADRs that adopted a dated slug
+  informally. Filed for the chair, whose surface `docs/decisions.md` is.
+- **The dispatch gradient has not moved.** Nine `workflow_dispatch` runs
+  since the last ExO run and the `triggering_actor` on all nine is
+  `alexandrapaiz`. The PM's power has been live since 2026-09-24 and the
+  count is now 21 of 21 hers. The one recorded reason is still
+  `INC-2026-09-24-dispatch-403` and nothing has retried it.
+- **Owner-as-seat, §3e.** She authored eleven substantive commits on the
+  evening of 2026-09-29, including four ADRs, two site-copy commits, the HQ
+  lessons sync, and by-hand `Merge main into <branch>` resolutions for at
+  least four seat branches. Then she opened `chair/pm-merges`, PR #147, "PMs
+  own merges and failed-run triage". That is §3e's mechanism working in the
+  open: the work landed on the only actor with no cron, and she responded by
+  creating the seat rather than by absorbing it. The number worth carrying is
+  the merge-resolution count, four in one evening, and the next run should
+  check whether #147 merged and whether the count fell.
+
+### What the next run must check first
+
+1. **Did the startup failure get confirmed or ruled out?** One push with one
+   `if:` line reverted answers it. Until then, treat PR #139 and PR #144 as
+   changes that four seats' continued existence depends on. If either merged
+   without that test, look immediately for a seat whose cron stopped firing,
+   because that failure has no log to find you with.
+2. **Did `GROQ_API_KEY` land in `agent-skill.yml` (queue item 12)?** If yes,
+   the next skill run can produce a real number and the row in
+   unowned-duties.md moves from capability gap to assigned. If no, every
+   skill in the library is provisional by ADR-38's own rule and row 1 of
+   quality-claims.md stays contradicted.
+3. **Does a route to the benchmark subject exist yet?** That is the ledger
+   entry for the engineer seat. Until it does, ADR-38 clause 6 cannot mark
+   any skill active, and a skill marked active anyway is the finding.
+4. **Re-measure the quality-claims table.** Three rows should move if the
+   engineer's and skill seat's open PRs merge. Say which way in the log,
+   because a row going from `queued` to `held` is the org paying a public
+   debt and a row going the other way is an incident. This seat has no
+   `NEON_RO_URL`, so the corpus-side numbers (545 of 846 waiting, edged
+   frontier at 301) have to be re-quoted from whichever run measured them.
+5. **Was the ADR-38 collision resolved?** If both headings are still there,
+   the count of ambiguous references has grown rather than shrunk, and the
+   fix is the chair's.
+6. **Item 2 is cancelled and should be deleted.** It is kept for one run as
+   the record of why. Move it to "Applied and deleted" and delete the body.
+
+### One thing that is simply working
+
+The consumer-report lane is two days old and it has already done the thing
+it was built for. The Ursa chair session's review of `harness-engineering`
+found value only in the non-obvious deltas and said the skill should have
+shipped a builder's checklist. The first measurement then said the same
+thing in numbers: the section that changed a design decision is the section
+with a positive delta, and the section that was longest prose is the one
+that made its task worse. **Two independent instruments, one qualitative and
+one quantitative, agreed on which part of a skill was worth anything.** That
+is what a measurement is supposed to feel like when the org is finally
+looking, and it arrived within a day of the org starting to look.
