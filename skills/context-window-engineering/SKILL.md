@@ -48,9 +48,9 @@ scoring pass.
 The ablation is the part to keep. Give every method the same rule, keep the
 prompt, and most of the difference between methods disappears: the method
 retaining the least of the question **gains up to 22.5 points**, the one already
-retaining the most **never gains more than 2** (claim 79). Random eviction
-scores as low as 0.231 unprotected and is the best policy in all four of those
-settings once protected.
+retaining the most **never gains more than 2** (claim 79). Random eviction scores
+as low as 0.231 unprotected and is the best policy in all four settings once
+protected.
 
 The decision rule: a compaction scorer is an optimisation with a control, and
 the control is protected-random at the same budget. Run it first.
@@ -59,10 +59,10 @@ the control is protected-random at the same budget. Run it first.
    as a scoring bonus. Outside the score.
 2. Build the null arm: same budget, same protection, uniform random eviction per
    head for the rest.
-3. Adopt the scorer only if it beats the null by more than the **32 to 43
-   percent throughput** the null hands you for free.
-4. Expect the question to be unrecoverable and the trace nearly free to cut,
-   because the trace restates itself (claims 80, 280).
+3. Adopt the scorer only if it beats the null by more than the **32 to 43 percent
+   throughput** the null hands you free.
+4. Expect the question to be unrecoverable and the trace nearly free to cut; the
+   trace restates itself (claims 80, 280).
 
 ## Delta 2: for multi-hop, re-query in parallel rounds; map-reduce once is not it
 
@@ -98,23 +98,23 @@ matters. The lead's second query must be able to depend on the first round.
 
 - Cache-eviction evidence is decode-phase eviction, short prompts, traces of
   several thousand to 32K tokens at 10 to 50 percent compression, four models,
-  three of one family, all grouped-query attention with 8 or 10 key-value heads
+  three of one family, all grouped-query attention with 8 or 10 KV heads
   per layer. **That is the floor for the per-head half**: under multi-query or
-  latent attention only the prompt protection carries over. Workloads where the
-  input itself fills the cache are outside the regime.
+  latent attention only the prompt protection carries over, and workloads where
+  the input itself fills the cache are outside the regime.
 - Claim 79 reads flatter than its paper, which establishes that random eviction
-  is *competitive*, not that scores carry no information. Four comparisons in its
-  tables favour a baseline significantly, code reasoning is the systematic
+  is *competitive*, not that scores carry no information. Four comparisons in
+  its tables favour a baseline significantly, code reasoning is the systematic
   exception on the two larger models, the throughput figure inverts at short
   generations, and claim 80's text-level redundancy is inferred, not measured.
 - Parallel-reading evidence is multi-hop QA on two datasets, 4B and 9B backbones
-  from one family, and says nothing about tasks where a chunk cannot be judged in
-  isolation. Claim 280's paper was read in abstract only; arXiv serves no HTML.
+  from one family, and says nothing about tasks where no chunk can be judged in
+  isolation. Claim 280's paper was read in abstract only, arXiv serving no HTML.
 
 ## What this file no longer carries
 
-Read-once protected regions and the planner-executor history boundary were cut
-2026-09-30 because the bare subject gave both unprompted and better; streaming
-ingestion was cut because its papers are video and nobody measured the transfer.
-Still do the first two. Receipts, with the bare answers, in
+Read-once protected regions and the planner-executor boundary were cut 2026-09-30
+because the bare subject gave both unprompted and better; streaming ingestion was
+cut because its papers are video and nobody measured the transfer. Still do the
+first two. Receipts, with the bare answers, in
 `skills/_validation/results/2026-09-30-bare-arm-differential-screen.md`.
