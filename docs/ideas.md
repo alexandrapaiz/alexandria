@@ -6633,3 +6633,268 @@ never need, its classifier is trained on a published dataset rather than asked
 at inference time, and its edges are between papers where ours are between
 claims. The scale comparison above is a comparison of labelling effort, not of
 graphs.
+
+### 2026-09-26 — Four claim rows overstate their papers; file for revision (skill seat)
+
+- Trigger: the first run under ADR-35 read all five papers of the
+  skill-library cluster in full (arXiv HTML) before drafting
+  skills/skill-library-engineering. Four of the twenty rows it cited read
+  stronger than the paper behind them. The skill says so in its own
+  "Where the full text narrows what our claim rows say" section, which is
+  what ADR-35 asks for, but the rows themselves are still in silver as
+  written.
+- What: revise or annotate these four claims. (a) Claim 566, structured
+  multi-file skill packages outperform monolithic files, is 2.85 points
+  and the smallest of that paper's three ablations; the row carries no
+  magnitude. (b) Claim 328, diversity-aware routing improves recall and
+  full coverage with larger gains on multi-skill queries, is 1.4 and 1.3
+  points at the only cutoff where both systems were actually compared,
+  and ties plain embedding retrieval exactly on single-skill queries; the
+  large numbers come from a cutoff at which the baseline's released output
+  is truncated, which the paper states outright. (c) Claim 400 names
+  Claude Code as a system the native router beat. The paper's table does
+  not contain Claude Code. It lists four open models running in Codex,
+  with their numbers quoted from the benchmark's own paper, and the router
+  runs in a different harness. This one is a misattribution, not a
+  magnitude problem. (d) Claim 320, strongest average performance among
+  compared methods, is a 2.2 to 2.5 point margin over its own ablations
+  inside a method whose gain over no-skill is 13 to 27 points; the row
+  invites crediting the search rather than the grounding.
+- Whose call: research seat to re-read and rewrite, or the engineer if
+  the fix belongs in prompts/distill.md's instructions about hedges.
+  ADR-10 makes the claim graph append-only, so this is a re-judgment, not
+  an edit, and the mechanism for that is the part that needs deciding.
+- First step: decide whether a narrowed claim is a new row with a
+  `refines` edge to the old one, or an annotation column. Nothing in the
+  schema answers this today, which is why this entry exists rather than a
+  patch.
+- Cost: $0 beyond the re-read.
+- Status: proposed
+
+### 2026-09-26 — harness-engineering fires on tool-registry routing prompts (skill seat)
+
+- Trigger: case `sle-neg-2` in skills/skill-library-engineering/triggers.json
+  fails. The prompt is about picking the wrong tool from thirty registered
+  on an MCP server, and skills/harness-engineering wins it at 0.1638
+  against a decoy panel, so a skill fires on a request it does not cover.
+- What: verified this is not the new draft stealing a case. Removing
+  skills/skill-library-engineering from the tree entirely and re-running
+  the same prompt still fires harness-engineering, at margin +0.027
+  against the null panel rather than +0.037. The draft ranks second and
+  is not the cause. Left failing per prompts/skill-extract.md, which says
+  a validated skill is not the extracting run's to edit.
+- Whose call: skill seat, on a run whose artifact is not also being judged
+  by the same instrument. The fix is one clause of
+  skills/harness-engineering's description, not a body change.
+- First step: harness-engineering's description says "the scaffold around
+  a model - tools, prompts, loop structure, feedback", and "tools" there
+  means the interface an agent acts through, not a registry the agent
+  selects from. Qualify that clause and re-run the suite.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-26 — The skill literature's foundational papers are absent from the corpus (skill seat)
+
+- Trigger: every one of the twelve works the five read papers build on is
+  missing from the `papers` table. Checked by id, not inferred: a select
+  over the twelve arXiv ids returns zero rows.
+- What: the corpus holds the 2026 results of the agent-skill cluster and
+  none of the work those results are measured against. Concretely,
+  alexandria now asserts in a shipped skill that an ill-suited skill
+  leaves a task worse off than no skill at all, on the say-so of three
+  papers that all cite SkillsBench (arxiv:2602.12670) for it, which the
+  library has never read. The same holds for SkillRouter
+  (arxiv:2603.22455), the routing benchmark two of the five use as their
+  baseline, and for SkillOpt (arxiv:2605.23904), the optimizing baseline
+  every "+4.01 percent" in the corpus is relative to. All twelve, with
+  reasons, are queued in docs/research/reading-queue.md under this run's
+  heading.
+- Whose call: engineer, since ADR-35 gives the engineer the job of feeding
+  queued arXiv ids to distill ahead of the daily intake. Research seat
+  drains the rest.
+- First step: the twelve ids are 2602.12670, 2603.22455, 2608.04828,
+  2605.23904, 2602.12430, 2603.25158, 2605.05726, 2604.24594, 2604.01687,
+  2606.03056, 2607.25853, 2603.02766. They are all cs.AI or cs.LG arXiv
+  preprints from 2026, so the normal ingest path reaches them.
+- Cost: twelve distill runs.
+- Status: proposed
+
+### 2026-09-26 — prompts/skill-extract.md's already-gold check reads an empty table (skill seat)
+
+- Trigger: the extract prompt tells the seat to check `select path from
+  promotions where status = 'approved'` so a run never re-extracts a
+  cluster the library already carries. That table has zero rows, against
+  four skills on disk.
+- What: the `promotions` table has never been written to. The only guard
+  against re-extracting a cluster is reading `skills/` on disk and the
+  provenance blocks in it, which is what this run actually did. This is
+  not urgent while the library is four skills and one seat writes them.
+  It is load-bearing the moment the ADR-13 panel exists, because the panel
+  writes its verdicts as `promotions` rows and the OKR file counts on that
+  path. Filed rather than patched in the prompt, because the right fix is
+  to start writing the rows, not to delete the check.
+- Whose call: engineer, alongside the reviewer panel (ADR-13, O3 KR1).
+  This run patched prompts/skill-extract.md to say the check is currently
+  dead and to read the disk instead, which is a note, not a fix.
+- First step: decide whether a merged skill PR writes its own `promotions`
+  row, or whether the panel does it at verdict time.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Three claim rows in the long-context cluster read stronger than their papers; file for revision (skill seat)
+
+- Trigger: the second ADR-35 run read five of the seven papers behind
+  skills/context-window-engineering in full. Three rows from one paper,
+  Random Attention (arxiv:2609.03430), state flatly what the paper itself
+  hedges, scopes, or marks as inferred. The skill says so in its own
+  "Where the full text narrows our claim rows" section, which is what
+  ADR-35 asks for, and the rows are still in silver as written.
+- What: revise or annotate these three. (a) Claim 79 says the selection
+  signal used by existing cache compression methods contributes almost
+  nothing to performance. The paper's limitations section says the wins
+  "establish that Random Attention is competitive, not that scores carry
+  no information," restricts the claim to decode-phase eviction with short
+  prompts and long traces against training-free evictors, calls it a claim
+  about the aggregate rather than every cell, and warns that a
+  non-significant cell is not evidence of equality. (b) Claim 78 reports a
+  match across four models and six tasks with no exception named. Four
+  comparisons across the paper's two accuracy tables favour a baseline
+  significantly, code reasoning on the two larger models is the systematic
+  one, and the throughput figure inverts at short generations, where every
+  compressed method serves less than uncompressed attention. (c) Claim 80
+  states that reasoning traces protect themselves through redundancy in the
+  text and across attention heads. Cross-head pooling is shown only in a
+  planted-fact probe on one 4B model where the text is non-redundant by
+  construction, and the paper says text-level redundancy is inferred rather
+  than measured.
+- Whose call: research seat, which owns distill and interpret output.
+- First step: decide whether a revision rewrites `claims.claim` in place or
+  adds a scope annotation beside it, since the skill's provenance cites the
+  id and a silent rewrite would break the receipt.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A contradicts edge that compares an overall average to a subset average (skill seat)
+
+- Trigger: the graph records claim 265 contradicting claim 85, at 0.78
+  confidence, from `openai/gpt-oss-120b@fbe080261d6b`. It is the only
+  contradiction in the long-context cluster's neighbourhood and the reason
+  the cluster was picked, because a contradiction inside a cluster is part
+  of the skill.
+- What: reading both papers in full shows the two rows are not opposed.
+  Claim 85 reports 12.5 percent average success on the four RMBench tasks
+  that require multiple past observations, where that paper leads every
+  published baseline it lists, the best of which reaches 7.3 percent. Claim
+  265 reports 83.3 percent overall across RMBench's full nine tasks, five of
+  which need only a single past observation. On the same four tasks the
+  second paper reports 82, 94, 100 and 96 percent, so the architectures do
+  differ sharply, and the edge still does not say that. Neither row carries
+  its denominator, and the linker had only the rows.
+- Why it matters beyond this edge: a contradiction detector that reads claim
+  text without task counts will keep producing this shape, and it produces it
+  in the direction that looks most interesting, because two numbers far apart
+  on a shared benchmark name is exactly what scores highest. The cluster
+  survey treats contradictions as signal, so a false one steers a whole run.
+- Whose call: engineer, alongside the graph-quality instrument in PR #134.
+- First step: check whether the linker prompt can require the evaluated
+  population, in words, on both sides before it may emit `contradicts`, and
+  whether a sample of existing contradicts edges shows the same defect.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — A skill fires on a GPU sizing question because its boundary sentence sits at the end of its description (skill seat)
+
+- Trigger: this run's hard negative for the new skill, "We serve a 70B model
+  and GPU memory is our bottleneck at peak. Should we quantize the weights to
+  4-bit or add two more GPUs and shard across them?", expects silence and
+  routes to `self-improving-post-training-loops` at 0.138 against a best
+  decoy of 0.080. The new skill does not appear in the top four, so this is
+  not a draft defect.
+- What: the whole over-fire rests on two tokens, `model` and `weight`. The
+  word `weight` reaches that description only through its closing sentence,
+  "this skill covers the training loop that updates the weights," which is a
+  boundary sentence placed after the "Use when" clause. `activation_clause()`
+  weights everything from the first "Use when" to the end of the field by
+  1.25, so that sentence is inside the boosted span. This is the exact defect
+  prompts/skill-extract.md already documents, learned 2026-09-22, and the
+  library's own gold skill commits it.
+- Why it matters: the rule was recorded in the prompt and never checked
+  against the skills already on disk, which is L-A9 and incident 20's shape.
+  The fix is one sentence moved, not a rewrite.
+- Whose call: skill seat, but not this run. That description belongs to a
+  validated skill and a validated skill is not a drafting run's to edit.
+- First step: move the boundary sentence of
+  `skills/self-improving-post-training-loops/SKILL.md` ahead of its "Use
+  when" clause, re-run the suite, and check the other four descriptions for
+  the same placement in the same pass.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — Two near-paraphrases of one multi-agent debugging question route to two different skills (skill seat)
+
+- Trigger: this run's confusion case, "Our five-agent research pipeline gets
+  about a third of its tasks wrong and we cannot localise which agent is
+  responsible," expects `harness-engineering` and routes to
+  `evaluation-integrity` at 0.239 against harness-engineering's 0.172. The
+  library's own `he-pos-1` case is the same need in different words, "Our
+  customer-support agent fails about a third of its multi-step tickets and we
+  cannot tell which of the five sub-agents is at fault," and it passes to
+  `harness-engineering`.
+- What: the flip is carried by one word. `evaluation-integrity` matches
+  `agent`, `task` and `wrong`, where `wrong` enters its description through
+  "when benchmark items turn out to be ambiguous, narrow or wrong," which is
+  about benchmark items rather than about an agent getting tasks wrong.
+  `harness-engineering` matches only `agent` and `pipeline`. A router this
+  sensitive to surface wording passes its own suite and would not survive a
+  user's phrasing.
+- Why it matters: every trigger result the library publishes is a lower bound
+  by the runner's own admission, and this is a concrete measurement of how
+  loose that bound is. It is an argument for the model-in-the-loop engine
+  (slice 2) rather than for editing either description.
+- Whose call: engineer and the ADR-13 validator, since the fix is the engine.
+- First step: add paraphrase pairs to the suite deliberately, one per gold
+  skill, so the next engine change is measured against wording sensitivity
+  rather than against case count.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-29 — The graph's edged region and its procedure-rich region are still mostly disjoint, and the gap is closing (skill seat)
+
+- Trigger: prompts/skill-extract.md tells the seat to measure whether the
+  cross-supported criterion can be applied at all before ranking on it. On
+  2026-09-22 the numbers were 439 of 661 claims waiting on interpret and no
+  edge above id 221. On 2026-09-26 the run recorded 15 claims carrying both a
+  procedure and an edge.
+- What: measured 2026-09-29. 846 claims, 545 waiting on interpret, highest
+  id carrying any edge 301, 524 claims carrying a procedure, and 66 claims
+  carrying both. The overlap has gone from 15 to 66 in three days, which is
+  real progress, and the edged frontier has moved only from 221 to 301 while
+  the corpus grew by 185 claims, so interpret is still falling behind
+  distill. This run could satisfy both criteria at once, which the 2026-09-26
+  run could not, and it could only do so by working inside the first 301 ids.
+- Whose call: engineer, who owns the interpret backlog.
+- First step: record the three measurements as a series somewhere the OKR
+  seat can read, because the ratio, not the absolute count, is what decides
+  whether a skill run can use the graph as designed.
+- Cost: $0
+- Status: observation
+
+### 2026-09-29 — The em dash in skill frontmatter versus ban-list entry 13 (skill seat)
+
+- Trigger: every SKILL.md in the library separates a paper title from its URL
+  with an em dash, following the gold specimen. Ban-list entry 13, as amended
+  on 2026-09-21, is the class of every character outside plain ASCII, and
+  since the owner's 2026-09-19 ruling the list governs site copy. The papers
+  list renders on the skill's library page.
+- What: this run followed the specimen rather than the ban list, because
+  diverging in one skill would make one library page render unlike the other
+  five, and the four validated skills are not a drafting run's to edit. The
+  charter's own register check names the ban list for skill descriptions
+  specifically, and this description is plain ASCII. Recorded so the next run
+  does not re-derive the question.
+- Whose call: writer seat, which owns the ban list.
+- First step: rule on whether structured frontmatter fields count as copy
+  under entry 13, then fix all six files in one pass or record the exception
+  in the entry.
+- Cost: $0
+- Status: proposed
