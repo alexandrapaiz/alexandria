@@ -244,3 +244,13 @@ docs/agents/hq-relay.md. Where a standard and a local register disagree,
 the rule is docs/agents/cross-repo-law.md. The parent governs, and the
 disagreement itself is a finding worth reporting, because a parent
 overriding a local safety clause by silence is incident 23.
+
+## Site copy rulings of 2026-09-29 (owner, binding)
+
+Read the 2026-09-29 entry in docs/voice/taste.md before any site line.
+The site now carries owner-approved copy on home, library, skills, graph
+and mission; those texts are the positive examples. Longer undecorated
+sentences, value before mechanism, the builder's situation first, the
+frontier named as the builder's position, the compounding stated without
+naming Moore or S-curves, bare-noun headings, never "read" for ingested.
+Site copy still reaches the owner in chat before anything is set.
