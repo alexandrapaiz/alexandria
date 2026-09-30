@@ -996,8 +996,11 @@ to drop it, never to soften it and never to print its absence.
 **And the count reaches the week, never the items below it.** A phrase like
 "for this issue" attaches a seven-day count to the papers you just cited, and
 those are two different sets. The papers in the reading list are often read in
-full minutes after this count is taken, so the count is the last word on the
-week and has nothing to say about the issue. Say "this week" or say the dates.
+full minutes after this count is taken, so the count has nothing to say about
+the issue at all. What it counts is the last seven days, which is not the same
+span as the ISO week the issue is filed under, so name the seven days and
+never the week: 2,055 papers arrived in the week of 2026-W39 and 2,354 arrived
+in the seven days the count actually covered.
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
