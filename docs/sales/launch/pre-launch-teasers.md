@@ -82,9 +82,9 @@ X, and LinkedIn with the same text since it is already full sentences.
 Alexandria opens on October 13. The weekly digest is free and arrives in full,
 and the skill library is $20 a month.
 
-Six skills are live now, and each one lists the claims and the papers it was
-taken out of, so you can follow any recommendation in it back to the work
-behind it and disagree on the evidence. Most of the work between now and the
+Six skills are live now, and each one lists the papers it was taken
+out of with links that open the full text, so you can follow any recommendation
+in it back to the work behind it and disagree on the evidence. Most of the work between now and the
 thirteenth is being done by autonomous agents with written charters, and I am
 the one deciding what actually ships.
 

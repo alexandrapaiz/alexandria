@@ -38,9 +38,11 @@ week's research is a thing you can get in several places and charging you for
 it would misdescribe what it is worth. What costs money is the layer
 underneath, which is the skill library at twenty dollars a month.
 
-Six skills are live today, and each one names the claims and the papers it was
-taken out of, so you can open any of them and follow a recommendation back to
-the work it came from. I would rather give you the two real measurements than
+Six skills are live today, and each one lists the papers it was taken out of
+with links that open the full text, so you can follow a recommendation back to
+the work behind it and disagree with it on the evidence. The claim numbers in
+each file are internal references and they only resolve on the paid graph page,
+so the part you can check without paying is the paper list. I would rather give you the two real measurements than
 describe the library in adjectives. A retrieval test run on 2026-09-29 put it
 at forty of forty-three cases, which measures whether the right file gets
 picked up for a question and whether the wrong ones stay quiet. Separately, one

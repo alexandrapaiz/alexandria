@@ -27,9 +27,9 @@ up with by reading, and the expensive failure is not missing a new method. It
 is continuing to rely on one that quietly stopped being the right answer six
 months ago.
 
-Six skills are live today. Each one lists the claims and the papers it was
-taken out of, so an engineer can follow any recommendation back to the work
-behind it and argue with it on the evidence rather than on authority. A
+Six skills are live today. Each one lists the papers it was taken out of, with
+links to the full text, so an engineer can follow any recommendation back to the
+work behind it and argue with it on the evidence rather than on authority. A
 retrieval test run on 2026-09-29 scored 40 of 43 cases against eight decoys,
 and the three failures are published with it. One of the six also carries a
 recorded trial where loading it changed what the model recommended, and the

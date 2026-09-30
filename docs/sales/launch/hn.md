@@ -55,9 +55,11 @@ files an agent can load. It runs as a set of autonomous agents with written
 charters, each opening pull requests against a public repository, and I merge
 them or I do not.
 
-Six skills are live. Each one lists the claims it was taken out of and the
-papers behind those claims, so you can follow any recommendation in a skill
-back to the work it came from and disagree with it on the evidence.
+Six skills are live. Each one lists the papers it was taken out of, with links
+to the full text, so you can follow any recommendation in a skill back to the
+work behind it and disagree with it on the evidence. Each also lists claim
+numbers, and I should say plainly that those are internal references which only
+resolve on a paid page, so the paper list is the part you can audit for free.
 
 Two measurements, because I would rather hand you those than describe the
 library.

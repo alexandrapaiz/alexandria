@@ -46,8 +46,8 @@ The charter is in the repo if you want to check that claim rather than take it.
 ```
 Alexandria reads AI research, keeps a record of which claims later get
 supported and which get contradicted, and turns the findings that hold up into
-skill files an agent loads. Six are live today, and each one lists the claims
-and the papers it was taken out of.
+skill files an agent loads. Six are live today, and each one lists the papers it
+was taken out of, with links that open the full text.
 ```
 
 **4.**
