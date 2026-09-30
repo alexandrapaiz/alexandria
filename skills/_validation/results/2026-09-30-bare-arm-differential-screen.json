@@ -8,12 +8,13 @@
   "known_bias": "subject and grader share a model family and the grader wrote the skills; this over-credits the bare arm and shrinks the differential set",
   "contexts": "one context per skill, four prompts each; within-skill priming also over-credits the bare arm",
   "counts": {
-    "candidates": 24,
-    "differential": 13,
-    "control": 11,
-    "bare_fail": 4,
-    "bare_partial": 9,
-    "bare_pass": 11
+    "candidates": 31,
+    "differential": 15,
+    "control": 15,
+    "dropped": 1,
+    "bare_fail": 5,
+    "bare_partial": 11,
+    "bare_pass": 15
   },
   "results": [
     {
@@ -21,168 +22,249 @@
       "skill": "harness-engineering",
       "section_under_test": "harness before weights / action interface / feedback",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "he-c2",
       "skill": "harness-engineering",
       "section_under_test": "imitation under an evolved harness regresses",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "he-c3",
       "skill": "harness-engineering",
       "section_under_test": "localise one agent at a time; cluster corrections",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "he-c4",
       "skill": "harness-engineering",
       "section_under_test": "parallel sample-and-select over reflection",
       "bare_verdict": "fail",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "cwe-c1",
       "skill": "context-window-engineering",
       "section_under_test": "protect the prompt; run the ranker against a null",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "cwe-c2",
       "skill": "context-window-engineering",
       "section_under_test": "read-once state needs an explicit protected region",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "cwe-c3",
       "skill": "context-window-engineering",
       "section_under_test": "parallel reading; order-sensitivity diagnosis",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "cwe-c4",
       "skill": "context-window-engineering",
       "section_under_test": "history to the planner, not the executor",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "ei-c1",
       "skill": "evaluation-integrity",
       "section_under_test": "attacker model against a generated rubric",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "ei-c2",
       "skill": "evaluation-integrity",
       "section_under_test": "verdict-only scoring is blind by construction",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "ei-c3",
       "skill": "evaluation-integrity",
       "section_under_test": "noise band, leakage screen, cost ceiling",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "ei-c4",
       "skill": "evaluation-integrity",
       "section_under_test": "evaluate under multi-turn pressure",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "rhsi-c1",
       "skill": "recursive-harness-self-improvement",
       "section_under_test": "freeze list, bounded edits, gates, rollback",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "rhsi-c2",
       "skill": "recursive-harness-self-improvement",
       "section_under_test": "evolution set disjoint from the eval set",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "rhsi-c3",
       "skill": "recursive-harness-self-improvement",
       "section_under_test": "search turns substitute for judge scale",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "rhsi-c4",
       "skill": "recursive-harness-self-improvement",
       "section_under_test": "matched-challenger recovery gate",
       "bare_verdict": "fail",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "sipt-c1",
       "skill": "self-improving-post-training-loops",
       "section_under_test": "per-prompt teacher reliability gate",
       "bare_verdict": "partial",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "sipt-c2",
       "skill": "self-improving-post-training-loops",
       "section_under_test": "refresh the synthetic teacher every iteration",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "sipt-c3",
       "skill": "self-improving-post-training-loops",
       "section_under_test": "rubrics regenerated during training",
       "bare_verdict": "fail",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "sipt-c4",
       "skill": "self-improving-post-training-loops",
       "section_under_test": "calibrate self-guidance by advantage sign",
       "bare_verdict": "fail",
-      "kept_as": "differential"
+      "kept_as": "differential",
+      "round": 1
     },
     {
       "candidate": "sle-c1",
       "skill": "skill-library-engineering",
       "section_under_test": "write the skill from recorded runs",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "sle-c2",
       "skill": "skill-library-engineering",
       "section_under_test": "the description is the whole routing surface",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "sle-c3",
       "skill": "skill-library-engineering",
       "section_under_test": "tune the reuse threshold from the strict side",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
     },
     {
       "candidate": "sle-c4",
       "skill": "skill-library-engineering",
       "section_under_test": "grounding before an optimizer",
       "bare_verdict": "pass",
-      "kept_as": "control"
+      "kept_as": "control",
+      "round": 1
+    },
+    {
+      "candidate": "ei-c5",
+      "skill": "evaluation-integrity",
+      "section_under_test": "unanimity across independent judgments",
+      "bare_verdict": "pass",
+      "kept_as": "control",
+      "round": 2
+    },
+    {
+      "candidate": "ei-c6",
+      "skill": "evaluation-integrity",
+      "section_under_test": "partial monitoring is an intervention",
+      "bare_verdict": "partial",
+      "kept_as": "dropped, no magnitude",
+      "round": 2
+    },
+    {
+      "candidate": "ei-c7",
+      "skill": "evaluation-integrity",
+      "section_under_test": "benchmark defect profile and repair loop",
+      "bare_verdict": "pass",
+      "kept_as": "control",
+      "round": 2
+    },
+    {
+      "candidate": "sle-c5",
+      "skill": "skill-library-engineering",
+      "section_under_test": "select a complementary set, not top-k",
+      "bare_verdict": "partial",
+      "kept_as": "differential",
+      "round": 2
+    },
+    {
+      "candidate": "sle-c6",
+      "skill": "skill-library-engineering",
+      "section_under_test": "revise in rounds, isolate the reader, stop at three",
+      "bare_verdict": "pass",
+      "kept_as": "control",
+      "round": 2
+    },
+    {
+      "candidate": "sle-c7",
+      "skill": "skill-library-engineering",
+      "section_under_test": "skills transfer across models",
+      "bare_verdict": "fail",
+      "kept_as": "differential",
+      "round": 2
+    },
+    {
+      "candidate": "rhsi-c5",
+      "skill": "recursive-harness-self-improvement",
+      "section_under_test": "gate compaction on arithmetic, not a threshold",
+      "bare_verdict": "pass",
+      "kept_as": "control",
+      "round": 2
     }
-  ]
+  ],
+  "rounds": "Round 1 screened the four candidates per skill the seat expected to keep. Round 2 screened the seven sections round 1 had left unmeasured, which is why three more sections were cut after the first six files were drafted."
 }

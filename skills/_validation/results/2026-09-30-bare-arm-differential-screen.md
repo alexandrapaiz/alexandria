@@ -39,6 +39,13 @@ cut in the same pull request.
    can be primed by an earlier one. Same direction: priming inflates the bare
    arm and drops tasks from the differential set.
 
+## Two rounds
+
+Round 1 screened four candidates per skill, chosen as the sections the seat
+expected to keep. Round 2 screened the seven sections round 1 had left
+unmeasured, and it cut three more after the first drafts were written. Both
+rounds are below; the round column says which.
+
 ## Results
 
 | candidate | section under test | bare verdict | kept as |
@@ -67,12 +74,27 @@ cut in the same pull request.
 | sle-c2 | the description is the whole routing surface | **pass** | control |
 | sle-c3 | tune the reuse threshold from the strict side | **pass** | control |
 | sle-c4 | grounding before an optimizer | **pass** | control |
+| ei-c5 (r2) | unanimity across independent judgments | **pass** | control |
+| ei-c6 (r2) | partial monitoring is an intervention | partial | dropped, no magnitude |
+| ei-c7 (r2) | benchmark defect profile and repair loop | **pass** | control |
+| sle-c5 (r2) | select a complementary set, not top-k | partial | differential |
+| sle-c6 (r2) | revise in rounds, isolate the reader, stop at three | **pass** | control |
+| sle-c7 (r2) | skills transfer across models | **fail** | differential |
+| rhsi-c5 (r2) | gate compaction on arithmetic, not a threshold | **pass** | control |
 
-**13 of 24 candidates qualified as differential: 4 bare failures and 9
-partials. The other 11 passed outright and become controls.** The four bare
-failures are the strongest tasks in the library, because on each of them the
-bare model recommended against the finding rather than merely omitting it:
-he-c4, rhsi-c4, sipt-c3, sipt-c4.
+**Across both rounds, 31 candidates: 15 qualified as differential (5 bare
+failures, 10 partials), 15 passed outright and become controls, and 1 was
+dropped for carrying no magnitude.** The five bare failures are the strongest
+tasks in the library, because on each of them the bare model recommended
+*against* the finding rather than merely omitting it: he-c4, rhsi-c4, sipt-c3,
+sipt-c4, sle-c7. The last of those is the sharpest result in the file. Asked
+whether a skill optimised on a small model should be re-optimised for a large
+one, the bare subject said yes and warned that the existing file would be
+"actively harmful"; the measured evidence says 34 of 36 cross-model transfers
+improved on the receiving model's no-skill baseline, and in one case the
+transferred skill beat the one optimised directly on the large model, 71.78 to
+69.40. A confident answer in the wrong direction is worth more to a skill than
+ten the model already has.
 
 ## The finding the table is really reporting
 
@@ -89,6 +111,16 @@ it is the sharpest case.
   multiplicity correction and the leakage read. `evaluation-integrity`'s noise
   band carried a floor of five repeat runs marked as ours because no source set
   one. The bare model set it at five to ten.
+- ei-c5: unprompted, it required unanimity rather than a majority, named
+  inter-judge correlation as the dominant error term rather than per-judge
+  accuracy, insisted independence come from different model families, and said
+  a malformed judgment must fail closed as an abstain that cannot satisfy the
+  gate. Three of the four portable parts `evaluation-integrity` carried, two of
+  them marked as ours.
+- rhsi-c5: derived that a percentage threshold is the wrong compaction trigger,
+  replaced it with absolute headroom against a projected worst case, and priced
+  it against prompt-cache invalidation at roughly ten times cached-read cost.
+  That is the argument SoL-Pi's compaction gate rests on, reached without it.
 - rhsi-c3 (a partial, not a pass): offered delta debugging by oracle substitution over the replayed
   run, about six replays for forty candidates and correct by construction,
   which is a better method than the text-search procedure the skill carries.
