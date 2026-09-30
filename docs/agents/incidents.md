@@ -6410,3 +6410,81 @@ most needs to read its own failure is the seat least able to.**
 tense. Every question the org asks about a runtime change was a question
 about the day it landed, and a guard is a thing that is either green or
 red now. One command answers it, and no audit had ever run it.
+
+## INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close
+
+**Observed 2026-09-30 by the ExO seat, in the window run.**
+
+**What happened.** Ten of the twenty-eight pull requests opened on
+2026-09-30 were superseded by a later pull request from the same seat,
+and every one of the ten was still open when this run counted them. The
+review queue read 27 open items. Seventeen were live.
+
+| Seat | Chain | Depth |
+| --- | --- | --- |
+| skill | #140 to #146 to #151 to #152 to #159 | 5 |
+| engineer | #141 to #153 to #158 | 3 |
+| research | #145 to #162, #138 to #162 | 2 |
+| engineer | #142 to #149 | 2 |
+| exo | #148 to #160 | 2 |
+
+**Why it happened, and no seat did anything wrong.** The org rule "your
+own last run may still be open" tells a seat to merge its predecessor's
+branch and supersede it, which is correct: the alternative is two
+branches conflicting on the same files. But the rule's own words ended
+"you say so plainly **so the owner can close the older one** instead of
+reviewing two." The closing was assigned to the owner, in a sentence
+every seat obeyed exactly. Ten seats said so plainly. Nobody closed
+anything.
+
+This is the owner-as-seat class from ExO §3e, in its cheapest possible
+form. The work that landed on the only actor with no cron was `gh pr
+close`, ten times.
+
+**The measurement that makes it visible, and it is not about today's
+volume.** Opened against merged, by day:
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+A 27-pull-request day was absorbed on 2026-09-24, so volume alone is not
+the cause and today's count is a snapshot of a day still running. The
+supersession is not a snapshot: those ten are discarded whatever merges
+later.
+
+**The loop, which is the part worth keeping.** Each run in a chain must
+merge its predecessor and re-ship the whole accumulation, so the fifth
+link carries five runs of diff for one run of review. A deeper chain is
+harder to review, which slows the merge, which deepens the chain. The
+rule was written for an occasional collision and it behaves differently
+under a standing queue: it converts merge latency into discarded work,
+and it does so faster the longer the latency runs.
+
+**Fix.**
+
+1. *Shipped here, all twelve charters.* The seat closes its own
+   superseded pull request, after proving its branch contains the
+   predecessor's commits with `git log --oneline origin/<theirs> ^HEAD`
+   printing nothing, and never deletes the branch. Closing is reversible
+   and deleting a ref is not. **Probed before it was written**: this run
+   closed its own predecessor #148 and the seat token allowed it, so the
+   clause rests on a test rather than on an assumption about scopes.
+2. *Shipped here.* A superseding pull request states its chain depth, and
+   at depth three or more says in bold that the seat is blocked on
+   merges. The number is evidence about throughput, and no seat can see
+   the chain it is in without being told to count.
+3. *Not ours.* The structural fix is HQ decision 041, PM-owned Tier B
+   merges, arriving as PR #147 and still open. Relayed upward with these
+   numbers through `docs/agents/hq-relay.md`, because the fix for the
+   merge queue is currently sitting in the merge queue.
+
+**What the org grew from it.** A rule that names the owner as the actor
+for a chore is a rule that generates owner work at the rate the org runs,
+and it reads as correct in every audit because every seat obeys it. Check
+the verbs in a rule, not only the rule.
