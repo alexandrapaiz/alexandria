@@ -304,6 +304,20 @@ def read_skill(slug: str) -> tuple[str, str]:
     return body.strip(), hashlib.sha256(raw.encode()).hexdigest()
 
 
+def skill_version(slug: str) -> str:
+    """The `version` in the skill's frontmatter, or "".
+
+    Parsed by `tools/skill_registrar.py`, which is the one frontmatter reader on
+    the Python side: a second one written here is how `validated` and every claim
+    id read as the empty string on every skill for eleven days (PR #133).
+    """
+    import skill_registrar
+
+    raw = (skill_dir(slug) / "SKILL.md").read_text()
+    front, _ = skill_registrar.split_frontmatter(raw)
+    return str(skill_registrar.parse_frontmatter(front).get("version") or "")
+
+
 # The skill seat writes `evals/evals.json`, which is also the name the
 # skill-creator plugin's own suites use. `evals/tasks.json` is accepted as an
 # alias because this harness proposed that name first, on 2026-09-30, in the same
@@ -1101,6 +1115,16 @@ def render(result: dict) -> str:
         lines.append(f"  controls         {c['tasks']} {noun}, delta "
                      f"{c['delta']:+.2f}, {moved}")
     lines.append(f"  spend            ${result['spend_usd']:.4f}")
+    if result.get("trigger"):
+        lines.append(f"  asked for by     {result['trigger']}")
+    history = result.get("history") or []
+    if len(history) > 1:
+        before = history[-2]
+        mean = (before.get("delta") or {}).get("mean")
+        if mean is not None:
+            lines.append(f"  version {before.get('version') or '?'} measured "
+                         f"{float(mean):+.2f} on {before.get('date')}, "
+                         f"{before.get('subject_model')}")
     if result["verdict"] != "gain":
         lines.append("  This is a finding, not a failure of the harness. "
                      "ADR-36: a skill whose eval shows no gain is retired with "
@@ -1170,6 +1194,11 @@ def main(argv=None) -> int:
                     help="run inside a reserved Kimi window anyway")
     ap.add_argument("--gate", action="store_true",
                     help="exit 1 unless the verdict is a gain (ADR-37's gate)")
+    ap.add_argument("--trigger", default="",
+                    help="what asked for this run: one of ADR-37's four "
+                         "triggers, or a sentence. It is recorded against this "
+                         "version in the history and it is what the skill's "
+                         "page shows as the reason for the revision.")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
@@ -1293,13 +1322,31 @@ def main(argv=None) -> int:
     out = results_path(args.skill)
     # Read before writing. The gate compares against the previous version's
     # measured delta, and this is the only moment the previous one still exists.
-    previous = None
+    #
+    # `history` is ADR-37's version history: one entry per measured version, with
+    # the trigger that asked for it. It is appended to rather than replaced, so a
+    # skill's whole measured life is in one file and the site can show what the
+    # last revision was for. A file written before the history existed
+    # contributes one entry, synthesised from its own top-level fields, so the
+    # record starts with the number that was actually published rather than
+    # with a gap.
+    import skill_triggers
+
+    previous_doc = {}
     if out.exists():
         try:
-            previous = json.loads(out.read_text())
+            previous_doc = json.loads(out.read_text())
         except json.JSONDecodeError:
             print(f"warning: {out.name} is not JSON, so there is nothing to "
                   "compare this run against")
+    history = skill_triggers.history_entries(previous_doc)
+    previous = history[-1] if history else None
+
+    result["version"] = skill_version(args.skill)
+    result["trigger"] = args.trigger.strip() or "asked for by hand"
+    result["history"] = history + [skill_triggers.summary_entry(
+        result, result["version"], result["trigger"])]
+
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print()
