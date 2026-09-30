@@ -997,10 +997,11 @@ to drop it, never to soften it and never to print its absence.
 "for this issue" attaches a seven-day count to the papers you just cited, and
 those are two different sets. The papers in the reading list are often read in
 full minutes after this count is taken, so the count has nothing to say about
-the issue at all. What it counts is the last seven days, which is not the same
-span as the ISO week the issue is filed under, so name the seven days and
-never the week: 2,055 papers arrived in the week of 2026-W39 and 2,354 arrived
-in the seven days the count actually covered.
+the issue at all. What it counts is the last seven days ending now, which is
+not the span of the ISO week the issue is filed under, and the two numbers
+differ by hundreds. So the sentence names the seven days and never the week,
+and no figure from this paragraph or any other in this file is a figure you
+print, because every count you print comes from the payload you were handed.
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
