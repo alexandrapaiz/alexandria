@@ -91,6 +91,37 @@ page.
 
 ### 2. The PM goes daily, so the org has a seat that is present
 
+**CANCELLED IN FULL 2026-09-30, on the measurement the 2026-09-27 run
+asked for. Do not apply anything in this item.** The one open question was
+the Monday ceremony's turn count, and the Monday run of 2026-09-28
+(36463692579) completed at **125 turns against a cap of 300**. The rule in
+[turn-caps.md](turn-caps.md) is twice the peak, which gives 250, and the
+cap in force is already 300. There is no shortfall and no headroom
+argument, so the raise from 300 to 400 is cancelled on the same grounds
+the standup's share was cancelled three days ago. Both PM rows in
+[turn-caps.md](turn-caps.md) are marked ok.
+
+**And three of this item's anchors had rotted, which is the more useful
+finding.** The cron anchor reads
+
+```
+-    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
+```
+
+and the live `agent-pm.yml` carries `- cron: "35 10 * * 1"     # Monday:
+the ceremony run (charter §0)`. The comment was rewritten when the cron
+split landed, so the diff would not have applied. Two more anchors point
+at a mermaid node and a table row that are not in any workflow file at
+all. This item rotted on 2026-09-19, was rewritten and shipped still
+rotted on 2026-09-20 (incident 26), and rotted again here. **An item that
+rots three times is not a bookkeeping problem, it is an item whose intent
+was overtaken by the live file long before anyone noticed**, and the
+charter rule that a diff whose intent has been overtaken is cancelled
+rather than rewritten is the one that applies. It is cancelled.
+
+The whole of the text below is kept for one run as the record of why, and
+the next ExO run moves it to "Applied and deleted" and deletes it.
+
 **CANCELLED IN PART 2026-09-27. Read this paragraph and then decide
 whether to read any further.** The cadence half was applied on
 2026-09-23 and the README half has been applied too. The remaining half
@@ -897,6 +928,27 @@ hit its cap, which is why nothing had flagged it.
 file has a single run step, and this diff was copied from the live file
 on 2026-09-27 rather than from memory, per the incident 26 rule.
 
+**Re-verified 2026-09-30, and the anchor needs a warning it did not have.**
+The anchor line still appears exactly once in `agent-skill.yml`, so the
+item is not rotted. It also appears verbatim in
+`.github/workflows/agent-research.yml`, because both seats run
+`claude-opus-5` at 180 turns. A hand applying this with an editor's
+find-and-replace across `.github/workflows/` would raise the research
+seat's cap too, silently and with no measurement behind it. **Apply this
+in `agent-skill.yml` only.** The general rule for this page, and it
+belongs in every future cap item: when a one-line anchor is not unique
+across the directory, name the file in bold in the How paragraph rather
+than trusting the line to identify itself.
+
+**And the case for it is stronger than it was.** The skill seat's duties
+grew again on 2026-09-30, when this run put ADR-38's bar into its charter:
+a bare-first differential pass, an eval run, and a status decision per
+skill. Its last two runs measured 114 and 91 turns against the same cap of
+180. Twice 114 is 228, so the measured rule now asks for 250 rather than
+200. Raise it to 250 and change the line below accordingly, or apply 200
+now and let the next duty-growth re-check ask again. The ExO seat's
+recommendation is 250 in one hand rather than two.
+
 ```diff
 -          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
 +          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
@@ -910,6 +962,62 @@ on 2026-09-27 rather than from memory, per the incident 26 rule.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
 budget.
+
+---
+
+### 12. The skill seat cannot measure a skill, because it has no `GROQ_API_KEY`
+
+**Queued 2026-09-30 by the ExO agent, under the owner's directive of the
+same day and ADR-38.** This is the capability half of the new row in
+[unowned-duties.md](unowned-duties.md).
+
+**Why.** ADR-38 makes a measured delta the gate on a skill's status, and
+the seat that produces skills cannot produce a delta. `tools/skill_eval.py`
+reaches its subject and judge through `pipeline/llm.py`, whose providers
+are `moonshot` and `groq` in `pipeline/budget.py`. The measurement that
+produced 5.4 against 5.3 used `qwen/qwen3.8-27b` as subject and
+`openai/gpt-oss-120b` as judge, and `budget.MODELS` gives both of them
+`"provider": "groq"`. So the arm needs `GROQ_API_KEY`:
+
+```bash
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-skill.yml | sort -u
+# BOARD_API_URL BOARD_RUNTIME_TOKEN CLAUDE_CODE_OAUTH_TOKEN
+# NEON_RO_URL PROJECTS_TOKEN SLACK_WEBHOOK_URL
+grep -rlE 'secrets\.GROQ_API_KEY' .github/workflows/     # nothing
+```
+
+No workflow in the repository carries it. The key itself exists as the
+Modal secret named `groq`, which is where the daily pipeline reads it, so
+this is a secret to add at the repository level rather than a credential to
+obtain, and the owner is the only one who can say whether exposing it to a
+seat sandbox is acceptable.
+
+**How.** One line in the `env:` block of
+`.github/workflows/agent-skill.yml`, after `NEON_RO_URL`.
+
+```diff
+       NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
++      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+```
+
+**Ordering.** Independent of item 11, which touches the `claude_args` line
+of the same file. Apply in either order. If both are applied in one hand,
+item 11's warning about the non-unique anchor still holds.
+
+**Cost.** $0. The groq free tier is what the daily pipeline already runs
+on, and `budget.MODELS` prices both models at 0.0 in and 0.0 out. The rate
+limits are the real constraint (8,000 tpm, 30 rpm, 1,000 rpd) and an eval
+run of four tasks at two arms and two repetitions fits inside them.
+
+**What this does not fix, and the owner should know it before applying.**
+ADR-38 clause 6 makes `status: active` depend on a delta measured on the
+model the product is actually used with, and there is no route to that
+model at all: `pipeline/budget.py` has two providers and neither serves
+it, and `grep -in anthropic pipeline/` returns nothing. That is pipeline
+work on the engineer's surface, not a secret, and it is filed in
+docs/ideas.md. Applying this item lets the seat run the cheap arm and
+report a provisional number. It does not let the seat mark a skill active
+under ADR-38 as written.
 
 ---
 
