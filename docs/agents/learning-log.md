@@ -2659,6 +2659,20 @@ skill seat sees skills, and only a pass over the claims together shows it.
    fix is the chair's.
 6. **Item 2 is cancelled and should be deleted.** It is kept for one run as
    the record of why. Move it to "Applied and deleted" and delete the body.
+7. **Did queue item 13 land?** The skill seat's inline dispatch prompt still
+   asks only for a trigger test, so until it is applied the charter this run
+   rewrote and the prompt that actually reaches the run disagree about what
+   counts as evidence, and the prompt arrives last. This is incident 25's
+   shape and item 4a has sat on that page in the same shape since
+   2026-09-21.
+8. **Two findings this run took outside the three-improvement cap, both
+   because the fix was two sentences.** Branch-name reuse is systemic, six
+   names across five seats, and all twelve charters now carry the one command
+   that detects it plus the suffix rule that makes the naming convention
+   obeyable (INC-2026-09-30-branch-name-reuse-is-systemic). And company
+   standard L-E10, synced on 2026-09-30, had no reader in any charter here,
+   so the engineer and frontend charters now carry the pull-request survey as
+   a step rather than as a page to read. Check that both stuck.
 
 ### One thing that is simply working
 

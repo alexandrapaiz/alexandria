@@ -144,7 +144,10 @@ nothing, [model routing](docs/agents/model-routing.md) for which seat gets which
 model, [turn caps](docs/agents/turn-caps.md) for how much room each seat is
 given to work, measured from run logs rather than guessed, and the
 [register map](docs/agents/registers.md), which says for every rule the org
-keeps where that rule is actually checked before something ships.
+keeps where that rule is actually checked before something ships, and
+[quality claims](docs/agents/quality-claims.md), which lists every claim the
+public site makes about what we ship beside the machine that would have to
+run for it to be true.
 
 ## Deployment view
 
