@@ -6197,7 +6197,7 @@ Two things follow, both cheap.
    does not either for a `.github/`-only diff. The change was invisible to
    every gate until the chair merged it into a branch that happened to be
    pushed.
-2. **`actionlint` is the missing gate and it is free.** It is the only
+2. **`actionlint` is the missing gate, and it is free.** It is the only
    checker that implements GitHub's expression and context rules rather
    than YAML's syntax. Filed for the engineer seat in docs/ideas.md.
 

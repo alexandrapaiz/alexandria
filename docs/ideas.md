@@ -7358,7 +7358,7 @@ graphs.
   ledger entry rather than an edit.
 - Status: proposed
 
-### 2026-09-30 — A YAML parse is not a workflow validation; actionlint is the gate (ExO)
+### 2026-09-30 — A YAML parse is not a workflow validation, and actionlint is the gate (ExO)
 
 - Trigger: INC-2026-09-30-four-seats-one-merge-from-silence. Four seat
   workflows on `chair/langfuse-traces` fail GitHub's own parser at startup,
