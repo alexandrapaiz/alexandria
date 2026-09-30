@@ -982,6 +982,22 @@ and nothing else. Where the scale of the week is what you want, the honest
 shape is both numbers in one sentence, what arrived and what was read closely
 out of it, and this close is the one line in the issue where two numbers
 standing together are the point rather than a crowd.
+**When `papers_read_in_full` is zero, this line does not appear at all.** Not
+as a zero, not as a word for zero, and not as a sentence explaining the zero.
+The print of 2026-09-30 closed by naming the week's arrivals and then saying
+in plain words that none of them had been read in full. Both numbers were
+correct and both verbs were right, which is why no gate in this file caught
+it. It still told a reader deciding whether to pay that the product read
+nothing. The sentence is not quoted here, because a line this file wants
+never written is a line this file must not hand you. Canon law 15 carries
+the answer in its own words: an issue that says nothing about its own scale
+has lost nothing a reader came for. The repair for a claim you cannot make is
+to drop it, never to soften it and never to print its absence.
+**And the count reaches the week, never the items below it.** A phrase like
+"for this issue" attaches a seven-day count to the papers you just cited, and
+those are two different sets. The papers in the reading list are often read in
+full minutes after this count is taken, so the count is the last word on the
+week and has nothing to say about the issue. Say "this week" or say the dates.
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
@@ -1391,12 +1407,22 @@ the rule's question to the thing in front of you.
   system carrying a latency number, appeared nowhere else in the issue, and the
   section that ran in its place had never been promised. Every line involved was
   true on its own. Cut what did not arrive, or name what did.
-- **Then count the grades' opening words.** Every item carrying a number carries
-  a grade, and grades against items are counted further up. This is the other
-  count: no two grades in the issue begin the same way, and none begins on the
-  word "evidence". Three accurate grades built on one stem shipped on
-  2026-09-28, at the same position in three consecutive items, and the count of
-  grades passed all three.
+- **Then read the grades for their shape, not their opening words.** Every item
+  carrying a number carries a grade, and grades against items are counted
+  further up. This is the other check, and its unit is the whole sentence. No
+  two grades in the issue begin the same way, none begins on the word
+  "evidence", and **no two are built on the same frame**, meaning the same
+  sequence of parts in the same order however the words change.
+  The unit is the frame because naming a stem only moves the stem. The gate
+  written on 2026-09-28 forbade the word "evidence" after three grades opened
+  on it. The print of 2026-09-30 obeyed that and carried four grades shaped
+  "One [unit], [unit], and [the assessment]", two of them opening on the same
+  two words. Every one was accurate and by the third the form was the furniture
+  between items rather than something being said.
+  So write each grade into a sentence already doing other work, and if you can
+  lift all of them out of the issue and line them up as a matching set, they
+  have stopped being grades. Say what this particular work cannot establish. A
+  grade that could be pasted onto another item is a stamp.
 - **Then check who the issue says did the research. A hard gate, and it is
   grammar rather than judgment.** The attribution rule above allows two forms,
   the institution and the named author, and says there is no third. The third
@@ -1449,12 +1475,23 @@ the rule's question to the thing in front of you.
   whether the section ends where its heading says it does. A heading that states
   a finding the body then withdraws has sold the reader a result and handed them
   a correction, and the heading is what they will remember.
-  The print of 2026-09-28 ran "The 82.2% ceiling was not a ceiling" over four
-  paragraphs whose conclusion is that the two results compared do not measure
-  the same thing, so nothing was shown about the ceiling at all. The body is
-  right and the heading is the claim the body dismantles. This is the hedge rule
-  above arriving one level up: the section noticed the comparison fails and the
-  heading had already been written as though it held.
+  The shape, written in a subject no payload will ever hand you, so that
+  copying it is obviously wrong. A section headed "The night shift is not
+  slower after all" runs four paragraphs whose conclusion is that the two
+  shifts were measured on different work, so nothing was shown about the night
+  shift either way. The body is right and the heading is the claim the body
+  dismantles. This is the hedge rule above arriving one level up: the section
+  noticed the comparison fails and the heading had already been written as
+  though it held.
+  **This specimen is deliberately about nothing, and the reason is a heading
+  that printed.** A real one stood here until 2026-09-30, quoted from the
+  print that produced this rule, and the next print carried that heading
+  verbatim over the same self-dismantling body. The four slot names are quoted
+  in this file eight times and have never printed, because they are not about
+  any paper. A specimen drawn from material you are actually handed is not an
+  illustration of the answer, it is the answer, and holding it at the end of
+  the file does not change that. So no example in this gate names a real
+  result, and any example that does is a draft of your output.
   Where the body's real finding is that a comparison does not work, the heading
   says that. It is a finding, it is that day's, and it is more interesting than
   the false version.
