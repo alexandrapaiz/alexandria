@@ -6,6 +6,8 @@ status: draft
 provenance:
   extracted: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   claims: [166, 167, 168, 169, 170, 306, 307, 308, 309, 310, 742, 743, 744, 745, 746]
   papers:
     - "Mole: Detecting Insider Threats in AI Agents — arxiv.org/abs/2609.06966"
@@ -352,7 +354,16 @@ Before reporting a defence or shipping an agent that faces untrusted content:
 - **Monitor recall figures are all at one review budget** (ten accounts per
   day) on one benchmark's account population. The ordering between monitors was
   stable across the study's corpora, and the absolute numbers should not be carried
-  into a different budget or fleet size.
+  into a different budget or fleet size. Ten accounts a day out of 150 is also
+  the floor to design against rather than an example: the point of the section
+  is that at any budget that small, observability of the state a harm touches
+  buys more than a better-ranked monitor does.
+- **The ranking hazard has a floor too.** A held-out security split of 100
+  tasks was small enough that the search framework's own score mis-ranked its
+  candidates, so the floor for a search that selects a safety harness is a
+  sealed split strictly larger than that, held out of the search's scoring
+  entirely, with the archive of non-moving mutations re-scored on it before any
+  candidate is shipped (ours, not the paper's).
 - These findings are from 2026 papers, read in full on 2026-09-30, and carry
   alexandria claim ids for three of the four sources. If a source claim is
   later contradicted or narrowed, this skill will be revised or deprecated with

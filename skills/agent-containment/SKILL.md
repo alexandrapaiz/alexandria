@@ -6,6 +6,8 @@ status: draft
 provenance:
   extracted: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   claims: []
   papers:
     - "Authority Is Not a String: A Capability-Scoped Harness for Prompt-Injection-Resistant Coding Agents — arxiv.org/abs/2609.08371"
@@ -375,7 +377,11 @@ Before shipping an agent that can execute, write or reach the network:
    name which mechanism refuses each one in the deployment you actually run,
    including the build system, the compiler and the version-control history
    (section 4)?
-5. Halt and undo: does a trip freeze the whole process tree rather than one
+5. Tier: did you pick the isolation tier from the workload class and price it,
+   rather than defaulting to the strongest or the nearest one, and does the
+   startup path load images on demand and mount layers rather than unpacking
+   archives (section 5)?
+6. Halt and undo: does a trip freeze the whole process tree rather than one
    PID, and can you revert both local and remote effects and tell the agent
    you did (sections 6 and 7)?
 
@@ -427,6 +433,16 @@ Before shipping an agent that can execute, write or reach the network:
   system-administration tasks, sixteen build tasks and fifty database tasks on
   one testbed. Its largest exploration gain, 15 times the score, is one game of
   the three it measured, and the other two were 1.4 times.
+- **Two defaults, since a caveat that states a requirement should state its
+  floor.** On the tier, the production platform in this cluster puts
+  repository-level software engineering and tool use on plain containers and
+  reserves the microVM boundary for security-sensitive or stronger-tenant
+  isolation, so a container is the default and the microVM is the deliberate
+  upgrade, not the safe starting point. On the enforcement point, the floor that
+  the measured evidence here actually supports is a blocking interceptor in the
+  harness that evaluates authority the agent did not author. Kernel-level
+  preemption is the tier above it and rests on the weakest-evidenced paper in
+  this file, so treat it as a direction rather than as the entry requirement.
 - These findings are from 2026 papers, read in full on 2026-09-30, and carry
   alexandria paper provenance rather than claim provenance. If a source result
   is later contradicted or narrowed, this skill will be revised or deprecated
