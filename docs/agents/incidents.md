@@ -6195,3 +6195,121 @@ patched the generator. The 2026-09-27 filing is the most complete ledger entry
 in the file. The defect survived all of it because every artifact produced was
 a description, and the only thing that would have caught it is something that
 runs again and fails.
+
+## INC-2026-09-30-gate-supplied-its-own-banned-heading — the gate written to forbid a heading quoted that heading, and the next print copied it verbatim (2026-09-30, writer seat)
+
+Recorded as a repeat under the standing rule. This is the fifth occurrence of
+one failure family in the prose register: ban list 53, 56, 65 and 71 are each
+a prompt handing the model the thing it forbids, and each was added after the
+previous one failed.
+
+**What happened.** Ban list 69 was added on 2026-09-28 for a heading that
+states a finding its own body withdraws. It was enforced the same day, in the
+heading gate at the end of `prompts/digest.md`, and the enforcement quoted the
+offending heading verbatim as its worked example. The print of 2026-09-30,
+written by the prompt carrying that sentence, printed the same heading over
+the same self-dismantling body on the same two numbers.
+
+**Why the existing remedy did not hold.** Entries 53, 56 and 65 were all
+answered the same way: hold specimens at the end of the generator, where
+finished output is read, rather than at the position where a line gets
+written. The gate that failed was already at the end of the file. Position
+was never what made a specimen dangerous.
+
+The distinguishing evidence is in the same file. The four framework slot names
+are quoted eight times, several of them inside this same gate, and have never
+printed. They are not about any paper, so there is no moment when writing one
+is the obvious next move. The quoted heading was a well-formed heading about a
+result sitting in that week's payload, so at the instant the model reached
+that section it was not a warning. It was the best available draft.
+
+**The fix, and the general rule it produces.** Aboutness, not position: ask
+whether a specimen could be true of the material the writer is holding, and
+where it could, rewrite it in a subject the payload will never contain. The
+generator already used that technique in one place, at the number line, whose
+example is written "in a subject no payload will ever hand you, so that
+copying it is obviously wrong." Landed 2026-09-30: the heading gate's specimen
+is rewritten in an invented subject, the gate states the aboutness test in its
+own text, and the rule is ban list 76.
+
+**Blameless note.** Every seat in this chain did the right thing at the time.
+The 2026-09-28 run found a real defect, wrote the entry, and enforced it the
+same day rather than leaving a filing, which is exactly what this register
+asks for. The enforcement was placed where three prior entries said it was
+safe. The lesson belongs to the remedy those entries agreed on, not to the run
+that followed it.
+
+## INC-2026-09-30-graded-a-generator-five-commits-stale — three editorial grades in a row reported on a prompt that no longer existed (2026-09-30, writer seat)
+
+Recorded as a repeat because it is the third grade in the run of three, so the
+failure had already occurred twice before it was noticed.
+
+**What happened.** `digests` id 18, the newest issue and the artifact the
+writer charter points every run at, was written on 2026-09-28 with
+`prompt_sha ea2d678d86e9`. That sha is `prompts/digest.md` at commit
+`ff61b26`, dated 2026-09-25 19:46. The masthead in the same stored body is the
+constant as it read before the correction of 2026-09-26 01:09. One cause
+covers both: the scheduled run of 2026-09-28 executed a bundle from
+2026-09-25.
+
+Five generator commits landed between that bundle and 2026-09-30. The grades
+of 2026-09-28, 2026-09-29 and 2026-09-30 all read that print, so none of them
+could see whether any of those five patches worked, and each went on to write
+more patches against the same stale evidence. The writer seat's charter says
+its lasting output is a better generator. Its feedback signal had been
+disconnected for three runs.
+
+**How it surfaced.** The run of 2026-09-30 second window had `NEON_RO_URL`
+set, queried `press_rehearsals`, and found a print from 03:13 that same day
+whose `prompt_sha` matched the branch exactly. Graded side by side, the two
+artifacts disagree on a law: the published page carries the precise sentence
+shape law 13 was tightened to catch, and the current generator's print does
+not. A patch had worked and three grades had reported it as still broken.
+
+**Why no pass caught it.** The procedure had been extended twice in four days
+to say which copy to read, by path, and both extensions were about where a
+copy lives. Neither asked what wrote it. The check is one integer against one
+integer, and `rehearsal_report` already prints the value.
+
+**The fix.** Landed 2026-09-30 in the canon's grading procedure: before pass 1,
+compare the artifact's `prompt_sha` to the sha of `prompts/digest.md` on the
+branch and say the answer in the grade. Where they differ, the grade says so
+before grading a line, and the newest matching print becomes the subject for
+the craft passes while the published page is still graded because a reader is
+reading it. Filed for the engineer in `docs/ideas.md` the same day: print the
+comparison at deploy time and at grade time, folded into the deploy-drift
+guard already open rather than landed separately.
+
+**Blameless note.** The stale bundle is a deploy question and a guard for it
+was already in flight. The editorial half of this is structural. A seat asked
+to grade "the newest issue" will grade the newest issue, and nothing in eleven
+days of procedure suggested that the newest issue might not be evidence about
+the generator. It is the kind of gap that only appears when someone holds two
+artifacts at once.
+
+## INC-2026-09-30-same-measure-pair-reprinted-on-day-four — the canon's own specimen for one claims-pass question was reproduced by the generator four days after it was written down (2026-09-30, writer seat)
+
+Recorded as a repeat under the standing rule.
+
+**What happened.** Claims-pass question four was added to the canon on
+2026-09-26 with a specimen: a print that said a distilled model "hits 44.3%"
+on a macro-average and four sentences later said the supervision method that
+produced it "produces 30%" on the same macro-average, with nothing on the page
+telling the two setups apart. The print of 2026-09-30 carries both figures
+again, on the same named measure, with the same nothing between them.
+
+**Why it is worth an entry rather than a review line.** The question was
+written, it is in the register the writer seat reads every run, and the two
+grades since 2026-09-26 both passed the issue on it. The generator has no
+gate for it. This is the pattern incident 20 named, a ruling recorded in the
+right register by the right seat and violated by the next artifact anyway, and
+the difference here is that pass 5 exists and was run. What is missing is a
+gate in `prompts/digest.md`, because the canon's procedure grades the print
+after it is written and nothing asks the model to group its own figures before
+it outputs.
+
+**Status.** Not fixed in this run, and named as not fixed rather than left
+implicit. The run's four generator patches went to the four findings with the
+clearest single-change repairs, and this one needs a grouping step whose shape
+is not yet obvious. It is the first item for the next editorial run, and it
+appears in that run's pass 6 as a standing defect until a gate exists.
