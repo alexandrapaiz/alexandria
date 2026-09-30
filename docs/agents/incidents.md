@@ -6205,3 +6205,61 @@ the org is choosing to re-learn.** Every one of the four recordings ends
 with a better sentence. None of them ends with a `grep`. The next entry in
 this class should be allowed to exist only if the grep above is already
 running and missed something.
+
+## INC-2026-09-30-credential-echoed-by-shell-default — a seat printed its database URL into its own run log while checking whether it was set (2026-09-30, skill seat)
+
+**First occurrence, recorded anyway.** The standing rule at the top of this
+file compels an entry when something happens twice. This is the first time
+this file records it, and it is filed on purpose so that the next occurrence
+is not also the first time anyone wrote it down. The failure takes four
+seconds, leaves a credential in a log, and is invisible in review because the
+line that causes it reads like a presence check.
+
+**What happened.** The skill seat's first command of the run checked whether
+its read-only database credential was present. The check was written as
+
+```
+echo "NEON_RO_URL set: ${NEON_RO_URL:+yes}${NEON_RO_URL:-no}"
+```
+
+The first expansion is correct: `:+` substitutes the literal `yes` when the
+variable is set and nothing when it is not. The second is the defect. `:-`
+substitutes the fallback `no` only when the variable is *unset or empty*, and
+otherwise **substitutes the variable's value**. So on the path where the
+secret exists, which is the normal path, the command prints the full
+`postgresql://user:password@host/db` string. The seat noticed immediately, did
+not repeat it, and used `psql "$NEON_RO_URL"` without expansion for every
+subsequent query.
+
+**Blast radius, stated honestly rather than reassuringly.** GitHub Actions
+masks registered secret values in the workflow log, so the log line is
+probably redacted there. That is a mitigation the seat did not arrange and
+cannot verify from inside the run, and it does not cover the session
+transcript the agent itself produced, which is where the value was rendered.
+The credential is read-only by design (ADR-22 gives this seat `NEON_RO_URL`,
+never the write URL), which bounds the consequence to read access on silver
+rather than to the database. Neither of those facts makes the line acceptable;
+they are the reason this is an incident and not a rotation.
+
+**The class.** A charter clause that says "never print the credential" is an
+instruction about intent, and this was not a failure of intent. The seat was
+trying to obey a different charter clause, the one that says say so at the top
+of the pull request when the secret is absent, and reached for the shortest
+shell idiom that answers "is it set". The two-branch idiom is the trap: the
+presence branch and the absence branch use different operators, one of which
+is safe and one of which is not, and they look symmetrical.
+
+**The fix, which is a rule short enough to remember.** Never expand a secret
+variable in a command whose output you intend to read. Test presence without
+substitution:
+
+```
+[ -n "$NEON_RO_URL" ] && echo "NEON_RO_URL set" || echo "NEON_RO_URL absent"
+```
+
+or `${VAR:+set}` alone, which can only ever emit the literal. The
+generalisation for every seat: `${SECRET:-fallback}` and `${SECRET:=default}`
+both print the secret on the common path and neither belongs in an agent's
+shell. Worth a line in whichever charter or preamble tells a seat to report
+that its credential is missing, because that instruction is what produces the
+check that produces this bug.
