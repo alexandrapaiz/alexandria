@@ -27,6 +27,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
 import budget                                                    # noqa: E402
+import distill                                                   # noqa: E402
 import evidence                                                  # noqa: E402
 import interpret                                                 # noqa: E402
 import llm                                                       # noqa: E402
@@ -738,7 +739,7 @@ def test_distills_cap_buys_more_than_one_paper_at_the_worst_case_price():
     ceiling is $0.10, which is sixteen times a triage batch, so the margin
     between a working cap and a useless one is much thinner here.
     """
-    import distill as job
+    job = distill
     ceiling = budget.cost_usd(
         int(job.FULLTEXT_CHARS / budget.FULLTEXT_CHARS_PER_TOKEN) + 990,
         job.MAX_COMPLETION_TOKENS, job.MODELS[0])
@@ -758,7 +759,7 @@ def test_the_density_constant_was_measured_at_the_window_the_job_sends():
     FULLTEXT_CHARS without re-measuring would have under-sized every request by
     about a third.
     """
-    import distill as job
+    job = distill
     receipt = json.loads((ROOT / "docs" / "evals"
                           / "2026-09-30-fulltext-token-density.json").read_text())
     assert receipt["window_chars"] == job.FULLTEXT_CHARS
@@ -779,3 +780,355 @@ def test_the_token_counter_survives_a_paper_that_prints_a_special_token():
     pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     assert budget.count_tokens("before <|endoftext|> after") > 0
     assert budget.count_tokens("<|im_start|><|endofprompt|>") > 0
+
+
+# ================ the day's run, driven end to end (2026-09-30) ================
+#
+# Every distill test above and in tests/test_distill_gates.py checks a gate, a
+# constant or a query. None of them runs the loop, and on 2026-09-30 the loop
+# is the part that changed most: it moved to the shared client, it gained three
+# ceilings that each have to stop it cleanly, it lost the per-run fetch budget,
+# and it has to tell the truth about which papers arrived whole.
+#
+# This section is what the engineer seat could run in place of a smoke run. A
+# real smoke run is `modal run pipeline/distill.py --max-papers 1 --cap-usd
+# 0.15` and it needs the Moonshot key, which lives in Modal and which no seat
+# sandbox has. So the provider and the database are fakes here and everything
+# between them is the real code: the real ordering, the real cap accounting out
+# of a real usage block, the real fulltext_chars write, the real stop
+# conditions. What it cannot prove is that Moonshot answers a
+# 250,000-character paper well, which is gate 3's question and the chair's to
+# ask.
+#
+# It lives in this file rather than its own because checks.yml names test files
+# one by one and no seat can push a workflow. A test CI does not run is
+# enforced at the reliability of somebody running it locally, which is L-A22,
+# and this section is too load-bearing for that.
+
+class Row(list):
+    """psycopg hands back tuples; the fake cursor hands back these."""
+
+
+class FakeCursor:
+    def __init__(self, rows):
+        self._rows = rows
+
+    def fetchall(self):
+        return self._rows
+
+    def fetchone(self):
+        return self._rows[0] if self._rows else None
+
+
+class FakeConn:
+    """Answers the handful of queries the run makes, and records every write.
+
+    Deliberately literal rather than clever: it matches on a distinctive
+    fragment of each statement, so a query that changes shape fails here loudly
+    instead of silently answering something else.
+    """
+
+    def __init__(self, papers, queue_depth=0):
+        self.papers = papers
+        self.queue_depth = queue_depth
+        self.inserts = []
+        self.fulltext_writes = {}
+        self.statements = []
+
+    def execute(self, sql, params=()):
+        self.statements.append(" ".join(sql.split()))
+        low = sql.lower()
+        if "information_schema.columns" in low:
+            return FakeCursor([(1,)])          # every optional column exists
+        if "from distill_queue" in low and "count(*)" in low:
+            return FakeCursor([(self.queue_depth,)])
+        if "from distill_queue" in low:
+            return FakeCursor(self.papers)
+        if low.strip().startswith("insert into claims"):
+            self.inserts.append((sql, params))
+            return FakeCursor([])
+        if "fulltext_chars = %s" in low:
+            self.fulltext_writes[params[1]] = params[0]
+            return FakeCursor([])
+        if "where embedding is null" in low:
+            return FakeCursor([])              # nothing left to embed
+        return FakeCursor([])
+
+    def commit(self):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def paper_reply(status=200, claims=None, prompt_tokens=40_000):
+    body = {
+        "choices": [{"message": {"content": json.dumps(
+            {"claims": claims or [], "institutions": []})},
+            "finish_reason": "stop"}],
+        "usage": {"prompt_tokens": prompt_tokens, "completion_tokens": 900},
+    }
+
+    class R:
+        status_code = status
+        text = ""
+        headers: dict = {}
+
+        def json(self):
+            return body
+
+        def raise_for_status(self):
+            pass
+
+    return R()
+
+
+CLAIM = {
+    "claim": "Two-stage distillation raises pairwise win rate to 71.3%.",
+    "evidence": "Held-out split, three annotators, Krippendorff alpha 0.81.",
+    "procedure": "1. SFT on 12,400 demonstrations. 2. Distil with KL 0.02.",
+    "topics": ["reasoning"],
+}
+
+PAPERS = [
+    ("arxiv:1", "Chain of thought prompting at scale", "an abstract",
+     "deep_read", "arxiv"),
+    ("arxiv:2", "A sandbox for untrusted agent tools", "an abstract",
+     "distill", "arxiv"),
+    ("arxiv:3", "A fast Fourier transform variant", "an abstract",
+     "distill", "arxiv"),
+]
+
+
+@pytest.fixture
+def loop_env(monkeypatch, no_sleep):
+    """Everything the loop reaches for, faked at its own edge."""
+    monkeypatch.setenv("MOONSHOT_API_KEY", "moonshot-key")
+    monkeypatch.setenv("GROQ_API_KEY", "groq-key")
+    monkeypatch.setenv("DATABASE_URL", "postgres://fake")
+    monkeypatch.setattr(distill, "load_prompt",
+                        lambda kind="paper": ("a prompt", f"sha-{kind}"))
+    monkeypatch.setattr(distill, "reading_queue", lambda: _NoQueue())
+    monkeypatch.setattr(distill, "read_paper", lambda: _NoFetch())
+    monkeypatch.setattr(httpx, "get", lambda *a, **k: response(
+        200, claims=[]) if False else _catalog())
+    # setitem rather than assignment, so the fakes are removed when the test
+    # ends. A `psycopg` left in sys.modules would follow the suite into every
+    # file collected after this one.
+    monkeypatch.setitem(sys.modules, "sentence_transformers",
+                        _fake_sentence_transformers())
+    monkeypatch.setitem(sys.modules, "psycopg", _fake_psycopg())
+    return None
+
+
+def _catalog():
+    class R:
+        status_code = 200
+        text = ""
+        headers: dict = {}
+
+        def json(self):
+            return {"data": [{"id": m} for m in distill.MODELS]}
+
+    return R()
+
+
+class _NoQueue:
+    QUEUE_PATH = "docs/research/reading-queue.md"
+    MAX_PER_RUN = 6
+
+    def read_file(self, path):
+        return None
+
+    def pending(self, text, limit=None):
+        return []
+
+    def resolve(self, conn, requested, fetch_metadata=None):
+        return []
+
+    def merge(self, first, intake, max_papers):
+        return (list(first) + list(intake))[:max_papers]
+
+
+class _NoFetch:
+    """arXiv serves no HTML, so the run takes the documented fallback."""
+
+    def fetch_fulltext(self, pid, max_chars=None):
+        return None
+
+    def fetch_metadata(self, pid):
+        return None
+
+
+class _WholePaper(_NoFetch):
+    def __init__(self, length):
+        self.length = length
+
+    def fetch_fulltext(self, pid, max_chars=None):
+        body = "x" * self.length
+        return body[:max_chars] if max_chars else body
+
+
+def _fake_sentence_transformers():
+    import types
+    mod = types.ModuleType("sentence_transformers")
+    mod.SentenceTransformer = lambda name: None
+    return mod
+
+
+def _fake_psycopg():
+    import types
+    mod = types.ModuleType("psycopg")
+    mod.connect = lambda url: CONN["conn"]
+    return mod
+
+
+CONN: dict = {}
+
+
+def drive(monkeypatch, papers, responses, reader=None, **kwargs):
+    conn = FakeConn(papers, queue_depth=kwargs.pop("queue_depth", 0))
+    CONN["conn"] = conn
+    if reader is not None:
+        monkeypatch.setattr(distill, "read_paper", lambda: reader)
+    queue = list(responses)
+    monkeypatch.setattr(httpx, "post",
+                        lambda *a, **k: queue.pop(0) if len(queue) > 1
+                        else queue[0])
+    # The Modal stub gives `hf_cache` as None, and the embedding sweep only
+    # touches it when there is something to embed, which the fake database
+    # says there is not.
+    distill.distill(**kwargs)
+    return conn
+
+
+# ---------------- the loop writes what it read ----------------
+
+def test_a_complete_paper_is_recorded_as_the_number_of_characters_read(
+        loop_env, monkeypatch, capsys):
+    """`papers.fulltext_chars` is what the masthead's number is counted from.
+
+    So it has to be the real length, and a paper cut at the window has to be
+    distinguishable from one that arrived whole. The run prints both counts and
+    the column carries the per-paper number behind them.
+    """
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+                 reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] == 40_000
+    assert "read 1 of 1 papers from their full text, 1 of those complete" in out
+
+
+def test_a_paper_longer_than_the_window_is_read_but_not_counted_complete(
+        loop_env, monkeypatch, capsys):
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+                 reader=_WholePaper(distill.FULLTEXT_CHARS + 50_000))
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] == distill.FULLTEXT_CHARS
+    assert "0 of those complete" in out
+    assert f"cut at {distill.FULLTEXT_CHARS}" in out
+
+
+def test_a_paper_with_no_html_falls_back_to_the_abstract_and_says_null(
+        loop_env, monkeypatch, capsys):
+    """The documented fallback, and the honest marker that goes with it.
+
+    A stat the weekly issue prints cannot be generous about what was read, so
+    an abstract-only paper writes NULL rather than the abstract's length.
+    """
+    conn = drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])])
+    out = capsys.readouterr().out
+    assert conn.fulltext_writes["arxiv:1"] is None
+    assert "1 from the abstract alone" in out
+
+
+# ---------------- the three ceilings ----------------
+
+def test_the_spend_cap_stops_the_run_and_names_itself(loop_env, monkeypatch, capsys):
+    """Less than one paper's allowance, three papers queued.
+
+    A paper here bills $0.0416, so a $0.03 cap is spent by the first one and
+    the second is refused before it is sent. That is the shape `llm.Cap` is
+    built for: the check is BEFORE the call, so a run stops at its cap rather
+    than one call past it, and on a 262,144-token model one call past it is
+    four cents rather than a rounding error.
+    """
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000), cap_usd=0.03)
+    out = capsys.readouterr().out
+    assert "stopped on: the $0.03 spend cap" in out
+    assert out.count("claims (paper)") == 1, (
+        "the cap is checked before the call, so the run stops AT it rather "
+        "than one paper past it")
+
+
+def test_the_daily_token_share_stops_the_run_and_names_itself(
+        loop_env, monkeypatch, capsys):
+    """A different ceiling with a different fix, so a different message.
+
+    Running out of the account's day is not a cost problem, and answering it
+    with more money buys nothing. The line has to say which one it was.
+    """
+    monkeypatch.setattr(distill, "TOKENS_PER_RUN", 50_000)
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the 50,000-token daily share" in out
+    assert "the next run resumes" in out
+
+
+def test_the_paper_count_is_what_normally_stops_the_run(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the queue ran out" in out
+    assert out.count("claims (paper)") == 3
+
+
+# ---------------- what the run tells the reader ----------------
+
+def test_the_run_prints_the_measured_cost_per_paper(loop_env, monkeypatch, capsys):
+    """The owner asked for this number by name, so the run prints the realised
+    version of it beside the projection the preflight printed."""
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "cost per paper this run: $" in out
+    assert "spend: $" in out
+
+
+def test_the_run_says_which_model_answered(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert f"answered by: {distill.MODELS[0]} x1" in out
+
+
+def test_a_run_answered_only_by_a_fallback_warns_that_it_read_abstracts(
+        loop_env, monkeypatch, capsys):
+    """The quiet failure this whole change exists to end.
+
+    A Groq fallback answers, the run succeeds, claims are written, and every
+    one of them came from an abstract. That is the owner's finding of
+    2026-09-25 in one run, so the log has to name it rather than report a
+    normal day.
+    """
+    drive(monkeypatch, PAPERS[:1],
+          [paper_reply(404), paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert f"NOTE: {distill.MODEL} answered nothing this run" in out
+    assert "came from abstracts" in out
+
+
+def test_the_run_forecasts_the_remaining_queue(loop_env, monkeypatch, capsys):
+    drive(monkeypatch, PAPERS[:1], [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000), queue_depth=400)
+    out = capsys.readouterr().out
+    assert "400 papers still queued" in out
+    assert "OVER A WEEK" in out, (
+        "a queue that cannot clear in a week is the condition the owner's "
+        "directive named, so the run has to say so rather than print a number")
