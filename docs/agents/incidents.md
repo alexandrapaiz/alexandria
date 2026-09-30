@@ -6285,3 +6285,65 @@ expansion. That is one line per workflow, it removes the decision from the
 model, and it satisfies L-A14's own closing logic better than a better-worded
 prohibition would. Until it lands, L-A14 is enforced at the reliability of
 reading, and this entry is the second data point on what that reliability is.
+
+## INC-2026-09-30-eval-task-claims-unchecked — a field this seat invented yesterday was wrong in two of eight files, and nothing reads it (2026-09-30, skill seat)
+
+**What happened.** ADR-36 landed on 2026-09-30 and this seat wrote eight
+`skills/<slug>/evals/evals.json` files the same day. Each task carries
+`source.claims`, a list of the claim ids the task exercises, alongside its
+rubric criteria. The next run, the ADR-38 retrofit that had to tag every
+section of every skill with what validates it, used those lists to map sections
+to tasks. Two of the eight were wrong in the same way. In
+`evaluation-integrity`, the partial-monitoring section's three claims
+(269, 272, 273) were attached to `ei-t8`, whose five rubric criteria are all
+about pressure testing and none about monitoring. In
+`recursive-harness-self-improvement`, section 9 on certifying a gain cites
+claim 286 and no task named it at all. Both gaps were closed in the same pull
+request by writing the missing tasks, `ei-t11` and `rhsi-t10`, rather than by
+weakening the tags.
+
+**Why this is a repeat and not a new finding.** It is
+`INC-2026-09-27-new-register-shipped-without-a-gate` exactly, which is itself
+incident 20's class and L-A9 in `docs/standards/lessons.md`: recording is not
+enforcing. `source.claims` is a register. It was born on 2026-09-30 with an
+authorship gate, the prompt that says to write it, and no reader. The eval
+harness the engineer is building consumes the prompt, the check and the
+rubric; nothing in it compares a task's claim list against the section of the
+skill those claims live in. So the field was wrong in 25 percent of the files
+one day after it was invented, and the only reason anyone found out is that a
+different requirement, per-section validation tags, happened to need the
+mapping the field claims to provide.
+
+**The general form, which is the part worth keeping.** This is the third
+distinct instance of the same shape inside this seat's own surface in five
+days, and the pattern across the three is sharper than the class. Every one of
+them is a provenance field: `provenance.claims` on a SKILL.md, the ADR-35
+reading queue, and now `source.claims` on an eval task. Provenance fields
+attract this failure because they are cheap to write, read as authoritative,
+and are the one kind of field whose wrongness is invisible in the artifact
+that carries it. A claim id that does not support the sentence next to it
+looks exactly like one that does.
+
+So the cheap repair is mechanical and belongs beside the file, not in a weekly
+sweep: a check that every claim id in a task's `source.claims` appears in the
+`provenance.claims` list of the skill the suite belongs to, and that the task's
+rubric criteria mention the section those claims came from. The first half is a
+set comparison and needs no model. Filed for the engineer in `docs/ideas.md`
+rather than built here, because the eval harness is the engineer's surface and
+this seat writes only the task files.
+
+**What this seat did differently as a result.** `prompts/skill-extract.md` now
+says to check a task's rubric criteria rather than its claim list before a
+*Validation:* tag cites it, and to write the missing task rather than soften
+the tag. Under L-A22 that is a rule enforced at the reliability of a model
+reading a file, which is the same half of the problem the three earlier
+instances already had, so it is recorded here as insufficient on purpose. The
+command-side link, the one L-A22 actually asks for, is the set comparison filed
+in `docs/ideas.md` for whoever builds the eval harness, and L-A21's test says
+which half of it matters: name one change that would break the mapping, then
+ask whether the check would see it. The set comparison would not have seen
+either of today's two defects, because both wrong lists held ids the skill does
+cite. The check that sees them is the one that asks whether every section of
+the SKILL.md is named by a task, and that needs a `section` field on the task
+which does not exist yet. Recorded so the cheaper check does not ship alone and
+get mistaken for coverage.

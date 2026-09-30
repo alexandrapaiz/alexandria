@@ -7593,3 +7593,90 @@ graphs.
   requirements written into `prompts/skill-extract.md` so new skills ship with
   them. Versions bumped, trigger suite re-run.
 - Status: proposed
+
+### 2026-09-30 — An eval task's claim list has no reader, and was wrong in two of eight files one day after the field was invented (skill seat, for the engineer)
+
+- Trigger: the ADR-38 retrofit needed to map every section of every skill to
+  whatever validates it, and the obvious index was `source.claims` on each
+  `evals.json` task. Two of the eight suites were wrong.
+  `evaluation-integrity` attached the partial-monitoring section's claims to a
+  task whose five rubric criteria are all about pressure testing, and
+  `recursive-harness-self-improvement` had no task naming claim 286 at all,
+  which is its whole section 9. Both are fixed in this pull request by writing
+  `ei-t11` and `rhsi-t10`, and both suites moved to `suite_version: 2`.
+- What to build, for the eval harness (ADR-36): two checks beside the task
+  files, the first of which needs no model.
+  1. Every id in a task's `source.claims` appears in the
+     `provenance.claims` list of the skill whose directory the suite sits in.
+     A set comparison. It would have caught nothing here, because both wrong
+     lists held ids the skill does cite, which is worth knowing before anyone
+     builds only this half.
+  2. Every section of the SKILL.md is named by at least one task. This is the
+     check that finds both defects, and it is decidable if a task gains a
+     `section` field naming the heading it exercises. Adding that field is
+     this seat's work and the checking is the harness's.
+- Why it matters beyond tidiness: ADR-36's gate and the per-section
+  *Validation:* tags both depend on the mapping being true. A tag that cites a
+  task covering none of its section is exactly the overstatement the ADR-13
+  provenance reviewer exists to catch, produced by a field nobody reads.
+- Recorded as `INC-2026-09-30-eval-task-claims-unchecked`, a repeat of
+  `INC-2026-09-27-new-register-shipped-without-a-gate` and of L-A9.
+- Whose call: engineer.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-30 — The library page shows none of the three things ADR-38 added (skill seat, for the frontend)
+
+- Trigger: all eight skills now carry `provenance.reviews`, a per-section
+  *Validation:* line, and an "Apply" checklist. `site/lib/skill-provenance.js`
+  parses the frontmatter structurally, so the new nested `reviews` key reads
+  cleanly and is then dropped: `parseSkill` in `site/lib/content.js` returns a
+  fixed set of fields and `reviews` is not one of them. Verified by reading both
+  files rather than by running the site. Nothing is broken and nothing renders.
+- What: three additions to the skill page, in descending order of value to a
+  buyer. (1) The reviews lane. A skill page that says "one consumer, one design
+  decision changed" is the differentiator no marketplace offers, and it is now
+  sitting in a frontmatter field the page discards. (2) The per-section
+  validation status, surfaced beside each section rather than only in the body
+  text, since a reader deciding whether to trust a section should not have to
+  read the italics. (3) The Apply checklist, which is the part a buyer would
+  screenshot.
+- Note for whoever takes it: the `reviews` value is a block list of quoted
+  strings, the same shape as `papers`, so the existing parser handles it with
+  no change. Only the projection in `parseSkill` and the page need work.
+- Whose call: frontend, with the engineer on `parseSkill`.
+- Cost: $0
+- Status: proposed
+
+### 2026-09-30 — The extract prompt said five or fewer where the owner said five to seven (skill seat, resolved in this run)
+
+- Trigger: `prompts/skill-extract.md` carried "five or fewer checkable lines"
+  for the Apply checklist, written from the first consumer report's phrasing.
+  The owner's directive of 2026-09-30 says five to seven. Reconciled to five to
+  seven in this pull request, with the reason for the ceiling stated, which the
+  prompt was missing: a checklist longer than the sections it summarises is a
+  second skill.
+- Recorded rather than fixed silently, because the two numbers came from two
+  registers and the next run should not re-derive which one won.
+- Whose call: settled. No action.
+- Cost: $0
+- Status: built
+
+### 2026-09-30 — The new provenance field is plain ASCII while the papers list beside it is not (skill seat)
+
+- Trigger: the 2026-09-29 entry above, "The em dash in skill frontmatter versus
+  ban-list entry 13", is still unruled. This run had to add a `reviews:` field
+  to all eight skills, so it had to pick a side for new text.
+- What: the new `provenance.reviews` lines and every `reviews/README.md` are
+  plain ASCII, while the `papers` lines they sit next to keep the specimen's em
+  dash. So one frontmatter block now holds both conventions. That is uglier
+  than either answer and it is the honest state: ban-list entry 13 governs new
+  copy, and rewriting the papers lines of four skills the panel has not passed
+  is not a retrofit run's call.
+- First step unchanged from the 2026-09-29 entry: the writer seat rules on
+  whether structured frontmatter counts as copy, then one pass fixes all eight
+  files or the entry records the exception. This run adds only the fact that
+  waiting now costs a visible inconsistency rather than a hypothetical one.
+- Whose call: writer seat.
+- Cost: $0
+- Status: proposed
