@@ -7279,3 +7279,102 @@ graphs.
 - Cost: two `grep`-and-count links in a chain that already exists, plus one
   question asked while writing the others.
 - Status: proposed
+
+### 2026-09-30 — Competitive scan: The Pragmatic Engineer leads with the reversal, which is alexandria's own thesis in someone else's hands
+
+- Craft scan for 2026-09-30, engineer seat. Rotated to the one entry in
+  docs/market/landscape.md filed as "pricing comp, not an AI peer", last
+  observed 2026-09-18, because today's build taught the pipeline to read
+  engineering-practice writing and this is the reference product for it.
+  Observed directly at newsletter.pragmaticengineer.com/archive.
+- **What is worth stealing: the reversal is the lede, not the caveat.** Its
+  newest post is "Why has Shopify dropped React Native?", subtitled "It's only
+  been a year since the e-commerce platform declared it was very happy with
+  React Native, but now Shopify is dumping it". Both dates are in the subtitle.
+  The most-read practice newsletter in the industry puts a named company
+  abandoning its own public endorsement at the top of the page, and alexandria
+  files the same material in a section called "left behind" that does not exist
+  as a page yet (two accepted ledger entries, 12 days old). The form is the
+  lesson: a reversal reads as news when it names who reversed, what they said
+  before, and how long the earlier belief lasted.
+- **What alexandria does better: the newsletter cannot query itself.** It tells
+  a reader Shopify reversed. Nothing in it connects the 2025 endorsement to the
+  2026 reversal as data, because an archive of essays has no edges. alexandria
+  holds both as dated claims with a contradiction edge between them, so the
+  older claim is marked rather than merely forgotten, and `deprecated_claims`
+  computes the list instead of an editor remembering it. That is the one thing
+  in this category that cannot be copied by writing more essays.
+- A scan note carries no status by the ledger contract's own list, the way the
+  other competitive scans in this file do not. The proposal it produced is the
+  next entry.
+
+### 2026-09-30 — The reversal, as a first-class shape in the graph and the lede of the left-behind page
+
+- Trigger: today's competitive scan above, read against today's build. The
+  Pragmatic Engineer's top story is a company abandoning a technology it
+  endorsed a year earlier, with both dates in the subtitle. Separately, this
+  run added `claims.broke` and a practices prompt that asks a field report what
+  went wrong, so from today the corpus captures the raw material for that shape
+  and has nowhere to put it.
+- What: `deprecated_claims` currently finds a claim contradicted by newer
+  evidence, which is the general case. A reversal is the special case worth
+  naming: the same institution, contradicting itself, with the interval between
+  the two dates as the number that makes it a story. `claims.paper_id` resolves
+  to `papers.institutions`, which distill has always filled in, so the pair is
+  computable today with no new ingestion. Surface it as the ordering of the
+  Left-Behind Index page (sprint item 5, frontend), where "Shopify, 14 months"
+  is a headline and "a practice was contradicted" is not.
+- First step: a `reversals` view beside `deprecated_claims`, joining a
+  contradiction edge to matching institutions on both sides, plus the interval;
+  then count what it returns against the live corpus before any page is drawn,
+  because a view that returns four rows is a paragraph and not a page.
+- Cost: $0, one view over data already held.
+- Status: proposed
+
+### 2026-09-30 — A concurrency group on the twelve agent workflows
+
+- Trigger: two `engineer-agent` runs were live at once this morning, 80 seconds
+  apart, one on `schedule` and one on `workflow_dispatch`
+  (INC-2026-09-30-two-engineer-runs-at-once). Neither could see the other's
+  branch when it started, because the first run's PR did not exist yet when the
+  second began. No file collided, and that was a choice this run made after
+  reading the other PR's title, not a property of the machinery.
+- What: `concurrency: {group: engineer-agent, cancel-in-progress: false}` on
+  each agent workflow, so a second trigger queues behind the first instead of
+  racing it. The two triggers a seat's workflow carries are two doors to one
+  room and nothing checks whether the room is occupied. `cancel-in-progress:
+  false` rather than `true`, because a run cancelled at turn 90 is incident 3,
+  work lost at teardown, and queueing costs only time.
+- First step: one workflow, `agent-engineer.yml`, since it is the seat that runs
+  daily and the only one with a same-day repeat on record; then the other eleven
+  once a dispatched run has been seen to queue rather than race.
+- Cost: $0. It is a workflow edit, so it is the owner's to apply, and it belongs
+  in `docs/agents/pending-workflow-changes.md` rather than in a seat's PR.
+- Status: proposed
+
+### 2026-09-30 — Run the register checker and read main's colour: the two gates that exist and fire at nothing
+
+- Trigger: two findings from this run's own ship checks, and both are repeats.
+  `docs/agents/registers.md` on main carried three unresolved git conflict
+  blocks, one of them 176 lines
+  (INC-2026-09-30-conflict-markers-in-registers). `tools/check_registers.py`
+  was written on 2026-09-24 to catch exactly that, its own incident entry ends
+  with "Still open ... Nothing runs this one yet", and six days later the damage
+  landed in a larger form. Separately, `checks.yml` went live on 2026-09-29 and
+  has run twice on main and failed twice
+  (INC-2026-09-30-ci-red-on-main-since-it-went-live): the gate that guards main
+  has never once been green on it, and two real faults sat there across a
+  lessons sync and three merges.
+- What: two lines and one command. Add `tests/test_check_registers.py` to the
+  nine pytest files `checks.yml` already names, so the conflict-marker and
+  duplicate-id checks run on every pull request instead of only in a full local
+  suite. And add `gh run list --branch=main --workflow=checks.yml --limit 3` to
+  the engineer charter's §0 machinery diff, which today asks whether a runtime
+  change was explained and smoke-tested but never asks whether main is green
+  right now.
+- First step: the `checks.yml` line, since the test exists and passes and the
+  edit is one entry in a list that already has nine.
+- Cost: $0. Both halves are outside a seat's reach: the first needs a
+  `workflows` permission, the second is a charter edit, which only the owner
+  merges. That is the whole reason this is an entry and not a commit.
+- Status: urgent
