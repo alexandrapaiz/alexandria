@@ -142,6 +142,28 @@ a {
   transition: opacity var(--fast) var(--ease);
 }
 
+/* The canon's touch rule is 44 by 44, and the skill rows already carry
+   Freiberg's Fitts note ("a 44px target that accepts 52px of finger is
+   craft"). These are the controls that never got it, measured on the phone
+   this run: the wordmark is a 146x20 link inside an 83px bar, the nav links
+   are about 20px tall, and the footer's Privacy and Terms are 43x15 and
+   35x15. A finger that lands a few pixels above or below the words hits
+   nothing at all, on a bar that has the room to accept it.
+   The hit area is grown with padding and the growth is taken straight back
+   out with a negative margin, so every one of these sits exactly where it
+   sat: verified by measuring the nav's height and each link's box before
+   and after. The footer's links are inline, where vertical margin does not
+   affect layout at all, so the padding alone is already neutral. */
+.nav-logo,
+.nav-links a {
+  padding-block: 12px;
+  margin-block: -12px;
+}
+
+.footer a {
+  padding-block: 15px;
+}
+
 .nav-links a:hover {
   opacity: 1;
 }
