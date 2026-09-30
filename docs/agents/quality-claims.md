@@ -10,9 +10,11 @@ the first skill measurement.
 ## Why this register exists
 
 ADR-36 was written because the site said a skill is revised when the research
-moves and nothing in the organization did that. The site sentence came first
-and the machine came thirteen days later, and in between the sentence was
-simply untrue in public. That is not a copy defect. The writer had approval,
+moves and nothing in the organization did that. The site sentence shipped on
+2026-09-18 (commit 7c714c6). The decision to build the machine came eleven
+days later, on 2026-09-29, and the code for it is still on an unmerged
+branch. For those eleven days the sentence was simply untrue in public, and
+it is untrue today. That is not a copy defect. The writer had approval,
 the frontend shipped what was approved, and the claim was plausible to
 everyone who read it, because the thing it described was the thing the org
 intended to build.
@@ -87,7 +89,7 @@ the other.
 file.** Not built is an acceptable state to ship in, when the claim is
 honestly hedged the way `routines/page.jsx` hedges "once they ship". What is
 not acceptable is a flat present-tense claim with an empty mechanism column,
-because that is the 2026-09-16 skills copy again.
+because that is the 2026-09-18 skills copy again.
 
 Three things follow each ExO run.
 
