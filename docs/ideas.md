@@ -7612,9 +7612,13 @@ graphs.
      lists held ids the skill does cite, which is worth knowing before anyone
      builds only this half.
   2. Every section of the SKILL.md is named by at least one task. This is the
-     check that finds both defects, and it is decidable if a task gains a
-     `section` field naming the heading it exercises. Adding that field is
-     this seat's work and the checking is the harness's.
+     check that finds both defects, and it needed a field that did not exist,
+     so this run wrote it: every task in all eight suites now carries
+     `sections`, the list of `## ` headings it exercises, verbatim so a string
+     comparison resolves it. Controls and boundary tasks carry an empty list.
+     Both checks are now decidable with no model, and the contract is in
+     `skills/_validation/evals/README.md`. All eight suites are at
+     `suite_version: 2`.
 - Why it matters beyond tidiness: ADR-36's gate and the per-section
   *Validation:* tags both depend on the mapping being true. A tag that cites a
   task covering none of its section is exactly the overstatement the ADR-13

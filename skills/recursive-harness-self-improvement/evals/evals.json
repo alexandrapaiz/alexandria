@@ -6,11 +6,14 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls.",
+  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
   "tasks": [
     {
       "id": "rhsi-t1",
       "kind": "treatment",
+      "sections": [
+        "1. Write the freeze list before the first cycle"
+      ],
       "form": "prompt",
       "situation": "Every working design in the cluster splits the system into a part that moves and a part held still and alternates: ScienceBuddy's two nested loops with opposite freezes and a fixed auxiliary diagnostician, RSIAgent's memory frozen on a curriculum signal, SoL-Pi pinning source, configuration, tolerances and acceptance rules before the run.",
       "source": {
@@ -73,6 +76,9 @@
     {
       "id": "rhsi-t2",
       "kind": "treatment",
+      "sections": [
+        "2. The whole gain can come from the scaffold"
+      ],
       "form": "prompt",
       "situation": "Procedural Graphs began from a minimal skeleton, matched or surpassed hand-designed graphs, and repaired a deliberately flawed expert prior rather than inheriting it; RSIAgent lifted two open models past frontier closed models without updating a parameter.",
       "source": {
@@ -134,6 +140,9 @@
     {
       "id": "rhsi-t3",
       "kind": "treatment",
+      "sections": [
+        "3. Localize the failure before proposing an edit"
+      ],
       "form": "project",
       "situation": "ModularRSI's conversion of task-level outcomes into function-level evidence: roll out K times per task, label each trajectory by binary reward, sort tasks into all-success, mixed and all-failure, pair a success against a failure of the same task for the mixed group, pair a past success from memory for all-failure tasks, and fall back to single-sided diagnosis when none exists.",
       "source": {
@@ -182,6 +191,9 @@
     {
       "id": "rhsi-t4",
       "kind": "treatment",
+      "sections": [
+        "3. Localize the failure before proposing an edit"
+      ],
       "form": "prompt",
       "situation": "Root-Cause Attribution: four turns of continual search over an execution log raised attribution F1 from 0.349 to 0.498 and 0.478 to 0.620, search let lower-tier judges match higher-tier ones, and on short trajectories the extra turns did not help and sometimes hurt.",
       "source": {
@@ -241,6 +253,9 @@
     {
       "id": "rhsi-t5",
       "kind": "treatment",
+      "sections": [
+        "4. Bound what one edit is allowed to touch"
+      ],
       "form": "prompt",
       "situation": "The two bounds the cluster uses: ModularRSI restricts each modification to one of five functional modules and integrates only after all have evolved, while ScienceBuddy bounds by size, one scoped skill, instruction or context setting per edit, enforced by a schema check before evaluation.",
       "source": {
@@ -301,6 +316,9 @@
     {
       "id": "rhsi-t6",
       "kind": "treatment",
+      "sections": [
+        "5. Gate every edit, and roll back by default"
+      ],
       "form": "project",
       "situation": "ModularRSI's three gates in series after every function update, static program check then a separate diff-reviewing agent whose job is to reject task-specific heuristics then execution validation on two randomly sampled tasks, with any failure rolling the function back; plus Procedural Graphs accepting only on held-out performance and retaining rejected edits as negative signal.",
       "source": {
@@ -352,6 +370,9 @@
     {
       "id": "rhsi-t7",
       "kind": "treatment",
+      "sections": [
+        "6. Evolve on tasks the benchmark never sees"
+      ],
       "form": "prompt",
       "situation": "ModularRSI curated 2,000 executable evolution tasks disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis, which is what licenses its claim that the evolved harness transferred to unseen in-domain and out-of-domain tasks.",
       "source": {
@@ -413,6 +434,9 @@
     {
       "id": "rhsi-t8",
       "kind": "treatment",
+      "sections": [
+        "7. Make feedback cheap, and score tokens as well as accuracy"
+      ],
       "form": "prompt",
       "situation": "SoL-Pi's compaction gate, which computes at each subtask boundary the tokens compaction would save against the rewrite cost, from the current context size and the cache write-to-read price ratio, and compacts only when the saving wins.",
       "source": {
@@ -459,6 +483,9 @@
     {
       "id": "rhsi-t9",
       "kind": "treatment",
+      "sections": [
+        "8. When several agents evolve one shared artifact"
+      ],
       "form": "prompt",
       "situation": "Agora's 13 coding-agent workers on one shared Git repository for about 12 days, 1,703 contributions, the metric driven from 3.39 to 1.899 bits per byte with no central planner, credit assigned by an evidence score weighting downstream builds by other accounts, and a recorded convergence on one idea broken by a human intervention.",
       "source": {
@@ -519,6 +546,9 @@
     {
       "id": "rhsi-t10",
       "kind": "treatment",
+      "sections": [
+        "9. Certify the gain before you believe it"
+      ],
       "form": "prompt",
       "situation": "The Discovery Certification Protocol's three gates, and the narrowing this skill made on 2026-09-30 after reading the protocol in full: the third gate is optional and returned Inconclusive on both real-data audits, at 9 of 30 and 16 of 30 truthful continuations against 0 of 30 neutral, with 99 percent intervals straddling or undershooting the required lower bound of 0.30, while the first two gates passed. The task tests whether a reader gets the order and the expectation right, which is where a skill most easily oversells a protocol it admires.",
       "source": {
@@ -576,6 +606,7 @@
     {
       "id": "rhsi-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary version-control tooling. It carries this skill's exact vocabulary, localise, attribute, regression, rollback, gate, and is a bisection with no agent and no self-editing anywhere in it.",
       "source": {
@@ -602,6 +633,7 @@
     {
       "id": "rhsi-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary incident process for a human team. Root cause, attribution, failure, localise and rollback are all this skill's words, and there is no self-editing loop in sight.",
       "source": {

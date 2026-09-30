@@ -1,16 +1,19 @@
 {
   "skill": "self-improving-post-training-loops",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). sipt-t8 tests a boundary rather than a procedure: the correct answer is that this skill's mechanisms are not yet the right tool, which is the case a skill is most likely to get wrong in its own favour.",
+  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). sipt-t8 tests a boundary rather than a procedure: the correct answer is that this skill's mechanisms are not yet the right tool, which is the case a skill is most likely to get wrong in its own favour. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
   "tasks": [
     {
       "id": "sipt-t1",
       "kind": "treatment",
+      "sections": [
+        "Refresh the teacher every iteration, do not distill once and stop"
+      ],
       "form": "prompt",
       "situation": "RISE constructs a synthetic teacher from the model's own RLVR training trajectory, combines outcome-based reward with on-policy distillation from it in one loop, and refreshes the synthetic teacher every iteration as the student improves.",
       "source": {
@@ -71,6 +74,9 @@
     {
       "id": "sipt-t2",
       "kind": "treatment",
+      "sections": [
+        "Gate teacher trust before dense distillation, fall back when it fails"
+      ],
       "form": "prompt",
       "situation": "Verify Before You Distill's per-prompt teacher gating: estimate reliability from a small set of verifier-scored teacher probes, route to dense distillation when the check passes and verifier-grounded GRPO when it does not, which also raised teacher-node GPU utilisation from 9.8 to 78.9 percent in a 4B single-domain run.",
       "source": {
@@ -141,6 +147,9 @@
     {
       "id": "sipt-t3",
       "kind": "treatment",
+      "sections": [
+        "Gate teacher trust before dense distillation, fall back when it fails"
+      ],
       "form": "project",
       "situation": "The same gating mechanism, as the configuration a run would actually be launched with.",
       "source": {
@@ -192,6 +201,9 @@
     {
       "id": "sipt-t4",
       "kind": "treatment",
+      "sections": [
+        "Close the loop between evaluation, data selection, and the next mixture"
+      ],
       "form": "prompt",
       "situation": "NeoHorse-1's capability-guided allocation: evaluation feedback converted directly into the next training mixture, with routing signals used to structure supervised fine-tuning into a staged curriculum and to decide which student outputs a teacher supervises.",
       "source": {
@@ -252,6 +264,9 @@
     {
       "id": "sipt-t5",
       "kind": "treatment",
+      "sections": [
+        "Calibrate self-guidance by advantage sign, do not apply it uniformly"
+      ],
       "form": "prompt",
       "situation": "FlowBalance's calibration of a self-guidance score against the verifier-derived group advantage: retain the guidance on positive-advantage trajectories, reverse it on negative-advantage trajectories, and disable it entirely when the rollout group shows no outcome preference.",
       "source": {
@@ -312,6 +327,9 @@
     {
       "id": "sipt-t6",
       "kind": "treatment",
+      "sections": [
+        "Assign credit without a verifier through dynamic rubrics"
+      ],
       "form": "prompt",
       "situation": "DRACO's credit assignment without a verifier: rubrics generated dynamically during training so criteria track the policy's evolving capability, with each rubric's score redistributed over the steps responsible for it through a closed-form formula and no learned attribution module.",
       "source": {
@@ -372,6 +390,10 @@
     {
       "id": "sipt-t7",
       "kind": "treatment",
+      "sections": [
+        "Gate teacher trust before dense distillation, fall back when it fails",
+        "Assign credit without a verifier through dynamic rubrics"
+      ],
       "form": "prompt",
       "situation": "The general principle the cluster's gating and rubric findings share, stated in the skill as its own reading: before letting anything grade or teach itself, check whether that signal can be trusted, and build the fallback so it does not depend on trusting it.",
       "source": {
@@ -432,6 +454,7 @@
     {
       "id": "sipt-t8",
       "kind": "treatment",
+      "sections": [],
       "form": "prompt",
       "situation": "The skill's own boundary against harness-engineering: these mechanisms are a training-time complement to inference-time scaffold work, and the correct move when an agent underperforms is to exhaust harness improvements first.",
       "source": {
@@ -491,6 +514,11 @@
     {
       "id": "sipt-t9",
       "kind": "treatment",
+      "sections": [
+        "Refresh the teacher every iteration, do not distill once and stop",
+        "Gate teacher trust before dense distillation, fall back when it fails",
+        "Calibrate self-guidance by advantage sign, do not apply it uniformly"
+      ],
       "form": "prompt",
       "situation": "The debugging entry point the skill's description names: a self-improvement run that destabilises or collapses, read against the standard monitoring the skill preserves and the cluster's mechanisms for a self-referential signal.",
       "source": {
@@ -553,6 +581,7 @@
     {
       "id": "sipt-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary numerical utility code from inside this skill's own domain. Advantage, group, rollout and normalisation are all its vocabulary, and the task is arithmetic with no training decision in it.",
       "source": {
@@ -579,6 +608,7 @@
     {
       "id": "sipt-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary data engineering. Training corpus, mixture, data selection, validation and pipeline are all this skill's words, and the answer is idempotency and incremental processing with no training decision anywhere.",
       "source": {

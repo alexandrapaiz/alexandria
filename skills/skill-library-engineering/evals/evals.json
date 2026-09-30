@@ -1,16 +1,19 @@
 {
   "skill": "skill-library-engineering",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). This skill's own strongest finding is that a hand-written skill can go net negative, so its eval is the one with the most at stake: if any suite in the library should be believed over its author, it is this one.",
+  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). This skill's own strongest finding is that a hand-written skill can go net negative, so its eval is the one with the most at stake: if any suite in the library should be believed over its author, it is this one. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
   "tasks": [
     {
       "id": "sle-t1",
       "kind": "treatment",
+      "sections": [
+        "Write the skill from recorded runs, not from the task description"
+      ],
       "form": "prompt",
       "situation": "GraphSkillEvo's baseline table: under the Codex harness with GPT-5.4, an expert-written skill averaged 67.23 and an LLM-written-from-description skill 67.21, both below the 67.97 no-skill baseline, while trajectory-grounded skills averaged 8 to 10 points above it.",
       "source": {
@@ -71,6 +74,10 @@
     {
       "id": "sle-t2",
       "kind": "treatment",
+      "sections": [
+        "Most of the value is in the grounding, not in the search on top of it",
+        "Where the full text narrows what our claim rows say"
+      ],
       "form": "prompt",
       "situation": "COBRA-Skills' and GraphSkillEvo's own ablations: the bandit was worth 2.2 points and the population evolution 2.4, inside total gains of 13.1 to 26.9 over no-skill, and a Best-of-30 grounded baseline came within 2.5 points of the full system.",
       "source": {
@@ -131,6 +138,9 @@
     {
       "id": "sle-t3",
       "kind": "treatment",
+      "sections": [
+        "The description is the entire routing surface, and it is read alone"
+      ],
       "form": "project",
       "situation": "The Router Within: under progressive disclosure every skill's name and description is preloaded and the model picks from that menu with no body text visible, and Qwen3-32B in a live bash-agent harness on 177 executable tasks loaded the correct skill on 1.1 percent of them.",
       "source": {
@@ -187,6 +197,9 @@
     {
       "id": "sle-t4",
       "kind": "treatment",
+      "sections": [
+        "A wrong load costs more than a missed one"
+      ],
       "form": "prompt",
       "situation": "Reflect, Revise, Reuse's retrieval-threshold sweep: lowering the reuse threshold from 0.6 to 0.4 dropped success from 69.5 to 55.2 percent, while raising it to 0.8 dropped it only to 66.7.",
       "source": {
@@ -246,6 +259,10 @@
     {
       "id": "sle-t5",
       "kind": "treatment",
+      "sections": [
+        "When one request needs several skills, select a set",
+        "Where the full text narrows what our claim rows say"
+      ],
       "form": "prompt",
       "situation": "Beyond Top-k Skill Retrieval's central negative result: penalising raw similarity between candidate skills scored 0.534 recall against 0.705 for the pointwise baseline it was meant to improve, and only removing the query-aligned component of each representation first got set selection to 0.711.",
       "source": {
@@ -305,6 +322,9 @@
     {
       "id": "sle-t6",
       "kind": "treatment",
+      "sections": [
+        "Revise in rounds, keep the reader separate, stop at three"
+      ],
       "form": "prompt",
       "situation": "Reflect, Revise, Reuse's two largest ablations: removing in-run amendment cost 6.66 points and removing the reader's isolation cost 8.57, with three revision rounds worth 12.4 points and a fourth and fifth together worth 0.9.",
       "source": {
@@ -366,6 +386,9 @@
     {
       "id": "sle-t7",
       "kind": "treatment",
+      "sections": [
+        "Structure the file so one failure maps to one section"
+      ],
       "form": "project",
       "situation": "Reflect, Revise, Reuse's repair analysis: which failures the loop could fix depended on which file owned them, with plan errors repaired 16 of 23 by editing the plan file, grounding errors 6 of 12 via backup localization, and missing contingencies 1 of 4 via recovery rules.",
       "source": {
@@ -415,6 +438,9 @@
     {
       "id": "sle-t8",
       "kind": "treatment",
+      "sections": [
+        "Index on metadata, not on the body"
+      ],
       "form": "prompt",
       "situation": "The Router Within's comparison of a description menu against reading full skill bodies, where the menu held up on curated libraries and collapsed on procedural documents, set against Reflect, Revise, Reuse's metadata retrieval recovering 12 of 12 reuse cases against 1 of 12 for full-text matching.",
       "source": {
@@ -475,6 +501,9 @@
     {
       "id": "sle-t9",
       "kind": "treatment",
+      "sections": [
+        "Skills outlive the model they were written for"
+      ],
       "form": "prompt",
       "situation": "COBRA-Skills' and GraphSkillEvo's transfer results: 34 of 36 cross-model transfers improved on the receiving model's no-skill baseline, skills held their lead under two external harnesses, and a skill optimised on a small model beat a large model's no-skill baseline on all three benchmarks tested.",
       "source": {
@@ -534,6 +563,7 @@
     {
       "id": "sle-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary file-parsing engineering, over skill files. It sits inside this skill's exact subject matter and needs none of its content, which makes it the sharper of the two controls.",
       "source": {
@@ -560,6 +590,7 @@
     {
       "id": "sle-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary technical writing for human readers. It shares this skill's whole vocabulary, write clearly, keep it short, make examples concrete, and none of its evidence applies, because there is no agent, no router and no baseline to beat.",
       "source": {

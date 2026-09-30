@@ -35,6 +35,20 @@ result.
   reproduces and the claim ids it exercises, per ADR-35. The task is the
   situation the paper studied, restated as work a builder would actually be
   handed.
+- **Task coverage.** Added 2026-09-30. Every task also carries `sections`, the
+  list of `## ` headings of its skill that the task actually exercises, copied
+  verbatim so a string comparison resolves it. Controls carry an empty list,
+  and so does a treatment task that tests a boundary rather than a section. The
+  field exists because `source.claims` cannot do this job: it was wrong in two
+  of the first eight suites, in both cases naming claims the skill does cite
+  and a task that tested none of that section, which a claim-set comparison
+  passes (`INC-2026-09-30-eval-task-claims-unchecked`). Two checks the harness
+  should run off it, and the second is the one that catches the defect:
+  every string in `sections` is a heading of that SKILL.md, and every heading
+  of that SKILL.md other than the Apply checklist and the caveats appears in at
+  least one task's `sections`. Both are decidable with no model. A section with
+  no task is what a per-section *Validation:* tag has to say out loud (ADR-38),
+  so it is a finding rather than an error.
 
 ## Two kinds of task
 

@@ -1,16 +1,19 @@
 {
   "skill": "harness-engineering",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Nine treatment tasks and two controls, each reproducing a situation one of the five cited papers actually studied (ADR-35). Contract: skills/_validation/evals/README.md.",
+  "note": "Nine treatment tasks and two controls, each reproducing a situation one of the five cited papers actually studied (ADR-35). Contract: skills/_validation/evals/README.md. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
   "tasks": [
     {
       "id": "he-t1",
       "kind": "treatment",
+      "sections": [
+        "Order of operations: harness before weights"
+      ],
       "form": "prompt",
       "situation": "A harness was evolved around a weaker model on seven verifiable enterprise tasks, a stronger expert does even better under that same harness, and the team wants to close the gap by fine-tuning the weaker model on the expert's trajectories.",
       "source": {
@@ -72,6 +75,9 @@
     {
       "id": "he-t2",
       "kind": "treatment",
+      "sections": [
+        "Never break model-harness fit"
+      ],
       "form": "prompt",
       "situation": "The paper's first result: evolving the harness alone, same weaker model, realised substantial gains on the seven-task suite before any training was done.",
       "source": {
@@ -130,6 +136,9 @@
     {
       "id": "he-t3",
       "kind": "treatment",
+      "sections": [
+        "Order of operations: harness before weights"
+      ],
       "form": "prompt",
       "situation": "Feedback-Enriched Environments: long-horizon RL on SciWorld and BFCL-V3 under severe reward sparsity, where the fix was environment-side rather than agent-side, and the ordering was action guidance early, observation enrichment later.",
       "source": {
@@ -188,6 +197,9 @@
     {
       "id": "he-t4",
       "kind": "treatment",
+      "sections": [
+        "Order of operations: harness before weights"
+      ],
       "form": "project",
       "situation": "The paper's feedback-design axis, reduced to the harness surface where it is decided: a tool that answers failures with a bare verdict, which the skill calls the worst feedback a harness can give.",
       "source": {
@@ -217,6 +229,9 @@
     {
       "id": "he-t5",
       "kind": "treatment",
+      "sections": [
+        "Debugging a multi-agent harness: intervene one agent at a time"
+      ],
       "form": "prompt",
       "situation": "AgentGrad's target-prompt identification problem: a multi-agent system fails and prior methods pick a prompt to blame without verifying that it is the responsible one.",
       "source": {
@@ -275,6 +290,9 @@
     {
       "id": "he-t6",
       "kind": "treatment",
+      "sections": [
+        "Debugging a multi-agent harness: intervene one agent at a time"
+      ],
       "form": "project",
       "situation": "AgentGrad's semantic gradient abstraction: many textual corrections accumulated from failures, which prior methods concatenate and which the paper clusters by semantic similarity and abstracts into generalized corrections.",
       "source": {
@@ -322,6 +340,9 @@
     {
       "id": "he-t7",
       "kind": "treatment",
+      "sections": [
+        "Spending test-time compute: sample in parallel, then select"
+      ],
       "form": "prompt",
       "situation": "RevPropBench's cost analysis: nine revision methods including sequential reflection and parallel sampling variants, compared under a fixed LLM-call budget on conversationally generated JSON artifacts.",
       "source": {
@@ -366,6 +387,9 @@
     {
       "id": "he-t8",
       "kind": "treatment",
+      "sections": [
+        "Spending test-time compute: sample in parallel, then select"
+      ],
       "form": "prompt",
       "situation": "The boundary the source paper's method section fixes: medoid selection needs at least three samples and an embedding model, so the two-sample case is a different answer.",
       "source": {
@@ -415,6 +439,9 @@
     {
       "id": "he-t9",
       "kind": "treatment",
+      "sections": [
+        "Order of operations: harness before weights"
+      ],
       "form": "prompt",
       "situation": "Show-Harness: a compact semantic action interface let unmodified frontier VLMs control robots zero-shot, outperforming trained task-specific baselines, which is the interface-over-capacity result.",
       "source": {
@@ -472,6 +499,7 @@
     {
       "id": "he-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary client-library engineering. It borrows this skill's vocabulary (tool, failure, retry, feedback, flaky) and needs none of its content.",
       "source": {
@@ -498,6 +526,7 @@
     {
       "id": "he-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary CI engineering. The hardest control in this suite: it contains failure, feedback, flaky, parallel and a loop, every one of which this skill uses, and the correct answer is standard test-suite hygiene with no model in it.",
       "source": {

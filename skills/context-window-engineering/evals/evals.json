@@ -1,16 +1,19 @@
 {
   "skill": "context-window-engineering",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Eight treatment tasks and two controls from the seven cited papers (ADR-35). One paper, arxiv.org/abs/2609.07103, publishes no full HTML and was read at the abstract only; no task rests on it alone. Task cwe-t8 tests the skill's own narrowing section, which is where a skill most often launders a paper.",
+  "note": "Eight treatment tasks and two controls from the seven cited papers (ADR-35). One paper, arxiv.org/abs/2609.07103, publishes no full HTML and was read at the abstract only; no task rests on it alone. Task cwe-t8 tests the skill's own narrowing section, which is where a skill most often launders a paper. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
   "tasks": [
     {
       "id": "cwe-t1",
       "kind": "treatment",
+      "sections": [
+        "Protect the input. Sample the rest."
+      ],
       "form": "prompt",
       "situation": "Random Attention's controlled ablation: give every training-free cache evictor the same rule of keeping the prompt, and most of the difference between methods disappears, with the gain to each method ordered by how much of the question its score had been losing.",
       "source": {
@@ -70,6 +73,9 @@
     {
       "id": "cwe-t2",
       "kind": "treatment",
+      "sections": [
+        "Protect the input. Sample the rest."
+      ],
       "form": "project",
       "situation": "The same ablation, at the surface where it is implemented: a compaction step that ranks everything by a score and takes until full, which is the design whose failure the paper isolates.",
       "source": {
@@ -101,6 +107,9 @@
     {
       "id": "cwe-t3",
       "kind": "treatment",
+      "sections": [
+        "The exception is the one that describes most agents"
+      ],
       "form": "prompt",
       "situation": "The named boundary of the signal-free result: Random Attention never reproduces a passcode announced many compression rounds before the question, while redundancy-aware scored evictors recover it in a minority of trials.",
       "source": {
@@ -160,6 +169,9 @@
     {
       "id": "cwe-t4",
       "kind": "treatment",
+      "sections": [
+        "Read in parallel, reason in sequence"
+      ],
       "form": "prompt",
       "situation": "PARSER's controlled perturbations over 512 questions each: varying where the evidence sits, whether it appears in logical dependency order or reversed, and how far apart two pieces sit. Sequential memory swings on all three; parallel reading stays nearly flat.",
       "source": {
@@ -220,6 +232,9 @@
     {
       "id": "cwe-t5",
       "kind": "treatment",
+      "sections": [
+        "Read in parallel, reason in sequence"
+      ],
       "form": "project",
       "situation": "PARSER's four load-bearing design details from the full text: smaller chunks beat larger within the tested range, subagents can be small and frozen with 4B already near saturation, only the lead is trained, and the known failure is an unverifiable subagent finding.",
       "source": {
@@ -270,6 +285,9 @@
     {
       "id": "cwe-t6",
       "kind": "treatment",
+      "sections": [
+        "Give history to the planner, not to the executor"
+      ],
       "form": "prompt",
       "situation": "Memory as Plans' structural result, generalised: store each completed segment as a record, use it at planning time to produce a compact next-segment plan, and hand the executor only that plan, so the executor's context length stays fixed and its latency stays approximately constant as history grows.",
       "source": {
@@ -330,6 +348,9 @@
     {
       "id": "cwe-t7",
       "kind": "treatment",
+      "sections": [
+        "Make the steady-state cost cheaper than the answer cost"
+      ],
       "form": "prompt",
       "situation": "ShallowStream's asymmetry argument: material arrives continuously and questions arrive occasionally, so per-item ingestion cost is the first-order system cost, and most designs get it backwards by running the full model over everything on arrival.",
       "source": {
@@ -389,6 +410,9 @@
     {
       "id": "cwe-t8",
       "kind": "treatment",
+      "sections": [
+        "Where the full text narrows our claim rows"
+      ],
       "form": "prompt",
       "situation": "The source paper's own limitations section, which says the wins establish that the signal-free policy is competitive and not that scores carry no information, restricts the claim to decode-phase eviction with short prompts and long traces against training-free evictors, and reports code reasoning as the systematic exception on the two larger models.",
       "source": {
@@ -457,6 +481,7 @@
     {
       "id": "cwe-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary data-structure engineering. It is the densest control in the library for this skill's vocabulary, cache, eviction, budget, capacity, protected, and none of the skill's evidence bears on it.",
       "source": {
@@ -483,6 +508,7 @@
     {
       "id": "cwe-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary infrastructure cost work. It carries embeddings, index, retrieval, budget and memory, and the answer is storage and index engineering with no agent context window in it.",
       "source": {

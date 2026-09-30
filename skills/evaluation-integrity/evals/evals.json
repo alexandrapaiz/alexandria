@@ -6,11 +6,14 @@
   "adr": "ADR-36",
   "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
   "judge": "a model other than the subject; rubric tasks only",
-  "note": "Ten treatment tasks and two controls from the ten cited papers (ADR-35). Three carry machine checks, including one where the paper's own procedure is directly executable: construct the mutants a verdict gate cannot see. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found that the skill's partial-monitoring section had its claims attached to ei-t8 and no rubric criterion testing it, so ei-t11 was added and the suite is version 2. Eleven treatment tasks and two controls.",
+  "note": "Ten treatment tasks and two controls from the ten cited papers (ADR-35). Three carry machine checks, including one where the paper's own procedure is directly executable: construct the mutants a verdict gate cannot see. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found that the skill's partial-monitoring section had its claims attached to ei-t8 and no rubric criterion testing it, so ei-t11 was added and the suite is version 2. Eleven treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
   "tasks": [
     {
       "id": "ei-t1",
       "kind": "treatment",
+      "sections": [
+        "Stress-test a generated rubric before anything trains or gates on it"
+      ],
       "form": "prompt",
       "situation": "ImpossibleRubrics: eleven rubric generators, all exploitable, measured by handing each rubric to an attacker model optimising against it and checking the attacker's answer against an independent machine-checkable oracle.",
       "source": {
@@ -81,6 +84,9 @@
     {
       "id": "ei-t2",
       "kind": "treatment",
+      "sections": [
+        "A pass-or-fail verdict is blind to the answers that pass for the wrong reason"
+      ],
       "form": "project",
       "situation": "Beyond Solver Verdicts' training-set construction, which the paper notes works as an audit even if nothing is trained: mutate known-correct artifacts, keep only the mutants the checker still accepts but which are provably not equivalent, and those are the answers the verdict gate cannot see.",
       "source": {
@@ -131,6 +137,9 @@
     {
       "id": "ei-t3",
       "kind": "treatment",
+      "sections": [
+        "A pass-or-fail verdict is blind to the answers that pass for the wrong reason"
+      ],
       "form": "prompt",
       "situation": "Beyond Solver Verdicts' provable result: any scoring function depending only on a binary verdict scores AUROC 0.5 on a verdict-matched paired set, and the repair is a continuous score from a model reading the candidate against the original intent.",
       "source": {
@@ -200,6 +209,9 @@
     {
       "id": "ei-t4",
       "kind": "treatment",
+      "sections": [
+        "Treat benchmark items as defective until someone has gone looking"
+      ],
       "form": "project",
       "situation": "SWE-Bench Pro Verified's re-audit of a 731-instance repository-level coding benchmark: 119 candidate defect reports, 102 instances refined, 17 needing no change, with overly narrow tests dominating at 75, misleading descriptions at 22, overly broad tests at 3 and 2 corrupted.",
       "source": {
@@ -249,6 +261,9 @@
     {
       "id": "ei-t5",
       "kind": "treatment",
+      "sections": [
+        "Close the shortcut channels in the environment, not in the instructions"
+      ],
       "form": "prompt",
       "situation": "SWE-Bench Pro Verified's environment work: four channels carry the answer in a code-agent evaluation, and closing all four eliminated every observed reward-hacking attempt at zero successful hacks while normal agent function continued.",
       "source": {
@@ -318,6 +333,9 @@
     {
       "id": "ei-t6",
       "kind": "treatment",
+      "sections": [
+        "A judge trained on judgments loses the variance that made it useful"
+      ],
       "form": "prompt",
       "situation": "When AI Reviews Train AI Reviewers: mixing model-generated reviews into the next reviewer's training data compresses the rating distribution and reduces semantic diversity within and across papers, which the authors name scientific-judgment collapse.",
       "source": {
@@ -376,6 +394,9 @@
     {
       "id": "ei-t7",
       "kind": "treatment",
+      "sections": [
+        "Require unanimity across independent judgments when a false accept is expensive"
+      ],
       "form": "prompt",
       "situation": "An Open Recipe for IMO Gold's accept rule during competition search: unanimity across 16 independent judgments, 8 from the reinforcement learning checkpoint and 8 from the supervised one, with unparsable judgments discarded rather than counted, and the panel calibrated against an independent post-hoc model jury.",
       "source": {
@@ -443,6 +464,9 @@
     {
       "id": "ei-t8",
       "kind": "treatment",
+      "sections": [
+        "Evaluate under pressure, and over more than one turn"
+      ],
       "form": "prompt",
       "situation": "PACT's finding that ordinary user pressure raised rule-violation rates by an average of 65 percent across 22 models, alongside Emergence World's multi-day stress injections where recognition of an attack did not imply restraint or recovery and alignment was not compositional.",
       "source": {
@@ -514,6 +538,9 @@
     {
       "id": "ei-t9",
       "kind": "treatment",
+      "sections": [
+        "Auditing a result you did not produce"
+      ],
       "form": "prompt",
       "situation": "The Discovery Certification Protocol's audit sizing, where the episode count follows from the bound the auditor wants to state: a 5 percent bound at 1 percent one-sided error needs 90 zero-hit episodes by the exact Clopper-Pearson limit, and 96 were registered.",
       "source": {
@@ -559,6 +586,9 @@
     {
       "id": "ei-t10",
       "kind": "treatment",
+      "sections": [
+        "A gain inside the noise band is not a gain"
+      ],
       "form": "prompt",
       "situation": "RRSI's three non-compensatory accept criteria for a candidate change: leakage screening on the diff, a noise-adjusted floor against the best score so far, and a cost-to-gain ceiling.",
       "source": {
@@ -618,6 +648,9 @@
     {
       "id": "ei-t11",
       "kind": "treatment",
+      "sections": [
+        "Partial monitoring is an intervention, not an observation"
+      ],
       "form": "prompt",
       "situation": "SchemeArena's result that action-only monitoring increased scheming in closed-source models, so partial oversight acts as an optimization constraint rather than a deterrent, alongside the suite properties that make its nulls interpretable: 400 factorized scenarios varying one factor at a time, and a realism score of 3.21 on a 4-point scale with 0.97 internal consistency from human and model judges together.",
       "source": {
@@ -677,6 +710,7 @@
     {
       "id": "ei-c1",
       "kind": "control",
+      "sections": [],
       "form": "project",
       "situation": "Ordinary numerical code. It is dense with this skill's vocabulary, confidence, bound, interval, significance, and there is no generated instrument anywhere in it.",
       "source": {
@@ -703,6 +737,7 @@
     {
       "id": "ei-c2",
       "kind": "control",
+      "sections": [],
       "form": "prompt",
       "situation": "Ordinary product experiment design. It is this skill's second hard negative in triggers.json, kept as a control so the same case measures both instruments: effect size, stopping rules and a team gaming its own measurement, with no model anywhere in the instrument.",
       "source": {
