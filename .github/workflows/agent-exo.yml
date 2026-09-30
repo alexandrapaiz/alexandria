@@ -24,11 +24,37 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       BOARD_API_URL: ${{ secrets.BOARD_API_URL }}
       BOARD_RUNTIME_TOKEN: ${{ secrets.BOARD_RUNTIME_TOKEN }}
+      # Traces: this run lands in Langfuse as one trace, a span per tool call
+      # (runtime/langfuse/ in the HQ repo). The auth header is set by the step below.
+      CLAUDE_CODE_ENABLE_TELEMETRY: "1"
+      CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: "1"
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: none
+      OTEL_LOGS_EXPORTER: none
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.LANGFUSE_HOST }}/api/public/otel
+      OTEL_LOG_USER_PROMPTS: "1"
+      OTEL_LOG_ASSISTANT_RESPONSES: "1"
+      OTEL_LOG_TOOL_DETAILS: "1"
+      OTEL_RESOURCE_ATTRIBUTES: service.name=alexandria-exo,langfuse.environment=alexandria,langfuse.user.id=exo,langfuse.session.id=${{ github.run_id }}
       PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Trace this run to Langfuse
+        env:
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          if [ -z "$LANGFUSE_PUBLIC_KEY" ] || [ -z "$LANGFUSE_SECRET_KEY" ]; then
+            echo "No Langfuse keys on this repo; this run is not traced."
+            echo "OTEL_TRACES_EXPORTER=none" >> "$GITHUB_ENV"; exit 0
+          fi
+          auth=$(printf '%s:%s' "$LANGFUSE_PUBLIC_KEY" "$LANGFUSE_SECRET_KEY" | base64 -w0)
+          echo "::add-mask::$auth"
+          echo "OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic $auth" >> "$GITHUB_ENV"
+          echo "Traced: seat exo of alexandria, run ${{ github.run_id }}."
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -68,21 +94,34 @@ jobs:
         run: |
           git fetch origin --quiet 2>/dev/null || true
           branch=$(git rev-parse --abbrev-ref HEAD)
+          base="${GITHUB_REF_NAME:-main}"
           dirty=$(git status --porcelain)
-          pushed=$(git branch -r --contains HEAD 2>/dev/null | tr -d ' ')
+          commits=0
+          if git rev-parse "origin/$base" >/dev/null 2>&1; then
+            commits=$(git rev-list --count "origin/$base..HEAD" 2>/dev/null || echo 0)
+          fi
+          # Remote branches containing HEAD, EXCLUDING the base branch itself. A run
+          # that never branched leaves HEAD on origin/$base, which used to satisfy
+          # this check trivially: epitome run 35956231272 (2026-09-24) died at turn
+          # one, produced nothing, and the tripwire still reported success.
+          pushed=$(git branch -r --contains HEAD 2>/dev/null | tr -d ' ' | grep -v "^origin/$base$" || true)
           pr=$(gh pr list --head "$branch" --state all --json number --jq '.[0].number' 2>/dev/null || true)
           {
             echo "### Did this run ship anything?"
             echo ""
-            echo "- branch: \`$branch\`"
-            echo "- pushed to a remote branch: ${pushed:-NO}"
+            echo "- branch: \`$branch\` ($commits commit(s) ahead of $base)"
+            echo "- pushed to a seat branch: ${pushed:-NO}"
             echo "- pull request: ${pr:-none}"
           } >> "$GITHUB_STEP_SUMMARY"
           if [ -n "$dirty" ]; then
             echo "::warning::Uncommitted changes were left in the sandbox and are lost at teardown."
             printf '%s\n' "$dirty" | head -20
           fi
-          if [ -z "$pushed" ]; then
+          if [ "$commits" = "0" ] && [ -z "$pr" ] && [ -z "$dirty" ]; then
+            echo "::error::This run produced nothing at all: no commit, no seat branch, no pull request. A green model step is not evidence of work; read the seat run step's own outcome."
+            exit 1
+          fi
+          if [ "$commits" != "0" ] && [ -z "$pushed" ]; then
             echo "::error::This run made commits that were never pushed, so the work dies with the sandbox. See the 'Ship first, then work' rule in the pm standard (§8) and in this seat's charter."
             exit 1
           fi
@@ -98,18 +137,33 @@ jobs:
       # workflows at once (INC-2026-09-26-run-report-dash-echo). The webhook
       # guard stays inside the script for the reason the previous version's
       # comment gave: a step cannot read its own `env:` block from `if:`.
-      - name: Post run report
-        if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: python3 tools/run_report.py --workflow "${{ github.workflow }}" --status "${{ job.status }}"
-
-      # The board (docs/board.md), which pm.md §14 makes the state of the work.
-      # Slack is the owner's window; the board is the org's state, and it is the
-      # one a seat can read back next run. This step cannot fail the job:
-      # tools/board.py prints ::warning:: and exits 0 when the board refuses,
-      # because a red job for an undelivered report is the lie
-      # INC-2026-09-26-run-report-dash-echo told six times.
       - name: Post run report to the board
         if: always()
         run: python3 tools/board.py report --status ${{ job.status }}
+      - name: Report this run to the board
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          [ -n "$BOARD_API_URL" ] && [ -n "$BOARD_RUNTIME_TOKEN" ] || { echo "no board on this repo"; exit 0; }
+          branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo main)
+          pr=$(gh pr list --state all --author "@me" --limit 1 --json url,body,headRefName --jq '.[0]' 2>/dev/null || echo "")
+          [ -n "$pr" ] || pr=$(gh pr list --head "$branch" --state all --json url,body --jq '.[0]' 2>/dev/null || echo "")
+          python3 - "$pr" <<'PY'
+          import json, os, sys, urllib.request
+          pr = json.loads(sys.argv[1]) if sys.argv[1] else {}
+          report = (pr.get("body") or "").split("\n🤖")[0].strip()[:2000]
+          run_url = f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+          status = os.environ.get("JOB_STATUS", "unknown")
+          msg = {"company": "alexandria", "seat": "exo", "trigger": os.environ.get("GITHUB_EVENT_NAME", ""),
+                 "run_url": run_url, "pr_url": pr.get("url") or None, "exit": 0 if status == "success" else 1,
+                 "report": report or ("The run ended with status " + status + " and opened no pull request.")}
+          req = urllib.request.Request(os.environ["BOARD_API_URL"].rstrip("/") + "/api/runs", data=json.dumps(msg).encode(), method="POST",
+                                       headers={"Authorization": "Bearer " + os.environ["BOARD_RUNTIME_TOKEN"], "Content-Type": "application/json"})
+          try:
+              with urllib.request.urlopen(req, timeout=20) as r:
+                  print("board run report:", r.status)
+          except Exception as e:
+              print("board run report failed:", e)
+          PY
