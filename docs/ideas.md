@@ -7279,3 +7279,18 @@ graphs.
 - Cost: two `grep`-and-count links in a chain that already exists, plus one
   question asked while writing the others.
 - Status: proposed
+
+### 2026-09-29 — Consumer reports become a lane on every skill (chair, from the first report)
+
+- Trigger: the Ursa chair session filed the first usage review of a skill
+  (skills/harness-engineering/reviews/2026-09-29-ursa-chair.md): 1 design
+  change, 1 adopted procedure, 2 confirmations from 135 lines.
+- Proposal, for the skill seat and the frontend: (1) `skills/<slug>/reviews/`
+  is a standing lane with the frontmatter that file uses (consumer, task,
+  sections exercised, decisions changed, verdict); the eval harness (ADR-36)
+  counts reports beside measured deltas, and a skill with several reports and
+  zero decision changes is a retirement candidate. (2) Every skill gains a
+  per-section validation status and a builder's checklist at the end, and its
+  caveats name a default floor where one exists. (3) The skill page shows
+  reports and the checklist. Status: accepted by the chair on the owner's
+  behalf; the skill seat applies to harness-engineering first.
