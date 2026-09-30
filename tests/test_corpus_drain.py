@@ -640,3 +640,142 @@ def test_a_job_with_nowhere_left_to_go_is_still_a_failure(monkeypatch):
     assert problems, "a retry that does not fit either has to fail the gate"
     assert budget.cron_degradations()[0].endswith(
         "does NOT fit either, so the run cannot write a claim at all.")
+
+
+# ---------------- distill on Kimi (2026-09-30, owner's directive) ----------------
+
+def test_the_reading_queue_and_the_threads_are_ordered_ahead_of_the_intake():
+    """The owner's order of 2026-09-29, read out of the SQL that implements it.
+
+    The reading queue is `first` in the merge, so it cannot be outranked. What
+    this checks is the half that was missing: inside the intake, a standing
+    thread sorts ahead of `deep_read`, which sorts ahead of recency. Triage had
+    honoured the threads since 2026-09-26 and distill had not, which is a
+    priority with a hole in it — a thread promoted in the morning could wait
+    weeks behind the day's intake in the reading stage.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    order = source[source.index("order by case when title ilike any(%s)"):]
+    order = order[:order.index("limit %s")]
+    assert order.index("title ilike any") < order.index("deep_read"), (
+        "a standing thread must sort ahead of triage's deep_read; the owner's "
+        "instruction about a subject outranks triage's opinion about a paper")
+    assert order.index("deep_read") < order.index("published_at"), (
+        "deep_read must still break the tie inside a thread")
+
+
+def test_both_jobs_read_the_same_thread_list():
+    """One list, or the threads triage promotes are not the threads distill reads.
+
+    It was a constant in pipeline/triage.py until 2026-09-30. Two copies of a
+    list like this drift in silence: nothing prints a disagreement, and the
+    symptom is a thread that looks prioritised at one stage and is not at the
+    next.
+    """
+    import priority
+    import triage
+    assert triage.PRIORITY_TERMS is priority.PRIORITY_TERMS
+    assert triage.PRIORITY_PATTERNS == priority.PRIORITY_PATTERNS
+    for job in ("pipeline/triage.py", "pipeline/distill.py"):
+        source = (ROOT / job).read_text()
+        assert '.add_local_file("pipeline/priority.py"' in source, (
+            f"{job} uses the shared list and does not carry it into its image, "
+            "so the deployed job will fail at import")
+
+
+def test_every_ceiling_distill_can_stop_on_names_itself():
+    """Three ceilings, three different fixes, so three different messages.
+
+    Money, the account's daily token allowance, and the paper count each stop
+    the run, and they want different responses: raise the cap, raise the
+    Moonshot tier, raise MAX_PAPERS_PER_RUN. A single "stopped" line would hide
+    which, and the wrong fix for a token-allowance stop is more money.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    body = source[source.index("def distill("):]
+    assert 'stopped = f"the ${cap_usd:.2f} spend cap"' in body
+    assert 'stopped = f"the {TOKENS_PER_RUN:,}-token daily share"' in body
+    assert 'print(f"stopped on: {stopped}")' in body
+
+
+def test_the_three_ceilings_are_checked_before_the_call_not_after():
+    """A drain loop that checks afterwards always overshoots by one call.
+
+    On a 262,144-token model one call is not a rounding error: a single paper
+    is about 40,000 tokens and $0.04. `llm.Cap.allows()` exists for this and
+    the token check has to sit beside it.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    body = source[source.index("for pid, title, abstract, decision, source in papers:"):]
+    first_call = body.index("out, answered_by = extract_claims(")
+    assert body.index("if not cap.allows():") < first_call
+    assert body.index("if drawn >= TOKENS_PER_RUN:") < first_call
+
+
+def test_the_daily_token_allowance_is_a_guard_and_not_a_comment():
+    """The ceiling nobody was watching until a request got big.
+
+    Busting a per-request limit is a 413 on one call. Busting the account's
+    daily allowance is every Kimi call in the org failing for the rest of the
+    UTC day, press included, so it is the more dangerous of the two and it had
+    no check at all until distill started sending whole papers.
+    """
+    assert budget.check_kimi_tpd() == [], budget.check_kimi_tpd()
+    total, lines = budget.kimi_daily_draw()
+    allowance = budget.MODELS[budget.PRIMARY_MODEL]["tpd"]
+    assert total <= allowance * (1 - budget.MARGIN), (
+        f"{total:,} tokens a day against a {allowance:,} allowance")
+    for label in budget.cron_model_lists():
+        assert label in budget.KIMI_DAILY_DRAW, (
+            f"{label} calls Kimi on a schedule and draws from the account's "
+            "day, and nothing counts it")
+
+
+def test_distills_cap_buys_more_than_one_paper_at_the_worst_case_price():
+    """A cap smaller than one call is a job that never runs.
+
+    Triage has the same test and distill needs it more: one paper at the
+    ceiling is $0.10, which is sixteen times a triage batch, so the margin
+    between a working cap and a useless one is much thinner here.
+    """
+    import distill as job
+    ceiling = budget.cost_usd(
+        int(job.FULLTEXT_CHARS / budget.FULLTEXT_CHARS_PER_TOKEN) + 990,
+        job.MAX_COMPLETION_TOKENS, job.MODELS[0])
+    assert ceiling > 0
+    assert job.CAP_USD / ceiling >= 5, (
+        f"${job.CAP_USD:.2f} buys {job.CAP_USD / ceiling:.1f} papers at the "
+        f"worst-case price of ${ceiling:.4f}. A cap that buys almost nothing "
+        "is a job that reports success after one paper.")
+
+
+def test_the_density_constant_was_measured_at_the_window_the_job_sends():
+    """A density is only valid for the window it was measured at.
+
+    The same fourteen papers run 3.35 chars/token over their first 12,000
+    characters and 2.53 over their whole bodies, because a paper opens with a
+    title block and an abstract and only later reaches its equations. Widening
+    FULLTEXT_CHARS without re-measuring would have under-sized every request by
+    about a third.
+    """
+    import distill as job
+    receipt = json.loads((ROOT / "docs" / "evals"
+                          / "2026-09-30-fulltext-token-density.json").read_text())
+    assert receipt["window_chars"] == job.FULLTEXT_CHARS
+    assert receipt["model"] == job.MODELS[0]
+    assert budget.FULLTEXT_CHARS_PER_TOKEN <= receipt["worst_chars_per_token"]
+
+
+def test_the_token_counter_survives_a_paper_that_prints_a_special_token():
+    """The crash that a small window hid for the life of the guard.
+
+    tiktoken raises by default on text containing `<|endoftext|>`, and a
+    cleaned arXiv paper contains it whenever it quotes a prompt template or
+    discusses tokenizers. At 12,000 characters the guard never reached one; the
+    first measurement at 250,000 hit it on the first paper. A token counter
+    that throws is a guard that fails closed on exactly the papers the corpus
+    most wants to read.
+    """
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
+    assert budget.count_tokens("before <|endoftext|> after") > 0
+    assert budget.count_tokens("<|im_start|><|endofprompt|>") > 0

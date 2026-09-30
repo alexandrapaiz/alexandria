@@ -6271,3 +6271,63 @@ smoke run stands behind it; it does not ask whether main is green right
 now. That is one command, `gh run list --branch=main --workflow=checks.yml
 --limit 3`, and this seat proposes it be added to §0 in the ledger rather
 than editing its own charter.
+
+## INC-2026-09-30-triage-runtime-change-with-no-rehearsal — the priority list and the triage prompt changed on main, by direct push, with no pull request and no rehearsal receipt (2026-09-30, engineer seat)
+
+**Found by:** the daily machinery diff, which is step 0 of the engineer
+charter's "check the register before you ship" and exists for exactly
+this. One command:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' main -- .github/ pipeline/
+```
+
+**What it found.** `ea61cbc`, 2026-09-29 20:09 -0600, owner-authored,
+pushed straight to main: nine lines added to `pipeline/triage.py`
+(fourteen new terms in `PRIORITY_TERMS`) and twenty-eight to
+`prompts/triage.md`. `gh api repos/:owner/:repo/commits/ea61cbc/pulls`
+returns nothing, so no pull request explains it, and there is no
+rehearsal receipt for it anywhere this seat can read.
+
+**Why it counts as a runtime change.** Both files are baked into the
+triage image at `modal deploy`. `PRIORITY_TERMS` decides which papers
+reach the model first and `prompts/triage.md` decides how they are
+judged; the prompt's sha is written onto every `triage_log` row, so the
+change is observable in the database the moment it deploys and invisible
+until then. `docs/agents/runtime-changes.md` names a prompt change large
+enough to move the budget arithmetic as one of the four triggers for
+re-running the three gates, and this one moved `prompts/triage.md` from
+1,133 tokens to 1,498, which is a third of the way to the next cap
+revision.
+
+**The repeat this is.** The research brief of 2026-09-30 records the
+same class from the other end: `prompts/distill.md` was "measurably not
+running" and `prompts/triage.md` was current, and the only way anyone
+could tell was by inferring it from the shape of the output.
+`INC-2026-09-26-interpret-stale-third-sighting` is the same shape, and
+`INC-2026-09-28-repair-written-never-deployed` is the general form:
+merged is not deployed. What is new here is that the gap opened by a
+direct push rather than by a merge, which means the pull-request gate
+that normally carries the deploy chain never ran at all.
+
+**No blame in it.** The change is correct, it is the owner's own
+directive, and the four threads it adds are the point of tonight's work.
+The defect is that nothing between the commit and the running job says
+whether the running job has it.
+
+**What this run did about it.** Not a fix, because the fix is a deploy
+and this seat cannot run one. But the engineer PR of 2026-09-30 changes
+`pipeline/triage.py` anyway (the priority terms move into
+`pipeline/priority.py`, shared with distill), so triage has to be
+redeployed for that PR regardless, and `ea61cbc` rides along. The deploy
+chain in that PR names triage explicitly for this reason. If that PR is
+not merged, `ea61cbc` still needs its own `modal deploy
+pipeline/triage.py` behind the three gates.
+
+**What would actually close it.** A deployed-sha check: one query that
+reads the newest `triage_log.prompt_sha` and compares it against
+`sha256(prompts/triage.md)[:12]` on main, run daily, failing loudly when
+they disagree. The org has now inferred this state by hand four times.
+`docs/research/briefs/2026-09-30.md` does the inference again, in a
+table, for three prompts at once, which is the strongest evidence yet
+that it should be a command. Filed as a ledger entry the same day.
