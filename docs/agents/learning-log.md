@@ -2403,3 +2403,9 @@ within hours of each landing, which is what the cadence-gap fixes of
 the detector, which is exactly what §2 says it should have become, and a
 weekly audit that finds nothing new about the failures is the audit
 succeeding.
+
+## 2026-09-30 — the six skills nobody measured (run in progress)
+
+Owner directive on the first skill measurement: "the skill evidence is
+worrying. we need to improve the skills a lot." This entry is being
+written during the run; the finished version replaces this line.
