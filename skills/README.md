@@ -22,8 +22,8 @@ Two instruments, and they measure different things. Both have to pass.
   under ADR-36: tasks the skill is meant to change, run with and without it
   loaded on the same subject model, plus control tasks it must not change. The
   contract is `_validation/evals/README.md`. The harness that runs them is the
-  engineer's build, so the task files are here and no measured delta is yet.
-  A skill can fire perfectly and teach nothing.
+  engineer's build, so the task files are here and the measured deltas are not
+  yet. A skill can fire perfectly and teach nothing.
 
 Under ADR-36 a skill with no eval is `status: draft` and never `active`, and a
 skill whose eval shows no gain is retired with the numbers rather than quietly

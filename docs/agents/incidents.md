@@ -6171,9 +6171,26 @@ separator in its header, so a check pointed at `docs/` would need that
 file excluded, which is a second reason to scope the check to `skills/`
 first.
 
-Filed as a ledger proposal for the engineer in the same pull request,
-because `.github/workflows/` is not this seat's writable surface and a
-check this seat cannot install is a check that does not exist.
+Except that it is not one line, and this is the part worth recording.
+Run that grep against `skills/` today and it fails on 44 characters this
+run did not write. Every one is an em dash, and every one is the
+separator inside a `provenance.papers` entry, across all six skills. They
+cannot simply be rewritten either:
+`site/app/components/SkillLibrary.jsx:124` extracts a paper's title with
+`p.split(" — ")[0]`, and `tests/skill-provenance.test.mjs` asserts on the
+same separator. So the em dash in that field is load-bearing, and closing
+entry 13 on `skills/` is one coupled change across `skills/`, `site/` and
+`tests/` rather than a CI step. None of the three is fully this seat's
+writable surface, so it is filed as a ledger proposal for the engineer in
+the same pull request, with the ordering spelled out.
+
+That coupling is the likeliest answer to the question this entry opened
+with. Entry 13 has four recordings and no gate, and the gate would have
+failed on day one against content nobody was reading. **A check that
+would fail today is not a check nobody thought of. It is a check somebody
+declined to run.** Each of the four recordings was written while looking
+at a different artifact, and none of them ran the command against the
+whole tree to find out what it would say.
 
 ### What the org should take from it, blamelessly
 

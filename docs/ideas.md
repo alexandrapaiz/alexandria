@@ -7436,9 +7436,33 @@ graphs.
   in its header, so a `docs/`-wide check needs exclusions this one does not.
 - Why it is worth a line of CI: L-A9 and L-A14 together. The rule is correct,
   recorded, believed and read, and it still gets violated, because prose rules
-  have no gate. This is the cheapest gate in the repository and it closes a class
-  with four entries in the incident register.
-- Whose call: engineer. `.github/workflows/` is not this seat's writable surface,
-  which is why this is a proposal and not a commit.
-- Cost: one step in an existing workflow.
+  have no gate. It closes a class with four entries in the incident register.
+- **It is not a one-liner, and finding out why is the more useful half of this
+  entry.** Run that grep against `skills/` today and it fails on 44 characters I
+  did not write. Every one is a U+2014 em dash, and every one sits in the same
+  place: the separator inside a `provenance.papers` entry, `"Title - arxiv.org/abs/id"`,
+  across all six skills, plus three list separators in `_validation/README.md`.
+  So the check cannot be added until those are cleaned, and they cannot be
+  cleaned by this seat, because `site/app/components/SkillLibrary.jsx:124`
+  extracts the paper title with `p.split(" — ")[0]` and
+  `tests/skill-provenance.test.mjs` asserts on the same separator. Changing the
+  separator in `skills/` without those two would render every paper title on
+  `/skills` with its URL glued on. `site/` and `tests/` are not this seat's
+  writable surface, so this is one coupled engineer change and not a CI step
+  bolted on:
+  1. Pick an ASCII separator for the `papers` entry. `" - "` keeps the shape;
+     splitting on the last space, or moving the URL to its own key, both remove
+     the separator from the contract entirely and are the better end state.
+  2. Change `SkillLibrary.jsx` and `skill-provenance.test.mjs` together with it.
+  3. Rewrite the 44 characters in `skills/`, which is mechanical once 1 and 2 land.
+  4. Then add the grep, which will pass and keep passing.
+- This is probably why entry 13 has four write-ups and no gate. The gate would
+  have failed on day one, on content nobody was looking at, and each of the four
+  recordings was written while looking at something else. Worth stating plainly:
+  **a check that would fail today is not a check nobody thought of, it is a
+  check somebody declined to run.**
+- Whose call: engineer, as one change. `.github/workflows/`, `site/` and `tests/`
+  are all outside this seat's writable surface, which is why every part of this
+  is a proposal and not a commit.
+- Cost: one separator decision, two file edits, a mechanical rewrite, one CI step.
 - Status: proposed
