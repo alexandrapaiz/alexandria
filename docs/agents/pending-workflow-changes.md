@@ -987,6 +987,93 @@ push the file.
 
 **Cost.** $0. No key, no network, no database.
 
+### 13. The file that installs the suite's Modal stub triggers no check at all
+
+**Queued 2026-09-30 by the engineer seat.**
+
+Numbered 13 because 12 is the highest on this page today. Item 12 is queued
+ahead of this one and both add a step after the graph-audit step, so whoever
+applies them should apply 12 first and then append this one; if only one is
+applied, either order works, because neither touches the other's lines.
+
+**The hole.** `checks.yml` names fourteen test files in its two `paths` lists.
+`tests/conftest.py` is in neither, and no job in any workflow runs the whole
+suite. So a change to the one file that installs the Modal stub for every test
+module in the repository triggers nothing. That file's own docstring records
+what a bad version of it costs: four test files each carried their own copy of
+the stub, the copy without `modal.Volume` won under `pytest tests/ -q`, and
+"the whole suite reported a single error and ran nothing". A file with that
+failure mode and no path entry is the gap this item closes.
+
+`requirements-dev.txt` has the same shape and is deliberately left out of this
+item: it is a version floor rather than logic, and a stale item is worse than a
+narrow one.
+
+**What the new test file is.** `tests/test_check_helper_is_enforced.py`, added
+in the same pull request as this item. `tests/test_press_resilience.py` and
+`tests/test_press_rehearsal.py` report failures by appending to a module-level
+`FAILURES` list rather than by asserting, and only their `__main__` block reads
+that list. Under `python3 -m pytest tests/ -q`, the command
+`requirements-dev.txt` prescribes and both files' docstrings name, roughly 130
+checks printed `FAIL` to a swallowed stdout and the suite said green. A hook in
+`tests/conftest.py` now enforces the list under pytest as well.
+
+CI reads those two files' exit codes today, because it runs them as scripts, so
+the hook changes nothing about today's CI verdict and this item does not pretend
+otherwise. What it buys is the day either file grows a pytest fixture, which is
+the direction this suite has been moving all week: the moment one of them needs
+`monkeypatch` or `capsys` it has to be run under pytest, and without the hook
+that move silently retires 130 checks while every step stays green.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These two lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry, which is the last entry in each list. Verified
+against the live file this run: `      - "tools/graph_audit.py"` matches exactly
+twice, once per list, and `tests/conftest.py` appears zero times in the file.
+
+```yaml
+      - "tests/conftest.py"
+      - "tests/test_check_helper_is_enforced.py"
+```
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30. Two files in tests/ report failures by appending to a
+      # module-level FAILURES list, and until today only their __main__ block
+      # read it. Under `python3 -m pytest tests/ -q` every one of their ~130
+      # checks printed FAIL to a stdout that -q swallows and the suite reported
+      # green. That is how test_call_model_walks_and_backs_off came to assert a
+      # contract the press stopped honouring on 2026-09-24 and go unnoticed:
+      # the only reason it was ever caught is that this workflow happens to run
+      # its file as a script.
+      #
+      # The hook lives in tests/conftest.py, which is the other half of this
+      # item. That file installs the Modal stub for every test module here and
+      # had no path entry, so a change to it triggered no check at all, and its
+      # own docstring records a bad version of it making the whole suite collect
+      # zero tests. These tests run pytest in a subprocess against throwaway
+      # modules using the pattern, so they fail if the hook is deleted rather
+      # than passing vacuously. Confirmed both ways from the seat.
+      - name: the check() helper is enforced under pytest, not only as a script
+        if: always()
+        run: python3 -m pytest tests/test_check_helper_is_enforced.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** The command is 6 passed in
+this run's sandbox, and 2 failed, 4 passed with the hook deleted from
+`tests/conftest.py`, which is the only result that proves the tests are load
+bearing. The step cannot be smoke-tested as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about three seconds,
+which is what a subprocess pytest costs six times over.
+
+---
+
 ---
 
 ## Not queued here, because it needs a key rather than a hand
