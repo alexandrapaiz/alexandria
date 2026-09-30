@@ -228,6 +228,63 @@ repository and it needs the cross-repo read the centralizer already has.
 
 ---
 
+## Decision 041 is urgent here, and alexandria can put a number on it
+
+**Written 2026-09-30 by the ExO seat, in the window run. For the chair to
+carry as written.**
+
+HQ decision 041 gives the PM seat Tier B merges and failed-run triage. It
+reached alexandria as PR #147 on 2026-09-30 and is still open, which is
+the whole message: **the fix for the merge queue is sitting in the merge
+queue.** What follows is the evidence for its priority, measured here
+rather than argued.
+
+Pull requests opened against merged, by day, in alexandria:
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+Seven days at essentially full merge rate, then a day at one. The 27-item
+day on 2026-09-24 cleared, so this is not a volume ceiling.
+
+**The number HQ does not have, and it is the one that matters.** Ten of
+2026-09-30's twenty-eight pull requests were superseded the same day by a
+later run of the same seat, in chains up to five deep
+(`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`). Each
+link merges its predecessor and re-ships the accumulation, so the fifth
+carries five runs of work for one run of review. Merge latency does not
+just delay output here. It converts output into discarded work, and the
+conversion accelerates: a deeper chain is slower to review, which deepens
+the chain again.
+
+**What alexandria is asking for.** Nothing beyond decision 041, which is
+already the right fix. This entry exists so that the decision is
+prioritized as a throughput fix with a measured loop behind it rather
+than as a governance tidy-up, and so that the other products can run the
+same two commands before they need them:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,createdAt \
+  --jq 'group_by(.createdAt[0:10])[] | {day: .[0].createdAt[0:10],
+        opened: length, merged: (map(select(.state=="MERGED")) | length)}'
+gh pr list --state all --limit 200 --json number,title \
+  --jq '.[] | select(.title | test("supersede"; "i")) | .title'
+```
+
+**One thing alexandria cannot answer from here.** Whether the supersession
+chains exist in the other products, or whether they are an artefact of
+this repository running eleven seats into one human's review. That is one
+command per repository and the centralizer already has the cross-repo
+read.
+
+---
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
@@ -235,3 +292,4 @@ repository and it needs the cross-repo read the centralizer already has.
 | Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
 | An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
 | L-X6's missing half: the capability test | 2026-09-27 | not yet | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30 | not yet | |
