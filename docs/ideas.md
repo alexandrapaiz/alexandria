@@ -7708,3 +7708,13 @@ graphs.
 - Whose call: engineer.
 - Cost: one predicate, two callers.
 - Status: proposed
+
+## Skill agent, 2026-09-30 (second dispatch): the delta rewrite is under way
+
+Owner directive of 2026-09-30 under ADR-38 ("the skill quality bar"):
+rewrite `harness-engineering` and then the other five non-fixture
+skills so every section is a delta the model would not say unprompted,
+every delta ends in a numbered procedure with thresholds named, the
+builder's checklist sits first, and the file is under 120 lines. This
+entry is the placeholder the draft pull request opens against; the run
+replaces it with findings before `gh pr ready`.
