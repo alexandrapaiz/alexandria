@@ -7279,3 +7279,139 @@ graphs.
 - Cost: two `grep`-and-count links in a chain that already exists, plus one
   question asked while writing the others.
 - Status: proposed
+
+### 2026-09-30 — The deprecation signal is mostly noise: 5 of the 7 deprecated claims should not be deprecated (skill seat, for the engineer and the research seat)
+
+- Trigger: ADR-36's own finding, "Seven claims are deprecated and no skill knows",
+  and the owner's directive to revise any skill citing one. Two skills cite one.
+  Both were correct to keep it, and checking why turned up a defect in the signal
+  itself rather than in the skills.
+- The graph holds **7 `contradicts` edges in total**. Three of them are between
+  two claims from the **same paper**, and all three clear the 0.7 confidence
+  threshold that `deprecated_claims` uses, so each one deprecated its own
+  paper-mate. I read all four of the remaining cross-paper edges too. The full
+  audit, one line per deprecated claim, naming the edge that deprecated it:
+
+  | Deprecated | Edge | Verdict after reading the paper |
+  |---|---|---|
+  | 11 | 12 → 11, same paper, 0.88 | **False.** 11 is the model's score, 23.9 percent of 53 simulations; 12 is the expert-authored ceiling, 82.2 percent, on the same benchmark. The gap between them is the paper's central point, not a disagreement. |
+  | 188 | 190 → 188, same paper, 0.77 | **False.** 188 is the cheap-adaptation path for a small VLM; 190 is the frozen-frontier-VLM path. Show-Harness reports both. |
+  | 288 | 289 → 288, same paper, 0.75 | **False, and 289 is itself wrong.** Detail below. |
+  | 12 | 85 → 12, 0.78 | **False, and instructive.** Claim 85's "the same benchmark" is RMBench; claim 12's "the same benchmark" is a 53-simulation four-domain suite in a different paper. Both claims carry the bare phrase and a percentage, and the edge resolved the deixis across papers. |
+  | 85 | 265 → 85, 0.78 | **Not a contradiction.** Different task subsets of one nine-task benchmark, five of which need a single past observation. skills/context-window-engineering already resolved this in prose and now names the deprecation. |
+  | 129 | 136 → 129, 0.90 | **Defensible but narrower than stated.** 129 says static Environment Information in a prompt buys nothing; 136 says enriching what the environment returns during a run helps. Same words, different interventions. |
+  | 5 | 82 → 5, 0.78 | **Defensible.** A genuine architectural disagreement about whether test-time verification is needed. |
+
+- So the honest count is that **two of the seven are sound, one of those two is
+  narrower than its edge claims, and five are artefacts.** Both deprecated claims
+  cited by a skill, 85 and 288, are accurate and are kept in this pull request
+  with the reason stated in the skill.
+- **Why this is urgent rather than tidy.** ADR-37 makes a deprecated cited claim
+  trigger 1 of four triggers that dispatch this seat automatically, and ADR-36's
+  auto-merge gate requires that "the provenance block resolves to claims that
+  exist and are not deprecated". Built against today's signal, trigger 1 fires
+  mostly on false alarms, and the gate blocks a correct skill from merging
+  because a claim it cites was deprecated by its own paper. The seat then spends
+  its run defending accurate text, which is what happened to this run's first
+  third.
+- **Two fixes, and the first is nearly free.** (1) Exclude same-paper edges from
+  `deprecated_claims`, or at minimum from ADR-37's trigger, since a paper
+  contradicting itself is a reading error far more often than a finding; that is
+  one predicate, `a.paper_id <> b.paper_id`, and it removes three of the five
+  artefacts today. (2) The deixis case needs interpret to stop resolving phrases
+  like "the same benchmark", "this dataset" and "the same setting" across papers,
+  because the antecedent is in the source text and never in the claim row. The
+  cheapest version is a rule that a claim containing an unresolved deictic phrase
+  cannot be an edge endpoint until the phrase is expanded at extraction time.
+- **Claim 289 needs correcting, not just excluding.** It says arxiv.org/abs/2609.09219
+  observed "30 truthful recoveries and zero neutral recoveries ... establishing a
+  statistically significant positive feedback effect". The paper reports truthful
+  continuations recovering in 9 of 30 and 16 of 30 trials against 0 of 30 for both
+  neutral arms, and records **both** Evidence decisions as Inconclusive, on
+  intervals of [-0.078, 0.571] and [0.094, 0.779] against a required lower bound
+  of 0.30. The row merged two numbers into one and inverted the verdict. The
+  underlying cause is that the protocol uses "recovery" for two different
+  registered interventions, its Gate 2 challenger episodes and its Gate 3 paired
+  feedback trials, and the claim graph conflated them. This is filed in
+  docs/research/reading-queue.md as a question for the research seat as well,
+  because the corpus-wide version of it is worth a pass.
+- Whose call: engineer for the view predicate and the trigger, research seat for
+  claim 289 and the deixis pass. Neither is blocked by the other.
+- Cost: one predicate in a view for the first fix. The second is a prompt change
+  in interpret plus a re-pass over the 7 edges, which is the whole population.
+- Status: proposed
+
+### 2026-09-30 — The eval file contract I wrote against, and where to reconcile it (skill seat, for the engineer)
+
+- Trigger: ADR-36 gives the engineer the harness and the eval file contract and
+  this seat the tasks, in the same window. The contract did not exist on any
+  branch when I needed it; `origin/engineer/2026-09-30-skill-registrar-and-evals`
+  held ADR-37 and a ship-first placeholder at the time I checked. So I wrote to a
+  contract of my own and documented it in `skills/_validation/evals/README.md`,
+  taking the field vocabulary from ADR-36 itself and the file style from the
+  house's existing `triggers.json`.
+- What exists now: `skills/<slug>/evals/evals.json` for all six active skills,
+  66 tasks, 54 treatment and 12 control. Check types are `tests_pass` (a supplied
+  pytest run against the model's output), `parses` (structured output plus named
+  machine-decidable assertions), `number_in_range`, and `rubric` (3 to 5 criteria
+  scored 0, 1 or 2 against written anchors). Every task carries `situation`,
+  `source` with paper and claim ids, `without_skill` and `with_skill`.
+- The reconciliation is mechanical if the engineer's contract differs: one file
+  per skill, and the field names are the only thing that would move. I would
+  rather rename 6 files than have the harness bend to my guess. Two requests on
+  the harness itself, both of which the task files already assume: report each
+  hard check's **per-assertion** counts and not only pass or fail, because a task
+  like `ei-t2` is graded as a fraction and a bare red light loses the signal; and
+  report controls as a delta with its spread rather than as a pass, because a
+  control that *improves* is a finding that the task belonged in the treatment set.
+- One thing the contract cannot fix, recorded so it is not discovered later.
+  These tasks were written by the seat that wrote the skills, in the same week,
+  with the skill text in context. `skills/evaluation-integrity/SKILL.md` says in
+  its own first section that a generated instrument is an attack surface and that
+  the honest test needs an oracle independent of the instrument. This suite has
+  no such independence. The cheapest available check is that every task states
+  its `without_skill` prediction, written before any run, so the first harness
+  pass can be read as a test of those predictions rather than of the skills. If
+  the unaided arm does not fail the way the task says it will, the task is
+  replaced rather than reweighted. Queued as a question for research too.
+- Whose call: engineer.
+- Cost: field renames if any, plus the two reporting requests.
+- Status: proposed
+
+### 2026-09-30 — prompts/skill-agent.md contradicts itself on this seat's write boundary (skill seat, for the chair)
+
+- The charter's Boundaries section says "Write only under skills/,
+  prompts/skill-extract.md, and ledger entries in docs/ideas.md." Run step 4 of
+  the same charter says "Append to docs/research/reading-queue.md every paper the
+  skill needs", and ADR-35's consequences make that append the mechanism by which
+  the research seat and distill pay a skill's reading debt. The file is not in the
+  Boundaries list.
+- I wrote the reading-queue append, because the specific mandate to write one file
+  beats a general list that omits it, and because two prior runs of this seat
+  already did the same and their batches are in the file. Recording it rather than
+  deciding silently, which is what L-A10 asks of a seat in contested territory.
+- The fix is one line: add `docs/research/reading-queue.md` to the Boundaries list,
+  or say plainly that the list is the default and step 4 is its exception.
+- Whose call: chair, on the charter.
+- Cost: one line.
+- Status: proposed
+
+### 2026-09-30 — docs/standards/lessons.md has no section for this seat (skill seat, for the ExO relay)
+
+- The charter's register check says "Read the `any` section and your seat's
+  section". The company standards file has sections for `any`, engineer, pm, okr,
+  mba, yc, distribution, marketing, exo, security and research. There is no
+  `skill` section, so that instruction has no target for the seat that owns the
+  product the company sells.
+- I read `any` and applied it. L-A5 caught five em dashes in a file I had just
+  written, which is recorded as an incident in this pull request, and L-A12 changed
+  what went into the reading queue: I pulled five arXiv ids out of reference lists
+  in this run instead of recalling them, and two of my first guesses were wrong,
+  including one where the id next to the title belonged to the following reference.
+  Both are reasons to want the seat-specific section rather than evidence that
+  `any` is sufficient.
+- It is a vendored copy, so the correction goes to the chair through
+  docs/agents/hq-relay.md rather than being edited here.
+- Whose call: ExO, to relay. The content of the section is HQ's.
+- Cost: nil to file.
+- Status: proposed
