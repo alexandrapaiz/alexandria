@@ -7361,3 +7361,112 @@ graphs.
 - Cost: one grep. The file of withdrawn strings is a few lines and this seat
   maintains it.
 - Status: proposed
+
+### 2026-09-30 — The shape of the page has failed five grades in the prompt, so it needs a count (writer seat, for engineer)
+
+- Trigger: the charter's structure watch. "When the same structural fix fails
+  twice through prompt changes alone, propose the pipeline change in the
+  ledger for the engineer instead of prompt-tinkering a third time." This is
+  the fifth failure, so this run deliberately shipped no sixth wording of the
+  gate.
+- The record, one row per grade, all three counts measured on the artifact:
+  2026-09-26, 2026-09-27, 2026-09-28, 2026-09-29 and 2026-09-30 each found
+  zero bulleted lists, zero third-level headings and zero numbers standing on
+  a line. The shape gate in `prompts/digest.md` names all three, gives the fix
+  for each, and says in its own text that one kind of shape is a failing
+  issue. Canon law 14 predicted the exact failure mode, that "the cheapest way
+  to obey this law is also the way that leaves the reader's experience
+  untouched", and the newest print measures it: the longest paragraph fell
+  from 141 words to 78 while every page-level count stayed at zero.
+- What, the check: three counts on the generated body before it is stored,
+  failing when all three are zero. Wherever the pre-send gate of #60 or a CI
+  step is cheapest.
+
+  ```
+  grep -cE '^[-*] '   <body>   # bulleted list lines
+  grep -cE '^### '    <body>   # written turns inside sections
+  ```
+
+  and one for a short line carrying a bolded number and no other sentence. The
+  question is not whether a list is good, which no regex can judge. It is
+  whether a list exists, which is the part that has been zero for five issues.
+- Why this one is safe to automate when most prose rules are not: a markdown
+  body either contains `^[-*] ` or it does not. There is no taste in the
+  count. The gate's own text already says the fix is never decoration, so the
+  count belongs beside the model's judgment and not instead of it, which is
+  why it fails only when all three are zero rather than requiring each one.
+- Related: canon law 14, ban list 49, and the shape rows in the reviews of
+  2026-09-26 through 2026-09-30.
+- Whose call: engineer. Cost: three greps in a chain that already runs.
+- Status: proposed
+
+### 2026-09-30 — A grade cannot tell which generator wrote what it is reading (writer seat, for engineer)
+
+- Trigger: `digests` id 18, the newest issue, was written on 2026-09-28 with
+  `prompt_sha ea2d678d86e9`. That sha is `prompts/digest.md` at commit
+  `ff61b26`, dated 2026-09-25 19:46. The masthead in the same body is the
+  constant as it read before commit `cb99c37` of 2026-09-26 01:09. One cause
+  explains both strings: the scheduled run of 2026-09-28 executed a bundle
+  from 2026-09-25.
+- The consequence, and it is this seat's own loop: five generator commits have
+  shipped since that bundle, and the three grades that ran on 2026-09-28,
+  2026-09-29 and 2026-09-30 each graded a print from a generator that no
+  longer exists. Law 13 is the clean demonstration. The published page carries
+  the exact sentence shape law 13 was tightened to catch, and the newest
+  rehearsal, written by the current prompt, does not. A grade reading only the
+  published page reports a defect that was fixed days ago and cannot see any
+  patch that worked.
+- What, the check: compare the stored `prompt_sha` against
+  `sha256(prompts/digest.md)[:12]` at deploy time and at grade time, and say
+  the answer out loud in the run's output. One integer against one integer.
+  `rehearsal_report` already prints a `prompt_sha` line, so the value is in
+  hand and nothing compares it to the repository.
+- This overlaps the deploy-drift guard already open as #166 and is not a
+  second copy of it. That guard stops a stale bundle from shipping. This asks
+  for the sha to be legible after the fact, in the row and in the grade, so a
+  reader of an artifact can tell what wrote it. Both are wanted and the second
+  is a print statement.
+- Whose call: engineer, and worth folding into #166 rather than landing
+  separately. Cost: one comparison and one line of output.
+- Related: `INC-2026-09-30-graded-a-generator-five-commits-stale`, the canon's
+  grading procedure as corrected today.
+- Status: proposed
+
+### 2026-09-30 — Two withdrawn strings live in the stored rows, and the read count is sampled before the reading (writer seat, for engineer)
+
+- Three findings, one owner, because they are all repairs to the same two rows
+  and one query.
+- **The masthead's scope is wider than the 2026-09-27 filing says.** That
+  entry stands and is not restated. It is scoped to the published page, and
+  the grep recommended for the chain is scoped to `site/content/issues/`.
+  Queried today through `NEON_RO_URL`, the withdrawn line is also in both
+  stored digest bodies, at offset 98 in id 1 and offset 84 in id 18. A grep
+  over `site/content/issues/` alone goes green while two stored rows still
+  carry it, and the email is rendered from a stored body. The tripwire needs
+  the rows in scope, which the same entry already anticipates where it has a
+  database handle.
+- **The close ruling of 2026-09-30 reached the prompt and the page and not the
+  stored row.** `digests` id 18 still ends on the close the owner replaced
+  that day. The page and the row now differ in exactly that one line, which is
+  the whole diff between them. This is ban list 64 on a second string, created
+  by the hand-edit that applied the ruling correctly to one copy. Both
+  replacements already exist in the code and need no draft.
+- **The full-read count is measured before the reading it counts.** The
+  payload's `papers_read_in_full` is
+  `count(*) from papers where distilled_at > now() - interval '7 days' and
+  fulltext_chars is not null`, gathered at the start of the run. The reading
+  list's papers are read in full during the run: the newest print's three
+  picks carry `distilled_at` of 03:18, 03:19 and 03:20 against a payload
+  gathered at 03:13, and the count it was handed was zero. So the number
+  understates by the reading list's size on every issue, always, and it
+  reported zero on an issue whose three recommended papers had twelve thousand
+  characters of full text each. The generator side is patched today, so no
+  issue prints a zero and no issue claims the count covers its own items.
+  The number itself stays wrong until the count is taken after the reading, or
+  taken separately for the cited papers.
+- Whose call: engineer for the rows and the query. The owner still decides
+  whether an issue already sent to subscribers is altered at all, exactly as
+  the 2026-09-27 entry says.
+- Related: ban list 61, 64, 75 and 78, canon law 15, canon grading pass 6,
+  `INC-2026-09-27-law-15-live-in-the-archive`.
+- Status: proposed
