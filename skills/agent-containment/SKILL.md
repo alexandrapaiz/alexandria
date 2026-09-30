@@ -31,7 +31,7 @@ This skill adds to standard infrastructure practice, it does not replace it.
 Least privilege, network policy, image hygiene and audit logging all still
 hold, and an agent deployment that skips them is broken for ordinary reasons
 before any of the findings below apply. What is new is the adversary's
-position. In a normal service the attacker is outside and sends input; with an
+position. In a normal service the attacker is outside and sends input. With an
 agent, the process that composes every command, every path and every
 justification for them is the thing you are trying to constrain, and it reads
 attacker-controlled text as part of doing its job.
@@ -56,8 +56,8 @@ Three papers measure the consequence, from three directions.
    malicious actions were ordinary in-repository operations the list never
    named.
 2. Lexical matching on command text was bypassed in 410 of 500 obfuscated
-   payloads (base64 pipes, `getattr(__import__('os'), 'system')`, string
-   slicing such as `"cu" + "rl"`, hex escapes, template injection), while
+   payloads (base64 pipes, dynamic reflection through a runtime import,
+   string slicing, hex escapes, template injection), while
    probes at the kernel system-call boundary intercepted 500 of 500, because by
    the time an argument reaches `sys_connect` or `sys_execve` the runtime has
    already resolved it into concrete registers (Hard Stop).
@@ -71,7 +71,7 @@ What to do instead, in order of how much privilege the deployment has.
 
 - **If you control the harness**, store authority outside the model's context,
   keyed per agent, and check every tool call at dispatch. Path capabilities
-  cover canonicalised prefixes; execute capabilities cover prefixes of a
+  cover canonicalised prefixes, and execute capabilities cover prefixes of a
   **parsed argument vector**, with each segment of a compound command checked
   separately, so permitting `pytest` does not admit `pytest; cmd` (Authority Is
   Not a String). The requirement has a floor worth stating: a **blocking
@@ -253,12 +253,12 @@ knowing before you design the startup path:
 - **Memory sharing beats memory reclamation, and it is not free.** Collapsing
   duplicated guest page caches into one shared host mapping cut peak host
   memory by 40.2 percent but raised transient peak CPU from 26.5 to 41.4
-  percent; access-frequency-guided free-page reporting left peak memory roughly
+  percent. Access-frequency-guided free-page reporting left peak memory roughly
   unchanged and cut time-integrated memory by 21.2 percent. On CPU-constrained
   hosts the paper's own advice is to take the second and skip the first.
 - **Idle-priority scheduling alone does not protect a latency-sensitive
   sandbox.** With best-effort load at 50 percent of node capacity, per-step
-  latency rose 45.2 percent unprotected; marking the best-effort work
+  latency rose 45.2 percent unprotected, and marking the best-effort work
   idle-priority improved that by at most 3.4 percent, because a sibling
   hyperthread still contends, and adding core scheduling held the inflation to
   17.3 percent.
@@ -278,8 +278,9 @@ Two more dials, from the authorisation side:
   about 17 milliseconds, and expanding the cut-off trades attenuation for
   reliability. At a cut-off equal to the largest bundle any single query needs,
   67.7 percent of requests got every privilege they required with 40.2 percent
-  of granted privileges unnecessary; at 10, 90.9 percent with 75.6 percent
-  unnecessary; beyond that, capture plateaus near 97 percent (capmas). Pick the
+  of granted privileges unnecessary. At a cut-off of 10 it is 90.9 percent with
+  75.6 percent unnecessary, and beyond that capture plateaus near 97 percent
+  (capmas). Pick the
   point deliberately and let per-hop attenuation take back what the initial
   grant over-issued.
 
@@ -309,7 +310,7 @@ If you build the halt, three mechanical facts decide whether it works:
    (Hard Stop).
 2. **The state you read after a halt must be written atomically.** Reading a
    checkpoint out of POSIX shared memory after an asynchronous freeze produced
-   torn reads; a kernel ring buffer with reserve-write-commit semantics
+   torn reads, while a kernel ring buffer with reserve-write-commit semantics
    produced zero corrupted records across 1,000 freeze events.
 3. **The supervisor must be outside the agent's process.** A stochastic model
    cannot be its own safety arbiter, and a governance layer sharing the agent's
@@ -354,7 +355,7 @@ one is where a hand-rolled version breaks:
   times the round-trip time but under 0.3 percent end to end.
 
 The floor for the local half is a copy-on-write filesystem (the paper uses ZFS)
-plus a process checkpointer (CRIU); the remote half needs a proxy in front of
+plus a process checkpointer (CRIU). The remote half needs a proxy in front of
 the tool protocol, which is also where the compensating actions are recorded.
 
 ## Apply: the builder's checklist
@@ -407,7 +408,7 @@ Before shipping an agent that can execute, write or reach the network:
   were caused by a ceiling that was too narrow, which is the utility cost in
   its plainest form.
 - **capmas assumes agent code is non-malicious.** Infrastructure is
-  honest-but-curious and agents propagate signatures correctly; only the
+  honest-but-curious and agents propagate signatures correctly, and only the
   model's reasoning and external input are treated as untrusted. Its scoping
   numbers are from synthetic query-to-endpoint datasets, its identity provider
   is a single point of trust, and it propagates the user's query in plaintext
@@ -415,7 +416,7 @@ Before shipping an agent that can execute, write or reach the network:
 - **The fifteen-route classification is mostly reasoning, and says so.** Of its
   60 cells, four are read from a shipped rule set, five restate vendor
   documentation verbatim, 21 follow by inference, and 30 are uniform by
-  construction; two routes were run in practice and thirteen were not. It
+  construction. Two routes were run in practice and thirteen were not. It
   describes what the mechanisms of one vendor's harness can express for an
   unprivileged user, not how they hold against a determined adversary.
 - **DSec's numbers are one company's cluster**, its evaluation is a 10-node
@@ -425,7 +426,7 @@ Before shipping an agent that can execute, write or reach the network:
 - **Planarian's overheads are replayed traces, not live model runs**, over nine
   system-administration tasks, sixteen build tasks and fifty database tasks on
   one testbed. Its largest exploration gain, 15 times the score, is one game of
-  the three it measured; the other two were 1.4 times.
+  the three it measured, and the other two were 1.4 times.
 - These findings are from 2026 papers, read in full on 2026-09-30, and carry
   alexandria paper provenance rather than claim provenance. If a source result
   is later contradicted or narrowed, this skill will be revised or deprecated

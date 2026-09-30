@@ -7558,7 +7558,15 @@ graphs.
   feeds the graph instead of bypassing it. That second version is the one that
   makes the differentiator true: right now a paper read by this seat leaves no
   trace in the database at all.
-- Whose call: owner for the ADR, engineer for the gate.
+- The same gap on the library page, checked rather than assumed: the site's
+  provenance reader handles the empty inline array correctly and returns an
+  empty claims list, so nothing breaks. What the page will say is that the skill
+  has no claim ids, beside a skill whose whole evidence is six papers read in
+  full. A page that prints "0 claims" next to "6 sources" is telling the reader
+  the opposite of the truth. One line of copy in the receipts block fixes it:
+  when `claims` is empty and `papers` is not, say "drawn from papers read in
+  full" rather than printing a zero. `site/` is not this seat's surface.
+- Whose call: owner for the ADR, engineer for the gate and the page.
 - Cost: one predicate in the gate, or one small writer path from the skill run
-  into `claims`.
+  into `claims`, plus one conditional in the receipts block.
 - Status: proposed

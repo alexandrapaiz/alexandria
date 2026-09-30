@@ -60,7 +60,7 @@ completed harm is verified in service state, cross-checked deterministically
 where possible: an off-allowlist secret read and sent externally, model-weight
 bytes leaving the organisation, trigger examples merged into a training corpus,
 a sealed finance record modified after closure. Writing the predicate is the
-work; once it exists, refusals, attempts and near-misses stop competing for the
+work, and once it exists, refusals, attempts and near-misses stop competing for the
 headline number.
 
 ## 2. Report a defence as a point on a curve, never as a single rate
@@ -92,7 +92,7 @@ Three rules follow, and the second is the one most reports skip.
    harmful user request or from injected content, so it cannot say which
    control to revise (EvoSafeHarness).
 2. **Fix the operating point before comparing.** "Twice the utility at the same
-   zero-attack-success point" is a comparison; "lower attack success" on its own
+   zero-attack-success point" is a comparison. "Lower attack success" on its own
    is not, because the two systems may be standing at different points on the
    same curve.
 3. **Test under an adaptive attacker, and say what budget it had.** The same
@@ -142,7 +142,7 @@ the measurements are unusually clear about it.
 
 - **Perplexity gates flag benign content more often than malicious content.**
   Benign tool metadata averaged 20.51 perplexity, yet 43.9 percent of it
-  exceeded a threshold of 100; the attack's cost-inflation payloads averaged
+  exceeded a threshold of 100. The attack's cost-inflation payloads averaged
   78.36 and only 33.4 percent exceeded the same threshold, and the
   exfiltration and integrity payloads exceeded it in under 9 percent of cases
   (A2M). A gate tuned to catch these would reject a large share of legitimate
@@ -171,7 +171,7 @@ success remaining (A2M). The authors are explicit that this is one policy
 implementation on one model and does not establish the approach across stacks.
 
 The reason this shape works is structural. The attack is not a prompt the user
-sent; it arrives through a channel the agent treats as environment feedback
+sent. It arrives through a channel the agent treats as environment feedback
 rather than as input, so a filter positioned at the user boundary never sees
 it, and a filter positioned on the text competes with an optimiser that can
 rewrite the text.
@@ -188,8 +188,8 @@ within the top ten accounts reviewed per day).
 1. **The best monitor still misses about half.** Across 37 semantic monitors at
    the audit-event level, recall at ten per day ranged from 0.044 to 0.533. The
    two best reached 0.533 and 0.511, more than double a deployed anomaly
-   baseline at 0.222, and five semantic monitors scored below a robust
-   statistical baseline at 0.156.
+   baseline at 0.222, and five semantic monitors scored below a plain
+   statistical z-score baseline at 0.156.
 2. **What the monitor can see outweighs how capable it is.** A mid-tier monitor
    given the agent's reasoning beat a stronger monitor restricted to audit
    events on three of four corpora: 0.49 against 0.39, 0.71 against 0.52, and
@@ -208,7 +208,7 @@ within the top ten accounts reviewed per day).
    a uniform mid-tier monitor by 59, 64 and 49 percent on three corpora.
 5. **Classical and semantic monitors are not ranked, they are dataset-
    dependent.** On a conventional insider-threat dataset a count-anomaly
-   baseline led at 0.753 AUROC against 0.677 for a strong semantic monitor; on
+   baseline led at 0.753 AUROC against 0.677 for a strong semantic monitor. On
    agent traces the ordering reversed, 0.872 against 0.694, and on held-out
    accounts the semantic monitor kept 0.415 budget-weighted AUC while both
    classical monitors scored 0.000. Run both on your own traces before
@@ -321,9 +321,9 @@ Before reporting a defence or shipping an agent that faces untrusted content:
 - **All four papers are single studies from 2026 and three of the four are
   simulations.** The insider-threat results come from a simulated
   organisation, 150 accounts and nine services, with harmful objectives
-  assigned rather than arising; the shutdown study is two or three agents in a
+  assigned rather than arising. The shutdown study is two or three agents in a
   directory containing one script, with no code-execution tool, so its
-  countermeasure behaviours could not have taken effect; the hijacking results
+  countermeasure behaviours could not have taken effect. The hijacking results
   are one benchmark and one fixed agent stack, whose authors did not vary
   system prompts, routing policies, tool renaming, safety wrappers or the size
   of the competing tool pool.
@@ -351,7 +351,7 @@ Before reporting a defence or shipping an agent that faces untrusted content:
   skill deliberately carries no attack construction.
 - **Monitor recall figures are all at one review budget** (ten accounts per
   day) on one benchmark's account population. The ordering between monitors was
-  stable across the study's corpora; the absolute numbers should not be carried
+  stable across the study's corpora, and the absolute numbers should not be carried
   into a different budget or fleet size.
 - These findings are from 2026 papers, read in full on 2026-09-30, and carry
   alexandria claim ids for three of the four sources. If a source claim is
