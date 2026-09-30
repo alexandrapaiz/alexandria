@@ -648,7 +648,25 @@ anchor that does not match is a rot, whether or not the change it
 describes still makes sense, and a diff whose intent has been overtaken
 is cancelled in the item rather than left to a reader's judgment. The same goes for ordering: when two queued items touch one file,
 say which comes first and what breaks if the owner applies them in the
-other order. Verify your
+other order.
+
+**And re-verify the ordering paragraph the same way you re-verify the
+diff**, because the mechanical check does not reach it. Grepping every
+`-` line proves the anchors still match and says nothing about a sentence
+like "no other item on this page touches this file". That sentence was
+true when item 11 was written on 2026-09-27 and false from 2026-09-30,
+when item 13 was queued against `agent-skill.yml`, and it passed every
+anchor check in between. It is also the most load-bearing sentence on the
+page, because it is the one that tells a reader they may stop looking.
+One command settles it for the whole queue:
+
+```bash
+grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+  | sort | uniq -c | sort -rn
+```
+
+Any file named by two items needs both items' ordering paragraphs to name
+the other. Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter.
 

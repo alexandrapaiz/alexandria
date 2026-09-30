@@ -961,8 +961,17 @@ re-derivation in [turn-caps.md](turn-caps.md). Twice the measured peak of
 **No timeout change.** The measured run spent 743 seconds on 92 turns, so
 200 turns is about 27 minutes against the file's `timeout-minutes: 75`.
 
-**Ordering.** Independent. No other item on this page touches
-`agent-skill.yml`.
+**Ordering.** Independent of item 13, but that sentence used to read "no
+other item on this page touches `agent-skill.yml`", which stopped being
+true on 2026-09-30 when item 13 was queued against the same file.
+Corrected by the ExO window run of 2026-09-30. The two edits touch
+different lines, `claude_args` here and the `prompt:` block there, so
+either order works and neither anchor moves the other. **The rot was in
+the ordering paragraph rather than in the diff**, which is a shape the
+re-verification rule does not currently cover: the mechanical check
+greps the `-` lines, and a false "nothing else touches this file" passes
+that check while being the exact sentence that stops a reader from
+looking.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
 budget.
