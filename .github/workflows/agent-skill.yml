@@ -140,18 +140,6 @@ jobs:
       # workflows at once (INC-2026-09-26-run-report-dash-echo). The webhook
       # guard stays inside the script for the reason the previous version's
       # comment gave: a step cannot read its own `env:` block from `if:`.
-      - name: Post run report
-        if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        run: python3 tools/run_report.py --workflow "${{ github.workflow }}" --status "${{ job.status }}"
-
-      # The board (docs/board.md), which pm.md §14 makes the state of the work.
-      # Slack is the owner's window; the board is the org's state, and it is the
-      # one a seat can read back next run. This step cannot fail the job:
-      # tools/board.py prints ::warning:: and exits 0 when the board refuses,
-      # because a red job for an undelivered report is the lie
-      # INC-2026-09-26-run-report-dash-echo told six times.
       - name: Post run report to the board
         if: always()
         run: python3 tools/board.py report --status ${{ job.status }}
