@@ -13,6 +13,21 @@ all vectors must come from one model).
     modal run pipeline/distill.py::drain             # plan the drain, spend nothing
     modal run pipeline/distill.py --max-papers 5     # manual production run
 
+The smoke run, before the schedule is trusted, is one paper for pennies:
+
+    modal run pipeline/distill.py --max-papers 1 --cap-usd 0.15
+
+And on the deploy that first installs this, triage goes with it, because the
+standing thread list moved into `pipeline/priority.py` and both jobs import it:
+
+    python3 pipeline/budget.py \
+      && modal run pipeline/distill.py::preflight \
+      && modal run pipeline/distill.py::rehearse \
+      && modal run pipeline/triage.py::preflight \
+      && modal run pipeline/triage.py::rehearse \
+      && modal deploy pipeline/distill.py \
+      && modal deploy pipeline/triage.py
+
 ## Why this file changed on 2026-09-30
 
 The owner's directive of 2026-09-29: "the fact that we have so many papers,
