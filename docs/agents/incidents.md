@@ -6244,3 +6244,84 @@ the engineer seat's §0 machinery check reads `git log` over `.github/` and
 `pipeline/`, and it should also read `gh run list --workflow=checks.yml
 --branch=main`, because a merged workflow that fails is a runtime change that
 announced itself and nobody answered.
+
+## INC-2026-09-30-check-harness-green-under-pytest
+
+**Two test files reported 130 assertions to nobody, and the repository's own
+test command said green.** This is the mechanism behind the entry directly
+above, not a second instance of it, and it is the reason that entry's two
+defects sat on `main` for days with no one noticing.
+
+`tests/test_press_resilience.py` and `tests/test_press_rehearsal.py` predate
+pytest's presence here. Each carries its own harness: a module-level `FAILURES`
+list, a `check(name, condition, detail)` that appends to it and prints either
+`ok` or `FAIL`, and an `if __name__ == "__main__"` block that exits 1 when the
+list is not empty. `.github/workflows/checks.yml` runs both as scripts, so CI
+reads the exit code and the pattern does what it was built to do.
+
+Under `python3 -m pytest tests/ -q` it does nothing at all. pytest never runs
+`__main__`, nothing else reads `FAILURES`, and a test function that calls
+`check()` and returns normally is a test function that passed. Every failure
+prints `FAIL` to a stdout that `-q` swallows. That command is the one
+`requirements-dev.txt` prescribes in its own comment and the one both files'
+docstrings name.
+
+**Proved rather than argued, on the branch of this entry's PR, with tiktoken
+made unavailable:**
+
+```
+before the fix:  15 passed
+after the fix:   1 check() failure(s) in test_the_press_fits_its_primary_at_full_caps
+                   - the cost is in the range ADR-32 budgeted: $0.1628 an issue
+                 1 failed, 14 passed
+```
+
+**Why it is a repeat, twice over.** The entry above records
+`test_call_model_walks_and_backs_off` asserting a contract the press stopped
+honouring on 2026-09-24. The only reason that was ever found is that
+`checks.yml` happens to run its file as a script. Nobody running the repository's
+own test command, on any day in those six, would have seen it. And the specific
+check surfaced by the proof above is
+`INC-2026-09-25-budget-guard-estimates` recurring in a second file: `count_tokens`
+falls back to a pessimistic chars-per-token ratio when tiktoken is missing, so
+the same request reads $0.1628 estimated and $0.1376 exact, and this check
+compared whichever it got against a hard ceiling of 0.15. `pipeline/budget.py`
+learned that on 2026-09-25 and separates its estimated findings from its exact
+ones. The lesson was recorded in the code that produced it and nowhere else,
+which is incident 20's shape: the register was written and the next artifact
+never opened it.
+
+**Fixed in this PR.** A hook in `tests/conftest.py` enforces `FAILURES` for any
+test module that owns one, snapshotted per test so a failure is attributed to
+the test that produced it, and leaving a raising test its own traceback.
+`tests/test_check_helper_is_enforced.py` proves the hook by running pytest in a
+subprocess against throwaway modules using the pattern: 6 passed, and 2 failed
+with the hook deleted from `conftest.py`. The cost check now labels an estimate
+`ESTIMATED` and declines to compare it, the way `budget.py` already did. Script
+mode is untouched, because a conftest is not imported when a file runs directly.
+
+**One finding this run could not fix, and it is the larger half.**
+`checks.yml` names fourteen test files in its `paths` lists and no workflow in
+this repository runs the whole suite. `tests/conftest.py` is in neither list, so
+a change to the file that installs the Modal stub for every test module here
+triggers no check at all. That file's own docstring records what a bad version
+of it costs: the whole suite collecting zero tests and reporting one error. The
+engineer seat cannot push a workflow file, so the edit is queued as item 13 in
+`docs/agents/pending-workflow-changes.md` with both anchors verified.
+
+**The lesson, blamelessly.** Every gate in this organization is asked whether it
+passes. Almost none are asked whether they can still fail. These two files were
+green for a reason that had nothing to do with the code they test, and a green
+harness is indistinguishable from a working one from the outside, which is
+exactly why `tests/test_check_helper_is_enforced.py` runs pytest rather than
+reading the hook. The generalizable rule: a test harness that reports through
+anything other than an exception needs a test that deletes the reporting path
+and confirms red. Where the org has gates, it should keep a short list of which
+ones have ever been observed failing on purpose.
+
+**The guardrail the entry above proposed, executed.** That entry asks that the
+engineer seat's §0 machinery check also read
+`gh run list --workflow=checks.yml --branch=main`. This run did, before writing
+any code, and it is what established the position: five consecutive failures on
+`main` and green on this branch. Worth putting in the charter, which is the
+owner's file, so it is a ledger entry rather than an edit here.
