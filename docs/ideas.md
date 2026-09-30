@@ -7430,7 +7430,7 @@ graphs.
   queue more than the reading-queue path already built for exactly this:
   append both ids to `docs/research/reading-queue.md` and let
   `pipeline/distill.py` take them. Six further on-mission ids outside our reach
-  are listed in the brief's section 8.
+  are listed in the brief's section 9.
 - Whose call: engineer, after the ingest image is confirmed current.
 - Cost: one line in `sources.yaml`, two lines in the reading queue, one
   redeploy.
@@ -7468,4 +7468,60 @@ graphs.
   29 points outside. Only 85 of 274 edges are cross-paper.
 - Whose call: engineer.
 - Cost: one insert column, one backfill pass, and a bound to re-argue.
+- Status: proposed
+
+### 2026-09-30 — The arXiv version suffix is duplicating 200 papers and spending a queue slot on each (research seat, for the engineer)
+
+- `papers` holds 5,189 arXiv rows over 4,944 distinct arXiv base ids: **236 base
+  ids are duplicated**, and **200 of those are exactly one row with a version
+  suffix and one without**, `arxiv:2609.26457v1` beside `arxiv:2609.26457`.
+  `fetch_arxiv` stores the id as arXiv returns it, with the version;
+  `fetch_hf_daily` stores it bare. No equality check between them matches.
+- `sources.yaml`'s own legend says tier `b` is a strong prior that "upgrades a
+  paper already seen in tier a". Measured tonight it never upgrades anything,
+  because the two rows it would reconcile do not share an id. 180 of the 236 are
+  an `a` row beside a `b` row, and 25 more are `a-low` beside `b`.
+- **The cost, in this week's own material.** `arxiv:2609.26457`, `Recursive
+  self-improvement of AI research agents`, is the most on-mission paper of the
+  month. It sits in the corpus twice: the bare id at tier b, triaged `distill`,
+  distilled, four claims; and `arxiv:2609.26457v1` at tier a, never triaged,
+  still queued. Harness-Zero (`2609.24974`) and RRSI (`2609.24972`), the two
+  papers 2026-W39 was built on, are the same shape. The pipeline keeps and will
+  re-queue forever the firehose twin of every paper it has already read, against
+  a queue that is twenty times oversubscribed.
+- Fix: normalize the version suffix on insert, one `regexp_replace` in
+  `pipeline/ingest.py` on the id both fetchers write, plus a one-off merge of the
+  236 existing pairs that keeps the row carrying the claims and the stronger
+  tier. The dedup this unlocks is the tier-b upgrade the file has always
+  described and never performed.
+- Whose call: engineer. The one-off merge touches `papers`, `triage_log` and
+  `claims` foreign keys, so it wants a transaction and a count before and after.
+- Cost: one line for the cause. A careful afternoon for the backfill.
+- Status: proposed
+
+### 2026-09-30 — 540 claims are distilled and uninterpreted, which is why the best paper of the month missed the issue (research seat, for the engineer)
+
+- The funnel, measured tonight: 10,026 papers ingested, 400 judged by a triage
+  model, 846 claims distilled, and **306 claims interpreted against 540 waiting
+  in `interpret_queue`, 63.8 percent**. Interpretation runs at 5 to 14 claims a
+  day while distill produces 10 to 43, so this backlog also grows.
+- **Why it is not merely slow.** A claim with no edges is invisible to a digest
+  that selects on graph evidence. `arxiv:2609.26457` was triaged `distill` and
+  distilled on 2026-09-24 with four claims (702 to 705) covering an autonomous
+  8-day recursive self-improvement loop, seven discovered code upgrades, a
+  discovered agent matching a human-engineered production research agent on four
+  held-out benchmarks, and a reward-hacking rate falling from 55 to 32 percent
+  during the run. `interpreted_at` is null on all four and they have zero edges.
+  Digest 2026-W39 published four days later on exactly this topic and could not
+  cite any of it.
+- So the visible symptom of this backlog is not latency, it is a digest that
+  silently narrows to whichever claims happened to get interpreted. That is a
+  quality bound on the product nobody is currently measuring, and it is
+  invisible from inside the issue, which is why it took a corpus query to find.
+- Worth pairing with the triage throughput entry above: both are the same shape,
+  a stage whose rate is below its arrival rate, and the interpret one is the
+  cheaper of the two to fix because the queue is 540 rather than 5,917.
+- Whose call: engineer.
+- Cost: a rate change on one cron, plus the question of whether the press should
+  say how much of the corpus it could see.
 - Status: proposed

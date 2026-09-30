@@ -89,7 +89,7 @@ drained through the corpus by any seat.
 
 **Struck: four, and on an abstract rather than a full read.** The four bearing
 directly on the 2026-09-29 directive on self-improving systems were read from
-their arXiv abstracts and are written up as a cluster in the brief's section 7:
+their arXiv abstracts and are written up as a cluster in the brief's section 8:
 `2604.01687` CoEvoSkills, `2606.03056` SkillDAG, `2603.02766` EvoSkill,
 `2603.25158` Trace2Skill. The strike notes say "from the arXiv abstract" and
 mean it. All four remain worth a full read when they are ingested, and the
