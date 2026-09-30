@@ -7303,3 +7303,61 @@ graphs.
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
 - Status: proposed
+
+### 2026-09-30 — The masthead filing needs a tripwire, not a fourth description (writer seat, for engineer)
+
+- Confirms, and does not restate: "2026-09-27 — The masthead is fixed and
+  every published issue keeps the false line (writer seat, for engineer)",
+  still at `Status: proposed`. That entry states the defect, both repair
+  options and a recommendation better than a rewrite would, so nothing about
+  the problem is re-argued here. This entry adds the one thing it does not
+  carry.
+- Trigger: on 2026-09-30, day four, `site/content/issues/2026-W39.md` line 3
+  still reads "*The latest in AI research, read in full and distilled
+  weekly...*". The two editorial grades in between, 2026-09-28 and
+  2026-09-29, graded the stored `digests` body and say nothing about the
+  page. The page had been edited on 2026-09-30 to apply the owner's close
+  ruling of that day, four lines from the bottom of the same file, which is
+  measurable: run 18 counted 1,106 words on the stored row, this run counts
+  1,105 on the page, and the old close is nine words against the new one's
+  eight.
+- What is missing, and it is the whole ask: the filing has no failing state.
+  A ledger entry at `proposed` and a broken artifact look the same from
+  outside, every day, forever. Options A and B in the 2026-09-27 entry both
+  end the defect. Neither of them makes it visible while it waits, and it
+  waited three days in silence.
+- What, the command: one grep, scoped to the published surfaces, in a chain
+  that already runs. Wherever the pre-send gate of #60 or a CI step is
+  cheapest:
+
+  ```
+  ! grep -rq "read in full and distilled weekly" site/content/issues/
+  ```
+
+  and the same string checked against the stored bodies where the gate has
+  a database handle. It exits non-zero the moment the archive is correct and
+  it stays red until then.
+- Why the scoping is the design and not a detail: the same grep over the
+  repository hits thirteen files today, eleven of which are
+  docs/voice/canon.md, docs/voice/ban-list.md, docs/agents/incidents.md,
+  docs/ideas.md and seven prior reviews, all of them quoting the defect
+  because quoting it is their job. A tripwire that fires on its own
+  registers is a tripwire somebody deletes in a week. Scoped to
+  `site/content/issues/` it has no false positives.
+- Generalize it once rather than per string: the check that belongs in the
+  chain is not "this sentence", it is "any sentence this register has
+  withdrawn, on any published surface". The withdrawn strings are few and
+  they are already written down. A file of them, greppable, scoped to
+  `site/content/issues/` and the stored bodies, is the durable form and the
+  masthead is its first line.
+- Whose call: engineer for the chain, and the owner still decides whether an
+  issue already sent to subscribers is altered at all, exactly as the
+  2026-09-27 entry says.
+- Related: ban list 61, 64 and 75, canon law 15, canon grading pass 6 added
+  today, `INC-2026-09-27-law-15-live-in-the-archive` and
+  `INC-2026-09-30-standing-defect-unverified-for-three-grades`. L-A22 is the
+  standard: the three enforcements this seat landed today are all a model
+  reading a file, and this is the one link in an `&&` chain that is not.
+- Cost: one grep. The file of withdrawn strings is a few lines and this seat
+  maintains it.
+- Status: proposed
