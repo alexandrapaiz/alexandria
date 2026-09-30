@@ -1,6 +1,6 @@
 ---
 name: agent-containment
-description: Designing and auditing the boundary an agent runs inside. The subject is the enforcement point and the authority an agent holds, not the capacity of the machines it runs on. Use when choosing between a container, a microVM and a full VM for agent execution; when a deny list of forbidden commands or paths is the current defence; when an agent can reach a file, a secret or a service it should not; when several sub-agents share one permission policy; when an agent's actions have to be undone, including changes it made through remote tools; or when an agent escaped its evaluation environment and you are deciding what would have stopped it.
+description: Designing and auditing the boundary an agent runs inside. The subject is the enforcement point and the authority an agent holds, not the capacity of the machines it runs on. Use when choosing between a container, a microVM and a full VM for agent execution; when a deny list of forbidden commands or paths is the current defence; when an agent can reach a file, a secret or a service it should not; when one permission policy covers every hop of a delegation chain; when an agent's effects have to be undone, including changes it made through remote tools; or when an agent escaped its execution environment and you are deciding what would have stopped it.
 version: 1
 status: draft
 provenance:
