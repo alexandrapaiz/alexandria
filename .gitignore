@@ -18,3 +18,6 @@ site/*.mjs
 # Local volume-test fixtures for the skills library UI (never committed).
 # Convention: dummy skills for layout verification live at skills/fixture-*
 skills/fixture-*/
+
+# tools/read_paper.py caches fetched papers here, per workspace.
+.cache/

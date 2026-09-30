@@ -311,6 +311,7 @@ since the 2026-09-21 check, on a seat that runs daily and gained three
 duties that week. 150 has still never been hit, which is the reason
 nobody has noticed, and 200 remains the rule's answer.
 
+<<<<<<< HEAD
 
 ---
 
@@ -366,3 +367,61 @@ moment rather than from the moment somebody notices. The trigger for a
 re-measurement is therefore not only a cap hit and a duty change, which
 is what the rule above says. **It is also a cron change**, and that is
 now the third entry on the list in this page's opening rule.
+=======
+## Duty-growth re-check, 2026-09-27: the skill seat under ADR-35
+
+Rule 3 again, and this time the duty growth was an ADR rather than a
+charter edit. ADR-35 (2026-09-26) made reading a precondition of skill
+creation: the skill seat now surveys the claim graph, fetches papers in
+full from arXiv, and appends what it could not read to
+docs/research/reading-queue.md. Three new steps, all of them turn-hungry
+in the same way, because each paper is a fetch and a read.
+
+Re-measured 2026-09-27 from all six runs the seat has completed, by the
+command in "How to measure" above. Every one finished freely
+(`"subtype": "success"`, `"is_error": false`), so nothing here is
+censored in either direction.
+
+| Run | Date | num_turns | Cap in force |
+|---|---|---|---|
+| 36206676462 | 2026-09-26 | **92** | 180 |
+| 35949369039 | 2026-09-24 | 69 | 180 |
+| 35750031009 | 2026-09-22 | 81 | 180 |
+| 35308548423 | 2026-09-18 | 67 | 100 |
+| 35306055976 | 2026-09-18 | 61 | 100 |
+| 35305087740 | 2026-09-18 | 41 | 100 |
+
+| Seat | Duty added | Peak turns | Cap in force | Required | Verdict |
+|---|---|---|---|---|---|
+| skill | ADR-35: survey, read in full, queue what it could not read | **92** (run 36206676462) | 180 | **200** | **UNDER-CAPPED, raise queued as item 11** |
+
+Run 36206676462 is the first run under ADR-35, and it is the one that
+moved the peak. It read five papers in full, queued twelve it could not
+read, and finished in 92 turns against a peak of 81 before the ADR. Twice
+92 rounded up to the next 50 is 200, and the cap is 180, so the seat is
+short by 20 turns having never hit its cap. That is the writer's case
+from 2026-09-21 repeating exactly: a seat whose peak drifts up between
+triggers is measured by neither of them, and this one was caught only
+because the owner asked for the measurement by name.
+
+Two notes for whoever reads this next.
+
+**The queue this seat writes is now drained by machinery, and that cuts
+the other way.** From this PR, `pipeline/distill.py` reads
+docs/research/reading-queue.md at the top of every run and distills what
+it finds ahead of the day's intake. The reading the skill seat cannot
+finish inside its own run is therefore work the pipeline picks up
+overnight, which is a reason the seat's peak should stop climbing rather
+than a reason to expect more growth. Re-measure after the next two runs
+before concluding either way.
+
+**The timeout is not the binding constraint.** Run 36206676462 spent
+743 seconds on 92 turns, which is 7.4 turns a minute. Two hundred turns
+at that rate is 27 minutes against a `timeout-minutes` of 75, so the
+raise needs no timeout change. Checked, because the rule says a cap
+raise that outruns its job timeout buys nothing.
+
+This measurement was taken by the engineer seat under the owner's
+directive of 2026-09-25, not by the ExO seat that maintains this page.
+The page stays the ExO's; one directed edit is not a transfer.
+>>>>>>> origin/main

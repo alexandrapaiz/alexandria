@@ -1,90 +1,156 @@
 # Dispatch queue
 
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
-each run, because it is a queue rather than a log. (Note: the last few
-2026-09-24 passes drifted into appending dated sections instead of
-replacing the file; this run restores the charter's literal rule. That
-history is not lost — it is in git and in PR #100 — it just no longer
-lives in this file.)
+each run, because it is a queue rather than a log.
 
-## 2026-09-25 (Friday standup)
+## 2026-09-29 (Tuesday standup)
 
-**Nothing to propose. The queue is empty on purpose, not by omission.**
+**One entry, attempted this run, not fired.** Both charter §5
+conditions held (`PM_DISPATCH_ENABLED` true, no `workflow_dispatch` in
+the prior two hours), so this run tried to fire it for real rather than
+only propose it. The attempt 403'd, the same failure
+`INC-2026-09-24-dispatch-403` recorded five days ago against a
+different seat's workflow. Recorded as a repeat at
+`INC-2026-09-29-dispatch-403-repeat`. The command below is unchanged
+and ready for the owner or chair to run by hand with their own token.
 
-- **engineer, writer, and market are all disqualified by charter §4's
-  hard rule**, "never propose a dispatch for a seat whose last pull
-  request is still open" (promoted to a hard stop under §5's dispatch
-  authority): engineer has #60, #94, #96, #102 open; writer has #101
-  open; market has #93 (draft) and #98 open.
-- **The five other dispatchable seats (research, frontend, skill,
-  security, okr) have no due cadence today and no fresh, evidenced
-  trigger.** Checked the newest research brief (2026-09-24) and market
-  brief (2026-09-24) for anything pointing at one of them: research's
-  brief names the triage interleaving fix as the one thing that would
-  unblock its next curation decision, but that fix is `pipeline/triage.py`
-  (already committed 2026-09-19) awaiting a `modal deploy`, which is a
-  chair/owner action, not a seat to dispatch. Nothing else in either
-  brief, in `docs/decisions.md`'s newest entries (ADR-32/33/34), or in
-  `docs/sprints/pending.md` names a task for research, frontend, skill,
-  security, or okr that is both ready and undone.
-- **One piece of good news worth surfacing rather than sitting silent
-  in pending.md:** sprint-2026-09-21 item 1, the MCP OAuth redirect-URI
-  validation gap (blocking, due before Stripe launch 2026-09-26),
-  is shipped. Verified directly against `mcp/oauth_flow.py`: `/register`
-  now validates and stores `redirect_uris` (`normalize_redirect_uris`,
-  `issue_client_id`), and `/authorize` and `/token` reject any
-  `redirect_uri` that does not match what was registered
-  (`check_redirect_uri`), with `tests/test_oauth_redirect_uri.py` in the
-  tree. Tomorrow's deadline is not at risk from this item.
+### 1. skill — the Tuesday cron never fired, and sprint item 4 is ready and waiting
+
+**Trigger.** `agent-skill.yml`'s own schedule (`0 12 * * 2`, 8:00 AM ET
+Tuesdays) did not run today. `gh run list --workflow=agent-skill.yml`
+shows the last scheduled run was last Tuesday, 2026-09-22T15:50:51Z; the
+workflow is confirmed `active` via the Actions API, and no run of any
+kind appears for it since 2026-09-26 (a `workflow_dispatch`). It is now
+16:53 UTC, just under five hours past the scheduled time, with nothing
+queued or in progress. Separately, sprint item 4 in
+`docs/sprints/sprint-2026-09-28.md` (still on the open, unmerged
+`pm/sprint-2026-09-28` branch, PR #129) assigns the skill seat exactly
+this kind of day-sized work: rewrite the trigger-test decoy panel to
+the library's own word budget and re-measure lexical/2.1 against
+lexical/3, carried from the skill seat's own recommendation in PR #83
+and not yet acted on.
+
+**Cost of skipping it today.** A second missed week on a fix the skill
+seat itself flagged, and the cron gap goes unreported until the next
+scheduled Tuesday, another 7 days away, since nothing else in this org
+watches skill's cadence.
+
+**No open PR blocks this.** `gh pr list --state open` shows nothing on
+a `skill/*` branch.
+
+**Dispatch, attempted this run, 403'd:**
+
+```bash
+gh workflow run agent-skill.yml \
+  -f owner_instructions='Your own Tuesday 12:00 UTC schedule did not fire
+today (last scheduled run was 2026-09-22); this dispatch exists to close
+that gap, not to add new scope. Sprint item 4, from the sprint plan still
+open on PR #129 (docs/sprints/sprint-2026-09-28.md on branch
+pm/sprint-2026-09-28, read it from that branch since it has not merged
+to main yet): rewrite skills/_validation/decoys.json to the library's own
+word budget (100-150 words, matching skill description length, not the
+current ~40-word decoys), add the length-warning check from incident 31
+to trigger_test.py, and re-measure lexical/2.1 against lexical/3 on the
+same cases with the confound removed. This was your own recommendation
+from PR #83, not yet acted on. Done means both result bundles filed
+under skills/_validation/results/ with today'\''s date, and a plain
+statement of which engine wins now that the confound is removed.'
+```
+
+**Result.**
+
+```
+could not create workflow dispatch event: HTTP 403: Resource not
+accessible by integration
+(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361031512/dispatches)
+```
+
+No run was created. The skill seat's own Tuesday cron still has not
+fired as of this PR; the gap and the ready sprint item both stand,
+waiting on the owner or chair to run the command above by hand.
+
+**Not proposed for any other seat.** Engineer has an open PR (#133,
+superseding #130 and the whole earlier chain) — a hard stop under §4's
+rule regardless of the deploy-drift item (sprint item 2) still being
+open, and that item needs Modal CLI access no seat holds anyway, which
+makes it an owner action rather than a dispatch. Frontend's own
+Wednesday cadence covers sprint item 5 tomorrow with no gap to close
+today. Research, market, writer, security, and okr have no fresh,
+evidenced trigger: writer's daily run is under an hour past its usual
+time, well inside the multi-hour variance this lane has shown all week,
+so that is not treated as a miss.
 
 ## Run health
 
-**Fleet health.** All green since PR #100's last check (2026-09-24
-16:09 UTC). `gh run list` for everything created after that shows two
-completed runs, both `schedule`, both `success` (writer-agent
-2026-09-24T19:34:00Z, engineer-agent 2026-09-25T01:23:23Z), plus this
-window's three in-progress scheduled runs (market, pm, engineer,
-2026-09-25 ~15:45-47 UTC). No new failure class. The one non-success in
-the last 30 runs overall (`writer-agent` 35958638663, cancelled) is
-already registered as
-`INC-2026-09-24-writer-dispatch-started-twice`, no new entry needed.
+**Fleet health.** One repeat non-success to account for since the last
+PM run (2026-09-28T18:13:40Z, the ceremony): `engineer-agent`
+2026-09-29T02:32:53Z read as `failure` in `gh run list`. This is the
+same already-diagnosed class as the prior five (`INC-2026-09-26-run-
+report-dash-echo`, escalated at `INC-2026-09-28-dash-echo-sixth-
+failure`): the run's real work completed and opened PR #133, only the
+`Post run report` step crashes on a dash-vs-bash `echo` bug in twelve
+workflows at once. The fix (`tools/run_report.py`, tested) is written
+and sitting in PR #133, but landing it needs a one-line edit to
+`.github/workflows/agent-*.yml`, which no seat's token can push
+(`docs/agents/pending-workflow-changes.md`'s structural blocker). This
+is now an eight-run streak per PR #133's own count. It cannot be
+queued as a dispatch (`exo` is a forbidden seat under charter §5, and
+this needs a workflow-file edit, not a run), so it goes here as an
+owner action: merge PR #133, then apply the workflow edit yourself or
+route it through the ExO seat's Sunday cadence sooner than that.
+
+Also new and unexplained: `agent-skill.yml`'s Tuesday schedule did not
+fire today. See the dispatch above, which is this run's response to it
+rather than a separate finding.
+
+Both `engineer-agent` and `pm-agent` (this run) show as `in_progress`
+in the same minute this run started, both `schedule`-triggered, not
+`workflow_dispatch` — the org's two independent daily crons landing
+close together, not a synchronous-owner-present condition. No other
+`workflow_dispatch` run appears in the last two hours, so the §5
+"owner present" guard does not block today's dispatch.
 
 **Delivery health.**
 
-- **The press.** No database credentials in this sandbox, so the
-  `digests` table itself was not queried. `https://libraryofalexandria.dev/library`
-  returns 200 and lists `2026-W39` as the newest issue, consistent with
-  the last confirmed state (no digests DB access; site checked instead,
-  same limitation PR #100 noted). No new weekly issue is expected before
-  Monday 2026-09-28 09:00 UTC, so this is not a staleness finding.
-- **The site.** `https://libraryofalexandria.dev/` returns 200, serving
-  current content.
+- **The press.** No database credential in this sandbox, so the
+  `digests` table itself could not be queried; reported `unknown` per
+  guardrail 4, not green. `https://libraryofalexandria.dev/library`
+  returns 200 and still lists `2026-W39` as newest, consistent with no
+  new issue being due until Monday 2026-10-05. Not a staleness finding.
+  PR #133 carries `tools/delivery_health.py`, a script that would
+  automate this exact check once `DATABASE_URL` exists as a repo
+  secret (still the open, owner-only "urgent" ledger item).
+- **The site.** `https://libraryofalexandria.dev/` returns 200.
 - **The MCP server.** `https://ap4509--alexandria-mcp-serve.modal.run/`
-  answers HTTP 404 on a bare GET rather than timing out or refusing the
-  connection — the process is up. Not a protocol-level check (no route
-  exists at `/`, so this only confirms the container is alive).
+  answers HTTP 404 on a bare unauthenticated GET — up, and correctly
+  refusing rather than serving.
 
 ## Pending items past their date
 
-Checked every dated obligation in `docs/sprints/pending.md`
-("due 2026-09-26" for the Polar account, "due 2026-09-27" for the
-sprint-2026-09-21 milestone, "due mid-November" for the PR-merge token
-scope). None have passed their date as of today, 2026-09-25. The Polar
-deadline is tomorrow; worth the owner's eye, not yet a lapsed item.
+Not reconciled this run (standup mode writes this file alone, per
+charter §4; full `pending.md` reconciliation is ceremony-only, §1d).
+One item worth naming here rather than waiting for Monday: the
+`DATABASE_URL` read-only credential (filed `urgent` in `docs/ideas.md`
+by PR #130) is now blocking two things at once, this run's delivery
+check and PR #133's own new tool.
+
+## GitHub Projects board
+
+`PROJECTS_TOKEN` is present, but the GraphQL query this seat has used
+before (`user(login: "alexandrapaiz").projectV2(number: 4)`) returned
+`NOT_FOUND` this run. Not dug into further to keep this run cheap, per
+charter §4's "spend few turns on it" — noted rather than left silent.
 
 ## Linear trial
 
-Not checked this run (no new signal to report). Still on trial per the
-2026-09-19 ruling; no verdict yet.
+Not checked this run (no new signal). Still on trial per the
+2026-09-19 ruling; no verdict recorded since.
 
 ## Dispatched by the PM
 
-None this run. No qualifying trigger existed for any seat that charter
-§5 permits this seat to dispatch (see above); firing one without a
-trigger would violate §4's relay rule regardless of whether
-`PM_DISPATCH_ENABLED` is `true`. Note for whoever next attempts a real
-dispatch: `INC-2026-09-24-dispatch-403` recorded that the PM's own
-`gh workflow run` calls 403'd yesterday despite every documented
-condition being met, and no follow-up in this file or in
-`docs/decisions.md` shows that resolved. Untested again this run since
-there was nothing to test it with.
+1. **skill**, 2026-09-29, attempted, not fired. `HTTP 403: Resource not
+   accessible by integration`, identical shape to
+   `INC-2026-09-24-dispatch-403` against a different seat's workflow
+   five days earlier. Full instruction: see entry 1 above. No run URL
+   exists because no run was created. Registered as a repeat at
+   `INC-2026-09-29-dispatch-403-repeat` in `docs/agents/incidents.md`.

@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
+import { receiptSentences, formatDate } from "../../lib/skill-provenance.js";
+
 // The catalogue. Built to stay readable at fifty skills, not two: shelves
 // with counts, one compact row per skill, and a filter over the lot. The UX
 // benchmark the owner named is Clerk, whose docs index carries a grouped
@@ -22,6 +24,13 @@ import Link from "next/link";
 //
 // A row is a native <details>, so it opens on click, on Enter, and on Space,
 // it is announced as a disclosure, and it works before the JavaScript lands.
+//
+// The receipts block, added 2026-09-29 for sprint item 3. It sits inside the
+// disclosure and not on the resting line, because the owner's order of
+// 2026-09-18 is that a row at rest is one line and nothing else. What it shows
+// is the thing this library sells: the date the skill was distilled, the claim
+// ids it was built from, and the last trigger test that judged it. A skill
+// whose page cannot say when it was last checked is asking to be trusted.
 
 function matches(skill, shelfName, q) {
   if (!q) return true;
@@ -31,6 +40,64 @@ function matches(skill, shelfName, q) {
     .split(/\s+/)
     .filter(Boolean)
     .every((word) => hay.includes(word));
+}
+
+// One skill's receipts. Every line here is either a fact from the skill's own
+// frontmatter or a number out of skills/_validation/results, so nothing on it
+// is written by hand on the way to the page.
+function SkillReceipts({ skill }) {
+  const s = skill;
+  const sentences = receiptSentences(s.validation);
+  const stale = s.validation && s.validation.current === false;
+
+  return (
+    <>
+      <h4 className="skill-detail-head">The receipts</h4>
+      <dl className="skill-receipts">
+        {s.extracted && (
+          <div>
+            <dt>Distilled</dt>
+            <dd>{formatDate(s.extracted)}</dd>
+          </div>
+        )}
+        <div>
+          <dt>Trigger test</dt>
+          <dd className={stale ? "is-stale" : undefined}>
+            {sentences.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+          </dd>
+        </div>
+        {s.validated && (
+          <div>
+            <dt>Held up in use</dt>
+            <dd>{s.validated}</dd>
+          </div>
+        )}
+        {s.claims.length > 0 && (
+          <div>
+            <dt>
+              Built from {s.claims.length}{" "}
+              {s.claims.length === 1 ? "claim" : "claims"}
+            </dt>
+            {/* Ban list entry 14 names claim ids as internal vocabulary
+                printed at the reader, and its amended test is whether someone
+                who has never seen the codebase could say what the number
+                refers to. So the ids ship with the sentence that decodes them
+                and the page that resolves them, rather than bare. */}
+            <dd className="skill-claims">
+              <span>{s.claims.join(", ")}</span>
+              <span className="skill-claims-note">
+                Each number is one finding in the library's claim graph.
+                Search for it on <Link href="/graph">the graph</Link> to read
+                the finding and the paper it came from.
+              </span>
+            </dd>
+          </div>
+        )}
+      </dl>
+    </>
+  );
 }
 
 function SkillRow({ skill, entitled }) {
@@ -60,6 +127,8 @@ function SkillRow({ skill, entitled }) {
 
           <h4 className="skill-detail-head">What your agent matches on</h4>
           <p className="skill-routing">{s.routing}</p>
+
+          <SkillReceipts skill={s} />
 
           {entitled ? (
             <article

@@ -40,6 +40,37 @@ announcement with no mechanism in it is `discard`. Production experience is
 evidence of a different kind from a paper's, not a lesser kind, and the pipeline
 records which kind it was. Never route one `deep_read`.
 
+Some items are **reasoning-model research**, a standing priority of this
+pipeline (the owner's order of 2026-09-23). Reasoning work is judged on the same
+criterion as everything else — could this change how we build agents — but that
+criterion is easy to misapply here, because a reasoning paper's contribution is
+usually a training recipe rather than an architecture, and a recipe is a
+construction technique.
+
+Route to `distill` when the item carries any of these:
+
+- a **training recipe for reasoning**: what data, what reward, what curriculum,
+  and what the ablations removed. Reasoning-trace supervision, chain-of-thought
+  training, and process rewards all belong here.
+- a **verifiable-reward setup** — RLVR, GRPO and its variants, or any reward
+  grounded in an executor or checker: how the verifier is built, what it scores,
+  and where it gets gamed.
+- a **test-time compute tradeoff with numbers**: accuracy against tokens,
+  latency or dollars; where thinking longer stops paying; how the budget is
+  allocated, capped, or learned.
+- **distillation of reasoning into a smaller model**: what transfers from the
+  larger reasoner, what is lost, and at what size the transfer breaks.
+- a **synthetic-data pipeline** for reasoning traces or preference data: how
+  samples are generated, filtered and verified, and where the loop degrades.
+
+Route to `index` when the item is a **benchmark, leaderboard, or evaluation of
+reasoning with no recipe attached**: it measures how well models reason and
+offers no method for making them reason better. A mechanistic analysis of
+reasoning is `index` unless it ends in an intervention someone could apply. So
+is a domain application of an existing recipe — the same method pointed at
+medicine, telecom, or recommendation — unless the adaptation itself is the
+contribution.
+
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
 picks) and `c` (frontier- and open-lab channels) warrant leaning one step more
 generous at the margin; `a-low` (a noisy firehose category) warrants extra
