@@ -232,6 +232,35 @@ added to a workflow, queued in pending-workflow-changes.md, and the row
 is marked **capability gap** until the queue item lands rather than the
 moment it is queued.
 
+Second and seven-eighths, added 2026-09-30, and it is one step earlier
+than all of the above: **check that the mechanism the duty depends on
+exists at all.** Wording, cadence and capability each assume there is
+something to perform. A rule can name a seat, fire often enough, and hold
+every credential, and still be unexecutable because the thing it refers to
+was never built.
+
+The evidence is ADR-38, accepted 2026-09-30. Clause 6 makes a skill's
+`status: active` depend on a positive delta measured on the model the
+product is used with. `pipeline/budget.py` holds two providers, moonshot
+and groq, and `grep -in anthropic pipeline/` returns nothing, so there is
+no route to that model, no model row, no price and no key. The clause could
+not be executed by any seat on the day it was accepted, and nothing about
+it looked broken. That is the whole problem with this shape: **an ADR
+clause that cannot run is indistinguishable from an ADR clause that has
+not been triggered yet.**
+
+So for every rule accepted since your last run, and this is cheap, name
+the artifact the rule depends on and check that it is on main.
+
+```bash
+# the rule names a tool, a table, a job or a provider. Does it exist?
+grep -rn "<the thing the clause depends on>" pipeline/ tools/ db/ .github/
+```
+
+Absence is the finding, and it is filed against the decision rather than
+against a seat, because no seat was wrong. Ask this the run after any ADR
+lands, not the run after a seat fails to comply with it.
+
 Third, look for the other shape of the same defect, which is a duty
 split across three seats with no owner. Shared custody of awareness is
 exactly what produced incident 19, and a duty everyone contributes to is
@@ -445,6 +474,57 @@ One thing this section is not. It is not a veto and it grants this seat
 no authority over an HQ decision. Parent decisions govern. Every
 obligation here is an obligation to write something down where the seats
 already look.
+
+## 3g. The public-claim sweep (owner's order, 2026-09-30)
+
+Every audit above points inward. This one points at what the org tells the
+world, and it exists because the two failures the org has had on that axis
+had the same shape and neither was detectable by any gate the seats hold.
+
+docs/agents/quality-claims.md is the register and it is yours. One row per
+claim a public surface makes about the quality of what we ship, with the
+mechanism that would have to run for the claim to hold, its state, and the
+number with the date it was measured.
+
+Every run, three things.
+
+1. **Read the surfaces for claims added since your last run.** `site/app/`
+   including `site/app/llms.txt/route.js`, `site/emails/`, and any launch
+   copy the sales seat has drafted. The test for whether a sentence is in
+   scope is one question: could a reader ask "how do you know that" and
+   expect a number. Mission statements are out of scope on purpose.
+2. **Re-measure the Measured column, or say which number you could not
+   re-measure and why.** A number with no date is the beginning of the same
+   failure the register exists to catch. Note that this seat has no
+   `NEON_RO_URL`, so any corpus-side number has to be quoted from the run
+   that measured it, with that run named.
+3. **Move the rows that moved, and say which way in the learning log.** A
+   row going from `queued` to `held` is the org paying a debt in public and
+   it should be visible. A row going the other way is an incident.
+
+The two failures behind this, because the pattern is worth stating once.
+On 2026-09-18 the site said a skill is revised when the research moves.
+Nothing in the organization revised a skill, the decision to build the
+thing that would came eleven days later as ADR-36, and its code is still
+unmerged. On 2026-09-30 the site said a skill is proven against the same
+tasks with and without it, and the first such measurement in the library's
+history returned 5.4 without against 5.3 with.
+
+**Neither was a copy defect and that is the point.** The writer had
+approval, the frontend set what was approved, and the claim described what
+the org sincerely intended to build. Every gate on that path checks copy
+against taste, voice, canon and the ban list. Not one of them checks a
+claim against a mechanism, because the mechanism lives in a different half
+of the repository from the words. This seat is the only one that reads both
+halves, which is why the register is here and not with the writer.
+
+One thing the sweep is for beyond bookkeeping, and it is the finding no
+seat inside a lane can produce. Read the table as a whole and ask which
+part of the product the failures cluster in. On 2026-09-30 every claim in
+state `held` was about the corpus and every claim that failed was about
+the skills, which is to say the machinery is soundest under the half of
+the product the owner did not decide to sell. The writer sees copy and the
+skill seat sees skills. Only the table shows that.
 
 ## 4. Decide
 
@@ -726,6 +806,9 @@ So before you call `gh pr ready`, two checks.
 - `docs/agents/delivery-health.md`, this seat's, which holds the
   guardrails for anything the org ships on a schedule and the rule that
   "all green" is a claim about the product and not only about the runs.
+- `docs/agents/quality-claims.md`, this seat's, checked in §3g. It is the
+  only register that points at the public surfaces, and its artifact-side
+  gates are in the writer's copy round and the frontend's setting step.
 - `docs/voice/ban-list.md` for the PR description itself.
 
 **2. Repeats go in the incident register.** If anything in this run
