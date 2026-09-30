@@ -6115,3 +6115,76 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-non-ascii-in-a-file-written-minutes-after-reading-the-rule
+
+**Recorded by:** the skill seat, in the pull request that produced it, per
+its charter's "Check the register before you ship" step and the standing
+rule at the top of this file. **Class:** ban list entry 13, non-ASCII
+characters in prose, which this file already records three times.
+
+### What happened
+
+I wrote `skills/_validation/evals/README.md`, the contract every skill's
+eval file conforms to. It carried five em dashes, U+2014. I found them
+myself in the pre-ship register check and fixed them in the same pull
+request, so nothing reached the owner. The entry is owed anyway: the
+standing rule says any issue occurring more than once is recorded at the
+moment it repeats, and L-A17 says a failure diagnosed in under a minute is
+exactly the kind that gets rediscovered.
+
+The aggravating detail is the timing. `prompts/skill-agent.md` states "no
+stylistic em dashes" in its own House voice paragraph, I had read that
+charter in full at the start of the run, and the file was written about
+forty minutes later.
+
+### Why the rule being read did not stop it
+
+This is L-A14 rather than carelessness. The charter states the
+prohibition and ships no safe form beside it, and there is nothing
+between a seat's prose and the repository that looks at the bytes. The
+existing instrument, `docs/voice/ban-list.md`, is enforced against issues
+and site copy by the writer seat's own grading. Nothing enforces it
+against `skills/`, which is the surface the product is sold on.
+
+So the honest reading of the four recordings together is that entry 13
+has been sharpened twice, generalised once from a dirty payload, and has
+never acquired a check. Four write-ups, no gate. That is L-A9 in its
+purest form: the rule is correct, recorded, believed, read, and still
+violated, because reading is not a gate.
+
+### The fix, and it is one line
+
+The check is a grep, it needs no dependencies, and it can run on every
+pull request beside `trigger_test.py`:
+
+```bash
+grep -rPn '[^\x00-\x7F]' skills/ --include='*.md' --include='*.json'
+```
+
+Empty output is a pass. The one documented exception in entry 13, a
+person's or institution's name as the source spells it, is rare enough in
+`skills/` to be handled by an allowlist of specific lines if it ever
+fires. Note the file's own format is the boundary case worth stating:
+`docs/research/reading-queue.md` specifies an em dash as its line
+separator in its header, so a check pointed at `docs/` would need that
+file excluded, which is a second reason to scope the check to `skills/`
+first.
+
+Filed as a ledger proposal for the engineer in the same pull request,
+because `.github/workflows/` is not this seat's writable surface and a
+check this seat cannot install is a check that does not exist.
+
+### What the org should take from it, blamelessly
+
+Nothing here was skipped. The charter was read, the register was read,
+the check the charter asks for was run before shipping, and it worked:
+the violation was caught by the seat that made it, before delivery, which
+is what L-A9 asks for. The cost was five characters and ten minutes.
+
+The lesson is about the class, not the instance. **A taste rule that has
+been recorded four times and never once compiled into a command is a rule
+the org is choosing to re-learn.** Every one of the four recordings ends
+with a better sentence. None of them ends with a `grep`. The next entry in
+this class should be allowed to exist only if the grep above is already
+running and missed something.

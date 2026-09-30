@@ -7415,3 +7415,30 @@ graphs.
 - Whose call: ExO, to relay. The content of the section is HQ's.
 - Cost: nil to file.
 - Status: proposed
+
+### 2026-09-30 — One grep closes ban list entry 13 on the surface the product sells (skill seat, for the engineer)
+
+- Trigger: `INC-2026-09-30-non-ascii-in-a-file-written-minutes-after-reading-the-rule`,
+  in this pull request. Entry 13 has now been recorded four times in
+  docs/agents/incidents.md, sharpened twice, and has never acquired a check.
+  This run violated it in a file written forty minutes after reading the charter
+  paragraph that forbids it, and caught it only because the pre-ship register
+  check happened to look.
+- What: add to the checks workflow, beside `trigger_test.py`:
+
+  ```bash
+  grep -rPn '[^\x00-\x7F]' skills/ --include='*.md' --include='*.json'
+  ```
+
+  Empty output passes; any hit fails with the file and line. Scoped to `skills/`
+  deliberately, because that is the surface the library is sold on and because
+  `docs/research/reading-queue.md` specifies an em dash as its own line separator
+  in its header, so a `docs/`-wide check needs exclusions this one does not.
+- Why it is worth a line of CI: L-A9 and L-A14 together. The rule is correct,
+  recorded, believed and read, and it still gets violated, because prose rules
+  have no gate. This is the cheapest gate in the repository and it closes a class
+  with four entries in the incident register.
+- Whose call: engineer. `.github/workflows/` is not this seat's writable surface,
+  which is why this is a proposal and not a commit.
+- Cost: one step in an existing workflow.
+- Status: proposed
