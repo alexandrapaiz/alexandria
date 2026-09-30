@@ -1,0 +1,156 @@
+{
+  "measured_on": "2026-09-30",
+  "tokenizer": "o200k_base (tiktoken)",
+  "model": "kimi-k2.6",
+  "window_chars": 250000,
+  "worst_chars_per_token": 2.5346,
+  "worst_headroom_tokens": 141633,
+  "papers_complete": 13,
+  "papers_measured": 14,
+  "all_fit": true,
+  "budget_filler_chars_per_token": 6.176,
+  "guard_constant": 2.53,
+  "papers": [
+    {
+      "paper": "arxiv:2501.12948",
+      "cleaned_chars": 233306,
+      "measured_chars": 233306,
+      "tokens": 58713,
+      "chars_per_token": 3.9737,
+      "request_tokens": 61735,
+      "headroom": 161087,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2412.19437",
+      "cleaned_chars": 144799,
+      "measured_chars": 144799,
+      "tokens": 39293,
+      "chars_per_token": 3.6851,
+      "request_tokens": 42315,
+      "headroom": 180507,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2407.21783",
+      "cleaned_chars": 367520,
+      "measured_chars": 250000,
+      "tokens": 58752,
+      "chars_per_token": 4.2552,
+      "request_tokens": 61774,
+      "headroom": 161048,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2310.06825",
+      "cleaned_chars": 26796,
+      "measured_chars": 26796,
+      "tokens": 6977,
+      "chars_per_token": 3.8406,
+      "request_tokens": 9999,
+      "headroom": 212823,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2402.03300",
+      "cleaned_chars": 95059,
+      "measured_chars": 95059,
+      "tokens": 29017,
+      "chars_per_token": 3.276,
+      "request_tokens": 32039,
+      "headroom": 190783,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2305.18290",
+      "cleaned_chars": 110400,
+      "measured_chars": 110400,
+      "tokens": 31963,
+      "chars_per_token": 3.454,
+      "request_tokens": 34985,
+      "headroom": 187837,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2201.11903",
+      "cleaned_chars": 135076,
+      "measured_chars": 135076,
+      "tokens": 35552,
+      "chars_per_token": 3.7994,
+      "request_tokens": 38574,
+      "headroom": 184248,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2203.02155",
+      "cleaned_chars": 187176,
+      "measured_chars": 187176,
+      "tokens": 45230,
+      "chars_per_token": 4.1383,
+      "request_tokens": 48252,
+      "headroom": 174570,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2302.13971",
+      "cleaned_chars": 92207,
+      "measured_chars": 92207,
+      "tokens": 26123,
+      "chars_per_token": 3.5297,
+      "request_tokens": 29145,
+      "headroom": 193677,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2404.19737",
+      "cleaned_chars": 94768,
+      "measured_chars": 94768,
+      "tokens": 26792,
+      "chars_per_token": 3.5372,
+      "request_tokens": 29814,
+      "headroom": 193008,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2408.03314",
+      "cleaned_chars": 89871,
+      "measured_chars": 89871,
+      "tokens": 20359,
+      "chars_per_token": 4.4143,
+      "request_tokens": 23381,
+      "headroom": 199441,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2312.11805",
+      "cleaned_chars": 225299,
+      "measured_chars": 225299,
+      "tokens": 54578,
+      "chars_per_token": 4.128,
+      "request_tokens": 57600,
+      "headroom": 165222,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2501.19393",
+      "cleaned_chars": 198125,
+      "measured_chars": 198125,
+      "tokens": 78167,
+      "chars_per_token": 2.5346,
+      "request_tokens": 81189,
+      "headroom": 141633,
+      "fits": true
+    },
+    {
+      "paper": "arxiv:2410.05229",
+      "cleaned_chars": 83981,
+      "measured_chars": 83981,
+      "tokens": 21449,
+      "chars_per_token": 3.9154,
+      "request_tokens": 24471,
+      "headroom": 198351,
+      "fits": true
+    }
+  ],
+  "failures": []
+}
