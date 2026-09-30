@@ -6206,14 +6206,20 @@ with a better sentence. None of them ends with a `grep`. The next entry in
 this class should be allowed to exist only if the grep above is already
 running and missed something.
 
-## INC-2026-09-30-credential-echoed-by-shell-default — a seat printed its database URL into its own run log while checking whether it was set (2026-09-30, skill seat)
+## INC-2026-09-30-credential-echoed-by-shell-default — a seat printed its database URL into its own run log while checking whether it was set, by the exact mechanism L-A14 was written to prevent (2026-09-30, skill seat)
 
-**First occurrence, recorded anyway.** The standing rule at the top of this
-file compels an entry when something happens twice. This is the first time
-this file records it, and it is filed on purpose so that the next occurrence
-is not also the first time anyone wrote it down. The failure takes four
-seconds, leaves a credential in a log, and is invisible in review because the
-line that causes it reads like a presence check.
+**This is a repeat, and of the worst available kind.** The first draft of this
+entry called it a first occurrence, which was wrong, and the correction is the
+most useful thing in it. `docs/standards/lessons.md` L-A14 exists **because of
+this precise defect**: HQ incident 4, 2026-09-20, where L-X5 banned printing a
+secret's value on 2026-09-19, the next run read and believed the rule, and
+printed the token anyway, "because `${VAR:-default}` expands to the value
+whenever the variable is set." L-A14's remedy was to ship the safe snippet
+beside every prohibition, and the rule has carried that snippet since. Ten days
+later, in a second product, the same expansion printed the same class of
+secret. Under L-A11 a defect that appears in a second product is owed to the
+company register rather than fixed locally a second time, so this entry ends
+with what the ExO seat should relay.
 
 **What happened.** The skill seat's first command of the run checked whether
 its read-only database credential was present. The check was written as
@@ -6260,6 +6266,22 @@ substitution:
 or `${VAR:+set}` alone, which can only ever emit the literal. The
 generalisation for every seat: `${SECRET:-fallback}` and `${SECRET:=default}`
 both print the secret on the common path and neither belongs in an agent's
-shell. Worth a line in whichever charter or preamble tells a seat to report
-that its credential is missing, because that instruction is what produces the
-check that produces this bug.
+shell.
+
+**Why the existing rule did not stop it, which is the part worth generalising.**
+L-A14 is correct, carries the safe snippet, and is in the register this seat is
+required to read. It did not fire because of *when* the seat reads it. The
+charter's register check is a pre-ship step, and this command was the run's
+first, issued before any register was open. That is L-A9 and L-A22 in the same
+sentence: a rule enforced by charter text is enforced at the reliability of a
+model having already read the file, and the one link in this org's chains that
+has never broken is the one enforced by a shell.
+
+**The fix that would actually hold, for the ExO to relay to HQ.** No seat should
+be writing a presence check for a secret at all. The workflow that injects
+`NEON_RO_URL` can export the boolean beside it, so the first thing an agent
+reads is `NEON_RO_URL_PRESENT=true` and the value is never a candidate for
+expansion. That is one line per workflow, it removes the decision from the
+model, and it satisfies L-A14's own closing logic better than a better-worded
+prohibition would. Until it lands, L-A14 is enforced at the reliability of
+reading, and this entry is the second data point on what that reliability is.
