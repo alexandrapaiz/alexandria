@@ -1246,3 +1246,90 @@ check, and the harness; the skill seat writes evals for the existing
 skills and every new one; frontend renders results on the skill page;
 market and writer use only what the harness printed. ADR-13's panel
 (provenance, adversary, validator) becomes the harness's three checks.
+
+## ADR-37: Skills maintain themselves
+
+**Status.** Accepted 2026-09-29, owner-directed: "i want skills to
+self-maintain."
+
+**Decision.** A skill's life after merge runs without the owner. Four
+triggers, one loop, one gate that is a harness rather than a person.
+
+**Triggers**, all read from the corpus by a daily job:
+1. A claim the skill cites is deprecated (`skills_needing_revision`).
+2. A claim the skill cites gains a `refines` neighbor with confidence, so
+   the procedure the skill teaches has a newer, narrower form.
+3. A cited paper's citation trajectory moves sharply, up or down, over the
+   slow loop's window, so the skill's weight in the library is stale.
+4. The skill's eval regresses on the current subject model, or a new
+   model version is set as the subject.
+
+**Loop.** The job appends the trigger to `docs/research/reading-queue.md`
+and dispatches the skill seat with the skill and the trigger. The skill
+seat reads the new papers in full (ADR-35), revises the skill or retires
+it with the reason, bumps `version`, and re-runs the skill's eval
+(ADR-36). The PR carries the before and after eval result.
+
+**Gate.** A revision merges on its own when every check passes: the
+provenance block resolves to claims that exist and are not deprecated, the
+eval's with-versus-without delta is not worse than the previous version's
+within its spread, the control tasks are unchanged, the ban list and the
+trigger test pass, and the diff touches `skills/<slug>/` only. Anything
+else stays a draft PR for the owner. This is the one class of change in
+the repository that merges without her, and it is bounded to skill files
+that a harness has measured.
+
+**Publish.** The skill's page shows the new version, its eval, and the
+trigger that caused the revision. Retired skills stay on the page with
+their reason. The issue's "what the library changed" line draws from the
+same record.
+
+**Why.** The site says a skill is revised when the research moves and
+retired with an explanation when it is overturned. ADR-36 found that
+sentence had no machinery under it. A skill that waits for a human to
+notice is not maintained, it is abandoned slowly.
+
+**Consequences.** Engineer: the trigger job, the gate as a checks
+workflow with auto-merge on the skill path, the version bump and results
+history. Skill seat: revisions before new skills, always with the eval.
+Frontend: version, trigger, and result on the skill page. Security: the
+auto-merge path is reviewed at the 1st-of-month run for what a poisoned
+paper could push through it.
+
+### ADR-37, amended 2026-09-29: owner confirmed no human in the loop, with guardrails
+
+**Owner, verbatim.** "i want self mantaining without human in the loop.
+we might want to set guardrails though."
+
+**What merges on its own.** A revision or retirement of an existing skill,
+touching only `skills/<slug>/` (SKILL.md, evals/, results.json), when the
+gate passes. A skill's first version still comes to the owner: the loop
+maintains, it does not originate.
+
+**The gate** (all must pass): provenance resolves to claims that exist and
+are not deprecated; the eval's with-versus-without delta is not worse than
+the previous version's within its spread, on the same subject model; the
+control tasks are unchanged; ban list and trigger test pass; the diff
+carries no code, no workflow, no prompt, and no file outside the skill's
+folder; the skill's page still renders.
+
+**Guardrails around the gate:**
+1. **Rate.** At most three automatic merges a day across the library; the
+   rest wait a day. A burst is a signal, not a queue.
+2. **Kill switch.** A file `skills/MAINTENANCE_PAUSED` on main pauses
+   automatic merges; any seat may create it with a reason and only the
+   owner or chair removes it.
+3. **Rollback.** The day after an automatic merge the eval re-runs; a
+   regression beyond the spread reverts the merge automatically and
+   files an incident.
+4. **Notice.** Every automatic merge emails the owner the skill, the
+   trigger, the before and after eval, and the diff link. Silence is
+   never the record.
+5. **Poison check.** A revision citing a paper first seen by the library
+   within the last seven days, or a paper whose source is a single feed,
+   waits for the security seat's pass before it can auto-merge.
+6. **Audit.** The security seat reviews the month's automatic merges at
+   its 1st-of-month run; ExO reviews the gate's misses.
+
+**Rollback of the decision.** Create the kill-switch file. Nothing else
+needs to change.
