@@ -1,7 +1,7 @@
 ---
 name: harness-engineering
 description: Evidence-backed practices for designing, improving, and debugging agent harnesses (the scaffold around a model - tools, prompts, loop structure, feedback). Use when building an agent or multi-agent system, when an agent underperforms and the cause is unclear, when debugging a multi-agent pipeline, when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories, when deciding between improving the harness and training the model, or when deciding how to spend extra inference compute on a hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt.
-version: 1
+version: 2
 status: active
 provenance:
   extracted: 2026-09-12
@@ -34,6 +34,8 @@ conflict (the fine-tuning warning below is the main such conflict).
 
 ## Order of operations: harness before weights
 
+*Validation: exercised by the 2026-09-12 A/B trial (the prescribed alternative to fine-tuning came from this section); confirmed without decision change by the first consumer report (reviews/2026-09-29-ursa-chair.md).*
+
 When an agent underperforms, exhaust harness improvements before reaching for
 fine-tuning. Evolving the harness alone, with the same weaker model, produced
 substantial gains on seven enterprise agent tasks before any training was done
@@ -55,6 +57,8 @@ Concretely, before proposing training:
    Feedback consistency is a hard boundary, not a nicety.
 
 ## Never break model-harness fit
+
+*Validation: the 2026-09-12 A/B trial tested exactly this section's warning; bare Claude endorsed the imitation fine-tune, the loaded skill refused and cited the regression.*
 
 A harness evolved around one model's behavior becomes part of that model's
 extended body. The clearest negative result in this cluster: fine-tuning a
@@ -78,6 +82,8 @@ a coupled agent system, prefer the smallest local change that fixes the
 observed failure over wholesale replacement with someone else's style.
 
 ## Debugging a multi-agent harness: intervene one agent at a time
+
+*Validation: none yet as a trial; adopted as procedure by the first consumer report (reviews/2026-09-29-ursa-chair.md), untested in action.*
 
 When a system of multiple agents fails, do not guess which agent is at fault
 and do not change several things at once. Localize by sequential intervention
@@ -114,6 +120,8 @@ wall-clock by 2.5x versus the next-fastest method.
 
 ## Spending test-time compute: sample in parallel, then select
 
+*Validation: none yet as a trial; changed a live design decision in the first consumer report (reviews/2026-09-29-ursa-chair.md): a distiller specified best-of-three with medoid selection instead of single-sample reflection.*
+
 When the harness can afford extra inference for a hard step, parallel sampling
 with a cheap selection step beats asking the model to sequentially reflect on
 and revise its own answer. Best-of-three parallel samples, selected either by
@@ -123,13 +131,32 @@ reflection loops (What Else Needs Fixing). Default to parallel
 sample-and-select in harness design; reserve sequential reflection for cases
 where a verifier gives real signal between attempts.
 
+## Apply: the builder's checklist
+
+Before shipping an agent, a surface, or a loop this skill touched:
+
+1. Interface: can the model or the user state each intent in one semantic
+   unit of your interface, with no fragile composition of low-level steps?
+2. Feedback: is what the environment returns rich (never a bare "failed")
+   and identically shaped for the same action in similar states, including
+   the zero-result case?
+3. Compute: does every hard step that can afford extra inference sample at
+   least three candidates in parallel and select, rather than reflect and
+   revise, unless a real verifier signals between attempts?
+4. Fixes: is every improvement the smallest local change that repairs the
+   observed failure, never a wholesale replacement in someone else's style?
+5. Debugging: are failures made reproducible first, interventions made one
+   agent at a time starting upstream, and accumulated corrections clustered
+   by similarity before any of them touches a prompt?
+
 ## Caveats
 
 - The co-evolution results are from 7 enterprise tasks with Qwen3-Coder and
   Gemma 4 as the weaker models; the imitation-regression finding is about
   weaker models under evolved harnesses, not about distillation generally.
-- Medoid selection needs at least 3 samples and an embedding model; with 2
-  samples use an LLM judge.
+- Medoid selection needs at least 3 samples and an embedding model (a
+  MiniLM-class sentence embedder is sufficient); with 2 samples use an
+  LLM judge.
 - These findings are from 2026 papers and carry alexandria claim provenance;
   if a source claim is later contradicted, this skill will be revised or
   deprecated.

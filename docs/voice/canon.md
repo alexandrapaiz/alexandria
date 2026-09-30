@@ -90,7 +90,7 @@ Study decisions, never copy sentences.
    invented and rejected). Refinements layer ON TOP of her
    fine-tuning through the writer seat, with her merge. The weekly is the
    synthesis and must argue, not list.
-10. "You read to decide. Your agents load to act." The dual audience
+10. "Accelerate every builder and agent to frontier speed." The dual audience
     appears in every issue's close.
 11. Length follows the news. No fixed issue length at any cadence: a
     heavy day runs long, a thin day is honestly short. The amount of

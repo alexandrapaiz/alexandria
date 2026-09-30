@@ -995,7 +995,7 @@ the end of this file holds the sentence that made this rule necessary.
 Then the standing close, on its own line, exactly as written below. It is
 always last and never reworded.}
 
-**You read to decide. Your agents load to act.**
+**Accelerate every builder and agent to frontier speed.**
 ```
 
 Rules. Every one of them names examples, and an example is evidence that the

@@ -120,6 +120,15 @@ PRIORITY_TERMS = (
     "inference-time compute",
     "process reward",
     "long cot",
+    # Owner's order of 2026-09-29: four more threads go first, because the
+    # corpus held hundreds of their papers and had read almost none.
+    "model context protocol", "mcp", "agent protocol", "agent-to-agent", "a2a",
+    "agent interoperab", "agent identity",
+    "sandbox", "container", "isolation", "microvm", "firecracker", "gvisor",
+    "prompt injection", "jailbreak", "tool poisoning", "agent security",
+    "containment", "exfiltrat", "guardrail",
+    "self-improv", "self-evolv", "recursive self", "harness evolution",
+    "self-refin",
 )
 # The same predicate twice, in the two languages that need it. Both derive from
 # the tuple above, so they cannot drift: `%term%` for Postgres `ilike any`, and a
