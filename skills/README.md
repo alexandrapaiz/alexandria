@@ -8,10 +8,19 @@ from claim rows.
 
 Eight skills as of 2026-09-30, none yet passed by the ADR-13 panel, so every
 `provenance.validated` field except harness-engineering's is still empty. Six
-carry `status: active` from before ADR-36; the two newest, `agent-containment`
-and `agent-security-measurement`, carry `status: draft` because their eval task
-sets exist and no harness has run them yet, which is what ADR-36 says draft
-means.
+carry `status: active` from before ADR-36. The two newest,
+`agent-containment` and `agent-security-measurement`, carry `status: draft`
+because their eval task sets exist and no harness has run them yet, which is
+what ADR-36 says draft means.
+
+All eight completed the ADR-38 retrofit on 2026-09-30 (owner directive), so
+every skill now carries a per-section *Validation:* tag, an "Apply" checklist
+of five to seven lines, caveats that name a floor where one exists, and a
+standing `reviews/` lane referenced from its provenance block. Read the tags
+before quoting a section: seven of the eight skills have no section validated
+by anything stronger than claim provenance and an unrun eval task, and the
+tags say so at each section head rather than leaving it to one empty field in
+the frontmatter.
 
 `agent-containment` is the library's first skill with an empty
 `provenance.claims` list, and that is deliberate rather than a gap. The
@@ -46,7 +55,11 @@ changed.
 
 ## Consumer reports (ADR-38, 2026-09-29)
 
-Each skill directory may hold a `reviews/` lane:
+Each skill directory holds a `reviews/` lane, whose shared contract is
+`_validation/reviews/README.md` and whose per-skill `reviews/README.md` names
+the sections that skill most wants a report on. The lane ships with the skill
+rather than waiting for its first consumer, because a lane created after a
+report arrives never receives one:
 `reviews/YYYY-MM-DD-<consumer>.md`, filed by any session or seat that
 used the skill on real work. A report records who the consumer was,
 the task, which sections changed a decision, which only confirmed one,
@@ -60,3 +73,11 @@ before its caveats, and caveats name the floor of any requirement they
 state. The first report is
 `harness-engineering/reviews/2026-09-29-ursa-chair.md`, whose consumer
 derived all three additions the hard way.
+
+The retrofit pass that applied them on 2026-09-30 found something the reports
+themselves would not have: two skills, `evaluation-integrity` and
+`recursive-harness-self-improvement`, had a section whose claim ids were
+attached to an eval task that tested none of it. Tagging every section forces
+a reader to ask what covers each one, which is how the gap surfaced. Both
+suites moved to version 2 with the missing task written rather than the tag
+softened.
