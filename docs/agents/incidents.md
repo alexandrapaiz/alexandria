@@ -6315,3 +6315,98 @@ suffix rule, and the ship-first section's existing check is extended from
 "is my last PR open" to "has this name ever been used". The general lesson is
 the one the register keeps relearning: **when five seats break one rule, fix
 the rule's obeyability, not the seats.**
+
+## INC-2026-09-30-the-guard-went-red-and-nobody-read-it
+
+**Observed 2026-09-30 by the ExO seat, in the window run. Detected the
+same morning by the PM standup (#150) and handed to the engineer (#158),
+which is why the register entry is about the six days before that and not
+about the fix.**
+
+**What happened.** `main`'s own checks were red, and had been since
+2026-09-24. Two steps of the `digest request fits the model's budget` job
+failed on every push and on every open pull request:
+
+| Step | Assertion | Actual |
+| --- | --- | --- |
+| `tests/test_press_resilience.py` | the press honours a 1s `retry-after`, `slept == [1.0, 1.0]` | `[30, 60]` |
+| `tests/test_press_resilience.py` | per-issue cost under ADR-32's budget, `< 0.15` | `$0.1628` |
+| `tests/test_run_report.py` | `--dry-run` stdout parses as JSON | a `::warning::` line precedes the JSON |
+
+**Why it happened, and the tests are not the story.** The first two
+guards were correct when written and were made stale by two deliberate,
+correct changes to the press:
+
+- `281d0af`, 2026-09-23, raised `MAX_COMPLETION_TOKENS` from 6,000 to
+  24,000 because kimi-k2.6 spends its output budget reasoning before it
+  writes. That is a **token reservation**.
+- `69a9e7f`, 2026-09-24, stopped the press honouring a 1-second
+  `retry-after` on a concurrency 429 and gave it its own backoff, because
+  a concurrency limit is not a rate limit. That is a **retry policy**.
+
+Both phrases are named verbatim in `docs/agents/runtime-changes.md` as
+runtime changes, and the second clause was written on the same day as the
+second commit, in response to the same incident. The law had the right
+scope. Neither commit shipped an updated guard, and nothing noticed.
+
+The third failure is independent and simpler: `tools/run_report.py`
+prints its `::warning::` diagnostics to stdout, where `--dry-run` also
+prints the JSON payload the test parses. In CI `gh pr list` fails for
+want of a token, so the warning always fires and the parse always breaks.
+Diagnostics belong on stderr.
+
+**Why six days.** Three reasons, and only the first is about the tests.
+
+1. The runtime-change audit asks three questions and all three are about
+   the past: did a merged PR explain it, was there a smoke run, was there
+   a rehearsal. Every one of them can be answered correctly while the
+   thing the change broke is still broken.
+2. Both commits were direct pushes to `main` by the owner, which is hers
+   to do. So there was no pull request to explain them and, more to the
+   point, no pull request check to fail.
+3. `checks.yml` had no `push: branches: [main]` trigger until `4ef55df`
+   on 2026-09-29. For the whole window the repository's only gate was
+   scoped to pull requests, which is a channel these changes did not use.
+   **A gate scoped to pull requests is not a gate on a repository whose
+   owner commits directly**, and no seat can see this from inside a
+   sandbox, because seats only ever open pull requests.
+
+**What it cost, and the second-order cost is the larger one.** The cost
+guard exists to catch exactly this: its own comment says that if the
+number drifts "finance's books are wrong and this is where it should
+surface". It surfaced, correctly and immediately, that the press now
+costs **$0.1628 an issue against ADR-32's budgeted $0.05**, a factor of
+three, and it surfaced into nothing for six days. Finance has been
+working from a number the repository knew was wrong.
+
+Then the noise. A red `main` propagates to every open pull request
+through its merge check, so every seat's run ends with a red tick it did
+not cause. The PM counted **28 failed runs in 24 hours, 19 of them this
+same inherited pair**. On PR #146 the job failed on three steps, two
+inherited and one genuinely the skill seat's own, and the seat's real
+failure sat between two that were not its own. **A red main does not cost
+one bug. It costs the signal on every branch at once, and the seat that
+most needs to read its own failure is the seat least able to.**
+
+**Fix.**
+
+1. *Shipped here.* `docs/agents/runtime-changes.md` gains a fourth
+   question, the only one in the present tense: **is the guard that
+   covers this change green right now?** Run it; do not look for the run
+   that cleared it, because clearing is a claim about a past state.
+   Carried into the two charters that perform the audit, ExO §2 weekly
+   and the engineer's step 0 daily. The engineer's copy says to fix a red
+   main ahead of the sprint item, because `tests/` and `pipeline/` are
+   that seat's surface and nobody else's.
+2. *Shipped elsewhere, not duplicated here.* The two stale assertions and
+   the stdout/stderr split are in the engineer's PR #158, handed over by
+   PM standup #150. The detection chain worked on the day; this entry is
+   about the six days it did not.
+3. *Owner's.* The machinery half is already correct as of `4ef55df`.
+   Nothing more is queued, because the push-on-main trigger that would
+   have caught this landed five days late but did land.
+
+**What the org grew from it.** The law had the right scope and the wrong
+tense. Every question the org asks about a runtime change was a question
+about the day it landed, and a guard is a thing that is either green or
+red now. One command answers it, and no audit had ever run it.
