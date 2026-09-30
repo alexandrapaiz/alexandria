@@ -1123,7 +1123,10 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             body = fetch_fulltext(pid)
             whole = None
             if body is not None:
-                whole = len(body) < FULLTEXT_CHARS   # nothing was cut off
+                # Strictly less than, so a paper that is exactly the window
+                # long counts as cut. It probably was, and a number the
+                # masthead rests on errs toward the smaller claim.
+                whole = len(body) < FULLTEXT_CHARS
                 print(f"  full text ({len(body)} chars"
                       f"{'' if whole else f', cut at {FULLTEXT_CHARS}'}): "
                       f"{title[:50]}")
@@ -1152,6 +1155,16 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
                         out, answered_by = extract_claims(
                             title, (abstract or "")[:6000], kind,
                             env=os.environ, cap=cap, available=available)
+                    except client.CapReached as inner:
+                        # The retry is a second call and the walk checks the
+                        # cap before it sends. Caught here as well as above,
+                        # because an uncaught CapReached on the retry path
+                        # would end the run in a traceback instead of the
+                        # clean stop the cap is for, and the papers already
+                        # committed would look like a crash.
+                        stopped = f"the ${cap_usd:.2f} spend cap"
+                        print(f"stopping: {inner}")
+                        break
                     except client.NoModelAnswered:
                         stopped = "every model refused"
                         print("stopping: no model would take the abstract "

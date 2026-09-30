@@ -1132,3 +1132,18 @@ def test_the_run_forecasts_the_remaining_queue(loop_env, monkeypatch, capsys):
     assert "OVER A WEEK" in out, (
         "a queue that cannot clear in a week is the condition the owner's "
         "directive named, so the run has to say so rather than print a number")
+
+
+def test_the_daily_draw_reads_the_paper_count_out_of_the_job():
+    """The number that will move is the number the guard reads, not a copy.
+
+    Distill dominates this table by an order of magnitude, so raising
+    MAX_PAPERS_PER_RUN without the guard following would be a job quietly
+    drawing more of the account's day than anything checks. That is the same
+    argument `cron_caps` makes for spend caps, applied to the other ceiling.
+    """
+    spec, per_call, _ = budget.KIMI_DAILY_DRAW["distill (pipeline/distill.py)"]
+    assert budget._calls(spec) == distill.MAX_PAPERS_PER_RUN
+    # And the arithmetic downstream of it actually uses that number.
+    total, _ = budget.kimi_daily_draw()
+    assert distill.MAX_PAPERS_PER_RUN * per_call <= total

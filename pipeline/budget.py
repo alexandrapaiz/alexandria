@@ -1243,17 +1243,44 @@ KIMI_DAILY_DRAW = {
         60, 1_000,
         "one claim and five candidates a call, measured small"),
     "distill (pipeline/distill.py)": (
-        20, 40_259,
-        "MAX_PAPERS_PER_RUN at the mean payload of the fourteen papers in "
+        ("pipeline/distill.py", "MAX_PAPERS_PER_RUN"), 40_259,
+        "the paper count read out of the job, at the mean payload of the "
+        "fourteen papers in "
         "docs/evals/2026-09-30-fulltext-token-density.json, plus the prompt "
         "and a measured reply"),
 }
 
 
+def _calls(spec) -> int:
+    """A call count, either a literal or `(path, constant)` read out of the job.
+
+    Distill's is read rather than copied, for the reason `cron_caps` gives
+    about spend caps and `cron_model_lists` gives about model ids: it is the
+    number that will move, it dominates this table by an order of magnitude,
+    and a guard holding its own copy of a number is a guard that stops
+    guarding the moment somebody edits the job. Triage's and interpret's are
+    still literals because neither is a constant in its job; triage's 70 is
+    its cap divided by its worst-case call price, and derivation belongs in
+    the comment beside it rather than in a regex.
+    """
+    if isinstance(spec, int):
+        return spec
+    path, name = spec
+    source = (ROOT / path).read_text()
+    match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} no longer defines {name} where this guard looks for it, "
+            "so the daily token draw this guard checks is not the draw the job "
+            "will make.")
+    return int(match.group(1).replace("_", ""))
+
+
 def kimi_daily_draw() -> tuple[int, list[str]]:
     """Expected tokens per day across every Kimi job, and the lines behind it."""
     total, lines = 0, []
-    for label, (calls, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        calls = _calls(spec)
         draw = calls * per_call
         total += draw
         lines.append(f"  {label}: {calls} x {per_call:,} = {draw:,} tokens "
