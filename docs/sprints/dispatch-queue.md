@@ -21,15 +21,17 @@ landed in the ~13 hours between that window ending and this run).
 ## Run health
 
 **Fleet health.** Quiet since the last PM run (PR #165, which accounted
-for everything through 04:02:35 UTC). `gh run list --limit 50` shows
-nothing between 04:02:35 UTC and this run's own start: the only two runs
-in that gap are `engineer-agent` and this `pm-agent` run, both
-`schedule`-triggered and both still `in_progress` as this is written. No
-non-success to account for. The prior run's own open item (main's red
-"digest request fits the model's budget" check, cost/backoff and
-GH_TOKEN-JSON causes, handed to engineer) is unchanged: engineer's own
-break-fix PR (#158, "break-fix on main's red checks") is already open
-against it, so it needs no new dispatch, only the owner's merge.
+for everything through 04:02:35 UTC) until its own scheduled cron fired
+in the same minute as this one: `engineer-agent`, `schedule`-triggered,
+started 16:47:30 UTC, opened **PR #166** ("second window run: sprint
+item 2, the deploy-drift guard — supersedes #158") at 16:50:21 UTC,
+mid-run as this is written. No non-success to account for. The prior
+run's own open item (main's red "digest request fits the model's
+budget" check) is unchanged in substance: it was engineer's #158,
+already superseded by this new #166, so still no new dispatch needed,
+only the owner's merge once #166 is ready. This does not change the
+dispatch-queue conclusion above — engineer still holds an open PR
+either way.
 
 **Delivery health**, via `tools/delivery_health.py` (exit 2, not clean,
 and that is the honest answer rather than a false green):
