@@ -197,6 +197,41 @@ on 2026-09-19, and the owner found two failed runs herself the same day.
 Where you find a cadence gap, the fix is a cron change queued in
 pending-workflow-changes.md, not another sentence in a charter.
 
+Second and three-quarters, and this is the clause the 2026-09-27 run
+added because the register had been wrong about a row for three days:
+**check capability, not only wording and cadence.** A duty is owned when
+the naming seat can actually reach the evidence the duty is defined by.
+Words are cheap and crons are cheap. Inputs are not. A seat runs in a
+sandbox whose secrets are listed in its workflow, and a charter cannot
+grant a credential.
+
+So for every assigned row, read the duty's evidence, then read the
+naming seat's workflow, and ask whether the second contains what the
+first requires.
+
+```bash
+# what the duty needs, against what the seat's runtime actually holds
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-<seat>.yml | sort -u
+```
+
+The register was born with this bug too, and in the same row twice over.
+On 2026-09-24 a run assigned "the product reached its readers" to the PM
+seat, whose evidence `docs/agents/delivery-health.md` defines as the
+newest row in `digests`, and `.github/workflows/agent-pm.yml` has never
+carried `NEON_RO_URL`. The PM said so in its own standups, plainly and
+twice, and substituted the public library page, which is a weaker proxy
+in a direction that matters: a row written but never sent and a page
+served from cache both read as healthy. Three audits in a row scored
+that row assigned.
+
+This is the worst of the three shapes for the same reason cadence beats
+wording: the seat reports honestly, the row reads covered, and the
+substitution is invisible unless someone compares two files nobody
+reads together. Where you find a capability gap, the fix is a secret
+added to a workflow, queued in pending-workflow-changes.md, and the row
+is marked **capability gap** until the queue item lands rather than the
+moment it is queued.
+
 Third, look for the other shape of the same defect, which is a duty
 split across three seats with no owner. Shared custody of awareness is
 exactly what produced incident 19, and a duty everyone contributes to is
@@ -378,6 +413,20 @@ For each hit, three questions, and they are in order of severity.
    is not a record. Nothing reads commit subjects. Where it is missing,
    the entry is the chair's to write and yours to ask for, because
    docs/decisions.md is not your surface.
+
+   **And a comment inside the artifact is not a record either**, which is
+   the sharper form of the same rule and the one that fooled this seat on
+   2026-09-27. HQ Incident 5 changed how alexandria deploys to
+   production. Its reasoning was written out carefully, in nine lines of
+   comment at the top of `.github/workflows/deploy-main.yml`, and it
+   existed nowhere else: not in docs/decisions.md, not in
+   docs/agents/runtime-changes.md, and not in
+   docs/agents/delivery-health.md, which is this seat's own file and
+   whose table still described the deploy trigger the change had
+   replaced. A comment is read by whoever opens that file for some other
+   reason. `grep -rn "HQ Incident 5" docs/` returned nothing at all.
+   So run the grep, on the parent's own words for its decision, and
+   absence of a hit outside the artifact is the finding.
 3. **Do the seats whose behaviour changed know?** The four routed seats
    could not see their own model. A seat that cannot see its
    configuration cannot report on it, which is why the failure needed a
@@ -416,6 +465,36 @@ runner's token cannot push `.github/workflows/` at all, and no
 the workflow files). Write workflow changes out in full in
 docs/agents/pending-workflow-changes.md, with the evidence and the exact
 edit, and the owner applies them.
+
+**There are two lanes, not one, and this charter knew about one of them
+until 2026-09-27.** The push is refused for paths under
+`.github/workflows/` and nowhere else, so a seat can commit a complete,
+valid YAML file to `.github/workflows-pending/` and the owner's whole
+act of applying it is `git mv`. The engineer seat found this on
+2026-09-19 and has used it four times since, and that directory has its
+own README explaining the move. Meanwhile this charter and the queue
+page both went on telling every seat that prose was the only lane. An
+org that discovers a capability and does not write it where the next run
+looks has not discovered it.
+
+Which lane a change takes is decided by one property, and it is not
+convenience.
+
+- **A new workflow file goes in `.github/workflows-pending/`.** There is
+  nothing to rot against, the artifact is the thing itself rather than a
+  description of it, and CI can parse it where it sits.
+- **An edit to an existing workflow stays a diff on the queue page.** A
+  full-file copy of a file the owner also edits is the rot problem with
+  the loudness removed. A diff's anchor fails to match and the item is
+  visibly rotted, which is the whole mechanism of the paragraph below. A
+  stale full copy applies cleanly and silently reverts every edit made
+  to the live file since the copy was taken. Incident 26 is what a
+  rotted diff nearly cost when it still announced itself. Do not trade
+  that away for one fewer keystroke.
+
+So when you queue an item, say which lane it is in and why, and when a
+queued edit has grown large enough that a diff is unreadable, the answer
+is to split the item rather than to switch lanes.
 
 **A queued diff rots, so re-verify every pending item against the live
 file each run, before you queue anything new.** Open each workflow the
@@ -482,7 +561,32 @@ sandbox" and a run can lose ten minutes deciding whether the diagram is
 broken when it is the browser. Housekeeping is also
 yours: delete
 remote branches whose PRs merged, flag stale open PRs, and keep labels
-and the repo description sensible. When the PROJECTS_TOKEN secret
+and the repo description sensible.
+
+**And the branch deletion is the one destructive act in this charter, so
+it gets a rule of its own.** A branch name is not a PR. Deleting the ref
+behind an open pull request closes that pull request and takes its work
+with it, and a name can carry a merged PR and an open one at the same
+time, because the org has reused names. On 2026-09-27 `okr/2026-09`
+carried merged PR #86 and open PR #114. A sweep that asked only "did this
+branch's PR merge" would have answered yes and destroyed the OKR seat's
+unmerged check-in.
+
+So delete a branch only when **every** pull request that ever pointed at
+the name is merged or closed. One command, and read its output rather
+than trusting the loop:
+
+```bash
+gh pr list --state all --limit 100 --json number,state,headRefName \
+  --jq '.[] | "\(.headRefName)\t\(.number)\t\(.state)"' | sort
+# group by the first column; a name with any OPEN row is never deleted
+```
+
+Then, separately, the reuse itself is a finding. The org rule below says
+never reuse a branch name whose PR already merged, and it has now been
+broken at least once, which means the rule needs a reader rather than
+another sentence. Check for duplicate names every run, name the seat in
+your PR description, and if it happens twice register it. When the PROJECTS_TOKEN secret
 exists, verify the PM's Projects board reflects the committed sprint
 and flag drift in the ledger.
 

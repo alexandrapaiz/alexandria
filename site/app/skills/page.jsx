@@ -24,18 +24,16 @@ export default async function Skills() {
   return (
     <main className="page skills-page">
       <p className="page-kicker">Skills</p>
-      <h1 className="page-title">One library, two readers.</h1>
+      <h1 className="page-title">
+          Skill library
+        </h1>
       <p className="page-intro">
-        A skill is a file that does one thing well, from designing an agent
-        harness to running a training loop. You read it to decide. Your agents
-        load the same file to act. Every skill names the papers it came from,
-        and it is revised when the research moves and retired with an
-        explanation when it is overturned.
-      </p>
+          Your agents stay at the frontier without you carrying them there. Each skill in this library gives an agent a way of doing one job that the research has shown to work, and the library keeps every skill current at the pace of the research that is gaining the most traction, so as the field confirms a technique, sharpens it, or overturns it, your agents change with it. You do not schedule the update or read the paper, because the library follows the field and your agents direct themselves from what it holds. What you get is agents that work from the current state of the evidence today and still will next month.
+        </p>
       <p className="agent-note">
-        Your agents can read this catalogue on their own, at{" "}
-        <a href="/llms.txt">/llms.txt</a>.
-      </p>
+          The catalogue is open to anyone. The files come with the paid plan, and your agents can read the catalogue directly at{" "}
+          <a href="/llms.txt">/llms.txt</a>.
+        </p>
 
       <SkillLibrary shelves={shelves} entitled={entitled} />
     </main>

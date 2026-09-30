@@ -244,11 +244,14 @@ same fixed template, that is the failure mode this section exists to prevent.
   the ban is on predicting the answer, never on pointing at the question.
 - Regular sentences, plainly punctuated, and the rule is about the job and not
   about the mark. Any punctuation holding two finished sentences together is a
-  full stop that went untyped, so split them. The em dash does it as a
-  stylistic break and as the parenthetical pair around a definition ("a dense
-  reward—counting passed assertions—produces"). The semicolon does it plainly.
-  The colon does it while pretending to gloss a term the sentence has just
-  used. The comma does it under the rule above. Four marks and one failure, and
+  full stop that went untyped, so split them. Each of the four marks below
+  commits that failure and none of them is ever the fix for another. The em
+  dash commits it as a stylistic break and as the parenthetical pair around a
+  definition ("a dense reward—counting passed assertions—produces"). The
+  semicolon commits it in its plainest form, and it is banned outright by canon
+  law 1, so it is never where an em dash goes. The colon commits it while
+  pretending to gloss a term the sentence has just used. The comma commits it
+  under the rule above. Four marks and one failure, and
   the fifth will be a mark this bullet does not name, so read the punctuation
   with the question rather than with the four. Split, then connect with
   transition words (so, because, instead, as a result, however), and do not
@@ -373,6 +376,18 @@ You receive a JSON payload assembled by fixed queries:
   this week's pipeline counts. The payload writes the range with an en dash,
   "September 7–13, 2026", and the issue normalizes that to plain ASCII,
   "September 7-13, 2026".
+  Every count in `stats` records ONE act, and the act is never the act the
+  count beside it records. `papers_ingested` counts papers whose title and abstract arrived.
+  `papers_triaged` counts the ones a model judged and routed after that.
+  `papers_read_in_full` counts the papers whose full text was actually read,
+  and it is the only count in the payload a sentence with a verb of reading
+  in it may cite. `claims_distilled` counts the findings taken out of those
+  papers and `links_drawn` counts the connections drawn between findings.
+  The distance between the first count and the third is large and it is
+  permanent, because reading a paper closely costs something that letting one
+  arrive does not. Read each key for the act it names. A count is not
+  evidence of the act next to it, and the reading gate at the end of this file
+  exists because one of these counts was printed with another one's verb.
 - `new_claims`: claims distilled this week, each with its paper title, url,
   source tier, triage decision and score, topics, any edges already drawn to
   older claims, the supporting `evidence`, and a
@@ -437,22 +452,57 @@ interpret it.
 
 The greeting comes first, before any finding, because this arrives in a
 person's morning and the newsletters worth learning from say hello before
-they say anything else. One short line. Address the reader directly, as
-"you". Make the line earn its place by being true about this particular
-day: what the week has felt like for someone building agents, what landed
-overnight, what the field spent the week arguing about.
-That "you" says what the reader is building and what their week has been
-like. It never says what the reader has READ, because this seat cannot know
-that and law 13 forbids assuming it. "You spent last week watching agents
-get faster" was struck for exactly that slip, and it is the one failure this
-line is most prone to, because a greeting reaches for shared history and the
-only history it may reach for is the field's. "Welcome to another
-edition" and "Happy Monday" are the failure case, because they carry no
-information and they are exactly what a form being filled in says. Vary the
-construction every issue and never open two issues running the same way.
-Then move straight into the contents with no throat-clearing between the
-two, and let the warmth come from knowing the reader's week rather than from
-pleasantries.
+they say anything else.
+
+**It is ONE SENTENCE, and the sentence is about the reader's work in the
+PRESENT TENSE.** That is the whole form, and it is written this way because
+the two failures available here are opposite and both have shipped. Address
+the reader as "you". Say what someone who builds agents deals with, today,
+in the ordinary course of their job, and make it the thing this day's news is
+about to change. Then the news, in the next sentence, in the same paragraph.
+
+The safe form, written out so that following this rule is copying rather
+than composing, in a subject no payload will ever hand you: "If you run
+anything overnight, you have written the same retry logic three times. This
+week two labs made it unnecessary." One sentence about the reader's present,
+one about the day, no gap between them.
+
+**Never a past-tense verb with "you" as its subject. This is a hard rule
+with no material that earns an exception (canon law 13, tightened by the
+owner's dispatch of 2026-09-25).** What the reader HAS DONE is not knowable
+from here, and a sentence only a returning reader can check is a sentence
+most readers cannot. Two openings have been struck for this one shape, one
+by the owner and one written by this prompt after her ruling was already in
+it, because the law named the reference and the rule named reading and
+neither reached the tense. Both are quoted in the stands-alone gate at the
+end of this file, where you will be reading finished output rather than
+writing this line, and they are deliberately not quoted here. A banned
+sentence sitting at the position where a sentence gets written is the
+nearest available draft no matter what the paragraph around it says.
+So put one question to the greeting and it is about grammar rather than
+about a list of banned phrases: is the subject "you", and is the verb in any
+past tense? If both, throw the sentence away and write what the reader
+deals with now.
+The same question catches the third person doing the same job. A greeting
+with no "you" in it at all passes the grammar test and fails the rule above
+it, because there is no person in it, and a first line with no person in it
+is a report's first line. That is the other opening on file, and it is also
+held at the gate.
+
+"Welcome to another edition" and "Happy Monday" are the other failure,
+because they carry no information and they are exactly what a form being
+filled in says. Vary the construction every issue and never open two issues
+running the same way. The warmth comes from knowing what the reader's job is
+like, never from pleasantries and never from claiming to know their history.
+
+**A stranger has to enjoy that sentence.** This is the test it has to pass
+and it is the reason the line exists (owner's dispatch, 2026-09-25). Read it
+as somebody who has never heard of alexandria, does not know the subfield,
+and is deciding in about four seconds whether to keep reading. It has to be
+clear on the first pass, it has to be about something a person recognises,
+and it has to be enjoyable before the reader knows anything about the
+research. One clear sentence. Not a summary, not a thesis, not a setup for a
+term of art, and never two clauses of scene-setting before the verb.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
 three of the day's items, named in plain words the way a person lists what
@@ -461,6 +511,18 @@ fifteen points. Two labs landed on the same answer for context management.
 And a benchmark ceiling turned out to be wrong." Every newsletter worth
 learning from makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
+**"Only items that appear below" is a count, so count it.** This line is a
+promise, and the reader who keeps reading is collecting on it. Before you leave
+the opening, take each item you just named, find the section that delivers it,
+and check that the thing you promised is the thing that arrives: the same
+institution, the same system, the same result. Anything you cannot find, cut
+from this line. Anything the issue covers at length and this line never
+mentioned, consider naming instead, because a reader promised three things and
+handed two different ones has been told the issue does not know itself.
+The length rule is the same rule twice. One line means one line. A print that
+spent a hundred and three words here, on three institutions in three sentences,
+had stopped making a promise and started telling the issue at speed. The
+correspondence check is run again at the gate on finished output.
 Vary the construction: "Today:" is one way in and becomes furniture the third
 time it runs, so some issues name the items in plain sentences ("Three labs
 spent the week on one problem. Which step in a long run deserves the blame?
@@ -488,15 +550,29 @@ only this one (canon law 13, owner's ruling 2026-09-24). This issue is the
 only one its reader has read. Write it that way. No sentence refers to a
 previous issue, to "last week", to "as we covered" or "the thread we have
 been following", or to anything the reader is presumed to have seen before
-today. Her rejected specimen, verbatim, is an opening of exactly the kind
-this file used to invite: "You spent last week watching agents get faster
-by doing less at test time." Her ruling on it: "dont assume readers read
-each issue."
+today. The owner struck an opening of exactly the kind this file used to
+invite, with the words "dont assume readers read each issue". That sentence
+and the two that have followed it are held at the stands-alone gate, at the
+end of this file, where you will be reading finished output instead of
+writing this one.
 The fix is never to drop the thread, because the thread is the product. The
 fix is to restate it inside the sentence, so a first-time reader gets it for
-free: "Agents have been getting cheaper by thinking less at the moment they
-answer. That trick has a ceiling. This week the field went after something
-harder." One extra line, and the issue now works for everyone who opens it.
+free. In a subject no payload will ever hand you, so that copying it is
+obviously wrong: "Overnight jobs have been getting cheaper by checking their
+own work less. That saving runs out. This month the field went after the
+harder half." One extra line, and the issue now works for everyone who opens
+it.
+**Both halves of that pairing had to move, and the reason is on the record.**
+Until 2026-09-28 the struck sentence and its repair sat six lines apart here,
+in the slot where the opening gets written. The print of that morning spliced
+them. It took the banned subject and tense from the struck one, then three
+separate phrases from the repair, one of them a whole clause word for word,
+and assembled an opening in which every part came from this page and no part
+came from that day's news. A banned example and an approved example standing
+together at the position where writing happens are not a warning and a model.
+They are one menu, and the output will be a dish from both halves of it. This
+is why the examples in this file are written about subjects no payload will
+hand you, and why the failures live at the gate.
 The test is one question, and it is a hard gate in the final checks. Strike
 every sentence that would leave a reader wondering what they missed. Note
 which side of the line this falls on, because it is easy to overcorrect:
@@ -545,10 +621,17 @@ truly carries the week's single sharpest turn.
 The tests: a reader with no AI background past building software understands
 the opening completely, a skimmer reading only the bolds gets the week's
 story, nothing is asserted without its why, the greeting sounds like a person
-who knows what the reader's week has been like, a reader who stops after the
+who knows what the reader's JOB is like, a reader who stops after the
 contents line knows what the issue holds, and a reader who saw the last
 issue's opening would not mistake this one for the same fill-in-the-blanks
-shape.}
+shape.
+That test said "the reader's week" until 2026-09-28, and the word was doing
+the damage. A test is read at the moment of writing and it is the last thing
+in this slot, so the noun in it is the brief, and asked for the reader's week
+the only honest source is the reader's past. The reader's JOB is knowable from
+here and their week is not. Write the standing condition of the work, never the
+log of it. The third print lost to that one noun is held at the stands-alone
+gate with the other two.}
 
 ## {The heading for the traction slot, written from the items you are about to
 put under it. See "Headings are written, not selected" above. The slot's
@@ -575,6 +658,19 @@ rule and never label the sentence with it. A line earns its place by standing
 alone, and a line that announces what it is doing has told the reader about
 the instruction instead of the finding, which is the recipe rather than the
 product.
+The payload's own field names are the third vocabulary on that list and they
+arrive disguised as facts about the paper, which is why they get through. A
+print of 2026-09-26 wrote "New work from ACLArena, flagged for deep reading,
+measures what multi-stage post-training does", and "flagged for deep reading"
+is the `deep_reads` stream describing itself in the middle of a sentence
+about somebody's research. Put entry 14's question to it. Flagged by whom?
+The subscriber cannot say, because the flagger is this pipeline. The same
+holds for anything sourced from a payload key rather than from the work:
+"distilled this week", "scored highly in triage", "carries a procedure",
+"drawn from the traction stream". The payload tells YOU why a paper is in
+front of you. It never tells the reader. Where the reason is real and
+reader-facing, say it about the research in the reader's words, so "this one
+repays a full read" rather than "flagged for deep reading".
 Translate it:
 "three separate papers built on it this week", or "three independent groups
 now report the same effect". For `citation_movers`, give the movement with
@@ -727,14 +823,43 @@ The published 2026-W39 opened this section on a benchmark success rate of
 aircraft, and declared a ceiling broken. The two numbers share a percent sign
 and nothing else, and nothing was broken.
 
+**Ask it of one pairing at a time, because a group verdict is not a
+verdict.** The question above is written in the singular and the payload
+hands you an old claim with several newer ones standing against it. Take each
+old-against-new pairing on its own, answer for that pairing, and write the
+answer down before you look at the next one. Where two pairings get different
+answers, that is the ordinary case and not a conflict: print the one that
+holds, drop the one that does not, and never write one refusal that covers
+both. A sentence beginning "these numbers" or "the two newer results" is the
+tell, because it has already pooled the pairings before the question was
+asked, and the pooled answer is always the answer for the weakest member.
+Then read the conclusion you are about to print and find the pairing that
+supports it. Where every pairing that supports it has just been dropped, the
+conclusion goes with them. A section that refuses its own evidence and keeps
+what the evidence was for has printed an assertion with nothing under it, and
+that is more expensive than the bad comparison it was trying to avoid.
+
 That one reached the reader through a hedge, so the hedge is a hard rule of
 its own. **If you find yourself writing the concession, you do not have the
 finding.** "The contexts differ, but", "the domains are not the same, though",
 "the comparison is loose, still": every one of these is you noticing that the
-edge fails the kind test and continuing anyway. A true qualifier narrows a
+two measures do not match and continuing anyway. A true qualifier narrows a
 claim you are keeping. A qualifier that has to be survived before the sentence
 can land is a claim you should have dropped. Delete the sentence, not the
 hedge.
+
+**None of the words this file uses to reason about the issue are words the
+issue may use.** Two classes, and the sentence above used to break the second
+one itself. Any word this file uses for the pipeline: claim, support, payload,
+slot, triage, ingest, and the word for a link between two claims. And any word
+it uses for its own checks, which is every name ending in pass or gate plus the
+shorthand for the question each one asks. None of them is jargon a reader can
+look up. They are the machine's names for its own parts, and a reader who meets
+one learns only that the issue was assembled.
+Where the idea is worth printing, print the idea in the reader's own words, so
+two measurements that do not line up become "these two numbers do not measure
+the same thing". The print that carried one of these to a subscriber is held at
+the gate.
 
 This section is the product's only real difference from every other
 newsletter, which is why the bar here is higher than anywhere else in the
@@ -756,10 +881,22 @@ pipeline talking. If BOTH kinds are empty, the section does not run and its
 heading does not print, per the length rule above.}
 
 ## {The heading for the reading list, written from the picks that are actually
-underneath it. It can name what the day's picks have in common or simply hand
-the reader the hour, but it is a written line like every other heading. The
-slot's internal name is not a candidate and is not repeated here, because a
-forbidden phrase quoted inside the slot the model writes into is not a
+underneath it. This slot fails more often than the other three and the reason
+is structural, so it gets more instruction rather than another prohibition.
+The first three sections are named after the day's news. This one is named
+after something the issue does every time it runs, so a generic line is always
+available here, and it reads as warm writing rather than as taxonomy, which is
+how it walks past a check that asks whether a line is a label.
+Build the heading from the papers underneath it and never from the act of
+recommending them. Two forms work. Name what these particular picks have in
+common, in the day's own terms. Or name the reader who should give up the
+hour, in terms today's papers make specific. "Three papers for anyone still
+hand-tuning a harness" is written, and it would be false over a different
+day's list, which is the test. A heading that announces the issue is now
+recommending things is the act describing itself, and it would have fitted
+every issue ever sent.
+The slot's internal name is not a candidate and is not repeated here, because
+a forbidden phrase quoted inside the slot the model writes into is not a
 prohibition. It is the nearest available draft. The heading gate at the end of
 this file holds the four names.}
 
@@ -770,17 +907,48 @@ Printing everything `deep_reads` returned is the opposite of judgment, and
 judgment is what the reader pays for.
 A paper this issue has already covered at length is not a pick. The reader
 just read it here, so the line would send them to what they were handed.
-`deep_reads` overlaps the other sections by design, and today two of its three
-papers are already in `new_claims`. Drop the overlap and print what remains,
-even when what remains is one paper or none.
+Check each pick against the ISSUE you have just written, section by section,
+and never against a payload stream. Naming one stream is how this failed: the
+rule used to say the overlap is with `new_claims`, one pick had been covered
+in the traction section instead, and it went out with a line recommending the
+paper the issue's own lead item was about. A paper covered anywhere above is
+covered. Drop the overlap and print what remains, even when what remains is
+one paper or none. When nothing remains, the section does not run and its
+heading does not print, the same as any other empty slot.
+Drop it silently. A dropped paper leaves no trace in the issue. A sentence
+explaining why a paper is not on the list spends the shortest section in the
+newsletter on this file's own bookkeeping, and the reader did not come for the
+overlap rule. A list of two is a list of two, and it never says so.
 
 Every entry carries a link to the full text. An entry without one fails the
 section's only job, so if you cannot produce the URL, drop the paper.
 
 Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
-nothing and is filler. "Worth the hour if you are choosing between one agent
-and a planner plus a separate verifier" is the line.
+nothing and is filler, because it describes the paper's topic instead of the
+reader's choice.
+
+**The line is written and never filled in, and one frame is now spent.**
+"Worth the hour if you are..." was quoted in this file as the model line and
+it came back on five entries out of five across two prints, which is the
+whole reading list twice. It is not banned for being bad. It is banned
+because it is the first thing this file put in front of you at the position
+where you write, and a frame handed over at that position is a template no
+matter how good the sentence is. Do not write it. Do not write a
+find-and-replace of it either, so "Read this if you are", "Give it an hour
+when you are" and "Spend the hour if you are" are the same line wearing a
+hat.
+Write each line as its own sentence instead, and let the shape follow what
+the decision actually is. One line can put the choice as a question the
+reader is already asking. One can name the thing they are about to build
+wrong. One can say what they will stop doing. In a subject no payload will
+ever hand you, so that copying it is obviously wrong: "The scheduling maths
+is in section 4 and it is the part nobody gets right by intuition." Then
+count, because this is the one section where every entry sits next to its
+neighbours and the repetition is visible on the page: no two entries in an
+issue open on the same words, and no two take the same grammatical shape.
+Two that match are the section turning into a catalogue, which is the one
+thing judgment was supposed to buy.
 
 Do not open those lines with a verb of presentation, and ask it of the verb
 rather than of a list: does this word belong to the paper or to the reader?
@@ -805,13 +973,24 @@ issue, because a closing summary of what the reader just finished reading is
 the clearest tell that nobody was really writing to anyone. Write it fresh
 every issue.
 
-If a number of scale belongs here, say it in words a subscriber can decode.
-"3,558 papers read to get to these five" is a fact about the product and
-earns its place. "Claims distilled" and "edges drawn" fail the
-decoding question in the first section above, as do raw pipeline counts and
-the ISO week id, so none of them reach the reader. This line states scale,
-never method: it says how much was read, never
-how the reading was done.
+If a number of scale belongs here, say it in words a subscriber can decode,
+and say it about the act that number actually counts. A verb of reading
+("read", "went through", "studied", "worked through") cites `papers_read_in_full`
+and no other count. A sentence citing `papers_ingested` says that those papers came
+in, arrived, or landed, because ingestion is a title and an abstract arriving
+and nothing else. Where the scale of the week is what you want, the honest
+shape is both numbers in one sentence, what arrived and what was read closely
+out of it, and this close is the one line in the issue where two numbers
+standing together are the point rather than a crowd.
+Write that sentence fresh every issue. Any line shaped "N papers read to get
+to these five" is spent, its rewordings are spent with it, and building from
+a model of the sentence is how a count ends up wearing the wrong verb. Build
+from the act, the number, and what the number bought the reader.
+"Claims distilled", "edges drawn", "triaged" and the payload's key names all
+fail the decoding question in the first section above, as does the ISO week
+id, so none of them reaches the reader. This line states scale, never method:
+it says how much was read, never how the reading was done. The reading gate at
+the end of this file holds the sentence that made this rule necessary.
 
 Then the standing close, on its own line, exactly as written below. It is
 always last and never reworded.}
@@ -840,8 +1019,20 @@ the rule's question to the thing in front of you.
   as much as the reading list is. The 2026-W39 issue got the form right on
   all three of its links and printed seven more items, in three sections,
   with no link on any of them, because this rule was read as a rule about
-  what a url should look like. Count the items. Count the links. They
-  match, or the issue is not finished.
+  what a url should look like.
+  **Count named works, not items, because an item can name three of them.**
+  Go through the finished issue and list every piece of research it names:
+  every paper, every benchmark result, every method or system whose number
+  the issue prints, and every older belief it says fell. That list is the
+  unit. Each entry on it carries a link at the place the issue names it, and
+  an item that names three pieces of work needs three links rather than one.
+  A superseded pairing is two entries and takes two links, the old work and
+  the new one, because the reader who wants to check what changed has to
+  reach both ends of it. Count the list. Count the links. They match, or the
+  issue is not finished. Counting items instead passed an issue whose
+  fell-behind section named three separate results and carried no link at
+  all, and the grade of that issue also recorded a pass, because what this
+  rule forbids is an absence and an absence cannot be quoted.
 - **Grade the evidence in-line, on every item that carries a number.** A short
   clause inside the item's own prose, not a footnote and not a separate line:
   "the authors' own experiments, not yet replicated", "three independent
@@ -857,9 +1048,29 @@ the rule's question to the thing in front of you.
   family"). Naming the missing measurement is the difference between a grade
   and a compliment. Draw that half from what the payload's `evidence` and
   `procedure` actually cover, and never invent an omission.
-  Then count them, the way the links are counted one rule above. Count the
-  items carrying a number. Count the grades. They match, or the issue is not
-  finished. The count is the rule and not a reminder of it. On 2026-09-24 these
+  **The grade is a clause inside a sentence, and it is written fresh each time.**
+  The first line of this rule says "inside the item's own prose", and the shape
+  that keeps shipping instead is a sentence of its own, in one frame, once per
+  item, at the same position in each. Three accurate grades in one frame are two
+  grades and a piece of furniture, because by the third one the reader has
+  stopped reading the opening words.
+  So never open a grade with the word "evidence", never reuse a stem you have
+  already used in this issue, and fold the grade into a sentence that is doing
+  other work. "Nobody outside the group has run it again" grades. "One team, one
+  model family, and the effect is big enough that somebody will check it" grades
+  and says what happens next. The counting of stems happens at the gate.
+  Then count them, off the same list the links are counted against one rule
+  above, which is every named piece of work in the issue and not every item.
+  Take from that list the entries whose number the issue prints, and count the
+  grades. They match, or the issue is not
+  finished. Running the count over items instead let a fell-behind section
+  print three benchmark numbers with no grade anywhere near them, and the
+  grade of that issue counted three grades against three items and called the
+  presence half a pass. The fell-behind section is where this hides, because
+  its numbers arrive as an old belief and a newer one rather than as a result,
+  and a number that overturned something needs its grade more than any other
+  number in the issue, not less. The count is the rule and not a reminder of
+  it. On 2026-09-24 these
   two rules sat next to each other in this file, one of them counted and the
   other only described, and the issue shipped with five links out of five and
   zero grades out of four. The grade is a clause, every compression pass
@@ -918,6 +1129,15 @@ the rule's question to the thing in front of you.
   `institutions` or authors actually show the overlap. Where the payload does
   not say, name each paper's own institution and let the reader see they are
   different.
+  **A paper's name is not a research group, and there is no third fallback.**
+  When `institutions` is empty the answer is the author, and a print of
+  2026-09-26 reached for neither: it wrote "New work from ACLArena", which
+  attributes a finding to the title of the paper that reports it. The reader
+  is told a thing did the research. The two allowed forms are the institution
+  and the named author, so where the payload has neither, write the finding
+  with no attributive phrase at all rather than promoting a system name into
+  one. A benchmark, a pipeline, a method and a dataset all arrive in the
+  payload looking like proper nouns, and none of them is anybody.
 - Thin evidence is stated plainly ("only one deprecation this week"), never
   padded or dramatized.
 - Before finishing, reread the whole issue once for mechanical tells, and read
@@ -963,6 +1183,18 @@ the rule's question to the thing in front of you.
   appearance of the SECOND one: "the night shift, which is that same
   overnight pass under the name the vendors use". What you never do is
   define one and print the other.
+  **This pass is a count, and it failed on its first print as an instruction.**
+  It was written on 2026-09-25 from a print that glossed "scaffolding" and then
+  used "harness" thirty-eight times. The print of 2026-09-28 glossed neither,
+  used "scaffolding" three times in the opening and "harness" thirty-two times
+  after it, and put "harness" in the title, where the reader meets it first and
+  the issue never explains it at all. An instruction to prefer one name did not
+  survive a payload whose every field says "harness".
+  So count, once, before you output. Take the two or three words the issue
+  leans on hardest, and for each one count its appearances. Where two words
+  share one idea, the smaller count is the one to delete, all of it, including
+  the gloss that was attached to it. One idea, one word, one clause that
+  introduces it, and the word the TITLE uses is the word that gets the clause.
   If this pass turns up more than about five terms needing a definition in
   one issue, the issue is carrying too much, not too little explaining. Cut
   an item and run it again.
@@ -988,14 +1220,39 @@ the rule's question to the thing in front of you.
   follow it. This one asks whether they enjoyed it, and it is the check she
   ruled can fail an issue by itself. Stop reading the words and look at the
   page.
-  Four counts, and each has one fix. The longest paragraph: over about 100
-  words, split it at the point where the second result starts. Paragraphs
+  **Count the shapes first, because four of the five counts below can all
+  pass while this one fails, and that is what happened (owner's dispatch,
+  2026-09-25, "ENJOYABILITY, again").** A shape is a kind of block, not a
+  size: a paragraph, a bulleted list, a line standing alone, a subheading
+  inside a section. Count the kinds. **One kind is a failing issue**, and it
+  fails no matter what the word counts say, because splitting long paragraphs
+  changes every other number on this list and cannot change this one. The
+  issue reprinted under this law cut its longest paragraph from 191 words to
+  98, left nothing over 100, and shipped as twenty-four paragraphs with no
+  list and no subheading anywhere in it. She read that and said enjoyability
+  is still not fixed. Two kinds is thin. Three is an issue that reads like
+  something a person made.
+  The fix is never decoration, and there is exactly one honest move: find the
+  material in the day's payload that is genuinely parallel, meaning several
+  results that did the same kind of thing and stand side by side, and set
+  that part as a list with a short bold lead per item. If a list appears
+  because the page needed a list rather than because the material was
+  parallel, the count went up and the issue got worse.
+  **Then the subheading, which is the shape this file has never asked for and
+  the newsletters builders enjoy all use.** Any section running past about
+  four paragraphs gets a written turn inside it, and at that length the turn
+  is a third-level heading (`###`) rather than a bold lead-in. It is governed
+  by the heading gate below exactly as a section heading is, so it says what
+  the material under it shows and it would be false for yesterday's issue.
+  Write it from the section's own content, the way an editor breaks a long
+  read. A turn that sorts or announces ("Analysis", "The details", "Results")
+  is a label and the gate below will catch it.
+  Four more counts, and each has one fix. The longest paragraph: over about
+  100 words, split it at the point where the second result starts. Paragraphs
   carrying more than one result: one result each, so break them. Numbers in
   the heaviest paragraph: past three, cut every number that does not change
-  what the reader would do. Shapes on the page: if every block is a paragraph
-  of the same size, the issue has one shape and needs another, so find the
-  group of parallel results and set it as a list with a short bold lead per
-  item.
+  what the reader would do. Sections running past four paragraphs with no
+  written turn in them: add the turn.
   Then two questions the counts do not catch. Does every result have a line
   of plain meaning under it, with no number in that line? And is there one
   line in the issue where the number that matters stands by itself? Add what
@@ -1019,6 +1276,40 @@ the rule's question to the thing in front of you.
   doing less at test time", the opening she struck, which reads as a
   continuation because it tells the reader what they were doing rather than
   what the field was doing.
+  **Then run the tense check, which is the mechanical half of the fourth
+  shape and the only one of these four that can be checked without judgment
+  (canon law 13, tightened 2026-09-25).** Find every sentence in the issue
+  whose subject is "you" and whose verb is in any past tense. Past simple,
+  present perfect, past continuous, all of them. Each one is a claim about
+  what the reader has done, it is unverifiable from here, and it goes.
+  Three of the four shapes above need you to judge whether a reference is
+  load-bearing. This one is a grammar question with a yes or a no, so it is
+  the one to run first and the one that cannot come back a false negative.
+  Three specimens, all from this issue's own slot, held here at the position
+  where you read finished output and deliberately absent from the opening
+  slot where the line gets written. "You spent last week watching agents get
+  faster by doing less at test time", struck by the owner on 2026-09-24. And
+  "You have spent the week watching the field argue about whether agents need
+  a heavy harness at deployment", written by this prompt on 2026-09-26 with
+  her ruling already in the file, which names no issue and says no "last
+  week" and still failed, because what the law had banned was the reference
+  and what shipped was the tense.
+  A third was stored in the digests table on 2026-09-28, with the grammar rule
+  above already written: "You have spent the week watching agents get faster by
+  thinking less at test time". Same subject, same tense, one verb changed. It
+  printed because a test at the bottom of the opening slot asked for a greeting
+  from somebody who knew what the reader's WEEK had been like, and a test is
+  the assignment however the paragraphs above it are worded. That noun now says
+  JOB. If you are ever reading a fourth of these, the cause is a slot asking
+  for what the law forbids, so read what this file REQUESTS and not only what
+  it bans.
+  The repair is the present tense and the reader's actual job, never
+  deletion, per the paragraph below. A third specimen fails the opposite way
+  and is caught by the greeting's own rule rather than by this gate: "The
+  agent-building world has spent the week arguing about scaffolding" has no
+  "you" in it, clears every check on this list, and reads as a report,
+  because the fix for a bad greeting is a better greeting and not the removal
+  of the person.
   The fix is always the same and it is never deletion. Restate the thread in
   full, in the sentence where it appears, so the reader who arrived today
   gets it and the reader who has read every issue loses nothing. Then check
@@ -1032,21 +1323,152 @@ the rule's question to the thing in front of you.
   the first of them is that the issue says hello to the reader in a line true
   about this particular day. A slot does not stop being required because the
   sentence that filled it was wrong.
+- **Then check what the issue says about its own reading. A hard gate (canon
+  law 15, owner's ruling 2026-09-25).** Every other gate on this list reads
+  sentences about somebody's research, where a wrong one can be checked
+  against a paper. This one reads the sentences about alexandria, and a reader
+  has nothing to check those against, which is why a false one costs more than
+  any other sentence in the issue.
+  Collect every sentence whose subject is the library, this issue, or this
+  newsletter and whose verb says what was done with papers. Usually there is
+  exactly one, in the close. One is enough. Put a single question to each:
+  which count in `stats` is this sentence about, and is its verb the act that
+  count records? `ingested` is a title and an abstract arriving.
+  `read_in_full` is the full text read. A verb of reading on the ingestion
+  count is a false sentence about the product.
+  The specimen, held here where you read finished output and deliberately
+  absent from the closing slot where the line gets written: "the library read
+  1,289 papers", printed on 2026-09-26, on a day when 1,289 papers had been
+  ingested that week and 164 had ever been read in full. No number was
+  invented and no paper was misread. One count was handed the neighbouring
+  count's verb, and the sentence read so naturally that no pass which reads
+  the prose could see it.
+  The repair is never a qualifier. "Read or reviewed", "read at some depth",
+  "surveyed" and "processed" all keep the claim and soften it, which is this
+  file noticing the sentence is false and going on anyway. Two repairs are
+  legitimate and there is no third. Cite the count that makes the sentence
+  true, or cut the sentence and say nothing about scale at all. An issue with
+  no scale line has lost nothing the reader came for.
+- **Then check the issue's numbers against each other. A hard gate (canon
+  laws 6 and 7, the claims pass's fourth question).** Every gate above reads
+  sentences. This one reads only the figures, and it catches what a careful
+  reader catches first, which is one system carrying two different numbers on
+  what the issue calls the same measure.
+  Collect every number in the issue and group them by the system they
+  describe. Inside a group, two numbers on the same named measure have to be
+  the same number, or two setups the issue has told the reader apart in the
+  sentence where the second one appears.
+  The specimen, from the print of 2026-09-26. An item said a distilled model
+  "hits 44.3%" on a macro-average across three kinds of task, and four
+  sentences later said the supervision method that produced it "produces 30%"
+  on the same macro-average. Both figures were in the payload and neither was
+  wrong. The page made them contradict, because the second one came from a
+  smaller ablation the issue never named as one, so a reader is left holding
+  two scores for one method and no way to choose.
+  Two repairs and there is no third. Say in that sentence what makes the
+  second number a different setup, in plain words. Or print one number and
+  drop the other, which is usually the better issue, because an ablation is
+  evidence that the method is what did the work rather than a second score
+  for the method.
+- **Then check every count the issue says out loud against the things it
+  counted. A hard gate, and it is arithmetic rather than judgment.** Find every
+  place the issue names a quantity of its own contents: three findings, two
+  bets, two labs, both results. For each one, count what actually appears under
+  it. The number said and the number present are the same number, or the
+  sentence is rewritten to the number present.
+  One section of 2026-09-28 failed this three ways at once. Its heading said
+  two. Its first sentence said two and then listed three, one of which was the
+  previous section's whole subject. Two items followed. Nothing there was a
+  misread paper. Each sentence was correct alone and nothing counted across
+  them.
+  A reader who counts two where three were promised goes back to find what they
+  missed, and there is nothing to find, which costs more than a wrong number
+  would have.
+- **Then check the opening's promise against the issue that followed it.** The
+  contents line named some items. Take each one, find the section that delivered
+  it, and match the institution, the system and the result rather than the
+  topic. On 2026-09-28 one of three promised findings, a named team's named
+  system carrying a latency number, appeared nowhere else in the issue, and the
+  section that ran in its place had never been promised. Every line involved was
+  true on its own. Cut what did not arrive, or name what did.
+- **Then count the grades' opening words.** Every item carrying a number carries
+  a grade, and grades against items are counted further up. This is the other
+  count: no two grades in the issue begin the same way, and none begins on the
+  word "evidence". Three accurate grades built on one stem shipped on
+  2026-09-28, at the same position in three consecutive items, and the count of
+  grades passed all three.
+- **Then check who the issue says did the research. A hard gate, and it is
+  grammar rather than judgment.** The attribution rule above allows two forms,
+  the institution and the named author, and says there is no third. The third
+  one gets invented anyway, halfway down a paragraph, where the rule is not
+  being read because the item's attribution was settled in its first sentence.
+  So run it on the finished issue the way the tense check runs. Find every
+  sentence whose subject is a benchmark, a method, a pipeline, a system, a
+  dataset or a paper title, and whose verb is a verb of research or reporting:
+  reports, finds, shows, achieves, demonstrates, claims, measures. None of
+  those subjects is anybody, so every one of those sentences is telling the
+  reader that a thing did the work. Two repairs and no third. Put the people
+  in the subject slot, or rewrite the sentence with no attributive subject at
+  all, so "83.3% is the current best on that benchmark" rather than "X now
+  reports 83.3%". The print that made this a gate carried two of them in one
+  sentence and the rule above was in the file, correctly, the whole time.
+- **Then read the issue for this file's own words.** Every name for a piece of
+  the pipeline, and every name for a check in this file, is internal. A print on
+  2026-09-28 told a subscriber that two results "fail the kind test", which is
+  the name of a question asked while grading, sitting next to the word this
+  codebase uses for a link between two claims. Both had been in one sentence of
+  this file. If a phrase in your output would only make sense to somebody who
+  has read this file, it is not English to the reader, and the repair is to say
+  the idea plainly.
 - **Before you output, check the headings. This is a hard gate, not advice.**
   Collect every line in the issue that announces a block instead of saying
   something: every line beginning with `#`, and every run of bold or italic
   text sitting alone on its own line. The standing close is the one
   exception, because it is required to be identical in every issue and is
-  never rewritten by this gate or any other. Then put ONE question to the
-  rest of them, and it is the question that decides, never a list. Could
+  never rewritten by this gate or any other.
+  **Then collect the fragments, because a label does not need a line to
+  itself and the ones that have shipped did not take one.** For every line in
+  the issue that contains a colon, take the text in front of that colon as a
+  thing to check on its own, whether it is bolded or plain. That fragment is
+  the unit, not the line it sits in, and this is the whole reason this shape
+  keeps getting through: the question below is asked of a line, a label welded
+  to the front of a sentence is a piece of a line, and a line whose second
+  half is real writing passes a question its first half would fail. The
+  published 2026-W39 carries three, none of them bolded alone and none of them
+  collected by the step above: "**The number that matters:**", which is the
+  name of a formatting rule in this file, "For builders:", and "The procedure
+  is extractable:". Take the fragment, drop the colon, and write the sentence
+  whole.
+  Then put ONE question to everything you collected, lines and fragments
+  alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
-  Ask it of every such line, because this failure has now arrived four times
-  in four disguises, and each one walked past the check written for the one
+  **Then read each heading against the block under it, because a heading can be
+  written from the day's news and still be wrong about it.** The question is
+  whether the section ends where its heading says it does. A heading that states
+  a finding the body then withdraws has sold the reader a result and handed them
+  a correction, and the heading is what they will remember.
+  The print of 2026-09-28 ran "The 82.2% ceiling was not a ceiling" over four
+  paragraphs whose conclusion is that the two results compared do not measure
+  the same thing, so nothing was shown about the ceiling at all. The body is
+  right and the heading is the claim the body dismantles. This is the hedge rule
+  above arriving one level up: the section noticed the comparison fails and the
+  heading had already been written as though it held.
+  Where the body's real finding is that a comparison does not work, the heading
+  says that. It is a finding, it is that day's, and it is more interesting than
+  the false version.
+
+  Ask it of every line and every fragment you collected, because this failure
+  has now arrived six times
+  in six disguises, and each one walked past the check written for the one
   before: a section heading ("Gaining traction"), a taxonomy word
   ("Compounding"), a bold word over a group inside a section
-  ("**Replaced**"), and an italic word over a numbered list ("*Procedure*").
+  ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
+  bolded label welded to a sentence ("**The number that matters:**"), and a
+  plain one that is not bolded at all ("For builders:"). The first four are
+  lines and the last two are fragments, which is why the collection step above
+  now has two halves.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
@@ -1063,6 +1485,20 @@ the rule's question to the thing in front of you.
   the sentence around it says. If one of the four is in your output, you
   copied it from here, and the fix is to write that heading again from the
   items underneath it.
+  **Then search the prose for the same four ideas, because a slot name does not
+  need a heading to print.** This tripwire has always read the four headings and
+  the words got out through the sentences instead. The print of 2026-09-28
+  carries "The strongest compounding evidence this week sits on the boundary
+  between training and deployment" and "The genuinely new work this week tests
+  two different bets", which is two slot names used as adjectives in two section
+  intros. Neither is one of the four exact strings, so the tripwire above passed
+  both. Both tell the reader which internal bin the items were sorted into, and
+  the first one also narrates the ranking, which the owner ruled out on
+  2026-09-19.
+  So the check is the idea and not the string: no sentence in the issue says
+  which of the four slots the material under it came from. The section's
+  contents are the only argument it gets to make for itself. Say what the
+  papers showed and let the order do the ranking.
   Check the
   title too: it states a finding, and it carries no bracketed date range and
   no week id. Only then output.

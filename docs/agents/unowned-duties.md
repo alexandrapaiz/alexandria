@@ -48,6 +48,14 @@ the duty's occasion actually arrives, measured rather than assumed.
 than trigger rate, the state is `cadence gap`, and a cadence gap is a
 finding of the same weight as an unowned row.
 
+**And from 2026-09-27 there is a third state, `capability gap`**, which
+is neither of those. A row can name the right seat in words a run can
+act on, and that seat can run often enough, and the duty can still be
+unperformable because the seat's sandbox does not hold the credential
+the duty's evidence requires. Words are free and crons are free. Inputs
+live in a workflow file no seat can edit. The 2026-09-27 audit added
+this state and the row it was found in is below.
+
 | Duty | Owner | Trigger rate | Cadence | State |
 |---|---|---|---|---|
 | The org knows what the world knows | market (§5, named 2026-09-19) | weekly | weekly Fri | assigned |
@@ -58,13 +66,13 @@ finding of the same weight as an unowned row.
 | The corpus survives losing its database | **none** | continuous | n/a | owner decision |
 | The repo describes the system it is | exo (§5b) | weekly | weekly Sun | assigned |
 | Runs that fail get diagnosed | exo (§2b) | daily, 25 runs on 2026-09-19 | weekly Sun | **cadence gap** |
-| Runs that fail get reported to the owner | pm (§1f) | daily | weekly Mon, daily once queued | **cadence gap, fix queued** |
-| The org decides what to do next between Mondays | **none, and the owner did it** | hourly | n/a | **fix queued, see below** |
+| Runs that fail get reported to the owner | pm (§1f) | daily | **daily 6:35 ET, applied 2026-09-24** | **cadence gap CLOSED 2026-09-27**, see below |
+| The org decides what to do next between Mondays | pm (§5, `PM_DISPATCH_ENABLED` now `true`) | hourly | daily | **assigned and unexercised**: 12 of 12 dispatches since 2026-09-24 were the owner's, see below |
 | A runtime change is smoke-tested before the next cron fires | engineer (§0, added 2026-09-20), exo (§2) as backstop | twice in the week of 2026-09-14 | daily | assigned 2026-09-20, **and it was true only for `.github/` until 2026-09-24**, see below |
 | Reader-facing site copy gets drafted | writer (§"Site copy is yours to draft", added 2026-09-21) | per copy session, 8 rounds in one day on 2026-09-20 | daily 16:00 UTC | assigned 2026-09-21. **Was worse than unowned from 2026-09-19 to 2026-09-21**, see below |
 | Approved copy reaches the live site | frontend (sets only, §added 2026-09-21) | per approval | weekly Wed | assigned, lag accepted, see below |
 | The owner's rulings become reusable preference data | chair records (pm-agent.md ship check, added 2026-09-21) | whenever she rules in chat | present whenever she is | assigned 2026-09-21, and the chair is the correct owner here, see below |
-| **The product reached its readers** | pm (§1f delivery half, added 2026-09-24) | daily and weekly, whenever the press or the site ships | daily standup | assigned 2026-09-24. **Was unowned from the first issue until now**, see below |
+| **The product reached its readers** | pm (§1f delivery half, added 2026-09-24) | daily and weekly, whenever the press or the site ships | daily standup | **capability gap, found 2026-09-27**: the seat has no `NEON_RO_URL`, see below |
 | **An HQ decision is read against local law** | exo (§3f, added 2026-09-24) | two HQ decisions in the week of 2026-09-21 | weekly Sun | assigned 2026-09-24, and it is a cadence gap on its face, see below |
 | **Evidence from here reaches HQ** | exo writes, chair carries (hq-relay.md) | as incidents implicate a parent decision | weekly to write, unbounded to deliver | assigned 2026-09-24, with the delivery half outside any seat's control |
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
@@ -431,3 +439,152 @@ first two tests could have told you.
 That test is deliberately expensive, so run it on one row a week rather
 than on all of them, starting with rows whose gate is a shell command,
 because a shell command has a scope and a charter sentence does not.
+
+---
+
+## The 2026-09-27 rows
+
+### The fourth test, and the row it was found in: capability
+
+The page already has three tests, and the section above names them:
+wording, cadence and scope. This run found a row that passed all three
+and was still not being performed, and the reason was not in any charter
+or any cron. It was in a workflow's `env:` block.
+
+**The row.** "The product reached its readers", assigned to the PM seat
+on 2026-09-24. `prompts/pm-agent.md` §1f names it in words a run can act
+on. The PM runs daily, which is faster than the weekly press and at
+least as fast as the site. And the scope test passes too, because the
+seat's command is the one `docs/agents/delivery-health.md` prescribes.
+
+**Why it was not performed anyway.** Guardrail 4 defines the press's
+evidence as the newest row in the `digests` table.
+`.github/workflows/agent-pm.yml` does not carry `NEON_RO_URL`. Three
+workflows do (research, writer, skill) and the one seat whose daily job
+is to read that table is not among them. So every standup since
+2026-09-24 has said, honestly and in the file:
+
+> No database credentials in this sandbox, so the `digests` table itself
+> was not queried.
+
+and then read `libraryofalexandria.dev/library` instead.
+
+**Why the substitution is the finding rather than a footnote.** The
+library page lists issues the site has built. A row written and never
+sent, a send that failed after the row landed, and a page served from an
+edge cache all read as healthy there, and those are the three failures
+guardrail 3 exists to catch. The proxy is weakest exactly where the real
+check is worth most. This is the same shape as the scope defect above,
+one layer lower: the command's scope was right and its inputs were not.
+
+**The test, for every assigned row from now on.** Read the duty's
+evidence, then read the naming seat's workflow, and ask whether the
+second holds what the first requires.
+
+```bash
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-<seat>.yml | sort -u
+```
+
+Unlike the scope test this one is cheap, so run it on every assigned row
+every audit. A row fails it whenever the duty's evidence names a
+database, an API, a paid service or a private endpoint, and the seat's
+workflow does not name the credential that reaches it.
+
+**The fix and its shape.** A capability gap is closed by a workflow
+change and never by a charter edit, which makes it the second state on
+this page whose remedy the seats cannot apply. It is queued as item 6 in
+`docs/agents/pending-workflow-changes.md`, beside the engineer seat's
+identical need, which has been queued since 2026-09-20 and is the same
+finding nobody generalized. The row stays marked `capability gap` until
+the secret is in the file, not from the moment it is queued, because a
+queued fix is not a credential.
+
+### The new unowned row: the credentials the org runs on stay valid
+
+Found by the method this page prescribes, which is to take something the
+org plainly depends on and grep every charter for the vocabulary the duty
+would have to use.
+
+```bash
+grep -rin "rotate\|expire\|expiry\|revoke\|key rotation" prompts/*-agent.md
+```
+
+One hit in twelve charters, and it is this seat's own charter talking
+about the expiry of a restriction rather than of a secret. So the
+vocabulary is absent, and per this page's rule that absence is the
+finding.
+
+**Read the near miss for polarity, because a grep finds words and not
+direction.** `prompts/security-agent.md` §2 does discuss credentials,
+and it points the other way: it scans the tree and the history for
+secrets that have leaked **out**, and names rotation only as the owner's
+action after a leak. Nothing anywhere asks whether a secret the org
+relies on has gone **stale**. That is the harder case this page already
+warned about, a charter naming a subject in order to do the opposite
+thing with it.
+
+**What the org depends on.** Eight secrets are named across the agent
+workflows (`CLAUDE_CODE_OAUTH_TOKEN`, `NEON_RO_URL`,
+`OPENROUTE_API_KEY`, `OPENROUTE_BASE_URL`, `PROJECTS_TOKEN`,
+`SLACK_WEBHOOK_URL`, `VERCEL_DEPLOY_HOOK`, and `GITHUB_TOKEN`, which is
+minted per run and is the only one that cannot go stale), plus the
+provider and mail keys the press holds on the Modal side.
+
+**Why its failure would be silent, which is what puts it on this page.**
+An expired `CLAUDE_CODE_OAUTH_TOKEN` stops every seat at once, and the
+fleet's own health signal is `gh run list`, which would show red runs
+with no seat left able to diagnose them. An expired `NEON_RO_URL` makes
+three seats quietly read less than they think they are reading, which is
+the failure this same audit just found in its assigned form. An expired
+`VERCEL_DEPLOY_HOOK` returns a non-2xx and does fail loudly, which is
+the one good case.
+
+**Trigger rate**: unknown, and that is part of the finding, because no
+file records when any of these was minted or what its lifetime is.
+**State**: unowned.
+
+**Not assigned here.** This one is the owner's, under this page's own
+rule that a gap touching secrets is hers. It is stated rather than
+assigned for two reasons worth her eye. Naming an expiry date is
+something only the person who minted the token can do, and the seat best
+placed to watch the dates afterwards is the security seat, whose charter
+would then be pointing at the org's credential inventory, which is an
+authority change rather than a duty.
+
+The cheap version, if she wants one without deciding the larger question:
+a dated table of what exists and when it expires, in a file the security
+seat already reads, with no values in it. The watching is then ordinary
+work rather than a new power.
+
+### The row that closed, and the one that opened by being enabled
+
+**Closed.** "Runs that fail get reported to the owner" was a cadence gap
+from 2026-09-19, assigned to a weekly seat against a daily trigger, with
+the fix queued as item 2. The cron landed on 2026-09-24 and the row is
+now genuinely covered, in a better form than the one queued: two crons,
+Monday for the ceremony and every other day for the standup. The
+evidence that it works is this week's, and it is the strongest kind,
+because the duty fired and the report arrived before this audit ran. Five
+engineer runs failed between 2026-09-26 and 2026-09-27, and the PM's
+standups of both days carried them with an occurrence count, a surviving
+work note and a register id. This seat found nothing that the daily seat
+had not already found. That is the division of labour in
+`prompts/exo-agent.md` §2b working as written.
+
+**Opened by being enabled.** `vars.PM_DISPATCH_ENABLED` now reads `true`
+in the PM's run log, so §5 of that charter is live and the row "the org
+decides what to do next between Mondays" has an owner with the power to
+act. It has not acted. Twelve `workflow_dispatch` runs since 2026-09-24
+and the `triggering_actor` on all twelve is `alexandrapaiz`. The PM's own
+log in `docs/sprints/dispatch-queue.md` says "None this run" with a
+stated reason and names `INC-2026-09-24-dispatch-403` as still
+unresolved, so the §2c audit passes on honesty: nothing fired that was
+not logged, and nothing logged that did not fire.
+
+The state is therefore `assigned and unexercised`, which is a real state
+and not a failure. What makes it worth a row rather than a note is that
+the presence gradient has not moved at all since the power landed, and
+the one recorded reason is a 403 that no seat has retried. **The next
+audit's first question about this row is whether the 403 was ever tested
+again, because an unexercised power and a broken one look identical from
+here.**

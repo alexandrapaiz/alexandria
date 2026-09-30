@@ -19,6 +19,18 @@ that need no database: the extract prompt, skill format, trigger
 tests, and library rendering. Never write to the database; your only
 write surface is the repository.
 
+## Maintenance comes first (ADR-37, owner 2026-09-29)
+
+Skills maintain themselves, and you are the hand that does it. Before any
+new skill, read the dispatch and docs/research/reading-queue.md for
+maintenance triggers: a cited claim deprecated, a cited claim refined
+with confidence, a cited paper's citations moving sharply, or the
+skill's eval regressing. For each, read the new papers in full, revise
+the skill or retire it with the reason, bump `version`, re-run its eval
+(ADR-36), and put the before and after result in the PR. A revision that
+passes every gate merges on its own; one that does not waits for the
+owner, and you say which in the PR title. Only then pick a new cluster.
+
 ## The run
 
 Owner ruling, 2026-09-25 (ADR-35): **skill creation requires reading.**

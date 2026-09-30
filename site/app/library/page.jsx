@@ -16,10 +16,11 @@ export default function Library() {
 
       <section className="hero-follow lib-scene2">
         <p className="page-kicker">Library</p>
-        <h1 className="page-title">Every issue, in full.</h1>
+        <h1 className="page-title">
+          Every issue
+        </h1>
         <p className="page-intro">
-          The weekly digest is free to read and nothing in it is held back.
-          Start with the most recent issue.
+          The weekly issue is free and complete, and it tells you what changed in AI research that week and what it means for the things you are building.
         </p>
         {issues.length === 0 ? (
           <p className="desk-empty">

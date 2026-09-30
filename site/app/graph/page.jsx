@@ -25,16 +25,14 @@ export default async function Graph() {
       <p className="page-kicker">Graph</p>
       <h1 className="page-title">Claim graph</h1>
       <p className="page-intro">
-        Each claim the library distilled, and the claims that support,
-        refine, or contradict it.
-      </p>
+          Most of the cost of building on research is finding out too late that a result did not hold. The graph shows you how solid a finding is before you commit to it: what confirmed it, what narrowed it, and what has contradicted it, with the evidence behind each. A few minutes here can save the weeks that go into building on something the field has already moved past.
+        </p>
 
       {!entitled ? (
         <div className="graph-gate">
           <h2>Open any node with the paid plan.</h2>
           <p>
-            Each node is one claim, with its evidence, its procedure, and the
-            paper it came from. The paid plan opens them.
+            The paid plan opens every node, with its evidence, its procedure, and the paper it came from.
           </p>
           <Link href="/pricing" className="pill">
             See pricing

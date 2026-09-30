@@ -27,6 +27,19 @@ update papers set tier = 'c' where source = 'blog' and tier = 'a';
 -- alone can't mark completion because a paper may honestly yield zero claims)
 alter table papers add column if not exists distilled_at timestamptz;
 
+-- fulltext_chars: how much of the paper distill actually read, in characters, or
+-- NULL when it read the abstract only. Distill is the one step that fetches
+-- arXiv HTML, and until 2026-09-26 nothing recorded whether the fetch succeeded,
+-- so "read in full" was a number nobody could produce from the database. The
+-- weekly issue now states it (owner's directive 2026-09-25: the stats line says
+-- what happened, not "read N papers"), and a number the issue prints has to come
+-- from a column rather than from an assumption about a code path.
+--
+-- Rows distilled before this column existed stay NULL and are honestly unknown.
+-- The issue counts only the last seven days, so the gap ages out of every issue
+-- within a week of the column landing.
+alter table papers add column if not exists fulltext_chars integer;
+
 -- ============ triage log: every routing decision, with reasoning ============
 -- This table doubles as the eval set for the recursive loop: human_verdict
 -- labels each machine decision, and disagreements drive prompt proposals.
@@ -42,6 +55,29 @@ create table if not exists triage_log (
     human_verdict text check (human_verdict in ('agree', 'overturn')),
     human_note    text
 );
+
+-- method: model + prompt sha, the one string that says which judge produced a
+-- decision. `model` and `prompt_sha` have both been written since the table
+-- existed, and every question anybody actually asks needs the pair: which rows
+-- came from the rubric that is live now, and which came from the one before it.
+-- Same shape and same reason as claim_links.method, which has carried
+-- `model@sha` since the graph's first edge.
+alter table triage_log add column if not exists method text;
+
+-- Old rows get the pair they already recorded in two columns. Idempotent: the
+-- guard is the null, so a second run writes nothing.
+update triage_log
+   set method = coalesce(model, 'unknown') || '@' || coalesce(prompt_sha, 'unknown')
+ where method is null;
+
+create index if not exists triage_log_method_idx on triage_log (method);
+
+-- A paper may now carry MORE THAN ONE row here. Re-triage under a revised rubric
+-- appends a new decision rather than editing the old one, so the log stays the
+-- eval set it was built to be: the disagreement between two rubrics about the
+-- same paper is the most valuable row in the table, and an UPDATE would destroy
+-- it. `latest_triage` below is what every consumer reads, and it is the only
+-- place that knows a paper can have a history.
 
 -- ============ silver: distilled claims ============
 -- The unit of knowledge is the claim, not the paper.
@@ -81,7 +117,18 @@ begin
     end if;
 end $$;
 
+-- prompt_sha: which prompts/distill.md wrote this claim, the first 12 hex of its
+-- sha256. The press has recorded this on every issue since it existed and triage
+-- on every decision; claims had nothing, so the deploy state of the distill
+-- prompt was only knowable by inference from the shape of its output. That is
+-- how the interpret prompt went seven days stale unnoticed
+-- (INC-2026-09-26-interpret-stale-third-sighting), and a revised rubric whose
+-- arrival cannot be seen in the data is a rubric nobody can show is live.
+-- NULL means a claim written before this column existed.
+alter table claims add column if not exists prompt_sha text;
+
 create index if not exists claims_evidence_grade_idx on claims (evidence_grade);
+create index if not exists claims_prompt_sha_idx on claims (prompt_sha);
 
 -- ============ claim graph: relations between claims ============
 -- Append-only and time-directional: from_claim is always the newer, judging
@@ -183,13 +230,26 @@ create or replace view triage_queue as
     left join triage_log t on t.paper_id = p.id
     where t.id is null;
 
+-- The newest decision per paper, and the only triage row anything downstream
+-- reads. Re-triage appends (see triage_log above), so a paper judged `index` in
+-- September and `distill` in October has two rows and exactly one current
+-- answer. Without this view the join below would return such a paper twice and
+-- distill would spend its budget reading the same PDF twice in one run.
+create or replace view latest_triage as
+    select distinct on (paper_id)
+           paper_id, decision, score, reasoning, model, prompt_sha, method,
+           created_at
+    from triage_log
+    order by paper_id, created_at desc, id desc;
+
 -- drop first: adding distilled_at to papers changed this view's column order,
--- which CREATE OR REPLACE refuses to do
+-- which CREATE OR REPLACE refuses to do. It is dropped again now because the
+-- join moved from triage_log to latest_triage.
 drop view if exists distill_queue;
 create view distill_queue as
     select p.*, t.decision as triage_decision
     from papers p
-    join triage_log t on t.paper_id = p.id
+    join latest_triage t on t.paper_id = p.id
         and t.decision in ('distill', 'deep_read')
         and t.model != 'rule:backfill'
     where p.distilled_at is null;

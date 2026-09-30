@@ -25,9 +25,7 @@ export default async function Home() {
 
       <section className="hero-follow">
         <p className="statement">
-          Every week the library reads new AI research and tells you{" "}
-          <b>what changed</b>. Your agents load{" "}
-          <b>the same answers you do</b>.
+          What changed in AI research this week, written for people who build things.
         </p>
         <div className="hero-act">
           <Waitlist
@@ -39,10 +37,7 @@ export default async function Home() {
           </Link>
         </div>
         <p className="about-inline">
-          The digest takes a few minutes to read. It covers what is new in AI
-          research, what has proven out, and what no longer holds, in plain
-          language. The skill library then turns the same findings into files
-          your agents load, and every skill is revised as the research moves.
+          The library grows every day and corrects itself as the research moves, so every finding in it carries its evidence and is replaced when newer work overturns it. Each week the library becomes an issue that tells you what changed and what it means for your work, and the same findings become skills that your agents load and act on.
         </p>
         {papersThisWeek !== null && (
           <p className="metric-line">
