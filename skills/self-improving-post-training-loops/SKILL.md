@@ -21,8 +21,8 @@ provenance:
 
 # Self-improving post-training loops
 
-Three findings for the loop where the supervision signal is self-referential. All three
-are about not trusting a signal uniformly.
+Three findings for the loop where supervision is self-referential, all three about not
+trusting a signal uniformly.
 
 ## Apply: the builder's checklist
 
@@ -35,7 +35,6 @@ are about not trusting a signal uniformly.
 4. **Any self-generated guidance signal is conditioned on the verifier-derived advantage
    sign**: kept where positive, **reversed** where negative, off where the rollout group
    shows no preference (delta 3).
-5. **Harness improvements were exhausted first.**
 
 ## Delta 1: gate the teacher per prompt, and it pays in compute as well as accuracy
 
@@ -55,9 +54,8 @@ asynchronous distillation gets used once the gate decides what is worth it (clai
 1. Probe the teacher on a small verifier-scored sample per prompt cluster.
 2. Route dense distillation only to prompts that clear the check.
 3. Send the rest to verifier-grounded GRPO. Never to the teacher anyway.
-4. Watch teacher-node utilisation as the cheap confirmation the gate is working. **Floor
-   is 4B**: the utilisation gain was measured there, so a small student is enough to see
-   whether the gate pays before you spend at scale.
+4. Watch teacher-node utilisation as the cheap confirmation. **Floor is 4B**: the gain was
+   measured there, so a small student is enough to see whether the gate pays.
 
 ## Delta 2: without a verifier, the rubric has to move while the policy moves
 
@@ -88,19 +86,19 @@ it on negative-advantage trajectories, and disable it entirely when the rollout 
 shows no outcome preference** (claim 97). The reversal is the counterintuitive part and
 the part a uniform mixing weight cannot express.
 
-This calibrated signal can replace a separate token-level imitation loss, by reweighting a
-reference policy with an exponential energy function and fitting the normalised target
-with one log-partition estimate per rollout group through trajectory balance (claims 96,
-98). On mathematical reasoning it beat FlowRL at two scales while training faster, staying
-more stable, **avoiding response-length collapse**, and showing more correct-strategy
-diversity (claim 99).
+It can also replace a separate token-level imitation loss, by reweighting a reference
+policy with an exponential energy function and fitting the normalised target with one
+log-partition estimate per rollout group through trajectory balance (claims 96, 98). On
+mathematical reasoning it beat FlowRL at two scales while training faster, staying more
+stable, **avoiding response-length collapse**, and showing more strategy diversity (99).
 
 1. Compute the group advantage from the verifier over the rollout group.
 2. Advantage positive: keep the guidance as is.
 3. Advantage negative: **reverse its sign**. Not downweight.
 4. Group shows no outcome preference: switch the guidance off for that group.
 5. Log entropy, response length and correct-strategy diversity every iteration, on a
-   held-out set disjoint from the mixture.
+   held-out set disjoint from the mixture. And exhaust the harness first: this file is
+   for a loop whose training path is already chosen.
 
 ## Caveats
 
