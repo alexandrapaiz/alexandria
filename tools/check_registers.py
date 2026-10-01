@@ -35,6 +35,21 @@ REGISTERS = [
     "docs/voice/ban-list.md",
     "docs/voice/taste.md",
     "docs/standards/lessons.md",
+    # Added 2026-10-01 by the security seat, after main was found carrying
+    # conflict markers in two registers and this list covered only one of them.
+    # The original eight were the files the 2026-09-24 incident happened to
+    # name. The criterion is not that a file is famous, it is that more than
+    # one seat appends to it, because that is what produces the anchor
+    # contention incidents 6, 25 and 29 are all made of. Every file below is in
+    # docs/agents/registers.md's own table with a writer and a reader that are
+    # different seats.
+    "docs/agents/turn-caps.md",
+    "docs/agents/pending-workflow-changes.md",
+    "docs/agents/unowned-duties.md",
+    "docs/agents/learning-log.md",
+    "docs/agents/hq-relay.md",
+    "docs/backlog.md",
+    "docs/standards/pm.md",
 ]
 
 #: Git writes each marker as exactly seven characters at the start of a line.
