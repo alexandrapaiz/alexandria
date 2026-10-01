@@ -1243,7 +1243,9 @@ last three lines are the graph-audit step, verified this run:
 ```
 
 **Smoke-tested from the seat, as far as a seat can.** Both files pass in this
-run's sandbox, as does the whole suite (658 passed, 9 skipped). The harness was
+run's sandbox, as does the whole suite (668 passed, nothing skipped, with
+`requirements-dev.txt` and `tiktoken==0.8.0` installed as this workflow installs
+them). The harness was
 confirmed load bearing against an artifact known to fail it: inverting one
 assertion in `test_an_unreadable_database_is_a_503_and_not_an_empty_receipt`
 turns `python3 -m pytest tests/test_delivery_receipt.py -q` red with the check's
