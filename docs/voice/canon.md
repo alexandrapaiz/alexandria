@@ -475,8 +475,44 @@ Study decisions, never copy sentences.
 
 ## How an issue is graded
 
-The daily review runs five passes, in this order, and the first one
+The daily review runs six passes, in this order, and the first one
 is not optional (law 12a, the owner's ruling of 2026-09-19).
+
+**Which artifact, by path, before pass 1 begins** (added 2026-09-30,
+`INC-2026-09-30-standing-defect-unverified-for-three-grades`, corrected the
+same day by the run that first executed it). The issue exists in several
+places and they are not the same text. Grade the page under
+`site/content/issues/`, because that is the one a stranger reads. Where the
+database is reachable, grade the stored `digests` row as well and say where
+the two differ, because a difference between them is a defect by itself.
+Then read the reader-facing constants in `pipeline/` in this same pass and
+grade each one as a sentence in the issue, which is the duty ban list 61
+wrote down and handed to nobody.
+**The correction, because the first version of this paragraph gave a wrong
+reason and a later run would have relied on it.** It said the standing lines
+are spliced into the page and the email but not into the stored row, so the
+row is the one copy where a masthead defect is invisible. That is not how the
+pipeline works. `add_masthead` runs before the `insert into digests`, so the
+row carries the standing lines too, and the false masthead sits 84 characters
+into the stored body of the newest issue. It was never hidden. Two grades read
+a copy that contained it and missed it anyway, which is a plainer and worse
+finding than the one first written down.
+**So the check that belongs here is not about which copy. It is one integer
+against one integer.** Every stored body carries the `prompt_sha` of the
+prompt that wrote it. Compare it to the sha of `prompts/digest.md` as it
+stands on the branch, and say in the grade whether they match. Where they do
+not, the artifact was written by a generator that no longer exists, every
+patch landed since is invisible in it, and the grade says so before it grades
+a line. The newest print, wherever it lives, is the only artifact that carries
+information about the generator this seat is about to patch, so a rehearsal in
+`press_rehearsals` whose sha matches the branch is a better subject for passes
+1 through 5 than a published issue whose sha does not. The published page is
+still graded, because a reader is reading it.
+The reason this is written as a path and not as a principle: "read the issue"
+was the whole instruction for eleven days, a false masthead sat above the only
+published issue through two grades, and the newest `digests` row on 2026-09-30
+was written by a bundle from 2026-09-25, so three consecutive grades reported
+on a generator five commits out of date without once noticing.
 
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
@@ -574,6 +610,28 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    about the thing that is actually uncertain, and a grade aimed at
    the wrong risk satisfies neither. With the third question it also
    enforces law 15.
+6. **The standing defects.** Added 2026-09-30, from the fourth day of a
+   defect that had a law, two ban-list entries, an incident id and a
+   ledger entry with a recommendation, and was still printed.
+   Every entry in docs/voice/ban-list.md whose ending is a ledger filing
+   rather than a prompt change names a defect no prompt can reach, so
+   nothing in the generator will ever close it and nothing in the ledger
+   will ever fail. Take each of those entries and re-check it against the
+   live artifact. Print the check and its output in the grade, the way
+   law 12 is graded, and say how many days the entry has been open.
+   An entry that is still true is a FAIL line in the review with the same
+   weight as a law, and it stays one every run until the artifact is
+   clean. A filing has no failing state of its own, and this pass is the
+   failing state.
+   Do not restate the filed problem. The original ledger entry says it
+   better than a rewrite will, so confirm it in place with the day's
+   evidence, and where the entry has no check beside it, file the check
+   rather than the problem a second time.
+   The specimen is the masthead. `MASTHEAD` in `pipeline/weekly.py` was
+   corrected on 2026-09-26 and `site/content/issues/2026-W39.md` still
+   opened on "read in full and distilled weekly" on 2026-09-30, on a page
+   that had been edited that same day to apply a taste ruling four lines
+   from the bottom of the file.
 
 ## Maintenance
 
