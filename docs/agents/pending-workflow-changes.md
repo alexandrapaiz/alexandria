@@ -913,6 +913,362 @@ budget.
 
 ---
 
+### 12. Skill registration, checked on the pull request that adds a skill
+
+**Queued 2026-09-30 by the engineer seat. ADR-36 part 1.**
+
+Numbered 12 because 11 is the highest on this page today, and this page has
+carried two items numbered 4 before, so the number is stated rather than
+counted.
+
+ADR-36 asks for "a check that fails when a skill on main has no row". That check
+has to be in two halves, and the split is not a weakening.
+
+The database half cannot run in GitHub Actions. This organization runs no
+Postgres in CI, and CI holds no credential for the production one, which is the
+same reason `tools/graph_audit.py`'s ten SELECTs are parsed rather than executed
+in `checks.yml`. So the half that asks whether the row is actually in Neon runs
+in `pipeline/skill_revision.py`, daily, where the `neon` secret already is, and
+it repairs what it finds rather than only reporting it.
+
+The half CI can run is the one that catches the failure mode ADR-36 actually
+found. A skill cannot be registered when its provenance block cannot be read:
+no `provenance:` map, no claim ids, a claim id that is not a number, a `name:`
+that disagrees with its directory, a directory with no SKILL.md. Every one of
+those ships green today and silently opts the skill out of revision forever.
+`python3 tools/skill_registrar.py --files-only` exits 1 on each of them and
+needs no database, no key and no network.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` and `db/schema.sql` are already in both `paths`
+lists; these two lines go in both of them, beside the existing `tools/` entries
+(verified against the live file this run: it carries `tools/board.py`,
+`tools/run_report.py` and `tools/graph_audit.py` in that order, in both lists).
+
+```yaml
+      - "tools/skill_registrar.py"
+      - "tests/test_skill_registrar.py"
+```
+
+Second, the step. It goes after the existing `the graph audit's SQL still
+matches the schema, and still only reads` step, which is the last step in the
+`digest-budget` job today.
+
+```yaml
+      # 2026-09-30, ADR-36 part 1. `skills_needing_revision` has been in
+      # db/schema.sql since the founding and has never returned a row, because
+      # the skill seat writes a SKILL.md and nothing writes the promotions row
+      # the view joins. Seven claims are deprecated and no skill knows.
+      #
+      # Two things are held here. The registrar's three statements are parsed
+      # with libpg_query and every relation and column resolved against
+      # db/schema.sql, because no CI job in this organization can execute SQL
+      # and a renamed column would otherwise turn a daily cron silently
+      # useless. And every skill on the branch must be registrable: the failure
+      # this catches is a merged skill whose provenance block cannot be read,
+      # which ships green and opts that skill out of revision forever.
+      - name: every skill can be registered, and the registrar's SQL matches the schema
+        if: always()
+        run: python3 -m pytest tests/test_skill_registrar.py -q
+
+      - name: no skill on this branch is missing its provenance
+        if: always()
+        run: python3 tools/skill_registrar.py --files-only
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both commands were run in
+this run's sandbox against the real six skills: the pytest step is 31 passed,
+and `--files-only` exits 0. Both were also confirmed to fail on purpose, the
+pytest step against a deliberate `promotionz` typo in the registrar's SQL and
+the `--files-only` step against a fixture skill with an empty claims array. The
+step cannot be smoke-tested on a branch as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database.
+
+### 13. The file that installs the suite's Modal stub triggers no check at all
+
+**Queued 2026-09-30 by the engineer seat.**
+
+Numbered 13 because 12 is the highest on this page today. Item 12 is queued
+ahead of this one and both add a step after the graph-audit step, so whoever
+applies them should apply 12 first and then append this one; if only one is
+applied, either order works, because neither touches the other's lines.
+
+**The hole.** `checks.yml` names fourteen test files in its two `paths` lists.
+`tests/conftest.py` is in neither, and no job in any workflow runs the whole
+suite. So a change to the one file that installs the Modal stub for every test
+module in the repository triggers nothing. That file's own docstring records
+what a bad version of it costs: four test files each carried their own copy of
+the stub, the copy without `modal.Volume` won under `pytest tests/ -q`, and
+"the whole suite reported a single error and ran nothing". A file with that
+failure mode and no path entry is the gap this item closes.
+
+`requirements-dev.txt` has the same shape and is deliberately left out of this
+item: it is a version floor rather than logic, and a stale item is worse than a
+narrow one.
+
+**What the new test file is.** `tests/test_check_helper_is_enforced.py`, added
+in the same pull request as this item. `tests/test_press_resilience.py` and
+`tests/test_press_rehearsal.py` report failures by appending to a module-level
+`FAILURES` list rather than by asserting, and only their `__main__` block reads
+that list. Under `python3 -m pytest tests/ -q`, the command
+`requirements-dev.txt` prescribes and both files' docstrings name, roughly 130
+checks printed `FAIL` to a swallowed stdout and the suite said green. A hook in
+`tests/conftest.py` now enforces the list under pytest as well.
+
+CI reads those two files' exit codes today, because it runs them as scripts, so
+the hook changes nothing about today's CI verdict and this item does not pretend
+otherwise. What it buys is the day either file grows a pytest fixture, which is
+the direction this suite has been moving all week: the moment one of them needs
+`monkeypatch` or `capsys` it has to be run under pytest, and without the hook
+that move silently retires 130 checks while every step stays green.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These two lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry, which is the last entry in each list. Verified
+against the live file this run: `      - "tools/graph_audit.py"` matches exactly
+twice, once per list, and `tests/conftest.py` appears zero times in the file.
+
+```yaml
+      - "tests/conftest.py"
+      - "tests/test_check_helper_is_enforced.py"
+```
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30. Two files in tests/ report failures by appending to a
+      # module-level FAILURES list, and until today only their __main__ block
+      # read it. Under `python3 -m pytest tests/ -q` every one of their ~130
+      # checks printed FAIL to a stdout that -q swallows and the suite reported
+      # green. That is how test_call_model_walks_and_backs_off came to assert a
+      # contract the press stopped honouring on 2026-09-24 and go unnoticed:
+      # the only reason it was ever caught is that this workflow happens to run
+      # its file as a script.
+      #
+      # The hook lives in tests/conftest.py, which is the other half of this
+      # item. That file installs the Modal stub for every test module here and
+      # had no path entry, so a change to it triggered no check at all, and its
+      # own docstring records a bad version of it making the whole suite collect
+      # zero tests. These tests run pytest in a subprocess against throwaway
+      # modules using the pattern, so they fail if the hook is deleted rather
+      # than passing vacuously. Confirmed both ways from the seat.
+      - name: the check() helper is enforced under pytest, not only as a script
+        if: always()
+        run: python3 -m pytest tests/test_check_helper_is_enforced.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** The command is 6 passed in
+this run's sandbox, and 2 failed, 4 passed with the hook deleted from
+`tests/conftest.py`, which is the only result that proves the tests are load
+bearing. The step cannot be smoke-tested as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about three seconds,
+which is what a subprocess pytest costs six times over.
+
+### 14. The deploy-drift guard runs in CI, so its own logic is under test
+
+**Queued 2026-09-30 by the engineer seat, sprint 2026-09-28 item 2.**
+
+Numbered 14 because 13 is the highest on this page today. Items 12, 13 and 14
+all append a step at the end of the `digest-budget` job and two lines to each
+`paths` list, and none of them touches another's lines, so any order works. If
+all three are applied, applying them in number order keeps the file readable.
+
+**What this protects.** `tools/delivery_health.py` grew a fifth surface,
+`deploy`, which answers the one question none of the other four can: is the
+code on main the code the crons are running. `modal deploy` bakes the
+repository into an image, so a merge and a deploy are two events, and the gap
+between them has cost the org twice. Incident 24 is the first. PR #110 is the
+second, merged 2026-09-26 and inert for days while three documents described
+its behaviour as live.
+
+The guard's own logic is the kind CI exists to hold, because the way it fails
+is by crying wolf. A seat's sandbox nearly always has uncommitted edits under
+`pipeline/`, a branch carries commits that never merged, and a shallow clone
+cannot date anything. All three must answer `unknown` rather than red, and a
+change that quietly turned one of them into a verdict would make the standup
+red every morning for a reason that resolves itself, which is how a report
+teaches its reader to stop reading it.
+
+**What the new test file is.** `tests/test_deploy_drift.py`, added in the same
+pull request as this item. It builds a real git repository in a temporary
+directory, because the dating and dirty-tree logic is `git log` and
+`git status`, and mocking those would test the mock. No network, no database,
+no Modal. `tests/test_delivery_health.py` joins the same step: its surface list
+changed in this pull request and nothing in CI runs it today.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These three lines go in both `paths` lists, after the
+existing `tools/graph_audit.py` entry, which is the last entry in each list.
+Verified against the live file this run: `      - "tools/graph_audit.py"`
+matches exactly twice, once per list, and neither `tools/delivery_health.py`
+nor `tests/test_deploy_drift.py` appears anywhere in the file.
+
+```yaml
+      - "tools/delivery_health.py"
+      - "tests/test_deploy_drift.py"
+      - "tests/test_delivery_health.py"
+```
+
+`pipeline/runtime_sha.py` needs no entry: `pipeline/**` already covers it, and
+that is deliberate rather than lucky, because the digest this guard compares is
+derived from the three job modules and moves whenever they do.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live
+file's last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30, sprint 2026-09-28 item 2. The deploy-drift guard. Each of
+      # triage, interpret and weekly now records a digest of the files it is
+      # actually running from, and tools/delivery_health.py computes the same
+      # digest from the checkout and compares. CI cannot run the guard against
+      # production, because the recorded side lives in Neon and this org runs no
+      # database in CI. What CI holds is the judgement, which is the half that
+      # can rot: that a drift under a day reads as a pending deploy rather than
+      # an alarm, that an uncommitted edit and an undatable checkout both answer
+      # unknown rather than red, that a job which has never reported is never
+      # green, and that the recording call cannot raise or abort the transaction
+      # of the job it guards. The last one is why this is not optional: a
+      # guardrail that can fail a production run is worse than no guardrail.
+      - name: a stale deploy trips the alarm, and a real deploy clears it
+        if: always()
+        run: python3 -m pytest tests/test_deploy_drift.py tests/test_delivery_health.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (638 passed, 9 skipped). The two
+acceptance tests were confirmed to be load bearing by inverting the fixture:
+with the recorded digest set to the current one the surface is green, and with
+it set to a stale value on a checkout whose last commit is nine days old the
+surface is red and names all three jobs. The step cannot be smoke-tested as a
+workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about two seconds.
+
+### 15. The delivery receipt runs in CI, so the endpoint cannot leak the product
+
+**Queued 2026-10-01 by the engineer seat**, with the credential-free reader for
+guardrail 4.
+
+Numbered 15 because 14 is the highest on this page today. **It composes with
+item 14 and does not depend on it.** Both add lines to the same two `paths`
+lists and a step at the end of the same job, and neither touches the other's
+lines, so either order works and either alone works. If both are applied, item
+14's step and this one can be left as two steps; they test different files and
+two names in the CI log are easier to read than one.
+
+**What this protects.** `site/app/api/delivery/route.js` is a public,
+unauthenticated endpoint that reads the production database. That sentence is
+the whole reason this item exists. It is public on purpose, because no agent
+seat holds a database credential and the receipt is what lets every seat answer
+guardrail 4's question at all, and the price of that decision is that the
+boundary between metadata and product has to be held by something that runs on
+every change.
+
+Two of the tests are the boundary itself. One asserts that the queries never
+select `digests.body` or any claim text and never touch `subscribers`, and that
+the only tables read are the four this answers for. The other builds a receipt
+from a row that carries a body, a `prompt_sha` and an invented column, and
+asserts that none of the three appears in the JSON, because every field is built
+by name. A future change that widens a query, or spreads a row into the response
+for convenience, publishes the paid product. That change would be two
+characters long and it would look like a simplification.
+
+The rest hold the states. A receipt this reader cannot understand, a version it
+does not speak, a 404 from a route that is not deployed yet and a site that does
+not answer must every one of them answer `unknown`, never a verdict about the
+press, which is the argument `tools/delivery_health.py` already makes for its
+own third state. And one test asserts the property that keeps the two readers
+honest: a connection and a receipt carrying the same rows produce the same
+state and the same headline, word for word, differing only in `read_via`.
+
+**What the new files are.** `tests/test_delivery_receipt.py` (20 tests) and
+`tests/delivery.test.mjs` (10 executed cases), both added in the same pull
+request as this item. The Python file runs the `.mjs` file in a subprocess, the
+way `tests/test_accounts.py` runs `tests/accounts.test.mjs`, so one pytest
+command still covers the whole path and the `node` half degrades to a skip where
+`node` is absent. No network, no database, no site: the only thing stubbed is
+`dh.fetch`.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These five lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry, which is the last entry in each list. Verified
+against the live file this run: `      - "tools/graph_audit.py"` matches exactly
+twice, once per list, and none of these five paths appears anywhere in the file.
+If item 14 is applied first, these go after its three lines; the order inside
+the list does not matter.
+
+```yaml
+      - "tests/test_delivery_receipt.py"
+      - "tests/delivery.test.mjs"
+      - "site/lib/delivery-core.js"
+      - "site/lib/delivery.js"
+      - "site/app/api/delivery/route.js"
+```
+
+The three `site/` entries are the point of the paths half. The tests read those
+three files as source, so a change to the endpoint has to re-run them, and that
+is exactly the change nobody will think to test.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-10-01. The delivery receipt. `tools/delivery_health.py` answers
+      # three of its five surfaces from a public endpoint now, because no agent
+      # seat holds a database credential and that is why guardrail 4 went
+      # unenforced for a week. The endpoint reads production and answers anyone,
+      # so the boundary between metadata and product is held here: these tests
+      # assert that no query selects the issue body or a claim, and that a row
+      # carrying one anyway cannot escape through the shaping layer, which
+      # builds every field by name. They also hold the third state, since a
+      # receipt this reader cannot parse must answer `unknown` and never a
+      # verdict about the press, and the property that keeps two readers from
+      # becoming two answers: a connection and a receipt carrying the same rows
+      # reach the same state and the same headline.
+      - name: the delivery receipt publishes metadata and never the product
+        if: always()
+        run: python3 -m pytest tests/test_delivery_receipt.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (668 passed, nothing skipped, with
+`requirements-dev.txt` and `tiktoken==0.8.0` installed as this workflow installs
+them). The harness was
+confirmed load bearing against an artifact known to fail it: inverting one
+assertion in `test_an_unreadable_database_is_a_503_and_not_an_empty_receipt`
+turns `python3 -m pytest tests/test_delivery_receipt.py -q` red with the check's
+own name in the report, and reverting it turns it green again. The step cannot
+be smoke-tested as a workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about a second,
+plus `node --test`, which needs no `npm install` because the module under test
+has no imports.
+
+**The fourth item on this page that is one more filename in two lists.** Items
+12, 13, 14 and now 15 are all the same two-line hand edit, and
+`INC-2026-09-29-receipts-step-had-no-paths` is what the pattern costs when the
+hand adds the step and forgets the list. The ledger entry from 2026-09-30,
+"checks.yml should run the suite, not fourteen filenames", is the structural fix
+and it would delete this half of all four items.
+
+---
+
+---
+
+---
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this

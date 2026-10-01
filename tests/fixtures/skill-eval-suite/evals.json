@@ -1,0 +1,145 @@
+{
+  "skill": "fixture-skill",
+  "suite_version": 1,
+  "written": "2026-09-30",
+  "author": "engineer seat, mirroring the skill seat's shape exactly",
+  "note": "One task of every form and every check type the skill seat's six real suites use, so this harness's reader is tested against that vocabulary rather than against its own. Copied in shape, not in content, from skills/<slug>/evals/evals.json on branch skill/2026-09-30-skill-evals.",
+  "tasks": [
+    {
+      "id": "fx-t1",
+      "kind": "treatment",
+      "form": "prompt",
+      "situation": "An anchored rubric, which is how 52 of the 66 real tasks are scored.",
+      "source": {
+        "paper": "A Paper",
+        "arxiv": "arxiv.org/abs/2609.00001",
+        "claims": [
+          1,
+          2
+        ]
+      },
+      "prompt": "Our agent drops long threads. Should we fine-tune it on transcripts?",
+      "without_skill": "Endorses fine-tuning.",
+      "with_skill": "Declines and prescribes the harness change.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "declines",
+            "criterion": "Declines the plan and names the mechanism.",
+            "anchors": {
+              "0": "Endorses it.",
+              "1": "Hedges.",
+              "2": "Declines and names the mechanism."
+            }
+          },
+          {
+            "id": "repair",
+            "criterion": "Prescribes the alternative.",
+            "anchors": {
+              "0": "No alternative.",
+              "1": "Generic advice.",
+              "2": "The specific repair."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "fx-t2",
+      "kind": "treatment",
+      "form": "project",
+      "prompt": "Write mutants.py holding a function named mutant_1.",
+      "without_skill": "Prose about mutation testing.",
+      "with_skill": "A parseable module.",
+      "check": {
+        "type": "parses",
+        "format": "python_module",
+        "assertions": [
+          {
+            "id": "count",
+            "statement": "The module defines at least one callable named mutant_<n>."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fx-t3",
+      "kind": "treatment",
+      "form": "project",
+      "prompt": "Write config.json with the key `chunk_tokens`.",
+      "without_skill": "Prose.",
+      "with_skill": "Valid JSON.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "The object has a chunk_tokens key."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fx-t4",
+      "kind": "treatment",
+      "form": "prompt",
+      "prompt": "How many challenger episodes should we budget for a 5 percent bound at 99 percent confidence?",
+      "without_skill": "Answers 20.",
+      "with_skill": "Answers 90 to 96 from the exact zero-hit limit.",
+      "check": {
+        "type": "number_in_range",
+        "extract": "the number of challenger episodes the answer says to budget",
+        "range": [
+          90,
+          96
+        ],
+        "secondary_assertions": [
+          {
+            "id": "formula",
+            "statement": "The answer uses the exact zero-hit binomial limit rather than a normal approximation."
+          }
+        ],
+        "pass_condition": "the extracted count is in [90, 96] and the secondary assertion holds"
+      }
+    },
+    {
+      "id": "fx-c1",
+      "kind": "control",
+      "form": "project",
+      "prompt": "Implement double() in answer.py. Standard library only.",
+      "files": {
+        "spec.md": "double(n) returns 2n.\n"
+      },
+      "without_skill": "Implemented correctly.",
+      "with_skill": "The same. The skill must not intrude.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_double.py -q",
+        "pass_condition": "exit code 0 in both arms",
+        "files": {
+          "test_double.py": "import answer\n\n\ndef test_double():\n    assert answer.double(3) == 6\n    assert answer.double(0) == 0\n"
+        }
+      }
+    },
+    {
+      "id": "fx-c2",
+      "kind": "control",
+      "form": "prompt",
+      "prompt": "What is a reasonable HTTP client timeout for a slow model?",
+      "without_skill": "A number with a reason.",
+      "with_skill": "The same.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "gives-a-number",
+            "criterion": "Gives a specific number of seconds."
+          }
+        ]
+      }
+    }
+  ]
+}
