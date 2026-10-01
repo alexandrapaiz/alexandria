@@ -6328,6 +6328,17 @@ acting on anything in this one.
   After that, `python3 tools/delivery_health.py` answers all four surfaces and
   guardrail 4 has a reader for the first time since it was written.
 - Cost: $0. Neon roles are free and this adds no service and no account.
+- Update 2026-10-01 (engineer): answered a different way, and the first step
+  above is no longer needed for this. The site already holds `DATABASE_URL` in
+  its own environment, so it publishes the four facts at `GET /api/delivery` and
+  `tools/delivery_health.py` reads them with no credential anywhere. No Neon
+  role, no repository secret, no workflow edit, and the same change answers the
+  fifth surface the drift guard added. The status stays `urgent` and is the
+  owner's to move, for two reasons that are hers to weigh: the receipt is not
+  live until the pull request merges and the Vercel hook fires, and nothing
+  reachable from a seat sandbox can confirm that the site's Vercel project has
+  `DATABASE_URL` set. If it does not, the endpoint answers 503 saying exactly
+  that, which turns an invisible gap into a one-setting fix.
 - Status: urgent
 
 ### 2026-09-28 — A public status page, split into what we run and what we rent
@@ -7494,5 +7505,125 @@ graphs.
 - First step: the MCP half alone. One `@modal.enter()` hook, one row, one more
   app in the surface's loop, and the tests already exist in a shape that takes
   a fourth app without changing.
+- Cost: $0.
+- Update 2026-10-01 (engineer): the small JSON this entry's second half asks the
+  site to publish now exists, `site/app/api/delivery/route.js`, built for
+  guardrail 4. So the site half is one field: the build knows its own commit as
+  `VERCEL_GIT_COMMIT_SHA`, the receipt carries it, and the surface compares it to
+  `HEAD` the way the three crons are already compared. Not done in that run,
+  because the field widens a brand-new public endpoint and the tests that hold
+  what may leave it are a day old. The MCP half is unchanged and still first.
+- Status: proposed
+
+### 2026-10-01 — An agreement meter over the edges the graph already has (engineer, craft scan)
+
+- Trigger: today's craft scan of Consensus (consensus.app). Its home page leads
+  with a "Consensus Meter showing scientific agreement on yes/no questions",
+  which is one aggregate a reader sees before opening a single paper. The
+  alexandria claim graph holds strictly richer data for the same purpose,
+  `claim_links` with `supports`, `refines`, `contradicts` and `duplicates` plus a
+  per-claim `evidence_grade`, and it renders none of it as a verdict. `/graph`
+  shows a node-link diagram, which asks the reader to do the aggregation.
+- What: one number and one bar per claim, derived from the edges already stored:
+  how many claims support it, how many refine it, how many contradict it, and
+  the grade of the strongest evidence on each side. It goes on the claim panel
+  and in the `get_digest` and `rag_answer` payloads, so an agent asking "does
+  this hold" gets the aggregate rather than a list it has to reduce. The
+  `deprecated_claims` view is the extreme case of this number already, and the
+  Left-Behind Index is its public face; this is the same arithmetic applied to
+  every claim rather than only to the ones that lost.
+- Why it is worth building rather than noting: the OKR benchmark's weakest axis
+  is product surface, and this adds no backend. The data is in `claim_links`
+  today and the query is a group-by.
+- First step: the SQL and one number on the claim panel, behind the existing
+  entitlement gate, measured against `docs/product/graph-quality.md`'s bounds so
+  a meter is not published for a region of the graph with too few edges to mean
+  anything.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-01 — The daily machinery check should read the build, not only the commits (engineer)
+
+- Trigger: `INC-2026-09-30-two-checks-steps-red-on-main-for-days` closed with a
+  guardrail suggestion rather than a change, that the engineer seat's §0 also
+  read `gh run list --workflow checks.yml --branch main`. This run ran it as a
+  one-off and it is what found `INC-2026-10-01-checks-red-on-main-across-four-prs`:
+  five runs on `main`, five failures, the newest twenty-four hours old, and the
+  fix shipped four separate times in four of this seat's own pull requests
+  without landing. The `git log` half of §0 cannot see this, because the commit
+  that broke the build is outside the 36-hour window and looks fine anyway.
+- What: one more command in §0 of prompts/engineer-agent.md, beside the
+  `git log --since="36 hours ago"` over `.github/` and `pipeline/`. A red
+  `checks` on `main` is a runtime change that announced itself, and the seat that
+  runs daily is the only one positioned to answer it inside a day. The same
+  reasoning the §0 clause already makes for the `pipeline/` half, which was added
+  after a provider change landed where nobody was looking.
+- Why it is a ledger entry and not a commit: charters are edited by the owner's
+  merge only, and this seat is forbidden to include charter edits in its daily
+  pull request. So the diff is written here for her to take.
+- First step: add after the existing command, with the same two questions the
+  `git log` half asks. `gh run list --workflow checks.yml --branch main --limit 3
+  --json conclusion,createdAt`. If the newest is a failure, read the log, and if
+  the fix already exists in an open pull request, say so in one line addressed to
+  the owner rather than writing it a fifth time.
+- Cost: $0. One command, about two seconds.
+- Status: proposed
+
+### 2026-10-01 — The press's pure rules are behind a Modal import, so every reader of them carries a stub (engineer)
+
+- Trigger: building the credential-free reader this run. `tools/delivery_health.py`
+  needs exactly one function from the press, `week_just_ended`, which is pure
+  date arithmetic, and to reach it the file builds a fake `modal` module at
+  runtime with a chaining `__getattr__`, a fake `App`, a fake `Image`, a fake
+  `Secret` and a fake `Volume`. `tests/conftest.py` carries a second, larger copy
+  of the same stub for the whole suite, and its own docstring records that four
+  test files each had a third copy and that the disagreement between them took
+  the entire suite down to zero tests collected.
+- What: move the pure rules out from under the decorators. A `pipeline/rules.py`
+  (or `pipeline/weeks.py`) with no `import modal` at all, holding
+  `week_just_ended` and whatever else is arithmetic rather than infrastructure,
+  and `pipeline/weekly.py` imports from it. Nothing changes about what runs on
+  Modal. What changes is that a tool, a test or a seat sandbox can read the
+  press's own rules with an ordinary import, and the stub shrinks to the modules
+  that genuinely need it.
+- Why it is worth a day: the stub is load bearing in a way nobody chose. It is
+  the reason `delivery_health.py` can agree with the press about which week it
+  is, which that file argues for at length and is right to, and it is also one
+  `AttributeError` away from taking the suite to zero tests, which has already
+  happened once. A pure module is the version of that argument with no stub in
+  it.
+- First step: the one function the tools actually import, moved, with the stub in
+  `delivery_health.py` deleted in the same commit so the win is visible. The
+  conftest stub stays, because `pipeline/` and `mcp/` really do import Modal at
+  module scope for their decorators.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-01 — Craft scan: Consensus (consensus.app)
+
+- Trigger: the engineer seat's daily craft scan, rotating through
+  docs/market/landscape.md to the academic-tools entry at line 35, which has not
+  been opened by this seat.
+- **What is worth stealing: the single aggregate, shown before the reading.**
+  Consensus leads with a "Consensus Meter showing scientific agreement on yes/no
+  questions", plus "Study Snapshots with key findings and methodology" and a
+  "Citation Graph for paper relationships". The meter is the one that earns its
+  place. A reader arrives with a question and leaves with a position, and the
+  product does the reduction rather than handing over a reading list. That is in
+  the ledger above as its own entry, because alexandria already stores the
+  relations the meter would be computed from.
+- **What alexandria does better: the claim it makes is one that can be
+  contradicted.** Consensus's headline number is "Search 220M+ scientific
+  papers", and its home page says nothing about how fresh those papers are or
+  when the corpus last moved. Size is a claim nobody can check and it never goes
+  stale. alexandria's product is the opposite claim, what changed this week and
+  what the field has already moved past, and as of today the freshness is
+  published as a fact anyone can read at `/api/delivery`: the newest issue, the
+  week it covers, and when the corpus last ingested a paper. A number that can
+  be wrong in public is worth more than a number that cannot.
+- Second observation, recorded because it cuts against us: 220M papers against
+  this corpus's 8,956 ingested is four orders of magnitude, and nothing on the
+  site tells a visitor why that is the right trade. The positioning document has
+  the argument. The product does not make it.
 - Cost: $0.
 - Status: proposed
