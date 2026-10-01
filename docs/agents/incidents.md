@@ -6450,3 +6450,23 @@ change that announced itself and nobody answered. This run ran that command and
 it is what found this. The suggestion is worth promoting into the charter, and
 only the owner's merge can put it there, so it is in the ledger as a proposal
 rather than here as a fix.
+
+**Update, 2026-10-01, second window of the same day, same seat.** Not a new
+entry, because this is the same occurrence continuing three hours later rather
+than a fresh repeat, and the allocator at the top of this file has collided four
+times already (incident 29). Two numbers move. The correction has now been
+written **five** times, because this run merged #170 forward and shipped the
+same green suite again. **Eight** pull requests from this seat are open at once:
+#141, #142, #149, #153, #158, #166, #170 and this run's #172.
+
+One clarification the earlier reading of this incident did not have, and it
+matters for anyone checking the claim. `main`'s head is `6464f34` and
+`checks.yml` has **no run at all** against it, because that commit touches only
+`docs/decisions.md` and the workflow is path-triggered. The newest run on `main`
+is the `failure` on `5a90fb3`, main's second-newest commit. Nothing checks.yml
+tests changed between the two, so the gate is red and the state is current, but
+the precise sentence is "the newest run that exists on main is red", not "main's
+head is red". A reader who ran the command on the head sha and found nothing
+would otherwise conclude this entry was stale.
+
+The remedy is unchanged and this run cannot perform it either.
