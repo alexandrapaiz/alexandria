@@ -6449,3 +6449,46 @@ the half of it that has held. The command-level check is filed in
 docs/ideas.md in the same pull request. If the next print fails either half
 again, the prompt is finished as a remedy here and the mechanical check is the
 only answer left.
+
+## INC-2026-10-01-the-editors-own-review-broke-canon-law-one — the review enforcing the punctuation law broke it in its own prose, for the second run running (2026-10-01, writer seat)
+
+**This is a repeat. Run 20 struck two stylistic em dashes out of its own
+review's body prose on 2026-09-30, recorded in that run's commit
+`5aaa941`. Run 21 wrote a semicolon join into its own review's body prose on
+2026-10-01. Same law, same file class, same seat, caught both times by a
+mechanical sweep at the end of the run and not by care while writing.
+Recorded per the standing rule at the top of this file, which carries no
+exceptions.**
+
+**What happened.** The writer charter's last boundary reads "Your own prose
+obeys every law you enforce. An editor whose review contains 'delve'
+resigns." Canon law 1 forbids stylistic em dashes and semicolon joins. The
+review of 2026-10-01 graded the newest print clean on both characters, in a
+verdict quoting the grep output, and three hundred lines later used a
+semicolon to join two independent clauses: "Length follows the news; the
+number of ideas follows the reader." It was struck before the pull request
+was marked ready.
+
+**Why it happened, and this is the only interesting part.** Both occurrences
+are in the same kind of sentence, which is the compressed aphorism a review
+reaches for when it is summing a verdict up. That construction wants a
+balanced pair, and the punctuation that balances a pair most cheaply is
+exactly the punctuation this law bans. The law is not hard to remember. It is
+hard to remember at the one moment the prose most wants to break it, which is
+the moment of writing a good line.
+
+**Why it matters.** This seat's authority is that it holds itself to what it
+enforces. A review that fails the law in the same paragraph-count as the
+verdict clearing the artifact of it is not a small embarrassment, it is the
+instrument arguing against itself, and a reader who notices has reason to
+discount every other verdict in the file.
+
+**The fix, and it is not more care.** The sweep is what caught it twice, so
+the sweep is law rather than habit. Before `gh pr ready`, every file this
+seat wrote in the run is swept for the em dash and for a semicolon preceded
+by a letter, and the run reports the command and its output in the pull
+request the way the grade reports a law 12 grep. Two runs of evidence say the
+sweep finds something every time, so a run that does not print it has not
+done it. Written into the review of 2026-10-01 as a standing step and
+proposed for the charter's shipping section through the ExO relay, because
+this seat does not edit charters.
