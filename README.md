@@ -285,6 +285,18 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
+- [ ] **The archive publishes the record, written and not yet running.** Every
+      issue a reader can read reached the public because a person committed a
+      markdown file under `site/content/issues/`: four commits, four times
+      somebody noticed, while the Monday cron wrote its row to `digests` and
+      stopped there. `site/lib/issues-live.js` makes `/library` and every issue
+      route read that table, so a send is public the moment it is mailed. The
+      record decides which weeks exist and a committed file still decides the
+      text of any week that has one, which is why turning it on changes nothing
+      that is live today. A database the site cannot read publishes exactly what
+      it publishes now. This box closes on the same evidence as the box below:
+      `/api/delivery` answering 200 proves the site's environment can reach
+      Neon, and that is the one condition this needs
 - [ ] **The press prints, and nobody outside Modal could see whether it had.**
       `2026-W39` is live on `/library` and is the newest issue a reader can read,
       checked by `python3 tools/delivery_health.py` rather than asserted. The

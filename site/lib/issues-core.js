@@ -103,7 +103,7 @@ export function pickIssue({ week, file = null, row = null, hidden, parse }) {
 
 // One year of issues on the listing. The archive is the product's shop window
 // and a year of it is more than any visitor reads, so this is a ceiling on the
-// read rather than an editorial decision; a 53rd week will need a pager on the
+// read rather than an editorial decision. A 53rd week will need a pager on the
 // page before it needs a larger number here.
 export const LISTING_WEEKS = 52;
 

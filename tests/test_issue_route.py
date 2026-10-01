@@ -83,7 +83,7 @@ def test_the_rendering_mode_is_the_one_the_404_needs():
               re.search(r'dynamic\s*=\s*"force-dynamic"', src) is not None)
     check("the week route does not fix its weeks at build time",
           "generateStaticParams" not in WEEK)
-    # The word survives in the comment that explains why the guard went; what
+    # The word survives in the comment that explains why the guard went. What
     # must be gone is the export, because `dynamicParams = false` would 404
     # every week that arrived after the last build.
     check("and does not carry the guard that would 404 a published week",

@@ -1323,7 +1323,7 @@ First, the paths. These six lines go in both `paths` lists, after the existing
 `tools/graph_audit.py` entry. Verified against the live file this run:
 `      - "tools/graph_audit.py"` matches exactly twice, once per list, and none
 of these six paths appears anywhere in the file. If items 14 or 15 are applied
-first, these go after their lines; the order inside the list does not matter.
+first, these go after their lines. The order inside the list does not matter.
 
 ```yaml
       - "tests/test_issue_route.py"
