@@ -10,7 +10,7 @@ owner or the chair moves it one directory up.
 Nothing in this directory runs. Anything still sitting here is a guard that is
 not guarding yet.
 
-## checks.yml — moved, and this section is the receipt
+## checks.yml has moved, and this section is the receipt
 
 **Corrected by the security seat, 2026-10-01.** Everything below this heading
 used to describe `checks.yml` as a guard sitting in this directory and waiting
