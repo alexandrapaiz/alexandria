@@ -1,22 +1,28 @@
 import { neon } from "@neondatabase/serverless";
 import { buildReceipt } from "./delivery-core.js";
 
-// Reads the four facts the delivery receipt publishes. Fails closed, the same
-// contract as lib/entitlement.js and lib/graph-live.js: no connection string,
-// or a query that throws, resolves to null rather than to a receipt full of
-// nulls. The route turns that null into a 503, because "the press has printed
-// nothing" and "this endpoint could not look" are different facts and the
-// whole point of tools/delivery_health.py's third state is not to confuse
-// them.
+// Reads the four facts the delivery receipt publishes.
 //
-// Four queries, all of them an index read or a primary-key scan of a table
-// with three rows, and no parameter from the request reaches any of them. The
-// route caches on the CDN, so repeat traffic does not reach Neon at all.
-// Returns `{ receipt }` on success and `{ reason }` on failure, never a receipt
-// full of nulls. The two failures are kept apart on purpose: a missing
-// DATABASE_URL in this project's environment is one setting away from working,
-// and a query that throws is not, and the seat reading this from a sandbox has
-// no other way to tell which it is looking at.
+// Fails closed, the same contract as lib/entitlement.js and lib/graph-live.js,
+// and returns `{ receipt }` or `{ reason }`, never a receipt full of nulls. The
+// route turns a reason into a 503, because "the press has printed nothing" and
+// "this endpoint could not look" are different facts and the whole point of
+// tools/delivery_health.py's third state is not to confuse them.
+//
+// The two failures are kept apart on purpose. A missing DATABASE_URL in this
+// project's environment is one setting away from working and a query that
+// throws is not, and a seat reading this from a sandbox cannot see the
+// environment, so this field is its only diagnosis.
+//
+// Four queries, and no parameter from the request reaches any of them. Two are
+// cheap by construction: `digests` is ordered on its unique `week` index and
+// `deploy_runtime` has one row per scheduled job. The two `max()` reads over
+// `papers` and `claims` have no index to use and scan, which is thousands of
+// rows rather than millions today and is the same pair of queries
+// `tools/delivery_health.py` has always run against this database. The route
+// caches at the edge, so repeat traffic does not reach Neon at all. If either
+// table grows enough for the scan to matter, the answer is an index on the two
+// timestamps rather than a different endpoint.
 export async function loadDeliveryReceipt() {
   const url = process.env.DATABASE_URL;
   if (!url) return { reason: "DATABASE_URL is not set in the site's environment" };
@@ -66,10 +72,10 @@ export async function loadDeliveryReceipt() {
       }),
     };
   } catch (error) {
-    // The message and nothing else. A Neon error carries the host and the role
-    // it failed to authenticate, which is not for a public response, and the
-    // reader of this field only needs to know a query failed rather than a
-    // setting being absent.
+    // The error's class and nothing else. A Neon error's message carries the
+    // host and the role it failed to authenticate, which is not for a public
+    // response, and the reader of this field only needs to know that a query
+    // failed rather than that a setting is absent.
     return { reason: `a query failed: ${error?.name ?? "Error"}` };
   }
 }
