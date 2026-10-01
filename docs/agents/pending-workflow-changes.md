@@ -1202,9 +1202,15 @@ command still covers the whole path and the `node` half degrades to a skip where
 **Two edits to `.github/workflows/checks.yml`.**
 
 First, the paths. These five lines go in both `paths` lists, after the existing
-`tools/graph_audit.py` entry, which is the last entry in each list. Verified
-against the live file this run: `      - "tools/graph_audit.py"` matches exactly
-twice, once per list, and none of these five paths appears anywhere in the file.
+`tools/graph_audit.py` entry. Verified against the live file this run:
+`      - "tools/graph_audit.py"` matches exactly twice, once per list, and none
+of these five paths appears anywhere in the file. (Corrected 2026-10-01, second
+window, same seat: this sentence said `tools/graph_audit.py` was the last entry
+in each list and it is not. Three entries follow it, `db/schema.sql`,
+`site/emails/digest.html` and `.github/workflows/checks.yml`. The instruction is
+unchanged, because inserting after a line that matches exactly twice does not
+depend on that line being last, but a hand reading "last entry" and finding
+three more would have had to stop and work out which text to trust.)
 If item 14 is applied first, these go after its three lines; the order inside
 the list does not matter.
 
@@ -1262,6 +1268,127 @@ has no imports.
 hand adds the step and forgets the list. The ledger entry from 2026-09-30,
 "checks.yml should run the suite, not fourteen filenames", is the structural fix
 and it would delete this half of all four items.
+
+### 16. The archive publishes the record, and that is checked on the pull request
+
+**Queued 2026-10-01 by the engineer seat (second window)**, with the change
+that makes a Monday send public on Monday.
+
+Numbered 16 because 15 is the highest on this page today. **It composes with
+items 14 and 15 and depends on neither.** All three add lines to the same two
+`paths` lists and a step at the end of the same job, none of them touches
+another's lines, so any order works and any one alone works.
+
+**What this protects.** `site/lib/issues-live.js` decides which weeks the public
+archive publishes, from the `digests` table rather than from files committed by
+hand. The archive is the product's shop window and the issue is the free half of
+what the company sells, so three properties now stand between a change to that
+file and a public page, and every one of them is a way this could go wrong
+quietly rather than loudly.
+
+A database that cannot be read must publish exactly what the committed files
+publish. That is the difference between a Neon outage being invisible and a Neon
+outage emptying the archive, and the test drives it twice, once with no
+connection and once with a query that throws.
+
+`HIDDEN_WEEKS` must still retire a week that exists only as a row. That set is
+the owner's veto over the archive (2026-W37, retired on her order 2026-09-19)
+and the record is a second way in, so a row must not be able to walk past it.
+
+The committed file must win over the row for a week that has both. Every
+correction already made to a published issue lives in those files: the 2026-09-19
+corrections to 2026-W37, the 2026-09-24 reprint of 2026-W39 under canon law 14.
+A change that reversed this precedence would silently revert all of them, and it
+would look like a simplification.
+
+Two more are worth naming because they are about the query rather than the
+rules. The week comes out of the URL, so one test asserts it is interpolated and
+never concatenated, and that a week which does not match `^\d{4}-W\d{2}$` never
+reaches the database at all. And the listing query reads only the first 4,000
+characters of each body, so the shaping layer drops `body` from the listing
+shape entirely: a page that rendered it would be showing a truncated issue as a
+whole one.
+
+**What the new files are.** `tests/test_issue_route.py` (6 tests, 20 checks) and
+`tests/issues.test.mjs` (16 executed cases), both added in the same pull request
+as this item. The Python file runs the `.mjs` file in a subprocess, the way
+`tests/test_delivery_receipt.py` runs `tests/delivery.test.mjs`, so one pytest
+command covers the whole path and the `node` half degrades to a skip where
+`node` is absent. No network, no database, no `npm install`: the module under
+test has no imports, which is why the queries live in it.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These six lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry. Verified against the live file this run:
+`      - "tools/graph_audit.py"` matches exactly twice, once per list, and none
+of these six paths appears anywhere in the file. If items 14 or 15 are applied
+first, these go after their lines; the order inside the list does not matter.
+
+```yaml
+      - "tests/test_issue_route.py"
+      - "tests/issues.test.mjs"
+      - "site/lib/issues-core.js"
+      - "site/lib/issues-live.js"
+      - "site/lib/content.js"
+      - "site/app/library/**"
+```
+
+The four `site/` entries are the point of the paths half, and `site/lib/content.js`
+is there for a reason worth stating: the record's bodies are parsed by that
+file's `parseIssue`, which is now exported so there is one derivation rule
+rather than two, and a change to it moves every title and excerpt in the
+archive.
+
+Second, the step. It goes at the end of the `digest-budget` job, after the
+graph-audit step, which is the last step in the live file: `run: python3 -m
+pytest tests/test_graph_audit.py -q` matches exactly once and is the file's last
+line.
+
+```yaml
+      # 2026-10-01. The archive reads `digests` now, so an issue is public the
+      # moment the press mails it instead of whenever somebody remembers to
+      # commit a markdown file. Three properties stand between a change to
+      # site/lib/issues-live.js and a public page: a database that cannot be
+      # read publishes exactly what the committed files publish, HIDDEN_WEEKS
+      # still retires a week that exists only as a row, and the committed file
+      # still wins the text of any week that has one, which is what keeps every
+      # correction already made to a published issue standing. The week comes
+      # out of the URL, so the query half is held too.
+      - name: the archive publishes the record, and fails closed to the files
+        if: always()
+        run: python3 -m pytest tests/test_issue_route.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox. The harness was confirmed load bearing against an artifact known
+to fail it: changing one asserted string in `test_both_routes_read_the_record`
+to one the route does not contain turns `python3 -m pytest
+tests/test_issue_route.py -q` red with the check's own sentence in the report,
+and reverting it turns it green again, which also exercises the `FAILURES` hook
+in `tests/conftest.py` that makes a `check()` file legible to pytest at all. The
+step cannot be smoke-tested as a workflow, because the seat cannot push the
+file.
+
+Separately and beyond what CI can hold, the route behaviour was measured against
+a real production build of the site in this sandbox, because the change retires
+a guard that existed to prevent a 500. `npm install && npx next build && npx
+next start`, then six requests: `/` 200, `/library` 200, `/library/2026-W39` 200,
+`/library/2026-W37` 404, `/library/2026-W01` 404, `/library/nonsense` 404. A
+clean 404 on an unpublished week is the sentence the old guard was protecting,
+and it holds without the guard because the route is dynamic from the start.
+
+**Cost.** $0. No key, no network, no database. The step adds under a second,
+plus `node --test`, which needs no `npm install`.
+
+**The fifth item on this page that is one more filename in two lists.** Items
+12, 13, 14, 15 and now 16 are the same two-line hand edit five times over, and
+`INC-2026-09-29-receipts-step-had-no-paths` is what the pattern costs when the
+hand adds the step and forgets the list. The ledger entry from 2026-09-30,
+"checks.yml should run the suite, not fourteen filenames", is the structural fix
+and it would delete half of all five items. Five occurrences of one shape is no
+longer a pattern worth noting, it is a backlog, so this run raises it from a
+ledger line to a named recommendation to the owner in its pull request.
 
 ---
 

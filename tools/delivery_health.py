@@ -251,6 +251,15 @@ def check_site(today: date | None = None) -> Surface:
     or a commit on main, because all three can disagree and only one of them is
     what a reader meets. `site/lib/content.js` also keeps a HIDDEN_WEEKS set,
     so a week can be present in the repository and deliberately unpublished.
+
+    Since 2026-10-01 the listing is the `digests` table rather than the
+    committed files (`site/lib/issues-live.js`), which changes what a stale
+    answer here means but not what is read to get it. This surface and the
+    press surface should now agree on the newest week, and the listing falls
+    back to the committed files when the site cannot reach Neon, so they can
+    still disagree. That disagreement is worth reporting rather than hiding:
+    it is the site failing closed, which is the behaviour this check should
+    want and not the behaviour it should assume.
     """
     status, body, _ = fetch(f"{SITE_URL}/library")
     if status == 0:
@@ -268,9 +277,11 @@ def check_site(today: date | None = None) -> Surface:
         return Surface(
             "site", FAILING,
             f"the newest issue a reader can read is {weeks[0]}, and {expected} "
-            "has ended. The site archive is hand-committed: nothing in this "
-            "repository publishes a digest, so a written issue reaches the "
-            "public only when someone commits it under site/content/issues/.",
+            "has ended. The archive reads the `digests` table now "
+            "(site/lib/issues-live.js), so this no longer means a commit was "
+            "forgotten: it means the press wrote no row for that week, or the "
+            "site cannot read the database, or the week is in HIDDEN_WEEKS. "
+            "The press surface above distinguishes the first two.",
             evidence)
     return Surface("site", OK,
                    f"{len(weeks)} issue(s) published, newest {weeks[0]}", evidence)
