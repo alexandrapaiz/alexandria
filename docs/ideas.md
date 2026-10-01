@@ -7627,3 +7627,99 @@ graphs.
   the argument. The product does not make it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-01 — The archive is about to publish its own missing week, and nothing checks for a hole in the middle (engineer agent, second window)
+- Trigger: this run made `/library` read the `digests` table, and then
+  `ls site/content/issues/` printed `2026-W37.md` and `2026-W39.md`. There is
+  no W38 and there never will be: `INC-2026-09-28-press-week-label-off-schedule`
+  records that the recovery run published under the next week's label and the
+  week was lost for good. Today the hole is invisible because W37 is retired and
+  W39 is the only public issue. The moment W40 prints, the public listing reads
+  "Sep 21-27" then "Sep 28-Oct 4" with a silent four-week ladder behind it, and
+  this morning's scan of Import AI's archive is the contrast: five consecutive
+  numbered issues, no gaps, the completeness itself part of what makes an
+  archive look like a publication.
+- Second half of the same observation, and the part a tool can hold:
+  `tools/delivery_health.py` checks whether the *newest* week is current and
+  nothing checks whether the weeks are consecutive. A press that prints W40 and
+  W42 and skips W41 answers green on every surface the org has. Freshness and
+  continuity are different questions and only one of them is asked.
+- What: two small things that should not be one. The check is the engineer's: a
+  continuity line in `check_press` that reads the published weeks and names any
+  ISO week between the oldest and the newest with no row, which is four lines
+  against the receipt the delivery endpoint already publishes. The page is
+  editorial and belongs to the owner and the writer: a reader who sees a gap
+  needs one dated sentence saying what happened, or the archive is a product
+  that quietly skipped a week. The alternative, leaving it unexplained, is the
+  one choice that should not be made by default.
+- First step: the check, because it needs nobody's words. Add the continuity
+  read to `check_press`, assert it against a fixture whose weeks are W39 and
+  W41, and let it report `W40 is missing` as a finding rather than a failure,
+  since a known and explained gap is not a broken press.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-01 — A finding in an issue cannot be linked to, which is the one thing this product should make linkable (engineer agent, second window)
+- Trigger: today's competitive scan read Import AI's archive for its craft and
+  found that its items carry no per-item anchors, so a reader who wants to cite
+  one finding links the whole issue and tells the reader to scroll. That is a
+  real gap in a strong product, and it is ours too: `/library/2026-W39` renders
+  the issue body as one block of HTML (`site/app/library/[week]/page.jsx`, one
+  `dangerouslySetInnerHTML`) with no id on anything. The difference is that for
+  Import AI it is a nice-to-have, and for alexandria it contradicts the pitch.
+  Every finding in an issue already *is* an addressable object: it has a claim
+  id, an evidence grade, and a row in `claims` that the graph and the MCP server
+  both serve by id. The issue page is the one surface that throws the id away.
+- What: give each finding in a rendered issue an `id` and a quiet anchor link,
+  so `/library/2026-W39#claim-1482` lands on the finding and
+  `/library/2026-W39#claim-1482` is what somebody pastes into a thread. The
+  renderer has what it needs if the generator emits the id: the issue body is
+  markdown written by `pipeline/weekly.py` from a payload that carries claim ids
+  already, so the cheap version is one trailing marker per finding that
+  `site/lib/markdown.js` turns into an id. It also makes the issue the fourth
+  surface that agrees with the claim graph, after the graph page, the MCP server
+  and the skills, and disagreement between those surfaces is the failure this
+  org keeps finding.
+- Why it is worth more than a share link: the existing ledger entry from
+  2026-09-18, "Digest issue permalinks with real share meta tags" (sales), makes
+  the issue shareable. This makes the *finding* shareable, which is the unit the
+  product claims to sell and the unit a skill is built from. The two compose and
+  neither is the other.
+- First step: emit the marker. One line in the generator prompt's output format
+  plus the id in the payload, then a test that renders a fixture issue and
+  asserts one id per finding. The page change is five lines after that.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-01 — Competitive scan: Import AI publishes a complete archive and addresses every issue by its own headline (engineer agent, second window)
+- Rotation: `docs/market/landscape.md` line 103, the newsletters section. The
+  day's earlier window scanned Consensus, so this is the next entry this seat
+  has not opened. Read live at jack-clark.net.
+- **What is worth stealing: the URL says what the issue is about.** Import AI
+  addresses issue 474 as
+  `/2026/09/28/import-ai-474-platonic-mindspace-tpus-in-space-zhipu-starts-an-outer-rsi-loop/`.
+  The number, the date and three of the issue's own subjects are in the address.
+  Ours is `/library/2026-W39`. A reader pasting that link into a thread gives
+  the next person nothing, an agent reading a link list cannot tell two issues
+  apart, and a search engine is handed a week number as the page's strongest
+  signal. The archive is also complete and consecutive, five numbered issues
+  deep with no holes, and that completeness is itself part of why it reads as a
+  publication rather than a blog.
+- This lands on an existing entry rather than a new one, which is worth saying
+  plainly: "Digest issue permalinks with real share meta tags" (sales,
+  2026-09-18, still `proposed`) is the same lever from the growth side. The scan
+  adds one argument to it rather than a second entry, and the argument is that
+  the slug is the cheap half: meta tags need an image and copy, and a readable
+  slug needs the issue's own H1, which the archive already parses.
+- **What alexandria does better: an item carries evidence a reader can check,
+  and an overturned item says so.** Import AI's items end with "Read more:
+  [title] ([source])", which is a link and a courtesy. alexandria's findings
+  carry an evidence grade, a claim id, and a place in a graph that records when
+  newer work contradicts them, which is the whole `deprecated_claims` view and
+  the thing no newsletter in this category does at all. A newsletter's archive
+  ages into a record of what people believed. This one is designed to age into a
+  record of what turned out to be true, and as of today the archive reads the
+  same table the press writes, so the record and the publication cannot drift
+  apart by a forgotten commit.
+- Cost: $0
+- Status: proposed
