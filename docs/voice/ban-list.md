@@ -1081,3 +1081,129 @@ gap that the same collision had left empty (incident 25).
     about the week and never about the items below it. The sampling order is
     the engineer's, filed in docs/ideas.md the same day, because no wording can
     make a number true that was measured before the work it measures.
+
+79. The gate conditioned on a fact its reader was never given. Entry 72 is
+    the gate whose unit is wider than the thing it governs and entry 77 is the
+    one whose unit is narrower. This is the third shape and it is the quietest,
+    because the gate is written correctly and still cannot run.
+    `prompts/digest.md` divides itself at the top into house law and
+    weekly-only, and the weekly-only part is one demand: the Monday issue
+    argues one case rather than listing findings. "A daily may list. Monday may
+    not." The payload hands over the week label, the date range, the pipeline
+    counts and five lists of material. Nothing in it says which cadence is
+    being written. So the single most consequential structural rule in the file
+    was conditioned on a fact the writer had no way to look up, and the print
+    of 2026-09-30 shows the guess going both ways inside one issue, naming its
+    contents as the day's and its findings as the week's.
+    The general test, and it is the company's gate standard turned around.
+    L-A21 says to name a change that would break what a gate governs and ask
+    whether the gate would have seen it. This entry adds the prior question:
+    name the fact the gate's own sentence depends on, then find where the
+    writer reads that fact. Where the answer is nowhere, the gate has never
+    fired and never will, and it has been reporting a pass the whole time.
+    A rule conditioned on the calendar, on the reader, on the cadence or on
+    anything else outside the artifact and outside the payload is not a rule
+    yet. It is a rule plus a missing input.
+    Added 2026-10-01. Enforced the same day: the prompt derives the cadence
+    from the `dates` field, which spans days for a weekly and names one day for
+    a daily, and that is a fact the payload actually carries.
+
+80. The thesis only the close believes. Canon law 9 and the owner's ruling of
+    2026-09-19 both say the weekly is the synthesis and must argue rather than
+    list. An argument is expensive and a list is cheap, so the cheap thing
+    gets written and a sentence of argument gets laid over it at the end, where
+    it costs one paragraph and reads, at speed, exactly like the real thing.
+    The print of 2026-09-30 closed on "The field is converging on a question:
+    how much of the harness can disappear into the model, and what breaks when
+    it does?" Five sections printed above it. That question reaches two of
+    them. The close names a third by appending it with "And", and two sections
+    appear in no frame the issue builds, not the opening and not the close.
+    They are in the issue because they were in the payload.
+    The tell is not the closing paragraph, which is usually the best writing on
+    the page. The tell is a section that no sentence outside itself ever needs.
+    Lift each section out and ask which step of the stated case it carries. A
+    section that carries none was never part of an argument, and a case that
+    does not need three of its five sections was not the issue's case, it was a
+    summary of the two sections that happened to rhyme.
+    This is entry 67's relative, the promise the issue does not keep, moved
+    from the opening to the close. There the issue promises contents it fails
+    to deliver. Here it delivers contents and then claims a shape they never
+    had.
+    Added 2026-10-01. Enforced the same day: before a Monday issue is output,
+    the one case is written down as a sentence and every section is matched to
+    a step of it, with cutting the section and replacing the case as the only
+    two fixes.
+
+81. The gloss spent on the easier of two words. Canon law 12a requires every
+    term of art to carry its plain-words clause at first use, and the
+    first-use pass in the generator is the longest gate in the file. The pass
+    does not fail by skipping the duty. It fails by discharging it, visibly and
+    well, on one word, after which the page looks like a page that glosses its
+    terms.
+    The print of 2026-09-30 handed over its central term in a clause an
+    outsider can use and then carried the other term of its own title bare
+    through eight appearances, the title, the contents line, a section heading,
+    three body sentences, a bold lead and the closing line. Twenty-four terms
+    in that issue would have stopped a builder from outside the research world.
+    Three carried a clause.
+    Two things make this one worth its own entry rather than a note under 54.
+    The first is where the bare word sat. A title term is met before the reader
+    has any reason to continue, so law 4's one line and law 12a's first use are
+    the same line, and failing both at once is the most expensive single way to
+    fail either. The second is why the duty did not reach it. The instruction
+    to prefer the title's word existed, inside the rule about two names for one
+    idea, and the bare word had no second name, so a correctly written duty sat
+    in a conditional that never triggered. A duty parked inside another rule's
+    scope is enforced only for the cases that other rule happens to cover.
+    The general test: a gate that produces a visible success on one instance of
+    its subject is not evidence it ran. Count the instances and count the
+    successes, and where the subject is a closed list, check the closed list
+    first and separately.
+    Added 2026-10-01. Enforced the same day: the title's own nouns are a
+    closed list, checked first and on their own, with the clause required in
+    the title's sentence or the opening's first sentence and nowhere later.
+
+82. The nickname that arrives with "the". The owner's ruling of 2026-09-19
+    named this pair in her own words, that nicknames printed "before anyone
+    said that teacher and student are nicknames for a big model training a
+    small one" read "as gossip about strangers". The first-use pass lists the
+    class by name. The print of 2026-09-30 printed one of the listed words
+    anyway, thirteen days on, and the reason is a grammatical detail the gate
+    had no instruction about.
+    The sentence introduced one half of the pair with an indefinite article,
+    correctly, and the other half with a definite one in the same breath. The
+    definite article asserts that an introduction has already happened. The
+    writer feels the introduction, because the two roles arrive together in the
+    writer's head, and the reader gets only the half that was named.
+    So the tell is the article and not the word, which is why a list of the
+    words did not catch it. Any role noun, in any pair, under any nicknames the
+    field uses, fails this the moment it arrives with "the" and no antecedent.
+    Look for the sentence that INTRODUCES the role rather than the one that
+    uses it, and where one sentence hands over one half with "a" and the other
+    with "the", the second half is bare however naturally it reads.
+    Added 2026-10-01. Enforced the same day: the role nouns get their own
+    paragraph inside the first-use pass and the check is on the article, with
+    naming the thing in that sentence or dropping the nickname as the two fixes.
+
+83. The general sentence over the particular number. The claims pass has four
+    questions. Three compare one number against another and the fourth compares
+    the issue against itself. All four clear a sentence that invents nothing,
+    confuses no measures and still says something the evidence does not.
+    The print of 2026-09-30 measured one system on one benchmark and found that
+    under a third of its actions mattered. Its heading said that two thirds of
+    the whole activity is noise, and the plain-meaning line under it said the
+    same about all agents. One system was measured. Every system was described.
+    The number is accurate to the decimal and the sentence reporting it is
+    false, and no comparison exists anywhere for a comparison test to catch.
+    The two places this happens are the two places a figure stops being a
+    figure and becomes a statement, which are the heading and the line of plain
+    meaning law 14 requires under every result. Both are written after the
+    number is settled, both are written for effect, and both are read as
+    general by default because that is what a heading is for.
+    The test is two namings and a comparison. Name what was measured in full,
+    which system and how many and on what task. Name what the sentence claims.
+    Where the second is broader than the first, put the measured subject into
+    the sentence, which usually costs three words, or keep the general claim
+    and drop the number, which means the section has no finding and goes.
+    Added 2026-10-01. Enforced the same day as a gate on finished output,
+    beside the gate that checks the issue's numbers against each other.
