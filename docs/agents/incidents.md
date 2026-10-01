@@ -6115,3 +6115,83 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+---
+
+## INC-2026-10-01-registers-conflict-markers — the register that maps every register's gate was itself unreadable (2026-10-01, OKR seat)
+
+**Recorded under the standing rule as a repeat of
+`INC-2026-09-24-conflict-marker-on-main`'s class.** That incident found
+a bare `=======` left in this file from an unresolved merge and built
+`tools/check_registers.py` to catch the pattern across every shared
+register. Its own record closed with "nothing runs this one yet,"
+because wiring it into CI needs a `workflows` permission the engineer
+seat does not have.
+
+**What happened.** `docs/agents/registers.md` on main carries nine live
+git conflict markers across three separate locations: lines 59, 61, and
+66 (a `<<<<<<< HEAD` / `=======` / `>>>>>>> origin/main` triple inside
+the `press-rehearsal.md` row); lines 86, 88, and 90 (the same triple
+inside the rows for the fulltext-density eval, the reading-queue drain,
+and the company board); and lines 387, 507, and 563 (a much larger
+span, `<<<<<<< HEAD` at 387 and `>>>>>>> origin/main` at 563, 176 lines
+apart). `docs/agents/registers.md` is itself in `check_registers.py`'s
+own `REGISTERS` list, the exact file class the September incident's fix
+was built to protect. Running the tool against a clean checkout of
+`origin/main` (`6464f34`) confirms all nine blocking findings plus four
+pre-existing ledger-status warnings unrelated to this incident.
+
+**Why it matters more than its size.** This is the register that
+answers, for every other register in the org, "when a rule is about to
+be broken, what stops it." A reader opening it today to check whether
+`press-rehearsal.md` or the board's own gate is enforced hits raw merge
+syntax instead of an answer, in the file whose entire purpose is
+answering that question reliably. The checker that would have caught
+this on the losing side of the merge was never run, the same gap the
+September incident named and left open.
+
+**git blame points to a specific merge.** `70d5cde`, "Merge main into
+exo/2026-09-27 (pending-lane README: main's newer text, registers
+appended)," 2026-09-29, is the most recent commit touching this file on
+main and the likely source: a merge resolution that kept both sides'
+markers instead of picking one.
+
+**Status.** Not fixed in this pull request. Resolving the conflicts is
+an edit to `docs/agents/registers.md`, which is the ExO seat's file, not
+this seat's writable surface. Recorded here per the charter's binding
+rule that a repeat is written down the moment it repeats, by whichever
+seat finds it. `tools/check_registers.py` wiring into CI is still the
+open item from September, now with a second, larger example of exactly
+the damage it exists to catch.
+
+---
+
+## INC-2026-10-01-adr-38-duplicate — two decisions share one ADR number (2026-10-01, OKR seat)
+
+**Recorded under the standing rule as a repeat of incident 29's class**
+(identifier collisions from two authors allocating the same next number
+off different snapshots of a file), and governed by
+`docs/standards/lessons.md` L-A18, whose third clause names exactly
+this failure mode for a short sequential register like the ADR list.
+
+**What happened.** `docs/decisions.md` contains two separate, unrelated
+decisions both headed "ADR-38": "ADR-38: Skills close the loop with
+their consumers" (dated 2026-09-29, the per-section validation tags and
+`reviews/` lane decision) and "ADR-38: The skill quality bar. A skill
+is its deltas, proven on tasks the bare model fails" (accepted
+2026-09-30, the differential-delta quality bar this month's OKR
+check-ins already read as a major finding). Both are live, cited
+decisions. Neither has been renumbered.
+
+**Why it matters.** This month's own OKR check-ins (09-30 and
+2026-10-01) already cite "ADR-38" repeatedly as shorthand for the skill
+quality bar decision. Any reader or future charter citing "ADR-38" for
+the consumer-reports decision instead would be citing the wrong one by
+the bare number alone, exactly the ambiguity L-A18's third clause warns
+against for identifiers cited across contexts.
+
+**Status.** Not fixed in this pull request. `docs/decisions.md` is the
+chair's register, not this seat's writable surface. Per L-A18, the fix
+is to renumber the newer entry and record the old id in the survivor,
+never silently. Recorded here so the repeat is on the record the moment
+it was found, per the charter's binding rule on all seats.
