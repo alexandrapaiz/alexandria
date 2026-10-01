@@ -21,3 +21,9 @@ skills/fixture-*/
 
 # tools/read_paper.py caches fetched papers here, per workspace.
 .cache/
+
+# Captured emails are people's data. site/.gitignore already ignores this for
+# the Next.js app, whose cwd is site/, and site/lib/waitlist.js honours a
+# WAITLIST_FILE override that can land it anywhere. The root copy is here so a
+# holding pen written from the repo root cannot be committed by accident.
+.data/

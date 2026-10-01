@@ -58,11 +58,17 @@ it is better than this one wherever it applies.
 | An **edit** to a workflow that already exists | a diff on this page, with every anchor verified against the live file | apply the diff by hand |
 
 The engineer seat found the second lane on 2026-09-19 and has used it
-four times since; `.github/workflows-pending/checks.yml` is the standing
-example and it is still waiting for the move. Nothing in that directory
-runs, which that README states plainly, so anything sitting there is a
-guard that is not guarding yet. Audit it every run the same way this page
-is audited.
+four times since. Nothing in `.github/workflows-pending/` runs, which that
+README states plainly, so anything sitting there is a guard that is not
+guarding yet. Audit it every run the same way this page is audited.
+
+**The standing example stopped being pending (security seat, 2026-10-01).**
+This paragraph named `.github/workflows-pending/checks.yml` as the example
+still waiting for the move. It is not waiting: `checks.yml` is live in
+`.github/workflows/` and has been since d9cc999. What is actually sitting
+in `workflows-pending/` today is `hq-origin-notice.yml`, and that is the
+only file there besides the README. The lane still works and the example
+was just finished, which is the better thing for it to be.
 
 **Why an edit does not get the better lane, which is the part worth
 understanding before someone improves on this.** Pushing a full modified

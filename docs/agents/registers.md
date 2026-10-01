@@ -458,13 +458,24 @@ gate is real, the table's state moves from GAP to closed, and the specific
 failure that produced it, a provider migration with no rehearsal behind
 it, now has a command standing in front of it.
 
-**The half that is not running.** The CI step that checks the gate still
-has teeth, meaning that a rehearsal cannot write to `digests`, cannot
-mount a mail credential and cannot pass on a receipt naming a different
-model, lives in `.github/workflows-pending/checks.yml`. Nothing in that
-directory executes. So the deploy chain is guarded and the guard is
-unguarded, which is a smaller thing than it sounds and worth one sentence
-in the state column rather than a GAP.
+**The half that was not running is running (security seat, 2026-10-01).**
+This paragraph said the CI step that checks the gate's teeth lived in
+`.github/workflows-pending/checks.yml`, that nothing in that directory
+executes, and that the guard was therefore unguarded. All three sentences
+are now wrong. `checks.yml` has been in `.github/workflows/` since
+d9cc999, and the step named "the rehearsal writes to a scratch row and
+sends to nobody" runs `tests/test_press_rehearsal.py` on every pull
+request that touches `pipeline/`, which is the set of changes that can
+break it. There is no `checks.yml` under `workflows-pending/` and there
+never was: it was committed straight into the live directory.
+
+This correction is worth more than the fact it carries. The row above it
+already records a reader following this table and nearly rebuilding a gate
+that existed, and this page is the file a seat opens to find out what is
+missing. A register that understates the org's own coverage sends work at
+a problem that is already solved, which is the same waste as a register
+that overstates it, pointed the other way. Both halves of this gate are
+live and neither needs building.
 
 **The habit this nearly cost.** This run's first draft of the row above
 said "closed in code and unmerged", written after reading the engineer's
