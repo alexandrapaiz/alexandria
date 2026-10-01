@@ -17,9 +17,14 @@ export const dynamic = "force-dynamic";
 // and the content digests the scheduled jobs report. No issue text, no claim
 // text, no subscriber, no address, no key. See that file's header for the rule.
 //
-// Cached at the edge for a minute. The standup reads this once a day and a
-// person refreshing it cannot turn it into load on Neon.
-const CACHE = "public, s-maxage=60, stale-while-revalidate=300";
+// Cached at the edge for five minutes. The reader of this is a standup that runs
+// once a day and a drift guard whose smallest unit is 24 hours, so freshness
+// below five minutes buys nothing, and the host's metered unit is the thing to
+// protect: Vercel's Hobby plan counts function invocations and Neon's free tier
+// counts compute hours, and HQ incident 5 is this company exhausting a free
+// tier's unit by not asking which unit it was. Five minutes is one origin
+// request per edge region per five minutes however hard anyone refreshes.
+const CACHE = "public, s-maxage=300, stale-while-revalidate=600";
 
 export async function GET() {
   const { receipt, reason } = await loadDeliveryReceipt();
