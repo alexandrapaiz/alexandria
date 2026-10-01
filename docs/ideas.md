@@ -6328,6 +6328,17 @@ acting on anything in this one.
   After that, `python3 tools/delivery_health.py` answers all four surfaces and
   guardrail 4 has a reader for the first time since it was written.
 - Cost: $0. Neon roles are free and this adds no service and no account.
+- Update 2026-10-01 (engineer): answered a different way, and the first step
+  above is no longer needed for this. The site already holds `DATABASE_URL` in
+  its own environment, so it publishes the four facts at `GET /api/delivery` and
+  `tools/delivery_health.py` reads them with no credential anywhere. No Neon
+  role, no repository secret, no workflow edit, and the same change answers the
+  fifth surface the drift guard added. The status stays `urgent` and is the
+  owner's to move, for two reasons that are hers to weigh: the receipt is not
+  live until the pull request merges and the Vercel hook fires, and nothing
+  reachable from a seat sandbox can confirm that the site's Vercel project has
+  `DATABASE_URL` set. If it does not, the endpoint answers 503 saying exactly
+  that, which turns an invisible gap into a one-setting fix.
 - Status: urgent
 
 ### 2026-09-28 — A public status page, split into what we run and what we rent
@@ -7302,4 +7313,413 @@ graphs.
   maintenance before creation per ADR-37). The specimen
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
+
+### 2026-09-30 — Craft scan: `claude plugin eval`, the first-party harness for the thing we just built (engineer seat)
+
+- Trigger: today's build is ADR-36's with-versus-without eval harness, so the
+  scan went to the nearest first-party product rather than to a research tool.
+  Anthropic shipped `claude plugin eval`, read from
+  code.claude.com/docs/en/plugin-evals on 2026-09-30. It runs a plugin or skill
+  against a suite of cases, scores each with graders, and compares against a
+  no-plugin baseline. The vocabulary is ours: with-arm, without-arm, `Δ`.
+- **What was worth stealing, and was stolen today.** Graders that the
+  without-arm cannot possibly pass are excluded from the score in **both** arms
+  and reported as indicators only, with `arm: both` as the override. The
+  reasoning is exact and it applied to the harness as I had just written it: a
+  check like "the answer cites the 4 to 30 point regression" can only pass with
+  the skill loaded, because the number is in the skill, so scoring it pushes the
+  without-arm toward zero and inflates the delta by a whole task for free. That
+  is a correctness defect the scan found in my own code inside an hour, and
+  `scored_in: with_only` plus `indicators` in `results.json` is the fix, shipped
+  in the same pull request with a test that fails without it.
+- **What alexandria does better, and it is not a small thing.** Their `Δ` is the
+  difference of two means over three runs, reported as a number with no interval
+  at all, and a case passes at `--threshold 1.0`. Ours reports the delta with a
+  clustered bootstrap interval over tasks, the arms as counts with exact
+  binomial bounds, and refuses to call anything a gain when the lower bound
+  touches zero. They are building a developer tool, where a noisy number that
+  points the right way is useful. We are printing numbers at a paying reader, so
+  the interval is the product. The second difference is the loop: nothing in
+  their harness re-runs when the evidence a skill rests on is contradicted, and
+  `skills_needing_revision` plus today's daily job is exactly that.
+- Two smaller things worth copying later, filed rather than built: pinning the
+  model in CI so a model rollout is not read as a regression (our `results.json`
+  records `subject_model`, which is half of it), and a `--json` mode that writes
+  the whole result document to a path so a CI job can diff two runs.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — `deprecated_claims` needs a different paper and a newer claim, or the revision loop's first output is a false positive (engineer seat)
+
+- Trigger: building ADR-36's registrar, I cross-referenced the skills' provenance
+  blocks against the deprecated claim ids the research seat's 2026-09-28 brief
+  names. Exactly one skill is touched: `skills/context-window-engineering` cites
+  claim 85. The same brief judges the edge that deprecated it, `265 -> 85`,
+  **wrong**: two different systems on RMBench, which is a comparison and not a
+  contradiction. And the skill cites 265 as well. So the first revision this new
+  machinery will ever fire is a skill being told to rewrite itself because two
+  claims it holds side by side were read as a refutation.
+- What: the brief already proposes the fix, which is to require that the
+  contradicting claim come from a different paper and be newer, and it says four
+  of the six `contradicts` edges in the graph are wrong, two of them intra-paper.
+  Today the view requires only `relation = 'contradicts'` and confidence >= 0.7.
+  The view is four lines. Tightening it is a day's work with a before-and-after
+  count, and it now has a consumer that acts on it automatically, which it did
+  not have when the brief was written.
+- First step: add the paper and the recency predicate to `deprecated_claims` in
+  `db/schema.sql`, print the count before and after against the live graph, and
+  keep the loose version beside it as `contradicted_claims` if the Left-Behind
+  Index wants the wider set. The daily job's dispatch already warns the skill
+  seat to check the trigger before acting on it, which is a mitigation and not
+  the fix.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — The skill-eval spend belongs in the opex table before it becomes a habit (engineer seat)
+
+- Trigger: `tools/skill_eval.py` has a `CAP_USD` of $0.75 a run and no line in
+  `docs/finance/opex.md`. `budget.MONTHLY_CAP_CEILING_USD` is $30 and is
+  documented as the sum of the daily caps, so an eval run is outside it by
+  construction and correctly so, because it is not a cron. That is exactly how a
+  cost becomes untracked: every individual run is defensible and nobody added up
+  the month.
+- What: ADR-37 makes an eval run part of every skill revision, and ADR-36 makes
+  one part of every new skill. At six skills, one revision each and one Claude
+  benchmark a month, the projection is small and it is not zero. Finance should
+  carry the line and the guard should read the cap out of the runner the way
+  `budget.cron_caps` reads the crons', so raising it cannot be silent.
+- First step: a `SKILL_EVAL_CAP` entry in `budget.py` read from
+  `tools/skill_eval.py`, a projection line in the printout, and the number in
+  `docs/finance/opex.md`. Whose call: finance seat for the table, engineer for
+  the guard.
+- Cost: the proposal is $0. The thing being tracked is single-digit dollars a
+  month.
+- Status: proposed
+
+### 2026-09-30 — `pytest tests/` is not a step in checks.yml, so 350 tests gate nothing (engineer seat)
+
+- Trigger: `tests/test_check_registers.py` detects merge conflict markers in a
+  register, and it has for some time. Three of them were merged to `main` on
+  2026-09-30 and sat there, with `checks` red for an unrelated reason, because
+  that test file is not one of the eleven `checks.yml` names. The suite is 599
+  tests and the workflow runs a named subset.
+- What: `checks.yml` grew one step per incident, which is how it stayed honest,
+  and the cost is that a test written for a reason nobody had an incident about
+  yet runs nowhere. The whole suite is 20 seconds on this runner. One step that
+  runs `python3 -m pytest tests/ -q` would cover every file, and the named steps
+  stay because their comments are the org's memory of why each one exists and
+  because `if: always()` on each one is what keeps a red budget step from hiding
+  the rest.
+- First step: one step at the end of the `digest-budget` job, and a line in
+  `docs/agents/pending-workflow-changes.md` since no seat may push a workflow
+  file. Worth doing in the same hand that applies item 12.
+- Cost: $0, about 20 seconds a run.
+- Status: proposed
+
+### 2026-09-30 — Competitive scan: Paperguide sells the decision trail, and we give ours away for free
+
+- Trigger: this run's craft scan, rotating through `docs/market/landscape.md`
+  to the entry added 2026-09-18 and never opened since. Paperguide's front page
+  now leads with a product that did not exist at that observation, Systematic
+  Review, and its pitch is not the search. It is the audit: a predefined
+  protocol, a documented search, recorded screening decisions, a PRISMA flow,
+  two reviewers with a conflict resolver, and one sentence that reads like our
+  own charter, "AI never decides, it prepares the cited evidence." The value
+  they charge for is that the trail survives peer review and a regulatory
+  audit.
+- **Worth stealing: the decision trail is a product surface, not an internal
+  log.** alexandria already keeps a stronger version of exactly that artifact
+  and shows none of it. `triage_log` records every routing decision with the
+  model's reasoning and the prompt sha that produced it, the re-triage appends
+  rather than updates, so a paper carries a decision history, and
+  `pipeline/triage.py`'s own comment says why that history is the most valuable
+  row in the set. A reader of the digest cannot see one line of it. Paperguide
+  is charging $24 a month for the auditability of a screening decision that we
+  compute daily and throw behind a table nobody can query.
+- **What alexandria does better, and it is the axis their product cannot
+  reach.** A systematic review is a snapshot dated at submission. Ours is not:
+  `deprecated_claims` marks a claim the frontier has overtaken, and the
+  terminal state of a paper here is a skill, a pattern note or a discard rather
+  than a citation in someone's manuscript. Their output is a document a human
+  reads once. Ours is something an agent loads every day, and it changes when
+  the research changes.
+- Ledger idea this produces, sized for one day: a public page over
+  `triage_log` answering "why this paper, and why not that one" for the week
+  the current issue covers. Every row already carries the decision, the
+  reasoning and the prompt sha. This is the same lever the sprint's item 5
+  pulls, product surface being the OKR benchmark's weakest axis at 2.0, and it
+  needs no new backend either.
+- Status: proposed
+
+### 2026-09-30 — checks.yml should run the suite, not a list of fourteen filenames
+
+- Trigger: building sprint item 2 this run. `.github/workflows/checks.yml`
+  names fourteen test files by hand in two identical `paths` lists, and a new
+  test file is invisible to CI until somebody edits a file no agent seat can
+  push. Three items on `docs/agents/pending-workflow-changes.md` are queued
+  behind that fact right now (12, 13 and the one this run added, 14), and every
+  one of them is the same two-line hand edit to both lists.
+- What: replace the enumerated test entries with `tests/**` and `tools/**` in
+  both `paths` lists, and replace the per-file pytest steps with one step that
+  runs `python3 -m pytest tests/ -q`. The suite is 638 tests, it took 15
+  seconds in this run's sandbox, it needs no key, no network and no database,
+  and `tests/conftest.py` already installs the Modal stub for all of it. The
+  four script-mode steps stay as they are, because they also prove the files
+  still work when run directly, which is what their own docstrings promise.
+- Why it is worth a day rather than a line: this closes a class, not a gap.
+  `INC-2026-09-29-receipts-step-had-no-paths` is a CI step written, reasoned
+  and queued in one morning that could not have fired, because nothing it
+  guarded was in the trigger paths. `tests/conftest.py`, the file that decides
+  whether the whole suite collects at all, was in neither list until item 13
+  queued it. Both are the same defect, and it recurs because the check's input
+  is declared by hand instead of derived. That is the same argument
+  `pipeline/runtime_sha.py` makes for parsing the image manifest out of the
+  module, and the same one `pipeline/budget.py` makes for reading `MODELS` out
+  of `triage.py`.
+- First step: queue the diff on `docs/agents/pending-workflow-changes.md`,
+  verified against the live file, and delete items 12, 13 and 14's path halves
+  in the same entry so the owner applies one edit rather than four.
+- Cost: $0. Actions minutes are free on a public repo and the step is seconds.
+- Status: proposed
+
+### 2026-09-30 — The MCP server and the site are outside the drift guard, and the site is the one a reader meets
+
+- Trigger: building sprint item 2 this run. The guard covers the three Modal
+  crons the sprint named, `triage`, `interpret` and `weekly`. It does not cover
+  `mcp/server.py`, which is a fourth Modal app and the paid spine's whole
+  interface, and it does not cover the site, which deploys through a Vercel
+  hook on merge to `site/`. Both can sit merged and unshipped in exactly the
+  way PR #110 did, and for the MCP server nothing anywhere would say so:
+  `tools/delivery_health.py` probes it for a 401, which proves it is up and
+  guarded and says nothing at all about which code answered.
+- What: extend `runtime_sha.APPS` to the MCP app and record its digest on cold
+  start rather than per request, so a scale-to-zero server writes one row per
+  container rather than one per call. The site is a different shape and wants a
+  different answer: the build already knows its commit, so the honest check is
+  the deployed commit against `HEAD` rather than a file digest, read from a
+  small JSON the site publishes.
+- Why not today: the sprint's own note on item 2 says to scope this to
+  detection and alerting for the three crons and not to let it grow into
+  rebuilding the deploy pipeline. This entry is that scope held, written down
+  so the next run does not have to rediscover the boundary.
+- First step: the MCP half alone. One `@modal.enter()` hook, one row, one more
+  app in the surface's loop, and the tests already exist in a shape that takes
+  a fourth app without changing.
+- Cost: $0.
+- Update 2026-10-01 (engineer): the small JSON this entry's second half asks the
+  site to publish now exists, `site/app/api/delivery/route.js`, built for
+  guardrail 4. So the site half is one field: the build knows its own commit as
+  `VERCEL_GIT_COMMIT_SHA`, the receipt carries it, and the surface compares it to
+  `HEAD` the way the three crons are already compared. Not done in that run,
+  because the field widens a brand-new public endpoint and the tests that hold
+  what may leave it are a day old. The MCP half is unchanged and still first.
+- Status: proposed
+
+### 2026-10-01 — An agreement meter over the edges the graph already has (engineer, craft scan)
+
+- Trigger: today's craft scan of Consensus (consensus.app). Its home page leads
+  with a "Consensus Meter showing scientific agreement on yes/no questions",
+  which is one aggregate a reader sees before opening a single paper. The
+  alexandria claim graph holds strictly richer data for the same purpose,
+  `claim_links` with `supports`, `refines`, `contradicts` and `duplicates` plus a
+  per-claim `evidence_grade`, and it renders none of it as a verdict. `/graph`
+  shows a node-link diagram, which asks the reader to do the aggregation.
+- What: one number and one bar per claim, derived from the edges already stored:
+  how many claims support it, how many refine it, how many contradict it, and
+  the grade of the strongest evidence on each side. It goes on the claim panel
+  and in the `get_digest` and `rag_answer` payloads, so an agent asking "does
+  this hold" gets the aggregate rather than a list it has to reduce. The
+  `deprecated_claims` view is the extreme case of this number already, and the
+  Left-Behind Index is its public face; this is the same arithmetic applied to
+  every claim rather than only to the ones that lost.
+- Why it is worth building rather than noting: the OKR benchmark's weakest axis
+  is product surface, and this adds no backend. The data is in `claim_links`
+  today and the query is a group-by.
+- First step: the SQL and one number on the claim panel, behind the existing
+  entitlement gate, measured against `docs/product/graph-quality.md`'s bounds so
+  a meter is not published for a region of the graph with too few edges to mean
+  anything.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-01 — The daily machinery check should read the build, not only the commits (engineer)
+
+- Trigger: `INC-2026-09-30-two-checks-steps-red-on-main-for-days` closed with a
+  guardrail suggestion rather than a change, that the engineer seat's §0 also
+  read `gh run list --workflow checks.yml --branch main`. This run ran it as a
+  one-off and it is what found `INC-2026-10-01-checks-red-on-main-across-four-prs`:
+  five runs on `main`, five failures, the newest twenty-four hours old, and the
+  fix shipped four separate times in four of this seat's own pull requests
+  without landing. The `git log` half of §0 cannot see this, because the commit
+  that broke the build is outside the 36-hour window and looks fine anyway.
+- What: one more command in §0 of prompts/engineer-agent.md, beside the
+  `git log --since="36 hours ago"` over `.github/` and `pipeline/`. A red
+  `checks` on `main` is a runtime change that announced itself, and the seat that
+  runs daily is the only one positioned to answer it inside a day. The same
+  reasoning the §0 clause already makes for the `pipeline/` half, which was added
+  after a provider change landed where nobody was looking.
+- Why it is a ledger entry and not a commit: charters are edited by the owner's
+  merge only, and this seat is forbidden to include charter edits in its daily
+  pull request. So the diff is written here for her to take.
+- First step: add after the existing command, with the same two questions the
+  `git log` half asks. `gh run list --workflow checks.yml --branch main --limit 3
+  --json conclusion,createdAt`. If the newest is a failure, read the log, and if
+  the fix already exists in an open pull request, say so in one line addressed to
+  the owner rather than writing it a fifth time.
+- Cost: $0. One command, about two seconds.
+- Status: proposed
+
+### 2026-10-01 — The press's pure rules are behind a Modal import, so every reader of them carries a stub (engineer)
+
+- Trigger: building the credential-free reader this run. `tools/delivery_health.py`
+  needs exactly one function from the press, `week_just_ended`, which is pure
+  date arithmetic, and to reach it the file builds a fake `modal` module at
+  runtime with a chaining `__getattr__`, a fake `App`, a fake `Image`, a fake
+  `Secret` and a fake `Volume`. `tests/conftest.py` carries a second, larger copy
+  of the same stub for the whole suite, and its own docstring records that four
+  test files each had a third copy and that the disagreement between them took
+  the entire suite down to zero tests collected.
+- What: move the pure rules out from under the decorators. A `pipeline/rules.py`
+  (or `pipeline/weeks.py`) with no `import modal` at all, holding
+  `week_just_ended` and whatever else is arithmetic rather than infrastructure,
+  and `pipeline/weekly.py` imports from it. Nothing changes about what runs on
+  Modal. What changes is that a tool, a test or a seat sandbox can read the
+  press's own rules with an ordinary import, and the stub shrinks to the modules
+  that genuinely need it.
+- Why it is worth a day: the stub is load bearing in a way nobody chose. It is
+  the reason `delivery_health.py` can agree with the press about which week it
+  is, which that file argues for at length and is right to, and it is also one
+  `AttributeError` away from taking the suite to zero tests, which has already
+  happened once. A pure module is the version of that argument with no stub in
+  it.
+- First step: the one function the tools actually import, moved, with the stub in
+  `delivery_health.py` deleted in the same commit so the win is visible. The
+  conftest stub stays, because `pipeline/` and `mcp/` really do import Modal at
+  module scope for their decorators.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-01 — Craft scan: Consensus (consensus.app)
+
+- Trigger: the engineer seat's daily craft scan, rotating through
+  docs/market/landscape.md to the academic-tools entry at line 35, which has not
+  been opened by this seat.
+- **What is worth stealing: the single aggregate, shown before the reading.**
+  Consensus leads with a "Consensus Meter showing scientific agreement on yes/no
+  questions", plus "Study Snapshots with key findings and methodology" and a
+  "Citation Graph for paper relationships". The meter is the one that earns its
+  place. A reader arrives with a question and leaves with a position, and the
+  product does the reduction rather than handing over a reading list. That is in
+  the ledger above as its own entry, because alexandria already stores the
+  relations the meter would be computed from.
+- **What alexandria does better: the claim it makes is one that can be
+  contradicted.** Consensus's headline number is "Search 220M+ scientific
+  papers", and its home page says nothing about how fresh those papers are or
+  when the corpus last moved. Size is a claim nobody can check and it never goes
+  stale. alexandria's product is the opposite claim, what changed this week and
+  what the field has already moved past, and as of today the freshness is
+  published as a fact anyone can read at `/api/delivery`: the newest issue, the
+  week it covers, and when the corpus last ingested a paper. A number that can
+  be wrong in public is worth more than a number that cannot.
+- Second observation, recorded because it cuts against us: 220M papers against
+  this corpus's 8,956 ingested is four orders of magnitude, and nothing on the
+  site tells a visitor why that is the right trade. The positioning document has
+  the argument. The product does not make it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-01 — The archive is about to publish its own missing week, and nothing checks for a hole in the middle (engineer agent, second window)
+- Trigger: this run made `/library` read the `digests` table, and then
+  `ls site/content/issues/` printed `2026-W37.md` and `2026-W39.md`. There is
+  no W38 and there never will be: `INC-2026-09-28-press-week-label-off-schedule`
+  records that the recovery run published under the next week's label and the
+  week was lost for good. Today the hole is invisible because W37 is retired and
+  W39 is the only public issue. The moment W40 prints, the public listing reads
+  "Sep 21-27" then "Sep 28-Oct 4" with a silent four-week ladder behind it, and
+  this morning's scan of Import AI's archive is the contrast: five consecutive
+  numbered issues, no gaps, the completeness itself part of what makes an
+  archive look like a publication.
+- Second half of the same observation, and the part a tool can hold:
+  `tools/delivery_health.py` checks whether the *newest* week is current and
+  nothing checks whether the weeks are consecutive. A press that prints W40 and
+  W42 and skips W41 answers green on every surface the org has. Freshness and
+  continuity are different questions and only one of them is asked.
+- What: two small things that should not be one. The check is the engineer's: a
+  continuity line in `check_press` that reads the published weeks and names any
+  ISO week between the oldest and the newest with no row, which is four lines
+  against the receipt the delivery endpoint already publishes. The page is
+  editorial and belongs to the owner and the writer: a reader who sees a gap
+  needs one dated sentence saying what happened, or the archive is a product
+  that quietly skipped a week. The alternative, leaving it unexplained, is the
+  one choice that should not be made by default.
+- First step: the check, because it needs nobody's words. Add the continuity
+  read to `check_press`, assert it against a fixture whose weeks are W39 and
+  W41, and let it report `W40 is missing` as a finding rather than a failure,
+  since a known and explained gap is not a broken press.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-01 — A finding in an issue cannot be linked to, which is the one thing this product should make linkable (engineer agent, second window)
+- Trigger: today's competitive scan read Import AI's archive for its craft and
+  found that its items carry no per-item anchors, so a reader who wants to cite
+  one finding links the whole issue and tells the reader to scroll. That is a
+  real gap in a strong product, and it is ours too: `/library/2026-W39` renders
+  the issue body as one block of HTML (`site/app/library/[week]/page.jsx`, one
+  `dangerouslySetInnerHTML`) with no id on anything. The difference is that for
+  Import AI it is a nice-to-have, and for alexandria it contradicts the pitch.
+  Every finding in an issue already *is* an addressable object: it has a claim
+  id, an evidence grade, and a row in `claims` that the graph and the MCP server
+  both serve by id. The issue page is the one surface that throws the id away.
+- What: give each finding in a rendered issue an `id` and a quiet anchor link,
+  so `/library/2026-W39#claim-1482` lands on the finding and
+  `/library/2026-W39#claim-1482` is what somebody pastes into a thread. The
+  renderer has what it needs if the generator emits the id: the issue body is
+  markdown written by `pipeline/weekly.py` from a payload that carries claim ids
+  already, so the cheap version is one trailing marker per finding that
+  `site/lib/markdown.js` turns into an id. It also makes the issue the fourth
+  surface that agrees with the claim graph, after the graph page, the MCP server
+  and the skills, and disagreement between those surfaces is the failure this
+  org keeps finding.
+- Why it is worth more than a share link: the existing ledger entry from
+  2026-09-18, "Digest issue permalinks with real share meta tags" (sales), makes
+  the issue shareable. This makes the *finding* shareable, which is the unit the
+  product claims to sell and the unit a skill is built from. The two compose and
+  neither is the other.
+- First step: emit the marker. One line in the generator prompt's output format
+  plus the id in the payload, then a test that renders a fixture issue and
+  asserts one id per finding. The page change is five lines after that.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-01 — Competitive scan: Import AI publishes a complete archive and addresses every issue by its own headline (engineer agent, second window)
+- Rotation: `docs/market/landscape.md` line 103, the newsletters section. The
+  day's earlier window scanned Consensus, so this is the next entry this seat
+  has not opened. Read live at jack-clark.net.
+- **What is worth stealing: the URL says what the issue is about.** Import AI
+  addresses issue 474 as
+  `/2026/09/28/import-ai-474-platonic-mindspace-tpus-in-space-zhipu-starts-an-outer-rsi-loop/`.
+  The number, the date and three of the issue's own subjects are in the address.
+  Ours is `/library/2026-W39`. A reader pasting that link into a thread gives
+  the next person nothing, an agent reading a link list cannot tell two issues
+  apart, and a search engine is handed a week number as the page's strongest
+  signal. The archive is also complete and consecutive, five numbered issues
+  deep with no holes, and that completeness is itself part of why it reads as a
+  publication rather than a blog.
+- This lands on an existing entry rather than a new one, which is worth saying
+  plainly: "Digest issue permalinks with real share meta tags" (sales,
+  2026-09-18, still `proposed`) is the same lever from the growth side. The scan
+  adds one argument to it rather than a second entry, and the argument is that
+  the slug is the cheap half: meta tags need an image and copy, and a readable
+  slug needs the issue's own H1, which the archive already parses.
+- **What alexandria does better: an item carries evidence a reader can check,
+  and an overturned item says so.** Import AI's items end with "Read more:
+  [title] ([source])", which is a link and a courtesy. alexandria's findings
+  carry an evidence grade, a claim id, and a place in a graph that records when
+  newer work contradicts them, which is the whole `deprecated_claims` view and
+  the thing no newsletter in this category does at all. A newsletter's archive
+  ages into a record of what people believed. This one is designed to age into a
+  record of what turned out to be true, and as of today the archive reads the
+  same table the press writes, so the record and the publication cannot drift
+  apart by a forgotten commit.
+- Cost: $0
 - Status: proposed

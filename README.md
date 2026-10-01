@@ -249,7 +249,8 @@ docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
-tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the site, the MCP server
+tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the deploy, the site, the MCP server
+site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
@@ -284,13 +285,30 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
-- [ ] **The press is currently silent.** The last issue written is 2026-W37
-      (2026-09-14). No model on the provider's free tier can print the weekly
-      issue at the current prompt size, so the fix is a shorter generator prompt
-      or an issue split across several requests. Availability checks, an ordered
-      fallback list and an alarm to the owner are in flight. Incident 24 has the
-      diagnosis and [delivery health](docs/agents/delivery-health.md) has the
-      standing guardrails
+- [ ] **The archive publishes the record, written and not yet running.** Every
+      issue a reader can read reached the public because a person committed a
+      markdown file under `site/content/issues/`: four commits, four times
+      somebody noticed, while the Monday cron wrote its row to `digests` and
+      stopped there. `site/lib/issues-live.js` makes `/library` and every issue
+      route read that table, so a send is public the moment it is mailed. The
+      record decides which weeks exist and a committed file still decides the
+      text of any week that has one, which is why turning it on changes nothing
+      that is live today. A database the site cannot read publishes exactly what
+      it publishes now. This box closes on the same evidence as the box below:
+      `/api/delivery` answering 200 proves the site's environment can reach
+      Neon, and that is the one condition this needs
+- [ ] **The press prints, and nobody outside Modal could see whether it had.**
+      `2026-W39` is live on `/library` and is the newest issue a reader can read,
+      checked by `python3 tools/delivery_health.py` rather than asserted. The
+      long silence after `2026-W37` was a provider whose free tier could not
+      print the issue at the current prompt size, and incident 24 has that
+      diagnosis. What stayed broken afterwards was the watch on it: the evidence
+      guardrail 4 names is the newest row in `digests` and no agent seat holds a
+      credential for that table, so the question went unanswered for a week. The
+      site publishes that fact at `/api/delivery` as of 2026-10-01 and the
+      command reads it with no credential. Still open: this box closes when a
+      run of that command reports the press green from a seat sandbox, which
+      needs the receipt deployed
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations
@@ -300,6 +318,19 @@ The pipeline, built bottom-up.
       exact text on the page. The provenance had been in the files since
       2026-09-12 and reached no reader until today, because the frontmatter
       reader could not see an indented field
+- [ ] **Skills prove themselves and revise themselves, written and not yet
+      running** (ADR-36, ADR-37). `skills_needing_revision` has been in the
+      schema since the founding and had never returned a row, because a skill
+      reached `main` with no `promotions` row for the view to join, so seven
+      deprecated claims sat there and no skill knew.
+      `tools/skill_registrar.py` derives that row from each skill's own
+      provenance block, `pipeline/skill_revision.py` reads the view daily and
+      queues the reading and dispatches the skill seat, and
+      `tools/skill_eval.py` runs each skill's tasks with and without it loaded
+      on one model and prints the delta with an exact interval. Live when the
+      chair applies the CI step
+      ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
+      12) and deploys the daily job with a `github` secret
 - [ ] ADR-13 reviewer panel (provenance, adversary, validator) as the gate on gold.
       Until it exists, the owner's merge is that gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
