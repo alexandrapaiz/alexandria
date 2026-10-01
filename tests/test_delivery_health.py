@@ -63,14 +63,21 @@ def test_unknown_is_never_green_and_never_red():
           "not a green report" in dh.render([dh.Surface("press", dh.UNKNOWN, "x")]))
 
 
-def test_a_missing_credential_is_unknown_not_failing():
-    """No DATABASE_URL must never render the press as broken.
+def test_neither_reader_available_is_unknown_not_failing():
+    """No credential and no receipt must never render the press as broken.
 
     Reporting a healthy press as broken is how a report teaches its reader to
     stop reading it, which is the failure guardrail 4 is trying to prevent, one
     level up.
+
+    `dh.fetch` is stubbed to a dead site rather than left to the real one. This
+    test used to pass against the live site because `/api/delivery` answered
+    404, so the day that route deployed it would have started failing, and the
+    failure would have looked like a regression in the thing it protects.
     """
     old = dh.os.environ.pop("DATABASE_URL", None)
+    real_fetch = dh.fetch
+    dh.fetch = lambda url, timeout=25: (0, "nothing is listening", {})
     try:
         results = dh.database_surfaces()
         check("every database surface answers",
@@ -79,9 +86,13 @@ def test_a_missing_credential_is_unknown_not_failing():
         check("press is unknown, not failing",
               all(s.state == dh.UNKNOWN for s in results),
               str([s.state for s in results]))
-        check("and the message names the variable",
+        check("and the message names the missing credential",
               all("DATABASE_URL" in s.headline for s in results))
+        check("and the receipt it tried instead",
+              all(dh.RECEIPT_URL in s.headline for s in results),
+              results[0].headline)
     finally:
+        dh.fetch = real_fetch
         if old is not None:
             dh.os.environ["DATABASE_URL"] = old
 
@@ -169,7 +180,7 @@ def test_the_week_rule_comes_from_the_press():
 def main() -> int:
     for fn in [
         test_unknown_is_never_green_and_never_red,
-        test_a_missing_credential_is_unknown_not_failing,
+        test_neither_reader_available_is_unknown_not_failing,
         test_press_against_the_digests_table,
         test_incident_24_would_have_been_caught_in_one_call,
         test_weeks_between_counts_issues_not_days,

@@ -44,18 +44,38 @@ prose:
 
 ## What each surface needs
 
-| Surface  | Evidence                                    | Needs             |
-| ---      | ---                                         | ---               |
-| press    | newest row in `digests`, against the week   | `DATABASE_URL`    |
-| pipeline | newest rows in `papers` and `claims`        | `DATABASE_URL`    |
-| site     | the issues `/library` actually publishes    | nothing           |
-| mcp      | an unauthenticated probe of `/mcp`          | nothing           |
-| deploy   | `deploy_runtime` against this checkout      | `DATABASE_URL`, git |
+| Surface  | Evidence                                    | Needs    |
+| ---      | ---                                         | ---      |
+| press    | newest row in `digests`, against the week   | nothing  |
+| pipeline | newest rows in `papers` and `claims`        | nothing  |
+| site     | the issues `/library` actually publishes    | nothing  |
+| mcp      | an unauthenticated probe of `/mcp`          | nothing  |
+| deploy   | `deploy_runtime` against this checkout      | git      |
 
-Two of the five are public, so this command is useful in a seat's sandbox
-today. The other three want one read-only connection string in the environment,
-and the only thing standing between guardrail 4 and enforcement is that nobody
-has put one there.
+That column read `DATABASE_URL` for three of the five rows until 2026-10-01, and
+the gap was not academic. No agent seat holds that credential, so every seat ever
+asked whether the press printed answered `unknown`, and the ledger has carried
+that as urgent since 2026-09-28. The fix is two readers for the same three
+surfaces, in this order.
+
+1. **A direct connection**, when `DATABASE_URL` is in the environment. That is
+   the Modal jobs and the owner's own machine.
+2. **The receipt the site publishes**, `site/app/api/delivery/route.js`, which
+   needs no credential and is what every agent seat actually has. The site
+   already holds `DATABASE_URL` in its own environment
+   (`site/lib/graph-live.js`, `site/lib/entitlement.js`), so it is the one place
+   in this company where the database and a public HTTP surface already meet.
+
+The receipt carries rows and no verdicts, and the judgement stays here in one
+copy: `judge_press`, `judge_pipeline` and `judge_deploy` take facts rather than a
+connection, and both readers hand them the same shapes. A second copy of a rule
+can only ever agree with the first by luck, which is the argument `week_label`
+below already makes about the press's own week.
+
+Every surface says which reader answered it, as `read_via` in its evidence. A
+receipt is second-hand, and a report that hides that is the kind incident 24 was
+full of. One thing the receipt cannot do is write, so a drift alarm read that
+way is reported and not mailed, and it says so.
 
 ## The fifth surface: is the merged code the running code
 
@@ -104,6 +124,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 SITE_URL = "https://libraryofalexandria.dev"
 MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
+
+# The credential-free reader for the three database surfaces. The site already
+# holds DATABASE_URL in its own environment, so `site/app/api/delivery/route.js`
+# publishes the rows this command judges and no seat needs a credential to read
+# them. Facts only: the judgement below is the single copy.
+RECEIPT_URL = f"{SITE_URL}/api/delivery"
+RECEIPT_VERSION = 1  # must match site/lib/delivery-core.js RECEIPT_VERSION
+
+# Which reader answered. It goes in every surface's evidence as `read_via`,
+# because "the press printed" and "a second-hand record says the press printed"
+# are different strengths of evidence and a report that hides the difference is
+# the kind of report incident 24 was full of.
+DIRECT = "DATABASE_URL"
 
 OK, FAILING, UNKNOWN = "ok", "failing", "unknown"
 
@@ -268,8 +301,8 @@ def check_mcp() -> Surface:
     return Surface("mcp", FAILING, f"/mcp returned an unexpected HTTP {status}", evidence)
 
 
-def check_press(conn, today: date | None = None) -> Surface:
-    """The newest row in `digests`, against the week that has ended.
+def press_facts(conn) -> dict | None:
+    """The newest row in `digests`, or None when the table is empty.
 
     This is guardrail 4's own named evidence and the one query incident 24
     would have been answered by in a second.
@@ -277,13 +310,28 @@ def check_press(conn, today: date | None = None) -> Surface:
     row = conn.execute(
         "select week, created_at, model from digests order by week desc limit 1"
     ).fetchone()
-    expected = week_label(today)
     if row is None:
+        return None
+    return {"week": row[0], "created_at": row[1], "model": row[2]}
+
+
+def judge_press(facts: dict | None, today: date | None = None,
+                source: str = DIRECT) -> Surface:
+    """The newest issue, against the week that has ended.
+
+    Takes rows rather than a connection, so the credential-free reader and the
+    credentialled one are judged by this function and not by two copies of it.
+    The file already makes this argument about `week_just_ended`: a second copy
+    of a rule can only ever agree with the first by luck.
+    """
+    expected = week_label(today)
+    if facts is None:
         return Surface("press", FAILING, "the digests table is empty",
-                       {"expected": expected})
-    week, created_at, model = row
+                       {"expected": expected, "read_via": source})
+    week, created_at, model = facts["week"], facts["created_at"], facts["model"]
     evidence = {"newest_week": week, "expected": expected,
-                "created_at": str(created_at), "model": model}
+                "created_at": str(created_at), "model": model,
+                "read_via": source}
     if week < expected:
         missing = _weeks_between(week, expected)
         return Surface("press", FAILING,
@@ -292,23 +340,30 @@ def check_press(conn, today: date | None = None) -> Surface:
     return Surface("press", OK, f"{week} is written, by {model}", evidence)
 
 
-def check_pipeline(conn) -> Surface:
+def check_press(conn, today: date | None = None) -> Surface:
+    return judge_press(press_facts(conn), today)
+
+
+def pipeline_facts(conn) -> dict:
+    """When the corpus last moved: the newest row in `papers` and in `claims`."""
+    return {
+        "papers": conn.execute("select max(fetched_at) from papers").fetchone()[0],
+        "claims": conn.execute("select max(created_at) from claims").fetchone()[0],
+    }
+
+
+def judge_pipeline(facts: dict, now: datetime | None = None,
+                   source: str = DIRECT) -> Surface:
     """The daily crons, read through the rows they leave behind.
 
     delivery-health.md's own table calls this the next gap and says why it
     matters most: it is the surface that feeds every other one. A press that
     prints on an empty corpus prints an empty issue.
     """
-    now = datetime.now(timezone.utc)
-    rows = {}
-    for label, sql in (
-        ("papers", "select max(fetched_at) from papers"),
-        ("claims", "select max(created_at) from claims"),
-    ):
-        value = conn.execute(sql).fetchone()[0]
-        rows[label] = value
+    now = now or datetime.now(timezone.utc)
+    rows = dict(facts)
     stale = []
-    evidence = {}
+    evidence = {"read_via": source}
     for label, value in rows.items():
         if value is None:
             stale.append(f"{label} is empty")
@@ -324,6 +379,10 @@ def check_pipeline(conn) -> Surface:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
     return Surface("pipeline", OK,
                    f"ingesting and distilling within {PIPELINE_STALE_DAYS} days", evidence)
+
+
+def check_pipeline(conn) -> Surface:
+    return judge_pipeline(pipeline_facts(conn))
 
 
 def _git(repo_root: Path, *args: str) -> tuple[int, str]:
@@ -376,13 +435,37 @@ def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
         return None
 
 
-def check_deploy(conn, repo_root: Path | None = None,
-                 now: datetime | None = None, notify: bool = True) -> Surface:
+def deploy_facts(conn) -> dict | str:
+    """What each job last reported it was running, from `deploy_runtime`.
+
+    Returns one entry per app, or a string saying why there are none. The table
+    lands in db/schema.sql in the same change as this check and `apply_schema`
+    is a separate hand-run step, so "no such table" is a state this surface
+    will really meet, and it is not a broken deploy.
+    """
+    try:
+        rows = conn.execute(
+            "select app, runtime_sha, recorded_at, first_seen_at, notified_at "
+            "from deploy_runtime").fetchall()
+    except Exception as exc:
+        return f"deploy_runtime could not be read: {exc}"
+    return {app: {"runtime_sha": sha, "recorded_at": recorded_at,
+                  "first_seen_at": first_seen_at, "notified_at": notified_at}
+            for app, sha, recorded_at, first_seen_at, notified_at in rows}
+
+
+def judge_deploy(facts: dict | str, repo_root: Path | None = None,
+                 now: datetime | None = None, notify_conn=None,
+                 source: str = DIRECT) -> Surface:
     """Is the code on this checkout the code the crons are running.
 
     One surface for all three jobs rather than three, because the question the
     reader has is "is anything stale" and the headline can name which. The
     evidence block carries each app separately for whoever wants the detail.
+
+    `notify_conn` is a connection or None. None means do not mail, and the two
+    reasons for that are a caller passing `notify=False` and the facts having
+    come from the public receipt, which cannot write the alarm's cooldown.
     """
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     now = now or datetime.now(timezone.utc)
@@ -391,22 +474,14 @@ def check_deploy(conn, repo_root: Path | None = None,
         from pipeline import runtime_sha
     except Exception as exc:
         return Surface("deploy", UNKNOWN,
-                       f"pipeline/runtime_sha.py could not be read here: {exc}")
+                       f"pipeline/runtime_sha.py could not be read here: {exc}",
+                       {"read_via": source})
 
-    rows = {}
-    try:
-        for app, sha, recorded_at, first_seen_at, notified_at in conn.execute(
-                "select app, runtime_sha, recorded_at, first_seen_at, notified_at "
-                "from deploy_runtime").fetchall():
-            rows[app] = (sha, recorded_at, first_seen_at, notified_at)
-    except Exception as exc:
-        # The table lands in db/schema.sql in the same change as this check and
-        # `apply_schema` is a separate hand-run step, so "no such table" is a
-        # state this surface will really meet, and it is not a broken deploy.
-        return Surface("deploy", UNKNOWN,
-                       f"deploy_runtime could not be read: {exc}")
+    if isinstance(facts, str):
+        return Surface("deploy", UNKNOWN, facts, {"read_via": source})
+    rows = facts
 
-    evidence, drifted, unknowns, alarms = {}, [], [], []
+    evidence, drifted, unknowns, alarms = {"read_via": source}, [], [], []
     for app in sorted(runtime_sha.APPS):
         try:
             entries = runtime_sha.local_entries(app, root)
@@ -418,12 +493,12 @@ def check_deploy(conn, repo_root: Path | None = None,
         local = runtime_sha.digest(entries)
         row = rows.get(app)
         here = {"expected_sha": local, "files": len(entries),
-                "recorded_sha": row[0] if row else None,
-                "last_run": str(row[1]) if row else None}
+                "recorded_sha": row["runtime_sha"] if row else None,
+                "last_run": str(row["recorded_at"]) if row else None}
 
-        if row and row[0] == local:
+        if row and row["runtime_sha"] == local:
             here["state"] = OK
-            here["live_since"] = str(row[2])
+            here["live_since"] = str(row["first_seen_at"])
             evidence[app] = here
             continue
 
@@ -452,7 +527,14 @@ def check_deploy(conn, repo_root: Path | None = None,
 
     if alarms:
         names = ", ".join(f"{app} is {days} days behind" for app, days, _, _ in alarms)
-        note = _notify_drift(conn, alarms, root, now) if notify else "not notified"
+        if notify_conn is not None:
+            note = _notify_drift(notify_conn, alarms, root, now)
+        elif source == DIRECT:
+            note = "not notified"
+        else:
+            note = (f"not mailed: these rows came from {source}, which cannot "
+                    "write the once-a-day cooldown, and an alarm with no "
+                    "cooldown is one mail every time the standup runs")
         evidence["alarm"] = note
         return Surface("deploy", FAILING,
                        f"the deployed code is not this code: {names}. "
@@ -471,6 +553,12 @@ def check_deploy(conn, repo_root: Path | None = None,
                    evidence)
 
 
+def check_deploy(conn, repo_root: Path | None = None,
+                 now: datetime | None = None, notify: bool = True) -> Surface:
+    return judge_deploy(deploy_facts(conn), repo_root, now,
+                        notify_conn=conn if notify else None)
+
+
 def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
                   now: datetime) -> str:
     """Mail the owner once a day per stale app, and say what happened either way.
@@ -480,7 +568,7 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     """
     due = []
     for app, days, row, local in alarms:
-        last = row[3] if row else None
+        last = row["notified_at"] if row else None
         if last is not None:
             if last.tzinfo is None:
                 last = last.replace(tzinfo=timezone.utc)
@@ -499,7 +587,7 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
 
     lines = []
     for app, days, row, local in due:
-        running = row[0] if row else "nothing recorded at all"
+        running = row["runtime_sha"] if row else "nothing recorded at all"
         lines.append(f"{app}: this repository is at {local}, the last run "
                      f"reported {running}, and the change merged {days} days ago.")
     detail = "\n\n".join(
@@ -530,39 +618,136 @@ def _weeks_between(have: str, want: str) -> int:
     return max(0, (monday(want) - monday(have)).days // 7)
 
 
+# ------------------------------------------------- the credential-free reader
+
+def _parse_iso(value: str | None) -> datetime | None:
+    """A timestamp out of the receipt's JSON, as an aware datetime or None."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def read_receipt(url: str | None = None) -> tuple[dict | None, str]:
+    """GET the published delivery receipt. Returns (payload, why it is absent).
+
+    Every rejection below is a reason to answer `unknown` rather than to guess,
+    and the reason is carried back as prose because the reader of this command
+    needs to know which of the two paths failed and how.
+    """
+    url = url or RECEIPT_URL
+    status, body, _ = fetch(url)
+    if status == 0:
+        return None, f"{url} did not answer: {body}"
+    if status != 200:
+        return None, f"{url} returned HTTP {status}"
+    try:
+        payload = json.loads(body)
+    except ValueError as exc:
+        return None, f"{url} did not return JSON: {exc}"
+    if not isinstance(payload, dict) or payload.get("receipt") != "alexandria-delivery":
+        return None, f"{url} answered something that is not a delivery receipt"
+    if payload.get("version") != RECEIPT_VERSION:
+        # A version this reader does not know is not a licence to read the
+        # fields it recognises. The missing field would read as a null and a
+        # null here is a surface answering FAILING.
+        return None, (f"{url} published receipt version {payload.get('version')} "
+                      f"and this reader speaks version {RECEIPT_VERSION}")
+    return payload, ""
+
+
+def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
+    """The receipt's JSON, in the same three shapes the database reader returns.
+
+    This is the whole of the translation. The judgement is `judge_press`,
+    `judge_pipeline` and `judge_deploy`, unchanged and shared, so a receipt and
+    a connection cannot reach different conclusions about the same week.
+    """
+    press = payload.get("press")
+    press_row = None
+    if isinstance(press, dict) and press.get("newest_week"):
+        press_row = {"week": press["newest_week"],
+                     "created_at": _parse_iso(press.get("created_at")),
+                     "model": press.get("model")}
+
+    pipeline = payload.get("pipeline") or {}
+    pipeline_row = {"papers": _parse_iso(pipeline.get("papers_newest")),
+                    "claims": _parse_iso(pipeline.get("claims_newest"))}
+
+    deploy = payload.get("deploy")
+    if deploy is None:
+        # The route sends null when it could not run that query at all, and an
+        # empty list when the table is really empty. Collapsing the two would
+        # make a missing table look like three jobs that never reported, which
+        # is the drift alarm firing on a schema step.
+        deploy_rows: dict | str = ("deploy_runtime could not be read by the site "
+                                   "either, so the receipt carries no deploy rows")
+    else:
+        deploy_rows = {row["app"]: {"runtime_sha": row.get("runtime_sha"),
+                                    "recorded_at": _parse_iso(row.get("recorded_at")),
+                                    "first_seen_at": _parse_iso(row.get("first_seen_at")),
+                                    "notified_at": _parse_iso(row.get("notified_at"))}
+                       for row in deploy if isinstance(row, dict) and row.get("app")}
+    return press_row, pipeline_row, deploy_rows
+
+
 # ------------------------------------------------------------------ driver
 
 def database_surfaces(today: date | None = None, repo_root: Path | None = None,
                       notify: bool = True) -> list[Surface]:
-    """`press`, `pipeline` and `deploy`, or one honest `unknown` each.
+    """`press`, `pipeline` and `deploy`, by the best reader available.
 
-    The message names the variable, because the whole reason guardrail 4 has
-    never been enforced is that nobody could see which credential was missing
-    from where.
+    Two readers, in order. A direct connection when this environment holds
+    `DATABASE_URL`, which is the Modal jobs and the owner's laptop. Otherwise
+    the receipt the site publishes, which needs no credential and is what every
+    agent seat actually has. Both are judged by the same three functions.
+
+    When neither answers, all three surfaces are `unknown` and the message names
+    both paths, because the whole reason guardrail 4 went unenforced for four
+    days is that nobody could see which reader was missing what.
     """
     url = os.environ.get("DATABASE_URL", "").strip()
-    if not url:
-        why = ("no DATABASE_URL in this environment, so the artifact guardrail "
-               "4 names cannot be read here")
-        return [Surface("press", UNKNOWN, why, {"expected": week_label(today)}),
-                Surface("pipeline", UNKNOWN, why),
-                Surface("deploy", UNKNOWN, why)]
+    direct_why = "no DATABASE_URL in this environment"
+    if url:
+        surfaces, direct_why = _from_database(url, today, repo_root, notify)
+        if surfaces is not None:
+            return surfaces
+
+    payload, receipt_why = read_receipt()
+    if payload is not None:
+        press, pipeline, deploy = receipt_facts(payload)
+        return [judge_press(press, today, RECEIPT_URL),
+                judge_pipeline(pipeline, source=RECEIPT_URL),
+                judge_deploy(deploy, repo_root, source=RECEIPT_URL)]
+
+    why = (f"the artifact guardrail 4 names cannot be read here: {direct_why}, "
+           f"and the published receipt did not answer either ({receipt_why})")
+    return [Surface("press", UNKNOWN, why, {"expected": week_label(today)}),
+            Surface("pipeline", UNKNOWN, why),
+            Surface("deploy", UNKNOWN, why)]
+
+
+def _from_database(url: str, today: date | None, repo_root: Path | None,
+                   notify: bool) -> tuple[list[Surface] | None, str]:
+    """The three surfaces over a real connection, or None and why not.
+
+    None rather than three `unknown` surfaces, so the caller can fall through to
+    the receipt. A connection that fails is not a healthy press and not a broken
+    one, and neither is a missing driver.
+    """
     try:
         import psycopg
     except ImportError:
-        why = "psycopg is not installed here (pip install 'psycopg[binary]')"
-        return [Surface("press", UNKNOWN, why), Surface("pipeline", UNKNOWN, why),
-                Surface("deploy", UNKNOWN, why)]
+        return None, "psycopg is not installed here (pip install 'psycopg[binary]')"
     try:
         with psycopg.connect(url, connect_timeout=15) as conn:
             return [check_press(conn, today), check_pipeline(conn),
-                    check_deploy(conn, repo_root, notify=notify)]
+                    check_deploy(conn, repo_root, notify=notify)], ""
     except Exception as exc:
-        # A connection that fails is not a healthy press and not a broken one.
-        # It is the check failing, and saying so is the point of this state.
-        why = f"DATABASE_URL is set but the connection failed: {exc}"
-        return [Surface("press", UNKNOWN, why), Surface("pipeline", UNKNOWN, why),
-                Surface("deploy", UNKNOWN, why)]
+        return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
 ORDER = ["press", "pipeline", "deploy", "site", "mcp"]
