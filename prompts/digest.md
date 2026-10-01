@@ -16,6 +16,23 @@ you write a single one.
 Weekly-only is the demand that the issue argue one case rather than list
 findings. A daily may list. Monday may not. Where this file says "this week",
 a daily issue reads it as "today".
+**Which of the two you are writing is a fact in the payload, so read it
+instead of guessing.** The `dates` field spans a range of days for the Monday
+weekly and names a single day for a daily. Settle that question before you
+write the title, and let the answer govern every period word in the issue. One
+issue never carries both periods. A weekly that calls its contents the day's
+items, and a daily that reports what the week did, have each told the reader
+the wrong thing about what they are holding, and the reader cannot tell which
+half to believe.
+**The weekly's demand is checkable, so check it before you output.** Write the
+one case the issue argues, in a single sentence, for yourself. Then take each
+section in turn and say which step of that case it carries. A section that
+carries no step is cut, or the case is the wrong case and you write the right
+one. Those are the two fixes and there is no third. What you never do is print
+the sections and then assert a case in the closing lines that most of them do
+not reach, because a conclusion the body never built is a list wearing an
+argument's clothes, and the reader who checks it back against the sections
+finds the sections winning.
 
 **The daily's shape, so nobody has to invent one (law 9).** Everything above
 binds the daily. What follows is the only thing that differs, and it is written
@@ -505,7 +522,7 @@ research. One clear sentence. Not a summary, not a thesis, not a setup for a
 term of art, and never two clauses of scene-setting before the verb.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
-three of the day's items, named in plain words the way a person lists what
+three of the issue's items, named in plain words the way a person lists what
 they are about to say: "Today, a dense reward that moved terminal agents
 fifteen points. Two labs landed on the same answer for context management.
 And a benchmark ceiling turned out to be wrong." Every newsletter worth
@@ -523,8 +540,10 @@ The length rule is the same rule twice. One line means one line. A print that
 spent a hundred and three words here, on three institutions in three sentences,
 had stopped making a promise and started telling the issue at speed. The
 correspondence check is run again at the gate on finished output.
-Vary the construction: "Today:" is one way in and becomes furniture the third
-time it runs, so some issues name the items in plain sentences ("Three labs
+Vary the construction, and keep it inside the cadence you settled at the top
+of this file, because a word that names the wrong period is wrong however well
+it reads. Naming the period outright is one way in and becomes furniture the
+third time it runs, so some issues name the items in plain sentences ("Three labs
 spent the week on one problem. Which step in a long run deserves the blame?
 One of them broke a ceiling the field had accepted"),
 some fold the contents into the greeting's own sentence, and
@@ -1180,13 +1199,38 @@ the rule's question to the thing in front of you.
   characters. Is any mark doing the job of a full stop, per the punctuation
   rule above? Is every character in the issue plain ASCII, which is the whole
   class and not a list of hyphens and spaces?
-- **Then run the first-use pass. This is a hard gate, not advice.** Go back
+- **Then run the first-use pass. This is a hard gate, not advice.**
+  **Start with the title, because it is a closed list and the rest of this
+  pass is not.** The title is one line. Read it word by word and write down
+  every noun in it that a builder outside the research world could not
+  define. That list is rarely longer than two. Each one gets its plain-words
+  clause in the title's own sentence or in the first sentence of the opening,
+  and nowhere later: a title term defined in the third section is not
+  defined, because the reader met it before they had any reason to keep
+  reading, and law 4 says that line is where they decide. This runs first and
+  separately because it has already failed in the way an unbounded list
+  always fails. An issue glossed one of its title's two terms properly, then
+  carried the other bare through eight appearances including a heading, a
+  bold lead and the closing line. The duty was in this file the whole time,
+  sitting inside the rule about two names for one idea, and the bare word had
+  no second name, so nothing in that rule ever reached it.
+  Then go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
   every acronym, and every ordinary English word doing a technical job
   ("teacher", "student", "gradients", "reward", "rollout", "alignment").
   That last class is the one this pass exists to catch, because it does not
-  look like jargon on the page and so never gets listed. For each one, find
+  look like jargon on the page and so never gets listed.
+  **Inside that class the role nouns have their own tell, and the tell is the
+  article.** Two models in a training setup pick up nicknames, and a nickname
+  arrives with "the" in front of it as though the reader had been introduced
+  already. So check each one against the sentence that INTRODUCES it rather
+  than the sentence that uses it. Where one sentence hands over one half of a
+  pair with "a" and the other half with "the", the half carrying "the" is
+  bare however naturally it reads, and you have the usual two fixes: say what
+  it is in that same sentence, or drop the nickname and name the thing. This
+  is worth its own paragraph because the class was already listed by name a
+  few lines above and printed anyway, so being on a list was not enough. For each one, find
   the FIRST place it appears anywhere in the issue, and that includes the
   title, the contents line, a heading, a
   bold lead-in and an item headline, not just the body prose. That first
@@ -1395,6 +1439,32 @@ the rule's question to the thing in front of you.
   drop the other, which is usually the better issue, because an ablation is
   evidence that the method is what did the work rather than a second score
   for the method.
+- **Then check each number against the breadth of the sentence that reports
+  it. A hard gate (canon law 6, and the claims pass's first question in a
+  form it does not yet name).** The gate above compares two of the issue's
+  numbers to each other. This one compares one number against its own
+  sentence, and it catches the move no comparison test can see, because
+  nothing is compared and nothing is invented: a figure measured on one
+  system, on one benchmark, gets reported in a sentence about systems in
+  general.
+  Take every number that reaches a heading or a plain-meaning line, which are
+  the two places where a figure becomes a statement. Name what was actually
+  measured, in full: which system, how many of them, on which task. Then read
+  the sentence you wrote and name what it claims. Where the sentence covers
+  more systems than the measurement did, it is wrong, and it is wrong in the
+  direction that costs most, because the heading is the part the reader
+  carries away and the measurement is the part they do not.
+  The specimen, in a subject no payload will hand you. A benchmark scores one
+  delivery firm's dispatcher and finds that a third of its instructions change
+  anything at all. The heading says two-thirds of dispatching is wasted
+  motion. One firm was measured and every firm was accused, and the figure
+  printed under that heading is accurate to the decimal.
+  Two repairs and there is no third. Put the measured subject into the
+  sentence, which usually costs three words. Or keep the general claim and
+  drop the number, which means you no longer have a finding and the section
+  goes with it. What the sentence may never do is state the general and cite
+  the particular, because a reader who checks the number finds a narrower fact
+  than the one they were handed.
 - **Then check every count the issue says out loud against the things it
   counted. A hard gate, and it is arithmetic rather than judgment.** Find every
   place the issue names a quantity of its own contents: three findings, two
