@@ -7470,3 +7470,135 @@ graphs.
 - Related: ban list 61, 64, 75 and 78, canon law 15, canon grading pass 6,
   `INC-2026-09-27-law-15-live-in-the-archive`.
 - Status: proposed
+
+### 2026-10-01 — The daily issue is written down everywhere and runs nowhere (writer seat, for the owner, then the engineer)
+
+- Trigger: the company standard L-A16, "configured is not in effect", applied
+  to the product's own cadence. A capability counts as live only when a run
+  log proves it served a real turn.
+- What the record says. The owner adopted the daily cadence on 2026-09-19 and
+  it is in `docs/voice/taste.md` in her words, "so the product can be seen and
+  improved easily". `prompts/digest.md` carries about thirty-eight lines
+  specifying the daily and nothing else: its length band, its four slots and
+  the rule that a day rarely fills all four, its traction signal, and how to
+  write the day with nothing in it. `docs/voice/canon.md` calls its own
+  grading procedure the daily review. The writer charter sends this seat to
+  read the newest issue every run.
+- What the code says. The only cron in the repository that writes an issue is
+  `modal.Cron("0 9 * * 1")` in `pipeline/weekly.py`, which fires on Mondays.
+  `ingest`, `distill`, `triage` and `interpret` all carry `* * *` and run
+  daily, so the corpus grows every day and the issue appears once a week.
+- What the evidence says. `digests` holds two rows in the product's life, id 1
+  of 2026-09-14 and id 18 of 2026-09-28, and the insert is
+  `on conflict (week) do update`, so a second issue inside one ISO week
+  overwrites the first rather than joining it. No daily has ever been
+  generated, so the thirty-eight lines that specify one have never been read
+  by a run that needed them.
+- The owner's own approved site copy of 2026-09-29 reads "Each week the
+  library becomes an issue", so the public promise matches the cron and
+  nothing misleads a reader. This is not a false claim. It is a decision
+  recorded as live in four registers and dormant in the one place that
+  executes.
+- The cost, and it is this seat's cost. One prompt writes both cadences, the
+  prompt conditions its only weekly-only rule on which cadence is being
+  written, and the payload does not say. That is ban list 79 and it is the
+  cause of the law 9 failure in the grade of 2026-10-01. A prompt carrying a
+  cadence that never runs is not inert, because the writer reads the whole
+  file and the nearer, more concrete shape wins.
+- What is being asked, in order:
+  1. The owner rules on whether the daily is still wanted. Everything else
+     depends on the answer and no seat should guess it.
+  2. If yes, the engineer installs a cron that writes one and the digests key
+     stops being the ISO week alone, because two issues in a week currently
+     cannot both exist.
+  3. If no, the daily specification comes out of `prompts/digest.md`, this
+     seat does that in one pull request, and the cadence is recorded as
+     dormant in `docs/decisions.md` with what would turn it on, which is what
+     L-A16 requires and what nobody has done.
+- Whose call: owner first, then engineer. Cost of the recording step alone:
+  one line in the decisions file.
+- Related: canon law 9 and law 11, ban list 79 and 80, the grade of
+  2026-10-01, `docs/standards/lessons.md` L-A16.
+- Status: proposed
+
+### 2026-10-01 — The payload cannot tell the writer which cadence it is writing (writer seat, for engineer)
+
+- Trigger: ban list 79. `prompts/digest.md` says "A daily may list. Monday may
+  not", and the JSON payload hands over `week`, `dates`, `stats`,
+  `new_claims`, `superseded`, `traction`, `deprecated` and `deep_reads`. None
+  of those names the cadence.
+- The prompt side is patched today, and the patch is a workaround rather than
+  the fix. It tells the writer to read the cadence off `dates`, which spans a
+  range of days for the weekly and would name a single day for a daily. That
+  works because the formatting of one field happens to encode the answer, and
+  a field whose format carries meaning nobody declared is a defect waiting for
+  its own incident.
+- What, the change: one key in the payload, `cadence`, set to the string the
+  calling function already knows, beside the `week` label it already sets.
+  `rehearse` and `weekly` both call `week_just_ended`, so both know.
+- Why it is worth a key rather than an inference: the rule it feeds is the
+  single structural difference between the two products this prompt writes.
+  Everything else in the file is house law.
+- Whose call: engineer. Cost: one dictionary entry.
+- Related: ban list 79, canon law 9, the grade of 2026-10-01.
+- Status: proposed
+
+### 2026-10-01 — A law with two clauses needs two verdicts, and that is a change to the canon's procedure (writer seat, for the owner)
+
+- Trigger: `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`, the
+  third grade in six days to clear a law the artifact visibly breaks. Canon
+  law 9 has two subjects under one number, the owner's fine-tuning and the
+  weekly's duty to argue. A verdict quoted real evidence for the first and
+  was silent about the second, and nothing in the procedure made that
+  visible.
+- The two fixes already in the procedure cannot reach it. "Every verdict
+  carries a quoted line" steers a grade toward the clause that can produce a
+  quotation. "A law that asserts coverage is graded by a count" does not fire,
+  because law 9 asserts no coverage. What law 9 has is a conjunction.
+- What is proposed, and it is one sentence: a law with more than one clause is
+  graded clause by clause, the verdict names which clauses it covered, and a
+  law with two subjects gets two verdicts under one number.
+- Why this is filed rather than written. The canon says its laws section
+  changes only by the owner's ruling and its procedure has been corrected
+  twice this week by the runs that executed it. This seat can write the
+  procedure, and a third self-authored correction to the instrument that grades
+  this seat's own work is worth her word rather than this seat's judgment.
+- Whose call: owner. Cost: one sentence, and a longer grade every run.
+- Related: canon's grading procedure, `INC-2026-09-26-grade-cleared-a-printed-violation`,
+  `INC-2026-09-29-grade-cleared-link-coverage`.
+- Status: proposed
+
+### 2026-10-01 — The first-use pass needs a command, because the standard's threshold is one failure and it has had two (writer seat, for engineer)
+
+- Trigger: `docs/standards/lessons.md` L-A22, "the gate goes in the command,
+  not in the charter", whose own words are that when a law has failed to fire
+  once, writing it more clearly is not the fix. The first-use pass has now
+  failed twice, on the prints of 2026-09-28 and 2026-09-30.
+- This run shipped a prompt change anyway and said so in the incident entry
+  rather than quietly. The reason is that the two changes are conversions
+  rather than rewordings, from an unbounded list to a closed one and from a
+  lexical check to a grammatical one, and the one half of this gate that was
+  already converted to a count is the half that has held in every print since.
+  That is a reason, not a defence, and the filing below is the other half of
+  it.
+- What, the check, and the honest part first: whether a word carries a
+  plain-words clause is not mechanizable and no regex should try. Two
+  narrower things are.
+  1. **The title's words against the body.** Extract the title's content
+     words, and for each one report whether it appears again in the opening's
+     first two paragraphs. A title term that the opening never touches has not
+     been introduced there, which is where the rule now requires it.
+     `tools/check_issue_citations.py` is the precedent: a prose rule the org
+     already reduced to a script over a generated body.
+  2. **The role nouns on their article.** A grep for a definite article in
+     front of the field's training-pair nicknames is exact, cheap and has a
+     known failing artifact to test against, which is the print of
+     2026-09-30. Every gate is tested against an artifact known to fail it
+     before it is trusted, per L-A21.
+- Neither check decides whether the prose is good. Both answer a question that
+  has been answered wrong twice, which is whether the pass ran at all.
+- Whose call: engineer, and it belongs in the same pre-store chain as the shape
+  counts filed on 2026-09-30 rather than as a separate step.
+- Related: ban list 81 and 82, `INC-2026-10-01-first-use-pass-printed-a-word-it-lists-by-name`,
+  `docs/standards/lessons.md` L-A21 and L-A22.
+- Status: proposed
