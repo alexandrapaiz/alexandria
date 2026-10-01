@@ -2,6 +2,7 @@ import { neon } from "@neondatabase/serverless";
 
 import { HIDDEN_WEEKS, getIssue, listIssues, parseIssue } from "./content.js";
 import {
+  memo,
   mergeIssues,
   pickIssue,
   readListing,
@@ -31,10 +32,15 @@ function connect() {
   return url ? neon(url) : null;
 }
 
+// One minute, shared across every visitor, because the listing has no
+// per-visitor content. See `memo`'s own header for which unit this protects.
+// A minute of staleness on a weekly publication is not a cost worth naming.
+const listing = memo(readListing);
+
 export async function publishedIssues(sql = connect()) {
   return mergeIssues({
     files: listIssues(),
-    rows: await readListing(sql),
+    rows: await listing(sql),
     hidden: HIDDEN_WEEKS,
     parse: parseIssue,
   });

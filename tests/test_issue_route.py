@@ -120,6 +120,16 @@ def test_one_copy_of_every_rule():
           "new Set" not in CORE and "hidden," in CORE)
 
 
+def test_the_listing_read_is_bounded():
+    section("what the host meters (L-E9)")
+    check("the listing read is collapsed into a window",
+          "memo(readListing)" in LIVE)
+    check("the week read is not, because it is keyed by the URL's week",
+          "memo(readWeek)" not in LIVE)
+    check("the window is a constant and not a magic number at the call site",
+          re.search(r"ttlMs = 60_000", CORE) is not None)
+
+
 def test_the_public_listing_cannot_serve_an_issue_body():
     section("the listing's shape")
     # The listing query reads only the head of each body, so a body that
@@ -158,6 +168,7 @@ def main() -> int:
         test_the_rendering_mode_is_the_one_the_404_needs,
         test_it_fails_closed,
         test_one_copy_of_every_rule,
+        test_the_listing_read_is_bounded,
         test_the_public_listing_cannot_serve_an_issue_body,
         test_the_javascript_suite_runs,
     ):

@@ -143,3 +143,36 @@ export async function readWeek(sql, week) {
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// L-E9 in docs/standards/lessons.md: before a host connection is called done,
+// ask what the host actually meters, because "an agent company produces that
+// unit at a rate no human team does". This change moves `/library/<week>` from
+// prerendered HTML to a per-request render, which is the one rendering-mode
+// change it makes (`/library` and sixteen of the site's eighteen routes were
+// already server-rendered on demand, measured on both branches with `next
+// build`). So the listing's database read is bounded here.
+//
+// Why the listing and not the week route. The listing is the page every seat's
+// delivery check fetches, twelve times a day before any visitor, and it is one
+// read of up to 52 rows. The week route is a single lookup on a unique index,
+// keyed by a value from the URL, and a keyed cache for it would be a map this
+// file would then have to bound. One is worth collapsing and the other is not.
+//
+// A failed read is deliberately not remembered. `null` means "could not look",
+// and caching that would turn one unreachable moment into a minute of them,
+// which is the opposite of failing closed.
+export function memo(load, { ttlMs = 60_000, now = () => Date.now() } = {}) {
+  let at = null;
+  let value = null;
+  return async (...args) => {
+    const t = now();
+    if (at !== null && t - at < ttlMs) return value;
+    const fresh = await load(...args);
+    if (fresh !== null) {
+      value = fresh;
+      at = t;
+    }
+    return fresh;
+  };
+}

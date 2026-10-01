@@ -1309,8 +1309,8 @@ characters of each body, so the shaping layer drops `body` from the listing
 shape entirely: a page that rendered it would be showing a truncated issue as a
 whole one.
 
-**What the new files are.** `tests/test_issue_route.py` (6 tests, 20 checks) and
-`tests/issues.test.mjs` (16 executed cases), both added in the same pull request
+**What the new files are.** `tests/test_issue_route.py` (7 tests, 23 checks) and
+`tests/issues.test.mjs` (19 executed cases), both added in the same pull request
 as this item. The Python file runs the `.mjs` file in a subprocess, the way
 `tests/test_delivery_receipt.py` runs `tests/delivery.test.mjs`, so one pytest
 command covers the whole path and the `node` half degrades to a skip where
@@ -1377,6 +1377,16 @@ next start`, then six requests: `/` 200, `/library` 200, `/library/2026-W39` 200
 `/library/2026-W37` 404, `/library/2026-W01` 404, `/library/nonsense` 404. A
 clean 404 on an unpublished week is the sentence the old guard was protecting,
 and it holds without the guard because the route is dynamic from the start.
+
+**One thing this item does not need to queue, verified rather than assumed.**
+The same pull request adds a sixth surface to `tools/delivery_health.py`, the
+`archive` comparison, with six tests in `tests/test_delivery_health.py`. Both of
+those files are already queued into both `paths` lists and into a step by **item
+14** above (`run: python3 -m pytest tests/test_deploy_drift.py
+tests/test_delivery_health.py -q`), so applying item 14 covers them and this
+item does not name them twice. If item 14 is never applied, those six tests run
+under `python3 -m pytest tests/ -q` and nowhere in CI, which is the same hole
+item 14 exists to close and not a new one.
 
 **Cost.** $0. No key, no network, no database. The step adds under a second,
 plus `node --test`, which needs no `npm install`.

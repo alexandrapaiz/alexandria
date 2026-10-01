@@ -275,3 +275,63 @@ test("a week with no row resolves to null, which the route turns into a 404", as
   const sql = () => Promise.resolve([]);
   assert.equal(await core.readWeek(sql, "2026-W40"), null);
 });
+
+// ---------------------------------------------------------------------------
+// The bounded listing read (L-E9: what does the host meter)
+
+test("the listing read is collapsed inside its window and refreshed after it", async () => {
+  let calls = 0;
+  let clock = 1000;
+  const load = () => {
+    calls += 1;
+    return Promise.resolve([{ week: "2026-W40", body: "# x\n\ny\n" }]);
+  };
+  const cached = core.memo(load, { ttlMs: 60000, now: () => clock });
+
+  await cached();
+  await cached();
+  await cached();
+  assert.equal(calls, 1, "three page views inside the window are one read");
+
+  clock += 59999;
+  await cached();
+  assert.equal(calls, 1, "still inside the window");
+
+  clock += 2;
+  await cached();
+  assert.equal(calls, 2, "past the window, it reads again");
+});
+
+test("a read that could not look is never remembered", async () => {
+  let calls = 0;
+  let answer = null;
+  const cached = core.memo(() => {
+    calls += 1;
+    return Promise.resolve(answer);
+  });
+
+  assert.equal(await cached(), null);
+  assert.equal(await cached(), null);
+  assert.equal(calls, 2, "one unreachable moment must not become a minute of them");
+
+  answer = [{ week: "2026-W40", body: "# x\n\ny\n" }];
+  const rows = await cached();
+  assert.equal(rows.length, 1);
+  assert.equal(calls, 3);
+
+  // And once it has an answer, that answer is the one held.
+  answer = null;
+  assert.deepEqual(await cached(), rows, "a later outage serves the last good read");
+  assert.equal(calls, 3);
+});
+
+test("an empty archive is a real answer and is remembered", async () => {
+  let calls = 0;
+  const cached = core.memo(() => {
+    calls += 1;
+    return Promise.resolve([]);
+  });
+  assert.deepEqual(await cached(), []);
+  assert.deepEqual(await cached(), []);
+  assert.equal(calls, 1, "[] is 'the press has printed nothing', which is a fact");
+});

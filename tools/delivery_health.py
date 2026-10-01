@@ -52,7 +52,7 @@ prose:
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
 | deploy   | `deploy_runtime` against this checkout      | git      |
 
-That column read `DATABASE_URL` for three of the five rows until 2026-10-01, and
+That column read `DATABASE_URL` for three of the six rows until 2026-10-01, and
 the gap was not academic. No agent seat holds that credential, so every seat ever
 asked whether the press printed answered `unknown`, and the ledger has carried
 that as urgent since 2026-09-28. The fix is two readers for the same three
@@ -285,6 +285,92 @@ def check_site(today: date | None = None) -> Surface:
             evidence)
     return Surface("site", OK,
                    f"{len(weeks)} issue(s) published, newest {weeks[0]}", evidence)
+
+
+HIDDEN_WEEKS_RE = re.compile(r"HIDDEN_WEEKS\s*=\s*new Set\(\[(.*?)\]\)", re.S)
+
+
+def hidden_weeks(repo_root: Path | None = None) -> set[str]:
+    """The weeks the site deliberately does not publish.
+
+    Read out of `site/lib/content.js` rather than listed here, because that set
+    is the owner's veto over the archive (2026-W37, retired on her order
+    2026-09-19) and a second copy of it would be a second place to forget.
+    An unreadable file yields an empty set, which can only make this check
+    noisier and never quieter.
+    """
+    root = repo_root or Path(__file__).resolve().parents[1]
+    try:
+        text = (root / "site" / "lib" / "content.js").read_text()
+    except OSError:
+        return set()
+    m = HIDDEN_WEEKS_RE.search(text)
+    return set(re.findall(r"\d{4}-W\d{2}", m.group(1))) if m else set()
+
+
+def judge_archive(press: Surface | None, site: Surface | None,
+                  hidden: set[str] | None = None) -> Surface:
+    """Does the public archive show the week the press recorded.
+
+    This surface exists because of the shape of the fix that made it
+    answerable. `site/lib/issues-live.js` reads the `digests` table and falls
+    back to the committed markdown when it cannot, which is the right way to
+    fail and is also L-A16 in docs/standards/lessons.md: "the gap between
+    intent and effect is silent by construction, because a well-built fallback
+    makes the run succeed anyway." If the site's environment has no
+    `DATABASE_URL`, or the role cannot read `digests`, the archive keeps
+    serving the committed files and every other surface here stays green. The
+    record path would be dead and nothing would say so.
+
+    So the two answers are compared. The press surface knows the newest week in
+    `digests`. The site surface knows the newest week a reader can open. When
+    they agree, the connection between them is working, and that is the only
+    evidence that it is.
+    """
+    hidden = hidden if hidden is not None else hidden_weeks()
+    if press is None or site is None:
+        return Surface("archive", UNKNOWN,
+                       "needs both the press and the site surface to compare")
+    if press.state == UNKNOWN or site.state == UNKNOWN:
+        unread = press.name if press.state == UNKNOWN else site.name
+        return Surface("archive", UNKNOWN,
+                       f"the {unread} surface could not be read here, so the "
+                       "record and the page cannot be compared")
+
+    recorded = press.evidence.get("newest_week")
+    published = [w for w in site.evidence.get("published", []) if w not in hidden]
+    evidence = {"recorded": recorded, "published": published,
+                "hidden": sorted(hidden)}
+    if not recorded:
+        return Surface("archive", UNKNOWN,
+                       "the press surface reported no week to compare", evidence)
+    if recorded in hidden:
+        return Surface("archive", OK,
+                       f"{recorded} is the newest record and is deliberately "
+                       "unpublished", evidence)
+    if not published:
+        return Surface("archive", FAILING,
+                       f"the record holds {recorded} and the archive publishes "
+                       "nothing", evidence)
+
+    newest_published = max(published)
+    if newest_published == recorded:
+        return Surface("archive", OK,
+                       f"the record and the archive both end at {recorded}",
+                       evidence)
+    if newest_published < recorded:
+        return Surface("archive", FAILING,
+                       f"the press recorded {recorded} and the newest issue a "
+                       f"reader can open is {newest_published}. Either the "
+                       "site cannot read the database, in which case the "
+                       "archive is serving the committed files and the record "
+                       "path is dead, or that week is hidden and this list "
+                       "does not know it", evidence)
+    return Surface("archive", OK,
+                   f"the archive publishes {newest_published} and the record "
+                   f"does not hold it. The newest record is {recorded}. A week "
+                   "published by hand is the old path still working, not a "
+                   "failure", evidence)
 
 
 def check_mcp() -> Surface:
@@ -771,19 +857,33 @@ def _from_database(url: str, today: date | None, repo_root: Path | None,
         return None, f"DATABASE_URL is set but the connection failed: {exc}"
 
 
-ORDER = ["press", "pipeline", "deploy", "site", "mcp"]
+ORDER = ["press", "pipeline", "deploy", "site", "archive", "mcp"]
 
 
 def run(surfaces: list[str], today: date | None = None,
         repo_root: Path | None = None, notify: bool = True) -> list[Surface]:
+    asked = set(surfaces)
+
+    # `archive` compares the press's record against the site's page, so asking
+    # for it alone has to fetch both of those and then not report them. The two
+    # extra names are added here and dropped at the end, rather than inside the
+    # comparison, so that `judge_archive` stays a function of two surfaces and
+    # is testable as one.
+    needed = asked | ({"press", "site"} if "archive" in asked else set())
+
     out: list[Surface] = []
-    if {"press", "pipeline", "deploy"} & set(surfaces):
+    if {"press", "pipeline", "deploy"} & needed:
         out += [s for s in database_surfaces(today, repo_root, notify)
-                if s.name in surfaces]
-    if "site" in surfaces:
+                if s.name in needed]
+    if "site" in needed:
         out.append(check_site(today))
-    if "mcp" in surfaces:
+    if "archive" in asked:
+        by_name = {s.name: s for s in out}
+        out.append(judge_archive(by_name.get("press"), by_name.get("site")))
+    if "mcp" in asked:
         out.append(check_mcp())
+
+    out = [s for s in out if s.name in asked]
     return sorted(out, key=lambda s: ORDER.index(s.name))
 
 
@@ -817,7 +917,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--surface", action="append", dest="surfaces",
                         choices=ORDER,
-                        help="check one surface; repeatable, default is all five")
+                        help="check one surface; repeatable, default is all six")
     parser.add_argument("--no-notify", action="store_true",
                         help="find a stale deploy and do not mail the owner about it")
     parser.add_argument("--json", action="store_true",

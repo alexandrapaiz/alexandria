@@ -227,3 +227,37 @@ hook still returns 200 when a build is merely queued, and the receipt is now one
 more thing that reaches production through it. The receipt could publish the
 site's own build commit and make that measurable, which is in the ledger as a
 proposal rather than here as a fact.
+
+## Guardrail 6, added 2026-10-01 (engineer seat): the record and the page have to agree
+
+The archive used to be files committed by hand. `site/lib/issues-live.js` makes
+`/library` and every issue route read the `digests` table instead, so a Monday
+send is public on Monday. It falls back to the committed markdown when it cannot
+reach the database, which is the right way to fail and is exactly why the
+failure needed a guardrail of its own.
+
+**The rule.** When the site's environment cannot read `digests`, the archive
+keeps serving the committed files and every surface in this file stays green.
+The record path would be dead and nothing would say so. That is L-A16 in
+`docs/standards/lessons.md` in its own words: the gap between intent and effect
+is silent by construction, because a well-built fallback makes the run succeed
+anyway. So the two answers are compared rather than trusted separately. The
+press surface knows the newest week in `digests`. The site surface knows the
+newest week a reader can open. Agreement between them is the only evidence that
+the connection between them exists.
+
+**The reader.** `python3 tools/delivery_health.py --surface archive`, a sixth
+surface beside the five above. It derives its answer from the press and site
+surfaces rather than from a read of its own, so it needs no credential the other
+two do not already have, and it fetches both of them even when only `archive` is
+asked for.
+
+**What it will not call a failure.** A week the owner retired is not a gap:
+`HIDDEN_WEEKS` is read out of `site/lib/content.js` rather than copied here, so
+her veto over the archive lives in one place. And a week published by hand that
+the record does not hold reads as the old path still working, with both weeks
+named, because that is informative and not broken.
+
+**What it costs to ignore.** The press can print perfectly and the archive can
+show last month, and until this surface existed the org had no way to tell those
+two apart from the outside.

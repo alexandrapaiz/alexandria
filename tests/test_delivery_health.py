@@ -177,6 +177,107 @@ def test_the_week_rule_comes_from_the_press():
               dh.week_label(d) == week_just_ended(d)[0])
 
 
+def _press(week, state=None):
+    return dh.Surface("press", state or dh.OK, f"{week} is written",
+                      {"newest_week": week})
+
+
+def _site(weeks, state=None):
+    return dh.Surface("site", state or dh.OK, f"newest {weeks[0] if weeks else 'none'}",
+                      {"published": list(weeks)})
+
+
+def test_the_archive_surface_catches_a_dead_record_path():
+    """The one state this surface exists for.
+
+    site/lib/issues-live.js falls back to the committed markdown when it cannot
+    read `digests`, which is the right way to fail and is why the failure is
+    invisible: every other surface here stays green while the record path is
+    dead. The comparison is the only thing that sees it. L-A16.
+    """
+    s = dh.judge_archive(_press("2026-W41"), _site(["2026-W39"]), hidden=set())
+    check("a record ahead of the page is failing", s.state == dh.FAILING, s.headline)
+    check("and it names both weeks",
+          "2026-W41" in s.headline and "2026-W39" in s.headline, s.headline)
+    check("and it names the likely cause",
+          "cannot read the database" in s.headline, s.headline)
+
+    s = dh.judge_archive(_press("2026-W40"), _site(["2026-W40", "2026-W39"]),
+                         hidden=set())
+    check("agreement is green", s.state == dh.OK, s.headline)
+    check("and says what agreed", "2026-W40" in s.headline, s.headline)
+
+
+def test_the_owners_veto_is_not_a_failure():
+    hidden = {"2026-W37"}
+    s = dh.judge_archive(_press("2026-W37"), _site(["2026-W37"]), hidden=hidden)
+    check("a hidden newest record is deliberate, not broken", s.state == dh.OK,
+          s.headline)
+
+    # The hidden week is filtered out of the published list before the
+    # comparison, so a site that still lists it cannot make the two agree by
+    # accident.
+    s = dh.judge_archive(_press("2026-W40"), _site(["2026-W37"]), hidden=hidden)
+    check("a page publishing only a hidden week is not agreement",
+          s.state == dh.FAILING, s.headline)
+
+
+def test_a_hand_published_week_ahead_of_the_record_is_not_a_failure():
+    s = dh.judge_archive(_press("2026-W39"), _site(["2026-W40", "2026-W39"]),
+                         hidden=set())
+    check("the old path still working is green", s.state == dh.OK, s.headline)
+    check("and it says which week the record lacks", "2026-W40" in s.headline,
+          s.headline)
+
+
+def test_an_unreadable_surface_is_unknown_and_never_a_verdict():
+    s = dh.judge_archive(None, _site(["2026-W39"]), hidden=set())
+    check("no press surface is unknown", s.state == dh.UNKNOWN, s.headline)
+
+    s = dh.judge_archive(
+        dh.Surface("press", dh.UNKNOWN, "no credential"), _site(["2026-W39"]),
+        hidden=set())
+    check("an unknown press makes the comparison unknown",
+          s.state == dh.UNKNOWN, s.headline)
+    check("and it says which surface could not be read",
+          "press" in s.headline, s.headline)
+
+    s = dh.judge_archive(_press("2026-W39"),
+                         dh.Surface("site", dh.UNKNOWN, "no answer"), hidden=set())
+    check("an unknown site makes the comparison unknown",
+          s.state == dh.UNKNOWN, s.headline)
+
+    s = dh.judge_archive(_press("2026-W40"), _site([]), hidden=set())
+    check("a record with an empty archive is failing, not unknown",
+          s.state == dh.FAILING, s.headline)
+
+
+def test_hidden_weeks_is_read_from_the_site_and_not_copied():
+    weeks = dh.hidden_weeks()
+    check("2026-W37 is read out of site/lib/content.js", "2026-W37" in weeks,
+          str(weeks))
+    content = (Path(__file__).resolve().parents[1]
+               / "site" / "lib" / "content.js").read_text()
+    check("and that is where the set lives", "HIDDEN_WEEKS = new Set" in content)
+
+    missing = dh.hidden_weeks(Path("/nonexistent"))
+    check("an unreadable file yields an empty set, which can only add noise",
+          missing == set(), str(missing))
+
+
+def test_asking_for_the_archive_alone_fetches_what_it_needs():
+    """`--surface archive` must not report 'needs both surfaces' forever."""
+    source = (Path(__file__).resolve().parents[1]
+              / "tools" / "delivery_health.py").read_text()
+    check("run() widens the fetch for archive",
+          '{"press", "site"} if "archive" in asked' in source)
+    check("and narrows the report back to what was asked",
+          "if s.name in asked" in source)
+    check("archive sits between site and mcp in the printed order",
+          dh.ORDER.index("site") < dh.ORDER.index("archive") < dh.ORDER.index("mcp"),
+          str(dh.ORDER))
+
+
 def main() -> int:
     for fn in [
         test_unknown_is_never_green_and_never_red,
@@ -187,6 +288,12 @@ def main() -> int:
         test_pipeline_staleness,
         test_naive_timestamps_do_not_crash_the_comparison,
         test_the_week_rule_comes_from_the_press,
+        test_the_archive_surface_catches_a_dead_record_path,
+        test_the_owners_veto_is_not_a_failure,
+        test_a_hand_published_week_ahead_of_the_record_is_not_a_failure,
+        test_an_unreadable_surface_is_unknown_and_never_a_verdict,
+        test_hidden_weeks_is_read_from_the_site_and_not_copied,
+        test_asking_for_the_archive_alone_fetches_what_it_needs,
     ]:
         print(f"\n{fn.__name__}")
         fn()
