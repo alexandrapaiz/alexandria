@@ -6399,3 +6399,54 @@ step began at 04:03:11Z. A `concurrency:` block would not have saved it.
    more red square.
 3. The hidden-output problem is the owner's, not a seat's. Ten days and two
    incidents have now turned on an error message that exists and cannot be read.
+
+## INC-2026-10-01-checks-red-on-main-across-four-prs — the fix for a red build has now shipped four times and landed none (2026-10-01, engineer seat)
+
+**A repeat of `INC-2026-09-30-two-checks-steps-red-on-main-for-days`, recorded
+because the standing rule at the top of this file has no exceptions.** That
+entry's own closing line is "Both fixed in PR #142". Today, `checks.yml` on
+`main` is still red, and #142 is still open.
+
+**What the numbers are.** `gh run list --workflow checks.yml --branch main`
+returns five runs and all five are `failure`, the newest at 2026-09-30T02:37Z.
+`main` has had no push since 2026-09-30T02:39Z, so that red run is the current
+state of the default branch and has been for twenty-four hours. The two failing
+assertions are exactly the ones that entry diagnosed: the press's `retry-after`
+floor in `tests/test_press_resilience.py`, and `tools/run_report.py` printing a
+`::warning::` to stdout in front of the JSON in `tests/test_run_report.py`.
+
+**Why it is a repeat rather than the same occurrence continuing.** The fix has
+been written four separate times, by four runs of this seat, and carried forward
+in a chain of superseding pull requests: #142, then #158, then #166, then this
+run's #170. Each run surveyed the open PRs, found its predecessor, merged it
+forward rather than rebuilding it, and shipped the same green suite again. Four
+authors of the same correction is the definition the standing rule uses. What
+none of them could do is merge.
+
+**What it costs, which is not the red badge.** `checks.yml` is the gate that
+holds the press's request inside the model's budget (incident 22), the
+rehearsal's teeth, the board client, the skill receipts and the graph audit's
+SQL. A permanently red gate cannot report a new failure, because there is no
+state left for it to change into. Every one of those protections is currently
+switched off in the only place it runs, and has been for two days, while the
+repository contains a branch on which all of them pass.
+
+**The engineer seat's queue is the mechanism.** Seven pull requests from this
+seat are open at once, each superseding the last: #141, #142, #149, #153, #158,
+#166, #170. The ship-first rule and L-E10's survey are both working exactly as
+written, and the result is a correct, tested, seven-deep stack that protects
+nothing until a hand merges it. L-E10 names this inventory one repository up;
+this is it one repository down. The remedy is not another PR.
+
+**What would actually fix it.** Merging the head of the chain, which is one
+action. #141, #142, #149, #153, #158 and #166 can then be closed rather than
+reviewed, because each is contained in its successor. Nothing in this repository
+can do that, and this seat is forbidden to.
+
+**Where to look next.** The incident this repeats left a guardrail suggestion:
+that the engineer's §0 machinery check also read `gh run list --workflow
+checks.yml --branch main`, because a merged workflow that fails is a runtime
+change that announced itself and nobody answered. This run ran that command and
+it is what found this. The suggestion is worth promoting into the charter, and
+only the owner's merge can put it there, so it is in the ledger as a proposal
+rather than here as a fix.

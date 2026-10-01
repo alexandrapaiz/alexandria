@@ -1154,6 +1154,113 @@ workflow, because the seat cannot push the file.
 
 **Cost.** $0. No key, no network, no database. The step adds about two seconds.
 
+### 15. The delivery receipt runs in CI, so the endpoint cannot leak the product
+
+**Queued 2026-10-01 by the engineer seat**, with the credential-free reader for
+guardrail 4.
+
+Numbered 15 because 14 is the highest on this page today. **It composes with
+item 14 and does not depend on it.** Both add lines to the same two `paths`
+lists and a step at the end of the same job, and neither touches the other's
+lines, so either order works and either alone works. If both are applied, item
+14's step and this one can be left as two steps; they test different files and
+two names in the CI log are easier to read than one.
+
+**What this protects.** `site/app/api/delivery/route.js` is a public,
+unauthenticated endpoint that reads the production database. That sentence is
+the whole reason this item exists. It is public on purpose, because no agent
+seat holds a database credential and the receipt is what lets every seat answer
+guardrail 4's question at all, and the price of that decision is that the
+boundary between metadata and product has to be held by something that runs on
+every change.
+
+Two of the tests are the boundary itself. One asserts that the queries never
+select `digests.body` or any claim text and never touch `subscribers`, and that
+the only tables read are the four this answers for. The other builds a receipt
+from a row that carries a body, a `prompt_sha` and an invented column, and
+asserts that none of the three appears in the JSON, because every field is built
+by name. A future change that widens a query, or spreads a row into the response
+for convenience, publishes the paid product. That change would be two
+characters long and it would look like a simplification.
+
+The rest hold the states. A receipt this reader cannot understand, a version it
+does not speak, a 404 from a route that is not deployed yet and a site that does
+not answer must every one of them answer `unknown`, never a verdict about the
+press, which is the argument `tools/delivery_health.py` already makes for its
+own third state. And one test asserts the property that keeps the two readers
+honest: a connection and a receipt carrying the same rows produce the same
+state and the same headline, word for word, differing only in `read_via`.
+
+**What the new files are.** `tests/test_delivery_receipt.py` (20 tests) and
+`tests/delivery.test.mjs` (10 executed cases), both added in the same pull
+request as this item. The Python file runs the `.mjs` file in a subprocess, the
+way `tests/test_accounts.py` runs `tests/accounts.test.mjs`, so one pytest
+command still covers the whole path and the `node` half degrades to a skip where
+`node` is absent. No network, no database, no site: the only thing stubbed is
+`dh.fetch`.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These five lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry, which is the last entry in each list. Verified
+against the live file this run: `      - "tools/graph_audit.py"` matches exactly
+twice, once per list, and none of these five paths appears anywhere in the file.
+If item 14 is applied first, these go after its three lines; the order inside
+the list does not matter.
+
+```yaml
+      - "tests/test_delivery_receipt.py"
+      - "tests/delivery.test.mjs"
+      - "site/lib/delivery-core.js"
+      - "site/lib/delivery.js"
+      - "site/app/api/delivery/route.js"
+```
+
+The three `site/` entries are the point of the paths half. The tests read those
+three files as source, so a change to the endpoint has to re-run them, and that
+is exactly the change nobody will think to test.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-10-01. The delivery receipt. `tools/delivery_health.py` answers
+      # three of its five surfaces from a public endpoint now, because no agent
+      # seat holds a database credential and that is why guardrail 4 went
+      # unenforced for a week. The endpoint reads production and answers anyone,
+      # so the boundary between metadata and product is held here: these tests
+      # assert that no query selects the issue body or a claim, and that a row
+      # carrying one anyway cannot escape through the shaping layer, which
+      # builds every field by name. They also hold the third state, since a
+      # receipt this reader cannot parse must answer `unknown` and never a
+      # verdict about the press, and the property that keeps two readers from
+      # becoming two answers: a connection and a receipt carrying the same rows
+      # reach the same state and the same headline.
+      - name: the delivery receipt publishes metadata and never the product
+        if: always()
+        run: python3 -m pytest tests/test_delivery_receipt.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (658 passed, 9 skipped). The harness was
+confirmed load bearing against an artifact known to fail it: inverting one
+assertion in `test_an_unreadable_database_is_a_503_and_not_an_empty_receipt`
+turns `python3 -m pytest tests/test_delivery_receipt.py -q` red with the check's
+own name in the report, and reverting it turns it green again. The step cannot
+be smoke-tested as a workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about a second,
+plus `node --test`, which needs no `npm install` because the module under test
+has no imports.
+
+**The fourth item on this page that is one more filename in two lists.** Items
+12, 13, 14 and now 15 are all the same two-line hand edit, and
+`INC-2026-09-29-receipts-step-had-no-paths` is what the pattern costs when the
+hand adds the step and forgets the list. The ledger entry from 2026-09-30,
+"checks.yml should run the suite, not fourteen filenames", is the structural fix
+and it would delete this half of all four items.
+
 ---
 
 ---

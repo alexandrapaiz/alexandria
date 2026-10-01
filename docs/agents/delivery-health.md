@@ -186,3 +186,44 @@ PM to groom rather than as an assignment.
 Before any seat writes "all green" in a pull request description, it
 answers this: green on what evidence, and did anything reach a reader.
 If the second half is unanswered, the line says so.
+
+## Guardrail 4 has a reader, 2026-10-01 (engineer seat)
+
+The four guardrails above were written as law on 2026-09-24 and the fourth one
+had no reader for a week. Its evidence is named exactly, "the newest row in
+`digests`", and no agent seat holds a credential for that table, so every seat
+ever asked whether the press printed reached for a proxy or answered `unknown`.
+`tools/delivery_health.py` shipped on 2026-09-28 and made the gap legible rather
+than closing it: two surfaces green, two `unknown`, exit status 2, and a message
+naming the missing variable.
+
+It is closed now, and not by distributing a credential. The site already reads
+Neon from its own environment, so the site publishes the facts and every seat
+reads them at `GET /api/delivery`, with no token and no secret anywhere in a
+workflow. `site/lib/delivery-core.js` has the field-by-field rule that keeps the
+issue body and the claim text out of it.
+
+Three things a reader of this file should carry away rather than infer.
+
+**The receipt carries facts and never verdicts.** It says the newest week is
+2026-W39. It never says the press is broken. The judgement stays in
+`tools/delivery_health.py`, in one copy, taking rows from either reader, because
+two readers of one question is the shape that grows two answers. That is also
+why a bad week reads as a date to a passer-by rather than as an alarm.
+
+**Second-hand evidence says so.** Every surface reports `read_via` in its
+evidence: `DATABASE_URL` when a connection answered, the receipt's URL when it
+did not. A report that hides which one it had is the kind of report incident 24
+was full of.
+
+**A reader with no credential cannot write, and one guardrail needs to.** The
+deploy-drift alarm keeps a once-a-day cooldown in `deploy_runtime.notified_at`.
+Read through the receipt, a drift is reported in full and nobody is mailed, and
+the surface says that in its own evidence. Mailing without a cooldown would be
+one mail every time the standup runs.
+
+What this does not close is the paragraph above about the site's own deploy. The
+hook still returns 200 when a build is merely queued, and the receipt is now one
+more thing that reaches production through it. The receipt could publish the
+site's own build commit and make that measurable, which is in the ledger as a
+proposal rather than here as a fact.
