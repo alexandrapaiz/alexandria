@@ -12,9 +12,14 @@ import { buildReceipt } from "./delivery-core.js";
 // Four queries, all of them an index read or a primary-key scan of a table
 // with three rows, and no parameter from the request reaches any of them. The
 // route caches on the CDN, so repeat traffic does not reach Neon at all.
+// Returns `{ receipt }` on success and `{ reason }` on failure, never a receipt
+// full of nulls. The two failures are kept apart on purpose: a missing
+// DATABASE_URL in this project's environment is one setting away from working,
+// and a query that throws is not, and the seat reading this from a sandbox has
+// no other way to tell which it is looking at.
 export async function loadDeliveryReceipt() {
   const url = process.env.DATABASE_URL;
-  if (!url) return null;
+  if (!url) return { reason: "DATABASE_URL is not set in the site's environment" };
 
   try {
     const sql = neon(url);
@@ -51,14 +56,20 @@ export async function loadDeliveryReceipt() {
       deploy = null;
     }
 
-    return buildReceipt({
-      digest: digests[0] ?? null,
-      papers: papers[0]?.newest ?? null,
-      claims: claims[0]?.newest ?? null,
-      deploy,
-      observedAt: new Date(),
-    });
-  } catch {
-    return null;
+    return {
+      receipt: buildReceipt({
+        digest: digests[0] ?? null,
+        papers: papers[0]?.newest ?? null,
+        claims: claims[0]?.newest ?? null,
+        deploy,
+        observedAt: new Date(),
+      }),
+    };
+  } catch (error) {
+    // The message and nothing else. A Neon error carries the host and the role
+    // it failed to authenticate, which is not for a public response, and the
+    // reader of this field only needs to know a query failed rather than a
+    // setting being absent.
+    return { reason: `a query failed: ${error?.name ?? "Error"}` };
   }
 }

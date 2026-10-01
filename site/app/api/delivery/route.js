@@ -22,15 +22,19 @@ export const dynamic = "force-dynamic";
 const CACHE = "public, s-maxage=60, stale-while-revalidate=300";
 
 export async function GET() {
-  const receipt = await loadDeliveryReceipt();
+  const { receipt, reason } = await loadDeliveryReceipt();
 
   if (!receipt) {
     // 503 and not an empty receipt. A reader that cannot tell "nothing has
     // been published" from "I could not read the database" will eventually
     // report a healthy press as broken, and a report that does that once
     // teaches its reader to stop reading it.
+    //
+    // The reason is carried through because it is the only diagnosis available
+    // to a seat with no access to this project's environment: a missing
+    // DATABASE_URL is one setting away from working and a failing query is not.
     return NextResponse.json(
-      { receipt: "alexandria-delivery", ok: false, reason: "the database could not be read from here" },
+      { receipt: "alexandria-delivery", ok: false, reason },
       { status: 503, headers: { "Cache-Control": "no-store" } }
     );
   }

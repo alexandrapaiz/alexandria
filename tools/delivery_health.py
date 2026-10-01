@@ -643,7 +643,17 @@ def read_receipt(url: str | None = None) -> tuple[dict | None, str]:
     if status == 0:
         return None, f"{url} did not answer: {body}"
     if status != 200:
-        return None, f"{url} returned HTTP {status}"
+        # The route's own 503 carries the diagnosis in a `reason` field, and it
+        # is the only one available to a seat that cannot see the site's
+        # environment: `DATABASE_URL` absent there is one setting away from
+        # working, and a failing query is not. Relayed rather than dropped.
+        reason = ""
+        try:
+            reason = json.loads(body).get("reason") or ""
+        except (ValueError, AttributeError):
+            reason = ""
+        return None, (f"{url} returned HTTP {status}"
+                      + (f": {reason}" if reason else ""))
     try:
         payload = json.loads(body)
     except ValueError as exc:

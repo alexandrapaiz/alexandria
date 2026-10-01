@@ -81,16 +81,41 @@ def test_the_endpoint_takes_no_input():
 
 
 def test_an_unreadable_database_is_a_503_and_not_an_empty_receipt():
-    """`loadDeliveryReceipt` returns null for both no credential and a thrown
-    query, and the route must not turn that into a receipt full of nulls. A
-    reader that cannot tell "nothing published" from "could not look" will
+    """The route must not turn an unreadable database into a receipt of nulls.
+
+    A reader that cannot tell "nothing published" from "could not look" will
     eventually call a healthy press broken, which is the failure guardrail 4
-    exists to prevent, one level up."""
-    check("the reader fails closed to null", "return null;" in READER)
+    exists to prevent, one level up.
+
+    The two causes are also kept apart, because they are the diagnosis a seat
+    cannot otherwise reach: `DATABASE_URL` absent from the site's environment is
+    one setting away from working, and a query that throws is not.
+    """
     check("the route answers 503", "status: 503" in ROUTE)
-    check("and says which of the two it was",
-          "could not be read" in ROUTE)
-    check("the failure is not cached", 'no-store' in ROUTE)
+    check("the failure is not cached", "no-store" in ROUTE)
+    check("a missing credential names itself",
+          "DATABASE_URL is not set in the site's environment" in READER)
+    check("a failing query says so separately",
+          "a query failed:" in READER)
+    check("and the reason reaches the response", "reason" in ROUTE)
+    check("no driver error text is passed through whole",
+          "error.message" not in READER and "${error}" not in READER)
+
+
+def test_the_python_reader_relays_the_site_s_reason():
+    """Otherwise the diagnosis dies at the HTTP status, and `HTTP 503` is the
+    one answer that tells a seat nothing it did not already know."""
+    body = json.dumps({"receipt": "alexandria-delivery", "ok": False,
+                       "reason": "DATABASE_URL is not set in the site's environment"})
+    with served(status=503, text=body):
+        payload, why = dh.read_receipt()
+    check("the payload is refused", payload is None)
+    check("and the reason is carried through",
+          "DATABASE_URL is not set in the site's environment" in why, why)
+    with served(status=503, text="not json at all"):
+        _, why = dh.read_receipt()
+    check("a 503 with no readable reason still reports the status",
+          "HTTP 503" in why, why)
 
 
 def test_the_response_is_cached_at_the_edge():
