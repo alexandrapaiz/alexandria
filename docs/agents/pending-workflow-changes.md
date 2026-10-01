@@ -919,6 +919,200 @@ budget.
 
 ---
 
+### 12. Every action is pinned to a tag that can move
+
+**Queued 2026-10-01 by the security seat, from `docs/security/audit-2026-10-01.md`.**
+
+Seven distinct actions across 46 references, every one on a major-version tag:
+`actions/checkout@v4` (14), `anthropics/claude-code-action@v1` (16),
+`actions/upload-artifact@v4` (12), `docker/login-action@v3`,
+`docker/build-push-action@v6`, `actions/setup-python@v5`,
+`actions/setup-node@v4`. A major tag is a pointer the publisher can move.
+
+[runtime-changes.md](runtime-changes.md) already lists "the action version
+(`anthropics/claude-code-action@v1` moving)" among the changes that need a smoke
+test. So the org has written down that this pointer moving is dangerous and has
+left the pointer able to move, which is the gap between recording and enforcing
+that [registers.md](registers.md) exists to catch.
+
+Blast radius if the `claude-code-action@v1` tag were re-pointed: arbitrary code
+in a job holding `contents: write`, `pull-requests: write`, and every secret in
+that job's `env:` block, on twelve schedules, with nobody watching. It is the
+largest single-change exposure in the repository.
+
+The diff, per reference, is the standard form:
+
+    -      - uses: anthropics/claude-code-action@v1
+    +      - uses: anthropics/claude-code-action@<40-hex-sha>  # v1
+
+The chair resolves each tag to the SHA it points at today and keeps the tag in
+the trailing comment so the next reader can tell what version it is. Dependabot
+updates SHA pins as readily as tags, so this does not freeze the org on an old
+action, it only makes an update a reviewable commit.
+
+Verified against the live files on 2026-10-01: the 46 references are in the 15
+files under `.github/workflows/`, and none is SHA-pinned today.
+
+### 13. PROJECTS_TOKEN is in the environment of ten seats that never use it
+
+**Queued 2026-10-01 by the security seat, from the same audit.**
+
+`PROJECTS_TOKEN` is a classic PAT, which [playbook.md](../playbook.md) states in
+those words. It is in the job-level `env:` of all twelve `agent-*.yml`, which
+puts it in the environment of every step of the job, including the agent step,
+which runs with `--permission-mode bypassPermissions`.
+
+Two charters name it: `prompts/pm-agent.md` uses it for the GitHub Projects
+board, and `prompts/exo-agent.md` mentions it. The other ten seats hold a
+classic PAT and have no instruction that involves one. Four of those ten read
+the public web as their job.
+
+This does not contest ADR-28's neighbouring line, "PROJECTS_TOKEN stays as-is
+for the board." Keeping the PAT and handing it to eleven seats that do not use
+it are two separate decisions, and only the first was ever made.
+
+The diff, in each of the ten workflows that are not `agent-pm.yml` or
+`agent-exo.yml`:
+
+    -      PROJECTS_TOKEN: ${{ secrets.PROJECTS_TOKEN }}
+
+Verified against the live files on 2026-10-01: the line is present in all twelve,
+at `agent-engineer.yml:33`, `agent-exo.yml:27`, `agent-finance.yml:26`,
+`agent-frontend.yml:32`, `agent-market.yml:28`, `agent-okr.yml:27`,
+`agent-pm.yml:31`, `agent-research.yml:26`, `agent-sales.yml:25`,
+`agent-security.yml:27`, `agent-skill.yml:26`, `agent-writer.yml:26`.
+
+The stronger version, if the chair prefers one change to ten: move it from the
+job's `env:` to the one step in `agent-pm.yml` that needs it, and delete it
+everywhere else. That is least privilege rather than less privilege.
+
+### 14. checks.yml says its budget step fails. It passes.
+
+**Queued 2026-10-01 by the security seat, from the same audit. Comment only, no
+behaviour change, and the behaviour it describes should not change.**
+
+`.github/workflows/checks.yml` lines 104 to 106 read:
+
+          # `always()` on purpose: the budget step above fails today, for a real
+          # reason (incident 24, the 8,000 TPM ceiling), and a red build there must
+          # not hide whether the resilience paths still work.
+
+`python3 pipeline/budget.py` passes on `main` as of 2026-10-01: exit 0, last line
+"budget check passed". So the premise is out of date. The eleven `if: always()`
+steps should stay exactly as they are, because the reason to keep them is that
+any early step failing must not hide the later ones, and that reason does not
+depend on which step is currently red.
+
+The diff:
+
+    -      # `always()` on purpose: the budget step above fails today, for a real
+    -      # reason (incident 24, the 8,000 TPM ceiling), and a red build there must
+    -      # not hide whether the resilience paths still work.
+    +      # `always()` on purpose, on this step and the ten below it. The budget
+    +      # step above passed as of 2026-10-01, and that is exactly why the
+    +      # arrangement stays: a red build anywhere early must not hide whether
+    +      # the later properties still hold. Incident 24 is why it was written
+    +      # when the budget step was the failing one.
+
+Anchor verified against the live file on 2026-10-01 at lines 104 to 106.
+
+### 15. The no-ship tripwire passes a run that committed nothing
+
+**Queued 2026-10-01 by the security seat, from the same audit. Low severity, and
+it is the tripwire's own purpose that makes it worth recording.**
+
+The tripwire reads:
+
+          pushed=$(git branch -r --contains HEAD 2>/dev/null | tr -d ' ')
+
+and fails the job when `pushed` is empty. That correctly catches a run that made
+commits and never pushed them, which is the case incident 3 is about.
+
+It does not catch a run that committed nothing at all. `HEAD` is then still
+`main`'s commit, which is contained in `origin/main`, so `pushed` is non-empty
+and the check passes. The absent pull request is caught one line later, but only
+as a `::warning::`, so a run that did nothing ends green with a warning that
+nothing reads.
+
+The cheapest honest fix compares against the branch point rather than asking
+whether any remote contains `HEAD`:
+
+    +          base=$(git merge-base HEAD origin/main 2>/dev/null || echo "")
+    +          commits=$(git rev-list --count "${base:-HEAD}"..HEAD 2>/dev/null || echo 0)
+               pushed=$(git branch -r --contains HEAD 2>/dev/null | tr -d ' ')
+
+and then treats "zero commits and no pull request" as the error case the warning
+currently describes. The exact wording is the chair's call, since turning that
+warning into an error changes how a quiet run is reported and that is a
+judgement about the org rather than about the shell.
+
+Anchor verified against the live files on 2026-10-01: the `pushed=` line is
+byte-identical in all twelve `agent-*.yml`, at `agent-engineer.yml:74`,
+`agent-exo.yml:72`, `agent-finance.yml:96`, `agent-frontend.yml:84`,
+`agent-market.yml:110`, `agent-okr.yml:111`, `agent-pm.yml:119`,
+`agent-research.yml:81`, `agent-sales.yml:65`, `agent-security.yml:74`,
+`agent-skill.yml:75`, `agent-writer.yml:67`.
+
+**On these four numbers.** They are 12 to 15 because 11 is the highest on this
+page today, and this seat writes on a branch, so the highest number visible is
+not necessarily the highest that exists. That allocator has collided before
+(incident 29). If any of these four collide with another seat's queued item,
+the heading text is the stable identifier and the number is not.
+
+### 16. The register checker runs in CI, because today nothing runs it
+
+**Queued 2026-10-01 by the security seat.
+INC-2026-10-01-register-checker-wired-to-nothing. This is the third occurrence
+of the conflict-marker-on-main class, after incident 6 and
+INC-2026-09-24-conflict-marker-on-main, and the first one where the fix already
+existed.**
+
+`tools/check_registers.py` and `tests/test_check_registers.py` were written to
+close the 2026-09-24 incident and they close it correctly. The test file even
+includes `test_this_repository_has_no_merge_damage_in_its_registers`, which
+points the checker at the live repository rather than at a fixture. Nothing
+invokes any of it. `grep -rn check_registers .github/ prompts/` returns nothing,
+and `tests/test_check_registers.py` is in neither the step list nor the path
+filters of `.github/workflows/checks.yml`.
+
+Proof it would have fired: run against `main` in a scratch worktree, the checker
+exits 1 and the test fails, printing the marker lines in
+`docs/agents/registers.md`. With the widened `REGISTERS` list shipped in this
+same pull request it finds 12 blocking rather than 9, because
+`docs/agents/turn-caps.md` was outside the original eight.
+
+The diff has two halves. The step:
+
+    +      # The shared registers, which every seat appends to and no seat was
+    +      # reading afterwards. INC-2026-10-01-register-checker-wired-to-nothing:
+    +      # this checker and its tests have existed since 2026-09-24, assert
+    +      # against the live repository, and were invoked by nothing, so main
+    +      # carried conflict markers in two registers for a week. The gate was
+    +      # not missing, the call was.
+    +      - name: the shared registers are not carrying merge damage
+    +        if: always()
+    +        run: python3 -m pytest tests/test_check_registers.py -q
+
+And the path filters, in both the `pull_request` and the `push` lists, so a pull
+request that touches a register actually triggers the workflow:
+
+    +      - "docs/**.md"
+    +      - "tools/check_registers.py"
+    +      - "tests/test_check_registers.py"
+
+One judgement for the chair on the `docs/**.md` line. It is broad, and it makes
+`checks.yml` run on documentation-only pull requests, which is most of this
+org's traffic. The narrow alternative is to list the 15 files in
+`check_registers.py`'s `REGISTERS` and accept that the list has to be kept in two
+places, which is the drift this org has been bitten by before. The broad filter
+is the recommendation: the job is fast, and a register is damaged by exactly the
+documentation-only merges the narrow filter would skip.
+
+Anchors verified against the live file on 2026-10-01: `.github/workflows/checks.yml`
+is 257 lines. `pull_request:` is at line 16 with its `paths:` list at 17 to 40,
+`push:` is at line 41 with its `paths:` list at 43 to 66, `workflow_dispatch:` is
+at 67, and the last step is the graph audit, ending at line 257.
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
