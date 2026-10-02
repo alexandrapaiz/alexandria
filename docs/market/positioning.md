@@ -38,7 +38,18 @@ critical-severity security flaw, and four independent founders (skillbay.sh,
 Bastionskill, Skillcop, and Skill Federation, spread from March through
 this week) have each spent their own time building trust or curation
 tooling on top of the open ecosystem rather than trusting it as-is
-(docs/market/landscape.md).
+(docs/market/landscape.md). As of 2026-09-30 the argument has a second,
+independent number behind it that is not about safety at all: SkillsBench,
+an academic benchmark of 47,150 public skills, found a mean quality score of
+6.2 out of 12, and found that curation alone lifts the pass rate on real
+tasks by 16.2 percentage points over the uncurated average. The ecosystem's
+own growth data makes the same point from the demand side: skills.sh's
+registry hit 1 million skills faster than any major software platform on
+record, and nearly half of those skills have exactly one install ever
+(docs/market/landscape.md). Three independent measurements in one month,
+of security, of quality, and of what readers actually choose, now say the
+same thing: raw skill distribution needs a filter, and alexandria's claim
+graph is that filter with evidence attached rather than a popularity count.
 
 ## The price ladder (observed, 2026-09-18)
 
@@ -52,11 +63,20 @@ content value — a bundling tactic, not a content-price signal. Ben's
 Bites' Pro tier ($150/yr, ~$12.50/mo) sits between the $15/month cluster
 and $20/month, the closest a content-only newsletter brand has come to
 alexandria's price point without selling tooling (added 2026-09-24,
-docs/market/landscape.md).
+docs/market/landscape.md). TheSequence Edge prices a twice-weekly
+technical ML newsletter at $5/month or $50/year, the cheapest confirmed
+paid AI newsletter found in this landscape (added 2026-10-02). It
+marks the floor of the essay-newsletter category rather than challenging
+it, and widens the gap between "pay for more reading" ($5-15/month,
+commoditizing) and "pay for a tool" ($20+/month).
 
 Actual research *tools*, as opposed to reading material, price meaningfully
-above the essay tier: Consensus Pro at roughly $20/month, Elicit Pro at
-$49/month (Elicit Scale at $169/month). Institutional-grade technical
+above the essay tier: Consensus Pro at roughly $20/month (a 2026-10-02
+pass found several aggregator sites converging on a different,
+also-unconfirmed figure of $15/month instead — see
+docs/market/landscape.md, recorded as a contested reading, not yet a
+correction), Elicit Pro at $49/month (Elicit Scale at $169/month).
+Institutional-grade technical
 research goes further still: SemiAnalysis's retail newsletter is $500/year,
 and its separate "Core Research" institutional product is reported on track
 for roughly $100M/year from buy-side demand; The Information is $399/year
@@ -65,16 +85,16 @@ $9/month for a skill catalog, UandAI at $0.99-$29.99 per agent) sit well
 below $20 but are selling raw, uncurated content, not a research-backed tool
 layer.
 
-The top of the ladder moved further away this week. OpenAI is reportedly
-preparing a $500/month "ChatGPT Pro Max" tier, discovered in Codex's
-public checkout configuration rather than confirmed by OpenAI directly
-(medium confidence, leak not launch), expected to be detailed at DevDay
-2026-09-29.
-[testingcatalog.com](https://www.testingcatalog.com/openai-prepares-new-500-month-pro-max-plan-for-chatgpt/),
-2026-09-24. Not a comp for alexandria's tier or shape (general-purpose
-chat/agent usage, not a research-and-skills layer), but it is more evidence
-that the market's subscription ceiling keeps rising, not falling, which
-argues against $20/month being read as expensive.
+The top of the ladder moved further away this week, and last week's leak is
+now confirmed. OpenAI launched "Pro 500" at DevDay on 2026-09-29, a real
+$500/month ChatGPT tier with the highest usage cap OpenAI sells and
+exclusive access to its fastest model speed. [The Next Web](https://thenextweb.com/news/openai-devday-pro-200-usage-cut-pro-500-plan),
+2026-09-29. Still not a comp for alexandria's tier or shape (general-purpose
+chat/agent usage, not a research-and-skills layer, and OpenAI cut the usage
+allowance on its existing $200 tier the same day it launched this one), but
+it closes last week's open question and confirms the read: the market's
+subscription ceiling is still rising, which argues against $20/month being
+read as expensive.
 
 **Reading the ladder for alexandria's $20/month:** it sits exactly at the
 boundary between "premium single-voice newsletter" ($15/mo cluster) and
@@ -86,6 +106,26 @@ annual anchoring at $200 (ten months); that figure is consistent with the
 $150-200/year zone several comps land in, but no comp observed prices an
 annual plan at exactly ten months of the monthly rate, so this remains a
 proposal, not an evidenced conclusion.
+
+## A benchmark closed one gap this week, and sharpened rather than weakened the pitch
+
+OrchBench (arXiv 2607.25656, added to docs/market/landscape.md
+2026-10-02) is the first independent benchmark found that scores
+multi-agent orchestration plans. Simulated results correlate with real
+Claude Code executions at r=0.816, for 1.3% of the token cost. This
+closes the specific "no independent orchestration-pattern benchmark
+exists" gap this doc and the ledger have named since 2026-09-18. It does
+not compete with alexandria's why-pay pitch: OrchBench scores a plan's
+simulated structure, it does not attach research-backed evidence to a
+technique's claims or sit inside a product a reader subscribes to. The
+honest update is narrower than last month's framing. "No benchmark
+exists at all" is no longer true, but the claim graph's specific
+differentiation (evidence tied to claims, not a structural score) is
+unaffected. Separately, Skly's HN launch (added 2026-10-02) reopened the
+same free-vs-paid-skill debate skillbay.sh's launch triggered in
+September, with no new resolution. That is continued evidence that the sales
+pitch has to be the operational layer, never a bare skill file, which is
+already this doc's framing and needs no change.
 
 ## What the evidence does not yet support
 
@@ -166,3 +206,25 @@ proposal, not an evidenced conclusion.
   rising). Re-checked Elicit directly, unchanged; Consensus's pricing
   page now renders client-side and returned no confirmable figure this
   pass, unresolved rather than contradicted.
+- 2026-09-30 (regular ceremony, triggered by a synchronous work window):
+  confirmed last week's $500/month leak as a real launch (OpenAI's "Pro
+  500," DevDay, 2026-09-29) and added a second, non-security number to
+  the why-pay paragraph: SkillsBench's 6.2/12 mean skill-quality score
+  and its 16.2-point curation lift, alongside skills.sh's own install-
+  concentration data (docs/market/landscape.md). No change to $20/month.
+  The evidence keeps arriving from three separate directions in one
+  month (security, quality, and revealed reader preference) and all
+  three support the existing price rather than moving it. Re-checked
+  Elicit directly, unchanged; Consensus attempted again via its pricing
+  page and its own help-center article, both unconfirmable, third
+  attempt with the same result.
+- 2026-10-02 (regular Friday ceremony): added TheSequence Edge ($5/mo)
+  to the price ladder as the new floor of the paid-newsletter category.
+  Fourth attempt at Consensus's primary pricing source failed the same
+  way, but aggregator sites now converge on a different figure ($15/mo)
+  than the one tracked since 2026-09-18 ($20/mo), recorded as a
+  contested reading needing resolution, not averaged or substituted. Added
+  a section on OrchBench, the first independent orchestration-pattern
+  benchmark found: it closes a gap this doc has named since 2026-09-18
+  without competing with the claim-graph pitch. No change to $20/month.
+  Nothing found this run argues for one.
