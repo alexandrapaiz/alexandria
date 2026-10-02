@@ -401,3 +401,51 @@ create table if not exists consumed_codes (
 );
 
 create index if not exists consumed_codes_expires_idx on consumed_codes (expires_at);
+
+-- ============ skill registration (ADR-36) ============
+-- `skills_needing_revision` above has existed since the founding and had never
+-- returned a row, because it reads `promotions` and nothing ever wrote a
+-- promotions row for a skill. The skill seat writes a SKILL.md into the
+-- repository and the owner merges it, and that was the whole promotion. So the
+-- view joined an empty table, seven claims went deprecated, no skill knew, and
+-- the site went on saying a skill is revised when the research moves.
+--
+-- `tools/skill_registrar.py` derives the row from the skill's own provenance
+-- block. This index is what lets it run every day without writing a second row
+-- for a skill it already registered: the skill's directory is its identity, so
+-- `on conflict (path) where kind = 'skill'` updates the claim ids in place when
+-- a revision adds a paper.
+--
+-- Partial rather than plain, on purpose. `promotions` also holds `pattern` and
+-- `system_diff` rows whose `path` is a pull request url, and two system diffs
+-- may well point at one PR. Only a skill's path is an identity.
+create unique index if not exists promotions_skill_path_idx
+    on promotions (path) where kind = 'skill';
+
+-- ============ deploy_runtime: what each scheduled job is actually running ============
+-- Sprint 2026-09-28 item 2. `modal deploy` bakes the repository into an image,
+-- so a merge to main and a deploy are two events, and the org has twice
+-- discovered days later that the second one never happened: incident 24, and
+-- PR #110, merged 2026-09-26 and inert while three documents called it live.
+--
+-- One row per app, written by the job itself at the top of every run from
+-- `pipeline/runtime_sha.py`. The digest covers the module and every file its
+-- Modal image adds, keyed by repository path, so `tools/delivery_health.py`
+-- can compare it against the same digest computed from a git checkout.
+--
+-- Three times, because they answer three different questions. `recorded_at`
+-- is when the job last ran at all. `first_seen_at` is when this exact deploy
+-- started running, which is how you answer "when did the fix actually go
+-- live". `notified_at` is the drift alarm's own cooldown, so a deploy that
+-- stays stale for a week costs the owner one mail a day and not one per check;
+-- it resets to null whenever the running sha changes, because a new deploy is
+-- a new fact and the next drift deserves its own first alarm.
+create table if not exists deploy_runtime (
+    app           text primary key,          -- 'triage' | 'interpret' | 'weekly'
+    runtime_sha   text not null,             -- 12 hex chars, runtime_sha.digest()
+    entrypoint    text not null,             -- 'pipeline/triage.py', for the deploy command
+    file_count    integer not null,          -- how many files the digest covered
+    recorded_at   timestamptz not null default now(),
+    first_seen_at timestamptz not null default now(),
+    notified_at   timestamptz
+);
