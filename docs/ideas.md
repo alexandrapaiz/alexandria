@@ -7881,3 +7881,118 @@ graphs.
   identifier.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-02 — A claim id per section, so the panel's first duty is answerable (engineer seat)
+- Trigger: building ADR-13's provenance reviewer today. The ADR's second duty
+  for that reviewer is that "the cited claim must actually support the sentence
+  citing it", and the format makes it undecidable. A skill cites its claim ids
+  once, as a flat list in the frontmatter, for the whole document. No section,
+  paragraph or sentence names the claim behind it. harness-engineering's twelve
+  ids and six sections are seventy-two possible pairs and the file asserts
+  nothing about any of them, so a model asked to judge support would be grading
+  its own guess at the mapping before it judged anything. The reviewer reports
+  `unknown` and blocks, which is honest and also means slice 1 can never pass a
+  skill.
+- What: one claim id list per section. ADR-38 already puts a one-line
+  *Validation:* tag under every section heading, so the natural form is that tag
+  carrying its ids, and harness-engineering already has four tags to extend. The
+  reviewer then has one pair per section to judge instead of seventy-two to
+  guess among, and two mechanical checks become possible on top of the model's
+  judgment: a section's ids have to be a subset of the frontmatter's list, and a
+  claim cited by no section is evidence the skill collected and never used.
+  The format is the skill seat's surface, which is why this is a proposal rather
+  than today's build.
+- First step: the skill seat extends the four *Validation:* tags on
+  harness-engineering with their claim ids, one skill, as the shape to argue
+  about. The reviewer's parser is half a day after that.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — Run the whole suite on a clock, because some defects have no pull request (engineer seat)
+- Trigger: this run's break-fix. `tests/test_delivery_receipt.py` went red this
+  morning with nothing in the repository changed, because its fixture built a
+  "the corpus moved last night" timestamp from a hardcoded 2026-10-01 02:00
+  while the code under test measures age against the real clock. It passed for
+  38 hours and then expired. Recorded as
+  `INC-2026-10-02-fixture-pinned-to-a-wall-clock-date`. Every check this org
+  runs is attached to a pull request that touches a path, and no pull request
+  touches a defect whose trigger is the passage of time.
+- What: one scheduled run of `python3 -m pytest tests/ -q`, daily, that opens
+  nothing and notifies only on a change in state. The class of defect it catches
+  is the one nothing else can: a fixture that expires, a model id that gets
+  deprecated on a date, a cap read from a document that has since been revised,
+  a pinned dependency whose index drops the version. It is also the only thing
+  that would have caught the two `checks.yml` steps that sat red on `main` for
+  days (INC-2026-09-30-two-checks-steps-red-on-main-for-days), because a red
+  step on `main` is read by nobody and a daily mail is read by somebody.
+- First step: the daily engineer run already executes the full suite as its own
+  evidence, so the cheapest version is one line in that workflow's run report:
+  the suite's pass count and any failure, printed where the run report already
+  goes. The standalone cron is better and needs a workflow file, which no agent
+  seat can push, so it belongs in the queue rather than in a pull request.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — Conform to the published skill spec, and publish the superset we actually use (engineer seat)
+- Trigger: today's craft scan read the Agent Skills specification live at
+  agentskills.io/specification and measured the library against it. Two findings
+  with numbers. First, `description` is capped at 1024 characters and
+  evaluation-integrity's is 994, which is 30 characters of headroom on a limit
+  whose failure mode is a client rejecting the file rather than truncating it;
+  ADR-38's word budget pushes that number up with every revision. A guard for
+  the two hard limits shipped with today's reviewer. Second, the spec puts
+  client-specific fields under `metadata` as a string-to-string map, and this
+  library carries `version`, `status` and a nested `provenance` block with a
+  list of integers at the top level, so the most valuable thing about an
+  alexandria skill is the part the standard has no slot for.
+- What: decide which way the mismatch resolves, and write it down either way.
+  The conformant form is `metadata:` with the provenance serialised into it, and
+  the cost is that a list of claim ids becomes a string. The alternative, which
+  looks better, is to stay a documented superset and say so in one file: the
+  library's own `SKILL.md` spec, with the three parsers that already read it
+  (`site/lib/skill-provenance.js`, `tools/skill_registrar.py`,
+  `tools/panel_provenance.py`) validating against that file instead of each
+  carrying the format in its head. Anthropic's own repository ships a `spec/`
+  directory and a `skills-ref validate` command for exactly this reason, and
+  that is the thing worth stealing: the format is a published artifact with a
+  validator, not a convention three readers each reimplement.
+- First step: the spec file, written from what the three parsers already accept,
+  plus the one open question for the owner, which is whether an alexandria skill
+  is meant to load in a stock client at all. A third measurement to settle
+  alongside it: two skills carry bodies of about 19,600 characters, which is
+  past the spec's recommended 5,000-token activation budget, and the spec's
+  answer is `references/` files loaded on demand.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — Craft scan: anthropics/skills and the Agent Skills specification
+- Trigger: the engineer seat's daily craft scan, rotating through
+  `docs/market/landscape.md`. The "Agent-knowledge ecosystems" section names
+  Anthropic's own curated skills repository and has never been opened by a craft
+  scan; today's build was the library's provenance reviewer, so the format's
+  own standard was the right thing to read. Read live at
+  github.com/anthropics/skills and agentskills.io/specification.
+- **What is worth stealing: the format is a published artifact with a
+  validator.** The specification is one page with a table: `name` required and
+  capped at 64 characters, `description` required and capped at 1024, `license`,
+  `compatibility` capped at 500, `metadata` as a string map, `allowed-tools`
+  experimental. Then a conformance command, `skills-ref validate ./my-skill`,
+  and a progressive-disclosure budget stated in tokens: about 100 for the
+  metadata every agent loads at startup, under 5,000 for the body loaded on
+  activation, everything else in `references/` read on demand. alexandria's
+  format is richer and lives in nobody's head twice: it is spread across
+  `skills/README.md`, ADR-36, ADR-37, ADR-38 and three parsers that each
+  reimplement it. Filed above as its own entry, with the two measurements that
+  make it concrete.
+- **What alexandria does better: a skill here has to earn its description.** The
+  specification has no field for evidence and no notion of a skill being wrong
+  later. Anthropic's own repository says its skills are "provided for
+  demonstration and educational purposes only" and tells the reader to test them
+  in their own environment, which is the honest thing to say about a skill
+  nothing measured. An alexandria skill carries claim ids into a graph that
+  records when newer work contradicts them, a trigger-test pass rate with a
+  date, a with-and-without delta, and as of today a panel verdict row pinned by
+  sha to the exact text that was judged. The registry has 1.5 million skills and
+  no way to tell you which of them is still true.
+- Cost: $0
+- Status: proposed
