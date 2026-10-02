@@ -167,11 +167,24 @@ WEEK_FORMAT = "%Y-%m-%dT%H:%M:%S+00:00"
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
             papers=None, claims=None, deploy=None, version=1,
             press_present=True):
-    now = datetime(2026, 10, 1, 2, 0, tzinfo=timezone.utc)
+    """A receipt whose corpus moved last night, whatever night it is.
+
+    The press surface is judged against the `today` these tests pass in, so the
+    week label can be a constant. The corpus is not: `judge_pipeline` measures
+    age against the real clock, because a corpus is stale when it stopped
+    moving and no caller gets to decide what day it is. A fixture pinned to
+    2026-10-01 02:00 therefore aged into a stale corpus 14 hours later and
+    turned this file red on 2026-10-02 with nothing in the code changed, which
+    is the one kind of red that teaches nobody anything.
+    """
+    now = datetime.now(timezone.utc)
     fresh = (now - timedelta(hours=14)).strftime(WEEK_FORMAT)
     return {
         "receipt": "alexandria-delivery",
         "version": version,
+        # The receipt's own timestamp, which nothing judges an age against
+        # today. It stays next to `fresh` on purpose: the moment a reader does
+        # start checking how old a receipt is, this has to move with it.
         "observed_at": now.strftime(WEEK_FORMAT),
         "press": ({"newest_week": week, "created_at": created, "model": "kimi-k2"}
                   if press_present else None),

@@ -13,7 +13,7 @@ The view that would find those skills, `skills_needing_revision`, has existed in
 `promotions` and nothing ever registered a skill. Seven claims are deprecated and
 no skill knows.
 
-This job closes the loop, once a day, in four steps.
+This job closes the loop, once a day, in five steps.
 
 1. **Register.** Every skill on main gets its `promotions` row, derived from its
    own provenance block by `tools/skill_registrar.py`. Missing rows are written
@@ -21,22 +21,30 @@ This job closes the loop, once a day, in four steps.
    row that had to be created is itself a finding: it means a merge shipped a
    skill that nothing was watching, and the owner is told.
 
-2. **Read the view.** `skills_needing_revision` returns one row per (skill,
+2. **Review.** ADR-13's provenance reviewer, `tools/panel_provenance.py`, is
+   run over the same skills and files one `panel_verdicts` row each. This is
+   where ADR-13's first duty actually gets asked: do the claim ids a skill
+   cites exist in the corpus. The reviewer reads and never merges, so the only
+   write is the verdict row, and a `fail` verdict mails the owner for the same
+   reason an unregistered skill does. It runs here rather than in CI because
+   the question needs Neon and CI holds no database credential anywhere.
+
+3. **Read the view.** `skills_needing_revision` returns one row per (skill,
    deprecated claim) pair.
 
-3. **Queue the reading.** Each new pair is appended to
+4. **Queue the reading.** Each new pair is appended to
    `docs/research/reading-queue.md` in the format that file documents, which is
    the same queue the skill seat writes into by hand under ADR-35 and the
    research seat drains. Only NEW pairs are appended, so a skill that waits a
    week for its revision does not collect seven identical lines.
 
-4. **Dispatch the skill seat**, with the list in its owner instructions, and
-   only when step 3 appended something. A cron that dispatches a seat every day
+5. **Dispatch the skill seat**, with the list in its owner instructions, and
+   only when step 4 appended something. A cron that dispatches a seat every day
    about the same unfinished job is a cron nobody reads.
 
 ## Why this is a Modal job and not a GitHub Action
 
-Because step 1 and step 2 need Neon, and the only place in this organization
+Because steps 1 to 3 need Neon, and the only place in this organization
 that holds a Neon credential unattended is Modal (`pending-workflow-changes`
 item 6 is still waiting on a hand for the engineer seat's read-only URL). A
 scheduled Action would have to be given a database secret to do the same work.
@@ -55,8 +63,8 @@ job in it that never calls Kimi would make `check_kimi_windows` lie.
 
 ## Status: DORMANT until the `github` secret exists
 
-L-A16 in docs/standards/lessons.md: configured is not in effect. Steps 1 and 2
-need only the `neon` secret, which exists. Steps 3 and 4 write to GitHub, and
+L-A16 in docs/standards/lessons.md: configured is not in effect. Steps 1 to 3
+need only the `neon` secret, which exists. Steps 4 and 5 write to GitHub, and
 this job holds no GitHub credential today. Without one it does every read, prints
 the exact lines it would have appended and the dispatch it would have sent, tells
 the owner once, and exits 0. Nothing here has run against a real repository.
@@ -67,7 +75,7 @@ this repository plus `actions: write` to dispatch:
     modal secret create github GITHUB_TOKEN=<paste> GITHUB_REPO=alexandrapaiz/alexandria
 
 **One thing in here is an authority the owner has not granted before**, and it
-should be read rather than skimmed: step 3 commits to `main` without review.
+should be read rather than skimmed: step 4 commits to `main` without review.
 The reading queue is an append-only ledger and the directive asks for the
 append, so that is what this does, but `QUEUE_BRANCH` below is one constant and
 setting it to a branch name turns the append into a pull request the skill seat
@@ -108,6 +116,7 @@ image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1")
     .add_local_file("tools/skill_registrar.py", "/root/skill_registrar.py")
+    .add_local_file("tools/panel_provenance.py", "/root/panel_provenance.py")
     .add_local_dir("skills", "/root/skills")
 )
 
@@ -127,6 +136,19 @@ def registrar():
         if path not in sys.path:
             sys.path.insert(0, path)
     import skill_registrar as module
+
+    return module
+
+
+def panel():
+    """tools/panel_provenance.py, by the same two-path trick as registrar()."""
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent.parent / "tools")
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import panel_provenance as module
 
     return module
 
@@ -291,7 +313,7 @@ class GitHub:
                 f"{resp.text[:300]}")
 
 
-def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str]]:
+def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str], pathlib.Path]:
     """Every skill on `ref`, read from GitHub rather than from this image.
 
     Deliberately not the bundled copy. The image is built at deploy time and
@@ -318,7 +340,49 @@ def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str]]:
         except RuntimeError:
             continue        # read_skills reports the missing SKILL.md itself
         (root / entry["name"] / "SKILL.md").write_text(text)
-    return reg.read_skills(root)
+    # The directory comes back too, because step 2's reviewer re-reads the body
+    # of each SKILL.md and has to read the same text that was registered.
+    rows, problems = reg.read_skills(root)
+    return rows, problems, root
+
+
+# ------------------------------------------------------------ step 2
+
+# The marker the owner alarm keys on, the same way "registered skills/" is the
+# marker for an unwatched skill. One string, in one place, so the test can hold
+# the pair together.
+VERDICT_ALARM = "panel verdict failing:"
+
+
+def reviewed(conn, rows, problems, skills_root, dry_run: bool) -> list[str]:
+    """ADR-13's provenance reviewer over the skills step 1 just registered.
+
+    Read-only apart from the verdict rows themselves. A `fail` is a skill on
+    main whose evidence does not hold up, which is the one thing in this job
+    that the library's own promise to its readers depends on, so it goes in the
+    log with the marker the owner alarm reads.
+    """
+    reviewer = panel()
+    verdicts = reviewer.review(skills_dir=skills_root, conn=conn,
+                               rows=rows, problems=problems)
+    counts = {}
+    for verdict in verdicts:
+        counts[verdict["verdict"]] = counts.get(verdict["verdict"], 0) + 1
+    shape = ", ".join(f"{n} {name}" for name, n in sorted(counts.items()))
+    log = [f"provenance reviewer: {len(verdicts)} skills reviewed ({shape})"]
+
+    if dry_run:
+        log.append("dry run: no verdict row was filed")
+    else:
+        ids = reviewer.file_verdicts(conn, verdicts, reviewer.reviewer_sha())
+        log.append(f"filed {len(ids)} panel_verdicts rows: {ids}")
+
+    for verdict in verdicts:
+        for finding in verdict["findings"]:
+            if finding["severity"] == "fail":
+                log.append(f"{VERDICT_ALARM} {verdict['target']}: "
+                           f"{finding['check']}: {finding['detail']}")
+    return log
 
 
 # ------------------------------------------------------------ the run
@@ -344,12 +408,12 @@ def run(dry_run: bool = False) -> str:
 
     # Step 1, and 2. Read main, register, then ask the view.
     if gh is not None:
-        rows, problems = skills_from_github(gh, QUEUE_BRANCH)
+        rows, problems, skills_root = skills_from_github(gh, QUEUE_BRANCH)
         log.append(f"read {len(rows)} skills from {repo}@{QUEUE_BRANCH}")
     else:
-        rows, problems = reg.read_skills(pathlib.Path("/root/skills")
-                                         if pathlib.Path("/root/skills").exists()
-                                         else None)
+        skills_root = (pathlib.Path("/root/skills")
+                       if pathlib.Path("/root/skills").exists() else None)
+        rows, problems = reg.read_skills(skills_root)
         log.append(f"read {len(rows)} skills from this image's own copy, which "
                    "is as old as the last deploy")
     for line in problems:
@@ -367,6 +431,12 @@ def run(dry_run: bool = False) -> str:
                 log.append(f"registered {line}")
         else:
             log.append(f"all {len(rows)} skills already registered")
+
+        # Step 2, the panel's provenance reviewer. Inside this connection and
+        # before the early return below, because a day with nothing to revise
+        # is still a day the library's evidence is either sound or it is not.
+        log.extend(reviewed(conn, rows, problems, skills_root, dry_run))
+
         pending = reg.revisions(conn)
 
     log.append(f"skills_needing_revision returns {len(pending)} pairs")
@@ -457,6 +527,18 @@ def skill_revision(dry_run: bool = False) -> str:
             ["whether checks.yml ran the skill registration step on that "
              "skill's pull request",
              "python3 tools/skill_registrar.py --files-only"],
+            sender="alexandria skills"))
+    # ADR-13's provenance reviewer failed a skill that is already on main and
+    # already published on the site. The library's product claim is that every
+    # finding carries evidence a reader can check, so this one is worth a mail
+    # on the day it appears rather than on the day somebody reads the table.
+    if VERDICT_ALARM in out:
+        print(notify_owner(
+            "alexandria: the panel failed a skill's provenance",
+            out,
+            ["python3 tools/panel_provenance.py --files-only",
+             "the skill's provenance block against the claim ids it cites",
+             "select * from panel_latest where reviewer = 'provenance'"],
             sender="alexandria skills"))
     return out
 

@@ -90,7 +90,12 @@ import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "tools"))
+
+# This file's own directory, which is `tools/` in the repository and `/root`
+# inside the Modal image that `pipeline/skill_revision.py` builds. One line
+# covers both, because `tools/skill_registrar.py` is copied next to this file
+# in the image and sits next to it in the checkout.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import skill_registrar as registrar  # noqa: E402
 
@@ -172,6 +177,12 @@ def ours_markers(body: str) -> tuple[int, list[str]]:
     library today are wrapped across two lines by the 80-column prose, so
     `grep "ours, not the paper's"` finds fourteen of them and a reviewer built
     on grep would report the other five as unmarked judgment.
+
+    What this cannot see, said plainly: a passage of unsourced judgment that
+    carries no marker at all. The word `ours` is the only handle, so drift in
+    the words after it is caught and a missing marker is not. Catching that
+    needs the model half, where a reviewer reads the section and asks whether
+    its advice is in the papers, and it is the same half duty 2 waits on.
     """
     flat = " ".join(body.split())
     found, unknown_phrasings = 0, []
@@ -355,7 +366,7 @@ def review_claims(row, raw: str, live: dict[int, tuple[str, str]]) -> list[Findi
     """Duty 1, and the cross-check that a cited claim's paper is attributed."""
     findings: list[Finding] = []
 
-    missing = [c for c in row.claim_ids if c not in live]
+    missing = sorted({c for c in row.claim_ids if c not in live})
     if missing:
         findings.append(Finding(
             "claims-exist", "fail",
@@ -443,9 +454,18 @@ def reviewer_sha() -> str | None:
 
 
 def review(skills_dir: pathlib.Path | None = None, conn=None,
-           only: str | None = None) -> list[dict]:
-    """One verdict per skill, as the dicts a `panel_verdicts` row is built from."""
-    rows, problems = registrar.read_skills(skills_dir)
+           only: str | None = None, rows=None,
+           problems: list[str] | None = None) -> list[dict]:
+    """One verdict per skill, as the dicts a `panel_verdicts` row is built from.
+
+    `rows` and `problems` are passed in by the daily job, which reads every
+    skill from `main` over the GitHub API rather than from its own image. The
+    image is as old as the last deploy, and reviewing a skill the image cannot
+    see is the merged-but-inert failure this sprint exists to close.
+    """
+    if rows is None:
+        rows, problems = registrar.read_skills(skills_dir)
+    problems = problems or []
     if only:
         rows = [r for r in rows if r.slug == only]
     skills_dir = skills_dir or registrar.SKILLS_DIR
