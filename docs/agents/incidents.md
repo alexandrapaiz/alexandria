@@ -6115,3 +6115,38 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+### INC-2026-10-02-market-docs-no-house-voice-gate
+
+The market research agent's own charter (prompts/market-agent.md,
+Boundaries section) says "House voice in everything owner-facing: plain
+sentences, transition words, no stylistic em dashes or semicolon joins."
+This run found that every prior run's output under docs/market/
+violates it at scale: 51 stylistic em dashes in landscape.md and 11 in
+positioning.md as of the commit this run started from, plus at least one
+in the prior brief. This run's own first draft added 19 more before a
+check caught it.
+
+This is the same banned-pattern class already tracked for the digest
+issue (U+2014 em dash and semicolon joins, entries around line 2081 and
+3050 of this file, gated by the writer seat's TYPESETTER check in
+prompts/digest.md), now found on a second, ungated surface. The
+registers-map logic in docs/agents/registers.md applies exactly: the
+rule is recorded in a charter (an archive-side gate of a kind), but
+nothing between the charter and the artifact ever opens the file and
+checks, because the market seat's own ship step has no style check of
+its own, unlike the writer's. The TYPESETTER gate only ever ran on
+digest issues, never on this seat's output, so the rule has had zero
+enforcement on this surface since the charter was written on
+2026-09-18.
+
+This run fixed its own new text (the entries and brief dated 2026-10-02)
+before shipping. It did not retrofit the 62 pre-existing instances
+across landscape.md and positioning.md, which is a larger cleanup than
+one weekly ceremony's four duties cover and risks disturbing dated
+historical entries that should read as records, not live prose. Left
+for a future market-agent run or the writer/ExO seats to decide whether
+to retrofit, and named here so the next run does not rediscover this
+from zero. The general form, same as incident 20: a style rule written
+into a charter is not a check until some step actually opens the file
+and compares the artifact against it.

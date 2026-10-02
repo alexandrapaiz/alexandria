@@ -63,11 +63,20 @@ content value — a bundling tactic, not a content-price signal. Ben's
 Bites' Pro tier ($150/yr, ~$12.50/mo) sits between the $15/month cluster
 and $20/month, the closest a content-only newsletter brand has come to
 alexandria's price point without selling tooling (added 2026-09-24,
-docs/market/landscape.md).
+docs/market/landscape.md). TheSequence Edge prices a twice-weekly
+technical ML newsletter at $5/month or $50/year, the cheapest confirmed
+paid AI newsletter found in this landscape (added 2026-10-02). It
+marks the floor of the essay-newsletter category rather than challenging
+it, and widens the gap between "pay for more reading" ($5-15/month,
+commoditizing) and "pay for a tool" ($20+/month).
 
 Actual research *tools*, as opposed to reading material, price meaningfully
-above the essay tier: Consensus Pro at roughly $20/month, Elicit Pro at
-$49/month (Elicit Scale at $169/month). Institutional-grade technical
+above the essay tier: Consensus Pro at roughly $20/month (a 2026-10-02
+pass found several aggregator sites converging on a different,
+also-unconfirmed figure of $15/month instead — see
+docs/market/landscape.md, recorded as a contested reading, not yet a
+correction), Elicit Pro at $49/month (Elicit Scale at $169/month).
+Institutional-grade technical
 research goes further still: SemiAnalysis's retail newsletter is $500/year,
 and its separate "Core Research" institutional product is reported on track
 for roughly $100M/year from buy-side demand; The Information is $399/year
@@ -97,6 +106,26 @@ annual anchoring at $200 (ten months); that figure is consistent with the
 $150-200/year zone several comps land in, but no comp observed prices an
 annual plan at exactly ten months of the monthly rate, so this remains a
 proposal, not an evidenced conclusion.
+
+## A benchmark closed one gap this week, and sharpened rather than weakened the pitch
+
+OrchBench (arXiv 2607.25656, added to docs/market/landscape.md
+2026-10-02) is the first independent benchmark found that scores
+multi-agent orchestration plans. Simulated results correlate with real
+Claude Code executions at r=0.816, for 1.3% of the token cost. This
+closes the specific "no independent orchestration-pattern benchmark
+exists" gap this doc and the ledger have named since 2026-09-18. It does
+not compete with alexandria's why-pay pitch: OrchBench scores a plan's
+simulated structure, it does not attach research-backed evidence to a
+technique's claims or sit inside a product a reader subscribes to. The
+honest update is narrower than last month's framing. "No benchmark
+exists at all" is no longer true, but the claim graph's specific
+differentiation (evidence tied to claims, not a structural score) is
+unaffected. Separately, Skly's HN launch (added 2026-10-02) reopened the
+same free-vs-paid-skill debate skillbay.sh's launch triggered in
+September, with no new resolution. That is continued evidence that the sales
+pitch has to be the operational layer, never a bare skill file, which is
+already this doc's framing and needs no change.
 
 ## What the evidence does not yet support
 
@@ -189,3 +218,13 @@ proposal, not an evidenced conclusion.
   Elicit directly, unchanged; Consensus attempted again via its pricing
   page and its own help-center article, both unconfirmable, third
   attempt with the same result.
+- 2026-10-02 (regular Friday ceremony): added TheSequence Edge ($5/mo)
+  to the price ladder as the new floor of the paid-newsletter category.
+  Fourth attempt at Consensus's primary pricing source failed the same
+  way, but aggregator sites now converge on a different figure ($15/mo)
+  than the one tracked since 2026-09-18 ($20/mo), recorded as a
+  contested reading needing resolution, not averaged or substituted. Added
+  a section on OrchBench, the first independent orchestration-pattern
+  benchmark found: it closes a gap this doc has named since 2026-09-18
+  without competing with the claim-graph pitch. No change to $20/month.
+  Nothing found this run argues for one.

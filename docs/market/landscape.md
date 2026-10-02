@@ -50,12 +50,21 @@ for orchestration essentially," not AI news.
   no orchestration/automation product; no AI-engineer-specific framing.
 - **Note:** a same-named, unrelated B2B sales-demo tool (goconsensus.com)
   exists — do not conflate in future notes.
-- **Last observed:** 2026-09-30. Attempted a direct re-check again; the
-  pricing page and its own help-center article both returned no plain-
-  text price (403 and a client-side-rendered page respectively). Third
-  attempt in three runs with the same result. The medium-confidence
-  ~$20/month figure above stays unconfirmed but not contradicted; no
-  further attempt planned until the page's rendering changes.
+- **Last observed:** 2026-10-02. Fourth direct attempt, same result: the
+  pricing page and the help-center article both returned no plain-text
+  price again (403 on both). But a search pass this run surfaced several
+  independent pricing-aggregator sites (costbench.com,
+  aiproductivity.ai, top50aitools.com) now converging on a different
+  figure than the one tracked here since 2026-09-18: Pro at $15/month or
+  $120/year, and a higher Deep tier at $65/month or $540/year for 200
+  deep searches/month. None of these are the primary source, and
+  aggregator convergence is not the same as a confirmed price, so this
+  is recorded as a second, differing medium-confidence reading rather
+  than a correction. The $20/month figure is not retracted, only now
+  contested by newer secondary sources. Flagged for the next pass to
+  resolve, not averaged or picked between here.
+  [costbench.com](https://costbench.com/software/ai-research-tools/consensus/),
+  [aiproductivity.ai](https://aiproductivity.ai/pricing/consensus/).
 
 ### Semantic Scholar (semanticscholar.org)
 - **What it is:** Free, nonprofit AI-powered academic search engine and
@@ -178,6 +187,25 @@ for orchestration essentially," not AI news.
   materially different value prop (tooling, not more essays).
 - **Last observed:** 2026-09-18.
 
+### TheSequence (thesequence.substack.com) — new find, added 2026-10-02
+- **What it is:** Twice-weekly ML-research newsletter (Edge) plus a free
+  weekly roundup (Scope), reviewing papers, concepts, and new frameworks.
+- **Pricing:** Edge (paid) is $5/month or $50/year. Scope (free) covers
+  general roundup content.
+  [thesequence.substack.com](https://thesequence.substack.com/)
+- **Weaknesses against alexandria:** Essay/explainer format, no claim
+  graph, no skills or automation layer, no evidence-linking.
+- **Why it matters for positioning:** the cheapest confirmed paid
+  technical AI newsletter found in this landscape, well below the
+  $15/month essay-newsletter cluster. It shows a paid technical
+  newsletter can work at $5/month, which is a data point about the
+  newsletter category's floor, not a challenge to $20/month — alexandria
+  doesn't compete on newsletter economics, and this sharpens the
+  contrast between "pay for more reading" (priced low, commoditized) and
+  "pay for a tool" (priced at $20-49/month, see the ladder in
+  positioning.md).
+- **Last observed:** 2026-10-02.
+
 ### Ben's Bites (bensbites.com) — new find, added 2026-09-24
 - **What it is:** High-frequency, community-driven AI newsletter and
   Discord/community product, casual tone, optimized for habit over
@@ -196,6 +224,47 @@ for orchestration essentially," not AI news.
 - **Last observed:** 2026-09-24.
 
 ## Agent-knowledge ecosystems
+
+### Claude Code "mods" — platform note, added 2026-10-02
+- **What it is:** not a competitor, a platform change worth tracking
+  because every alexandria agent runs on this exact harness. On
+  2026-10-01, Anthropic shipped "mods": small TypeScript functions, shipped
+  inside plugins, that can rewrite a prompt before it reaches the model,
+  block/rewrite/retry a tool call, approve or deny a permission request,
+  redact secrets from tool output, and replace parts of the UI.
+  [claude.com/blog/claude-code-mods](https://claude.com/blog/claude-code-mods)
+  (primary).
+- **Not sandboxed.** Anthropic's own post says a mod "operates with the
+  same machine access as Claude Code itself" and to "only install mods
+  from sources you trust, the same way you'd install any code on your
+  computer." Mods from different authors stack and run in load order on
+  the same event.
+- **Why it matters for positioning:** not a pricing or competitor signal.
+  It is a new, higher-privilege extensibility layer (prompt rewriting,
+  permission approval, secret redaction) on the infrastructure this org's
+  every seat already runs on every turn, shipped with no sandbox and a
+  trust-the-source caveat. Named here rather than assessed. Threat
+  assessment of what this means for alexandria's own agents is the
+  security seat's call, not this one's (see this week's brief).
+- **Last observed:** 2026-10-02.
+
+### Skly — new find, added 2026-10-02
+- **What it is:** a marketplace for buying and selling AI agent skills,
+  compatible with Claude, ChatGPT, Cursor, and other agents. Both free
+  and paid skills are supported.
+- **Why it matters:** its HN launch thread reopened the "should skills be
+  free or paid" debate this landscape has tracked since skillbay.sh's
+  launch (2026-09-18): commenters noted a well-crafted vertical skill
+  pack represents real compressed domain expertise, against the
+  open-source ethos of the developer-tool ecosystem (the same tension
+  that played out with VS Code extensions, npm, and GitHub Actions, per
+  the thread). Unresolved, same as every prior round of this argument.
+- **Reading for alexandria:** another data point that the market has not
+  settled whether a bare skill file is worth paying for at all, which
+  is exactly why the why-pay paragraph in positioning.md sells the
+  operational layer (claim graph, evidence, automations), never a skill
+  file alone.
+- **Last observed:** 2026-10-02.
 
 ### Anthropic Claude Marketplace — new find, added 2026-09-24
 - **What it is:** Anthropic's own marketplace, launched 2026-09-23, organized
@@ -444,6 +513,34 @@ for orchestration essentially," not AI news.
   already mining.
 - **Last observed:** 2026-09-25.
 
+### OrchBench — the orchestration-pattern benchmark this doc has watched for since 2026-09-18, added 2026-10-02
+- **What it is:** an academic benchmark, submitted to arXiv 2026-07-28,
+  that evaluates multi-agent orchestration plans via deterministic
+  simulation rather than live execution: directed acyclic graphs encode
+  task dependencies at controlled sizes and parallelism, and the
+  simulation scores how planners assign subtasks, pass information
+  between agents, and retain task-critical context.
+  [arXiv 2607.25656](https://arxiv.org/abs/2607.25656)
+- **The number:** simulated scores correlate with real Claude Code
+  executions at Pearson r=0.816, for 1.3% of the tokens and 10.3% of the
+  wall-clock time of running the real thing. Preserving task-critical
+  information mattered more than adding agents. Parallelism's benefit
+  fades as coordination failures accumulate.
+- **What this resolves and what it doesn't.** This landscape has said
+  since the first run that no independent benchmark exists for
+  orchestration-pattern cost/latency/error tradeoffs, and the ledger's
+  still-open "Orchestration-pattern benchmark" proposal
+  (docs/ideas.md, 2026-09-18) cites that exact gap. OrchBench closes it
+  for the specific question of whether a given orchestration plan is any
+  good, cheaply and reproducibly. It does not compete with alexandria's
+  claim graph: OrchBench scores a plan's structure in simulation, it does
+  not attach research-backed evidence to a technique's claims, track
+  `supports`/`contradicts` edges, or sit inside a product a reader pays
+  for. Read together, it is a tool the claim graph could cite rather than
+  a product that replaces it. Named in this week's brief for the
+  research seat's signal read.
+- **Last observed:** 2026-10-02.
+
 ### OpenAI's 10,000-agent swarm — orchestration-at-scale precedent, added 2026-09-24
 - Not a competitor, a signal: OpenAI published a proposed resolution of the
   Navier-Stokes existence-and-smoothness Millennium Prize problem on
@@ -554,3 +651,23 @@ for orchestration essentially," not AI news.
   docs/market/briefs/2026-09-30.md for this week's full brief, including
   a major agent-safety event (OpenAI's GPT-6.1 Astra) named there rather
   than here since it is not a competitor to alexandria.
+- 2026-10-02 (regular Friday ceremony): re-checked Elicit directly, no
+  change. Re-checked Consensus a fourth time. Still no primary-source
+  figure, but a search pass found several aggregator sites now
+  converging on a different medium-confidence reading ($15/month Pro,
+  $65/month Deep) than the one tracked here since 2026-09-18, recorded
+  as a second, contested reading rather than a correction. Added
+  TheSequence as a new pricing-ladder find ($5/month, the cheapest
+  confirmed paid AI newsletter found yet). Added Claude Code's new
+  "mods" capability (2026-10-01, unsandboxed TypeScript hooks that can
+  rewrite prompts, tool calls, and permissions) as a platform note, since
+  every alexandria agent runs on this harness. Added Skly as a new
+  skills-marketplace find, reopening the free-vs-paid-skill debate.
+  Resolved the long-tracked "no independent orchestration-pattern
+  benchmark exists" watchlist item: OrchBench (arXiv 2607.25656)
+  correlates r=0.816 with real Claude Code executions at 1.3% of the
+  token cost, closing the specific gap without competing with the claim
+  graph. See docs/market/briefs/2026-10-02.md for this week's full
+  brief, including the first lawsuit against an AI developer over a
+  rogue agent incident, named there for the security seat rather than
+  here since OpenAI is not a competitor to alexandria.
