@@ -226,7 +226,14 @@ claim graph contain contradicting or refining claims the draft ignored?
 date, so the page can say when the evidence was last checked rather than only
 what it said.
 
-*Built.* No. Designed in ADR-13, zero engineer PRs so far.
+*Built.* The provenance reviewer, 2026-10-02: `tools/panel_provenance.py`,
+filing `panel_verdicts` rows, with the claim-existence question running daily
+in `pipeline/skill_revision.py`. Two of this section's four questions are
+answered, the claim-graph sweep belongs to the adversary reviewer and is not
+built, and "does the cited claim support the sentence citing it" is not
+decidable against today's format, which carries one claim id list per document
+rather than per section. Build note and the remaining slices:
+docs/product/reviewer-panel.md.
 
 ### V3. Behavioral delta on a held-out suite
 
