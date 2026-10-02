@@ -281,6 +281,70 @@ create or replace view skills_needing_revision as
     join deprecated_claims dc on dc.id = cited.claim_id
     where pr.kind = 'skill' and pr.status = 'approved';
 
+-- ============ gold: panel verdicts (ADR-13) ============
+-- ADR-13 replaced the human merge gate with three independent reviewer agents
+-- (provenance, adversary, validator) and said every verdict is a structured
+-- row, so the audit trail replaces the approval queue. This is that row.
+--
+-- Why it is not a column on `promotions`. The promotion is the proposal, and
+-- `promotions.status` is one three-way word for it. Three reviewers produce
+-- three verdicts about one proposal, each with its own findings and its own
+-- date, and the later slices need to ask "did all three pass, and did they
+-- pass the same text". That is a child table, not a column, and the whole
+-- point of ADR-13 is that the evidence is recorded rather than summarised.
+--
+-- `target_sha` is the sha256 of the exact SKILL.md the reviewer read, the same
+-- digest `tools/skill_registrar.py` derives and the same one the library's
+-- receipts are pinned by. It is what keeps a pass honest: a skill edited after
+-- its review carries a verdict for text that no longer exists, so the merge
+-- step in ADR-13's third slice can refuse it instead of trusting a stale pass.
+-- Without it, "unanimous pass merges the PR" would merge whatever the branch
+-- happens to say at merge time.
+--
+-- Verdicts are append-only. A re-review writes a new row; nothing updates an
+-- old one, because the disagreement between two reviews of the same text is
+-- the most useful row in the table (the same reasoning as `triage_log`).
+create table if not exists panel_verdicts (
+    id           bigserial primary key,
+    target       text not null,              -- 'skills/<slug>', the proposal reviewed
+    reviewer     text not null
+                 check (reviewer in ('provenance', 'adversary', 'validator')),
+    verdict      text not null
+                 check (verdict in ('pass', 'fail', 'unknown')),
+    findings     jsonb not null default '[]'::jsonb,
+    target_sha   text not null,              -- sha256 of the SKILL.md judged
+    reviewer_sha text,                       -- git blob sha of the reviewer's own code
+    model        text,                       -- NULL for a reviewer that calls no model
+    created_at   timestamptz not null default now()
+);
+
+create index if not exists panel_verdicts_target_idx
+    on panel_verdicts (target, reviewer, created_at desc);
+
+-- the newest verdict each reviewer has filed about each target
+create or replace view panel_latest as
+    select distinct on (target, reviewer)
+           target, reviewer, verdict, findings, target_sha, reviewer_sha,
+           model, created_at
+    from panel_verdicts
+    order by target, reviewer, created_at desc;
+
+-- ADR-13's gate as arithmetic: unanimous means three passes on one text.
+-- The 3 is the panel's size as the ADR fixes it, written here rather than
+-- inferred from how many reviewers happen to have filed, because a panel of
+-- one that passed is exactly the thing this must not read as unanimous.
+create or replace view panel_consensus as
+    select target,
+           count(*) as verdicts,
+           count(*) filter (where verdict = 'pass') as passes,
+           count(*) filter (where verdict = 'fail') as fails,
+           count(distinct target_sha) = 1 as one_text,
+           (count(*) filter (where verdict = 'pass') = 3
+            and count(distinct target_sha) = 1) as unanimous,
+           max(created_at) as latest
+    from panel_latest
+    group by target;
+
 create index if not exists papers_embedding_idx
     on papers using hnsw (embedding vector_cosine_ops);
 create index if not exists claims_embedding_idx
