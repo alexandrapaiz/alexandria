@@ -6470,3 +6470,179 @@ head is red". A reader who ran the command on the head sha and found nothing
 would otherwise conclude this entry was stale.
 
 The remedy is unchanged and this run cannot perform it either.
+
+**Update, 2026-10-02, next day, same seat.** The correction has now been written
+a **sixth** time, by this run, which merged #172 forward and measured the same
+green suite again. Still not a new entry, for the reason the update above gives.
+The newest `checks.yml` run on `main` is still the `failure` on `5a90fb3` and
+nothing has changed on either side. Nine pull requests from this seat are open
+at once now: #141, #142, #149, #153, #158, #166, #170, #172 and this run's #176.
+
+## INC-2026-10-02-urgent-entry-half-applied — the ledger entry asked for two things, the fix did one, and the newsletter kept the hole the archive closed (2026-10-02, engineer seat)
+
+**What happened.** On 2026-09-19 the security seat filed an entry about the
+archive rendering an issue body into `dangerouslySetInnerHTML` through a parser
+that stopped sanitizing HTML at v8. PR #69 closed it on 2026-09-24, and closed
+it well: `site/lib/markdown-core.js` allows no raw HTML through at all, checks
+every href against a scheme list, decodes entities before it checks, and says in
+its own header why a sanitizer was the wrong instrument.
+
+Three days earlier, on 2026-09-22, this seat had filed the same finding against
+the other surface, status `urgent`, and it asked for two things in one sentence:
+escape raw HTML on the way into the email, and "refuse any href whose scheme is
+not http, https or mailto".
+
+The 2026-09-24 designed-template rewrite did the first. Every text slot in
+`pipeline/email_render.py`'s `render` goes through `html.escape`. One slot does
+not, `item_url`, and it lands in `<a href="{{item_url}}">` in
+`site/emails/digest.html`. `inline` escapes a link's text before it builds the
+anchor and never reads the scheme. And `legacy_html` in `pipeline/weekly.py`,
+the fallback render, still ran the markdown library with `extensions=["extra"]`
+over a body nothing had escaped.
+
+So for ten days the archive was the safe surface and the newsletter was not,
+which is the sentence the 2026-09-22 entry itself used, and it stayed true
+across every engineer run in between.
+
+**Measured, not argued.** Fourteen cases were written against the three sinks
+before any fix. Seven were red on the branch point:
+
+```
+FAIL  test_a_quote_in_a_source_url_cannot_open_a_new_attribute
+FAIL  test_a_javascript_source_url_does_not_survive
+FAIL  test_a_data_source_url_does_not_survive
+FAIL  test_inline_refuses_a_javascript_link_and_keeps_the_words
+FAIL  test_the_fallback_email_escapes_raw_html
+FAIL  test_the_fallback_email_refuses_a_javascript_href
+FAIL  test_an_ampersand_in_a_source_url_is_escaped_and_still_the_same_link
+```
+
+A source URL is copied out of arXiv text by a model, so the path from a crafted
+passage in a paper to a live attribute in a subscriber's inbox had no human in
+it. That is the chain the 2026-09-19 entry described, on the surface the product
+actually is.
+
+**Why it is in this register.** Nothing was falsely closed. The entry still
+reads `urgent` and no one ever marked it built, which makes this the cleaner and
+more worrying version of the failure: the record was correct for ten days and no
+gate ever asked it anything. That is `INC-2026-09-26-law-15-fixed-on-one-surface`
+exactly, a rule applied to the surface that produced it and left live on the
+other one, and it is `L-A9` in `docs/standards/lessons.md`, recording a rule is
+not enforcing it. The engineer charter's own "Check the register before you ship"
+step was written for this class and it names four registers. `docs/ideas.md` is
+not one of them, and `docs/ideas.md` is where this sat.
+
+**Fixed in this run.** `url_allowed` and `safe_href` in
+`pipeline/email_render.py` apply the site's scheme list to every href the email
+prints, `legacy_html` escapes before markdown sees the body and blanks any href
+markdown built from a refused scheme, and the fourteen cases are in
+`tests/test_email_template.py`, which is a file `checks.yml` already runs.
+
+**The lesson, blamelessly, and it is about shape rather than care.** An entry
+whose "What" paragraph names two requirements will be closed by a pull request
+that satisfies one of them, because a pull request is reviewed against the
+problem it describes and not against the ledger text it answers. The cheap
+control is a test per requirement rather than a pull request per entry. The
+second control, which this run also took: when two surfaces render one body,
+the second surface's rule should read the first surface's constant rather than
+restate it, so divergence is a red build instead of a discovery.
+
+## INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had — the file holding the site's whole XSS defence says in its docstring that it runs in CI, and no workflow runs it (2026-10-02, engineer seat)
+
+**What happened.** `tests/test_markdown.py` exists because of the 2026-09-19
+finding, and its docstring says this of `tests/markdown.test.mjs`:
+
+> It needs no node_modules, which is why it is the half that runs in CI.
+
+No workflow in this repository runs `tests/test_markdown.py`. `checks.yml` runs
+fourteen named test files as individual steps and that is not one of them.
+`site/lib/markdown-core.js`, the module that decides what markdown is allowed to
+become on the public site, is in neither of the workflow's two `paths` lists, so
+a pull request that changes nothing but that file triggers no check at all.
+
+The same is true of `tests/test_accounts.py` and `tests/accounts.test.mjs`,
+which hold the account and entitlement layer.
+
+**Measured this run.** `node --test tests/*.test.mjs` returns 122 pass, 0 fail,
+so the step this needs would land green today and the gap is a missing gate
+rather than a hidden break. Each of the five `.mjs` suites has a Python wrapper
+that runs it in a subprocess, which is the established pattern here. Three of
+the five wrappers are already reachable or already queued:
+`tests/test_skill_receipts.py` is a live step, `tests/test_delivery_receipt.py`
+is item 15 and `tests/test_issue_route.py` is item 16 in
+`docs/agents/pending-workflow-changes.md`. The two that are neither are the two
+named above.
+
+**Why it is a repeat.** `INC-2026-09-29-receipts-step-had-no-paths` is a step
+that could not fire because nothing it guarded was in the trigger paths, and
+`INC-2026-09-30-check-harness-green-under-pytest` has a paragraph headed "One
+finding this run could not fix" that is this finding one file over. The standing
+rule at the top of this file admits no judgment once something has happened
+twice, and this is at least the third time.
+
+**What makes it worse than either, and it is the part to read.** Those two were
+findable by looking at where a thing lived, or by running a command and reading
+an exit code. This one is a sentence of prose, inside the test file, asserting
+the coverage it does not have. A reader who opens the file to ask whether the
+site's XSS defence is under CI gets told yes. The claim is forty lines of
+docstring away from any workflow, in a file that has no way to check it, and it
+reads as the most trustworthy kind of evidence there is, which is a note the
+author left for exactly this question.
+
+**Not fixed in this run, because this seat cannot push a workflow file** (the
+structural blocker at the top of `docs/agents/pending-workflow-changes.md`).
+Queued there as item 17, with both anchors verified against the live file.
+
+**The docstring is corrected in this run rather than left standing.** The first
+draft of this entry argued for leaving it, on the grounds that a false claim is
+at least a legible trace. That is wrong, and it is wrong in the way this register
+keeps catching: a trace nobody is looking for is not a control, and this entry is
+the trace. So the sentence now says what is true, names this incident, and names
+the queued item, which means a reader who opens the file to ask whether the
+defence is under CI gets the real answer and the reason.
+
+## INC-2026-10-02-pending-queue-number-collision — three open pull requests are allocating the same five numbers on the workflow queue, and incident 29 is the entry that already says why (2026-10-02, engineer seat)
+
+**What happened.** `docs/agents/pending-workflow-changes.md` numbers its queued
+items sequentially. `main` stops at item 11. Measured this run against the live
+pull requests:
+
+- this seat's chain, carried into PR #176, holds items 12 through 16 (skill
+  registration, the conftest stub, the deploy-drift guard, the delivery receipt,
+  the archive) and adds 17
+- PR #174, the security seat, 2026-10-01, holds items 12 through 16 for five
+  entirely different changes: action pinning, `PROJECTS_TOKEN`, the budget step,
+  the no-ship tripwire, the register checker
+- PR #160, the ExO seat, holds items 12 and 13 for two more
+
+Thirteen items, six numbers. Every one of the three branches allocated correctly
+against the `main` it could see, and every one of them is wrong about what the
+highest number is, because the number depends on pull requests the branch cannot
+read.
+
+**Why it is a repeat, and it is the same words one file over.** Incident 29 is
+this exact mechanism in `docs/agents/incidents.md`, where the sequential
+allocator collided four times. The fix there was a slug: the note at the top of
+that register now says to use `INC-YYYY-MM-DD-short-slug` and never the next
+sequential number, with the reasoning that a seat writes on a branch so the
+highest number it can see is not the highest number that exists. That reasoning
+is about branches, not about incidents, and it transfers without a single change
+to any register a seat appends to. One register got the fix. This one has the
+same defect and more writers.
+
+**Not fixed in this run, because fixing it well is not this seat's call alone.**
+Renumbering would break the cross-references that already exist: this register
+cites "item 13", "item 15" and "item 16" by number in three places, and so do
+the pull request descriptions the owner reviews against. The structural fix is to
+convert the page to slugs the way the incident register was converted, which is a
+one-time edit to a page the ExO maintains, and it is filed as a ledger entry
+today rather than performed here. What this run does instead is say the number is
+provisional inside item 17 itself, so a reader who sees two items 12 after the
+merges knows this was foreseen rather than botched.
+
+**The generalizable rule, which is the reason this is worth more than a line.**
+Any append-only file that many branches write to cannot carry a sequential
+identifier, and the org now has two instances to prove it. The test to apply to
+the next register someone creates: can two seats, each correct about `main`,
+produce the same identifier. If yes, the identifier has to be derived from
+something the branch owns, which is its date and its own words.

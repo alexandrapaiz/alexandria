@@ -7723,3 +7723,161 @@ graphs.
   apart by a forgotten commit.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-02 — The pre-ship register check reads the ledger's open urgent entries, not just its shape (engineer seat)
+- Trigger: today's break-fix. The 2026-09-22 entry that produced it was filed
+  `urgent` by this seat, named two requirements in one sentence, and sat ten
+  days with one of them unmet while ten engineer runs opened and closed. Nothing
+  ever asked it anything. The engineer charter's "Check the register before you
+  ship" step names four registers and `docs/ideas.md` is not one of them, which
+  is how an urgent finding becomes the only kind of record in this org that
+  nobody is required to read. `tools/check_registers.py` already opens the file
+  every run it is invoked in, and it checks the shape of entries rather than
+  their content: today it reported 0 blocking and 4 warnings, all four of them
+  status words outside the vocabulary.
+- What: the same tool grows a second half. It lists every entry whose status is
+  `urgent`, with its age in days and the seat that filed it, and it exits
+  non-zero when one is older than a threshold the owner sets. The output is the
+  thing, not the exit code: a seat that runs one command before shipping should
+  be handed the sentence "three urgent findings are open, the oldest is 13 days"
+  rather than having to go looking. Pair it with a convention in the ledger
+  contract that an entry's `What` paragraph gets one bullet per testable
+  requirement, because the failure today was not that nobody read the entry, it
+  was that a pull request satisfying the first half of a sentence reads as
+  closing it.
+- First step: the lister and the age report, printed and not yet blocking, plus
+  the four status words reconciled to the vocabulary or added to it. Half a day.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — An attack corpus for the email, the way the site already has one (engineer seat)
+- Trigger: today's fix closed three sinks in the email with fourteen hand-written
+  cases, and then found that the site has had something better since 2026-09-24.
+  `tools/check_markdown_render.mjs` runs the real `marked` parser over a corpus
+  of attacks and re-derives the allowed tag and attribute lists from the live
+  library, so a parser upgrade that starts emitting something new fails a test
+  instead of widening what the page accepts. The email's renderer has no
+  equivalent. Fourteen cases are the fourteen attacks one engineer thought of in
+  one afternoon, and the email is the surface the product actually is.
+- What: one corpus file, read by both renderers. The cases already written for
+  the site and the email become rows in it, each row carrying the payload and
+  the property that must hold, and both test suites iterate the same rows. The
+  email adds the cases only an email can have, which are the ones about what a
+  mail client does that a browser does not: entity decoding inside an attribute,
+  `<base>`, CSS expressions in a `style` attribute that Outlook honours, and a
+  URL that is legal in a browser and rewritten by a link tracker.
+- First step: lift the fourteen cases and the site's corpus into one JSON file
+  and make both suites read it. The new email-only cases come after, because the
+  shared file is what stops the two surfaces drifting again and that is the
+  lesson of today rather than a longer list of payloads.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — Publish a recall number against a named alternative, not just arithmetic about ourselves (engineer seat)
+- Trigger: today's craft scan of Undermind (below). It leads with "85% recall on
+  the 20 most relevant papers versus 50% for GPT-5.6 Sol" and a whitepaper
+  behind it. Every number this company publishes is about its own corpus: 8,956
+  papers ingested, 164 read in full, a claim count, an evidence grade. Those are
+  honest and they are unfalsifiable from outside, because no reader can tell
+  whether 164 is good. A recall number against a named alternative is the one
+  kind of number a stranger can check, and it is eleven days to launch.
+- What: pick twenty questions a researcher in our topics would actually ask,
+  build the reference answer set by hand from arXiv, and measure what the press
+  surfaced in its five published issues against what a named alternative
+  surfaced for the same questions. Publish the method and the misses. The misses
+  are the part that makes it credible and they are also the next sprint's
+  backlog.
+- First step: the twenty questions and the reference sets, written down before
+  anything is measured, because a benchmark whose questions are chosen after the
+  results are known is marketing. One day for the questions, a second for the
+  measurement.
+- Cost: $0 if the alternative is measured through its free tier, which is what
+  the scan found Undermind offers. A paid comparison is an owner proposal.
+- Status: proposed
+
+### 2026-10-02 — URGENT: the suite that holds the site's XSS defence runs in no workflow, and says in its own docstring that it does (engineer seat)
+- Trigger: today's run needed the site's URL rule as the reference for the
+  email's, which meant opening `tests/test_markdown.py`. Its docstring says of
+  `tests/markdown.test.mjs`, "It needs no node_modules, which is why it is the
+  half that runs in CI." No workflow in this repository runs either file.
+  `checks.yml` runs fourteen named test files as individual steps and this is
+  not one of them, and `site/lib/markdown-core.js`, the module that decides what
+  markdown may become on the public archive, is in neither of the workflow's two
+  `paths` lists. A pull request changing nothing but that file runs no check at
+  all. `tests/test_accounts.py` and `tests/accounts.test.mjs` are in the same
+  position and they hold the account and entitlement layer.
+- What: the step, and preferably the structural version of it. Recorded as
+  `INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had` and queued as
+  item 17 in `docs/agents/pending-workflow-changes.md`, which offers two forms.
+  The minimal form is four more filenames in two lists, which would be the sixth
+  instance of the two-line hand edit that page already says should be deleted
+  rather than extended. The recommended form replaces the fourteen named steps
+  with `python3 -m pytest tests/ -q` and both `paths` lists with the directories
+  the suite covers, which deletes the paths halves of pending items 12 through
+  16 at the same time. The suite passes in full today, 694 passed and 1 skipped
+  in 26 seconds, and `tests/conftest.py` has enforced the script-mode harness
+  under pytest since 2026-09-30, so both reasons this was unsafe a week ago are
+  gone.
+- First step: the owner or the chair applies item 17. No agent seat can push a
+  workflow file.
+- Cost: $0. Under two seconds for the minimal form, about 26 for the structural
+  one.
+- Status: urgent
+
+### 2026-10-02 — Craft scan: Undermind (undermind.ai)
+- Trigger: the engineer seat's daily craft scan, rotating through
+  `docs/market/landscape.md`. Undermind was added to the landscape on 2026-09-18
+  and no craft scan has opened it since. Yesterday's two windows took Consensus
+  and Import AI, and 2026-09-30 took Paperguide, so this is the next unopened
+  entry under "Academic research tools". Read live at undermind.ai.
+- **What is worth stealing: the number is about a competitor, not about the
+  corpus.** Undermind leads with 85% recall on the twenty most relevant papers
+  against 50% for a named frontier model, and a whitepaper behind it. Its
+  transparency claim is per-statement, "trace any statement by following in-line
+  citations back to the source paper", which is where alexandria already is. The
+  thing we do not have is the comparative number, and it is filed above as its
+  own entry rather than only here, because it is a day of work and not an
+  observation.
+- **The pricing is also worth reading next to ADR-31.** Free with rate limits,
+  Pro at $16 a month billed annually, Team at $15 a person. That is the shape of
+  a tool sold to an individual researcher, and it brackets our $20 spine from
+  below on a product whose unit cost per search is far higher than ours. The
+  read is that $20 is defensible and that the free tier is the part that has to
+  be good, which is the half this company gives away anyway.
+- **What alexandria does better: the archive is designed to age.** Undermind
+  answers a question you asked, and the answer is as true as the day you asked
+  it. It has no notion of a finding that stopped being true. alexandria's
+  `deprecated_claims` view and the Left-Behind Index are exactly that notion,
+  and as of this week the public archive reads the same table the press writes,
+  so the record and the publication cannot drift apart by a forgotten commit. A
+  search tool's output ages into a document nobody rechecks. A record that
+  retracts its own claims ages into the thing a researcher can cite.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-02 — Convert the workflow queue to slugs, the way the incident register already was (engineer seat)
+- Trigger: today's L-E10 survey of every open pull request found three of them
+  allocating the same numbers on `docs/agents/pending-workflow-changes.md`. This
+  seat's chain takes items 12 through 16, PR #174 takes 12 through 16 for five
+  different changes, and PR #160 takes 12 and 13 for two more. Thirteen items,
+  six numbers, and all three branches allocated correctly against the `main`
+  they could see. Recorded as
+  `INC-2026-10-02-pending-queue-number-collision`.
+- What: the same fix incident 29 produced for `docs/agents/incidents.md`, where
+  the allocator collided four times before the register switched to
+  `INC-YYYY-MM-DD-short-slug`. The reasoning written at the top of that file is
+  about branches rather than about incidents, so it transfers unchanged: a seat
+  writes on a branch, the highest number it can see is not the highest number
+  that exists. Queue items become `WF-YYYY-MM-DD-short-slug`. The one real cost
+  is the cross-references that already cite items by number, in this register and
+  in open pull request descriptions, so the conversion keeps the old number in
+  each heading for one cycle and the `Applied and deleted` section records the
+  mapping.
+- First step: the ExO seat does the conversion in one pass on a quiet branch,
+  because this page is its surface and a conversion that races a seat's append is
+  the defect it exists to fix. The sharper question for the owner first: the same
+  test should be run over every append-only register the org keeps, and the test
+  is one sentence. Can two seats, each correct about `main`, produce the same
+  identifier.
+- Cost: $0
+- Status: proposed

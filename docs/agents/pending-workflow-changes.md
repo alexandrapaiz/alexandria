@@ -1400,6 +1400,104 @@ and it would delete half of all five items. Five occurrences of one shape is no
 longer a pattern worth noting, it is a backlog, so this run raises it from a
 ledger line to a named recommendation to the owner in its pull request.
 
+### 17. The site's XSS defence and the account layer run in CI, or checks.yml stops naming filenames
+
+**Queued 2026-10-02 by the engineer seat**, from
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`.
+
+**Numbered 17 only relative to this branch, and the number is already wrong.**
+`main` stops at item 11. Three open pull requests allocate numbers from 12
+upward on this page right now and none of them can see the others: this seat's
+chain takes 12 through 16, PR #174 takes 12 through 16 for five different
+changes (action pinning, `PROJECTS_TOKEN`, the budget step, the no-ship
+tripwire, the register checker), and PR #160 takes 12 and 13 for two more. After
+all three merge, thirteen items will claim six numbers. That is incident 29's
+sequential allocator, in the one register whose numbering was never converted to
+slugs, and it is recorded this run as
+`INC-2026-10-02-pending-queue-number-collision`. Read this item by its title,
+not by its number, and expect to renumber at merge. It composes with every other
+queued item and depends on none of them.
+
+**What is wrong.** `tests/test_markdown.py` holds the 2026-09-19 finding, the
+one where a crafted passage in an arXiv paper reached the public archive as live
+HTML. Its docstring says of `tests/markdown.test.mjs`, "It needs no
+node_modules, which is why it is the half that runs in CI." No workflow in this
+repository runs either file. `site/lib/markdown-core.js`, which decides what
+markdown is allowed to become on the public site, is in neither `paths` list, so
+a pull request changing nothing but that file runs no check at all.
+
+`tests/test_accounts.py` and `tests/accounts.test.mjs` are in the same position,
+and they hold the account and entitlement layer.
+
+Measured this run: `node --test tests/*.test.mjs` returns 122 pass, 0 fail, so
+nothing is broken behind this. What is missing is the gate.
+
+**The recommendation, which is the structural form.** Replace the fourteen named
+pytest steps with one that runs the suite, and replace both `paths` lists with
+the directories the suite covers. One step, one list, and items 12 through 16 on
+this page lose their paths halves entirely:
+
+```yaml
+      - name: the test suite
+        if: always()
+        run: python3 -m pytest tests/ -q
+```
+
+This is the ledger entry of 2026-09-30, "checks.yml should run the suite, not
+fourteen filenames", and this item is the sixth occurrence of the two-line hand
+edit that entry exists to delete. Two things make it safe to do now that were
+not true a week ago. `tests/conftest.py` enforces the `FAILURES` harness under
+pytest since 2026-09-30, so the two script-mode files no longer go green by
+default under a suite run (`INC-2026-09-30-check-harness-green-under-pytest`).
+And the suite passes in full in this run's sandbox: 694 passed, 1 skipped, in 26
+seconds. Keep the three script-mode invocations as they are if you want belt and
+braces, because they cost under a second each.
+
+**The minimal form, if the structural one is too large a change to make by
+hand.** Four lines in both `paths` lists, after the existing
+`      - "tools/graph_audit.py"` entry, which matches exactly twice in the live
+file, once per list. None of these four appears anywhere in the file today,
+verified this run:
+
+```yaml
+      - "tests/test_markdown.py"
+      - "tests/markdown.test.mjs"
+      - "site/lib/markdown-core.js"
+      - "tests/test_accounts.py"
+```
+
+And one step at the end of the `digest-budget` job, after `run: python3 -m
+pytest tests/test_graph_audit.py -q`, which matches exactly once and is the live
+file's last line:
+
+```yaml
+      # 2026-10-02, INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had.
+      # site/lib/markdown-core.js is the whole of the defence between a crafted
+      # passage in an arXiv paper and live HTML on the public archive, and until
+      # this step existed a pull request touching only that file ran no check.
+      # The account layer is here for the same reason. Both files run their .mjs
+      # half in a subprocess, so one pytest command covers each layer, and the
+      # node half degrades to a skip where node is absent.
+      - name: the archive refuses HTML, and the account layer holds
+        if: always()
+        run: python3 -m pytest tests/test_markdown.py tests/test_accounts.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** `python3 -m pytest
+tests/test_markdown.py tests/test_accounts.py -q` passes in this sandbox, and
+`node --test tests/*.test.mjs` passes at 122 of 122. The step cannot be
+smoke-tested as a workflow, because the seat cannot push the file.
+
+**Cost.** $0 either way. The minimal form adds under two seconds. The structural
+form adds about 26 seconds and removes five pending items from this page.
+
+**One thing this item deliberately does not do.** It does not add
+`site/lib/account-core.js`, `site/lib/entitlement.js` or
+`site/lib/markdown.js` to the minimal form's list, because the minimal form is
+already the sixth instance of a pattern that this page says should be deleted
+rather than extended, and a seventh filename argues the wrong way. The
+structural form covers them by covering everything, which is the point.
+
 ---
 
 ---
