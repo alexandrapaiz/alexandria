@@ -840,20 +840,57 @@ def email_render():
     return module
 
 
+def escape_raw_html(text: str) -> str:
+    """Neutralise raw HTML in an issue body without disturbing its markdown.
+
+    `html.escape` would also escape `>`, and `>` at the start of a line is
+    markdown's blockquote, so escaping it would cost the fallback email every
+    quotation an issue carries. A tag needs `<`, so `<` and a bare `&` are the
+    whole job. An `&` that already opens an entity is left alone, so a body
+    saying `&amp;` still renders as one ampersand.
+    """
+    text = re.sub(r"&(?!#?\w+;)", "&amp;", text)
+    return text.replace("<", "&lt;")
+
+
+def neutralise_hrefs(html_text: str, allowed) -> str:
+    """Blank any href or src whose scheme `allowed` refuses.
+
+    Raw HTML is already gone by the time this runs, so the only URLs left are
+    the ones markdown itself built out of `[label](url)`. `allowed` is
+    `email_render.url_allowed`, which is the same list of schemes the designed
+    template uses: one rule, both emails.
+    """
+    def repl(match):
+        return match.group(0) if allowed(match.group(2)) else f'{match.group(1)}=""'
+
+    return re.sub(r'\b(href|src)="([^"]*)"', repl, html_text, flags=re.I)
+
+
 def legacy_html(body: str) -> str:
     """The pre-2026-09-24 email: markdown in an inline Georgia div.
 
     Kept only as the fallback under a rendering failure. An issue that reaches
     its readers plain is a bad day; an issue that reaches nobody because the
     template moved a comment marker is an outage.
+
+    It is also the surface the 2026-09-22 ledger entry was written about. The
+    `markdown` library has not escaped raw HTML since v8, and this path runs it
+    over a body a model wrote out of arXiv text, which is why the escaping and
+    the scheme check below are not optional on the quiet path either. This is
+    the render that only ships when the designed one failed, which is the exact
+    moment nobody is reading the output.
     """
     try:
         import markdown as md
-    except ImportError:
+
+        allowed = email_render().url_allowed
+    except Exception:
         # The image pins markdown==3.7, so this is not the production path.
         # It exists because this function is the last thing standing between
         # a rendering failure and an issue nobody receives, and a last resort
-        # that can itself raise is not one.
+        # that can itself raise is not one. It escapes everything, so it is
+        # also the safest of the three renders rather than the loosest.
         import html as _html
 
         return (
@@ -874,7 +911,8 @@ def legacy_html(body: str) -> str:
             spaced.append("")
         spaced.append(line)
 
-    html_body = md.markdown("\n".join(spaced), extensions=["extra"])
+    html_body = md.markdown(escape_raw_html("\n".join(spaced)), extensions=["extra"])
+    html_body = neutralise_hrefs(html_body, allowed)
     return (
         "<div style='max-width:640px;margin:0 auto;font-family:Georgia,serif;"
         "font-size:16px;line-height:1.6;color:#222'>"
