@@ -31,6 +31,7 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -233,3 +234,50 @@ def test_no_heading_in_the_receipts_carries_an_explanatory_subtitle():
     assert heads == ["The receipts"], heads
     for head in heads:
         assert ":" not in head and "(" not in head, head
+
+
+# ------------------------------------------- ADR-13's reviewer, in this step
+
+def test_the_provenance_reviewer_passes_every_skill_the_library_publishes():
+    """ADR-13's provenance reviewer, over the real library, inside a CI step.
+
+    `tests/test_panel_provenance.py` holds the reviewer's 43 cases, and
+    `checks.yml` names fourteen test files as individual steps, so a new file
+    in `tests/` runs nowhere until a hand edits a workflow and no agent seat
+    can push one (INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had,
+    and pending-workflow-changes item 17 is the structural fix). This step is
+    the one whose paths already include `skills/**` and `db/schema.sql`, which
+    are exactly the two files that can break a provenance review, so the suite
+    runs here until that item is applied.
+
+    What turns red, and when: a skill that cites a claim id twice, names no
+    paper, cites a paper it lists twice, or marks its own judgment in words the
+    library's vocabulary does not recognise, on the pull request that adds it.
+    And a migration that renames a column the reviewer selects, because the
+    suite resolves its SQL against db/schema.sql.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest",
+         str(Path(__file__).parent / "test_panel_provenance.py"), "-q"],
+        capture_output=True, text=True, cwd=REPO,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_the_page_and_the_reviewer_read_the_same_provenance():
+    """Two readers of one block, held to the same answer.
+
+    `site/lib/skill-provenance.js` feeds the page and `tools/skill_registrar.py`
+    feeds the reviewer and the promotions row. They were written separately,
+    they parse the same indented YAML subset, and the defect this whole file
+    exists for was one of them reading a field as empty while the other read it
+    fine. So the claim ids the page shows are compared against the claim ids
+    the reviewer judges, skill by skill.
+    """
+    sys.path.insert(0, str(REPO / "tools"))
+    import skill_registrar as reg
+
+    rows = {row.name: row.claim_ids for row in reg.read_skills()[0]}
+    for skill in _list_skills():
+        ids = [int(c) for c in skill["claims"]]
+        assert ids == rows[skill["name"]], skill["name"]
