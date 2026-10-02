@@ -6492,3 +6492,94 @@ sweep finds something every time, so a run that does not print it has not
 done it. Written into the review of 2026-10-01 as a standing step and
 proposed for the charter's shipping section through the ExO relay, because
 this seat does not edit charters.
+
+## INC-2026-10-02-coverage-law-counted-by-the-wrong-unit — a coverage law was graded with a narrower denominator than the procedure fixes, and the items the narrower one drops are the ones with nothing in them (2026-10-02, writer seat)
+
+**What happened.** The canon's grading procedure carries a rule added on
+2026-09-29 after a grade cleared link coverage on an issue that lacked links:
+wherever a law's subject is "every item" or "every issue", the verdict carries
+two integers, and "the unit is the named piece of work rather than the item,
+because an item can name three."
+
+Run 21's pass 3 applied that rule to law 8 and used the right unit: "Named
+pieces of work, nine. Carrying an `arxiv.org/html/` link, eight." Four
+verdicts earlier, on law 6, the same pass counted sections instead: "Sections
+carrying numbers, five. Sections carrying a grade that names what the work did
+not establish, three."
+
+Nine and five are denominators for the same artifact in the same pass. The four
+works the smaller one drops are the three reading-list picks and the unnamed
+benchmark paper, and the three picks carry no evidence grade at all. So the one
+part of the issue where the law is failed completely never entered the count
+that the rule exists to produce, and the verdict reported a partial failure
+where the honest number was worse.
+
+**Why it got through, and it is the rule's own blind spot arriving inside the
+rule.** The 2026-09-29 rule was written because inspecting what exists cannot
+find what is missing. Counting by section is inspecting what exists one level
+up: a section is a block that was written, and the reading list is a block
+whose entries were written without the thing being counted. A denominator drawn
+from the blocks where grades already live can only ever measure the quality of
+the grades that are there.
+
+**The same shape is already in this register twice,** which is why this is a
+repeat and not a first. `INC-2026-09-29-grade-cleared-link-coverage` is a grade
+that inspected what existed. `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`
+is a grade that scored the half of a law able to produce a quotation. This is
+the third of the family and the fourth time in six days the instrument has
+reported a law as better than it is, each time through a different route into
+the same place.
+
+**FIXED, and deliberately not in the canon.** The procedure's text is already
+correct and already names the unit. It was applied to one law and not to
+another in the same pass, so the defect is in the running rather than in the
+wording, and a fourth edit to the grading procedure in five days would be this
+seat correcting the instrument faster than anyone can tell whether the last
+correction worked. The fix is the general test ban-list entry 81 already
+states, applied to denominators: a gate that produces a visible success on one
+instance of its subject is not evidence it ran. Where two coverage laws grade
+one artifact in one pass and their denominators differ, one of them is wrong,
+and that comparison costs nothing to run. Run 22's review carries the corrected
+law 6 count with both integers and the unit named.
+
+## INC-2026-10-02-label-shape-arrived-in-a-seventh-disguise — the defect the owner has flagged twice got through a two-part gate for the seventh time, by changing one character (2026-10-02, writer seat)
+
+**What happened.** Incident 20 records the owner ruling twice that framework
+and taxonomy labels never print. The generator's heading gate states the rule
+correctly, that a label is a label at any level and in any typeface, and it
+carries a collection step in front of the rule that decides what the rule gets
+to see. That step had two halves: lines, meaning a heading or a run of bold
+sitting alone on its own line, and colon fragments, meaning the text in front
+of any colon.
+
+The print of 2026-09-30 opened four of its five sections on a bolded label
+ending in a full stop. Every one of them would have fitted any issue the
+product will ever send. None sat alone on a line, because each was followed on
+the same line by the paragraph's first sentence. None contained a colon. So
+neither half collected any of the four, the rule was never asked about them,
+and the gate reported a pass. One of the four was a shape the file names by
+hand as a failure, with the colon swapped for a period.
+
+Three editorial grades read that print and none of them named the four labels,
+which is the part of this worth recording beside the generator defect.
+
+**Why it kept happening.** Every one of the seven disguises walked past a check
+written for the one before, and every one of those checks matched a shape:
+a string, a line, a typeface, a punctuation mark. A unit defined by a
+punctuation mark is escaped by changing the punctuation mark, and the file had
+predicted exactly this in the sentence after its own list of six, that the next
+one would wear a disguise not on any list.
+
+**Contributing cause, and it belongs to another seat's open filing.** Canon
+law 14 licenses the bold lead in one place only, inside a bulleted list, one
+per bullet. The issue that printed four of them sets no list anywhere, for the
+sixth consecutive grade, which is the formatting escalation run 20 filed for
+the engineer after the fifth. The ornament arrived without the structure it
+was attached to.
+
+**FIXED.** The collection step loses both punctuation-shaped halves in favour
+of one positional unit: any run of bold or italic that BEGINS a line, whatever
+punctuates it and whether or not the line continues. Recorded as ban-list
+entry 84, whose general tell is that a unit defined by a punctuation mark can
+always be escaped by changing the punctuation. No eighth string was added to
+the tripwire, because seven strings have now been escaped by seven disguises.

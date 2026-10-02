@@ -7602,3 +7602,84 @@ graphs.
 - Related: ban list 81 and 82, `INC-2026-10-01-first-use-pass-printed-a-word-it-lists-by-name`,
   `docs/standards/lessons.md` L-A21 and L-A22.
 - Status: proposed
+
+### 2026-10-02 — A label gate can be a command, because position is mechanical where taste is not (writer seat, for engineer)
+
+- Trigger: the shape the owner has flagged twice got through the generator's
+  heading gate for the seventh time, by ending in a full stop instead of a
+  colon (`INC-2026-10-02-label-shape-arrived-in-a-seventh-disguise`). Seven
+  disguises, seven checks written for the one before, every check matching a
+  shape. `docs/standards/lessons.md` L-A22 says that when a law has failed to
+  fire once, writing it more clearly is not the fix, and this one has failed
+  seven times.
+- This run converted the gate's collection step from punctuation to position,
+  which is a conversion rather than a reworded prohibition, and it is still a
+  model reading a file.
+- The honest split, because half of this is not mechanizable. Whether a line
+  is a label is the owner's taste question and no script decides it. Whether a
+  line is a CANDIDATE is pure syntax, and that is the half that failed every
+  time. So the command does the collecting and the model does the judging.
+- The check, over a generated body before it is stored, beside the shape counts
+  filed on 2026-09-30: emit every run of bold or italic that begins a line,
+  every line beginning with `#`, and every fragment in front of a colon, each
+  with its line number. Then the press refuses to store a body whose collected
+  set is empty of nothing and unexamined, which is the part this seat cannot
+  specify, so the minimum useful version is that the list is printed in the
+  run report and in the rehearsal output where a grade cannot miss it.
+- The test artifact exists and is known to fail, per L-A21: `press_rehearsals`
+  id 3 carries four bolded labels ending in full stops and the current
+  published page carries two bold leads that are findings. A correct
+  implementation collects six and judges four of them labels.
+- Whose call: engineer. Cost: a few lines beside an existing pre-store chain.
+- Related: ban list 84, canon law 12, incident 20,
+  `INC-2026-10-02-label-shape-arrived-in-a-seventh-disguise`.
+- Status: proposed
+
+### 2026-10-02 — Three runs have patched the generator with nothing to measure, and only a merge can end that (writer seat, for owner)
+
+- The fact, stated once. The newest artifact of any kind is the rehearsal print
+  of 2026-09-30 03:13. `digests` holds two rows in the product's life and the
+  newest is 2026-09-28. Runs 20, 21 and 22 have each read that same text, and
+  the prompt changes all three of them shipped sit unmerged on one branch. The
+  print's `prompt_sha` matches `main`, so every patch from all three runs has
+  produced nothing, and the only evidence any of us can get about whether they
+  work is one merge and one send.
+- Why this is filed rather than worked around. This seat's charter sends it to
+  read a new issue every run and it has had none for five days. Grading the
+  same text a fourth time has a measurable cost that this run can show: of the
+  defects a third reader found in that print, two were genuinely new and the
+  rest were already on the record, and the two new ones were found by changing
+  the unit of measurement rather than by reading harder. A fifth reading will
+  not have a fourth unit.
+- What this run did about it: kept its own diff to two slots, because three
+  stacked layers of unexercised prompt text interacting is a risk nobody can
+  see, and said so at the top of its review.
+- The decision is yours and there are two. Merge the writer branch and let
+  Monday's send be the measurement, which is what the merge gate is for. Or
+  tell this seat to stop patching until an artifact written by the current
+  prompt exists, in which case the runs in between grade the published page
+  and the registers and ship no generator diff, which the charter already
+  allows in its own words: a quiet day with a passing grade and no diff is a
+  fine outcome.
+- Related: `INC-2026-09-30-graded-a-generator-five-commits-stale`, and the
+  dormant-daily filing of 2026-10-01, which asks the other half of this
+  question.
+- Status: proposed
+
+### 2026-10-02 — The bold lead is the ornament of a list that was never set (writer seat, evidence for an open filing)
+
+- Not a new filing. One row of evidence for the formatting escalation run 20
+  sent the engineer after the fifth consecutive grade with zero lists, zero
+  third-level headings and zero numbers standing on a line.
+- The new evidence: the print of 2026-09-30 carries four bolded leads at the
+  tops of paragraphs, and canon law 14 licenses that device in exactly one
+  place, inside a bulleted list, one per bullet. With no list anywhere in the
+  issue, the device migrated to paragraph openings, where all four of them read
+  as labels and none as a finding. The published page of 2026-09-28, written by
+  the earlier prompt, carries two bold leads and both are findings.
+- So the unanswered escalation is not merely leaving the page one shape. It is
+  producing a second defect out of a rule that was correct, which is worth
+  knowing before the sixth wording of that gate is considered and rejected
+  again.
+- Related: ban list 84, canon law 14, the formatting filing of 2026-09-30.
+- Status: evidence appended, no new request
