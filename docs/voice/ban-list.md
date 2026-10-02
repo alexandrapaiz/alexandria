@@ -1207,3 +1207,95 @@ gap that the same collision had left empty (incident 25).
     and drop the number, which means the section has no finding and goes.
     Added 2026-10-01. Enforced the same day as a gate on finished output,
     beside the gate that checks the issue's numbers against each other.
+
+84. The label welded to a sentence by a full stop. Entry 62 and the owner's
+    rulings of 2026-09-19 are about taxonomy at the top of a block, and the
+    generator's heading gate states the rule correctly, that a label is a
+    label at any level and in any typeface. The collection step in front of
+    that rule is where this keeps getting through, and it has been escaped
+    twice now by the same move.
+    The step had two halves. One collected lines, meaning a heading or a run
+    of bold sitting alone on a line of its own. The other was added for the
+    label that takes no line of its own, and it collected by colon: the text
+    in front of a colon, bolded or plain. A print of 2026-09-30 opened four
+    of its paragraphs on a bolded label that ended in a full stop. None sat
+    alone, so the first half missed all four. None carried a colon, so the
+    second half missed all four. One of them was a shape this register
+    already condemns with the colon swapped for a period.
+    Put the deciding question to any of them and it fails at once: a label
+    that says a comparison is about to arrive, or that the next lines are
+    what the news means for the reader, would have fitted every issue the
+    product will ever send. They are furniture in the one typeface that
+    guarantees the eye lands on them first, and a skimmer reading only the
+    bolds gets the issue's filing system instead of its story.
+    The general tell, and it is the reason this entry is not just an eighth
+    string: a unit defined by a punctuation mark is escaped by changing the
+    punctuation mark. Seven disguises have now walked past seven checks
+    written for the one before, and every one of those checks matched a
+    shape. The unit has to be the position.
+    One more thing is worth recording about where the shape came from. The
+    bold lead is licensed by canon law 14 in exactly one place, inside a
+    bulleted list, one lead per bullet. The issue that printed four of them
+    set no list anywhere, for the sixth grade running. The ornament arrived
+    without the structure it was attached to, which is what an unanswered
+    formatting escalation looks like on the page.
+    Added 2026-10-02. Enforced the same day: the heading gate's collection
+    step loses both punctuation-shaped halves in favour of one positional
+    unit, any run of bold or italic that BEGINS a line, whatever punctuates
+    it and whether or not the line continues.
+
+85. The hour recommended with nothing behind it, in the one slot whose format
+    had no room for a grade. In-line evidence grades are house law in
+    prompts/digest.md and canon law 6, binding every item at every cadence.
+    The reading list's format spec named three parts and the grade was not
+    one of them: a title, a link, and the line naming the reader's decision.
+    So a print of 2026-09-30 carried a grade on every section above and none
+    on any of its three picks, and the model was obeying the file in both
+    places.
+    This is the worst slot in the issue to lose it in, for two reasons. It is
+    the only section that asks the reader to spend an hour, and it is the
+    section where a whole subfield gets summarised in a clause. An entry that
+    declares what the real bottleneck in some area is, on the authority of
+    one unreplicated paper, with no number anywhere near it, is entry 83 one
+    level up: the general sentence over the particular, with the particular
+    left out altogether. The three questions of the claims pass all need two
+    figures to compare, so a sentence carrying none of them reaches no check
+    in the file.
+    The general tell: where a slot's format is written as a closed list of
+    parts, that list is the law for whoever fills it, and a duty stated
+    anywhere else in the file does not reach inside it. Check every format
+    spec against the rules said to bind every item, and where the spec has no
+    place to put one of them, the spec is the defect and not the print.
+    Added 2026-10-02. Enforced the same day: the reading-list entry carries
+    what the work cannot establish inside its own sentence, and the title
+    rule is restated there too, because the same print set its picks as
+    bolded short names and one of them as a bare acronym where the paper's
+    title goes.
+
+86. The posture kept by deleting the verb. A rule written against a class of
+    words is obeyed by writing the same thing without any word from that
+    class, and the result passes every check the rule can run.
+    The reading list banned verbs of presentation and listed them, shows,
+    details, presents, provides, introduces and every synonym. A print of
+    2026-09-30 contained none of them and opened all three of its entries on
+    a bare noun phrase describing the paper: the study of a thing, the case
+    for a thing, the model that does a thing. Three catalogue entries with no
+    catalogue verb in them. The ban had named the symptom. The posture is
+    carried by the subject, and a noun phrase needs no verb to hold it.
+    Two of the three then took the same grammatical shape in their second
+    sentence as well, against the same slot's own rule that no two entries
+    share a shape, because once the opening is a description of the paper the
+    sentence that addresses the reader has to arrive afterwards in whatever
+    form is left.
+    The general tell, and it generalises past this slot: where a rule bans a
+    word class, ask what the sentence would look like with the class removed
+    and nothing else changed. If the offending version survives that
+    deletion, the rule is aimed at the wrong unit, and the unit is almost
+    always the grammatical subject. A test on the subject cannot be escaped
+    by deletion, because every sentence has one.
+    Added 2026-10-02. Enforced the same day: the slot asks what the first
+    words of the entry are ABOUT, with the reader, their decision or the
+    thing they are about to build wrong as the only allowed answers, and the
+    paper arriving inside the sentence rather than at the front of it. The
+    frame ban in the same slot is also stated to bind its heading, because
+    the sentence banned on the entries printed in the heading instead.

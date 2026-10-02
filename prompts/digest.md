@@ -950,6 +950,29 @@ Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler, because it describes the paper's topic instead of the
 reader's choice.
+**The title is the paper's own title, in italic, and never a system name
+lifted out of it.** Every item in the four sections above prints the full
+title that way, and a print of 2026-09-30 set all three of its picks as a
+bolded short name instead, one of them a bare acronym. An acronym standing
+alone where the title goes is the coined name leading the idea, which the
+voice rules at the top of this file forbid everywhere else, and it is worse
+here than anywhere, because this is the line on which the reader decides
+whether to give up an hour.
+**The grade belongs in this entry, and this slot is where it has been
+missing.** In-line evidence grades are house law at the top of this file and
+they bind every item at every cadence. The format above had no place to put
+one, so a print of 2026-09-30 carried a grade on every section and none on
+any of its three picks, which is the one part of the issue asking the reader
+for an hour of their time. Say what this work cannot establish, inside the
+entry's own sentence and never as a second sentence stapled behind it. One
+team, one benchmark, a result nobody outside the group has reproduced: those
+are the facts that decide whether the hour is worth it, and the entry that
+withholds them is recommending on the reader's behalf.
+This is also where the broadest sentence in the issue gets written, because
+an entry is a whole field summarised in a clause with no number in it. A line
+that says what the bottleneck in some subfield really is, on the authority of
+one unreplicated paper, is the general claim over the particular evidence
+with the evidence left out. The grade is what bounds it.
 
 **The line is written and never filled in, and one frame is now spent.**
 "Worth the hour if you are..." was quoted in this file as the model line and
@@ -961,6 +984,13 @@ matter how good the sentence is. Do not write it. Do not write a
 find-and-replace of it either, so "Read this if you are", "Give it an hour
 when you are" and "Spend the hour if you are" are the same line wearing a
 hat.
+**A frame banned in this slot is banned everywhere in this slot, the heading
+included.** The ban above is on a sentence and it was read as a ban on a
+position. A print of 2026-09-30 kept it off all three entries, correctly, and
+put "worth the hour" in the section heading instead, where the banned words
+did the one job the heading is forbidden to do, which is announce that the
+issue is now recommending things. A phrase this slot refuses does not become
+available by moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
@@ -978,6 +1008,17 @@ rather than of a list: does this word belong to the paper or to the reader?
 "Shows", "details", "presents", "provides", "introduces" and every synonym any
 of them has describe the paper's posture instead of the reader's decision, and
 a column of them turns the picks into a catalogue.
+**Then ask the same question of the SUBJECT, because a posture does not need a
+verb and the verb rule was obeyed by dropping it.** A print of 2026-09-30
+carried no banned verb and no synonym of one, and opened all three of its
+entries on a bare noun phrase describing the paper: the study of a thing, the
+case for a thing, the model that does a thing. Three catalogue entries with no
+catalogue verb in them. So the test is grammatical and it is the one that
+cannot be escaped by deletion. What are the first words of the line ABOUT? The
+reader, their decision, or the thing they are about to build wrong. Never the
+paper, never its contents, and never its method. Where the line opens on the
+paper, the repair is to start from the choice and let the paper arrive inside
+the sentence, which is usually shorter as well.
 Expect the payload to hand you one ready-made, because `deep_reads` carries
 triage notes written in exactly this register, and one of today's opens
 "Provides a comprehensive framework for continual learning". That note is a
@@ -1532,18 +1573,29 @@ the rule's question to the thing in front of you.
   exception, because it is required to be identical in every issue and is
   never rewritten by this gate or any other.
   **Then collect the fragments, because a label does not need a line to
-  itself and the ones that have shipped did not take one.** For every line in
-  the issue that contains a colon, take the text in front of that colon as a
-  thing to check on its own, whether it is bolded or plain. That fragment is
-  the unit, not the line it sits in, and this is the whole reason this shape
-  keeps getting through: the question below is asked of a line, a label welded
-  to the front of a sentence is a piece of a line, and a line whose second
-  half is real writing passes a question its first half would fail. The
-  published 2026-W39 carries three, none of them bolded alone and none of them
-  collected by the step above: "**The number that matters:**", which is the
-  name of a formatting rule in this file, "For builders:", and "The procedure
-  is extractable:". Take the fragment, drop the colon, and write the sentence
-  whole.
+  itself and the ones that have shipped did not take one.** Two units, and
+  neither of them is a whole line. The first is POSITIONAL: any run of bold
+  or italic text that BEGINS a line, whatever punctuates it and whether or
+  not the line continues past it in plain prose. The second is the text in
+  front of any colon, bolded or plain. Collect both. A label welded to the
+  front of a sentence is a piece of a line, and a line whose second half is
+  real writing passes a question its first half would fail, which is the
+  whole reason this shape keeps getting through.
+  **The first unit is positional rather than punctuational on purpose, and
+  the reason is one character.** A print of 2026-09-30 opened four of its
+  paragraphs on a bolded label that ended in a full stop, and each of them
+  would have fitted any issue this product will ever send. None sat alone on
+  its line, so the step above did not collect it. None contained a colon, so
+  the colon unit did not collect it either, and one of the four was a shape
+  this file already names with the colon swapped for a period. A unit defined
+  by a punctuation mark can always be escaped by changing the punctuation
+  mark, so the unit is the position instead: anything bold or italic at the
+  start of a line is a label until the question below clears it.
+  The published 2026-W39 carried three of the colon kind under an earlier
+  commit, none of them bolded alone and none collected by the step above:
+  "**The number that matters:**", which is the name of a formatting rule in
+  this file, "For builders:", and "The procedure is extractable:". Take the
+  fragment, drop whatever punctuates it, and write the sentence whole.
   Then put ONE question to everything you collected, lines and fragments
   alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
@@ -1576,15 +1628,17 @@ the rule's question to the thing in front of you.
   the false version.
 
   Ask it of every line and every fragment you collected, because this failure
-  has now arrived six times
-  in six disguises, and each one walked past the check written for the one
+  has now arrived seven times
+  in seven disguises, and each one walked past the check written for the one
   before: a section heading ("Gaining traction"), a taxonomy word
   ("Compounding"), a bold word over a group inside a section
   ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
-  bolded label welded to a sentence ("**The number that matters:**"), and a
-  plain one that is not bolded at all ("For builders:"). The first four are
-  lines and the last two are fragments, which is why the collection step above
-  now has two halves.
+  bolded label welded to a sentence by a colon ("**The number that
+  matters:**"), a plain one that is not bolded at all ("For builders:"), and
+  the same bolded label welded by a full stop instead, four times in one
+  issue. The first four are lines, the next two are colon fragments, and the
+  seventh is why the collection step above stopped asking about punctuation at
+  all.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
