@@ -31,6 +31,14 @@ by hand, so it is checked here as a convention: the marker's wording has to be
 one the library's own vocabulary recognises, or a reader grepping for an
 unsourced recommendation will not find it.
 
+One check here is not one of the three duties, and it is labelled
+`spec-conformance` so nobody mistakes it for one. The published Agent Skills
+specification caps `description` at 1024 characters and `name` at 64, and a
+file past either is rejected by a client that validates it rather than loaded
+with a long description. This reviewer is the only thing in the repository that
+opens every SKILL.md on every pull request, so the two numbers are checked here
+rather than in a seventh parser.
+
 **Duty 2 cannot be decided today, and this reviewer says so rather than
 guessing.** A skill cites its claim ids once, as a flat list in the frontmatter,
 for the whole document. No section, paragraph or sentence names the claim behind
@@ -116,6 +124,18 @@ OURS_VOCABULARY = (
 # Long enough for the longest entry above, short enough that two markers in one
 # sentence cannot be read as one.
 OURS_WINDOW = 32
+
+# The published Agent Skills specification's two hard limits, read live at
+# agentskills.io/specification on 2026-10-02. A `description` over 1024
+# characters or a `name` over 64 makes a SKILL.md non-conformant, which means a
+# client validating it (`skills-ref validate`) rejects the file rather than
+# loading a skill with a long description. They are checked here because this
+# reviewer is the only thing that opens every SKILL.md on every pull request,
+# and because the library is already close: its longest description is 994
+# characters, 30 short of the ceiling, and ADR-38's word budget pushes that
+# number up with every revision.
+SPEC_NAME_MAX = 64
+SPEC_DESCRIPTION_MAX = 1024
 
 ARXIV = re.compile(r"arxiv\.org/abs/([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)", re.I)
 SECTION = re.compile(r"^## +(.+?)\s*$", re.M)
@@ -269,6 +289,34 @@ def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
         findings.append(Finding(
             "papers-listed", "note",
             f"arXiv sources attributed: {len(arxiv_ids)}"))
+
+    # The external format the file has to satisfy to be loadable at all. Not
+    # one of ADR-13's three duties, and it is here for the reason above: one
+    # reader of every SKILL.md, running on every pull request that touches one.
+    description = str(parsed.get("description") or "")
+    name = str(parsed.get("name") or "")
+    if len(description) > SPEC_DESCRIPTION_MAX:
+        findings.append(Finding(
+            "spec-conformance", "fail",
+            f"description is {len(description)} characters and the Agent "
+            f"Skills specification allows {SPEC_DESCRIPTION_MAX}. A client "
+            "that validates the file rejects it."))
+    elif not description:
+        findings.append(Finding(
+            "spec-conformance", "fail",
+            "has no description, which the specification requires and which is "
+            "the only part of a skill an agent reads before deciding to load "
+            "it."))
+    if len(name) > SPEC_NAME_MAX:
+        findings.append(Finding(
+            "spec-conformance", "fail",
+            f"name is {len(name)} characters and the specification allows "
+            f"{SPEC_NAME_MAX}."))
+    if description and len(description) <= SPEC_DESCRIPTION_MAX:
+        findings.append(Finding(
+            "spec-conformance", "note",
+            f"description is {len(description)} characters, "
+            f"{SPEC_DESCRIPTION_MAX - len(description)} under the ceiling"))
 
     # duty 3: judgment that is ours has to say so, in words the library knows.
     markers, drifted = ours_markers(body)

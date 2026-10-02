@@ -6646,3 +6646,47 @@ identifier, and the org now has two instances to prove it. The test to apply to
 the next register someone creates: can two seats, each correct about `main`,
 produce the same identifier. If yes, the identifier has to be derived from
 something the branch owns, which is its date and its own words.
+
+## INC-2026-10-02-fixture-pinned-to-a-wall-clock-date — a test with no code change behind it went red when the clock passed it (2026-10-02, engineer seat)
+
+**`tests/test_delivery_receipt.py` failed this morning and nothing in the
+repository had changed.** The file was written on 2026-10-01 by this seat's own
+run and shipped green. Its `receipt()` fixture builds a delivery receipt whose
+corpus "moved last night", and it built that timestamp from a hardcoded
+`datetime(2026, 10, 1, 2, 0)` minus fourteen hours. `judge_pipeline` in
+`tools/delivery_health.py` measures corpus age against the real clock, which is
+correct: a corpus is stale when it stopped moving and no caller gets to decide
+what day it is. `PIPELINE_STALE_DAYS` is 2. So the fixture read as fresh for
+about 38 hours and then read as a two-day-old corpus forever, and the assertion
+"a corpus that moved last night reads ok" became false at roughly 16:00 UTC on
+2026-10-02.
+
+**Why it matters more than one red file.** The same function in the same test
+file already had the right pattern six lines below, where the stale case is
+built as `datetime.now(timezone.utc) - timedelta(days=5)`. One case was
+relative and the other was pinned, in one fixture, so the file looked
+deliberate. And the failure is invisible where it would be caught: the file is
+not one of the fourteen `checks.yml` names, so no pull request runs it, and the
+only thing that would have shown it is `python3 -m pytest tests/ -q`, which is
+the command the repository documents and no workflow runs.
+
+**Fixed in the same pull request that found it** (engineer, 2026-10-02, second
+window): the fixture derives its freshness from `datetime.now`, with the reason
+written where the constant was, and `observed_at` is left pinned with a note
+saying what has to change if a reader ever starts judging a receipt's own age.
+
+**The repeat it belongs to.** INC-2026-09-30-two-checks-steps-red-on-main-for-days
+is the same class seen from one angle: a test whose verdict depends on
+something other than the code it tests. There it was the environment, a test
+that "passed on every machine holding a token and failed in the only place it
+ran". Here it is the clock. Both are assertions that decay, and the lesson
+generalises to one line worth a gate: a test fixture that names a date is a
+test that expires, so build every relative timestamp from `now` and keep the
+absolute ones for the labels nothing measures an age against.
+
+**What would have caught it earlier.** Nothing in this org runs the whole suite
+on a schedule. Every check is attached to a pull request that touches a path,
+which cannot catch a defect whose trigger is the passage of time. Filed in the
+ledger as its own entry (2026-10-02, a daily run of the whole suite), because
+the same gap hides anything else that expires: a pinned model id, a cap read
+from a dated document, an API that deprecates on a date.

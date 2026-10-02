@@ -598,3 +598,42 @@ def test_the_pass_logs_one_line_per_failing_finding(tmp_path):
     alarms = [line for line in log if line.startswith(job.VERDICT_ALARM)]
     assert len(alarms) == 1 and "claim-ids" in alarms[0]
     assert conn.inserted, "a real run files the row"
+
+
+# ------------------------------------------------- the format, as published
+
+def test_a_description_past_the_published_ceiling_fails(tmp_path):
+    """agentskills.io/specification, read 2026-10-02: 1024 characters.
+
+    A file past it is rejected by a client that validates it. The library's
+    longest description is 994 characters today, so this is 30 characters of
+    headroom rather than a hypothetical.
+    """
+    root = write_skill(tmp_path)
+    skill = root / "fixture-skill" / "SKILL.md"
+    skill.write_text(skill.read_text().replace(
+        "A fixture skill, long enough to look like one.", "x" * 1025))
+    fails = only(panel.review(skills_dir=root), check="spec-conformance",
+                 severity="fail")
+    assert len(fails) == 1 and "1025 characters" in fails[0]["detail"]
+
+
+def test_the_note_says_how_much_headroom_is_left(tmp_path):
+    root = write_skill(tmp_path)
+    notes = only(panel.review(skills_dir=root), check="spec-conformance",
+                 severity="note")
+    assert len(notes) == 1 and "under the ceiling" in notes[0]["detail"]
+
+
+def test_every_skill_in_the_library_is_within_the_published_limits():
+    """The measurement, over the real six, so a revision that crosses the line
+    fails on its own pull request instead of on a reader's client."""
+    verdicts = panel.review()
+    assert not [f for v in verdicts for f in v["findings"]
+                if f["check"] == "spec-conformance" and f["severity"] == "fail"]
+    headroom = {}
+    for verdict in verdicts:
+        for finding in verdict["findings"]:
+            if finding["check"] == "spec-conformance":
+                headroom[verdict["target"]] = finding["detail"]
+    assert len(headroom) == len(verdicts), "every skill reports its headroom"

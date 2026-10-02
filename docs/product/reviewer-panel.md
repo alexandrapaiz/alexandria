@@ -78,6 +78,20 @@ The format is the skill seat's surface, not the engineer's, so this is a ledger
 proposal rather than a change in this build. It is filed in `docs/ideas.md`
 (2026-10-02, per-section claim ids).
 
+## One check that is not a duty
+
+The reviewer also holds two numbers from the published Agent Skills
+specification, read live at agentskills.io/specification on 2026-10-02:
+`description` is capped at 1024 characters and `name` at 64, and a file past
+either is rejected by a client that validates it rather than loaded with a long
+description. It is labelled `spec-conformance` so nobody mistakes it for one of
+ADR-13's duties, and it lives here because this reviewer is the only thing in
+the repository that opens every SKILL.md on every pull request.
+
+It is not hypothetical headroom. The library's longest description is 994
+characters, 30 short of the ceiling, and ADR-38's word budget pushes that number
+up with every revision.
+
 ## The row, and why it is not a column
 
 `promotions` is the proposal and `promotions.status` is one three-way word for
