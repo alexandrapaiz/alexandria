@@ -21,13 +21,19 @@ This job closes the loop, once a day, in five steps.
    row that had to be created is itself a finding: it means a merge shipped a
    skill that nothing was watching, and the owner is told.
 
-2. **Review.** ADR-13's provenance reviewer, `tools/panel_provenance.py`, is
-   run over the same skills and files one `panel_verdicts` row each. This is
-   where ADR-13's first duty actually gets asked: do the claim ids a skill
-   cites exist in the corpus. The reviewer reads and never merges, so the only
-   write is the verdict row, and a `fail` verdict mails the owner for the same
-   reason an unregistered skill does. It runs here rather than in CI because
-   the question needs Neon and CI holds no database credential anywhere.
+2. **Review.** Two of ADR-13's three reviewers run over the same skills and
+   each files its own `panel_verdicts` row per skill.
+   `tools/panel_provenance.py` asks whether the claim ids a skill cites exist
+   in the corpus and whether it attributes the papers behind them.
+   `tools/panel_adversary.py` asks the opposite question: whether the claim
+   graph has since contradicted or refined anything the skill cites, and
+   whether it was ever asked at all. Both read and neither merges, so the only
+   write is the verdict row, and a `fail` from either mails the owner for the
+   same reason an unregistered skill does. They run here rather than in CI
+   because both questions need Neon and CI holds no database credential
+   anywhere. The validator is the third and is not built: it runs the A/B
+   trial (`tools/skill_eval.py`) and needs a model key in this job, which is
+   the open question `docs/product/reviewer-panel.md` records.
 
 3. **Read the view.** `skills_needing_revision` returns one row per (skill,
    deprecated claim) pair.
@@ -117,6 +123,8 @@ image = (
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1")
     .add_local_file("tools/skill_registrar.py", "/root/skill_registrar.py")
     .add_local_file("tools/panel_provenance.py", "/root/panel_provenance.py")
+    .add_local_file("tools/panel.py", "/root/panel.py")
+    .add_local_file("tools/panel_adversary.py", "/root/panel_adversary.py")
     .add_local_dir("skills", "/root/skills")
 )
 
@@ -140,17 +148,32 @@ def registrar():
     return module
 
 
-def panel():
-    """tools/panel_provenance.py, by the same two-path trick as registrar()."""
+def _reviewer(module_name: str):
+    """A reviewer module, by the same two-path trick as registrar().
+
+    `/root` when Modal built the image, the repository when a person runs this
+    locally. Both reviewers and the vocabulary they share are added to the
+    image above, so a reviewer that is not in that list fails here loudly
+    rather than being skipped quietly.
+    """
+    import importlib
     import sys
 
     here = str(pathlib.Path(__file__).resolve().parent.parent / "tools")
     for path in ("/root", here):
         if path not in sys.path:
             sys.path.insert(0, path)
-    import panel_provenance as module
+    return importlib.import_module(module_name)
 
-    return module
+
+def panel():
+    """ADR-13's provenance reviewer, the first of the three."""
+    return _reviewer("panel_provenance")
+
+
+def adversary():
+    """ADR-13's adversary, the second. It has no half that runs in CI."""
+    return _reviewer("panel_adversary")
 
 
 # ------------------------------------------------------------ pure functions
@@ -354,22 +377,28 @@ def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str], pathlib.P
 VERDICT_ALARM = "panel verdict failing:"
 
 
-def reviewed(conn, rows, problems, skills_root, dry_run: bool) -> list[str]:
-    """ADR-13's provenance reviewer over the skills step 1 just registered.
+def review_pass(reviewer, label: str, conn, rows, problems, skills_root,
+                dry_run: bool) -> list[str]:
+    """One reviewer of ADR-13's panel over the skills step 1 just registered.
 
     Read-only apart from the verdict rows themselves. A `fail` is a skill on
-    main whose evidence does not hold up, which is the one thing in this job
-    that the library's own promise to its readers depends on, so it goes in the
-    log with the marker the owner alarm reads.
+    main that did not hold up, which is the one thing in this job that the
+    library's own promise to its readers depends on, so it goes in the log with
+    the marker the owner alarm reads.
+
+    Both reviewers get the same arguments and write the same verdict shape, so
+    this pass is written once. What it must not do is merge their findings:
+    each files its own row, because `panel_consensus` counts one verdict per
+    reviewer and a pass that summarised two reviewers into one row would make a
+    panel of two read as a panel of one.
     """
-    reviewer = panel()
     verdicts = reviewer.review(skills_dir=skills_root, conn=conn,
                                rows=rows, problems=problems)
     counts = {}
     for verdict in verdicts:
         counts[verdict["verdict"]] = counts.get(verdict["verdict"], 0) + 1
     shape = ", ".join(f"{n} {name}" for name, n in sorted(counts.items()))
-    log = [f"provenance reviewer: {len(verdicts)} skills reviewed ({shape})"]
+    log = [f"{label}: {len(verdicts)} skills reviewed ({shape})"]
 
     if dry_run:
         log.append("dry run: no verdict row was filed")
@@ -383,6 +412,25 @@ def reviewed(conn, rows, problems, skills_root, dry_run: bool) -> list[str]:
                 log.append(f"{VERDICT_ALARM} {verdict['target']}: "
                            f"{finding['check']}: {finding['detail']}")
     return log
+
+
+def reviewed(conn, rows, problems, skills_root, dry_run: bool) -> list[str]:
+    """Reviewer 1, provenance: does the skill's own evidence hold up."""
+    return review_pass(panel(), "provenance reviewer", conn, rows, problems,
+                       skills_root, dry_run)
+
+
+def adversary_reviewed(conn, rows, problems, skills_root,
+                       dry_run: bool) -> list[str]:
+    """Reviewer 2, the adversary: does the claim graph disagree with the skill.
+
+    It runs here and nowhere else. Nothing it decides is in a SKILL.md, so it
+    has no `--files-only` half and no step in `checks.yml`; see the "no half
+    that runs in CI" section of tools/panel_adversary.py for why an empty green
+    step there would be worse than no step at all.
+    """
+    return review_pass(adversary(), "adversary", conn, rows, problems,
+                       skills_root, dry_run)
 
 
 # ------------------------------------------------------------ the run
@@ -432,10 +480,17 @@ def run(dry_run: bool = False) -> str:
         else:
             log.append(f"all {len(rows)} skills already registered")
 
-        # Step 2, the panel's provenance reviewer. Inside this connection and
-        # before the early return below, because a day with nothing to revise
-        # is still a day the library's evidence is either sound or it is not.
+        # Step 2, the panel. Inside this connection and before the early
+        # return below, because a day with nothing to revise is still a day the
+        # library's evidence is either sound or it is not.
+        #
+        # Two of ADR-13's three reviewers run here as of 2026-10-03, in their
+        # own passes filing their own rows. The adversary is second on purpose:
+        # its findings are about what the corpus learned after a skill was
+        # written, so reading them under the provenance report is the order a
+        # person would want them in.
         log.extend(reviewed(conn, rows, problems, skills_root, dry_run))
+        log.extend(adversary_reviewed(conn, rows, problems, skills_root, dry_run))
 
         pending = reg.revisions(conn)
 
@@ -528,17 +583,22 @@ def skill_revision(dry_run: bool = False) -> str:
              "skill's pull request",
              "python3 tools/skill_registrar.py --files-only"],
             sender="alexandria skills"))
-    # ADR-13's provenance reviewer failed a skill that is already on main and
-    # already published on the site. The library's product claim is that every
-    # finding carries evidence a reader can check, so this one is worth a mail
-    # on the day it appears rather than on the day somebody reads the table.
+    # A reviewer failed a skill that is already on main and already published
+    # on the site. The library's product claim is that every finding carries
+    # evidence a reader can check, so this is worth a mail on the day it
+    # appears rather than on the day somebody reads the table. One mail covers
+    # both reviewers because the log line names which one failed, and two mails
+    # about one morning's run is how an alarm becomes noise.
     if VERDICT_ALARM in out:
         print(notify_owner(
-            "alexandria: the panel failed a skill's provenance",
+            "alexandria: the panel failed a skill",
             out,
-            ["python3 tools/panel_provenance.py --files-only",
+            ["python3 tools/panel_provenance.py --files-only, for a "
+             "provenance finding",
+             "python3 tools/panel_adversary.py, with NEON_RO_URL set, for an "
+             "adversary finding: it has no file-only half",
              "the skill's provenance block against the claim ids it cites",
-             "select * from panel_latest where reviewer = 'provenance'"],
+             "select * from panel_latest order by target, reviewer"],
             sender="alexandria skills"))
     return out
 
