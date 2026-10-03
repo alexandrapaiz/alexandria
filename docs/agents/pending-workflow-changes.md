@@ -1504,6 +1504,92 @@ structural form covers them by covering everything, which is the point.
 
 ---
 
+### 18. ADR-13's panel runs in CI, or three documents stop saying it does
+
+**Queued 2026-10-03 by the engineer seat.
+INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had.**
+
+Numbered 18 because 17 is the highest on this page today, and this page has
+carried two items numbered 4 and two numbered 5 before, so the number is stated
+rather than counted (incident 29).
+
+The panel's first reviewer shipped on 2026-10-02 with a build note saying its
+file half "runs on every pull request that touches `skills/**` or
+`db/schema.sql`, inside the skill-receipts step of `checks.yml`". It does not.
+That step runs `tests/test_skill_receipts.py` and nothing else, and neither
+reviewer's file is in either `paths` list. So 46 tests have never run in CI, and
+the thing only CI can hold about a reviewer in this organization, that its SQL
+still resolves against `db/schema.sql`, has never been held.
+
+**Why these tests belong in CI when the reviewers mostly do not.** No Postgres
+exists in CI here, so the SELECTs are parsed with libpg_query and every relation
+and column is resolved against the schema, exactly as `tools/graph_audit.py`'s
+ten SELECTs already are in the `the graph audit's SQL still matches the schema`
+step. A migration that renames `claim_links.to_claim` or
+`claims.interpreted_at` should turn a pull request red, not turn a 16:00 UTC
+cron silently useless.
+
+**Three edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` and `db/schema.sql` are already in both lists;
+these four lines go in both, beside the existing `tools/` and `tests/` entries.
+
+```yaml
+      - "tools/panel.py"
+      - "tools/panel_provenance.py"
+      - "tools/panel_adversary.py"
+      - "tests/test_panel_provenance.py"
+      - "tests/test_panel_adversary.py"
+```
+
+Second, two steps. They go after `every skill can be registered, and the
+registrar's SQL matches the schema` from item 12, because the panel reads what
+the registrar writes and a reader wants them in that order.
+
+```yaml
+      # 2026-10-03, ADR-13. The panel's two built reviewers send five SELECTs
+      # and two INSERTs between them, and no CI job in this organization can
+      # execute any of them. So they are parsed with libpg_query and every
+      # relation and column is resolved against db/schema.sql, the same
+      # instrument the graph audit step above uses, for the same reason: a
+      # renamed column would otherwise be discovered by a daily cron going
+      # quietly useless rather than by the pull request that renamed it.
+      #
+      # Two reviewers, two steps, on purpose. A single step would go red for
+      # either and the log line is where a reader learns which.
+      - name: the provenance reviewer's SQL matches the schema, and its duties still decide
+        if: always()
+        run: python3 -m pytest tests/test_panel_provenance.py -q
+
+      - name: the adversary reads the graph in the direction ADR-10 fixed
+        if: always()
+        run: python3 -m pytest tests/test_panel_adversary.py -q
+
+      # The one half of one reviewer that can actually judge a skill with no
+      # database: every check that lives in the SKILL.md itself. This is the
+      # step the build note of 2026-10-02 claimed already existed.
+      - name: no skill on this branch fails the panel's file-only checks
+        if: always()
+        run: python3 tools/panel_provenance.py --files-only
+```
+
+**What must NOT be added, and this is the half a reader will be tempted by.**
+There is no step that runs `tools/panel_adversary.py`. Nothing that reviewer
+decides is in a SKILL.md: its whole input is the claim graph, so with no
+credential it can only report that nobody asked the graph, and a green step
+named for it would read as the graph agreeing.
+`tests/test_panel_adversary.py` asserts that `checks.yml` never names that
+command, so adding it turns the second step above red.
+
+**Smoke-tested from the seat, as far as a seat can.** All three commands were
+run in this run's sandbox against the real six skills: 46 passed, 39 passed, and
+`--files-only` exits 0 with six `unknown` verdicts and no fail. Each pytest step
+was also confirmed to fail on purpose, against a deliberately renamed column in
+each reviewer's SQL. The steps cannot be smoke-tested as a workflow on a branch,
+because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database.
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this

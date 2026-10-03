@@ -25,11 +25,19 @@ row. The reviewer reads and files; it merges nothing, because merging needs a
 PR-merge-scoped token that does not exist yet (docs/sprints/pending.md item 7).
 
 It runs in two places, for one reason: this organization holds no database
-credential in CI and no model key in a test. So the half that lives in the file
-runs on every pull request that touches `skills/**` or `db/schema.sql`, inside
-the skill-receipts step of `checks.yml`, and the half that needs Neon runs daily
+credential in CI and no model key in a test. The half that needs Neon runs daily
 as step 2 of `pipeline/skill_revision.py`, which already holds the `neon` secret
-and already reads every skill off `main`.
+and already reads every skill off `main`. The half that lives in the file is
+`--files-only`, and it needs a step in `checks.yml` that this seat cannot push.
+
+**Corrected 2026-10-03.** The paragraph above said that file half "runs on every
+pull request" from the day it was written, and it never did: `checks.yml` names
+no reviewer and neither reviewer's tests are in its `paths`, so 46 tests had
+never been executed in CI. The queue entry that was missing is item 18 of
+`docs/agents/pending-workflow-changes.md`, and the entry in the incident
+register is `INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had`. It is
+the second time in two days that this seat described a CI step in prose and
+shipped no step, so the general shape is recorded there rather than here.
 
 ## The three duties, and which of them is decidable
 
@@ -113,16 +121,74 @@ passed must never read as unanimous.
 The PM's 2026-09-28 grooming split this entry into three, and this build is the
 first. The two that remain, with what each needs:
 
-1. **The adversary and the validator.** The adversary searches the claim graph
-   for contradicting or refining claims the draft ignored, which is
-   `deprecated_claims` and the contradiction edges, and much of the arithmetic
-   already exists in `tools/skill_triggers.py`. The validator runs the A/B
-   trial, which is `tools/skill_eval.py`. Both need a model key in the job that
-   runs them, and neither needs the merge token.
-2. **The merge.** Unanimous pass merges the proposal through the server-held
+1. **The adversary**, built 2026-10-03, `tools/panel_adversary.py`. See the
+   section below: it turned out to need no model key at all, which is the one
+   thing this list got wrong.
+2. **The validator.** Runs the A/B trial, which is `tools/skill_eval.py`, and
+   needs a model key in the job that runs it. That is the open
+   infrastructure question, and the model half of duty 2 belongs with it for
+   the same reason: which job holds a key, and what the per-run cap is.
+3. **The merge.** Unanimous pass merges the proposal through the server-held
    token. Blocked on the owner minting a PR-merge-scoped token, and gated by
    ADR-12's whitelist: the panel may merge `skills/`, `prompts/*.md` and
    `sources.yaml`, and never machinery.
 
-The model half of duty 2 belongs with slice 2, because it is the same
-infrastructure question: which job holds a key, and what the per-run cap is.
+## Slice 2, the adversary (2026-10-03)
+
+ADR-13 gives it one sentence and the sentence is the whole specification:
+*"Searches the claim graph for contradicting or refining claims the draft
+ignored. If the graph disagrees with the skill, the PR fails."*
+
+**The list above said this reviewer needs a model key. It does not, and that is
+the most useful thing in this section.** ADR-10 fixes the direction of every
+edge in `claim_links`: `from_claim` is always the newer, judging claim. So "a
+contradicting claim the draft ignored" is a query and not a judgment. For each
+id the skill cites, read the `contradicts` edges pointing at it, and ask whether
+the newer claim on the other end is in the skill's own citation list. Not cited
+is a `fail`, which is the ADR's second sentence. Cited is an `unknown`, because
+a flat citation list cannot say whether the skill discusses the disagreement or
+asserts both sides as settled, and that is the same format gap duty 2 waits on.
+`refines` edges get the same arithmetic with a softer meaning, and `SEVERITY`
+in the file is the one line to change if an ignored refinement should warn
+rather than fail.
+
+**It reads the organization's threshold rather than choosing one.**
+`deprecated_claims` defines a contradicted claim at `confidence >= 0.7`, and
+`skills_needing_revision` is that view joined against what skills cite, which is
+what queues a revision in `pipeline/skill_revision.py`. A reviewer with its own
+number would give the panel and the revision queue two answers to one question,
+so this one reads 0.7 and files weaker contradictions as evidence.
+`tests/test_panel_adversary.py` asserts that agreement against the schema text.
+
+**The check that matters most is an `unknown`.** A cited claim whose
+`interpreted_at` is null has never been judged against its neighbours, so it has
+no edges, so a naive adversary finds nothing and reports a pass. That pass would
+mean "the graph was never asked" while reading as "the graph agrees". Those ids
+are reported `unknown` by number, which blocks the merge the way ADR-13 intends.
+The claim graph has stalled twice in this product's life, so this is a live
+condition: incident 24, and the 2026-09-24 curation brief that found it frozen
+since 2026-09-12.
+
+**It has no half that runs in CI, and that is a decision rather than a gap.**
+Everything the provenance reviewer decides is in the SKILL.md, so `--files-only`
+is a real check. Nothing the adversary decides is in the SKILL.md, because the
+disagreement is a row somebody wrote after the skill was merged. A green CI step
+named for this reviewer could only ever mean that nobody asked the graph, so
+there is no `--files-only` here and the test suite asserts that `checks.yml`
+never names the command. Its *tests* do belong in CI, and queue item 18 is where
+they are asked for.
+
+**Two checks in it are not ADR-13 duties**, labelled `evidence-breadth` and
+`evidence-grade` the way the provenance reviewer labels `spec-conformance`.
+`duplicates` edges between two claims a skill cites mean its list is wider than
+its evidence, which the provenance reviewer cannot see because the duplication
+is in the corpus rather than in the file. And `claims.evidence_grade` says what
+kind of support a claim has. Both are recorded as evidence and neither moves a
+verdict, because no decision in any register sets a bar for either and inventing
+one in a reviewer would be the reviewer legislating.
+
+**What slice 2 still does not do.** It cannot pass a skill whose claims the
+corpus has never interpreted, and it cannot see a disagreement nobody wrote an
+edge for. Both are the interpret job's health rather than this reviewer's
+accuracy, which is why the `graph-searchable` finding prints the count every
+time, including on a clean pass.

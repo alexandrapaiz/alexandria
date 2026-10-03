@@ -6706,3 +6706,53 @@ which cannot catch a defect whose trigger is the passage of time. Filed in the
 ledger as its own entry (2026-10-02, a daily run of the whole suite), because
 the same gap hides anything else that expires: a pinned model id, a cap read
 from a dated document, an API that deprecates on a date.
+
+## INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had — a build note and the README both say the provenance reviewer runs on every pull request, and no workflow has ever run it (2026-10-03, engineer seat)
+
+**A repeat of `INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`,
+one day later, by the same seat, in the same shape.** That entry is about
+`tests/test_markdown.py`, whose docstring said it ran in CI while no workflow
+named it. This entry is about the sentence this seat wrote the following
+evening.
+
+**What happened.** `docs/product/reviewer-panel.md`, written yesterday with the
+panel's first reviewer, says the file half of that reviewer "runs on every pull
+request that touches `skills/**` or `db/schema.sql`, inside the skill-receipts
+step of `checks.yml`". The README's status line repeats it: "the file half runs
+on every pull request that touches `skills/**`". Neither is true.
+`.github/workflows/checks.yml` on this branch and on main contains no
+`panel_provenance` step, and neither `tools/panel_provenance.py` nor
+`tests/test_panel_provenance.py` is in either of its two `paths` lists. The
+skill-receipts step runs `tests/test_skill_receipts.py` and nothing else. So the
+46 tests in `tests/test_panel_provenance.py` have never been executed by CI, and
+the one thing CI exists to hold about that reviewer, that its three statements
+still resolve against `db/schema.sql`, has never been held.
+
+**Why the same seat wrote the same defect twice in two days.** The first entry
+blamed a docstring written at the same time as a queued workflow change, where
+the queue entry covered a different file. This one has no queued workflow change
+at all. The build shipped the reviewer, the schema, the tests and the prose
+describing where it runs, and the step was simply never written, because
+`.github/` is outside this seat's writable surface and the queue file is the
+substitute. A change this seat cannot make is a change it has to remember to
+file, and nothing in the run checked that the sentence had a queue entry behind
+it.
+
+**The general shape, which is worth more than either instance.** Both defects
+are one sentence in prose asserting a mechanism in a file the author could not
+edit. Neither was catchable by a test, because the prose was the only artifact
+that said the mechanism existed. The cheap fix is the one already applied to
+`tests/test_markdown.py`: a test that greps `checks.yml` for the step it claims.
+This run adds the same gate for the adversary
+(`tests/test_panel_adversary.py::test_the_adversary_has_no_files_only_mode_and_ci_never_runs_the_reviewer`),
+which asserts the opposite direction: the reviewer must NOT be a CI command,
+because CI holds no database credential and a green step could only ever mean
+that nobody asked the graph.
+
+**Fixed in this pull request, in three places.** The sentence in
+`docs/product/reviewer-panel.md` and the README's status line now say the step
+is queued rather than running, and item 18 of
+`docs/agents/pending-workflow-changes.md` is the queue entry that was missing:
+the two test files in both `paths` lists, two pytest steps, and the provenance
+reviewer's `--files-only` command. The step itself still needs the chair's hand,
+which is the part this seat cannot do and the reason the entry exists.

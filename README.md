@@ -331,19 +331,27 @@ The pipeline, built bottom-up.
       chair applies the CI step
       ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
       12) and deploys the daily job with a `github` secret
-- [ ] **ADR-13 reviewer panel, one reviewer of three (2026-10-02).** The
+- [ ] **ADR-13 reviewer panel, two reviewers of three (2026-10-03).** The
       provenance reviewer is built (`tools/panel_provenance.py`) and files a
       `panel_verdicts` row per skill: the claim ids a skill cites have to exist
       in the corpus, the paper behind each one has to be in the skill's own
       citation list, and judgment the papers do not support has to say so. The
-      file half runs on every pull request that touches `skills/**`; the half
-      that needs Neon runs daily inside `pipeline/skill_revision.py`, so it is
-      live when the chair deploys that job. One duty the ADR names is not
-      decidable yet and the reviewer reports it rather than guessing: a skill
-      cites its claim ids once for the whole document, so nothing says which
-      claim supports which section. The adversary, the validator and the merge
-      are the next two slices (docs/product/reviewer-panel.md). Until all
-      three pass a skill, the owner's merge is still the gate
+      adversary is built too (`tools/panel_adversary.py`) and asks the opposite
+      question, which ADR-10's edge direction makes a query rather than a
+      judgment: for every claim a skill cites, has the corpus since contradicted
+      or refined it, and does the skill cite what did. A contradiction the draft
+      ignored fails the skill, and a claim the interpret job never judged is
+      reported by id as unmeasured, because the dangerous output here is a clean
+      pass that means nobody asked the graph. Both run daily inside
+      `pipeline/skill_revision.py`, so both are live when the chair deploys that
+      job. Two duties are not decidable against today's format and the panel
+      reports them rather than guessing: a skill cites its claim ids once for
+      the whole document, so nothing says which claim supports which section,
+      and nothing says whether a skill citing both sides of a contradiction
+      discusses it. The validator (the A/B trial, which needs a model key in
+      that job) and the merge (which needs a PR-merge-scoped token) are the two
+      slices left, in docs/product/reviewer-panel.md. Until all three pass a
+      skill, the owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21
