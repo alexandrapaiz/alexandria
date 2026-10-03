@@ -1299,3 +1299,69 @@ gap that the same collision had left empty (incident 25).
     paper arriving inside the sentence rather than at the front of it. The
     frame ban in the same slot is also stated to bind its heading, because
     the sentence banned on the entries printed in the heading instead.
+
+87. The line that exists because the skeleton was blank there. A format
+    skeleton names every part of the artifact, and the gap between two of
+    its parts is read by whoever fills it as a slot with no rules in it
+    rather than as a part that does not exist.
+    `prompts/digest.md` specifies the title and then the opening, with
+    nothing between them. Both issues this product has sent since the
+    generator was rewritten printed an italic line in that gap, and in both
+    it described the issue's own three streams, in the order the payload
+    glossary lists them. The published one added a claim the library could
+    not make and that clause was found, filed and removed. What was left
+    after the removal was the part no grade ever reached, because every
+    reader graded the worse clause and passed the line.
+    Three separate gates had the line in hand and none of them stopped it.
+    The heading gate's collection step takes "every run of bold or italic
+    text sitting alone on its own line", and this was the only line in the
+    issue that step collected which was not a heading. Its question,
+    whether the line could sit over a different day's items unchanged,
+    answers yes on its face. Its remedy is where the gate ran out: the only
+    repair it offers is to write the line again from the items underneath
+    it, and a line with nothing underneath it cannot be rewritten, so a
+    reader applying the gate honestly arrives at a fresh invention instead
+    of a deletion.
+    The general tell: a gate that collects a line, asks the right question
+    and offers one repair can only ever produce that repair. Where the
+    honest answer is that the line should not exist, a rewrite-only remedy
+    launders it. So every gate that can condemn a line needs a delete branch,
+    and the condition on that branch is ownership: does any slot in the file
+    ask for this line at all. And when a skeleton has a gap, the gap gets
+    written out as a slot whose rule is that it stays empty, because an
+    instruction absent from a writing position is not a prohibition.
+    Added 2026-10-03. Enforced the same day: the skeleton carries a block
+    between the title and the opening saying nothing stands there, and the
+    heading gate's remedy splits into a rewrite branch for headings over
+    blocks and a delete branch for a line no slot asked for.
+
+88. The specimen the payload could never have supplied, which is why nobody
+    noticed it was still a template. This file defends its own examples with
+    one test, stated at the skeleton: "Every example in this file is drawn
+    from a subject the payload cannot contain." The test was written against
+    the failure where a worked rewrite of an issue became that issue's prose,
+    and for examples about research it holds.
+    It protects nothing in a specimen that names no subject. A phrase about
+    how strong the evidence is, or about what the issue is, is payload-neutral
+    by construction: it fits every issue, so there is no subject in it to be
+    drawn from a week the generator was not handed, and it passes the test
+    while being directly printable.
+    The grade rule demonstrated a grade in a sentence counting two units of
+    scale and then assessing them. Four hundred lines later the gate banned
+    that exact frame by name and recorded that a print carried it four times
+    out of four, two of them opening on the specimen's own first two words.
+    The reading-list rule listed the same facts in the same shape at the
+    position where its entries get written. The payload glossary described
+    one of the four streams in reader-facing words, and those words printed
+    at the top of the issue as the line in entry 87.
+    The general tell, and it is the test this file's defence is missing: ask
+    of every quoted specimen whether it could print verbatim in an issue
+    about any research at all. If it could, the subject test does not reach
+    it and the position is what decides. At a writing position, delete it and
+    name no replacement, because a replacement offered where the writing
+    happens is the next frame. At a gate, where finished output is being
+    read, a specimen is evidence and may stay.
+    Added 2026-10-03. Enforced the same day: the in-frame grade specimen is
+    struck and the rule names no replacement, the reading-list facts are
+    stated as questions rather than as a shaped sentence, and the glossary
+    describes the traction stream by what it is computed from.

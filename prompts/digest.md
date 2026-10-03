@@ -412,7 +412,7 @@ You receive a JSON payload assembled by fixed queries:
   mechanism.
 - `superseded`: high-confidence `refines` edges from this week, each pairing
   an older claim with the newer claim that updates it, with both papers.
-- `traction`: two evidence streams for older work gaining acceptance, namely
+- `traction`: two evidence streams on claims alexandria already held, namely
   `supported_claims` (claims with 2+ incoming `supports` edges, with counts)
   and `citation_movers` (papers whose Semantic Scholar citation count grew
   since the last check, with before/after numbers).
@@ -461,6 +461,19 @@ date, the issue metadata, the archive listing. No bracketed range, no "this
 week" stamp, and never the ISO week id here or anywhere else reader-facing.
 Where a date range genuinely belongs in the prose, write the payload's `dates`
 with a plain ASCII hyphen, so "September 7-13, 2026".}
+
+{Nothing stands between the title and the opening's first sentence. No
+second line under the title, no italic line describing the issue, no
+standing line describing alexandria. This slot is written here because it
+is the one place in the skeleton that was blank, and a blank in a skeleton
+is not an absence to the writer reading it, it is a slot with no rules in
+it. Every issue this product has sent since the generator was rewritten has
+filled it with the same line, and that line told the reader which internal
+bins the material was sorted into, which is the one thing the gate at the
+end of this file forbids a sentence to do. The product describes itself on
+the site and never inside an issue (owner's ruling, 2026-09-19). The title
+states the finding, the opening greets the reader, and the reader needs no
+line between them explaining what they are holding.}
 
 {Opening: the most important prose in the issue, and the one place each
 issue should feel different from the last. It has four jobs, in order:
@@ -964,10 +977,13 @@ they bind every item at every cadence. The format above had no place to put
 one, so a print of 2026-09-30 carried a grade on every section and none on
 any of its three picks, which is the one part of the issue asking the reader
 for an hour of their time. Say what this work cannot establish, inside the
-entry's own sentence and never as a second sentence stapled behind it. One
-team, one benchmark, a result nobody outside the group has reproduced: those
-are the facts that decide whether the hour is worth it, and the entry that
-withholds them is recommending on the reader's behalf.
+entry's own sentence and never as a second sentence stapled behind it. How
+many groups have done this, how much of the field it was tested on, and
+whether anybody outside the group has reproduced it: those are the facts that
+decide whether the hour is worth it, and the entry that withholds them is
+recommending on the reader's behalf. Say them in your own words, because the
+sentence that counts two units of scale and then assesses them is the frame
+the gate below bans, and this is a writing position.
 This is also where the broadest sentence in the issue gets written, because
 an entry is a whole field summarised in a clause with no number in it. A line
 that says what the bottleneck in some subfield really is, on the authority of
@@ -1140,9 +1156,15 @@ the rule's question to the thing in front of you.
   stopped reading the opening words.
   So never open a grade with the word "evidence", never reuse a stem you have
   already used in this issue, and fold the grade into a sentence that is doing
-  other work. "Nobody outside the group has run it again" grades. "One team, one
-  model family, and the effect is big enough that somebody will check it" grades
-  and says what happens next. The counting of stems happens at the gate.
+  other work. "Nobody outside the group has run it again" grades, and it grades
+  without handing you a shape, which is the only kind of specimen this rule is
+  allowed to carry. A second one stood here until today, reading two units of
+  scale and then an assessment, and the gate below bans exactly that frame.
+  The print of 2026-09-30 carried it four times out of four and two of those
+  opened on its first two words. So the frame is not demonstrated here at all:
+  the gate names it as the thing to avoid and this rule names no replacement,
+  because a replacement offered at the position where you write is the next
+  frame. The counting of frames happens at the gate.
   Then count them, off the same list the links are counted against one rule
   above, which is every named piece of work in the issue and not every item.
   Take from that list the entries whose number the issue prints, and count the
@@ -1601,6 +1623,17 @@ the rule's question to the thing in front of you.
   this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
+  **Two fixes, and which one applies depends on whether this file asked for
+  the line at all.** For a heading over a block, the fix is the rewrite above.
+  For a line no slot in this file asks you to write, the fix is to DELETE it,
+  and rewriting it is the wrong repair. The skeleton names every line the
+  issue contains: the title, the opening, the four headings and their blocks,
+  the reading list's entries, the close and the standing line. A line you
+  collected that answers to none of those was invented at a position with no
+  rules, so it has no items underneath it to be rewritten from, and a fresh
+  one next issue is the same invention wearing today's words. The one that
+  has shipped sat directly under the title in italics and described the
+  issue's own three streams. Delete, and the title meets the opening.
   **Then read each heading against the block under it, because a heading can be
   written from the day's news and still be wrong about it.** The question is
   whether the section ends where its heading says it does. A heading that states
