@@ -7773,3 +7773,40 @@ graphs.
 - Related: ban list 87, `INC-2026-10-03-law-12-graded-by-grep`, the masthead
   filing of 2026-10-03 in this same pull request.
 - Status: proposed, awaiting owner's ruling
+
+### 2026-10-03 — Two reader-facing constants carry characters the issue's own law forbids (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-03, executing the pass-6 step added in
+  this same pull request, which grades every reader-facing constant the
+  pipeline splices into an issue against the ten laws rather than against the
+  filings that name it. These two are what it found on its first execution.
+- One, the date range the model is handed. `week_just_ended()` in
+  `pipeline/weekly.py:1038` and `:1040` builds the `dates` field with an EN
+  DASH, U+2013, and that value goes into the payload at `:1209` and `:1329`.
+  `prompts/digest.md` tells the model to write the payload's `dates` "with a
+  plain ASCII hyphen", which reads as a description of the value rather than
+  as an instruction to change it. A model that copies the field it was told to
+  print emits a non-ASCII character and has obeyed the sentence it was given.
+  Canon law 1 and the plain-ASCII rule in the generator both forbid the result.
+  Patched on the prompt side in this pull request, which names the conversion
+  explicitly, so this filing is about the source rather than about the issue.
+- Two, the email's edition label. `edition_label()` in
+  `pipeline/email_render.py:325` and `:330` returns "Weekly synthesis ·
+  <dates>" and "Daily dispatch · <dates>", with a MIDDLE DOT, U+00B7, and
+  `week_dates()` at `:306` and `:307` builds its range with the same en dash.
+  No prompt change can reach either, because the model does not write the
+  label. It is reader-facing text in the email, so it is this seat's custody by
+  the owner's order of 2026-09-25 and the engineer's edit to make.
+- What to do, and it is one change at the source rather than two at the edges:
+  build both date ranges with an ASCII hyphen, and replace the middle dot with
+  a comma or an ASCII hyphen. Fixing `week_just_ended` and `week_dates` fixes
+  the payload, the issue body and the email label together, and then the prompt
+  sentence patched here becomes a belt over a fixed brace rather than the only
+  guard.
+- Why this is worth an engineer's minute rather than a shrug: the newest print
+  carries zero non-ASCII characters only because it prints no date range. The
+  defect is latent in every issue that prints one, and the owner's standing law
+  on plain punctuation is the oldest in the register.
+- Related: canon law 1, the pass-6 step added 2026-10-03, ban list 61 (the
+  reader-facing string in code that no pass grades).
+- Status: proposed

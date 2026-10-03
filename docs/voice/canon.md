@@ -652,6 +652,23 @@ on a generator five commits out of date without once noticing.
    opened on "read in full and distilled weekly" on 2026-09-30, on a page
    that had been edited that same day to apply a taste ruling four lines
    from the bottom of the file.
+   **Then grade the standing lines themselves, against the laws, with no
+   filing required** (added 2026-10-03, `INC-2026-10-03-law-12-graded-by-grep`).
+   Everything above this paragraph re-checks defects somebody already
+   filed, and a pass built out of filings can only find what is already
+   known. The grade of 2026-10-02 executed it correctly, opened
+   `pipeline/weekly.py`, checked `MASTHEAD` against the law in the filing
+   that named it, and wrote that the constant "has been correct since
+   2026-09-26". It was correct about law 15 and it was reciting three of
+   the four framework slots at the time, which is law 12, which nothing
+   had filed.
+   So list every reader-facing constant the pipeline splices into an
+   issue, name its file and line, and put the ten laws to each one as
+   though it were a sentence somebody wrote this morning. These lines
+   print on every issue, they are written by no run that is grading, and
+   they are the only prose in the product that no prompt gate can reach.
+   A standing line is the cheapest place in the product to be wrong for a
+   fortnight.
 
 ## Maintenance
 

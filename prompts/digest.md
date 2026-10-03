@@ -460,7 +460,11 @@ is the finding alone, and the date lives where dates live: the email's own
 date, the issue metadata, the archive listing. No bracketed range, no "this
 week" stamp, and never the ISO week id here or anywhere else reader-facing.
 Where a date range genuinely belongs in the prose, write the payload's `dates`
-with a plain ASCII hyphen, so "September 7-13, 2026".}
+with a plain ASCII hyphen, so "September 7-13, 2026". That is a CONVERSION and
+not a description of what you were handed: the payload's `dates` arrives with
+an en dash between the two days, every time, because the pipeline builds it
+that way. Copy the value and you have printed a character the issue is not
+allowed to contain. Retype the separator as a hyphen.}
 
 {Opening: the most important prose in the issue, and the one place each
 issue should feel different from the last. It has four jobs, in order:
