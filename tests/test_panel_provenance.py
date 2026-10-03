@@ -637,3 +637,24 @@ def test_every_skill_in_the_library_is_within_the_published_limits():
             if finding["check"] == "spec-conformance":
                 headroom[verdict["target"]] = finding["detail"]
     assert len(headroom) == len(verdicts), "every skill reports its headroom"
+
+
+def test_no_skill_on_this_branch_fails_a_file_level_check():
+    """The check the queued `--files-only` step cannot be.
+
+    `python3 tools/panel_provenance.py --files-only` exits 2 over the real
+    library and always will: duty 2 is structurally `unknown` for every skill
+    until the per-section claim id format lands, and the three states are
+    `0 nothing wrong`, `1 a finding`, `2 something unmeasurable`. A CI step on
+    that command would be red on every pull request forever, which is why item
+    18 of docs/agents/pending-workflow-changes.md queues two pytest steps and
+    not three commands. This test is the part of it worth having: a skill whose
+    provenance block has a real defect fails here, and an honest `unknown`
+    does not.
+    """
+    verdicts = panel.review(conn=None)
+    fails = [(v["target"], f["check"], f["detail"])
+             for v in verdicts for f in v["findings"]
+             if f["severity"] == "fail"]
+    assert not fails, fails
+    assert verdicts, "the library has no skills to review"

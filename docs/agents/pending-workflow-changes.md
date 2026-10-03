@@ -1529,10 +1529,10 @@ step. A migration that renames `claim_links.to_claim` or
 `claims.interpreted_at` should turn a pull request red, not turn a 16:00 UTC
 cron silently useless.
 
-**Three edits to `.github/workflows/checks.yml`.**
+**Two edits to `.github/workflows/checks.yml`.**
 
 First, the paths. `skills/**` and `db/schema.sql` are already in both lists;
-these four lines go in both, beside the existing `tools/` and `tests/` entries.
+these five lines go in both, beside the existing `tools/` and `tests/` entries.
 
 ```yaml
       - "tools/panel.py"
@@ -1544,7 +1544,10 @@ these four lines go in both, beside the existing `tools/` and `tests/` entries.
 
 Second, two steps. They go after `every skill can be registered, and the
 registrar's SQL matches the schema` from item 12, because the panel reads what
-the registrar writes and a reader wants them in that order.
+the registrar writes and a reader wants them in that order. Item 12 is not a
+prerequisite: these two steps stand alone if item 12 is still unapplied, and in
+that case they go after the graph audit step instead, which is the last step in
+the `digest-budget` job today.
 
 ```yaml
       # 2026-10-03, ADR-13. The panel's two built reviewers send five SELECTs
@@ -1564,16 +1567,25 @@ the registrar writes and a reader wants them in that order.
       - name: the adversary reads the graph in the direction ADR-10 fixed
         if: always()
         run: python3 -m pytest tests/test_panel_adversary.py -q
-
-      # The one half of one reviewer that can actually judge a skill with no
-      # database: every check that lives in the SKILL.md itself. This is the
-      # step the build note of 2026-10-02 claimed already existed.
-      - name: no skill on this branch fails the panel's file-only checks
-        if: always()
-        run: python3 tools/panel_provenance.py --files-only
 ```
 
-**What must NOT be added, and this is the half a reader will be tempted by.**
+**Why there is no third step running the reviewer itself, which this entry
+nearly got wrong.** The obvious companion to item 12's `python3
+tools/skill_registrar.py --files-only` is `python3 tools/panel_provenance.py
+--files-only`, and the first draft of this entry queued it and claimed it exits
+0. It exits 2, over the real library, and always will. The reviewer's three
+states are `0 nothing wrong`, `1 a finding`, `2 something could not be
+measured`, and duty 2 is structurally unmeasurable for every skill until the
+per-section claim id format lands, so that step would be red on every pull
+request forever and would teach every seat to ignore it. The useful half of it
+is a test instead:
+`tests/test_panel_provenance.py::test_no_skill_on_this_branch_fails_a_file_level_check`
+asserts that no skill carries a `fail` finding, which is the thing that should
+block a merge, and lets an honest `unknown` through. It was added in the same
+pull request as this entry.
+
+**What must NOT be added, and this is the other half a reader will be tempted
+by.**
 There is no step that runs `tools/panel_adversary.py`. Nothing that reviewer
 decides is in a SKILL.md: its whole input is the claim graph, so with no
 credential it can only report that nobody asked the graph, and a green step
@@ -1581,12 +1593,15 @@ named for it would read as the graph agreeing.
 `tests/test_panel_adversary.py` asserts that `checks.yml` never names that
 command, so adding it turns the second step above red.
 
-**Smoke-tested from the seat, as far as a seat can.** All three commands were
-run in this run's sandbox against the real six skills: 46 passed, 39 passed, and
-`--files-only` exits 0 with six `unknown` verdicts and no fail. Each pytest step
-was also confirmed to fail on purpose, against a deliberately renamed column in
-each reviewer's SQL. The steps cannot be smoke-tested as a workflow on a branch,
-because the seat cannot push the file.
+**Smoke-tested from the seat, as far as a seat can.** Both commands were run in
+this run's sandbox against the real six skills: `tests/test_panel_provenance.py`
+is 47 passed and `tests/test_panel_adversary.py` is 43 passed. Each was also
+confirmed to fail on purpose, against a deliberately renamed column in its own
+reviewer's SQL, and the adversary's suite was confirmed to fail against four
+more deliberate defects: the threshold moved off the schema's 0.7, the edge read
+in the wrong direction, the file dropped from the Modal image, and an
+un-interpreted claim downgraded from `unknown` to a note. The steps cannot be
+smoke-tested as a workflow on a branch, because the seat cannot push the file.
 
 **Cost.** $0. No key, no network, no database.
 
