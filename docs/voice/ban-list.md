@@ -1379,3 +1379,32 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-03. Enforced the same day: the in-frame grade specimen is
     struck and the rule names no replacement, and the reading-list facts are
     stated as the questions they answer rather than as a shaped sentence.
+
+89. The payload fact that went stale in the prompt. An instruction written
+    while looking at one day's data records what that data was, the sentence
+    is accurate and useful on the day it is written, and every run afterwards
+    reads a verdict on its own input before it has looked at it.
+    The traction slot of `prompts/digest.md` carried two, both added
+    2026-09-23. "A paper going from zero citations to one, or from one to two,
+    is a single reader rather than the field moving, and today all five movers
+    are that size." And "`supported_claims` returns claims and never papers,
+    so two rows can be one paper: today's twelve rows are ten papers, with two
+    of them doubled."
+    The newest print was handed twelve citation movers and twelve supported
+    claims, not five movers, and it printed no traction section at all. The
+    traction slot is section one of every issue at every cadence and the law it
+    carries is the owner's oldest, "Traction matters a lot." The one sentence
+    in the file that could have told a model to skip it told it, in the
+    payload's own units, in the present tense, with the word "today".
+    The general tell: a prompt is read on a day it was not written, so a
+    sentence in it that describes the input is a claim about a day that has
+    passed. The tense is the giveaway. Any "today", "this week", "all five",
+    "today's twelve" in an instruction is either a rule stated as an
+    observation or an observation that has escaped into the rules, and both
+    repair the same way: turn it into the question the model asks of the
+    payload in front of it, and let the count be whatever it is. The file may
+    say how to judge a stream. It may never say what the stream contains.
+    Added 2026-10-03. Enforced the same day: both sentences struck, each
+    replaced by the question asked of the payload actually handed over, and
+    the first replacement says in its own words that this file does not know
+    how many movers there are or how big they are.

@@ -699,11 +699,20 @@ Translate it:
 now report the same effect". For `citation_movers`, give the movement with
 its numbers (X -> Y citations) and say what a jump that size signals.
 Then ask whether it signals anything. A paper going from zero citations to
-one, or from one to two, is a single reader rather than the field moving, and
-today all five movers are that size. This is the impact section, so movement
-earns a slot only where a builder could act on it. Say plainly that nothing
-older moved much today, or say nothing at all, and never dress a count of one
-as traction. An
+one, or from one to two, is a single reader rather than the field moving.
+Ask that of the movers you were actually handed, one at a time, and count how
+many clear it. **This file does not know how many you have or how big they
+are, and a sentence here that says it does is a sentence to distrust.** One
+stood here until today asserting that all of today's movers were of the
+signal-free size. It was a true observation about the payload of 2026-09-23
+and it stayed in the file, so for ten days every run read a verdict on its own
+traction stream before looking at it, and the newest print carried no traction
+section at all while its payload held twelve movers and twelve supported
+claims. This is the impact section and it is section one, so the bar is real
+and the finding has to be yours: movement earns a slot where a builder could
+act on it, and a stream with nothing that size in it is a stream you report.
+Where genuinely nothing clears the bar, say plainly that nothing older moved
+much, and never dress a count of one as traction. An
 empty stream is never news. "No citation movers were recorded this week"
 names one of alexandria's own tables at a reader who has never heard of it,
 so either say nothing or say the absence as a fact about the field in the
@@ -711,8 +720,11 @@ reader's words ("nothing older moved enough to be worth reporting today").
 That holds anywhere a query comes back empty.
 
 `supported_claims` returns claims and never papers, so two rows can be one
-paper: today's twelve rows are ten papers, with two of them doubled. Count
-distinct papers before you count items, and give one paper a second slot here
+paper and the row count is never the paper count. Count the distinct papers in
+the rows you were handed, rather than trusting a figure from this file: the
+sentence here used to name a row count and a paper count for one particular
+day, and both went stale the next morning. Count distinct papers before you
+count items, and give one paper a second slot here
 only when the prose says outright that both findings come from the same work.
 
 Each item is prose, and depth follows significance here as everywhere. The
