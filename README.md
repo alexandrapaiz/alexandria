@@ -331,7 +331,7 @@ The pipeline, built bottom-up.
       chair applies the CI step
       ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
       12) and deploys the daily job with a `github` secret
-- [ ] **ADR-13 reviewer panel, two reviewers of three (2026-10-03).** The
+- [ ] **ADR-13 reviewer panel, all three reviewers built (2026-10-03).** The
       provenance reviewer is built (`tools/panel_provenance.py`) and files a
       `panel_verdicts` row per skill: the claim ids a skill cites have to exist
       in the corpus, the paper behind each one has to be in the skill's own
@@ -348,10 +348,23 @@ The pipeline, built bottom-up.
       reports them rather than guessing: a skill cites its claim ids once for
       the whole document, so nothing says which claim supports which section,
       and nothing says whether a skill citing both sides of a contradiction
-      discusses it. The validator (the A/B trial, which needs a model key in
-      that job) and the merge (which needs a PR-merge-scoped token) are the two
-      slices left, in docs/product/reviewer-panel.md. Until all three pass a
-      skill, the owner's merge is still the gate
+      discusses it. The validator is built as well
+      (`tools/panel_validator.py`), and it needs no model key either: ADR-13
+      asks whether behaviour moved in the direction the evidence supports, and
+      the A/B trial is a dated receipt `tools/skill_eval.py` writes under a
+      policy registered in advance, so the reviewer judges the receipt rather
+      than running a trial whose threshold it would be choosing at review time.
+      It asks four things of that receipt, all of them file facts: that it
+      exists, that it measured the text under review rather than an earlier
+      revision, that the harness's own gate passes it, and that nobody edited
+      the threshold after seeing the numbers. It also holds ADR-36's own
+      sentence, that a skill with no eval is `status: draft` and never
+      `active`, which **fails all six skills on main today**. So the panel is
+      complete and `panel_consensus`'s three passes on one text are reachable
+      for the first time. **The merge is the only slice left** (a
+      PR-merge-scoped token only the owner can mint), in
+      docs/product/reviewer-panel.md. Until the panel passes a skill, the
+      owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21
