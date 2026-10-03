@@ -6749,9 +6749,18 @@ which asserts the opposite direction: the reviewer must NOT be a CI command,
 because CI holds no database credential and a green step could only ever mean
 that nobody asked the graph.
 
-**Fixed in this pull request, in three places.** The sentence in
-`docs/product/reviewer-panel.md` and the README's status line now say the step
-is queued rather than running, and item 18 of
+**Three documents carried it, not two.** Row `panel_verdicts` of
+`docs/agents/registers.md` is the third, and it is the worst of them, because
+that file is the map of which register has a pre-ship gate and this row
+answered that exact question with a step that did not exist. The register whose
+job is to say what is enforced is the one that said it. That is the second gate
+of incident 20's own lesson failing on the file where the lesson is written
+down.
+
+**Fixed in this pull request, in four places.** The sentence in
+`docs/product/reviewer-panel.md`, the README's status line and the
+`panel_verdicts` row of `docs/agents/registers.md` now say the step is queued
+rather than running, and item 18 of
 `docs/agents/pending-workflow-changes.md` is the queue entry that was missing:
 the two test files in both `paths` lists, two pytest steps, and the provenance
 reviewer's `--files-only` command. The step itself still needs the chair's hand,
