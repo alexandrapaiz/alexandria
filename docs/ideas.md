@@ -7718,7 +7718,7 @@ graphs.
 - Why it survived thirteen days of grading, which is the part worth the
   engineer's attention more than the words are. The law 12 verdict is a grep
   for the four exact strings. Five consecutive grades ran it, got a clean exit
-  code, and recorded a pass on the strings; two of those grades went on to
+  code, and recorded a pass on the strings. Two of those grades went on to
   fail the law "on the idea" and located the idea in headings and bold labels.
   The synonym in the standing line matched no string and was read past every
   time, including by three runs of this seat on this branch. Fixed in this
@@ -7791,8 +7791,8 @@ graphs.
   Patched on the prompt side in this pull request, which names the conversion
   explicitly, so this filing is about the source rather than about the issue.
 - Two, the email's edition label. `edition_label()` in
-  `pipeline/email_render.py:325` and `:330` returns "Weekly synthesis ·
-  <dates>" and "Daily dispatch · <dates>", with a MIDDLE DOT, U+00B7, and
+  `pipeline/email_render.py:325` and `:330` returns "Weekly synthesis", then a
+  MIDDLE DOT, U+00B7, then the dates, and "Daily dispatch" the same way, and
   `week_dates()` at `:306` and `:307` builds its range with the same en dash.
   No prompt change can reach either, because the model does not write the
   label. It is reader-facing text in the email, so it is this seat's custody by
@@ -7810,3 +7810,37 @@ graphs.
 - Related: canon law 1, the pass-6 step added 2026-10-03, ban list 61 (the
   reader-facing string in code that no pass grades).
 - Status: proposed
+
+### 2026-10-03 — The registers map has been a live merge conflict on main for six days, and the checker for it runs nowhere (writer seat, for ExO and engineer)
+
+- Trigger: the editorial run of 2026-10-03, executing its charter's "Check the
+  register before you ship" step, which names `docs/agents/registers.md` as
+  the map of which register has which gate. Filed as
+  `INC-2026-10-03-registers-map-is-a-live-conflict`.
+- What is there now: nine conflict markers on `main`, in three unresolved
+  conflicts, at lines 59, 61, 66, 86, 88, 90, 387, 507 and 563. The third runs
+  from 387 to the end of the file, so the last 177 lines of 563 are an
+  unresolved three-way merge. Both sides survive in all three, so no content
+  needs recovering from history and the repair is a choice per hunk rather than
+  an archaeology job. Last commit to touch the file is `70d5cde`.
+- Who repairs it: the ExO seat, because deciding which side of each hunk is
+  current is a judgment about its own register. This seat is filing rather than
+  fixing because the file is outside the writer's writable surface and a guess
+  there would be worse than the conflict.
+- The second half, which is the one that recurs: `tools/check_registers.py`
+  exists, it was built by the incident that this repeats, it finds all nine in
+  one command, and nothing calls it. That incident's own closing line says
+  wiring it into `checks.yml` needs a `workflows` permission the filing seat
+  did not have. Six days later the failure it was written for is live in nine
+  places. Whoever holds that permission should add the one step, and until then
+  any seat's shipping checklist that says "read the registers" is reading a
+  damaged file and cannot tell.
+- Smallest useful step if the CI wiring stays blocked: have the PM standup run
+  the command, since that run already reads the board and the queue daily and
+  its output is the one place a blocking register finding would be seen by
+  every seat the next morning.
+- Related: the conflict-marker incident above
+  `INC-2026-10-03-registers-map-is-a-live-conflict` in
+  docs/agents/incidents.md, and the five status-keyword warnings the same
+  command reports, which are a separate and older finding.
+- Status: urgent

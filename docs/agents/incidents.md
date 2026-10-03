@@ -6645,7 +6645,7 @@ canon's grading procedure now gives law 12 a three-part verdict: record the
 grep and its output, then ask the law's idea of every heading and label, then
 ask the idea of every standing line in the artifact with the file each one
 lives in named, including files this seat cannot edit. The procedure section is
-the writer seat's to correct; the laws section is not, and the wording of law
+the writer seat's to correct. The laws section is not, and the wording of law
 12 itself is proposed in docs/ideas.md for the owner's ruling instead. Taking
 the line off the page is an engineer's change and is the third filing on it.
 
@@ -6664,3 +6664,80 @@ and against that failure it worked. An instrument sharpened for one blind spot
 acquiring another is the pattern across all four of these entries, and the
 argument it makes is for grading laws by their idea with the cheap check as a
 floor, rather than for more care.
+
+## INC-2026-10-03-registers-map-is-a-live-conflict — nine conflict markers on `main` in the one file that tells every seat which register has which gate, and the checker built to catch them is still wired to nothing (2026-10-03, writer seat)
+
+**This is a repeat of the conflict-marker incident recorded above, the one
+whose fix added `tools/check_registers.py`. That entry closed with "Still
+open: the checker is a command, and nothing runs this one yet." Nothing ran
+it, and the failure it was built for is now live in nine places instead of
+one. Recorded at the moment it repeated per the standing rule at the top of
+this file.**
+
+**What happened.** This run executed its charter's "Check the register before
+you ship" step, which points at `docs/agents/registers.md` by name as "the
+full map of which register has which gate". Running the checker that the
+earlier incident shipped:
+
+```
+$ python3 tools/check_registers.py
+BLOCKING: docs/agents/registers.md:59:  '<<<<<<< HEAD'
+BLOCKING: docs/agents/registers.md:61:  '======='
+BLOCKING: docs/agents/registers.md:66:  '>>>>>>> origin/main'
+BLOCKING: docs/agents/registers.md:86:  '<<<<<<< HEAD'
+BLOCKING: docs/agents/registers.md:88:  '======='
+BLOCKING: docs/agents/registers.md:90:  '>>>>>>> origin/main'
+BLOCKING: docs/agents/registers.md:387: '<<<<<<< HEAD'
+BLOCKING: docs/agents/registers.md:507: '======='
+BLOCKING: docs/agents/registers.md:563: '>>>>>>> origin/main'
+
+9 blocking, 5 warning(s). The registers are damaged and every seat reads them.
+```
+
+Three unresolved conflicts. The third one runs from line 387 to line 563,
+which is the end of the file, so the last 177 lines of a 563-line register are
+an unresolved three-way merge. Both sides survive in every case, so no content
+was lost, which is also why nothing noticed.
+
+**It is on `main`, not on this branch.** The last commit to touch the file is
+`70d5cde`, "Merge main into exo/2026-09-27". This branch does not touch the
+file at all:
+
+```
+$ git show origin/main:docs/agents/registers.md | grep -c '^<<<<<<<\|^=======\|^>>>>>>>'
+9
+$ git diff --stat origin/main...HEAD -- docs/agents/registers.md
+(no output)
+```
+
+**Why it matters, and it is the same argument as last time with a worse
+subject.** This is the file whose only job is telling each seat which register
+carries which gate, and the charters cite it to close exactly the loop
+incident 20 opened. Every writer run is instructed to read it before shipping.
+A third of it has been a merge conflict since 2026-09-27, through every seat's
+runs in the six days since, and the first thing to say so is a command that
+existed the whole time.
+
+**The reusable part.** The earlier entry diagnosed this correctly: "What is
+missing is not the fix but the looking: the charters warn the seat that is
+about to append, and nothing looks at the file afterwards." It then shipped a
+command and said in its own closing words that a gate is worth the number of
+commands that run it, and that wiring it into `checks.yml` needed a
+`workflows` permission that seat did not have. The gap between a gate that
+exists and a gate that runs is six days and nine markers wide. A fix whose
+last line is "nothing runs this yet" is a filing, not a fix, and it should be
+graded as a filing until something calls it.
+
+**Not repaired here, and why.** `docs/agents/registers.md` is outside this
+seat's writable surface, and repairing a 177-line three-way conflict means
+deciding which side of each hunk is current, which is the ExO seat's call on
+its own register rather than an editor's guess. Filed in `docs/ideas.md` in
+this pull request with the two things the repairing seat needs: the marker
+line numbers, and the fact that both sides survive so nothing has to be
+recovered from history.
+
+**Blameless note.** The seat that filed the earlier incident built the
+checker, wrote the tests, found a second real defect with its first run, and
+said plainly that nothing invoked it. It did everything available to it inside
+its permissions. The missing piece is organisational, which is that no seat's
+shipping step runs a checker another seat wrote.
