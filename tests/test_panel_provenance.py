@@ -173,6 +173,59 @@ def test_unanimous_means_three_passes_on_one_text():
     assert "count(distinct target_sha) = 1" in view
 
 
+
+
+def _table_columns(table: str) -> set:
+    """The columns db/schema.sql gives one table, not the schema's whole union.
+
+    `_schema_names` flattens every column name in the file into one set, which
+    is the right looseness for a SELECT whose FROM this test does not resolve.
+    It is too loose for an INSERT: `panel_verdicts (model)` would pass against a
+    `model` column that belongs to `triage_log`.
+    """
+    pglast = pytest.importorskip("pglast")
+    for node in _walk(pglast.parse_sql(SCHEMA), []):
+        if type(node).__name__ != "CreateStmt":
+            continue
+        relation = getattr(node, "relation", None)
+        if relation is None or relation.relname != table:
+            continue
+        return {c.colname for c in _walk(node, [])
+                if type(c).__name__ == "ColumnDef" and c.colname}
+    raise AssertionError(f"db/schema.sql creates no table named {table}")
+
+
+def test_the_schema_reader_finds_the_table_it_is_asked_for():
+    """`_table_columns` returning an empty set would make the test below
+    vacuously true, which is the failure mode `_walk`'s own guard exists for.
+    """
+    assert "target_sha" in _table_columns("panel_verdicts")
+    assert "to_claim" not in _table_columns("panel_verdicts")
+
+
+def test_every_column_this_reviewer_writes_exists_in_panel_verdicts():
+    """The half the SELECT tests above do not reach, and the only half that
+    matters for what a reviewer *writes*.
+
+    An INSERT's target columns are `ResTarget` nodes in `stmt.cols`, not
+    `ColumnRef`s, so the column test above never looked at them. Renaming
+    `panel_verdicts.target_sha` left all three reviewer suites green and would
+    have been discovered by a 16:00 UTC cron raising on every verdict it tried
+    to file. Recorded as INC-2026-10-03-reviewer-suites-never-resolved-the-
+    insert-columns.
+    """
+    columns = _table_columns("panel_verdicts")
+    stmt = _parse(panel.QUERIES["file"])[0].stmt
+    assert stmt.cols, "the INSERT names no columns, so the order is positional"
+    for col in stmt.cols:
+        assert col.name in columns, (
+            f"this reviewer writes panel_verdicts.{col.name}, which "
+            "db/schema.sql does not define")
+    values = stmt.selectStmt.valuesLists[0]
+    assert len(stmt.cols) == len(values), (
+        f"{len(stmt.cols)} columns and {len(values)} values, so the row would be written into the wrong columns or not at all")
+
+
 # ------------------------------------------------------- a skill, written out
 
 FRONTMATTER = """---
