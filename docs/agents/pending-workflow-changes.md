@@ -1505,6 +1505,7 @@ structural form covers them by covering everything, which is the point.
 ---
 
 ### 18. ADR-13's panel runs in CI, or three documents stop saying it does
+### (amended 2026-10-03 second window: three reviewers, not two)
 
 **Queued 2026-10-03 by the engineer seat.
 INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had.**
@@ -1538,8 +1539,10 @@ these five lines go in both, beside the existing `tools/` and `tests/` entries.
       - "tools/panel.py"
       - "tools/panel_provenance.py"
       - "tools/panel_adversary.py"
+      - "tools/panel_validator.py"
       - "tests/test_panel_provenance.py"
       - "tests/test_panel_adversary.py"
+      - "tests/test_panel_validator.py"
 ```
 
 Second, two steps. They go after `every skill can be registered, and the
@@ -1567,6 +1570,10 @@ the `digest-budget` job today.
       - name: the adversary reads the graph in the direction ADR-10 fixed
         if: always()
         run: python3 -m pytest tests/test_panel_adversary.py -q
+
+      - name: the validator judges the trial receipt against the text under review
+        if: always()
+        run: python3 -m pytest tests/test_panel_validator.py -q
 ```
 
 **Why there is no third step running the reviewer itself, which this entry
@@ -1604,6 +1611,36 @@ un-interpreted claim downgraded from `unknown` to a note. The steps cannot be
 smoke-tested as a workflow on a branch, because the seat cannot push the file.
 
 **Cost.** $0. No key, no network, no database.
+
+**Amended 2026-10-03, same day, second window: the third reviewer.**
+`tools/panel_validator.py` completes ADR-13's panel, so this entry now asks for
+three steps rather than two and seven path lines rather than five. Amended in
+place rather than queued as item 19, because an unapplied entry about exactly
+this subsystem is one hand for the chair instead of two, and because a reader
+who applied item 18 and then met a separate item 19 about the same two lists
+would reasonably wonder which was current. `tests/test_panel_validator.py` is 62
+passed in this run's sandbox and the whole suite is 844 passed, 9 skipped.
+
+**And the reviewer command, which this entry can now offer for one of the
+three.** The paragraph above explains at length why there is no step running
+`tools/panel_provenance.py --files-only` (it exits 2 forever, because duty 2 is
+structurally unmeasurable) and none running the adversary at all (it holds no
+database credential, so a green step would read as the graph agreeing). The
+validator is different in kind: **every finding it makes is a fact about a file
+in the repository**, so its `--files-only` verdict is its whole verdict, and
+`tests/test_panel_validator.py::test_the_files_only_half_and_the_live_half_return_the_same_verdict`
+asserts that rather than claiming it.
+
+It is still **not** queued as a step, and the reason is the same arithmetic that
+killed the first one: it exits 1 today, on every pull request, because all six
+skills on main say `status: active` with no eval behind them (ADR-36 part 2). A
+step that is red on every pull request teaches every seat to ignore it, which is
+worse than no step. The useful half is in the suite instead, as
+`test_no_skill_on_this_branch_fails_a_check_this_reviewer_invented`, which
+asserts that every `fail` over the real library traces to a sentence in ADR-36
+and nothing else. **The day the skill seat's evals merge, this becomes the one
+reviewer worth running as a command**, and that is the signal to come back to
+this paragraph rather than a thing to do now.
 
 ## Not queued here, because it needs a key rather than a hand
 
