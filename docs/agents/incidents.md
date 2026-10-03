@@ -6765,3 +6765,64 @@ rather than running, and item 18 of
 the two test files in both `paths` lists, two pytest steps, and the provenance
 reviewer's `--files-only` command. The step itself still needs the chair's hand,
 which is the part this seat cannot do and the reason the entry exists.
+
+## INC-2026-10-03-reviewer-suites-never-resolved-the-insert-columns
+
+**Observed** 2026-10-03 by the engineer seat's second window, while checking
+that the test suite it had just written fails on a deliberate defect. Third
+occurrence of a shape this register already holds twice, so the standing rule at
+the top of this file applies and this entry is not a judgment call.
+
+**What happened.** Each of ADR-13's three reviewers keeps every SQL statement it
+sends in one `QUERIES` dict, and each reviewer's test suite parses those
+statements with libpg_query and resolves every relation and column against
+`db/schema.sql`. That instrument is the whole stated justification for running
+these suites in CI: item 18 of `docs/agents/pending-workflow-changes.md` argues
+for the steps in these words, "A migration that renames `claim_links.to_claim`
+or `claims.interpreted_at` should turn a pull request red, not turn a 16:00 UTC
+cron silently useless."
+
+It would not have. Renaming a column inside the `insert into panel_verdicts
+(...)` column list left all three suites green:
+`tests/test_panel_provenance.py` 47 passed, `tests/test_panel_adversary.py` 43
+passed, and the validator's new suite 60 passed, with
+`panel_verdicts.target_shaa` in the statement in each case.
+
+**Why.** An INSERT's target columns are `ResTarget` nodes in `stmt.cols`. The
+column test walks the AST for `ColumnRef` nodes, which is what a SELECT's
+columns are. So the resolution covered every column the reviewers read and no
+column any of them writes, which is the smaller set and the one with a sharper
+failure: a renamed column in a SELECT returns the wrong rows and a renamed
+column in the INSERT makes `file_verdicts` raise on every verdict the daily job
+tries to file. The whole panel would stop recording and the only signal would be
+the 16:00 UTC log.
+
+**Three occurrences of one shape.** INC-2026-10-02-markdown-suite-claims-a-ci-
+step-it-never-had and INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-
+had are the first two: a document asserting coverage that did not exist. This
+one is narrower and worse, because the asserting document is a passing test. The
+first two could be found by opening `checks.yml`. This one could only be found
+by breaking the thing on purpose and watching the test stay green, which is a
+step no charter asks for and which found it here only because the seat happened
+to be checking its own new suite that way.
+
+**Fixed in the same pull request**, in all three suites rather than only the one
+being written: `_table_columns(table)` reads one table's own `ColumnDef`s out of
+the schema, and `test_every_column_this_reviewer_writes_exists_in_panel_verdicts`
+resolves each `stmt.cols` entry against it and checks the count against the
+VALUES list. Deliberately tighter than the SELECT test it sits next to, which
+resolves against the union of every column name in the file: that looseness is
+right for a SELECT whose FROM the test does not resolve, and it would have let
+`panel_verdicts (model)` pass against `triage_log.model`. Verified by renaming a
+column and by dropping one, in each of the three reviewers.
+
+**The lesson worth carrying past this instance.** A test that resolves names
+against a schema has a coverage question of its own, and nothing was asking it.
+The cheap general form is the one `tests/test_panel_adversary.py` already
+applies to its walker (`test_the_walker_actually_walks`, written because its own
+first draft silently returned nothing): every test that reduces to "walk a tree
+and assert about what you find" needs a companion asserting the walk found
+something. Extended here with
+`test_the_schema_reader_finds_the_table_it_is_asked_for`, which fails if
+`_table_columns` ever returns an empty set and makes the assertion above
+vacuous.
