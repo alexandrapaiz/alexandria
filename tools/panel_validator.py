@@ -291,14 +291,58 @@ def review_trial(row, skills_dir: pathlib.Path) -> list[Finding]:
     return findings
 
 
+def review_suite(slug: str, skills_dir: pathlib.Path, suite: dict | None,
+                 suite_why: str) -> list[Finding]:
+    """Can the harness run this suite at all. Its question, so its answer.
+
+    `tools/skill_eval.py`'s `conformance` is the organization's answer to "is
+    this eval file runnable", and `--check` exists to be a gate over it. So
+    this reads it rather than keeping a second opinion, exactly as the
+    direction check reads `gate_problems`.
+
+    It is not decoration. The three open skill-seat pull requests that each
+    carry eight `evals/evals.json` files (#151, #152, #159) write
+    `suite_version: 2`, and this harness speaks contract 1, so `conformance`
+    refuses every one of them. A reviewer that only compared policies would
+    have reported those suites as present and fine.
+    """
+    if suite is None:
+        return []
+    try:
+        problems = skill_eval.conformance(
+            skill_eval.normalize(suite), slug, evals_dir(skills_dir, slug))
+    except Exception as exc:                        # pragma: no cover
+        return [Finding("suite-runnable", "unknown",
+                        f"the suite could not be checked: {exc}")]
+    return [Finding("suite-runnable", "fail", problem) for problem in problems]
+
+
 def review_pre_registration(result: dict, suite: dict | None,
                             suite_why: str) -> list[Finding]:
     """Rule 1: the policy was fixed before the run, so nobody tuned until green.
 
-    The result carries the policy that ran, copied in by `summarize`. The suite
-    carries the policy as written. A disagreement is not a judgment call: it
-    means one of the two was edited after the other, and the only edit that
-    direction rewards is one made after seeing the numbers.
+    Rule 1's words name three things the suite has to carry: "the repetitions,
+    the models and the threshold, and the run copies them into the result
+    rather than choosing them". So there are two different failures here, and
+    conflating them would produce a wrong accusation, which is worse than a
+    missed one.
+
+    **Not registered** is a key the suite never wrote. The run then chose it,
+    which is what rule 1 forbids, and the honest finding names which of the
+    three are missing. The suites the skill seat has actually written are in
+    this state: they carry the two model names at the top level and no `policy`
+    block, so `skill_eval.normalize` fills in a default of three repetitions
+    and there is no threshold anywhere.
+
+    **Disagreement** is a key both documents wrote and wrote differently. That
+    one means somebody edited one after the other, and the only edit in that
+    direction that pays is one made after seeing the numbers: a delta of 0.16
+    misses a registered 0.2 and clears a 0.15 written in afterwards.
+
+    The raw suite is read here rather than the normalized one, deliberately.
+    `normalize` invents a repetitions default, so a normalized suite always
+    looks as though it registered one, and a check reading it would report
+    every suite in the library as compliant with the rule it breaks.
     """
     if suite is None:
         return [Finding(
@@ -309,26 +353,42 @@ def review_pre_registration(result: dict, suite: dict | None,
 
     ran = result.get("policy") or {}
     written = suite.get("policy") or {}
-    disagreements = []
-    for key in PRE_REGISTERED_KEYS:
-        if ran.get(key) != written.get(key):
-            disagreements.append(
-                f"{key}: the run used {ran.get(key)!r} and the suite now says "
-                f"{written.get(key)!r}")
+    findings = []
+
+    missing = [k for k in PRE_REGISTERED_KEYS if written.get(k) is None]
+    if missing:
+        elsewhere = sorted(k for k in ("subject_model", "judge", "repetitions")
+                           if suite.get(k) is not None)
+        hint = (f" The file does carry {elsewhere} at the top level, so the "
+                "fix is moving them into `policy` rather than choosing new "
+                "numbers." if elsewhere else "")
+        findings.append(Finding(
+            "trial-pre-registered", "fail",
+            f"registers no {missing} in `policy`, so the run chose them. Rule "
+            "1 of docs/product/skill-validation.md section V5 asks the suite "
+            "for the repetitions, the models and the threshold, because a "
+            f"threshold chosen after the numbers is not a threshold.{hint}"))
+
+    disagreements = [
+        f"{key}: the run used {ran.get(key)!r} and the suite now says "
+        f"{written.get(key)!r}"
+        for key in PRE_REGISTERED_KEYS
+        if written.get(key) is not None and ran.get(key) != written.get(key)]
     if disagreements:
-        return [Finding(
+        findings.append(Finding(
             "trial-pre-registered", "fail",
             "the policy in the result and the policy in the suite disagree, so "
             "one was edited after the other and the threshold this result is "
             f"measured against is not the one that was registered. "
-            f"{'; '.join(disagreements)}")]
+            f"{'; '.join(disagreements)}"))
 
-    registered = {k: written.get(k) for k in PRE_REGISTERED_KEYS
-                  if written.get(k) is not None}
-    return [Finding(
-        "trial-pre-registered", "note",
-        f"the suite and the result agree on the registered policy: "
-        f"{registered or 'nothing pre-registered beyond the defaults'}")]
+    if not findings:
+        registered = {k: written.get(k) for k in PRE_REGISTERED_KEYS}
+        findings.append(Finding(
+            "trial-pre-registered", "note",
+            f"the suite and the result agree on the registered policy: "
+            f"{registered}"))
+    return findings
 
 
 def review_status(row, skills_dir: pathlib.Path) -> list[Finding]:
@@ -462,6 +522,8 @@ def review(skills_dir: pathlib.Path | None = None, conn=None,
     for row in rows:
         raw = (skills_dir / row.slug / "SKILL.md").read_text()
         findings = review_trial(row, skills_dir)
+        findings += review_suite(row.slug, skills_dir,
+                                 *suite_of(skills_dir, row.slug))
         findings += review_status(row, skills_dir)
         findings += review_validated_claim(row, raw, skills_dir)
         findings += review_evidence(row, skills_dir)

@@ -285,12 +285,24 @@ def gained(**over):
     return doc
 
 
+def task(tid, control=False):
+    """One task the harness would agree to run. `conformance` is strict about
+    this shape and the reviewer now calls it, so a stub task would read as a
+    suite the harness refuses rather than as a suite with a policy problem.
+    """
+    return {"id": tid, "kind": "treatment" if not control else "control",
+            "form": "prompt", "prompt": f"the {tid} question",
+            "check": {"type": "rubric",
+                      "criteria": [{"id": "c1", "criterion": "declines",
+                                    "anchors": {"0": "no", "2": "yes"}}]}}
+
+
 def suite_for(**policy):
     base = {"min_delta": 0.15, "repetitions": 5, "subject": "kimi-k2.6",
             "judge": "openai/gpt-oss-120b"}
     base.update(policy)
     return {"skill": "fixture", "contract": 1, "policy": base,
-            "tasks": [{"id": "t1"}, {"id": "t2"}]}
+            "tasks": [task("t1"), task("t2"), task("c1", control=True)]}
 
 
 def verdict(tmp_path, **kwargs):
@@ -495,6 +507,84 @@ def test_prose_in_a_suite_can_be_edited_without_reading_as_tampering(tmp_path):
     v = verdict(tmp_path, suite=suite, result=gained())
     assert checks(v, "trial-pre-registered")[0]["severity"] == "note"
     assert v["verdict"] == "pass"
+
+
+def test_a_suite_the_harness_would_refuse_to_run_fails(tmp_path):
+    """`conformance` is the harness's answer to "is this file runnable", and
+    the reviewer reads it rather than keeping a second opinion.
+
+    This is live, not hypothetical. The three open skill-seat pull requests
+    that carry eight `evals/evals.json` files each write `suite_version: 2`,
+    and the harness speaks contract 1.
+    """
+    suite = suite_for()
+    suite["contract"] = 2
+    v = verdict(tmp_path, suite=suite, result=gained())
+    finding = checks(v, "suite-runnable")[0]
+    assert finding["severity"] == "fail"
+    assert "contract is 2" in finding["detail"]
+    assert v["verdict"] == "fail"
+
+
+def test_the_skill_seat_s_real_suite_shape_is_reported_the_way_it_is(tmp_path):
+    """The format the skill seat actually wrote, not the one this suite invents.
+
+    Written out here from `skills/harness-engineering/evals/evals.json` on
+    `alexandria-skill/2026-09-30-window`: `suite_version: 2`, the two model
+    names at the top level, and no `policy` block at all. A reviewer that read
+    only `policy` would compare `None` against the result's numbers on every
+    key and report four disagreements, which is an accusation of tampering
+    against a file nobody tampered with. Two findings, each naming its own
+    cause, is the correct reading.
+    """
+    suite = {"skill": "fixture", "suite_version": 2, "written": "2026-09-30",
+             "author": "the skill seat", "subject_model": "kimi-k2.6",
+             "judge": "openai/gpt-oss-120b",
+             "tasks": [task("t1"), task("t2"), task("c1", control=True)]}
+    v = verdict(tmp_path, suite=suite, result=gained())
+
+    runnable = checks(v, "suite-runnable")
+    assert any("contract is 2" in f["detail"] for f in runnable)
+
+    registration = checks(v, "trial-pre-registered")
+    assert len(registration) == 1, "one cause, one finding"
+    detail = registration[0]["detail"]
+    assert "registers no" in detail and "min_delta" in detail
+    assert "disagree" not in detail, (
+        "a suite that registered nothing is not a suite that was edited")
+    assert "subject_model" in detail and "top level" in detail, (
+        "the finding has to tell the skill seat the fix is a move")
+
+
+def test_a_missing_key_and_an_edited_key_are_two_different_findings(tmp_path):
+    suite = suite_for()
+    del suite["policy"]["min_delta"]
+    suite["policy"]["repetitions"] = 9
+    v = verdict(tmp_path, suite=suite, result=gained())
+    details = [f["detail"] for f in checks(v, "trial-pre-registered")]
+    assert len(details) == 2
+    assert any("registers no ['min_delta']" in d for d in details)
+    assert any("repetitions: the run used 5" in d for d in details)
+
+
+def test_the_registration_check_reads_the_raw_suite_and_not_the_default(tmp_path):
+    """`skill_eval.normalize` invents a repetitions default.
+
+    A check reading the normalized suite would find a repetitions value on
+    every file in the library and report every one of them as compliant with
+    the rule they break, which is the quietest possible way for this gate to
+    be useless.
+    """
+    import skill_eval as ev
+    suite = suite_for()
+    del suite["policy"]["repetitions"]
+    assert ev.normalize(suite)["policy"]["repetitions"], (
+        "normalize stopped defaulting, so this test is testing nothing"
+    )
+    v = verdict(tmp_path, suite=suite, result=gained())
+    assert any("repetitions" in f["detail"]
+               for f in checks(v, "trial-pre-registered")
+               if f["severity"] == "fail")
 
 
 def test_a_result_with_no_suite_cannot_have_its_registration_checked(tmp_path):
