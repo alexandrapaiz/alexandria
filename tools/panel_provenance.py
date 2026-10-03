@@ -105,9 +105,20 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # in the image and sits next to it in the checkout.
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
+import panel                        # noqa: E402
 import skill_registrar as registrar  # noqa: E402
 
 REVIEWER = "provenance"
+
+# The verdict vocabulary is the panel's, not this reviewer's: `panel_consensus`
+# counts passes across all three, so the three severities and the arithmetic
+# that turns findings into one verdict live in one file. These names stay bound
+# here because this module's own checks read them on every line below, and
+# because the three reviewers are independent in their context rather than in
+# their grading scale (tools/panel.py says why at length).
+Finding = panel.Finding
+verdict_of = panel.verdict_of
+render = panel.render
 
 # The library's vocabulary for duty 3, normalised to one space. Every marker in
 # the six skills on main is one of these three. A fourth phrasing is a finding
@@ -140,46 +151,6 @@ SPEC_DESCRIPTION_MAX = 1024
 ARXIV = re.compile(r"arxiv\.org/abs/([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)", re.I)
 SECTION = re.compile(r"^## +(.+?)\s*$", re.M)
 VALIDATION_TAG = re.compile(r"^\*Validation:", re.M)
-
-
-# ----------------------------------------------------------------- findings
-
-class Finding:
-    """One thing a reviewer noticed, with the severity that drives the verdict.
-
-    `fail` is a defect in the skill. `unknown` is a defect in what this
-    reviewer can see. `note` is evidence: it is recorded in the verdict so the
-    row says what was actually measured, and it never changes the verdict.
-    """
-
-    SEVERITIES = ("fail", "unknown", "note")
-
-    def __init__(self, check: str, severity: str, detail: str):
-        assert severity in self.SEVERITIES, severity
-        self.check = check
-        self.severity = severity
-        self.detail = detail
-
-    def as_dict(self) -> dict:
-        return {"check": self.check, "severity": self.severity,
-                "detail": self.detail}
-
-    def __repr__(self) -> str:                      # pragma: no cover
-        return f"Finding({self.check}, {self.severity})"
-
-
-def verdict_of(findings: list[Finding]) -> str:
-    """fail beats unknown beats pass. A note never decides anything.
-
-    The order matters and it is the conservative one: a skill with a real
-    defect and an unmeasurable check is a `fail`, because the defect is known.
-    """
-    severities = {f.severity for f in findings}
-    if "fail" in severities:
-        return "fail"
-    if "unknown" in severities:
-        return "unknown"
-    return "pass"
 
 
 # ------------------------------------------------------------- the file half
@@ -372,22 +343,9 @@ QUERIES = {
 
 
 def connect(writable: bool):
-    """A connection, or None with a printed reason. Never raises on absence."""
-    try:
-        import psycopg
-    except ImportError:
-        print("unknown: psycopg is not installed here, so no claim id could be "
-              "checked against the corpus. pip install 'psycopg[binary]'")
-        return None
-    names = ("DATABASE_URL",) if writable else ("NEON_RO_URL", "DATABASE_URL")
-    for name in names:
-        url = (os.environ.get(name) or "").strip()
-        if url:
-            return psycopg.connect(url)
-    print(f"unknown: none of {', '.join(names)} is in this environment, so "
-          "duty 1 could not be measured. The live half of this reviewer runs "
-          "in pipeline/skill_revision.py, which holds the neon secret.")
-    return None
+    return panel.connect(writable, cannot=(
+        "duty 1 could not be measured and no claim id was checked against the "
+        "corpus"))
 
 
 def live_claims(conn, claim_ids: list[int]) -> dict[int, tuple[str, str]]:
@@ -493,12 +451,7 @@ def review_validated(row, raw: str, panel: dict | None) -> list[Finding]:
 
 def reviewer_sha() -> str | None:
     """The git blob sha of this file, so a verdict says which reviewer judged."""
-    try:
-        out = subprocess.run(["git", "rev-parse", "HEAD:tools/panel_provenance.py"],
-                             cwd=ROOT, capture_output=True, text=True, check=True)
-        return out.stdout.strip() or None
-    except (OSError, subprocess.CalledProcessError):
-        return None
+    return panel.reviewer_sha("tools/panel_provenance.py")
 
 
 def review(skills_dir: pathlib.Path | None = None, conn=None,
@@ -547,38 +500,10 @@ def review(skills_dir: pathlib.Path | None = None, conn=None,
 
 
 def file_verdicts(conn, verdicts: list[dict], sha: str | None = None) -> list[int]:
-    ids = []
-    for v in verdicts:
-        row = conn.execute(QUERIES["file"], (
-            v["target"], v["verdict"], json.dumps(v["findings"]),
-            v["target_sha"], sha,
-        )).fetchone()
-        ids.append(int(row[0]))
-    conn.commit()
-    return ids
+    return panel.file_verdicts(conn, QUERIES["file"], verdicts, sha)
 
 
 # ---------------------------------------------------------------------- cli
-
-def render(verdicts: list[dict]) -> str:
-    lines = []
-    for v in verdicts:
-        lines.append(f"{v['verdict']:>7}  {v['target']}")
-        for finding in v["findings"]:
-            if finding["severity"] == "note":
-                continue
-            lines.append(f"         {finding['severity']}: {finding['check']}: "
-                         f"{finding['detail']}")
-        notes = [f["detail"] for f in v["findings"] if f["severity"] == "note"]
-        if notes:
-            lines.append(f"         measured: {'; '.join(notes)}")
-    fails = sum(1 for v in verdicts if v["verdict"] == "fail")
-    unknowns = sum(1 for v in verdicts if v["verdict"] == "unknown")
-    lines.append("")
-    lines.append(f"{len(verdicts)} skills reviewed, {fails} failing, "
-                 f"{unknowns} not fully measurable")
-    return "\n".join(lines)
-
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
