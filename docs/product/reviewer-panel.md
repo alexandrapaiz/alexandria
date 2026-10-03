@@ -116,10 +116,19 @@ as arithmetic, three passes on one text, and the 3 is written out rather than
 inferred from how many reviewers happened to file, because a panel of one that
 passed must never read as unanimous.
 
+`reviewer_sha` is the other half of that pin, and it was null on every row this
+job would ever have filed until 2026-10-03. The first draft asked git for it,
+and the Modal image the daily job runs carries each reviewer's file without the
+repository, so the only populated rows would have come from somebody's laptop.
+It is the git blob sha computed from the bytes now, which needs no repository
+and returns exactly what `git hash-object` returns; `tests/test_panel_adversary.py`
+asserts that against all three files. The same property
+`pipeline/runtime_sha.py` rests on, for the same reason: one number, computed
+the same way inside the container and in a checkout.
+
 ## The slices that remain
 
-The PM's 2026-09-28 grooming split this entry into three, and this build is the
-first. The two that remain, with what each needs:
+The PM's 2026-09-28 grooming split this entry into three. Two are built:
 
 1. **The adversary**, built 2026-10-03, `tools/panel_adversary.py`. See the
    section below: it turned out to need no model key at all, which is the one
