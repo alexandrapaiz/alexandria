@@ -208,10 +208,17 @@ def quote(edge: dict, limit: int = 110) -> str:
 
     A finding that says only "claim 412 contradicts claim 207" sends a reader
     to the database. A finding that says what 412 found does not.
+
+    Plain ASCII in the truncation marker, not a single-character ellipsis.
+    These findings reach the owner's alarm mail through
+    `pipeline/skill_revision.py`, and entry 13 of docs/voice/ban-list.md is the
+    whole class of non-ASCII characters in anything she reads, because her
+    search box and an agent loading the text both match on ASCII and neither
+    matches on the pretty version.
     """
     text = " ".join((edge.get("claim") or "").split())
     if len(text) > limit:
-        text = text[:limit - 1].rstrip() + "…"
+        text = text[:limit - 3].rstrip() + "..."
     paper = edge.get("paper_id") or "an unnamed paper"
     return f"claim {edge['from_claim']} ({paper}): {text!r}"
 

@@ -352,8 +352,27 @@ def test_the_evidence_grades_are_recorded_and_never_graded():
 def test_a_quote_is_short_enough_to_read_in_a_log_line():
     long = edge(1, 2, "contradicts", claim="x" * 400)
     assert len(adv.quote(long)) < 160
-    assert adv.quote(long).endswith("…'")
+    assert adv.quote(long).endswith("...'")
     assert "claim 2" in adv.quote(long)
+
+
+def test_every_character_a_finding_can_print_is_ascii():
+    """These findings reach the owner's alarm mail, and entry 13 of
+    docs/voice/ban-list.md is the whole class of non-ASCII characters in
+    anything she reads. The truncation marker is the one this file nearly
+    shipped as a single-character ellipsis.
+    """
+    row = Row([10])
+    findings = (adv.contradicted(row, [edge(10, 99, "contradicts", 0.9,
+                                            "x" * 400)])
+                + adv.refined(row, [edge(10, 77, "refines")])
+                + adv.breadth(row, [edge(10, 11, "duplicates")])
+                + adv.grades(row, interpreted(10))
+                + adv.searchable(row, {}))
+    for finding in findings:
+        finding.detail.encode("ascii")
+    source = (ROOT / "tools" / "panel_adversary.py").read_text()
+    source.encode("ascii")
 
 
 def test_a_wrapped_claim_reads_as_one_line():

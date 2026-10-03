@@ -7996,3 +7996,125 @@ graphs.
   no way to tell you which of them is still true.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-03 — Publish how much of the corpus has actually been interpreted, because it decides whether the panel can ever pass anything (engineer seat)
+- Trigger: today's build, ADR-13's adversary. Its first finding on every skill
+  reports how many of that skill's cited claims have a non-null
+  `interpreted_at`, because a claim nothing has judged against its neighbours
+  has no edges, and an adversary that reported a clean pass over one of those
+  would be turning "the graph was never asked" into "the graph agrees". The
+  finding is correct and it exposes something bigger than itself: if that
+  fraction is low, every verdict this reviewer files is `unknown` forever,
+  `panel_consensus` can never reach three passes, and ADR-13's autonomy is
+  blocked by the interpret job rather than by the missing third reviewer. No
+  seat can see the number. It lives in Neon, the interpret cron writes it, and
+  the only readers are inside Modal. The claim graph has already frozen once
+  without anybody noticing for twelve days (the 2026-09-24 curation brief).
+- What: one more surface in `tools/delivery_health.py`, published the way
+  `/api/delivery` already publishes the press and the site with no credential
+  in the reader's hand: of the claims the library actually cites, how many have
+  been interpreted, how many have any edge at all, and the date of the newest
+  edge in `claim_links`. Three numbers. The third is the one that catches a
+  stall, because a frozen graph keeps its old edges and only stops gaining new
+  ones. Then the panel's `unknown` verdicts have a cause a reader can see
+  instead of a cause a reader has to guess.
+- First step: the SELECT and the `interpret` surface in
+  `tools/delivery_health.py`, which already has the three-state vocabulary and
+  the credential-free route pattern from the delivery receipt. The route half
+  is the same shape as `site/app/api/delivery/route.js`.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-03 — The panel files verdicts no reader can see, on the same pages that already show receipts (engineer seat)
+- Trigger: as of today two reviewers file a `panel_verdicts` row per skill per
+  day, so the daily job writes twelve rows a day about six skills, and the
+  site renders none of them. The library page already shows each skill's
+  trigger-test receipt with a date and an engine version, pinned by sha, which
+  is the harder version of this problem and it is solved. Meanwhile the
+  README's own status line says the owner's merge is still the gate "until all
+  three pass a skill", and no reader, including the owner, can see how close
+  any skill is or which finding is holding it.
+- What: the newest verdict per reviewer on each skill's page, read from the
+  `panel_latest` view that already exists, beside the receipt that is already
+  there. Three rows or fewer per skill, each with the reviewer's name, its
+  verdict, its date, and the findings that decided it. The honest version of
+  this is more interesting than a badge, because today every verdict is
+  `unknown` and the reasons are specific and short: a flat citation list cannot
+  say which claim supports which section, and some cited claims have never
+  been interpreted. A page that says that is the product's best argument about
+  itself, which is the same argument the receipts work already won.
+- First step: extend `site/lib/skill-provenance.js`'s reader and the skills
+  page to take an optional verdict list, with the live query behind the same
+  credential path `site/lib/issues-live.js` uses, so a site with no database
+  renders exactly what it renders today.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-03 — Sentence-level citation in the digest and in rag_answer, not only in a skill (engineer seat)
+- Trigger: today's craft scan of Elicit (note below). Its single strongest
+  product sentence is that it "supports all AI-generated claims with
+  sentence-level citations from the underlying sources", and it charges $49 a
+  month for the tier that does it. alexandria cites at item level: a digest
+  item names the papers behind it and `rag_answer` returns a cited answer, so
+  a reader who doubts the third sentence of a four-sentence item has to read
+  every paper the item names to find out which one it came from. This is a
+  different entry from the 2026-10-02 per-section claim ids one, which is about
+  the skill file's format. This one is about the two surfaces a reader actually
+  reads.
+- What: carry the claim id through generation to the sentence, not only to the
+  item. The pipeline already has what this needs and has never used it that
+  way: `gather()` hands the press a numbered claim payload, so the prompt can
+  require each sentence to end in the claim id it came from and the renderer
+  can turn that into a link, exactly as the issue template already links
+  papers. `rag_answer` is the same change against the same corpus, and it is
+  the surface where the MCP consumer is an agent, which cannot follow a hunch
+  about which paper a sentence came from the way a person can.
+- First step: measure before building. Take the newest issue, count its
+  sentences and how many of them a reader could trace to one claim without
+  opening a paper, and put that number in the ledger. If it is already high the
+  entry is not worth the prompt change, and if it is low that number is the
+  argument. The press's prompt is the writer seat's surface, so the prompt half
+  is a proposal to that seat and the renderer half is this one's.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-03 — Craft scan: Elicit (elicit.com)
+- Trigger: the engineer seat's daily craft scan, rotating through
+  `docs/market/landscape.md`. Elicit is the first entry in its "Academic
+  research tools" section and the largest product in this category that no
+  craft scan had opened: 10-01 took Consensus and Import AI, 10-02 took
+  Undermind and the Agent Skills specification. Today's build is a reviewer
+  that searches for evidence contradicting a claim, so the product that sells
+  evidence synthesis was the right thing to read. Read live at elicit.com and
+  elicit.com/pricing on 2026-10-03.
+- **What is worth stealing: the citation granularity is the product promise.**
+  Elicit says it "supports all AI-generated claims with sentence-level
+  citations from the underlying sources", and everything else on the page is
+  arranged behind that one guarantee: a workflow "inspired by systematic
+  reviews", screening 5,000 papers at $49 a month and 40,000 at Enterprise,
+  "99.4% data extraction accuracy" from one case study, and a named external
+  standard at the top tier, PRISMA. The lesson is not the number. It is that
+  the unit of evidence is the sentence, chosen once and then held everywhere,
+  and the whole product is legible because of it. alexandria chose the item and
+  the skill section as its unit, which is why today's reviewer had to file two
+  honest `unknown` verdicts: a claim id list for a whole document cannot say
+  which claim supports which sentence, so the one duty ADR-13 names that needs
+  that mapping is not decidable, and neither is whether a skill citing both
+  sides of a contradiction discusses the disagreement. Two of the panel's
+  blockers are one unresolved choice about granularity. Filed above as its own
+  entry for the reader-facing half.
+- **What alexandria does better: nothing here knows when it stops being
+  true.** Elicit's Routines "find new evidence, update your work, and report
+  back", which is addition. Its accuracy claim, 99.4%, is extraction fidelity:
+  whether the number it pulled out of a table is the number in the table. It
+  has no edge type for one paper overturning another, no confidence on that
+  edge, and no way to tell a reader that the thing they relied on in March is
+  contradicted now. alexandria's `claim_links` has a fixed direction, so the
+  newer claim is always the judge (ADR-10); `deprecated_claims` draws a line at
+  0.7 confidence; and as of today a reviewer fails a skill when a contradicting
+  claim at that confidence is one the skill never cites. Three turns of the
+  loop are the difference: Elicit screens, alexandria screens and then keeps
+  judging what it screened, and then refuses to publish advice the judgment
+  has overturned.
+- Cost: $0
+- Status: proposed
