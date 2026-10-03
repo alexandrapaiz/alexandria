@@ -1618,8 +1618,8 @@ three steps rather than two and seven path lines rather than five. Amended in
 place rather than queued as item 19, because an unapplied entry about exactly
 this subsystem is one hand for the chair instead of two, and because a reader
 who applied item 18 and then met a separate item 19 about the same two lists
-would reasonably wonder which was current. `tests/test_panel_validator.py` is 62
-passed in this run's sandbox and the whole suite is 844 passed, 9 skipped.
+would reasonably wonder which was current. `tests/test_panel_validator.py` is 66
+passed in this run's sandbox and the whole suite is 848 passed, 9 skipped.
 
 **And the reviewer command, which this entry can now offer for one of the
 three.** The paragraph above explains at length why there is no step running

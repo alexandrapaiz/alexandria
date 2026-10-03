@@ -233,9 +233,9 @@ def review_trial(row, skills_dir: pathlib.Path) -> list[Finding]:
         if suite is not None:
             findings.append(Finding(
                 "trial-exists", "unknown",
-                f"has a pre-registered suite of "
-                f"{len(suite.get('tasks') or [])} tasks and no "
-                f"{RESULTS_FILENAME}, so the trial was written and never run. "
+                f"has a suite of {len(suite.get('tasks') or [])} tasks and "
+                f"no {RESULTS_FILENAME}, so the trial was written and never "
+                "run. "
                 "ADR-13 cannot pass a skill whose behaviour nobody measured, "
                 "and this one is waiting on a run of tools/skill_eval.py "
                 "rather than on an author."))

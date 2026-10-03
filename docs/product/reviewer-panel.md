@@ -256,6 +256,33 @@ was unreachable in principle rather than merely unmet.
    what a number means are compared, so a suite's author note can be rewritten
    without reading as tampering.
 
+A fifth finding is the harness's own refusal rather than a duty, labelled
+`suite-runnable`: `tools/skill_eval.py`'s `conformance` is this organization's
+answer to "is this eval file runnable at all", and the reviewer reads it for the
+same reason it reads `gate_problems`.
+
+**Two things the first draft of this reviewer got wrong, both found by pointing
+it at the suites the skill seat has actually written** (eight files each on
+#151, #152 and #159, all three open). They are recorded because the second one
+is the more interesting failure mode.
+
+First, those suites carry `suite_version: 2` and the harness speaks contract 1,
+so `conformance` refuses every one of them. A reviewer that compared only
+policies would have reported them as present and fine, which is why
+`suite-runnable` exists.
+
+Second, and this is the one worth remembering: they carry the two model names at
+the top level and **no `policy` block at all**. The first draft compared the
+result's policy against a missing one, key by key, and reported four
+disagreements. That is an accusation of tampering against a file nobody
+tampered with. Rule 1 names two different failures and they need two different
+findings: a key the suite never wrote means the run chose it, and a key both
+documents wrote differently means one was edited after the other. Only the
+second is tampering. The fix also had to read the *raw* policy rather than the
+normalized one, because `skill_eval.normalize` invents a repetitions default,
+and a check reading it would have reported every suite in the library as
+compliant with the rule it breaks.
+
 **One finding is ADR-36's duty rather than ADR-13's**, labelled
 `status-vs-eval` the way the provenance reviewer labels `spec-conformance`:
 *"A skill with no eval is `status: draft`, never `active`."* Those are ADR-36

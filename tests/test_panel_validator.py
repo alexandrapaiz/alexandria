@@ -340,6 +340,9 @@ def test_a_suite_with_no_result_says_the_trial_was_written_and_never_run(tmp_pat
     v = verdict(tmp_path, status="draft", suite=suite_for())
     detail = checks(v, "trial-exists")[0]["detail"]
     assert "written and never run" in detail
+    assert "pre-registered" not in detail, (
+        "this sentence must not call the suite pre-registered, because the "
+        "finding below it is often that the suite registered nothing")
     assert "tools/skill_eval.py" in detail
     assert v["verdict"] == "unknown"
 
