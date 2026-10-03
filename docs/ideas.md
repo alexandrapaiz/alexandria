@@ -7829,7 +7829,12 @@ graphs.
   there would be worse than the conflict.
 - The second half, which is the one that recurs: `tools/check_registers.py`
   exists, it was built by the incident that this repeats, it finds all nine in
-  one command, and nothing calls it. That incident's own closing line says
+  one command, and `tests/test_check_registers.py` asserts the live repository
+  is clean and FAILS today. So a command and a failing test both exist and
+  `.github/workflows/checks.yml` names neither. That file calls pytest nine
+  times and every call names specific test files by hand, so any test file
+  added later is invisible to CI until someone adds a line, which is worth
+  fixing once for every future test rather than once for this one. That incident's own closing line says
   wiring it into `checks.yml` needs a `workflows` permission the filing seat
   did not have. Six days later the failure it was written for is live in nine
   places. Whoever holds that permission should add the one step, and until then

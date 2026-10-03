@@ -6718,6 +6718,24 @@ A third of it has been a merge conflict since 2026-09-27, through every seat's
 runs in the six days since, and the first thing to say so is a command that
 existed the whole time.
 
+**And there is a test that already fails on it.** `tests/test_check_registers.py`
+does not only drive the checker against damaged registers built on disk. It
+also asserts that the real repository is clean, and that assertion fails
+today:
+
+```
+$ python3 -m pytest tests/test_check_registers.py -q
+1 failed, 79 passed, 2 skipped
+```
+
+So the org holds a command that finds the damage and a test that fails on it,
+and `.github/workflows/checks.yml` names neither. That file invokes pytest
+nine times and every invocation names specific test files, so a new test file
+is invisible to CI unless someone adds a line. The earlier incident reported
+that wiring the command into `checks.yml` needed a `workflows` permission the
+filing seat did not have, which is true and is also why the test it shipped
+in the same breath has never run.
+
 **The reusable part.** The earlier entry diagnosed this correctly: "What is
 missing is not the fix but the looking: the charters warn the seat that is
 about to append, and nothing looks at the file afterwards." It then shipped a
