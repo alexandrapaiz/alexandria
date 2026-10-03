@@ -128,19 +128,22 @@ the same way inside the container and in a checkout.
 
 ## The slices that remain
 
-The PM's 2026-09-28 grooming split this entry into three. Two are built:
+The PM's 2026-09-28 grooming split this entry into three. All three reviewers
+are built; one slice remains and it is not a reviewer.
 
-1. **The adversary**, built 2026-10-03, `tools/panel_adversary.py`. See the
+1. **The adversary**, built 2026-10-03, `tools/panel_adversary.py`. See its
    section below: it turned out to need no model key at all, which is the one
    thing this list got wrong.
-2. **The validator.** Runs the A/B trial, which is `tools/skill_eval.py`, and
-   needs a model key in the job that runs it. That is the open
-   infrastructure question, and the model half of duty 2 belongs with it for
-   the same reason: which job holds a key, and what the per-run cap is.
+2. **The validator**, built 2026-10-03 in the same day's second window,
+   `tools/panel_validator.py`. This list said it runs the A/B trial and is
+   therefore blocked on a model key. **It is not, and the entry below says
+   why**, which makes this the second prediction in two days that a reviewer
+   would need a key and did not.
 3. **The merge.** Unanimous pass merges the proposal through the server-held
    token. Blocked on the owner minting a PR-merge-scoped token, and gated by
    ADR-12's whitelist: the panel may merge `skills/`, `prompts/*.md` and
-   `sources.yaml`, and never machinery.
+   `sources.yaml`, and never machinery. **This is now the only thing between
+   ADR-13 and a working loop**, and it is the one slice no agent can unblock.
 
 ## Slice 2, the adversary (2026-10-03)
 
@@ -201,3 +204,109 @@ corpus has never interpreted, and it cannot see a disagreement nobody wrote an
 edge for. Both are the interpret job's health rather than this reviewer's
 accuracy, which is why the `graph-searchable` finding prints the count every
 time, including on a clean pass.
+
+## Slice 3, the validator (2026-10-03, second window)
+
+ADR-13: *"Runs the A/B trial - bare model vs. skill-loaded on held-out prompts -
+and passes only if behavior moves in the direction the evidence supports."*
+
+**It reads the trial. It does not run it, and that is the design rather than a
+shortcut.** The trial exists, `tools/skill_eval.py`, written 2026-09-30 under
+ADR-36: a model key, about $0.40 a skill, several minutes. The list above
+concluded that this reviewer therefore waits on an infrastructure question.
+Rule 1 of `docs/product/skill-validation.md` §V5 is the answer to it: *the
+policy is pre-registered.* A reviewer that ran its own trial at review time
+would choose the repetitions, the subject model and the threshold at review
+time, which is exactly what pre-registration forbids, and it would re-run on
+every review until one came back green. The trial is a dated receipt somebody
+ran once under a policy fixed in advance; judging the receipt is the reviewer's
+whole job.
+
+So the key question leaves the panel. It is now "who runs `tools/skill_eval.py`,
+on what schedule, under what cap", a scheduling question with no gate waiting on
+it, and **the panel is complete today.** `panel_consensus` has computed its gate
+as three passes on one text since the table was written, and until this file
+existed the most a skill could earn was two: the arithmetic that decides a merge
+was unreachable in principle rather than merely unmet.
+
+**Four findings carry ADR-13's duty, and all four are file facts.**
+
+1. *A trial exists.* No `evals/results.json` is `unknown`, never a pass. A suite
+   with no result reads differently from no suite at all, because the two want
+   different people: the first wants whoever runs the harness and the second
+   wants the skill seat.
+2. *The trial measured this text.* The receipt carries `skill_md_sha256`, and a
+   skill edited after its eval has a result describing an earlier revision. This
+   is what `panel_verdicts.target_sha` exists for, applied one level down:
+   without it a skill could earn three passes, be edited, and the merge would
+   ship the edit.
+3. *The direction.* Not re-derived here. `tools/skill_eval.py`'s own
+   `gate_problems` is this organization's one answer to "why is this result not
+   a pass", shared with ADR-37's revision gate, and this reviewer calls it. Two
+   copies would let the panel fail a skill the revision gate passes, which is
+   the failure the adversary avoided by reading `deprecated_claims`'s 0.7
+   instead of choosing a threshold. The test for it monkeypatches
+   `gate_problems` and asserts the finding appears, because a test that only
+   compared today's answers would stay green the day somebody reimplemented it.
+4. *The policy was not tuned after the fact.* Rule 1 again, and **nothing in
+   this repository checked it until now.** The suite carries the policy as
+   written and the result carries the copy that ran. A delta of 0.16 misses a
+   registered 0.2 and clears a 0.15 written in afterwards, so a disagreement
+   between the two documents is the whole evidence. Only the keys that change
+   what a number means are compared, so a suite's author note can be rewritten
+   without reading as tampering.
+
+**One finding is ADR-36's duty rather than ADR-13's**, labelled
+`status-vs-eval` the way the provenance reviewer labels `spec-conformance`:
+*"A skill with no eval is `status: draft`, never `active`."* Those are ADR-36
+part 2's own words. All six skills on main say `status: active` and none has an
+eval, so **this reviewer's first run fails the whole library**, on a rule the
+owner accepted on 2026-09-29. A `draft` skill with no eval is not a finding,
+which is the pair that proves the check reads the rule rather than complaining
+that the library has no evals.
+
+That is not in tension with ADR-36's other sentence, that a skill whose eval
+shows no gain "is retired with the numbers, a finding rather than a failure".
+The panel's `fail` means do not promote this text. ADR-36 says the response to
+the numbers is retirement rather than a rewrite. Two decisions about one
+measurement, and the skill seat owns the second.
+
+**Two findings are evidence and never move a verdict**, the line the adversary's
+`evidence-grade` also stays on. `trigger-firing` reports the newest
+`skills/_validation/results/` receipt, its pass rate and whether it measured the
+current text: the trigger test asks whether a skill fires, which is a different
+question from whether it helps, and no register fixes a number for it. A
+reviewer that failed a skill on it would be legislating. `eval-spend` records
+`spend_usd` with its date, because the ledger already asks for skill-eval spend
+in the opex table before it becomes a habit.
+
+**Its file half is its whole verdict**, which is the far end of a range the other
+two define. The provenance reviewer's `--files-only` runs a subset of its
+checks; the adversary has no file half at all. Here the database is needed only
+to write the row, and
+`test_the_files_only_half_and_the_live_half_return_the_same_verdict` asserts
+that rather than claiming it. A reviewer whose judgment needs no credential is
+worth having in a panel where the other two do, because it is the one verdict a
+pull request can see in full.
+
+**The one thing that did not come free.** The daily job reads skills from `main`
+over the GitHub API rather than from its own image, because the image is as old
+as the last deploy. It wrote only `SKILL.md`. A validator pointed at an `evals/`
+directory nobody wrote would report every skill unmeasured forever, in a voice
+indistinguishable from the truth about a library that genuinely has no evals:
+the skill seat would merge six suites and six results, the reviewer would keep
+filing `unknown`, and the first person to notice would be whoever eventually
+asked why a passing library never passed. That is the merged-but-inert failure
+this sprint was called to close, arriving one level down.
+`pipeline/skill_revision.py` now fetches the `evals/` files, one listing call
+per skill, plus one more for the single trigger receipt the reviewer actually
+reads out of fifteen.
+
+**What slice 3 does not do.** It cannot tell a good eval suite from a bad one.
+Every check above is about the receipt's integrity, its freshness and its
+registration, and none of them can see whether the tasks hold the skill to
+anything. That is deliberate and it is the reason `tools/skill_eval.py`'s
+docstring insists the skill seat authors the tasks rather than the harness or
+the skill's own author: cases written by the author in the same session are the
+contamination the corpus warns about, and no reviewer downstream of them can
+undo it.
