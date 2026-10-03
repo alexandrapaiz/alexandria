@@ -219,12 +219,27 @@ def trigger_receipt(skills_dir: pathlib.Path, slug: str) -> dict | None:
 
 # --------------------------------------------------------------- the checks
 
-def review_trial(row, skills_dir: pathlib.Path) -> list[Finding]:
+class Receipts:
+    """One skill's eval files, read once.
+
+    Four checks below ask about the result and two ask about the suite, and the
+    first draft re-read each file for every one of them. Six reads per skill is
+    nothing at this size; one object is still the right shape, because the
+    alternative is six chances for two checks in one verdict to disagree about
+    what the file said.
+    """
+
+    def __init__(self, skills_dir: pathlib.Path, slug: str):
+        base = evals_dir(skills_dir, slug)
+        self.result, self.result_why = read_json(base / RESULTS_FILENAME)
+        self.suite, self.suite_why = suite_of(skills_dir, slug)
+
+
+def review_trial(row, receipts: Receipts) -> list[Finding]:
     """ADR-13's duty, as the four questions a receipt can answer."""
     findings: list[Finding] = []
-    base = evals_dir(skills_dir, row.slug)
-    result, why = read_json(base / RESULTS_FILENAME)
-    suite, suite_why = suite_of(skills_dir, row.slug)
+    result, why = receipts.result, receipts.result_why
+    suite, suite_why = receipts.suite, receipts.suite_why
 
     if result is None:
         if why != "absent":
@@ -291,8 +306,8 @@ def review_trial(row, skills_dir: pathlib.Path) -> list[Finding]:
     return findings
 
 
-def review_suite(slug: str, skills_dir: pathlib.Path, suite: dict | None,
-                 suite_why: str) -> list[Finding]:
+def review_suite(slug: str, skills_dir: pathlib.Path,
+                 receipts: Receipts) -> list[Finding]:
     """Can the harness run this suite at all. Its question, so its answer.
 
     `tools/skill_eval.py`'s `conformance` is the organization's answer to "is
@@ -306,11 +321,12 @@ def review_suite(slug: str, skills_dir: pathlib.Path, suite: dict | None,
     refuses every one of them. A reviewer that only compared policies would
     have reported those suites as present and fine.
     """
-    if suite is None:
+    if receipts.suite is None:
         return []
     try:
         problems = skill_eval.conformance(
-            skill_eval.normalize(suite), slug, evals_dir(skills_dir, slug))
+            skill_eval.normalize(receipts.suite), slug,
+            evals_dir(skills_dir, slug))
     except Exception as exc:                        # pragma: no cover
         return [Finding("suite-runnable", "unknown",
                         f"the suite could not be checked: {exc}")]
@@ -391,7 +407,7 @@ def review_pre_registration(result: dict, suite: dict | None,
     return findings
 
 
-def review_status(row, skills_dir: pathlib.Path) -> list[Finding]:
+def review_status(row, receipts: Receipts) -> list[Finding]:
     """ADR-36's own sentence, labelled so it is not read as an ADR-13 duty.
 
     "A skill with no eval is `status: draft`, never `active`." The frontmatter
@@ -399,9 +415,8 @@ def review_status(row, skills_dir: pathlib.Path) -> list[Finding]:
     evidence for it, and this is the only reader in the repository that opens
     both.
     """
-    result, _ = read_json(evals_dir(skills_dir, row.slug) / RESULTS_FILENAME)
     status = (row.skill_status or "").strip().lower()
-    if result is not None or status != "active":
+    if receipts.result is not None or status != "active":
         return []
     return [Finding(
         "status-vs-eval", "fail",
@@ -411,7 +426,7 @@ def review_status(row, skills_dir: pathlib.Path) -> list[Finding]:
         "about a skill and it is currently making it without a measurement.")]
 
 
-def review_validated_claim(row, raw: str, skills_dir: pathlib.Path) -> list[Finding]:
+def review_validated_claim(row, raw: str, receipts: Receipts) -> list[Finding]:
     """`provenance.validated` asserts a trial. This asks for the receipt.
 
     Deliberately a different question from the provenance reviewer's check on
@@ -426,8 +441,7 @@ def review_validated_claim(row, raw: str, skills_dir: pathlib.Path) -> list[Find
     asserted = str(provenance.get("validated") or "").strip()
     if not asserted:
         return []
-    result, _ = read_json(evals_dir(skills_dir, row.slug) / RESULTS_FILENAME)
-    if result is not None:
+    if receipts.result is not None:
         return []
     return [Finding(
         "validated-has-a-receipt", "unknown",
@@ -437,7 +451,8 @@ def review_validated_claim(row, raw: str, skills_dir: pathlib.Path) -> list[Find
         f"assertion begins {asserted[:60]!r}.")]
 
 
-def review_evidence(row, skills_dir: pathlib.Path) -> list[Finding]:
+def review_evidence(row, skills_dir: pathlib.Path,
+                    receipts: Receipts) -> list[Finding]:
     """Recorded, never graded. Both of these are notes by construction."""
     findings: list[Finding] = []
 
@@ -458,7 +473,7 @@ def review_evidence(row, skills_dir: pathlib.Path) -> list[Finding]:
             f"on {trigger['generated']} under {trigger['engine']}, measured "
             f"against {current}"))
 
-    result, _ = read_json(evals_dir(skills_dir, row.slug) / RESULTS_FILENAME)
+    result = receipts.result
     if result is not None and result.get("spend_usd") is not None:
         findings.append(Finding(
             "eval-spend", "note",
@@ -521,12 +536,12 @@ def review(skills_dir: pathlib.Path | None = None, conn=None,
     out = []
     for row in rows:
         raw = (skills_dir / row.slug / "SKILL.md").read_text()
-        findings = review_trial(row, skills_dir)
-        findings += review_suite(row.slug, skills_dir,
-                                 *suite_of(skills_dir, row.slug))
-        findings += review_status(row, skills_dir)
-        findings += review_validated_claim(row, raw, skills_dir)
-        findings += review_evidence(row, skills_dir)
+        receipts = Receipts(skills_dir, row.slug)
+        findings = review_trial(row, receipts)
+        findings += review_suite(row.slug, skills_dir, receipts)
+        findings += review_status(row, receipts)
+        findings += review_validated_claim(row, raw, receipts)
+        findings += review_evidence(row, skills_dir, receipts)
         out.append({
             "target": row.path,
             "reviewer": REVIEWER,
