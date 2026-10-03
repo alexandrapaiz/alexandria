@@ -8118,3 +8118,144 @@ graphs.
   has overturned.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-03 — The claim edge records a relation and never the sentence that justifies it (engineer seat, second window)
+- Trigger: today's craft scan read Semantic Scholar's live citations endpoint
+  and found that it does not store "paper A cites paper B". It stores the
+  sentence in A that does the citing, as `contexts`, and the first paper the
+  scan queried was `arXiv:2609.09134`, one of harness-engineering's own five
+  cited papers. One of its citers quotes the exact finding that skill's
+  `provenance.validated` field asserts in prose: "regresses performance on all
+  seven tasks studied by 4 to 30 points". Meanwhile `claim_links` in this
+  repository carries `relation`, `confidence` and `method`, and no text at all.
+  Today's validator build sat directly next to the consequence: the adversary
+  can say that claim 243 is contradicted at 0.95 confidence by claim 991, and
+  it cannot say which sentence of claim 991's paper does the contradicting, so
+  a skill author reading the finding has to go and re-read the paper to learn
+  what the disagreement was.
+- What: one `context text` column on `claim_links`, written by
+  `pipeline/interpret.py` at the moment it creates the edge, holding the
+  sentence or two from the newer claim's own distilled text that justifies the
+  relation. The interpret job already has that text in hand when it makes the
+  judgment, so this is a column and a prompt field rather than a new pass. Two
+  consumers get better immediately and both are already built:
+  `tools/panel_adversary.py` prints the quote in its `contradiction-ignored`
+  finding instead of a claim id, and `pipeline/skill_revision.py`'s reading
+  queue hands the skill seat the disagreement rather than a pointer to it. It
+  also unblocks half of the panel's duty 2 from the other end: the mapping from
+  a skill's sentence to a claim is the skill seat's format change, but the
+  mapping from an edge to its evidence is ours and nobody is waiting on anyone
+  for it.
+- First step: the column, plus the adversary printing it when present and
+  falling back to the id when it is null, which keeps every edge written before
+  today readable.
+- Cost: $0. No new call: the judgment that produces the edge already reads the
+  text the quote comes from.
+- Status: proposed
+
+### 2026-10-03 — The panel is complete and nothing runs the trial it judges (engineer seat, second window)
+- Trigger: today's build finished ADR-13's third reviewer and moved the model
+  key off the panel, which is good and which leaves a gap one level over.
+  `tools/panel_validator.py` judges the receipt `tools/skill_eval.py` writes.
+  No job in this organization runs `tools/skill_eval.py`. It has no Modal
+  function, no cron and no workflow step, so `skills/<slug>/evals/results.json`
+  does not exist for any skill and will not come into existence on its own. The
+  panel will report `unknown` on duty 1 of the validator every day, honestly
+  and forever, and the honesty is not the problem.
+- What: a weekly Modal function that runs the A/B trial for one skill, the one
+  whose receipt is oldest or missing, under `skill_eval.py`'s existing
+  `CAP_USD` and outside `pipeline/llm.py`'s reserved Kimi windows (the runner
+  already refuses to start inside one, which is failure 2 of
+  INC-2026-09-24-press-provider-migration). It writes `results.json` to a
+  branch and opens a pull request rather than committing to main, because a
+  result is a claim about the library and ADR-14 keeps machinery human-merged.
+  One skill a week means the library turns over in six weeks and the spend is
+  bounded by arithmetic rather than by a promise.
+- First step: not an engineer action. **This costs money**, about $0.40 a skill
+  at kimi-k2.6's list price for a 6-task 5-repetition run, so it is a proposal
+  for the owner and never a thing this seat does. The ledger already carries
+  "the skill-eval spend belongs in the opex table before it becomes a habit"
+  (2026-09-30), and that entry is the prerequisite to this one: the line item
+  first, then the schedule. If the answer is no, the honest consequence is that
+  ADR-36 part 2 is aspirational and the six skills should say `status: draft`,
+  which is the next entry.
+- Cost: about $0.40 per skill per run, roughly $10 a month at one skill a week
+  with re-runs. Needs the owner.
+- Status: proposed
+
+### 2026-10-03 — All six skills say `status: active` against ADR-36's own sentence, and the only seat that can fix it is not the one that found it (engineer seat, second window)
+- Trigger: `tools/panel_validator.py`'s first run over the real library fails
+  all six skills, on one finding, `status-vs-eval`. ADR-36 part 2's words are
+  "A skill with no eval is `status: draft`, never `active`." Every skill on main
+  carries `status: active` and none has an `evals/` directory. This is not a
+  judgment the reviewer invented and
+  `tests/test_panel_validator.py::test_no_skill_on_this_branch_fails_a_check_this_reviewer_invented`
+  asserts that it traces to that sentence and to nothing else. It has been true
+  since 2026-09-29, when the owner accepted the ADR, and nothing read the rule
+  until today.
+- What: one word per file, six files, `active` to `draft`, until each skill has
+  a result that gained. It is the honest state and it is also the state the
+  site should render, because a reader meeting a skill page is being told the
+  library's own strongest claim about it. The reason this is a ledger entry and
+  not a commit is boundaries: `skills/` belongs to the skill seat and ADR-13's
+  panel, and the engineer charter forbids this seat writing there. So it is
+  filed rather than fixed, which is the correct outcome and worth saying plainly
+  because the temptation to do it anyway was real.
+- First step: the skill seat's next run flips the six, in the same pull request
+  as whatever else it does. If instead the owner's reading is that `active`
+  means "promoted to the library" rather than "proven", then ADR-36 part 2 wants
+  one amending sentence and this reviewer's finding should move from `fail` to
+  `note`. Either answer is cheap. Only the silence is expensive, because the
+  panel now fails the entire library every day until one of them is given.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-03 — Craft scan: Semantic Scholar's citations API (engineer seat, second window)
+- Trigger: the engineer seat's daily craft scan, rotating through
+  `docs/market/landscape.md`. Semantic Scholar was last observed there on
+  2026-09-18, the oldest date on the page, and today's two windows had already
+  taken Elicit in the first. Read live rather than from the documentation: the
+  public endpoint `api.semanticscholar.org/graph/v1/paper/{id}/citations`,
+  queried without a key on 2026-10-03.
+- What: **the thing worth stealing is that the edge carries its own sentence.**
+  Ask for `fields=contexts,intents,isInfluential,contextsWithIntent` and a
+  citation comes back as the text in the citing paper that does the citing, not
+  as a pair of ids. The query that made the point used `arXiv:2609.09134`,
+  which is Co-Evolving Harnesses and Models and one of harness-engineering's
+  five cited papers, and one citer's context reads "regresses performance on
+  all seven tasks studied by 4 to 30 points, since the expert's planning style
+  no longer matches the harness evolved around the weaker model". That is the
+  same finding harness-engineering's `validated` field asserts in prose, except
+  that here it is attached to the edge, so a reader who follows the edge lands
+  on the sentence. alexandria's `claim_links` has four relations, a direction
+  fixed by ADR-10, a confidence and a `method`, and no text, so following an
+  edge lands a reader on a claim id. Filed above as its own entry, because it
+  is a column rather than an observation.
+  **The second half of the scan is a warning rather than a theft, and it is the
+  more useful half.** `intents` is in the schema, documented as the
+  background/method/result classification SciCite made the field famous for,
+  and it is empty. Zero of 120 sampled citation rows carried one: 40 on BERT
+  (`arXiv:1810.04805`), 40 on ResNet (`arXiv:1512.03385`), and every row
+  returned for the harness paper. `isInfluential` is populated and sparse, 2 of
+  40 on BERT. So the most prestigious open research graph in this category ships
+  a field whose schema promises a judgment and whose values say nothing, and a
+  consumer reading it naively gets an empty list where it should get "nobody
+  classified this", which are not the same answer and are indistinguishable in
+  JSON.
+- **What alexandria does better: `unknown` is a verdict here, not an empty
+  list.** That exact failure is the one this product keeps designing against,
+  and today's build is the third instance in three days. The adversary's
+  `graph-searchable` finding prints the count of cited claims the interpret job
+  never judged, on every run including a clean pass, precisely because a
+  reviewer that found no edges would otherwise report agreement when what
+  happened was that nobody asked. The validator shipped today reports
+  `unknown` rather than `pass` for a skill with no trial, for a trial measured
+  against an earlier revision of the text, and for a result whose
+  pre-registration it cannot read. `panel.verdict_of` makes `unknown` beat
+  `pass` as arithmetic, and `panel_consensus` requires three passes, so an
+  unmeasurable check blocks a merge instead of waving it through. Semantic
+  Scholar's graph holds 200M papers against this corpus's five thousand, and
+  its edges still cannot tell a reader the difference between "no disagreement" and "not looked at". Ours can,
+  and that is the entire product.
+- Cost: $0
+- Status: proposed
