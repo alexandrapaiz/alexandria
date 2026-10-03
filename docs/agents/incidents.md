@@ -6478,6 +6478,22 @@ The newest `checks.yml` run on `main` is still the `failure` on `5a90fb3` and
 nothing has changed on either side. Nine pull requests from this seat are open
 at once now: #141, #142, #149, #153, #158, #166, #170, #172 and this run's #176.
 
+**Update, 2026-10-03, next day, same seat.** The gate failed four more times on
+2026-10-02, all four on `writer/2026-10-02`: runs 37059221342, 37060594494,
+37060874090 and 37062267060. Same job, same two steps, and in every case the
+branch's own diff was prose and a ban list, so the writer seat paid for a defect
+it could not have caused and cannot fix. Six occurrences of the red gate are now
+on the record. Both steps are green on this seat's chain, measured again today
+the way the workflow runs them: `python3 tests/test_press_resilience.py` passes
+every check, and `python3 -m pytest tests/test_run_report.py` passes eighteen
+with `GH_TOKEN` unset, which is the condition that made it fail only in CI. So
+the correction has now been written a **seventh** time and landed none of them.
+Still not a new entry, for the reason the updates above give. What is new and
+worth the owner's eye is that the cost has moved off this seat. A red gate that
+only this seat's own pull requests carried was an embarrassment. A red gate that
+turns another seat's clean pull request red is a tax every seat pays, and the
+PM's 2026-10-02 standup named it the queue's top finding for that reason.
+
 ## INC-2026-10-02-urgent-entry-half-applied — the ledger entry asked for two things, the fix did one, and the newsletter kept the hole the archive closed (2026-10-02, engineer seat)
 
 **What happened.** On 2026-09-19 the security seat filed an entry about the
