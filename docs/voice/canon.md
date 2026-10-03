@@ -475,8 +475,44 @@ Study decisions, never copy sentences.
 
 ## How an issue is graded
 
-The daily review runs five passes, in this order, and the first one
+The daily review runs six passes, in this order, and the first one
 is not optional (law 12a, the owner's ruling of 2026-09-19).
+
+**Which artifact, by path, before pass 1 begins** (added 2026-09-30,
+`INC-2026-09-30-standing-defect-unverified-for-three-grades`, corrected the
+same day by the run that first executed it). The issue exists in several
+places and they are not the same text. Grade the page under
+`site/content/issues/`, because that is the one a stranger reads. Where the
+database is reachable, grade the stored `digests` row as well and say where
+the two differ, because a difference between them is a defect by itself.
+Then read the reader-facing constants in `pipeline/` in this same pass and
+grade each one as a sentence in the issue, which is the duty ban list 61
+wrote down and handed to nobody.
+**The correction, because the first version of this paragraph gave a wrong
+reason and a later run would have relied on it.** It said the standing lines
+are spliced into the page and the email but not into the stored row, so the
+row is the one copy where a masthead defect is invisible. That is not how the
+pipeline works. `add_masthead` runs before the `insert into digests`, so the
+row carries the standing lines too, and the false masthead sits 84 characters
+into the stored body of the newest issue. It was never hidden. Two grades read
+a copy that contained it and missed it anyway, which is a plainer and worse
+finding than the one first written down.
+**So the check that belongs here is not about which copy. It is one integer
+against one integer.** Every stored body carries the `prompt_sha` of the
+prompt that wrote it. Compare it to the sha of `prompts/digest.md` as it
+stands on the branch, and say in the grade whether they match. Where they do
+not, the artifact was written by a generator that no longer exists, every
+patch landed since is invisible in it, and the grade says so before it grades
+a line. The newest print, wherever it lives, is the only artifact that carries
+information about the generator this seat is about to patch, so a rehearsal in
+`press_rehearsals` whose sha matches the branch is a better subject for passes
+1 through 5 than a published issue whose sha does not. The published page is
+still graded, because a reader is reading it.
+The reason this is written as a path and not as a principle: "read the issue"
+was the whole instruction for eleven days, a false masthead sat above the only
+published issue through two grades, and the newest `digests` row on 2026-09-30
+was written by a bundle from 2026-09-25, so three consecutive grades reported
+on a generator five commits out of date without once noticing.
 
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
@@ -502,11 +538,31 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    because a wrong pass is indistinguishable from a right one and that
    is how a violation printed on three artifacts was graded clear
    (2026-09-26, `INC-2026-09-26-grade-cleared-a-printed-violation`).
-   Law 12 is the case where this costs nothing: the four framework
-   names are a closed set of exact strings, so the verdict is a grep of
-   the artifact for "Trailblazing", "Gaining traction", "Left behind"
-   and "Read these yourself", and the grade records the command and its
-   output rather than the word "pass". Grade one artifact per verdict.
+   Law 12 was written here as the case where this costs nothing: the
+   four framework names are a closed set of exact strings, so the
+   verdict is a grep of the artifact for "Trailblazing", "Gaining
+   traction", "Left behind" and "Read these yourself", and the grade
+   records the command and its output rather than the word "pass".
+   **That sentence was wrong and this procedure is where the error was**
+   (corrected 2026-10-03, `INC-2026-10-03-law-12-graded-by-grep`, ban
+   list 87). A closed set of strings makes the grep cheap. It does not
+   make the grep the verdict. Five consecutive grades ran that command,
+   recorded a clean exit code as instructed, and passed law 12 on an
+   artifact whose second line recites three of the four slots in
+   plain-English synonyms: `MASTHEAD` in `pipeline/weekly.py`, "what's
+   new in AI research, what's gaining acceptance, and what newer
+   evidence has overturned", 84 characters into the same body the grep
+   was run over. The law forbids the framework from printing. The strings
+   are how it printed once.
+   So the verdict has three parts and the grep is the first of them.
+   Record the command and its output. Then ask the law's IDEA of every
+   heading and every label, which is where the grades of 2026-10-01 and
+   2026-10-02 correctly found it. Then ask the idea of every STANDING
+   line in the artifact, naming the file each line lives in, including
+   files this seat cannot edit, because a standing line is the one place
+   a violation prints on every issue and is written by nobody who is
+   grading. A verdict that stops at the grep is a verdict about four
+   strings. Grade one artifact per verdict.
    Two artifacts sharing a verdict line is where an attribution error
    becomes invisible.
    **A law that asserts coverage is graded by a count, never by a
@@ -574,6 +630,45 @@ is not optional (law 12a, the owner's ruling of 2026-09-19).
    about the thing that is actually uncertain, and a grade aimed at
    the wrong risk satisfies neither. With the third question it also
    enforces law 15.
+6. **The standing defects.** Added 2026-09-30, from the fourth day of a
+   defect that had a law, two ban-list entries, an incident id and a
+   ledger entry with a recommendation, and was still printed.
+   Every entry in docs/voice/ban-list.md whose ending is a ledger filing
+   rather than a prompt change names a defect no prompt can reach, so
+   nothing in the generator will ever close it and nothing in the ledger
+   will ever fail. Take each of those entries and re-check it against the
+   live artifact. Print the check and its output in the grade, the way
+   law 12 is graded, and say how many days the entry has been open.
+   An entry that is still true is a FAIL line in the review with the same
+   weight as a law, and it stays one every run until the artifact is
+   clean. A filing has no failing state of its own, and this pass is the
+   failing state.
+   Do not restate the filed problem. The original ledger entry says it
+   better than a rewrite will, so confirm it in place with the day's
+   evidence, and where the entry has no check beside it, file the check
+   rather than the problem a second time.
+   The specimen is the masthead. `MASTHEAD` in `pipeline/weekly.py` was
+   corrected on 2026-09-26 and `site/content/issues/2026-W39.md` still
+   opened on "read in full and distilled weekly" on 2026-09-30, on a page
+   that had been edited that same day to apply a taste ruling four lines
+   from the bottom of the file.
+   **Then grade the standing lines themselves, against the laws, with no
+   filing required** (added 2026-10-03, `INC-2026-10-03-law-12-graded-by-grep`).
+   Everything above this paragraph re-checks defects somebody already
+   filed, and a pass built out of filings can only find what is already
+   known. The grade of 2026-10-02 executed it correctly, opened
+   `pipeline/weekly.py`, checked `MASTHEAD` against the law in the filing
+   that named it, and wrote that the constant "has been correct since
+   2026-09-26". It was correct about law 15 and it was reciting three of
+   the four framework slots at the time, which is law 12, which nothing
+   had filed.
+   So list every reader-facing constant the pipeline splices into an
+   issue, name its file and line, and put the ten laws to each one as
+   though it were a sentence somebody wrote this morning. These lines
+   print on every issue, they are written by no run that is grading, and
+   they are the only prose in the product that no prompt gate can reach.
+   A standing line is the cheapest place in the product to be wrong for a
+   fortnight.
 
 ## Maintenance
 

@@ -16,6 +16,23 @@ you write a single one.
 Weekly-only is the demand that the issue argue one case rather than list
 findings. A daily may list. Monday may not. Where this file says "this week",
 a daily issue reads it as "today".
+**Which of the two you are writing is a fact in the payload, so read it
+instead of guessing.** The `dates` field spans a range of days for the Monday
+weekly and names a single day for a daily. Settle that question before you
+write the title, and let the answer govern every period word in the issue. One
+issue never carries both periods. A weekly that calls its contents the day's
+items, and a daily that reports what the week did, have each told the reader
+the wrong thing about what they are holding, and the reader cannot tell which
+half to believe.
+**The weekly's demand is checkable, so check it before you output.** Write the
+one case the issue argues, in a single sentence, for yourself. Then take each
+section in turn and say which step of that case it carries. A section that
+carries no step is cut, or the case is the wrong case and you write the right
+one. Those are the two fixes and there is no third. What you never do is print
+the sections and then assert a case in the closing lines that most of them do
+not reach, because a conclusion the body never built is a list wearing an
+argument's clothes, and the reader who checks it back against the sections
+finds the sections winning.
 
 **The daily's shape, so nobody has to invent one (law 9).** Everything above
 binds the daily. What follows is the only thing that differs, and it is written
@@ -443,7 +460,11 @@ is the finding alone, and the date lives where dates live: the email's own
 date, the issue metadata, the archive listing. No bracketed range, no "this
 week" stamp, and never the ISO week id here or anywhere else reader-facing.
 Where a date range genuinely belongs in the prose, write the payload's `dates`
-with a plain ASCII hyphen, so "September 7-13, 2026".}
+with a plain ASCII hyphen, so "September 7-13, 2026". That is a CONVERSION and
+not a description of what you were handed: the payload's `dates` arrives with
+an en dash between the two days, every time, because the pipeline builds it
+that way. Copy the value and you have printed a character the issue is not
+allowed to contain. Retype the separator as a hyphen.}
 
 {Opening: the most important prose in the issue, and the one place each
 issue should feel different from the last. It has four jobs, in order:
@@ -505,7 +526,7 @@ research. One clear sentence. Not a summary, not a thesis, not a setup for a
 term of art, and never two clauses of scene-setting before the verb.
 
 Then say what is in here, in one line, before any interpreting starts. Two or
-three of the day's items, named in plain words the way a person lists what
+three of the issue's items, named in plain words the way a person lists what
 they are about to say: "Today, a dense reward that moved terminal agents
 fifteen points. Two labs landed on the same answer for context management.
 And a benchmark ceiling turned out to be wrong." Every newsletter worth
@@ -523,8 +544,10 @@ The length rule is the same rule twice. One line means one line. A print that
 spent a hundred and three words here, on three institutions in three sentences,
 had stopped making a promise and started telling the issue at speed. The
 correspondence check is run again at the gate on finished output.
-Vary the construction: "Today:" is one way in and becomes furniture the third
-time it runs, so some issues name the items in plain sentences ("Three labs
+Vary the construction, and keep it inside the cadence you settled at the top
+of this file, because a word that names the wrong period is wrong however well
+it reads. Naming the period outright is one way in and becomes furniture the
+third time it runs, so some issues name the items in plain sentences ("Three labs
 spent the week on one problem. Which step in a long run deserves the blame?
 One of them broke a ceiling the field had accepted"),
 some fold the contents into the greeting's own sentence, and
@@ -676,11 +699,20 @@ Translate it:
 now report the same effect". For `citation_movers`, give the movement with
 its numbers (X -> Y citations) and say what a jump that size signals.
 Then ask whether it signals anything. A paper going from zero citations to
-one, or from one to two, is a single reader rather than the field moving, and
-today all five movers are that size. This is the impact section, so movement
-earns a slot only where a builder could act on it. Say plainly that nothing
-older moved much today, or say nothing at all, and never dress a count of one
-as traction. An
+one, or from one to two, is a single reader rather than the field moving.
+Ask that of the movers you were actually handed, one at a time, and count how
+many clear it. **This file does not know how many you have or how big they
+are, and a sentence here that says it does is a sentence to distrust.** One
+stood here until today asserting that all of today's movers were of the
+signal-free size. It was a true observation about the payload of 2026-09-23
+and it stayed in the file, so for ten days every run read a verdict on its own
+traction stream before looking at it, and the newest print carried no traction
+section at all while its payload held twelve movers and twelve supported
+claims. This is the impact section and it is section one, so the bar is real
+and the finding has to be yours: movement earns a slot where a builder could
+act on it, and a stream with nothing that size in it is a stream you report.
+Where genuinely nothing clears the bar, say plainly that nothing older moved
+much, and never dress a count of one as traction. An
 empty stream is never news. "No citation movers were recorded this week"
 names one of alexandria's own tables at a reader who has never heard of it,
 so either say nothing or say the absence as a fact about the field in the
@@ -688,8 +720,11 @@ reader's words ("nothing older moved enough to be worth reporting today").
 That holds anywhere a query comes back empty.
 
 `supported_claims` returns claims and never papers, so two rows can be one
-paper: today's twelve rows are ten papers, with two of them doubled. Count
-distinct papers before you count items, and give one paper a second slot here
+paper and the row count is never the paper count. Count the distinct papers in
+the rows you were handed, rather than trusting a figure from this file: the
+sentence here used to name a row count and a paper count for one particular
+day, and both went stale the next morning. Count distinct papers before you
+count items, and give one paper a second slot here
 only when the prose says outright that both findings come from the same work.
 
 Each item is prose, and depth follows significance here as everywhere. The
@@ -818,10 +853,14 @@ two claims measure the same thing.** Not the same topic and not the same
 percent sign. The same quantity, of the same kind of system, on a task a
 reader would accept as the same task. Where they do not, there is no edge at
 any strength, and the answer is to drop it rather than to print it carefully.
-The published 2026-W39 opened this section on a benchmark success rate of
-82.2% for building agents and a win rate of 87% for simulated fighter
-aircraft, and declared a ceiling broken. The two numbers share a percent sign
-and nothing else, and nothing was broken.
+The shape, in a subject no payload will ever hand you. A section opens on a
+delivery service completing 82% of its routes and a hospital winning 87% of
+its appeals, and declares a ceiling broken. The two numbers share a percent
+sign and nothing else, and nothing was broken. The specimen is invented on
+purpose: a real one stood here, and the section it described was written
+again four days later off the same two numbers, because a well-formed
+sentence about a paper in your payload is a draft no matter what the words
+around it say.
 
 **Ask it of one pairing at a time, because a group verdict is not a
 verdict.** The question above is written in the singular and the payload
@@ -927,6 +966,32 @@ Format: *title* - [full text](url), then one line naming the decision this
 paper would inform. "Advancing agent design and evaluation pipelines" names
 nothing and is filler, because it describes the paper's topic instead of the
 reader's choice.
+**The title is the paper's own title, in italic, and never a system name
+lifted out of it.** Every item in the four sections above prints the full
+title that way, and a print of 2026-09-30 set all three of its picks as a
+bolded short name instead, one of them a bare acronym. An acronym standing
+alone where the title goes is the coined name leading the idea, which the
+voice rules at the top of this file forbid everywhere else, and it is worse
+here than anywhere, because this is the line on which the reader decides
+whether to give up an hour.
+**The grade belongs in this entry, and this slot is where it has been
+missing.** In-line evidence grades are house law at the top of this file and
+they bind every item at every cadence. The format above had no place to put
+one, so a print of 2026-09-30 carried a grade on every section and none on
+any of its three picks, which is the one part of the issue asking the reader
+for an hour of their time. Say what this work cannot establish, inside the
+entry's own sentence and never as a second sentence stapled behind it. How
+many groups have done this, how much of the field it was tested on, and
+whether anybody outside the group has reproduced it: those are the facts that
+decide whether the hour is worth it, and the entry that withholds them is
+recommending on the reader's behalf. Say them in your own words, because the
+sentence that counts two units of scale and then assesses them is the frame
+the gate below bans, and this is a writing position.
+This is also where the broadest sentence in the issue gets written, because
+an entry is a whole field summarised in a clause with no number in it. A line
+that says what the bottleneck in some subfield really is, on the authority of
+one unreplicated paper, is the general claim over the particular evidence
+with the evidence left out. The grade is what bounds it.
 
 **The line is written and never filled in, and one frame is now spent.**
 "Worth the hour if you are..." was quoted in this file as the model line and
@@ -938,6 +1003,13 @@ matter how good the sentence is. Do not write it. Do not write a
 find-and-replace of it either, so "Read this if you are", "Give it an hour
 when you are" and "Spend the hour if you are" are the same line wearing a
 hat.
+**A frame banned in this slot is banned everywhere in this slot, the heading
+included.** The ban above is on a sentence and it was read as a ban on a
+position. A print of 2026-09-30 kept it off all three entries, correctly, and
+put "worth the hour" in the section heading instead, where the banned words
+did the one job the heading is forbidden to do, which is announce that the
+issue is now recommending things. A phrase this slot refuses does not become
+available by moving up a line.
 Write each line as its own sentence instead, and let the shape follow what
 the decision actually is. One line can put the choice as a question the
 reader is already asking. One can name the thing they are about to build
@@ -955,6 +1027,17 @@ rather than of a list: does this word belong to the paper or to the reader?
 "Shows", "details", "presents", "provides", "introduces" and every synonym any
 of them has describe the paper's posture instead of the reader's decision, and
 a column of them turns the picks into a catalogue.
+**Then ask the same question of the SUBJECT, because a posture does not need a
+verb and the verb rule was obeyed by dropping it.** A print of 2026-09-30
+carried no banned verb and no synonym of one, and opened all three of its
+entries on a bare noun phrase describing the paper: the study of a thing, the
+case for a thing, the model that does a thing. Three catalogue entries with no
+catalogue verb in them. So the test is grammatical and it is the one that
+cannot be escaped by deletion. What are the first words of the line ABOUT? The
+reader, their decision, or the thing they are about to build wrong. Never the
+paper, never its contents, and never its method. Where the line opens on the
+paper, the repair is to start from the choice and let the paper arrive inside
+the sentence, which is usually shorter as well.
 Expect the payload to hand you one ready-made, because `deep_reads` carries
 triage notes written in exactly this register, and one of today's opens
 "Provides a comprehensive framework for continual learning". That note is a
@@ -982,6 +1065,26 @@ and nothing else. Where the scale of the week is what you want, the honest
 shape is both numbers in one sentence, what arrived and what was read closely
 out of it, and this close is the one line in the issue where two numbers
 standing together are the point rather than a crowd.
+**When `papers_read_in_full` is zero, this line does not appear at all.** Not
+as a zero, not as a word for zero, and not as a sentence explaining the zero.
+The print of 2026-09-30 closed by naming the week's arrivals and then saying
+in plain words that none of them had been read in full. Both numbers were
+correct and both verbs were right, which is why no gate in this file caught
+it. It still told a reader deciding whether to pay that the product read
+nothing. The sentence is not quoted here, because a line this file wants
+never written is a line this file must not hand you. Canon law 15 carries
+the answer in its own words: an issue that says nothing about its own scale
+has lost nothing a reader came for. The repair for a claim you cannot make is
+to drop it, never to soften it and never to print its absence.
+**And the count reaches the week, never the items below it.** A phrase like
+"for this issue" attaches a seven-day count to the papers you just cited, and
+those are two different sets. The papers in the reading list are often read in
+full minutes after this count is taken, so the count has nothing to say about
+the issue at all. What it counts is the last seven days ending now, which is
+not the span of the ISO week the issue is filed under, and the two numbers
+differ by hundreds. So the sentence names the seven days and never the week,
+and no figure from this paragraph or any other in this file is a figure you
+print, because every count you print comes from the payload you were handed.
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
@@ -1056,9 +1159,15 @@ the rule's question to the thing in front of you.
   stopped reading the opening words.
   So never open a grade with the word "evidence", never reuse a stem you have
   already used in this issue, and fold the grade into a sentence that is doing
-  other work. "Nobody outside the group has run it again" grades. "One team, one
-  model family, and the effect is big enough that somebody will check it" grades
-  and says what happens next. The counting of stems happens at the gate.
+  other work. "Nobody outside the group has run it again" grades, and it grades
+  without handing you a shape, which is the only kind of specimen this rule is
+  allowed to carry. A second one stood here until today, reading two units of
+  scale and then an assessment, and the gate below bans exactly that frame.
+  The print of 2026-09-30 carried it four times out of four and two of those
+  opened on its first two words. So the frame is not demonstrated here at all:
+  the gate names it as the thing to avoid and this rule names no replacement,
+  because a replacement offered at the position where you write is the next
+  frame. The counting of frames happens at the gate.
   Then count them, off the same list the links are counted against one rule
   above, which is every named piece of work in the issue and not every item.
   Take from that list the entries whose number the issue prints, and count the
@@ -1156,13 +1265,38 @@ the rule's question to the thing in front of you.
   characters. Is any mark doing the job of a full stop, per the punctuation
   rule above? Is every character in the issue plain ASCII, which is the whole
   class and not a list of hyphens and spaces?
-- **Then run the first-use pass. This is a hard gate, not advice.** Go back
+- **Then run the first-use pass. This is a hard gate, not advice.**
+  **Start with the title, because it is a closed list and the rest of this
+  pass is not.** The title is one line. Read it word by word and write down
+  every noun in it that a builder outside the research world could not
+  define. That list is rarely longer than two. Each one gets its plain-words
+  clause in the title's own sentence or in the first sentence of the opening,
+  and nowhere later: a title term defined in the third section is not
+  defined, because the reader met it before they had any reason to keep
+  reading, and law 4 says that line is where they decide. This runs first and
+  separately because it has already failed in the way an unbounded list
+  always fails. An issue glossed one of its title's two terms properly, then
+  carried the other bare through eight appearances including a heading, a
+  bold lead and the closing line. The duty was in this file the whole time,
+  sitting inside the rule about two names for one idea, and the bare word had
+  no second name, so nothing in that rule ever reached it.
+  Then go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,
   every acronym, and every ordinary English word doing a technical job
   ("teacher", "student", "gradients", "reward", "rollout", "alignment").
   That last class is the one this pass exists to catch, because it does not
-  look like jargon on the page and so never gets listed. For each one, find
+  look like jargon on the page and so never gets listed.
+  **Inside that class the role nouns have their own tell, and the tell is the
+  article.** Two models in a training setup pick up nicknames, and a nickname
+  arrives with "the" in front of it as though the reader had been introduced
+  already. So check each one against the sentence that INTRODUCES it rather
+  than the sentence that uses it. Where one sentence hands over one half of a
+  pair with "a" and the other half with "the", the half carrying "the" is
+  bare however naturally it reads, and you have the usual two fixes: say what
+  it is in that same sentence, or drop the nickname and name the thing. This
+  is worth its own paragraph because the class was already listed by name a
+  few lines above and printed anyway, so being on a list was not enough. For each one, find
   the FIRST place it appears anywhere in the issue, and that includes the
   title, the contents line, a heading, a
   bold lead-in and an item headline, not just the body prose. That first
@@ -1358,18 +1492,45 @@ the rule's question to the thing in front of you.
   describe. Inside a group, two numbers on the same named measure have to be
   the same number, or two setups the issue has told the reader apart in the
   sentence where the second one appears.
-  The specimen, from the print of 2026-09-26. An item said a distilled model
-  "hits 44.3%" on a macro-average across three kinds of task, and four
-  sentences later said the supervision method that produced it "produces 30%"
-  on the same macro-average. Both figures were in the payload and neither was
+  The specimen, invented so that copying it is obviously wrong, because the
+  real one stood here and the pair it described was printed again on
+  2026-09-30. An item says a night shift closes 44% of its tickets, and four
+  sentences later says the checklist that taught it to "closes 30%" of them,
+  on the same named measure. Both figures were in the payload and neither was
   wrong. The page made them contradict, because the second one came from a
-  smaller ablation the issue never named as one, so a reader is left holding
-  two scores for one method and no way to choose.
+  smaller test the issue never named as one, so a reader is left holding two
+  scores for one method and no way to choose.
   Two repairs and there is no third. Say in that sentence what makes the
   second number a different setup, in plain words. Or print one number and
   drop the other, which is usually the better issue, because an ablation is
   evidence that the method is what did the work rather than a second score
   for the method.
+- **Then check each number against the breadth of the sentence that reports
+  it. A hard gate (canon law 6, and the claims pass's first question in a
+  form it does not yet name).** The gate above compares two of the issue's
+  numbers to each other. This one compares one number against its own
+  sentence, and it catches the move no comparison test can see, because
+  nothing is compared and nothing is invented: a figure measured on one
+  system, on one benchmark, gets reported in a sentence about systems in
+  general.
+  Take every number that reaches a heading or a plain-meaning line, which are
+  the two places where a figure becomes a statement. Name what was actually
+  measured, in full: which system, how many of them, on which task. Then read
+  the sentence you wrote and name what it claims. Where the sentence covers
+  more systems than the measurement did, it is wrong, and it is wrong in the
+  direction that costs most, because the heading is the part the reader
+  carries away and the measurement is the part they do not.
+  The specimen, in a subject no payload will hand you. A benchmark scores one
+  delivery firm's dispatcher and finds that a third of its instructions change
+  anything at all. The heading says two-thirds of dispatching is wasted
+  motion. One firm was measured and every firm was accused, and the figure
+  printed under that heading is accurate to the decimal.
+  Two repairs and there is no third. Put the measured subject into the
+  sentence, which usually costs three words. Or keep the general claim and
+  drop the number, which means you no longer have a finding and the section
+  goes with it. What the sentence may never do is state the general and cite
+  the particular, because a reader who checks the number finds a narrower fact
+  than the one they were handed.
 - **Then check every count the issue says out loud against the things it
   counted. A hard gate, and it is arithmetic rather than judgment.** Find every
   place the issue names a quantity of its own contents: three findings, two
@@ -1391,12 +1552,22 @@ the rule's question to the thing in front of you.
   system carrying a latency number, appeared nowhere else in the issue, and the
   section that ran in its place had never been promised. Every line involved was
   true on its own. Cut what did not arrive, or name what did.
-- **Then count the grades' opening words.** Every item carrying a number carries
-  a grade, and grades against items are counted further up. This is the other
-  count: no two grades in the issue begin the same way, and none begins on the
-  word "evidence". Three accurate grades built on one stem shipped on
-  2026-09-28, at the same position in three consecutive items, and the count of
-  grades passed all three.
+- **Then read the grades for their shape, not their opening words.** Every item
+  carrying a number carries a grade, and grades against items are counted
+  further up. This is the other check, and its unit is the whole sentence. No
+  two grades in the issue begin the same way, none begins on the word
+  "evidence", and **no two are built on the same frame**, meaning the same
+  sequence of parts in the same order however the words change.
+  The unit is the frame because naming a stem only moves the stem. The gate
+  written on 2026-09-28 forbade the word "evidence" after three grades opened
+  on it. The print of 2026-09-30 obeyed that and carried four grades shaped
+  "One [unit], [unit], and [the assessment]", two of them opening on the same
+  two words. Every one was accurate and by the third the form was the furniture
+  between items rather than something being said.
+  So write each grade into a sentence already doing other work, and if you can
+  lift all of them out of the issue and line them up as a matching set, they
+  have stopped being grades. Say what this particular work cannot establish. A
+  grade that could be pasted onto another item is a stamp.
 - **Then check who the issue says did the research. A hard gate, and it is
   grammar rather than judgment.** The attribution rule above allows two forms,
   the institution and the named author, and says there is no third. The third
@@ -1427,18 +1598,29 @@ the rule's question to the thing in front of you.
   exception, because it is required to be identical in every issue and is
   never rewritten by this gate or any other.
   **Then collect the fragments, because a label does not need a line to
-  itself and the ones that have shipped did not take one.** For every line in
-  the issue that contains a colon, take the text in front of that colon as a
-  thing to check on its own, whether it is bolded or plain. That fragment is
-  the unit, not the line it sits in, and this is the whole reason this shape
-  keeps getting through: the question below is asked of a line, a label welded
-  to the front of a sentence is a piece of a line, and a line whose second
-  half is real writing passes a question its first half would fail. The
-  published 2026-W39 carries three, none of them bolded alone and none of them
-  collected by the step above: "**The number that matters:**", which is the
-  name of a formatting rule in this file, "For builders:", and "The procedure
-  is extractable:". Take the fragment, drop the colon, and write the sentence
-  whole.
+  itself and the ones that have shipped did not take one.** Two units, and
+  neither of them is a whole line. The first is POSITIONAL: any run of bold
+  or italic text that BEGINS a line, whatever punctuates it and whether or
+  not the line continues past it in plain prose. The second is the text in
+  front of any colon, bolded or plain. Collect both. A label welded to the
+  front of a sentence is a piece of a line, and a line whose second half is
+  real writing passes a question its first half would fail, which is the
+  whole reason this shape keeps getting through.
+  **The first unit is positional rather than punctuational on purpose, and
+  the reason is one character.** A print of 2026-09-30 opened four of its
+  paragraphs on a bolded label that ended in a full stop, and each of them
+  would have fitted any issue this product will ever send. None sat alone on
+  its line, so the step above did not collect it. None contained a colon, so
+  the colon unit did not collect it either, and one of the four was a shape
+  this file already names with the colon swapped for a period. A unit defined
+  by a punctuation mark can always be escaped by changing the punctuation
+  mark, so the unit is the position instead: anything bold or italic at the
+  start of a line is a label until the question below clears it.
+  The published 2026-W39 carried three of the colon kind under an earlier
+  commit, none of them bolded alone and none collected by the step above:
+  "**The number that matters:**", which is the name of a formatting rule in
+  this file, "For builders:", and "The procedure is extractable:". Take the
+  fragment, drop whatever punctuates it, and write the sentence whole.
   Then put ONE question to everything you collected, lines and fragments
   alike, and it is the question that decides, never a list. Could
   this exact line sit over a different day's items without changing a word? If it could, it is a
@@ -1449,26 +1631,39 @@ the rule's question to the thing in front of you.
   whether the section ends where its heading says it does. A heading that states
   a finding the body then withdraws has sold the reader a result and handed them
   a correction, and the heading is what they will remember.
-  The print of 2026-09-28 ran "The 82.2% ceiling was not a ceiling" over four
-  paragraphs whose conclusion is that the two results compared do not measure
-  the same thing, so nothing was shown about the ceiling at all. The body is
-  right and the heading is the claim the body dismantles. This is the hedge rule
-  above arriving one level up: the section noticed the comparison fails and the
-  heading had already been written as though it held.
+  The shape, written in a subject no payload will ever hand you, so that
+  copying it is obviously wrong. A section headed "The night shift is not
+  slower after all" runs four paragraphs whose conclusion is that the two
+  shifts were measured on different work, so nothing was shown about the night
+  shift either way. The body is right and the heading is the claim the body
+  dismantles. This is the hedge rule above arriving one level up: the section
+  noticed the comparison fails and the heading had already been written as
+  though it held.
+  **This specimen is deliberately about nothing, and the reason is a heading
+  that printed.** A real one stood here until 2026-09-30, quoted from the
+  print that produced this rule, and the next print carried that heading
+  verbatim over the same self-dismantling body. The four slot names are quoted
+  in this file eight times and have never printed, because they are not about
+  any paper. A specimen drawn from material you are actually handed is not an
+  illustration of the answer, it is the answer, and holding it at the end of
+  the file does not change that. So no example in this gate names a real
+  result, and any example that does is a draft of your output.
   Where the body's real finding is that a comparison does not work, the heading
   says that. It is a finding, it is that day's, and it is more interesting than
   the false version.
 
   Ask it of every line and every fragment you collected, because this failure
-  has now arrived six times
-  in six disguises, and each one walked past the check written for the one
+  has now arrived seven times
+  in seven disguises, and each one walked past the check written for the one
   before: a section heading ("Gaining traction"), a taxonomy word
   ("Compounding"), a bold word over a group inside a section
   ("**Replaced**"), an italic word over a numbered list ("*Procedure*"), a
-  bolded label welded to a sentence ("**The number that matters:**"), and a
-  plain one that is not bolded at all ("For builders:"). The first four are
-  lines and the last two are fragments, which is why the collection step above
-  now has two halves.
+  bolded label welded to a sentence by a colon ("**The number that
+  matters:**"), a plain one that is not bolded at all ("For builders:"), and
+  the same bolded label welded by a full stop instead, four times in one
+  issue. The first four are lines, the next two are colon fragments, and the
+  seventh is why the collection step above stopped asking about punctuation at
+  all.
   The next one will wear a disguise that is not on any list, so a line that
   passes only because it failed to match a string has not been checked at all.
   A label is a label at any level and in any typeface, and the steps under one
