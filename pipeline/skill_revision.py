@@ -125,6 +125,13 @@ image = (
     .add_local_file("tools/panel_provenance.py", "/root/panel_provenance.py")
     .add_local_file("tools/panel.py", "/root/panel.py")
     .add_local_file("tools/panel_adversary.py", "/root/panel_adversary.py")
+    .add_local_file("tools/panel_validator.py", "/root/panel_validator.py")
+    # The validator calls tools/skill_eval.py's `gate_problems` rather than
+    # keeping a second copy of "why is this result not a pass". That is one
+    # import, and this is the line that makes it resolve inside the image.
+    # `skill_eval` pulls in no third-party package at module scope, so it costs
+    # nothing but the file.
+    .add_local_file("tools/skill_eval.py", "/root/skill_eval.py")
     .add_local_dir("skills", "/root/skills")
 )
 
@@ -174,6 +181,17 @@ def panel():
 def adversary():
     """ADR-13's adversary, the second. It has no half that runs in CI."""
     return _reviewer("panel_adversary")
+
+
+def validator():
+    """ADR-13's validator, the third, which completes the panel.
+
+    The only one of the three whose verdict needs no credential: every finding
+    it makes is a fact about a file in the repository. It still runs here, for
+    the reason the other two do, which is that `panel_verdicts` is where a
+    verdict is durable and this is the job that holds a writable URL.
+    """
+    return _reviewer("panel_validator")
 
 
 # ------------------------------------------------------------ pure functions
@@ -363,10 +381,99 @@ def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str], pathlib.P
         except RuntimeError:
             continue        # read_skills reports the missing SKILL.md itself
         (root / entry["name"] / "SKILL.md").write_text(text)
-    # The directory comes back too, because step 2's reviewer re-reads the body
-    # of each SKILL.md and has to read the same text that was registered.
+    # The directory comes back too, because step 2's reviewers re-read the body
+    # of each SKILL.md and have to read the same text that was registered.
     rows, problems = reg.read_skills(root)
+    for row in rows:
+        receipts_from_github(gh, ref, root, row.slug)
+    trigger_receipt_from_github(gh, ref, root)
     return rows, problems, root
+
+
+# The files ADR-13's validator reads besides the SKILL.md, and the only reason
+# this function exists. Written 2026-10-03 with the third reviewer.
+#
+# The validator's whole input is files, so a validator pointed at a directory
+# nobody wrote reports every skill unmeasured, in a voice indistinguishable
+# from the truth about a library that genuinely has no evals. That is the
+# merged-but-inert failure this sprint was called to close, arriving one level
+# down: the skill seat would merge six suites and six results, the daily
+# reviewer would keep filing `unknown`, and the first person to notice would be
+# whoever eventually asked why a passing library never passed.
+#
+# Two names for the suite because `tools/skill_eval.py` accepts two; it reads
+# `evals.json` first and the alias second, and the list here is in that order.
+EVAL_FILES = ("evals.json", "tasks.json", "results.json")
+
+
+def receipts_from_github(gh: GitHub, ref: str, root: pathlib.Path,
+                         slug: str) -> list[str]:
+    """One skill's `evals/` files, written next to the SKILL.md already there.
+
+    One listing call per skill rather than three reads, because the common case
+    today is that the directory does not exist at all and a listing says so
+    once. Absence is not an error here and never raises: a skill with no eval is
+    the honest majority state of the library on 2026-10-03, and the validator
+    is the thing that reports it.
+    """
+    resp = gh.client.get(f"/repos/{gh.repo}/contents/skills/{slug}/evals",
+                         params={"ref": ref})
+    if resp.status_code != 200:
+        return []
+    payload = resp.json()
+    if not isinstance(payload, list):
+        return []
+    wanted = {e["name"] for e in payload
+              if e.get("type") == "file" and e.get("name") in EVAL_FILES}
+    written = []
+    for name in EVAL_FILES:
+        if name not in wanted:
+            continue
+        try:
+            text, _ = gh.read_file(f"skills/{slug}/evals/{name}", ref)
+        except RuntimeError:
+            continue
+        target = root / slug / "evals" / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text)
+        written.append(name)
+    return written
+
+
+def trigger_receipt_from_github(gh: GitHub, ref: str,
+                                root: pathlib.Path) -> str:
+    """The newest trigger-test receipt, which the validator records as evidence.
+
+    One file, not the directory. There are fifteen receipts in
+    `skills/_validation/results/` and the reviewer reads exactly one of them,
+    the newest whose engine is the one the library runs, so fetching the rest
+    would be fourteen API calls to produce the same note. The names lead with
+    the date, which is what makes the newest one pickable from the listing
+    alone.
+    """
+    resp = gh.client.get(f"/repos/{gh.repo}/contents/skills/_validation/results",
+                         params={"ref": ref})
+    if resp.status_code != 200:
+        return ""
+    payload = resp.json()
+    if not isinstance(payload, list):
+        return ""
+    names = sorted((e["name"] for e in payload
+                    if e.get("type") == "file"
+                    and e.get("name", "").endswith(".json")
+                    and "experiment" not in e["name"]
+                    and "retired" not in e["name"]), reverse=True)
+    if not names:
+        return ""
+    try:
+        text, _ = gh.read_file(
+            f"skills/_validation/results/{names[0]}", ref)
+    except RuntimeError:
+        return ""
+    target = root / "_validation" / "results" / names[0]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text)
+    return names[0]
 
 
 # ------------------------------------------------------------ step 2
@@ -433,6 +540,19 @@ def adversary_reviewed(conn, rows, problems, skills_root,
                        skills_root, dry_run)
 
 
+def validator_reviewed(conn, rows, problems, skills_root,
+                       dry_run: bool) -> list[str]:
+    """Reviewer 3, the validator: did a builder do better work with the skill.
+
+    Third because its question comes last in time. Provenance asks whether the
+    evidence behind the skill holds, the adversary asks whether the corpus has
+    since disagreed, and this one asks whether the finished text changed what a
+    builder produced. A reader wants them in that order.
+    """
+    return review_pass(validator(), "validator", conn, rows, problems,
+                       skills_root, dry_run)
+
+
 # ------------------------------------------------------------ the run
 
 def run(dry_run: bool = False) -> str:
@@ -484,13 +604,16 @@ def run(dry_run: bool = False) -> str:
         # return below, because a day with nothing to revise is still a day the
         # library's evidence is either sound or it is not.
         #
-        # Two of ADR-13's three reviewers run here as of 2026-10-03, in their
-        # own passes filing their own rows. The adversary is second on purpose:
-        # its findings are about what the corpus learned after a skill was
-        # written, so reading them under the provenance report is the order a
-        # person would want them in.
+        # All three of ADR-13's reviewers run here as of 2026-10-03, in their
+        # own passes filing their own rows. The order is the order the three
+        # questions come in time: whether the evidence behind the skill holds,
+        # whether the corpus has since disagreed, and whether the finished text
+        # changed what a builder produced. With the third one filing,
+        # `panel_consensus`'s unanimous is reachable for the first time; it has
+        # counted to three since the table was written and never could.
         log.extend(reviewed(conn, rows, problems, skills_root, dry_run))
         log.extend(adversary_reviewed(conn, rows, problems, skills_root, dry_run))
+        log.extend(validator_reviewed(conn, rows, problems, skills_root, dry_run))
 
         pending = reg.revisions(conn)
 
