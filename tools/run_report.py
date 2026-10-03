@@ -48,6 +48,20 @@ import sys
 import urllib.error
 import urllib.request
 
+
+def warn(message: str) -> None:
+    """A delivery problem, as a GitHub annotation, on stderr.
+
+    stderr rather than stdout, and that is the whole of this function. Actions
+    reads annotations from both streams, so nothing is lost on the run page,
+    while `--dry-run` keeps its promise that stdout is the payload and nothing
+    else. It stopped keeping it the first time `gh pr list` failed: with no
+    `GH_TOKEN` in the job, the warning landed ahead of the JSON and
+    `json.loads(stdout)` raised, so the step that exists to never fail the run
+    failed it.
+    """
+    print(f"::warning::{message}", file=sys.stderr)
+
 # The owner's two rulings of 2026-09-26, in the order she gave them.
 # "communications are pretty dead on slack" -> the report is the pull
 # request's own opening, not a log line. "make the slack prose be in
@@ -130,13 +144,13 @@ def fetch_pr(branch: str) -> dict | None:
         capture_output=True, text=True, check=False,
     )
     if result.returncode != 0:
-        print(f"::warning::gh pr list failed for {branch}: "
-              f"{result.stderr.strip()[:300]}")
+        warn(f"gh pr list failed for {branch}: "
+             f"{result.stderr.strip()[:300]}")
         return None
     try:
         rows = json.loads(result.stdout or "[]")
     except json.JSONDecodeError as exc:
-        print(f"::warning::gh pr list returned unparseable JSON: {exc}")
+        warn(f"gh pr list returned unparseable JSON: {exc}")
         return None
     return rows[0] if rows else None
 
@@ -152,11 +166,11 @@ def post(webhook: str, payload: dict) -> bool:
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
             if response.status >= 300:
-                print(f"::warning::Slack returned HTTP {response.status}")
+                warn(f"Slack returned HTTP {response.status}")
                 return False
             return True
     except (urllib.error.URLError, OSError, TimeoutError) as exc:
-        print(f"::warning::the run report did not reach Slack: {exc}")
+        warn(f"the run report did not reach Slack: {exc}")
         return False
 
 
