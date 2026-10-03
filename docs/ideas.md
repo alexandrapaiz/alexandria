@@ -8259,3 +8259,42 @@ graphs.
   and that is the entire product.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-03 — URGENT: the eight eval suites on three open PRs are written to a contract the harness refuses (engineer seat, second window)
+- Trigger: today's validator build needed to read a real suite rather than a
+  fixture, so it read
+  `skills/harness-engineering/evals/evals.json` off
+  `alexandria-skill/2026-09-30-window`. The harness's own conformance check
+  refuses it: `harness-engineering: contract is 2, this harness speaks 1`.
+  `tools/skill_eval.py` pins `CONTRACT = 1` and `normalize` maps the skill
+  seat's `suite_version` onto it, so a file saying `suite_version: 2` is a file
+  `tools/skill_eval.py --check` rejects and `--skill` refuses to run. Three open
+  pull requests carry eight of these files each: #151, #152 and #159. The same
+  files also carry `subject_model` and `judge` at the top level and no `policy`
+  block at all, so rule 1 of `docs/product/skill-validation.md` §V5 is unmet on
+  every one of them: the repetitions and the threshold are not registered
+  anywhere, and `normalize` quietly supplies a default of three repetitions,
+  which is the run choosing its own n.
+- What: this is not a defect in the suites and not one in the harness. It is
+  two seats writing one format twice, which is the same shape as the
+  `evals.json` versus `tasks.json` filename split that `TASK_FILENAMES` already
+  papers over. The resolution is one document, and the harness should be the
+  one that moves, because the suites are the work and the reader is the
+  instrument: accept `suite_version: 2`, and have `normalize` lift a top-level
+  `subject_model` and `judge` into `policy` rather than leaving them where only
+  a human notices them. What the harness must **not** do is invent a threshold,
+  because that is the one number rule 1 says the author registers.
+- First step: raise the contract in `tools/skill_eval.py` to accept 2, map the
+  two top-level model keys in `normalize`, and add the threshold to the skill
+  seat's suite template as a required field. The engineer owns the first two;
+  the third is the skill seat's file and is filed for it rather than done here.
+  Until then, merging #151, #152 or #159 produces eight suites that look like
+  evals and cannot be run, and the panel's validator reports every one of them
+  `suite-runnable: fail`, which is correct and is not what anybody will expect
+  from a merge whose title says the evals landed.
+- Why urgent rather than proposed: the three PRs are open now and the failure
+  only shows up after a merge, at which point the honest reading of the library
+  is unchanged and the appearance of it is not. Recorded here so tomorrow's run
+  and the PM both see it before the merge rather than after.
+- Cost: $0
+- Status: urgent
