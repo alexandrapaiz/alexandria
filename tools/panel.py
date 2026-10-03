@@ -22,10 +22,10 @@ there were two.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
-import subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -94,19 +94,35 @@ def connect(writable: bool, cannot: str = ""):
 
 
 def reviewer_sha(relative_path: str) -> str | None:
-    """The git blob sha of a reviewer's own file, so a verdict says who judged.
+    """The git blob sha of a reviewer's own file, computed from the bytes.
 
-    Returns None rather than raising when there is no git here, which is the
-    case inside the Modal image: the image carries the file and not the
-    repository, so `reviewer_sha` is null on every row the daily job files and
-    `target_sha` is the pin that matters.
+    `panel_verdicts.reviewer_sha` exists so a verdict says which version of
+    which reviewer judged. The first draft of this asked git, which meant the
+    column was null on every row that will ever exist in production: the Modal
+    image the daily job runs carries the reviewer's file and not the
+    repository, so there is no git to ask. A verdict trail whose only
+    populated rows come from a laptop is not a verdict trail.
+
+    So the bytes are hashed directly, in git's own blob format, which needs no
+    repository and gives the identical value `git hash-object` gives. One
+    number, computed the same way on Modal and in a checkout, which is the
+    same property `pipeline/runtime_sha.py` is built on and for the same
+    reason.
+
+    The file is looked for next to this module first, which is `/root` in the
+    image and `tools/` in the repository, and then at its repository path, so
+    callers can keep naming it the way a reader would write it down.
     """
-    try:
-        out = subprocess.run(["git", "rev-parse", f"HEAD:{relative_path}"],
-                             cwd=ROOT, capture_output=True, text=True, check=True)
-        return out.stdout.strip() or None
-    except (OSError, subprocess.CalledProcessError):
-        return None
+    name = pathlib.PurePosixPath(relative_path).name
+    for candidate in (pathlib.Path(__file__).resolve().parent / name,
+                      ROOT / relative_path):
+        try:
+            body = candidate.read_bytes()
+        except OSError:
+            continue
+        header = f"blob {len(body)}\0".encode()
+        return hashlib.sha1(header + body).hexdigest()
+    return None
 
 
 def file_verdicts(conn, insert: str, verdicts: list[dict],

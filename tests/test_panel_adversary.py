@@ -543,3 +543,35 @@ def test_the_adversary_has_no_files_only_mode_and_ci_never_runs_the_reviewer():
     assert "tools/panel_adversary.py" not in workflow, (
         "checks.yml runs the adversary, and CI holds no database credential, "
         "so the step can only ever report that nobody asked the graph")
+
+
+def test_the_reviewer_sha_is_the_sha_git_would_give():
+    """The column exists so a verdict says which reviewer code judged.
+
+    Asking git for it made the column null on every row that will ever exist
+    in production, because the Modal image carries the reviewer's file and not
+    the repository. Hashing the bytes in git's blob format needs no repository
+    and gives the same number, so this asserts the two agree on the real file.
+    """
+    import subprocess
+
+    for name in ("tools/panel.py", "tools/panel_provenance.py",
+                 "tools/panel_adversary.py"):
+        expected = subprocess.run(["git", "hash-object", name], cwd=ROOT,
+                                  capture_output=True, text=True, check=True)
+        assert panel.reviewer_sha(name) == expected.stdout.strip(), name
+
+
+def test_the_reviewer_sha_is_found_the_way_the_image_lays_the_files_out():
+    """In the container the file is `/root/panel_adversary.py`, with no
+    `tools/` above it and no repository anywhere. The basename lookup beside
+    this module is what makes the same call work in both places.
+    """
+    assert panel.reviewer_sha("anywhere/at/all/panel_adversary.py") == \
+        panel.reviewer_sha("tools/panel_adversary.py")
+    assert panel.reviewer_sha("tools/not_a_reviewer.py") is None
+
+
+def test_both_reviewers_file_a_sha_rather_than_a_null():
+    for module in (adv, __import__("panel_provenance")):
+        assert module.reviewer_sha(), f"{module.REVIEWER} files a null sha"
