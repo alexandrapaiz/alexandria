@@ -6583,3 +6583,84 @@ punctuates it and whether or not the line continues. Recorded as ban-list
 entry 84, whose general tell is that a unit defined by a punctuation mark can
 always be escaped by changing the punctuation. No eighth string was added to
 the tripwire, because seven strings have now been escaped by seven disguises.
+
+## INC-2026-10-03-law-12-graded-by-grep — a fourth editorial grade cleared a law the artifact broke, because the grading procedure named a string search as the verdict (2026-10-03, writer seat)
+
+**This is a repeat of `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+itself a repeat of `INC-2026-09-29-grade-cleared-link-coverage`, itself a repeat
+of `INC-2026-09-26-grade-cleared-a-printed-violation`. Fourth occurrence, same
+seat, same register, same shape, recorded at the moment it repeated per the
+standing rule at the top of this file.**
+
+**What happened.** Canon law 12 says framework names never print. Five
+consecutive grades, of 2026-09-28, 2026-09-30, 2026-09-30-b, 2026-10-01 and
+2026-10-02, recorded the verdict as a grep for the four internal slot names
+over the published page, the stored row and the newest print. All five got no
+output and all five recorded a pass on the strings. The grades of 2026-10-01
+and 2026-10-02 then added "FAIL on the idea" and located the idea in three
+headings and four bold labels, correctly.
+
+The law's worst instance is in none of those places. It is the second line of
+every issue the product has ever sent. `MASTHEAD` in `pipeline/weekly.py:792`
+reads "*What's new in AI research, what's gaining acceptance, and what newer
+evidence has overturned.*" That is three of the four internal slots, in the
+generator's own order, in plain-English synonyms: the new-work slot, the
+traction slot, the fell-behind slot. The grep matches none of them because not
+one of the four strings is present, and the line sits 84 characters into the
+same body every one of those greps was run over.
+
+**Why the verdict came out wrong, which is the reusable part and is new.** The
+three prior occurrences were a violation that could not be quoted, a law
+asserting coverage that needed a count, and a law with two clauses under one
+number. This one is a law whose enforcement instrument is narrower than the
+law, and the narrowing was written down as an instruction. The canon's grading
+procedure said, in its own words, that law 12 "is the case where this costs
+nothing: the four framework names are a closed set of exact strings, so the
+verdict is a grep". Five grades obeyed a correct-sounding procedure and
+produced a wrong verdict. A closed set of strings does make the grep cheap. It
+does not make the grep the verdict, because the law forbids the framework from
+printing and the four strings are only how it printed the first time.
+
+**And no gate in the generator could have caught it either.** The model does
+not write this line. `add_masthead` splices the constant into the body after
+generation, so the heading gate, whose first collection step takes every run of
+italic text sitting alone on its own line and would collect this line on sight,
+reads output that does not contain it yet. The one line in the issue the oldest
+step in that gate was built to catch is the one line it is structurally unable
+to see. That is ban list 61's class, the reader-facing string in code that no
+pass grades, now with a named law it breaks.
+
+**Why it matters.** Four grades in eight days have each cleared a law the
+artifact visibly broke, and each time the cause was a different blind spot in
+the same instrument. This occurrence is the worst of the four on duration and
+reach: the defect was filed by this same seat on 2026-09-20, in
+docs/ideas.md, with canon law 12 named explicitly and with deletion
+recommended, and it has printed above the fold on every issue for the thirteen
+days since while five grades passed the law. The seat that files a finding and
+the seat that grades the artifact are the same seat, and the filing did not
+reach the grade.
+
+**The fix, and it is in the procedure rather than in the laws.** Pass 3 of the
+canon's grading procedure now gives law 12 a three-part verdict: record the
+grep and its output, then ask the law's idea of every heading and label, then
+ask the idea of every standing line in the artifact with the file each one
+lives in named, including files this seat cannot edit. The procedure section is
+the writer seat's to correct; the laws section is not, and the wording of law
+12 itself is proposed in docs/ideas.md for the owner's ruling instead. Taking
+the line off the page is an engineer's change and is the third filing on it.
+
+**A second boundary note, recorded because it nearly became the fifth
+occurrence.** This run first wrote the fix into the laws section of the canon,
+which the canon's own maintenance rule forbids: "The laws section changes only
+by the owner's ruling, recorded in docs/voice/taste.md first." The edit was
+reverted before the commit that carried it. The prior incident in this chain
+had already recorded that constraint in its own fix paragraph, and reading that
+paragraph is what caught it. A register's second gate working is worth one
+entry, since this file is mostly the record of it failing.
+
+**Blameless note.** The grading procedure's law 12 sentence was written to stop
+a different failure, where a grade recorded the word "pass" with no evidence,
+and against that failure it worked. An instrument sharpened for one blind spot
+acquiring another is the pattern across all four of these entries, and the
+argument it makes is for grading laws by their idea with the cheap check as a
+floor, rather than for more care.

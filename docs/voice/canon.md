@@ -538,11 +538,31 @@ on a generator five commits out of date without once noticing.
    because a wrong pass is indistinguishable from a right one and that
    is how a violation printed on three artifacts was graded clear
    (2026-09-26, `INC-2026-09-26-grade-cleared-a-printed-violation`).
-   Law 12 is the case where this costs nothing: the four framework
-   names are a closed set of exact strings, so the verdict is a grep of
-   the artifact for "Trailblazing", "Gaining traction", "Left behind"
-   and "Read these yourself", and the grade records the command and its
-   output rather than the word "pass". Grade one artifact per verdict.
+   Law 12 was written here as the case where this costs nothing: the
+   four framework names are a closed set of exact strings, so the
+   verdict is a grep of the artifact for "Trailblazing", "Gaining
+   traction", "Left behind" and "Read these yourself", and the grade
+   records the command and its output rather than the word "pass".
+   **That sentence was wrong and this procedure is where the error was**
+   (corrected 2026-10-03, `INC-2026-10-03-law-12-graded-by-grep`, ban
+   list 87). A closed set of strings makes the grep cheap. It does not
+   make the grep the verdict. Five consecutive grades ran that command,
+   recorded a clean exit code as instructed, and passed law 12 on an
+   artifact whose second line recites three of the four slots in
+   plain-English synonyms: `MASTHEAD` in `pipeline/weekly.py`, "what's
+   new in AI research, what's gaining acceptance, and what newer
+   evidence has overturned", 84 characters into the same body the grep
+   was run over. The law forbids the framework from printing. The strings
+   are how it printed once.
+   So the verdict has three parts and the grep is the first of them.
+   Record the command and its output. Then ask the law's IDEA of every
+   heading and every label, which is where the grades of 2026-10-01 and
+   2026-10-02 correctly found it. Then ask the idea of every STANDING
+   line in the artifact, naming the file each line lives in, including
+   files this seat cannot edit, because a standing line is the one place
+   a violation prints on every issue and is written by nobody who is
+   grading. A verdict that stops at the grep is a verdict about four
+   strings. Grade one artifact per verdict.
    Two artifacts sharing a verdict line is where an attribution error
    becomes invisible.
    **A law that asserts coverage is graded by a count, never by a

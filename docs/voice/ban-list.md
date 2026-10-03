@@ -1300,68 +1300,82 @@ gap that the same collision had left empty (incident 25).
     frame ban in the same slot is also stated to bind its heading, because
     the sentence banned on the entries printed in the heading instead.
 
-87. The line that exists because the skeleton was blank there. A format
-    skeleton names every part of the artifact, and the gap between two of
-    its parts is read by whoever fills it as a slot with no rules in it
-    rather than as a part that does not exist.
-    `prompts/digest.md` specifies the title and then the opening, with
-    nothing between them. Both issues this product has sent since the
-    generator was rewritten printed an italic line in that gap, and in both
-    it described the issue's own three streams, in the order the payload
-    glossary lists them. The published one added a claim the library could
-    not make and that clause was found, filed and removed. What was left
-    after the removal was the part no grade ever reached, because every
-    reader graded the worse clause and passed the line.
-    Three separate gates had the line in hand and none of them stopped it.
-    The heading gate's collection step takes "every run of bold or italic
-    text sitting alone on its own line", and this was the only line in the
-    issue that step collected which was not a heading. Its question,
-    whether the line could sit over a different day's items unchanged,
-    answers yes on its face. Its remedy is where the gate ran out: the only
-    repair it offers is to write the line again from the items underneath
-    it, and a line with nothing underneath it cannot be rewritten, so a
-    reader applying the gate honestly arrives at a fresh invention instead
-    of a deletion.
-    The general tell: a gate that collects a line, asks the right question
-    and offers one repair can only ever produce that repair. Where the
-    honest answer is that the line should not exist, a rewrite-only remedy
-    launders it. So every gate that can condemn a line needs a delete branch,
-    and the condition on that branch is ownership: does any slot in the file
-    ask for this line at all. And when a skeleton has a gap, the gap gets
-    written out as a slot whose rule is that it stays empty, because an
-    instruction absent from a writing position is not a prohibition.
-    Added 2026-10-03. Enforced the same day: the skeleton carries a block
-    between the title and the opening saying nothing stands there, and the
-    heading gate's remedy splits into a rewrite branch for headings over
-    blocks and a delete branch for a line no slot asked for.
+87. The law graded by grep, and the violation that used the synonym. A law
+    written as a closed set of exact strings gets enforced with a string
+    search, the search is honest and its exit code is recorded, and the
+    verdict it produces is about the strings rather than about the law.
+    Canon law 12 says framework names never print. The four internal names
+    are "Trailblazing", "Gaining traction", "Left behind" and "Read these
+    yourself", and five consecutive grades ran the same grep for those four
+    over the page, the stored row and the newest print, got no output from
+    any of them, and recorded law 12 as a pass on the strings. Runs 21 and
+    22 then added "FAIL on the idea" and located the idea in three headings
+    and four bold labels, which is correct and is not where the law is worst
+    broken.
+    It is broken in the second line of every issue the product has ever
+    sent. `MASTHEAD` in `pipeline/weekly.py` reads "*What's new in AI
+    research, what's gaining acceptance, and what newer evidence has
+    overturned.*" Three of the four internal slots, in the file's own order,
+    in plain-English synonyms: what's new is the new-work slot, what's
+    gaining acceptance is the traction slot, what newer evidence has
+    overturned is the fell-behind slot. The grep cannot match any of them
+    because not one of the four strings appears, and the line sits 84
+    characters into the same body the grep was run over.
+    The reason no prompt gate catches it either: the model does not write
+    this line. `add_masthead` splices the constant in after generation, so
+    the heading gate, which reads finished output and whose first collection
+    step takes every run of italic text sitting alone on its own line, reads
+    output that does not contain it yet. This is entry 61's class, the
+    reader-facing string in code that no pass grades, and entry 64's, the
+    standing line whose fix cannot reach what is published. The third thing
+    it is, and the new part, is a law whose verdict a grep can satisfy.
+    The general tell: where a law names a closed set of strings, the grep is
+    the floor of the verdict and never the verdict. Write the law's IDEA as
+    a question and ask it of every standing line in the artifact, including
+    the ones this seat cannot edit, and name the file they live in. A clean
+    exit code on four strings is evidence about four strings.
+    And the instrument was instructed. The canon's grading procedure said in
+    its own words that law 12 "is the case where this costs nothing" and that
+    the verdict is the grep. Five grades obeyed a procedure that was wrong,
+    which is why this entry's fix is a correction to that procedure and not a
+    note about care.
+    Added 2026-10-03. Not enforceable from the prompt, and the reason is the
+    splice. Enforcement lands in the canon's grading procedure instead, pass
+    3, where the verdict now has three parts and the third asks the idea of
+    every standing line with its source file named, and in the
+    structure-watch filing of 2026-10-03 in docs/ideas.md,
+    which is the third on this line: the first, of 2026-09-20, already named
+    canon law 12 and recommended deleting the constant, and it is still
+    `proposed` on day 13.
 
-88. The specimen the payload could never have supplied, which is why nobody
+88. The specimen a payload could never have supplied, which is why nobody
     noticed it was still a template. This file defends its own examples with
     one test, stated at the skeleton: "Every example in this file is drawn
     from a subject the payload cannot contain." The test was written against
     the failure where a worked rewrite of an issue became that issue's prose,
     and for examples about research it holds.
     It protects nothing in a specimen that names no subject. A phrase about
-    how strong the evidence is, or about what the issue is, is payload-neutral
-    by construction: it fits every issue, so there is no subject in it to be
-    drawn from a week the generator was not handed, and it passes the test
-    while being directly printable.
-    The grade rule demonstrated a grade in a sentence counting two units of
+    how strong the evidence is is payload-neutral by construction: it fits
+    every issue, so there is no subject in it to be drawn from a week the
+    generator was not handed, and it passes the test while being directly
+    printable.
+    The grade rule demonstrated a grade as a sentence counting two units of
     scale and then assessing them. Four hundred lines later the gate banned
-    that exact frame by name and recorded that a print carried it four times
-    out of four, two of them opening on the specimen's own first two words.
-    The reading-list rule listed the same facts in the same shape at the
-    position where its entries get written. The payload glossary described
-    one of the four streams in reader-facing words, and those words printed
-    at the top of the issue as the line in entry 87.
-    The general tell, and it is the test this file's defence is missing: ask
+    that exact frame by name, "One [unit], [unit], and [the assessment]", and
+    recorded that a print carried it four times out of four with two of those
+    opening on the specimen's own first two words. The reading-list rule
+    listed the same facts in the same shape at the position where its entries
+    get written. So the gate forbade the frame while two writing positions
+    went on handing it over, which is the 2026-09-30 defect of the gate that
+    supplied its own banned heading, repeating in the slot that is house law
+    on every item at every cadence.
+    The general tell, and it is the test this file's defence was missing: ask
     of every quoted specimen whether it could print verbatim in an issue
     about any research at all. If it could, the subject test does not reach
-    it and the position is what decides. At a writing position, delete it and
-    name no replacement, because a replacement offered where the writing
-    happens is the next frame. At a gate, where finished output is being
-    read, a specimen is evidence and may stay.
+    it and the position decides. At a writing position, strike it and name no
+    replacement, because a replacement offered where the writing happens is
+    the next frame. At a gate, where finished output is being read, a
+    specimen is evidence and may stay.
     Added 2026-10-03. Enforced the same day: the in-frame grade specimen is
-    struck and the rule names no replacement, the reading-list facts are
-    stated as questions rather than as a shaped sentence, and the glossary
-    describes the traction stream by what it is computed from.
+    struck and the rule names no replacement, and the reading-list facts are
+    stated as the questions they answer rather than as a shaped sentence.

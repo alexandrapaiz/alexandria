@@ -7683,3 +7683,93 @@ graphs.
   again.
 - Related: ban list 84, canon law 14, the formatting filing of 2026-09-30.
 - Status: evidence appended, no new request
+
+### 2026-10-03 — The masthead recites the framework, it was filed on 2026-09-20 with that law named, and it has printed above the fold every day since (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-03, structure watch, reading the
+  newest issue cold. The third filing on `MASTHEAD` in `pipeline/weekly.py`,
+  after the one of 2026-09-20 ("the masthead is about to be hardened into two
+  constants") and the one of 2026-09-27 (the false reading claim live in the
+  archive). Filed again rather than edited, per the ledger's own rule, because
+  the facts changed in a way that matters: the clause that made the line
+  famous has been fixed, the clause nobody graded has not, and the first
+  filing already named the law it breaks.
+- What the line is now, in full, at `pipeline/weekly.py:792`:
+  "*What's new in AI research, what's gaining acceptance, and what newer
+  evidence has overturned.*"
+- The defect, and it is canon law 12. Three of the four internal slot names,
+  in this file's own order, in plain-English synonyms. What's new is the
+  new-work slot. What's gaining acceptance is the traction slot, and the
+  payload glossary in `prompts/digest.md` describes that stream in nearly the
+  same words, "older work gaining acceptance". What newer evidence has
+  overturned is the fell-behind slot. The reader is told which internal bins
+  the material was sorted into, in the second line of the issue, on every
+  issue. The heading gate's closing step forbids exactly this of a sentence,
+  "no sentence in the issue says which of the four slots the material under it
+  came from", and that step cannot reach this sentence.
+- Why the prompt cannot fix it, which is unchanged since 2026-09-20 and is why
+  this is an engineer's filing and not a patch. `add_masthead` splices the
+  constant into the body after the model has finished, so the heading gate
+  reads output that does not yet contain the line. The gate's first collection
+  step takes "every run of bold or italic text sitting alone on its own line",
+  which would collect this line on sight, and the splice happens after the
+  gate has run. The one line in the issue that the oldest step in the gate was
+  built to catch is the one line the gate is structurally unable to see.
+- Why it survived thirteen days of grading, which is the part worth the
+  engineer's attention more than the words are. The law 12 verdict is a grep
+  for the four exact strings. Five consecutive grades ran it, got a clean exit
+  code, and recorded a pass on the strings; two of those grades went on to
+  fail the law "on the idea" and located the idea in headings and bold labels.
+  The synonym in the standing line matched no string and was read past every
+  time, including by three runs of this seat on this branch. Fixed in this
+  pull request on the grading side: canon law 12's verdict now has three
+  parts and the third asks the idea of every standing line with its source
+  file named. That makes the next grade catch it. It does not take it off the
+  page.
+- What to do, and the recommendation has not changed since 2026-09-20: delete
+  `MASTHEAD` and `add_masthead()` and let the title meet the opening. The
+  title states the finding, the opening greets the reader, and nothing between
+  them is doing a job the issue needs. This also closes the 2026-09-27 filing's
+  problem at the root, because a line that is never spliced cannot be baked
+  into a stored body that later needs correcting.
+- If the owner wants a standing line under the title, the constraint is that
+  it describe the product's value and not its three streams, and the house
+  already has its best sentence: the close she approved on 2026-09-30,
+  "Accelerate every builder and agent to frontier speed." Promote that and let
+  it carry both ends. Any replacement is reader-facing copy and so reaches her
+  in chat first, drafted in `docs/voice/`, per the copy pipeline.
+- Smallest intermediate step if neither happens: the line loses its third
+  clause and its order, so it stops being a recitation of the framework even
+  while it stays a description of the product. This is worse than deletion and
+  better than another week of law 12 printing.
+- Related: ban list 61, 64, 87, canon law 12, the filings of 2026-09-20 and
+  2026-09-27 (both still `proposed`), and
+  `INC-2026-10-03-law-12-graded-by-grep` in this pull request.
+- Status: proposed, third filing, the first still unexecuted on day 13
+
+### 2026-10-03 — Canon law 12's own wording, proposed for the owner's ruling (writer seat)
+
+- Trigger: `INC-2026-10-03-law-12-graded-by-grep`. The law reads "Framework
+  names never print", and five grades read "names" as the four exact strings
+  the generator uses internally. The artifact recites three of the four slots
+  in plain-English synonyms in its second line and every one of those grades
+  passed the law.
+- The procedure fix is already made, because pass 3 of the grading procedure
+  is this seat's to correct. This entry is only about the sentence in the laws
+  section, which the canon's maintenance rule reserves to her: "The laws
+  section changes only by the owner's ruling, recorded in docs/voice/taste.md
+  first."
+- Proposed wording, for her ruling and not applied: law 12 forbids the
+  framework from printing, in any words. The four internal names are the
+  closed set of strings and a synonym is the same violation. A standing line,
+  a masthead, a subtitle or a contents sentence that tells the reader which
+  internal bins the material was sorted into breaks the law exactly as a
+  heading does, wherever in the repo that line is written.
+- Why it is worth her sentence rather than this seat's: she gave this ruling
+  twice (incident 20), and both times the artifact in front of her was a
+  heading. The law was written from those two artifacts and is narrower than
+  what she was objecting to. Widening it is a reading of her intent, so it
+  goes to her.
+- Related: ban list 87, `INC-2026-10-03-law-12-graded-by-grep`, the masthead
+  filing of 2026-10-03 in this same pull request.
+- Status: proposed, awaiting owner's ruling

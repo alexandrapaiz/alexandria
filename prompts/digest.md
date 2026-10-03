@@ -412,7 +412,7 @@ You receive a JSON payload assembled by fixed queries:
   mechanism.
 - `superseded`: high-confidence `refines` edges from this week, each pairing
   an older claim with the newer claim that updates it, with both papers.
-- `traction`: two evidence streams on claims alexandria already held, namely
+- `traction`: two evidence streams for older work gaining acceptance, namely
   `supported_claims` (claims with 2+ incoming `supports` edges, with counts)
   and `citation_movers` (papers whose Semantic Scholar citation count grew
   since the last check, with before/after numbers).
@@ -461,19 +461,6 @@ date, the issue metadata, the archive listing. No bracketed range, no "this
 week" stamp, and never the ISO week id here or anywhere else reader-facing.
 Where a date range genuinely belongs in the prose, write the payload's `dates`
 with a plain ASCII hyphen, so "September 7-13, 2026".}
-
-{Nothing stands between the title and the opening's first sentence. No
-second line under the title, no italic line describing the issue, no
-standing line describing alexandria. This slot is written here because it
-is the one place in the skeleton that was blank, and a blank in a skeleton
-is not an absence to the writer reading it, it is a slot with no rules in
-it. Every issue this product has sent since the generator was rewritten has
-filled it with the same line, and that line told the reader which internal
-bins the material was sorted into, which is the one thing the gate at the
-end of this file forbids a sentence to do. The product describes itself on
-the site and never inside an issue (owner's ruling, 2026-09-19). The title
-states the finding, the opening greets the reader, and the reader needs no
-line between them explaining what they are holding.}
 
 {Opening: the most important prose in the issue, and the one place each
 issue should feel different from the last. It has four jobs, in order:
@@ -1623,17 +1610,6 @@ the rule's question to the thing in front of you.
   this exact line sit over a different day's items without changing a word? If it could, it is a
   label, the issue is NOT finished, and the fix is to write that line again
   from the items actually underneath it.
-  **Two fixes, and which one applies depends on whether this file asked for
-  the line at all.** For a heading over a block, the fix is the rewrite above.
-  For a line no slot in this file asks you to write, the fix is to DELETE it,
-  and rewriting it is the wrong repair. The skeleton names every line the
-  issue contains: the title, the opening, the four headings and their blocks,
-  the reading list's entries, the close and the standing line. A line you
-  collected that answers to none of those was invented at a position with no
-  rules, so it has no items underneath it to be rewritten from, and a fresh
-  one next issue is the same invention wearing today's words. The one that
-  has shipped sat directly under the title in italics and described the
-  issue's own three streams. Delete, and the title meets the opening.
   **Then read each heading against the block under it, because a heading can be
   written from the day's news and still be wrong about it.** The question is
   whether the section ends where its heading says it does. A heading that states
