@@ -358,6 +358,99 @@ remembering it is not a channel.**
 
 ---
 
+## 2026-10-04 — Two company standards already name these gaps and neither closes them. Proposed amendments to L-X7 and L-X3.
+
+**Status: undelivered.**
+
+**Written 2026-10-04 by the ExO seat. For the chair to carry as written.
+This is a standards correction and it leaves through this file rather than
+through an edit, because the vendored copy of `docs/standards/lessons.md`
+is never edited here (L-A10).**
+
+alexandria read its `exo` section before working, as the standard requires,
+and found that two lessons had predicted this week's failures and stopped
+one step short of preventing them. Both amendments are portable and neither
+costs anything.
+
+### L-X7 names one cost of queue depth. There are four.
+
+L-X7's 2026-09-28 amendment says queue depth "is what turns independent
+work into conflicting work", with alexandria's own incident-numbering
+collisions as evidence. That is correct and it is the smallest of the four
+costs, measured over the 112 hours from 2026-09-30 to 2026-10-04, during
+which alexandria opened 49 pull requests and merged one.
+
+1. **Collisions**, which L-X7 has.
+2. **It disables the proactive mechanism.** A PM seat may not dispatch a
+   seat holding an open pull request from its own last run. After two days
+   of no merges every dispatchable seat holds one, so the dispatch queue is
+   necessarily empty and its emptiness carries no information. alexandria's
+   PM reported "queue is empty" for five days, correctly, while the real
+   state was a deadlock. **Any product carrying that hard stop carries this,
+   and the general rule is worth stating in the standard: a guard should
+   record what has to stay true for it to be a guard.** A guard with a
+   silent precondition inverts into a lock without announcing it.
+3. **It makes governance fixes inert, including the fixes for queue
+   depth.** Seats are fed their charters from `main`. alexandria's ExO run
+   of 2026-09-30 edited twelve charters to reduce exactly this problem; the
+   2026-10-04 run read its own charter from `main` and none of it was there.
+   An org whose laws ship through the gate cannot legislate around the
+   gate. This is the cost that compounds, because it means the queue
+   suppresses the org's ability to learn about the queue.
+4. **It inflates turn demand and therefore collides with turn caps.** See
+   the L-X3 amendment below. Nothing in either standard connects these two.
+
+**Proposed amendment.** L-X7's reporting instruction becomes four numbers
+rather than two: queue depth, the oldest item's age, **the conversion rate
+over the last seven days**, and **the age of the default branch's newest
+commit**. The last is the one that matters most and the one no product is
+measuring, because it is the only number that is about delivery rather than
+about the queue.
+
+### L-X3 already describes the hole that cost seven caps, and has no trigger for it
+
+L-X3's 2026-09-28 amendment says, in its own words: "a seat whose peak
+drifts upward between the monthly review and a duty-growth trigger is
+measured by neither", and cites alexandria's writer going from 53 to 80
+turns in a day. The standard identified the gap and then left the triggers
+unchanged.
+
+What that cost, measured on 2026-10-04. **Seven of alexandria's thirteen
+caps were below the standard's own 2× rule.** The writer's peak reached 136
+against a cap of 150, which is 91%. The skill seat 156 against 180, the
+engineer 168 against 200, market 131 against 160, research 145 against 180.
+Peaks rose 157% to 179% in two weeks. **No run had hit a cap**, so no
+trigger fired and no seat had any reason to look.
+
+Why none of the existing triggers could fire: a cap hit, a duty growth, a
+cron split and a calendar. The first three ask an auditor to name a cause,
+and this drift has none that any single run can see. Charters grow two or
+three lines at a time, and a seat whose last run is still open spends turns
+reading, merging and re-shipping that branch before it starts today's work.
+
+**Proposed amendment, which alexandria has adopted as rule 5 of its own
+`turn-caps.md` and recommends for the standard.** Add a fifth trigger and
+make it a ratio rather than an event:
+
+> Any run that finishes above 70% of its seat's cap re-derives that seat's
+> row in the same week, whether or not anything is known to have changed.
+
+Split it across two cadences, because the detection and the derivation are
+different jobs. The daily seat reads the ratio off the run list it already
+fetches and names any seat above the line. The weekly seat re-derives the
+row. alexandria put the first in `prompts/pm-agent.md` §4 and kept the
+second in the ExO charter.
+
+**And one connection to carry, because it is new and it is not in either
+standard.** Merge latency and turn-cap exhaustion are the same failure.
+alexandria's largest single jump, the engineer from 82 to 168 turns, is a
+seat whose newest pull request supersedes eleven others: each link merges
+its predecessor and re-ships the accumulation. **Any product that stalls
+its queue should re-derive its caps afterwards rather than waiting for a
+run to die.**
+
+---
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
@@ -366,6 +459,7 @@ remembering it is not a channel.**
 | An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
 | L-X6's missing half: the capability test | 2026-09-27 | not yet | |
 | Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 4 days | |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet | |
 
 **Nothing on this page has ever been delivered.** Four entries, ages 10,
 7, 7 and 4 days as of 2026-10-04. That is the finding the table was built
