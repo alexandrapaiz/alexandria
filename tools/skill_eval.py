@@ -93,7 +93,15 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 sys.path.insert(0, str(ROOT / "tools"))
 
-CONTRACT = 1
+# What a suite's own version number may say. Two numbers, not one, because
+# two seats write one format: this harness called it `contract`, the skill
+# seat's suites call it `suite_version: 2`, and a reader that speaks only its
+# own number refuses the work it exists to measure
+# (URGENT ledger entry, 2026-10-03). The harness moves, since the suites are
+# the work and this file is the instrument.
+CONTRACTS = (1, 2)
+#: What a result written today is tagged with.
+CONTRACT = CONTRACTS[-1]
 
 # Defaults. The subject comes from the budget table, so the id here is checked
 # against the provider's live catalog by the same machinery the crons use.
