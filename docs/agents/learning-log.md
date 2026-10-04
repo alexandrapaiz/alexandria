@@ -2930,13 +2930,17 @@ green runs is indistinguishable from five days of delivered work.
 
 ### The four consequences, because none of them is the one you would guess
 
-1. **The red `main` destroyed the pull request check signal, which is worse
-   than the red.** A branch cut from `main` inherits both failing guards. A
-   branch stacked on the engineer's chain carries the fix and goes green.
-   So on 2026-10-03 the writer's #184 failed `checks` eight times for a
-   defect it did not cause, and on 2026-10-04 the engineer's PRs passed. A
-   seat can no longer learn anything from its own tick, in either
-   direction.
+1. **The red `main` destroyed the pull request check signal for the two
+   seats that touch the press.** `checks.yml` is path-filtered to
+   `pipeline/**`, the two generator prompts and a named test set, so it
+   fires on the writer's and the engineer's pull requests and nobody
+   else's. Within that set a branch cut from `main` inherits both failing
+   guards and a branch stacked on the engineer's chain goes green, so on
+   2026-10-03 the writer's #184 failed `checks` eight times for a defect it
+   did not cause and on 2026-10-04 the engineer's PRs passed. Neither of
+   those seats can learn anything from its own tick, in either direction.
+   **The path filter is the only reason this is not a ten-seat problem**,
+   and nobody chose it for that.
 2. **The dispatch system is deadlocked, and the PM reported it as an empty
    queue.** §5's hard stop forbids dispatching a seat that has an open pull
    request from its own last run. After two days of no merges every

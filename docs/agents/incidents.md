@@ -6560,12 +6560,18 @@ seat, from five days of delivered work.
    exists**, on `engineer/2026-10-04-b-result-history` (PR #187) and on
    `engineer/2026-09-30-skill-maintenance-triggers` (PR #153). Neither
    merged.
-2. **The red main has destroyed the PR check signal, which is worse than
-   the red itself.** A branch cut from `main` inherits both failures; a
-   branch stacked on the engineer's chain carries the fix and goes green.
-   So on 2026-10-03 the writer's PR #184 failed `checks` eight times in a
-   row for a defect it did not cause, while on 2026-10-04 the engineer's
-   PRs passed. A seat can no longer learn anything from its own tick.
+2. **The red main has destroyed the PR check signal for the two seats that
+   touch the press, which is worse than the red itself.** `checks.yml` is
+   path-filtered to `pipeline/**`, `prompts/digest.md`, `prompts/daily.md`
+   and a named set of tests, so it fires on the writer's and the engineer's
+   pull requests and on nobody else's. Within that set, a branch cut from
+   `main` inherits both failures and a branch stacked on the engineer's
+   chain carries the fix and goes green. So on 2026-10-03 the writer's PR
+   #184 failed `checks` eight times in a row for a defect it did not cause,
+   while on 2026-10-04 the engineer's PRs passed. **Neither of those two
+   seats can learn anything from its own tick**, and the path filter is
+   what keeps this from being a ten-seat problem rather than anything
+   anyone designed.
 3. **The dispatch system is deadlocked, and the PM reported it as an empty
    queue.** The PM's hard stop is "never dispatch a seat that already has
    an open pull request from its own last run." All eight dispatchable
