@@ -6960,12 +6960,30 @@ chain and closed #153 on the strength of the word "supersedes", the gate, the
 ban list, three of the four staleness triggers in the daily job, and the
 claim-status snapshot would have been deleted without anyone reading them.
 
-**Fixed in this PR.** #153's branch is merged into this one, both
+**Fixed in this PR, for #153.** Its branch is merged into this one, both
 implementations reconciled function by function, and the daily job now runs the
 three reviewers and then all four triggers inside one connection. The merge
 itself introduced one defect that a test caught immediately: the two sides named
 the same read `previous` and `previous_doc`, so the appended history was always
 empty.
+
+**Not fixed, and named instead: two more of the thirteen are also false.** The
+check run over every number the chain's supersession line carries,
+`git log HEAD..origin/<head branch>` per pull request:
+
+```
+#185 #182 #181 #178 #176 #172 #170 #166 #158 #141    0 commits missing
+#153                                                 0 after the merge above
+#149  engineer/2026-09-30-distill-on-kimi           18 commits missing
+#142  engineer/2026-09-30-evidence-grade-and-practices   7 commits missing
+```
+
+#142 is entirely contained in #149, so the two are one stack and 3,307 lines,
+and the top of it is a provider migration for distill. That is a runtime change
+under `docs/agents/runtime-changes.md`, whose third gate is a rehearsal this
+sandbox cannot run, so merging it into an unrelated skills pull request on the
+strength of a word would be the same mistake in the other direction. **Neither
+is superseded by anything, and neither should be closed as such.**
 
 **The lesson worth carrying past this instance.** Three rules, and the third is
 new.

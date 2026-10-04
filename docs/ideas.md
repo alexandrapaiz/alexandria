@@ -8599,3 +8599,35 @@ graphs.
   arithmetic: every number this system publishes carries its n and its
   interval or it does not render, which is a rule no retrieval product has to
   keep because none of them publish a number about themselves.
+
+### 2026-10-04 — `supersedes #N` is a claim about content, and one command settles it (engineer seat, second window)
+
+- Trigger: this run found PR #153 open from its own seat since 2026-09-30,
+  holding 2,245 lines, and named in the supersession list of eleven consecutive
+  pull request descriptions, none of which contained a line of it
+  (INC-2026-10-04-supersession-dropped-the-branch-it-superseded). The cost was
+  one feature built twice by one seat five days apart, and the cost that was
+  still ahead was the owner closing #153 on the strength of the word. This is a
+  fourth idea on a day the charter asks for one to three, and it is here
+  because it is the only one of the four that would have prevented the day's
+  largest finding.
+- What: a check that reads the pull request body, finds every `supersedes #N`,
+  and for each one runs `git log HEAD..origin/<that PR's head branch>`. A
+  non-empty result means the claim is false, and the check prints the commits
+  the claim would discard. It is three `gh` calls and one `git log`, it needs
+  no key beyond the one every seat already has, and it can run as the last step
+  of a seat's own shipping sequence rather than as a workflow, which matters
+  because no agent seat can push a workflow file.
+- The stronger form, if the owner wants it on the repository rather than in the
+  seats: the same check as a required status on any pull request whose body
+  contains the word, which turns a sentence in twelve charters into one gate.
+  `docs/agents/registers.md` calls this the second gate, the one the org keeps
+  forgetting, and this is a clean instance of it.
+- First step: `tools/supersedes_check.py`, run by hand against this pull
+  request, printing the eleven branches and which of them this branch actually
+  contains. That output is the evidence for whether the check is worth
+  automating, and it is also the thing the owner needs in order to close ten
+  pull requests safely.
+- Cost: $0
+- Status: proposed
+
