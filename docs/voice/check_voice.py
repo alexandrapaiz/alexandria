@@ -5,19 +5,19 @@ A rule enforced by a sentence in a register is enforced at the reliability of
 a model reading a file. Each check below replaced such a sentence, and each one
 caught a live defect on the run that wrote it.
 
-1. `enforcements` — docs/voice/ban-list.md ban list 92. An entry's second
+1. `enforcements`, docs/voice/ban-list.md ban list 92. An entry's second
    ending names the change to the generator that enforces it. Thirty-four of
    thirty-five named it in prose, so verifying the register meant a close
    reading of prompts/digest.md and nothing re-ran a close reading. This
    reports the ratio and verifies every quoted ending against the live
    generator, matching on normalised whitespace because both files wrap.
 
-2. `stale` — ban list 89 and 90. A prompt is read on a day it was not
+2. `stale`, ban list 89 and 90. A prompt is read on a day it was not
    written, so a sentence in it describing the INPUT is a claim about a day
    that has passed. Entry 89 named the class, struck its two specimens, and
    left three live where this command would have found them.
 
-3. `measure` — ban list 91. A measurement carried from one artifact to
+3. `measure`, ban list 91. A measurement carried from one artifact to
    another is how a FAIL got recorded against a clean issue for four days.
    Prints the character census per path, so no figure can be shared between
    two artifacts in a grade.
@@ -129,11 +129,28 @@ def stale():
     return 0
 
 
+HIDDEN = re.compile(r'HIDDEN_WEEKS\s*=\s*new Set\(\[([^\]]*)\]\)')
+
+
+def hidden_weeks():
+    """Weeks retired at the serving layer, so not reader-facing.
+
+    `site/lib/content.js` hides 2026-W37 on the owner's order of 2026-09-19.
+    Its markdown fixture is still on disk and carries 152 non-ASCII characters,
+    which is the figure a grade once reported against the issue that replaced
+    it. A check that fails on a page nobody serves is noise, and L-A21 says a
+    gate is judged by what it can see.
+    """
+    f = ROOT / "site/lib/content.js"
+    if not f.exists():
+        return set()
+    m = HIDDEN.search(f.read_text())
+    return set(re.findall(r'"([^"]+)"', m.group(1))) if m else set()
+
+
 def measure(paths=None):
-    paths = paths or [
-        ROOT / "site/content/issues/2026-W39.md",
-        ROOT / "site/content/issues/2026-W37.md",
-    ]
+    retired = hidden_weeks()
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
     rc = 0
     for p in paths:
         if not p.exists():
@@ -143,14 +160,15 @@ def measure(paths=None):
         na = collections.Counter(c for c in t if ord(c) > 127)
         paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
         lens = [len(x.split()) for x in paras]
-        print(f"{p.relative_to(ROOT)}")
+        off = p.stem in retired
+        print(f"{p.relative_to(ROOT)}" + ("   [retired, not served]" if off else ""))
         print(f"  words {len(t.split()):<6} paragraphs {len(paras):<4} "
               f"longest {max(lens) if lens else 0:<4} over100 {len([x for x in lens if x > 100])}")
         print(f"  em dashes {t.count(chr(8212)):<4} semicolons {t.count(';'):<4} "
               f"non-ASCII {sum(na.values()):<5} distinct {len(na)}")
         for c, k in na.most_common():
             print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}")
-        if sum(na.values()) or t.count(chr(8212)):
+        if not off and (sum(na.values()) or t.count(chr(8212))):
             rc = 1
     print()
     print("Every figure above is printed under the path it was measured on.")

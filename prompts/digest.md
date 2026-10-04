@@ -418,7 +418,7 @@ You receive a JSON payload assembled by fixed queries:
   and `citation_movers` (papers whose Semantic Scholar citation count grew
   since the last check, with before/after numbers).
 - `deprecated`: claims contradicted this week by newer claims (confidence
-  ≥ 0.7), each paired with the contradicting claim.
+  >= 0.7), each paired with the contradicting claim.
 - `deep_reads`: papers triage flagged this week as worth the reader's own
   full read.
 
