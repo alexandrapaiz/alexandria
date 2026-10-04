@@ -6926,3 +6926,81 @@ item 19 on that page, both edits, with the exit-code handling the gate needs
 must not turn a build red). Both branches of that step were verified in this
 run: exit 0 on the library as it stands, exit 1 with one real non-conformant
 suite dropped into `skills/`.
+
+## INC-2026-10-04-named-test-file-never-written — a module named the test file holding its one dangerous property, the file did not exist, and the property was false (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, writing the file.
+
+**Fifth sighting of the shape** `INC-2026-10-02-markdown-suite-claims-a-ci-
+step-it-never-had` named first, after `INC-2026-10-03-panel-reviewer-claims-a-
+ci-step-it-never-had`, `INC-2026-09-29-receipts-step-had-no-paths` and
+`INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had` earlier the same
+day. It is also a repeat of `INC-2026-09-29-gate-unit-three-more`, and it is the
+first instance where the two shapes are the same event.
+
+**What happened.** `tools/skill_triggers.py`, 851 lines, carries this sentence
+in its module docstring: "`tests/test_skill_triggers.py` asserts that every line
+this module can produce parses as zero papers to fetch." There was no
+`tests/test_skill_triggers.py`. The module had no pytest file at all.
+
+The property is real and it matters. `pipeline/reading_queue.py` reads any
+`arxiv:<id>` in a queue line as a request to fetch that paper and puts it at the
+front of distill's drain, so a maintenance line about a paper the corpus already
+holds would spend the drain re-fetching it. The module defends it in
+`paper_reference`, which names a paper by title and url.
+
+**The half that was worse than the missing file.** The assertion did exist,
+inside `--smoke`, which no workflow runs. And it was written at the wrong unit:
+it checks the lines the four callers that exist today produce, not the channel
+every line passes through. Written at the channel it is false. The evidence of a
+`deprecated` or a `refines` record interpolates claim text and paper titles
+straight out of the corpus, so one claim whose sentence quotes an arXiv id
+queues a fetch. That input is a database row, not a hypothetical. The new file's
+`test_a_claim_whose_own_text_quotes_a_paper_id_does_not_queue_a_fetch` fails
+without the fix.
+
+**Fixed in this PR.** `record`, the one function every record is built by,
+defuses `arxiv:<id>` to `arXiv <id>`: the queue reader does not act on it and a
+person can still follow it. `tests/test_skill_triggers.py` now exists, 22 tests,
+no database and no model, and the docstring says what is true instead of what
+was intended.
+
+**The lesson worth carrying past this instance.** The register already holds the
+question that finds this class: name the unit the check inspects, name the unit
+the defect lives in, and say whether they are the same size. This instance adds
+the reason a demonstration cannot answer it. `--smoke` runs the callers that
+exist, so it is a sample of the inputs; the property is about every input. When
+a module names an invariant over everything it can produce, the check belongs at
+the chokepoint the producers share, and the enforcement belongs in the producer
+rather than in each caller. The second rule, cheaper still: a docstring that
+names a file is a claim, and `ls` settles it. Four of the five sightings of this
+shape would have been caught by reading the sentence and then looking.
+
+## INC-2026-10-04-one-constant-for-two-documents — widening the dialect the harness reads silently changed the version number of the document it writes (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, in its own morning's work.
+
+**What happened.** `tools/skill_eval.py` reads a suite file and writes a result
+file. They are two documents with two independent version numbers.
+`CONTRACTS = (1, 2)` was widened this morning so the harness would stop
+refusing the skill seat's eight suites, which say `suite_version: 2`. One line
+below it, `CONTRACT = CONTRACTS[-1]`, commented "what a result written today is
+tagged with", and `summarize` wrote that number into every result.
+
+So accepting a new input dialect moved the output document from `contract: 1` to
+`contract: 2`. `site/app/skills/README.md` is the contract for the result, it
+says `1`, and its own first rule is that a reader which does not know the number
+renders pending rather than guessing. Nothing reads the field yet, so this is a
+latent blank page and not a live one: the first component built as documented
+would have rendered every freshly measured skill as **pending validation**, with
+the measurement sitting in the file.
+
+**Fixed in this PR.** `SUITE_CONTRACTS` for what the harness reads,
+`RESULT_CONTRACT` for what it writes, and a line in the contract document saying
+the two numbers move independently.
+
+**The lesson worth carrying past this instance.** One constant may not serve two
+documents, however nearly identical the two look at the moment it is written.
+The cheap test for it: the comment on the line. `CONTRACT = CONTRACTS[-1]` needed
+a sentence explaining which document it meant, and a name that needs that
+sentence is two names.

@@ -1715,6 +1715,44 @@ the whole measurement path against a scripted model, 24 calls and $0.00, and
 it already asserts the arithmetic of the verdict rule. It has been a command
 nobody runs since 2026-09-30.
 
+### 19, amended 2026-10-04 (second window): two more files, and the module whose test file did not exist
+
+Amended in place rather than queued as item 20, for the reason item 18 was
+amended in place: the same two `paths` lists, in the same workflow, about the
+same subsystem. A reader applying item 19 and then meeting a separate item 20
+about those lists would have to work out which is current.
+
+`INC-2026-10-04-named-test-file-never-written`. `tools/skill_triggers.py` names
+`tests/test_skill_triggers.py` in its own docstring as the thing that holds its
+one dangerous property, which is that no maintenance line it writes may read as
+a request to fetch a paper. That file did not exist until this run. It exists
+now, 22 tests, no database, no model, no network, and writing it found the
+property false at the channel every line passes through.
+
+So four paths rather than two, in **both** lists:
+
+```yaml
+      - "tools/skill_eval.py"
+      - "tools/skill_triggers.py"
+      - "tests/test_skill_eval.py"
+      - "tests/test_skill_triggers.py"
+```
+
+And one more step, beside the two above. It takes no key and no model, and it
+is the only thing in CI that would notice if a queue line started asking
+`pipeline/reading_queue.py` to re-fetch a paper the corpus already holds:
+
+```yaml
+      - name: the staleness triggers, and the fetch request they must never write
+        if: always()
+        run: python3 -m pytest tests/test_skill_triggers.py tests/test_skill_eval.py -q
+```
+
+Both files are pytest, so one step covers them and `requirements-dev.txt` is
+already installed by the step above. Verified in this run's sandbox: 22 passed
+for the triggers, 90 passed for the harness, and the whole suite 888 passed, 9
+skipped.
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
