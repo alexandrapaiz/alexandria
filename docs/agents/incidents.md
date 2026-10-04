@@ -6488,3 +6488,175 @@ and it does so faster the longer the latency runs.
 for a chore is a rule that generates owner work at the rate the org runs,
 and it reads as correct in every audit because every seat obeys it. Check
 the verbs in a rule, not only the rule.
+
+## INC-2026-10-04-four-days-of-output-and-no-delivery — the org ran autonomously for 113 hours, opened 49 pull requests, merged one, and left main red the whole time (2026-10-04, ExO seat)
+
+**This is the fifth occurrence of the class named in
+`INC-2026-09-28-repair-written-never-deployed`, and the first at the scale
+of the whole organization rather than one seat's surface. Recorded under
+the standing rule.** That entry closed with "the general form, for the
+ExO: every seat that writes a repair it cannot deploy has this gap, and
+the org measures the writing rather than the deploying." It was written
+six days before this one and handed to this seat. This seat did not act on
+it, and that is part of what happened.
+
+### What happened, measured
+
+Nothing has merged to `main` since 2026-09-30 at 02:08 UTC, which is PR
+#143. At the time of writing that is **4 days and 17 hours**. In that
+window the org opened 49 pull requests and merged one.
+
+| Day opened | Opened | Merged | Closed | Still open |
+|---|---|---|---|---|
+| 2026-09-24 | 27 | 25 | 2 | 0 |
+| 2026-09-26 | 13 | 13 | 0 | 0 |
+| 2026-09-27 | 7 | 7 | 0 | 0 |
+| 2026-09-28 | 6 | 6 | 0 | 0 |
+| 2026-09-29 | 5 | 5 | 0 | 0 |
+| 2026-09-30 | 32 | 1 | 1 | 30 |
+| 2026-10-01 | 6 | 0 | 0 | 6 |
+| 2026-10-02 | 5 | 0 | 0 | 5 |
+| 2026-10-03 | 4 | 0 | 0 | 4 |
+| 2026-10-04 | 4 | 0 | 0 | 4 |
+
+Fifty pull requests are open. Seven consecutive days at essentially full
+conversion, then five days at one merge, so this is not a volume ceiling:
+the 27-item day of 2026-09-24 cleared.
+
+**No seat did anything wrong and no run failed.** Every scheduled agent
+run since 2026-09-30 concluded `success`. There were 24 of them. The twelve
+`failure` conclusions in the window are all the `checks` workflow on open
+pull requests, inheriting a red `main`.
+
+### The three channels, and why this is one incident rather than three
+
+Every path by which work leaves this organization terminates in one human,
+and all three were at zero for the same 113 hours.
+
+| Channel | Mechanism | Throughput in the window |
+|---|---|---|
+| Merge | the owner merges a pull request | 1 of 49 |
+| Dispatch | the owner or the PM fires `workflow_dispatch` | 0, and 0 by any actor |
+| Relay to HQ | the chair carries an entry out of `hq-relay.md` | 0 of 4, oldest written 2026-09-24 |
+
+For the same window: zero commits by any human author across every ref,
+116 by `claude[bot]`; zero comments on any pull request; zero
+`workflow_dispatch` events.
+
+**The reading that matters is not "the owner was away."** She is allowed
+to be away, and an org whose seats all ran green and produced 116 commits
+while she was away is, in one sense, working exactly as designed. The
+defect is that **the organization has no mechanism that makes its own
+output available to itself, and no detector that notices when the gate
+shuts.** Five days of green runs is indistinguishable, from inside any
+seat, from five days of delivered work.
+
+### What it cost, item by item
+
+1. **`main` has been red for ten days.** Two guards in
+   `tests/test_press_resilience.py` and `tests/test_run_report.py` have
+   failed since 2026-09-24, found and registered on 2026-09-30 as
+   `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`. **The fix
+   exists**, on `engineer/2026-10-04-b-result-history` (PR #187) and on
+   `engineer/2026-09-30-skill-maintenance-triggers` (PR #153). Neither
+   merged.
+2. **The red main has destroyed the PR check signal, which is worse than
+   the red itself.** A branch cut from `main` inherits both failures; a
+   branch stacked on the engineer's chain carries the fix and goes green.
+   So on 2026-10-03 the writer's PR #184 failed `checks` eight times in a
+   row for a defect it did not cause, while on 2026-10-04 the engineer's
+   PRs passed. A seat can no longer learn anything from its own tick.
+3. **The dispatch system is deadlocked, and the PM reported it as an empty
+   queue.** The PM's hard stop is "never dispatch a seat that already has
+   an open pull request from its own last run." All eight dispatchable
+   seats have one. `PM_DISPATCH_ENABLED` is `true`. So the PM's standup of
+   2026-10-04 correctly concluded that it could dispatch nothing, and will
+   conclude the same thing every day until a merge happens. **The rule's
+   unstated precondition was a queue that converts daily**, and when that
+   stopped holding the rule turned from a safety into a lock on the org's
+   only proactive mechanism.
+4. **Every charter fix written on 2026-09-30 is inert, including the ones
+   written to fix this.** The workflows feed each seat the charter on
+   `main`. The 2026-09-30 window run edited all twelve charters to make a
+   seat close its own superseded pull request, and added the fourth
+   runtime question and §3g to this seat's own charter. **This run read
+   `prompts/exo-agent.md` from `main` at its first turn and none of it was
+   there.** So the laws this organization wrote to stop rediscovering
+   things cannot stop it from rediscovering things.
+5. **Four public claims on the site are waiting on a merge.** Rows 1, 2, 3
+   and 4 of `quality-claims.md` name mechanisms that are, in that file's
+   own words, "on unmerged branches". The site tells readers a skill is
+   proven with and without it. The harness that proves it is in the queue.
+6. **Turn demand has roughly doubled fleet-wide, partly because of this.**
+   The October re-derivation in `turn-caps.md` found seven of thirteen caps
+   under the measured rule, the writer at 91% of its cap. One named cause
+   is that a seat whose last run is open must read, merge and re-ship that
+   branch before starting today's work. The engineer's newest pull request
+   supersedes eleven. **Merge latency and cap collisions are the same
+   failure**, which nothing in this org had connected before.
+7. **Supersession chains deepen as a direct function of latency.** Each
+   link merges its predecessor and re-ships the accumulation, so the
+   eleventh carries eleven runs of diff for one run of review, which makes
+   it slower to review, which deepens the chain again. This loop was
+   measured on 2026-09-30 at depth five and is now at eleven.
+
+### Why no audit caught it
+
+Every audit this organization runs measures a seat against its charter, or
+a register against its gate. Fifty open pull requests is not a property of
+any seat and not a property of any register. It is a property of the gap
+between them, and the grep that proves nobody owns it is three lines:
+
+```bash
+grep -ril "merge queue" prompts/*.md     # nothing
+grep -ril "queue depth" prompts/*.md     # nothing
+grep -ril "nothing has merged" prompts/*.md  # nothing
+```
+
+The PM comes closest. Its charter says "unmerged PRs waiting on the owner
+are a finding, not a complaint: flag them once, clearly, at the top of your
+PR description", and its standup reads `gh pr list --state open` with each
+PR's age. Both are **per pull request**. So the 2026-10-04 standup reported
+five stacked PRs, all of them its own, and PR #60 at 14 days, honestly and
+usefully, and never produced the aggregate. A seat asked for ages reports
+ages.
+
+### The fix
+
+1. **The duty is named and owned.** "The organization's finished work
+   reaches `main`" is a new row in
+   [unowned-duties.md](unowned-duties.md), assigned to the PM, whose daily
+   cron and `gh`-only evidence both clear §3b's cadence and capability
+   tests. `prompts/pm-agent.md` §4 gains a queue-health block: four
+   measured numbers, and a 48-hour threshold at which the queue becomes
+   the standup's first line, above the dispatch queue, because a dispatch
+   queue is meaningless in that state.
+2. **The relay stops being a drawer.** `prompts/exo-agent.md` §3f now
+   requires every undelivered `hq-relay.md` entry to be quoted at the top
+   of this seat's pull request description. The pull request is the one
+   surface the owner provably reads, because merging happens there. This
+   is the 2026-09-30 run's open question answered in the direction of
+   delivery rather than in the direction of admitting the file is a
+   reading list.
+3. **A closed-superseded branch is not a deletable branch.**
+   `prompts/exo-agent.md` §5b said delete when every pull request for the
+   name is "merged or closed". With a frozen queue the org now accumulates
+   branches whose pull request is closed as superseded and whose work
+   survives only inside another unmerged branch. `exo/2026-09-30` was the
+   first and this run declined to delete it.
+4. **Not fixed, and it cannot be fixed here.** The structural answer is HQ
+   decision 041, which gives the PM seat Tier B merges. It reached this
+   repository as PR #147 on 2026-09-30 and is still open. **The fix for the
+   merge queue is in the merge queue**, now for the fifth day. The relay
+   entry carrying its evidence is also undelivered. Both are relayed with
+   this entry's numbers appended.
+
+### The blameless part
+
+Every one of the twelve seats behaved well for five days with no
+supervision. They found a red main, diagnosed it by test name, declined to
+dispatch into a seat that was at its hard stop, filed the work so it would
+not be lost, fixed it on a branch, and reported honestly every day that
+their own output was piling up. The organization's weakness is not its
+judgment. It is that **an org can be good at everything except the one
+step that makes any of it true**, and that step has no cron.
