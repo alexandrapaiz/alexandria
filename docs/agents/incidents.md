@@ -6759,3 +6759,83 @@ checker, wrote the tests, found a second real defect with its first run, and
 said plainly that nothing invoked it. It did everything available to it inside
 its permissions. The missing piece is organisational, which is that no seat's
 shipping step runs a checker another seat wrote.
+
+## INC-2026-10-04-measurement-attributed-to-the-wrong-artifact — an editorial grade recorded a FAIL against a clean artifact, using a figure measured on a different issue twelve days earlier, and the sentence forbidding it was written into the canon by the same pull request (2026-10-04, writer seat)
+
+**What happened.** The editorial review of 2026-10-03 graded canon law 1 on the
+published issue and reported: "The published page carries 152 non-ASCII
+characters and six em dashes." Its measurement table carried the same 152 in
+the published-page column. The published page is
+`site/content/issues/2026-W39.md` and it contains no non-ASCII characters at
+all.
+
+```
+$ file site/content/issues/2026-W39.md
+site/content/issues/2026-W39.md: ASCII text, with very long lines (989)
+$ LC_ALL=C grep -c $'[\x80-\xff]' site/content/issues/2026-W39.md
+0
+```
+
+**Where the number came from.** It is exact and it belongs to `2026-W37`, which
+carries 152 non-ASCII characters across seven distinct code points and eight em
+dashes. It was measured correctly by the grade of 2026-09-22, which says so in
+its own words: "152 non-ASCII characters in the published file and 134 in the
+row". W37 was the published issue that day. W39 was published afterwards, the
+column heading "the published page" kept pointing at whatever was newest, and
+the value under it did not move.
+
+The same figure's sibling is in the generator. `prompts/digest.md` told the
+model "The last issue carried eight different non-ASCII characters and 134 of
+them", and 134 is the W37 stored row from the same 2026-09-22 measurement. Two
+issues later the last issue carried zero. That half is ban list 89 and is
+struck in this pull request.
+
+**Why it is an incident and not a slip.** The rule against it was written into
+`docs/voice/canon.md` by the same pull request that broke it. Pass 3 of the
+grading procedure now reads: "Grade one artifact per verdict. Two artifacts
+sharing a verdict line is where an attribution error becomes invisible." The
+measurement table in that review has one row per metric and three artifact
+columns, so every row in it is a verdict line shared by three artifacts. The
+rule was obeyed in the prose, where the verdicts are written one law at a time,
+and broken in the table, which is where measurements actually live.
+
+That is the fourth time this org has recorded a rule and violated it in the
+same artifact or the next one. Incident 20 is the owner's taste ruling violated
+by the very next artifact. `INC-2026-09-30-gate-supplied-its-own-banned-heading`
+is a prompt gate that handed over the heading it banned. Ban list 76 is the
+specimen that fit the payload, and `INC-2026-10-03-law-12-graded-by-grep` is a
+grading instruction that was itself the defect. The pattern is not carelessness.
+It is that a rule and its own compliance are written in one pass by one reader,
+who has just finished thinking about the rule and is therefore the worst
+available judge of whether the artifact obeys it.
+
+**What it cost.** Not the wrong number. A FAIL recorded against a clean
+artifact, on the one axis the generator has genuinely solved. The published page
+is pure ASCII, the newest print is pure ASCII, and the review that said so in
+its honest summary also carried a table saying the page fails. A grade that
+cannot tell a fixed defect from a live one cannot tell anyone when to stop
+working on it, which is the whole purpose of grading.
+
+**The fix, in this pull request.** Pass 1 of the canon's grading procedure now
+requires every measurement to name the artifact path it was taken from and the
+command that took it, to be re-taken rather than carried forward, and to carry
+the earlier review's date and subject where a figure is quoted from one. Ban
+list 91 records the tell.
+
+**What is not fixed, and it is the reusable part.** Nothing checks a review. The
+generator has gates, the registers have `tools/check_registers.py`, the issue
+has six grading passes, and the grade itself is read by nobody before it ships.
+Three of the four incidents in the chain above were found by the next run of the
+same seat, one day later, which is the only reviewer this artifact has. That is
+survivable at a daily cadence and it is worth saying out loud, because every fix
+in this chain has been a rule added to the file the same reader is already
+reading.
+
+**Blameless note.** The run of 2026-10-03 found a five-day-old law 12 violation
+that four grades had cleared, traced it to the instruction that caused it,
+corrected the instruction, and declined to patch the prompt where a patch could
+not reach. It did more for the instrument in one run than the four before it.
+The figure it carried forward came from the register doing its job, which is
+that an earlier review recorded a measurement and a later one could read it. The
+missing piece is that a measurement in this register has never carried its
+subject.
