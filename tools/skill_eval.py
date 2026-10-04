@@ -99,9 +99,17 @@ sys.path.insert(0, str(ROOT / "tools"))
 # own number refuses the work it exists to measure
 # (URGENT ledger entry, 2026-10-03). The harness moves, since the suites are
 # the work and this file is the instrument.
-CONTRACTS = (1, 2)
-#: What a result written today is tagged with.
-CONTRACT = CONTRACTS[-1]
+SUITE_CONTRACTS = (1, 2)
+
+# What a result document written today is tagged with, which is a different
+# number living in a different document. Until today one constant served both,
+# and `summarize` tagged its result with the newest number any *suite* may
+# carry, so widening the reader above silently moved the result from 1 to 2.
+# site/app/skills/README.md is the contract for the result, it says `1`, and its
+# own first rule is that a reader which does not know the number renders pending
+# rather than guessing. One constant for two documents means a change to the
+# dialect the harness reads can blank the page it writes.
+RESULT_CONTRACT = 1
 
 # Defaults. The subject comes from the budget table, so the id here is checked
 # against the provider's live catalog by the same machinery the crons use.
@@ -458,10 +466,10 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
     without a key, a model or a dollar.
     """
     problems = []
-    if spec.get("contract") not in CONTRACTS:
+    if spec.get("contract") not in SUITE_CONTRACTS:
         problems.append(f"{slug}: contract is {spec.get('contract')!r}, this "
                         f"harness speaks "
-                        f"{' and '.join(str(c) for c in CONTRACTS)}")
+                        f"{' and '.join(str(c) for c in SUITE_CONTRACTS)}")
     if spec.get("skill") != slug:
         problems.append(f"{slug}: the file says skill {spec.get('skill')!r}")
     policy = spec.get("policy") or {}
@@ -1110,7 +1118,7 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         return out
 
     result = {
-        "contract": CONTRACT,
+        "contract": RESULT_CONTRACT,
         "skill": slug,
         "skill_md_sha256": sha,
         "date": today,
@@ -1190,7 +1198,7 @@ def render(result: dict) -> str:
 
 
 SMOKE_SPEC = {
-    "contract": CONTRACT,
+    "contract": SUITE_CONTRACTS[-1],
     "skill": "_smoke",
     "policy": {"repetitions": 3, "min_delta": 0.2},
     "tasks": [

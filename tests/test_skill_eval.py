@@ -534,7 +534,7 @@ def test_the_skill_seat_s_vocabulary_leaves_one_problem_and_it_is_rule_one():
     spec = fixture_suite()
     problems = ev.conformance(spec, "fixture-skill", FIXTURE)
     assert len(problems) == 1 and "policy.repetitions" in problems[0], problems
-    assert spec["contract"] == 2 and spec["contract"] in ev.CONTRACTS
+    assert spec["contract"] == 2 and spec["contract"] in ev.SUITE_CONTRACTS
     ids = {t["id"] for t in spec["tasks"]}
     assert ids == {"fx-t1", "fx-t2", "fx-t3", "fx-t4", "fx-c1", "fx-c2"}
     controls = {t["id"] for t in spec["tasks"] if t.get("control")}
