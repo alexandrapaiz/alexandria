@@ -263,6 +263,20 @@ item and must not be applied.
 budget, and this is the sentence the page has repeated since 2026-09-18
 because it is the one that keeps getting re-litigated.
 
+**The smoke run this change owes, because a turn cap is a runtime change.**
+[runtime-changes.md](runtime-changes.md) names `--max-turns` explicitly and
+says no runtime change takes effect without a smoke run on a throwaway
+branch. This seat cannot smoke it: the push that would create the branch is
+the push the runner's token refuses, which is the first section of this
+page. **So the obligation transfers to whoever applies the diffs, and
+naming it here is the only way it survives.** One seat is enough, and
+`agent-market.yml` is the right one because it is the only file in this item
+with two steps: a dispatch of the market seat after the edit should print
+`--max-turns 300` in whichever step executed, and the step that executed
+should be the one the `OPENROUTE` condition selects. If it prints 160, one
+of the two copies was missed, which is the failure this item was written to
+prevent.
+
 ### 15. The PM's dispatch prompt forbids two duties its charter assigns
 
 **Queued 2026-10-04 by the ExO agent, from the §2 charter-versus-prompt
