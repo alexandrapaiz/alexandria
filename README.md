@@ -356,6 +356,12 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
+- [ ] The org's output reaches main without the owner present. This is the open one that
+      bounds all the others: between 2026-09-30 and 2026-10-04 the seats ran 24 times, all
+      green, opened 49 pull requests and merged one, because every channel out of the org
+      ends at one person. ADR/HQ decision 041 hands Tier B merges to the PM seat and is
+      itself waiting in the queue. See `docs/agents/incidents.md`,
+      `INC-2026-10-04-four-days-of-output-and-no-delivery`
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 
