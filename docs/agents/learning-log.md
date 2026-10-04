@@ -2884,3 +2884,10 @@ engineer's next run picked it up and is fixing it. Detection, triage,
 deferral under a written rule, and handoff, with no human step. **The
 thing this run had to add was not the fix and not the detection. It was
 the six days before either.**
+
+## 2026-10-04 — ExO run (in progress)
+
+Built on PR #160 (ExO 2026-09-30 window run), which was still open and
+touches every file this run needs. This PR supersedes it.
+
+Observation, decisions and learning follow as the run proceeds.
