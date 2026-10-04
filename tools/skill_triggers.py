@@ -52,8 +52,12 @@ re-weigh a skill as one it started citing, and ADR-37 says "up or down".
 `pipeline/reading_queue.py` treats any `arxiv:<id>` in a queue line as a paper
 to fetch and puts it at the front of distill's drain. Trigger 3's evidence is
 about a paper the corpus already holds, so these lines name papers by url and
-title and never by `arxiv:` id. `tests/test_skill_triggers.py` asserts that
-every line this module can produce parses as zero papers to fetch.
+title and never by `arxiv:` id, and `record` defuses any id that reaches it
+through claim text or a paper title, which is the path the corpus can supply.
+`tests/test_skill_triggers.py` asserts that every line this module can produce
+parses as zero papers to fetch. That sentence named a file that did not exist
+until 2026-10-04, and the file found the property false for the one record type
+whose evidence a caller writes.
 """
 
 from __future__ import annotations
@@ -62,6 +66,7 @@ import argparse
 import datetime as dt
 import json
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -95,6 +100,29 @@ LABELS = {
 
 # --------------------------------------------------------------- the records
 
+# `pipeline/reading_queue.py`'s own pattern, case-insensitive, which is what
+# makes any `arxiv:<id>` in a queue line a request to fetch that paper and put
+# it at the front of distill's drain.
+FETCH_REQUEST = re.compile(
+    r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7})(?:v\d+)?",
+    re.IGNORECASE)
+
+
+def defuse(text: str) -> str:
+    """The same id, named in a way the queue reader does not act on.
+
+    `paper_reference` has defused one field by hand since this module was
+    written, and the docstring at the top claims the property for every line the
+    module can produce. It was not true of every line: the evidence of a
+    `deprecated` or `refines` record carries claim text and paper titles
+    straight out of the corpus, and one claim whose sentence quotes an arXiv id
+    is enough to queue a fetch for a paper the corpus already holds. One
+    chokepoint, so the property holds for whatever is written next rather than
+    for the four callers that exist today.
+    """
+    return FETCH_REQUEST.sub(lambda m: f"arXiv {m.group('id')}", text or "")
+
+
 def record(trigger: str, skill_path: str, key: str, evidence: str,
            detail: dict | None = None) -> dict:
     """One reason one skill needs a maintenance pass.
@@ -107,7 +135,8 @@ def record(trigger: str, skill_path: str, key: str, evidence: str,
         raise ValueError(f"{trigger!r} is not one of {', '.join(TRIGGERS)}")
     return {"trigger": trigger, "skill_path": skill_path,
             "skill": skill_path.rsplit("/", 1)[-1], "key": key,
-            "evidence": " ".join(evidence.split()), "detail": detail or {}}
+            "evidence": defuse(" ".join(evidence.split())),
+            "detail": detail or {}}
 
 
 def truncate(text: str, limit: int = 240) -> str:
