@@ -6826,3 +6826,103 @@ something. Extended here with
 `test_the_schema_reader_finds_the_table_it_is_asked_for`, which fails if
 `_table_columns` ever returns an empty set and makes the assertion above
 vacuous.
+
+## INC-2026-10-04-two-checks-that-could-not-fail — the fixture agreed with the suites on the one field it did not copy, and the rule-1 check was handed its answer by the function that runs before it (2026-10-04, engineer seat)
+
+**Observed** 2026-10-04 by the engineer seat, while acting on the urgent ledger
+entry of 2026-10-03 about eight eval suites the harness refuses. Fourth
+occurrence of a shape this register already holds three times, so the standing
+rule at the top of this file applies and this entry is not a judgment call.
+
+**What happened, part one.** `tests/test_skill_eval.py` carried a test named
+`test_the_skill_seat_s_vocabulary_is_read_without_a_single_problem`, whose
+docstring said the skill seat wrote its suites in a different vocabulary than
+the harness proposed and that `normalize` is the one place the two meet. It
+asserted `conformance(spec, ...) == []` against
+`tests/fixtures/skill-eval-suite/evals.json`, a fixture whose own note said it
+was "copied in shape" from the real files. It passed every day since
+2026-09-30.
+
+Every one of the eight real suites says `suite_version: 2`. The fixture said
+`suite_version: 1`. The harness pinned `CONTRACT = 1`. So the single field on
+which the two vocabularies disagreed was the single field the fixture did not
+copy, and it was the field that decided the test's answer. The test existed to
+prove the reader speaks the suites' language, and it passed because the one word
+of that language it got wrong was the word under test.
+
+**What happened, part two.** `conformance` holds the harness's check for rule 1
+of `docs/product/skill-validation.md` §V5, the pre-registered policy:
+
+```python
+if not isinstance(policy, dict) or "repetitions" not in policy:
+    problems.append(f"{slug}: policy.repetitions is not pre-registered, ...")
+```
+
+`load_tasks` calls `normalize(...)` and passes its output to `conformance`, and
+`normalize` ran `policy.setdefault("repetitions", DEFAULT_REPS)` three lines
+earlier. The check could therefore never fail, for any input, ever. Not one of
+the eight real suites carries a `policy` block at all, and all eight passed this
+check, with the n the harness had just chosen for them sitting in the field the
+check was reading. `tools/panel_validator.py` had already noticed the hazard and
+worked around it in its own reviewer, reading the raw suite instead, and its
+docstring says exactly why: "a check reading the normalized suite would report
+every suite in the library as compliant with the rule it breaks". That docstring
+describes `conformance` and nobody looked.
+
+**Why these are one incident.** Both are assertions that cannot come out any
+other way: one because the fixture was built from the expectation rather than
+from the artifact, the other because a defaulting layer sits between the
+document and the check. The gap between them is three days and one function
+call.
+
+**Fixed in this pull request.** The fixture now says `suite_version: 2` and
+carries the two top-level model fields as the prose every real file writes, and
+the test asserts the true answer: exactly one problem remains, named, with a
+companion test proving the one `policy` block in the error message is the whole
+fix for all eight files. `normalize` no longer supplies a repetitions count, so
+the rule-1 check fires. Verified against the eight real suites read off
+`alexandria-skill/2026-09-30-window`: one problem each before the policy block,
+none after it.
+
+**The lesson worth carrying past this instance.** A fixture copied from an
+artifact must be diffed against the artifact field by field, not resembled; the
+cheap form is to read the real file in the test where the real file is reachable,
+and where it is not, to say in the fixture which fields were verified against it
+and when. And the general rule the third occurrence of this shape already
+reached for, extended one step: a check for a missing field must read the
+document, never an object some other function normalized, because normalization
+is the business of supplying what is missing. Where both a raw and a normalized
+form exist, the absence checks belong on the raw one and nowhere else.
+
+## INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had — the function written to be a CI gate, with the sentence saying so, has never run in CI (2026-10-04, engineer seat)
+
+**Observed** 2026-10-04 by the engineer seat, while queueing the step above.
+Fourth sighting of the shape INC-2026-10-02-markdown-suite-claims-a-ci-step-it-
+never-had named first, after INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-
+never-had and INC-2026-09-29-receipts-step-had-no-paths.
+
+**What happened.** `conformance` in `tools/skill_eval.py` carries this sentence
+from the day it was written, 2026-09-30: "Its own function so `--check` can be
+a CI gate over every skill's eval file without a key, a model or a dollar."
+There is no such step. Neither `tools/skill_eval.py` nor
+`tests/test_skill_eval.py` appears in either `paths` list in
+`.github/workflows/checks.yml`, and no step in any workflow invokes either. The
+same is true of `--smoke`, which runs the entire measurement path against a
+scripted model for $0.00 and has been a command nobody runs since the day it
+was written.
+
+**What it cost, concretely.** The eight suites on PRs #151, #152 and #159 were
+written on 2026-09-30 against a contract document the reader did not implement.
+Four days passed. The defect was found on 2026-10-03 by a seat reading one of
+those files by hand, for an unrelated reason, and it was found one day before
+the merges. A step that costs nothing would have printed it on the pull request
+that wrote them.
+
+**Not fixed here, and why.** No agent seat can push a file under
+`.github/workflows/`, which is the standing blocker at the top of
+`docs/agents/pending-workflow-changes.md`. The change is written out in full as
+item 19 on that page, both edits, with the exit-code handling the gate needs
+(`--check` exits 2 for a skill with no suite, which ADR-36 calls draft and which
+must not turn a build red). Both branches of that step were verified in this
+run: exit 0 on the library as it stands, exit 1 with one real non-conformant
+suite dropped into `skills/`.

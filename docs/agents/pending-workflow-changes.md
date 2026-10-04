@@ -1642,6 +1642,79 @@ and nothing else. **The day the skill seat's evals merge, this becomes the one
 reviewer worth running as a command**, and that is the signal to come back to
 this paragraph rather than a thing to do now.
 
+### 19. The eval harness's own `--check` gate runs in CI, or its docstring stops calling itself one
+
+**Queued 2026-10-04 by the engineer seat.
+INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had.**
+
+Numbered 19 because 18 is the highest on this page today, and this page has
+carried two items numbered 4 and two numbered 5 before, so the number is stated
+rather than counted (incident 29).
+
+`tools/skill_eval.py`'s `conformance` carries this sentence, written the day the
+harness was: "Its own function so `--check` can be a CI gate over every skill's
+eval file without a key, a model or a dollar." Nothing runs it. Neither
+`tools/skill_eval.py` nor `tests/test_skill_eval.py` is in either `paths` list
+in `checks.yml`, and no step invokes either one. Fourth sighting of the shape
+INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had named first.
+
+**Why it belongs in CI, specifically.** The gate needs no key, no model and no
+dollar, which is the whole reason `conformance` is a separate function. And the
+thing it holds is a cross-seat seam: the suites are the skill seat's files, the
+reader is the engineer's, and the two were written to different contract
+documents, which is how eight suites spent four days unrunnable
+(2026-10-03 urgent ledger entry, fixed in the reader on 2026-10-04). A pull
+request that adds a suite the reader cannot run should be red on that pull
+request.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` is already in both lists; these two lines go in
+both, beside the existing `tools/` and `tests/` entries.
+
+```yaml
+      - "tools/skill_eval.py"
+      - "tests/test_skill_eval.py"
+```
+
+Second, two steps, after the skill-receipts step. The exit codes matter and the
+second step is written around them: `--check` exits 0 when every skill carries a
+conformant suite, **2 when some skill carries none**, and 1 when a file exists
+and is malformed. Unmeasured is an honest state under ADR-36 and must not turn a
+build red, so 2 is accepted explicitly rather than by `|| true`, which would
+accept 1 as well and make the step decorative. Today every skill is in state 2,
+so this step passes while saying so in its log.
+
+```yaml
+      # 2026-10-04. `conformance` in tools/skill_eval.py was written to be this
+      # step and never was one. It parses every skills/*/evals/evals.json,
+      # resolves each registered model id against pipeline/budget.py's table,
+      # and holds the one rule the harness must never satisfy on an author's
+      # behalf: rule 1 of docs/product/skill-validation.md section V5, the
+      # pre-registered policy. No key, no model, no network, no dollar.
+      - name: the eval harness still measures what it should
+        if: always()
+        run: python3 tools/skill_eval.py --smoke
+
+      # Exit 2 is "some skill has no suite yet", which is ADR-36's draft state
+      # and not a failure. Exit 1 is a suite that exists and cannot be run.
+      # Written out rather than `|| true`, which would swallow both.
+      - name: every eval suite in the library can actually be run
+        if: always()
+        run: |
+          python3 tools/skill_eval.py --check || status=$?
+          if [ "${status:-0}" = "2" ]; then
+            echo "some skills carry no suite yet, which ADR-36 calls draft"
+            exit 0
+          fi
+          exit "${status:-0}"
+```
+
+The `--smoke` step is the cheaper half and the one worth having first: it runs
+the whole measurement path against a scripted model, 24 calls and $0.00, and
+it already asserts the arithmetic of the verdict rule. It has been a command
+nobody runs since 2026-09-30.
+
 ## Not queued here, because it needs a key rather than a hand
 
 The GitHub App token-mint step (ADR-27) is the change that makes this
