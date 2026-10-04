@@ -504,6 +504,26 @@ failure distribution, and neither repository learned from the other
 until the owner carried the numbers by hand. That is the cost this file
 exists to stop paying.
 
+**The outbox is not a channel until something carries it, so this seat
+carries it** (added 2026-10-04, after the 2026-09-30 run asked the next
+run to decide this either way). `docs/agents/hq-relay.md` held four
+entries on 2026-10-04, the oldest written 2026-09-24, and every one of
+them was still marked undelivered. The file's own rule is that an entry
+stays until the chair marks it delivered with a date. Nothing in the org
+reminds the chair that it exists, so for ten days the outbox was a drawer.
+
+The answer is not a new mechanism and not an admission that the file is a
+reading list. It is to attach the outbox to the one surface the owner
+provably reads, which is **this seat's pull request description**, because
+merging happens there and nowhere else.
+
+So every run, under a heading called **Undelivered to HQ**, quote the
+title and one-line summary of every entry in `hq-relay.md` whose status is
+undelivered, with the date it was written and its age in days. Oldest
+first. Do this even when you have added nothing to the file, because the
+point is the age rather than the news. When the chair marks an entry
+delivered, it leaves the heading on its own.
+
 One thing this section is not. It is not a veto and it grants this seat
 no authority over an HQ decision. Parent decisions govern. Every
 obligation here is an obligation to write something down where the seats
@@ -666,7 +686,25 @@ grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.
 ```
 
 Any file named by two items needs both items' ordering paragraphs to name
-the other. Verify your
+the other.
+
+**Run it across the whole page, every run, and run it again after your own
+edits** (added 2026-10-04, `INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`).
+The run that wrote the three paragraphs above fixed the one item it was
+looking at, published the command, and never executed it across the page.
+Item 4 carried the identical false sentence about `agent-writer.yml` for
+thirteen days and the next run found it in one second. Then deleting an
+item left a live item's ordering paragraph naming a deleted one, which the
+same sweep caught only because it was run a second time, afterwards.
+
+**And take that as the general rule for this seat, because it is the
+cheapest lesson on this page.** When a run writes a new mechanical check,
+it runs that check across the entire artifact before it ships, in the same
+run, and says in the pull request how many instances it found. A rule
+written for the next run protects the next run. The artifact in front of
+you stays wrong, and you are the only run that was looking at it.
+
+Verify your
 writable surface by attempting it rather than by trusting this list, and
 when a lane named here turns out to be unreachable, fix this charter.
 
@@ -716,8 +754,30 @@ branch's PR merge" would have answered yes and destroyed the OKR seat's
 unmerged check-in.
 
 So delete a branch only when **every** pull request that ever pointed at
-the name is merged or closed. One command, and read its output rather
-than trusting the loop:
+the name is merged or closed.
+
+**And "closed" is not sufficient on its own** (added 2026-10-04). Since
+2026-09-30 the org closes its own superseded pull requests, which was the
+right fix and which produces a new shape: a branch whose only pull request
+is closed, whose work was merged into a successor branch, and whose
+successor has not merged either. Deleting it destroys work that exists in
+exactly one more place. `exo/2026-09-30` was the first of these and this
+run declined to delete it.
+
+The condition is therefore two tests, not one. Every pull request for the
+name is merged or closed, **and** for every closed one, its commits are on
+`main`:
+
+```bash
+git log --oneline origin/<branch> ^origin/main   # must print nothing
+```
+
+Printing nothing means `main` holds everything the branch holds, and the
+ref is a name rather than an artifact. Printing anything means the branch
+is the only copy of something, whatever its pull request says. This is the
+same containment proof the supersession clause already requires before
+closing a pull request, pointed at `main` instead of at the successor
+branch. One command, and read its output rather than trusting the loop:
 
 ```bash
 gh pr list --state all --limit 100 --json number,state,headRefName \
@@ -755,6 +815,19 @@ before you diagnose anything: `error_max_turns` at exactly the cap plus
 one is a run killed mid-work, while a `success` subtype with an
 `exceeding the configured maximum` error is a run that finished and was
 failed afterwards, with its work already shipped.
+
+**And re-derive on the ratio, not only on the calendar and the event**
+(added 2026-10-04). Rule 5 of that page says any run finishing above 70%
+of its cap re-derives that seat's row in the same week, whether or not
+anything is known to have changed. The October re-derivation found seven
+of thirteen rows under the measured rule, the writer at 91% of its cap,
+and **not one of the page's four existing triggers had fired**, because
+all four ask an auditor to name a cause and the drift had none: charters
+grow two lines at a time, and a seat whose last run is still open spends
+turns reading and re-shipping that branch before it starts today's work.
+Merge latency and cap collisions turn out to be the same failure. The PM
+reports the ratio daily from the run list it already reads; the
+re-derivation is yours.
 
 Maintain docs/agents/learning-log.md, append-only, dated: what this run
 observed, what it changed and why, what the next run must check first.
