@@ -2885,9 +2885,256 @@ deferral under a written rule, and handoff, with no human step. **The
 thing this run had to add was not the fix and not the detection. It was
 the six days before either.**
 
-## 2026-10-04 — ExO run (in progress)
+## Run 2026-10-04 (scheduled, Sunday)
 
-Built on PR #160 (ExO 2026-09-30 window run), which was still open and
-touches every file this run needs. This PR supersedes it.
+Built on PR #160, the 2026-09-30 window run, which was still open and
+touches every file this run needed. Branch cut from its head, **#160 is
+superseded**, and this run took the "build on it" option deliberately
+rather than branching from main into the same twelve files.
 
-Observation, decisions and learning follow as the run proceeds.
+**Read this entry before any other, including the 2026-09-30 pair, because
+it changes what their findings mean.** Both of those runs are unmerged.
+Their charter edits are not on `main`. The workflows feed each seat the
+charter on `main`. So a successor reading this log will find clauses
+described as shipped that no run has ever executed, and the way to tell
+which is which is in finding 1.
+
+### The one thing this run found, and everything else is a consequence of it
+
+**Nothing has merged to `main` since 2026-09-30 at 02:08 UTC. At the time
+of writing that is 112 hours. In that window the org opened 49 pull
+requests and merged one.** Fifty are open. `main` has been red for ten
+days. Twenty-four scheduled agent runs ran in the window and every one
+concluded `success`.
+
+Zero commits by any human on any ref. Zero pull request comments. Zero
+`workflow_dispatch` events. 116 commits by `claude[bot]`.
+
+Registered as `INC-2026-10-04-four-days-of-output-and-no-delivery`, the
+fifth occurrence of the class `INC-2026-09-28-repair-written-never-deployed`
+named six days earlier and handed to this seat in writing. This seat did
+not act on it then. That is part of the finding and it is recorded as such.
+
+**The class name, for the log: three channels, one actor, zero
+throughput.** Every path by which work leaves this organization terminates
+in one human, and all three were at zero for the same 112 hours. Merge, 1
+of 49. Dispatch, 0 by any actor. The HQ relay, 0 of 4 entries, oldest
+written 2026-09-24 and still marked undelivered.
+
+The reading that matters is not that the owner was away. She is allowed to
+be away, and twelve seats producing 116 commits unsupervised with no
+failures is the org working. The defect is that **the organization has no
+mechanism that makes its own output available to itself, and no detector
+that notices when the gate shuts.** From inside any seat, five days of
+green runs is indistinguishable from five days of delivered work.
+
+### The four consequences, because none of them is the one you would guess
+
+1. **The red `main` destroyed the pull request check signal, which is worse
+   than the red.** A branch cut from `main` inherits both failing guards. A
+   branch stacked on the engineer's chain carries the fix and goes green.
+   So on 2026-10-03 the writer's #184 failed `checks` eight times for a
+   defect it did not cause, and on 2026-10-04 the engineer's PRs passed. A
+   seat can no longer learn anything from its own tick, in either
+   direction.
+2. **The dispatch system is deadlocked, and the PM reported it as an empty
+   queue.** §5's hard stop forbids dispatching a seat that has an open pull
+   request from its own last run. After two days of no merges every
+   dispatchable seat has one. `PM_DISPATCH_ENABLED` is `true`. The
+   2026-10-04 standup concluded correctly that it could dispatch nothing
+   and will conclude the same every day until a merge happens. **A safety
+   rule whose unstated precondition was a daily-converting queue became a
+   lock on the org's only proactive mechanism.** The general lesson, and it
+   is the most transferable thing in this entry: **when you write a guard,
+   write down what has to stay true for it to be a guard**, because a guard
+   with a silent precondition inverts without announcing it.
+3. **Every charter fix written on 2026-09-30 is inert, including the ones
+   written to fix this.** This run read `prompts/exo-agent.md` from `main`
+   at its first turn and neither §3g nor the fourth runtime question nor
+   the twelve-charter supersession clause was there. **An org whose laws
+   ship through the gate cannot legislate its way around the gate.** The
+   practical consequence for this seat: writing a new clause is currently
+   the lowest-value act available to it, which is why two of this run's
+   three improvements are measurements and records rather than clauses.
+4. **Merge latency and turn-cap collisions are the same failure**, which
+   nothing in this org had connected. See finding 2.
+
+### Finding 2: seven of thirteen caps are under the rule, and no trigger fired
+
+The October re-derivation, which is the monthly duty in §6. Every number is
+a free-running `success` run.
+
+| Seat | Peak | Prev | Cap | Required | % of cap |
+|---|---|---|---|---|---|
+| writer | 136 | 53 | 150 | 300 | **91%** |
+| skill | 156 | 114 | 180 | 350 | **87%** |
+| engineer | 168 | 82 | 200 | 350 | **84%** |
+| market | 131 | 47 | 160 | 300 | **82%** |
+| research | 145 | 54 | 180 | 300 | **81%** |
+| exo | 134 | 93 | 200 | 300 | 67% |
+| security | 134 | 108 | 250 | 300 | 54% |
+
+Peaks rose 157% for the writer, 179% for market, 169% for research, in two
+weeks. **No cap has been hit, which is exactly why nobody looked.**
+
+Why every trigger on `turn-caps.md` missed it is the useful part. Three are
+events (a cap was hit, a duty was added, a cron split) and the fourth is a
+calendar. The drift was none of those shapes. Charters grow two lines at a
+time, so no single edit is recognisable as duty growth, and a seat whose
+last run is open spends turns reading, merging and re-shipping that branch
+before it starts today's work. The engineer's newest pull request supersedes
+eleven.
+
+So the page gains **rule 5, a ratio rather than an event**: any run above
+70% of its cap re-derives that row, with no need to name a cause. Detection
+is daily and belongs to the PM, which already reads the run list.
+Re-derivation is weekly and stays here. **The general form: a trigger that
+asks an auditor to name a cause cannot catch drift that has no cause.**
+
+The seven raises are queued as one item, 14, replacing items 4 and 11,
+which both proposed 200 and were both overtaken.
+
+### Finding 3: the duty nobody had a word for
+
+Found by §3b's prescribed method and it is the cleanest instance the
+register holds. Four greps across twelve charters and roughly nine thousand
+lines of them:
+
+```
+grep -ril "merge queue"        prompts/*.md   # nothing
+grep -ril "queue depth"        prompts/*.md   # nothing
+grep -ril "nothing has merged" prompts/*.md   # nothing
+grep -ril "main is green"      prompts/*.md   # nothing
+```
+
+Not one word for the step on which every other word depends. The PM came
+closest, with "unmerged PRs waiting on the owner are a finding, not a
+complaint", and its standup reads `gh pr list --state open` with each PR's
+age. Both are **per pull request**, so the 2026-10-04 standup accurately
+reported five stacked PRs, all its own, and PR #60 at 14 days, and never
+produced the aggregate. **A seat asked for ages reports ages.**
+
+Assigned to the PM: daily cron clears §3b's cadence test, `gh`-only
+evidence clears the capability test. `prompts/pm-agent.md` §4 gains a
+four-number queue gauge and a 48-hour threshold at which the gauge becomes
+the standup's first line, above the dispatch queue, because in that state
+the dispatch queue is necessarily empty and its emptiness is not
+information.
+
+**What is still not owned, and cannot be assigned here.** Acting on the
+number. This row buys visibility, not throughput. Throughput is decision
+041 and decision 041 is in the queue.
+
+### Smaller things, each with its evidence
+
+- **The ordering sweep was written, published with its command, and run
+  against one file.** The 2026-09-30 run fixed item 11's false "nothing
+  else touches this file", wrote the general rule into §5 and published the
+  one-line sweep. It never ran it. Item 4 carried the identical false
+  sentence about `agent-writer.yml` for thirteen days and this run found it
+  in one second. Then deleting item 11 left item 13 naming a deleted item,
+  caught only by running the sweep **again, afterwards**. Four ordering
+  paragraphs were false and **two had none at all**, which is the quietest
+  of the three shapes because there is nothing for a reader to check.
+  Registered as `INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`.
+  **The rule that came out of it, and it is the one to keep: when a run
+  writes a new mechanical check, it runs that check across the whole
+  artifact before it ships, in the same run, and says how many instances it
+  found. A rule written for the next run protects the next run. The
+  artifact in front of you stays wrong.**
+- **The inline prompt does not reliably win, so §2's prediction was
+  wrong.** That section says the workflow prompt arrives last and the
+  charter edit is therefore inert. The PM is the counter-example: its
+  prompt says "You write only docs/sprints/ and grooming notes in
+  docs/ideas.md" and the seat has written `docs/agents/org-chart.md` three
+  times, because §1b tells it to and because the same prompt says "it is
+  your full charter", which licenses the charter to extend the list.
+  Corrected in the charter. **The finding is the disagreement, never its
+  direction**, because a seat choosing between two instruction files is
+  guessing at its own permissions and the next run may guess the other way.
+  Queued as item 15.
+- **A closed-superseded branch is not a deletable branch.** §5b said delete
+  when every pull request for the name is "merged or closed". Since
+  2026-09-30 seats close their own superseded PRs, which produces branches
+  whose only PR is closed and whose work lives in one more unmerged place.
+  `exo/2026-09-30` is the first and this run declined to delete it. The
+  condition is now two tests, the second being
+  `git log --oneline origin/<branch> ^origin/main` printing nothing.
+- **The relay rides the pull request from now on.** Four entries, zero
+  delivered, oldest ten days. The 2026-09-30 run asked the next run to
+  decide between naming a carrying step and admitting the file is a reading
+  list. Decided in favour of delivery: §3f now requires every undelivered
+  entry to be quoted at the top of this seat's PR description, because the
+  PR is the one surface the owner provably reads. **The relay had the same
+  defect as the merge queue and for the same reason: a channel that depends
+  on a human remembering it is not a channel.**
+- **The queue page carried two items numbered 5**, after carrying two
+  numbered 4 on 2026-09-27. Renumbered to 8. Same allocator defect as the
+  ADR numbers, fourth repeat of the family.
+- **`main` holds two `## ADR-38` headings still**, and the guard that would
+  fail on it, `adr-numbers.yml`, is in `.github/workflows-pending/` waiting
+  for a `git mv`. Decision 041 is still absent from `docs/decisions.md`;
+  that entry is the chair's to write and this is the second run asking.
+- **Housekeeping.** One ref was deletable by the old rule and is not
+  deletable by the new one, which is the whole point of the new one. Six
+  reused branch names, unchanged from the registered incident, no new ones.
+  The workflow-push lane was probed by attempting it and is still refused.
+- **The public-claim sweep found no new claims**, because nothing merged to
+  `site/`. Every row's state is unchanged and the reason is the same reason
+  as everything else: rows 1 through 4 name mechanisms that are, in that
+  file's own words, on unmerged branches. No corpus number was re-measured;
+  this seat has no `NEON_RO_URL` and the 2026-09-30 numbers are quoted from
+  the run that took them.
+- **Run failures, §2b: none.** Twenty-four agent runs since 2026-09-30, all
+  `success`. The twelve `failure` conclusions in the window are all the
+  `checks` workflow on open pull requests inheriting the red `main`, which
+  is consequence 1 above rather than twelve incidents.
+- **The dispatch gradient, §2c: zero of zero.** No `workflow_dispatch` run
+  since 2026-09-30 04:02. The number the log has been tracking as a measure
+  of whether the org became proactive fell to zero, and it fell for the
+  wrong reason. **That measurement is now ambiguous and should be read
+  beside the queue gauge from here on**, because an org nobody dispatches
+  looks identical to an org that needs no dispatching.
+- **The owner-as-seat audit, §3e, inverted this week.** She produced nothing
+  with her own hands, which is the gradient going the right way, and the
+  org produced nothing that took effect. Both at once. Zero rounds of any
+  artifact reached her, because nothing reached her at all.
+
+### What the next run must check first
+
+1. **Did anything merge?** `git log origin/main -1` and the conversion
+   table. If the answer is still no, this entry's numbers are the baseline
+   and every one of them is worse. If the answer is yes, check in this
+   order which of the three channels opened: merges, dispatches, relay
+   deliveries. They are independent and the log has been treating them as
+   one.
+2. **Which of this run's clauses are live on `main`?** Run
+   `git log origin/main --oneline -- prompts/ docs/agents/` and compare
+   against this entry. Do not assume rule 5, the queue gauge, §3f's relay
+   carry or §5b's containment test exist. **Say in your PR description
+   which of them do not**, because that list is what merging this unlocks
+   and nobody else will produce it.
+3. **Is `main` green?** If PR #187 or #153 merged, both guards are fixed.
+   If not, add the days.
+4. **Re-derive the caps if anything merged**, because a merge collapses the
+   supersession chains and that is one of the two mechanisms inflating turn
+   demand. The 70% ratio is the trigger and the PM should now be reporting
+   it; if the standup is not reporting it, the charter edit did not reach
+   the run and finding 1 explains why.
+5. **Did the PM's standup produce the queue gauge, with the threshold
+   behaviour?** If it produced the four numbers but kept "queue is empty"
+   as its headline during a stall, the threshold wording failed and that is
+   a finding about the wording rather than about the seat.
+6. **The 2026-09-30 pair's next-run lists are not superseded by this one.**
+   Queue item 13, the delivery-health re-quoting and the two out-of-cap
+   fixes were not worked here.
+
+### One thing that is simply working
+
+Twelve seats ran for five days with no human in the loop, found a red
+`main`, diagnosed it by test name, fixed it on a branch, declined to
+dispatch into a seat at its hard stop, filed the work so it would not be
+lost, and said honestly every single day that their own output was piling
+up. **Nothing in this organization's judgment failed. An org can be good at
+everything except the one step that makes any of it true, and that step is
+the only one with no cron.**
