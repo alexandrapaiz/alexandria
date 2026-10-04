@@ -783,3 +783,163 @@ def test_the_gate_says_what_it_did_not_check():
         assert elsewhere in text, (
             "a gate that implies it checked everything is how a partial gate "
             "becomes a full one in somebody's memory")
+
+
+# ------------------------------------------------------------- the record
+#
+# ADR-37's `history` key had a reader in `tools/skill_triggers.py` since
+# 2026-09-30 and no writer anywhere, so a second run of the harness replaced
+# the first run's numbers and the regression trigger compared the newest result
+# against itself. These hold the writer: that a measurement already on the
+# record survives the next run, that the entry is the shape the reader parses,
+# and that the comparison the gate makes reads the record rather than a file
+# that may have been replaced.
+
+def scripted_run(tmp_path, monkeypatch, *, with_answer="adapt the harness",
+                 version="2", argv=None) -> dict:
+    """One whole `--skill` run against a scripted model, writing a real file.
+
+    Everything that would cost money or need a key is replaced and nothing else
+    is, so the path under test is the write path `main` really takes.
+    """
+    import llm
+
+    spec = {"contract": 2, "skill": "s", "policy": {"repetitions": 2},
+            "tasks": [
+                {"id": "graded", "ask": "?",
+                 "check": {"type": "contains_all", "patterns": ["harness"]}},
+                {"id": "held", "control": True, "ask": "?",
+                 "check": {"type": "contains_none", "patterns": ["nonsense"]}},
+            ]}
+    out = tmp_path / "results.json"
+    monkeypatch.setattr(ev, "load_tasks", lambda slug: (spec, []))
+    monkeypatch.setattr(ev, "read_skill", lambda slug: ("body", "a" * 64))
+    monkeypatch.setattr(ev, "skill_version", lambda slug: version)
+    monkeypatch.setattr(ev, "results_path", lambda slug: out)
+    monkeypatch.setattr(ev, "tasks_path", lambda slug: tmp_path / "evals.json")
+    monkeypatch.setattr(ev, "window_conflict", lambda now: "")
+    monkeypatch.setattr(llm, "usable_models", lambda models, env: (None, []))
+    monkeypatch.setattr(ev, "Subject", lambda model, env, cap, available=None:
+                        ev.ScriptedSubject(with_answer=with_answer,
+                                           without_answer="fine-tune it"))
+    assert ev.main(argv or ["--skill", "s"]) == 0
+    return json.loads(out.read_text())
+
+
+def test_a_second_run_does_not_erase_the_first(tmp_path, monkeypatch):
+    first = scripted_run(tmp_path, monkeypatch)
+    assert len(first["history"]) == 1
+
+    # The second run measures a skill that stopped working. Its own numbers are
+    # worse, and the point is that the better ones do not disappear with them.
+    second = scripted_run(tmp_path, monkeypatch, with_answer="fine-tune it")
+    assert second["delta"]["mean"] < first["delta"]["mean"]
+    assert len(second["history"]) == 2, (
+        "the run that fell replaced the run that passed, which is the one "
+        "thing an append-only record exists to prevent")
+    kept = second["history"][0]
+    assert kept["delta"]["mean"] == first["delta"]["mean"]
+    assert kept["verdict"] == first["verdict"] == "gain"
+    assert second["history"][-1]["verdict"] == second["verdict"]
+    assert second["verdict"] != "gain"
+
+
+def test_the_top_level_is_still_the_newest_summary(tmp_path, monkeypatch):
+    """The site reads the top level. Appending a history must not move it."""
+    first = scripted_run(tmp_path, monkeypatch)
+    second = scripted_run(tmp_path, monkeypatch, with_answer="fine-tune it")
+    # The without-arm is scripted identically in both runs, so the fields that
+    # must have moved are the ones the second run changed.
+    for field in ("delta", "verdict", "with_skill"):
+        assert second[field] != first[field], field
+    last = second["history"][-1]
+    assert last["delta"]["mean"] == second["delta"]["mean"]
+    assert last["date"] == second["date"]
+    assert last["skill_md_sha256"] == second["skill_md_sha256"]
+
+
+def test_the_entry_is_the_shape_the_reader_parses(tmp_path, monkeypatch):
+    import skill_triggers
+
+    doc = scripted_run(tmp_path, monkeypatch, version="7")
+    entries = skill_triggers.history_entries(doc)
+    assert len(entries) == 1
+    entry = entries[0]
+    for field in ("version", "date", "subject_model", "judge_model", "tasks",
+                  "repetitions", "verdict", "skill_md_sha256"):
+        assert entry.get(field) not in (None, ""), field
+    assert entry["version"] == "7", (
+        "trigger 2 finds the version date by matching this field against the "
+        "frontmatter, so an entry without it is an entry it cannot use")
+    assert entry["controls_unchanged"] is True
+
+
+def test_the_version_in_the_entry_is_the_one_in_the_frontmatter():
+    """`skill_version` reads the real library, through the registrar's parser."""
+    assert ev.skill_version("harness-engineering") == "2"
+    assert ev.skill_version("no-such-skill") == ""
+
+
+def test_a_file_written_before_the_history_existed_still_has_a_predecessor():
+    published = {"date": "2026-09-30", "subject_model": "kimi-k2.6",
+                 "verdict": "gain", "repetitions": 3, "tasks": 10,
+                 "delta": {"mean": 0.6, "ci95": [0.4, 0.8]}}
+    history = ev.appended_history(published, result_of(date="2026-10-04"))
+    assert len(history) == 2, (
+        "the number that was on the page before this change must survive it")
+    assert history[0]["delta"]["mean"] == 0.6
+    assert ev.previous_measurement(published)["delta"]["mean"] == 0.6
+
+
+def test_the_gate_compares_against_the_record_and_not_the_whole_file():
+    previous = {"date": "2026-10-03",
+                "subject_model": "kimi-k2.6",
+                "delta": {"mean": 0.9, "ci95": [0.8, 1.0]},
+                "history": [
+                    {"version": "1", "date": "2026-10-01",
+                     "subject_model": "kimi-k2.6", "verdict": "gain",
+                     "delta": {"mean": 0.6, "ci95": [0.4, 0.8]}},
+                    {"version": "2", "date": "2026-10-03",
+                     "subject_model": "kimi-k2.6", "verdict": "gain",
+                     "delta": {"mean": 0.5, "ci95": [0.3, 0.7]}},
+                ]}
+    against = ev.previous_measurement(previous)
+    assert against["date"] == "2026-10-03" and against["delta"]["mean"] == 0.5
+    now = result_of(delta={"mean": 0.35, "ci95": [0.2, 0.5]})
+    assert ev.gate_problems(now, against) == [], (
+        "0.35 is inside the last measurement's own spread, and reading the "
+        "file's top level instead would have called it a regression")
+
+
+def test_nothing_to_compare_against_is_not_a_comparison():
+    assert ev.previous_measurement(None) is None
+    assert ev.previous_measurement({}) is None
+    assert ev.appended_history(None, result_of()) == ev.appended_history(
+        {}, result_of())
+
+
+def test_an_unreadable_results_file_is_kept_rather_than_overwritten(
+        tmp_path, monkeypatch, capsys):
+    out = tmp_path / "results.json"
+    out.write_text("{this was a measurement once")
+    doc = scripted_run(tmp_path, monkeypatch)
+    assert len(doc["history"]) == 1
+    kept = list(tmp_path.glob("results.unreadable-*.json"))
+    assert len(kept) == 1 and kept[0].read_text() == "{this was a measurement once"
+    assert "rather than overwritten" in capsys.readouterr().out
+
+
+def test_the_run_says_how_many_measurements_are_on_the_record(tmp_path,
+                                                              monkeypatch):
+    scripted_run(tmp_path, monkeypatch)
+    doc = scripted_run(tmp_path, monkeypatch)
+    assert "2 measurements, this one last" in ev.render(doc)
+    assert "on the record" not in ev.render({**doc, "history": doc["history"][:1]})
+
+
+def test_the_record_and_the_version_are_in_the_contract_the_frontend_reads():
+    contract = (ROOT / "site" / "app" / "skills" / "README.md").read_text()
+    for field in ("history", "version"):
+        assert f"`{field}`" in contract, (
+            f"{field} is written into every result and the page cannot know it "
+            "exists")

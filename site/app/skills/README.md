@@ -33,9 +33,10 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 
 | Field | Type | What it is |
 |---|---|---|
-| `contract` | number | `1` today. A reader that does not know the number should render pending rather than guess. |
+| `contract` | number | `1` today, and it is the *result* document's number, not the task file's. A reader that does not know the number should render pending rather than guess. The suites carry their own `suite_version`, which is `1` or `2`, and the two numbers move independently. |
 | `skill` | string | the slug, which must match the directory |
 | `skill_md_sha256` | string | sha256 of the `SKILL.md` this result measured |
+| `version` | string | the `version` in that `SKILL.md`'s frontmatter, or `""` when it has none |
 | `date` | string | `YYYY-MM-DD`, the day the run finished |
 | `subject_model` | string | the model that answered, both arms. Kimi by default (ADR-32's funded account), Claude for the monthly benchmark |
 | `judge_model` | string | the model that graded the rubric tasks, always a different one |
@@ -58,6 +59,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `policy` | object | the task file's pre-registered policy, copied verbatim |
 | `per_task` | array | one row per task: `id`, `control`, `scored_by`, `with_mean`, `without_mean`, `delta`, the raw scores, and a note per repetition |
 | `harness` | string | the runner that produced it |
+| `history` | array | every measurement of this skill, oldest first, this one last. Append-only, below |
 
 An arm summary:
 
@@ -76,6 +78,53 @@ was 0 or 1, which is the case when every task had a hard check. A run that
 included a rubric produces fractional scores, and then `mean` and `n` are all
 there is. The interval is Clopper-Pearson, exact rather than normal, because at
 these sample sizes the normal approximation is simply wrong.
+
+## `history`, and why a result cannot be replaced
+
+Every run appends to `history` and nothing removes from it. The top level of the
+file is always the newest measurement, so a component written against the fields
+above does not change, and the array is the record behind it.
+
+```json
+"history": [
+  {
+    "version": "1",
+    "date": "2026-09-30",
+    "subject_model": "kimi-k2.6",
+    "judge_model": "openai/gpt-oss-120b",
+    "tasks": 10,
+    "repetitions": 3,
+    "verdict": "gain",
+    "skill_md_sha256": "3f9c...",
+    "spend_usd": 0.41,
+    "delta": { "mean": 0.42, "ci95": [0.18, 0.63] },
+    "controls_unchanged": true,
+    "trigger": ""
+  }
+]
+```
+
+One entry per run, in the order they ran. `trigger` is what asked for the run
+when something did, which is one of `tools/skill_triggers.py`'s four reasons, and
+`""` for a run somebody started by hand.
+
+The reason it appends is a publication rule, not a storage preference. ADR-36
+says a skill whose eval shows no gain is retired with the numbers, and that
+sentence only means anything while the numbers are still there. Before this,
+`results.json` was one slot: a run whose delta fell replaced the run that
+passed, so the way to make an unflattering result go away was to run the harness
+again. Now it takes a deliberate edit to a file, which is a thing a reviewer can
+see in a diff.
+
+What it gives the page: the delta over time for one skill, and the ability to
+say *when* a number was first published rather than only what it is. What it
+gives the rest of the system: `tools/skill_triggers.py`'s fourth trigger
+compares the last two entries measured on the same subject model, which is a
+comparison that was impossible while the file held one.
+
+An entry carries no `per_task` rows. Those stay at the top level, for the
+newest run only, because they are the largest part of the document and the
+page shows them for one revision at a time.
 
 ## Three rules on rendering, which matter more than the fields
 

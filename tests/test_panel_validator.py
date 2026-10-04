@@ -1071,3 +1071,41 @@ def test_the_files_the_fetch_names_are_the_files_the_reviewer_opens():
     """
     assert set(job.EVAL_FILES) == set(val.TASK_FILENAMES) | {
         val.RESULTS_FILENAME}
+
+
+def test_the_validator_compares_the_newest_measurement_against_the_last_one(
+        tmp_path):
+    """The record the harness started writing on 2026-10-04, read by the panel.
+
+    A result whose delta fell below the previous measurement's own lower bound
+    is a fail, and before `history` existed this reviewer could not see it: it
+    holds one file, and the run that produced it had overwritten the older
+    numbers.
+    """
+    entry = {"version": "1", "date": "2026-10-01",
+             "subject_model": "kimi-k2.6", "verdict": "gain",
+             "delta": {"mean": 0.6, "ci95": [0.4, 0.8]}}
+    fell = gained(delta={"mean": 0.1, "ci95": [0.05, 0.2]})
+    fell["history"] = [entry, {**entry, "version": "2", "date": "2026-10-04",
+                               "delta": fell["delta"]}]
+    v = verdict(tmp_path, suite=suite_for(), result=fell)
+    direction = [f for f in checks(v, "trial-direction")
+                 if f["severity"] == "fail"]
+    assert any("below the previous result's own lower bound" in f["detail"]
+               for f in direction), direction
+    assert v["verdict"] == "fail"
+    record = checks(v, "trial-record")
+    assert len(record) == 1
+    assert "2 measurements on the record" in record[0]["detail"]
+    assert "2026-10-01" in record[0]["detail"]
+
+
+def test_one_measurement_is_not_compared_against_itself(tmp_path):
+    only = gained()
+    only["history"] = [{"version": "1", "date": "2026-10-03",
+                        "subject_model": only["subject_model"],
+                        "verdict": "gain", "delta": only["delta"]}]
+    v = verdict(tmp_path, suite=suite_for(), result=only)
+    assert v["verdict"] == "pass", v["findings"]
+    record = checks(v, "trial-record")
+    assert len(record) == 1 and "no earlier number" in record[0]["detail"]

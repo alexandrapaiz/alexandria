@@ -289,7 +289,16 @@ def review_trial(row, receipts: Receipts) -> list[Finding]:
 
     # duty: the direction. One implementation of this question lives in the
     # harness that computed the numbers, and this is a call to it.
-    problems = skill_eval.gate_problems(result, None)
+    #
+    # The second argument is the measurement before this one, read out of the
+    # result's own append-only `history` (2026-10-04). Until that record
+    # existed this was `None`, because a reviewer holds one file and the older
+    # numbers had been overwritten by the run that produced it. With the record
+    # the same call also answers "is this a fall from the last one", which is
+    # the question ADR-37's gate asks and the panel could not.
+    history = skill_eval.history_entries(result)
+    prior = history[-2] if len(history) > 1 else None
+    problems = skill_eval.gate_problems(result, prior)
     for problem in problems:
         findings.append(Finding("trial-direction", "fail", problem))
     delta = result.get("delta") or {}
@@ -301,6 +310,13 @@ def review_trial(row, receipts: Receipts) -> list[Finding]:
         f"{result.get('tasks')} tasks at {result.get('repetitions')} "
         f"repetitions on {result.get('subject_model')}, judged by "
         f"{result.get('judge_model')}"))
+
+    findings.append(Finding(
+        "trial-record", "note",
+        f"{len(history)} measurement{'' if len(history) == 1 else 's'} on the "
+        f"record" + (f", and this verdict compares the newest against the one "
+                     f"of {prior.get('date') or 'no date'}" if prior else
+                     ", so there is no earlier number to compare it against")))
 
     findings += review_pre_registration(result, suite, suite_why)
     return findings

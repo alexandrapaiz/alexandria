@@ -67,6 +67,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
+import skill_eval                          # noqa: E402
 import skill_registrar as registrar        # noqa: E402
 
 # ADR-37's own number, and the same one `deprecated_claims` uses for a
@@ -317,42 +318,17 @@ def read_results(skill_dir: pathlib.Path) -> dict:
     return doc if isinstance(doc, dict) else {}
 
 
-def history_entries(doc: dict) -> list[dict]:
-    """Every measured version, oldest first.
-
-    `history` is the record ADR-37 asks for. A document written before the
-    history existed is one entry, synthesised from its own top-level fields, so
-    the first run after this lands compares against the number that was
-    published rather than against nothing.
-    """
-    history = doc.get("history")
-    if isinstance(history, list) and history:
-        return [e for e in history if isinstance(e, dict)]
-    if doc.get("delta") and doc.get("date"):
-        return [summary_entry(doc)]
-    return []
-
-
-ENTRY_FIELDS = ("version", "date", "subject_model", "judge_model", "tasks",
-                "repetitions", "verdict", "skill_md_sha256", "trigger",
-                "spend_usd")
-
-
-def summary_entry(result: dict, version: str = "", trigger: str = "") -> dict:
-    """One history entry: what a version measured, and what asked for it."""
-    entry = {"version": str(version or result.get("version") or ""),
-             "trigger": trigger or str(result.get("trigger") or "")}
-    for field in ENTRY_FIELDS:
-        if field in ("version", "trigger"):
-            continue
-        if result.get(field) is not None:
-            entry[field] = result[field]
-    delta = result.get("delta") or {}
-    entry["delta"] = {"mean": delta.get("mean"), "ci95": delta.get("ci95")}
-    controls = result.get("controls")
-    if controls:
-        entry["controls_unchanged"] = bool(controls.get("unchanged"))
-    return entry
+# The record's reader, and the shape of one entry, both defined where the
+# record is written. `tools/skill_eval.py` is the only thing that writes
+# `history`, the two aliases below are that file's own functions, and this seat
+# has filed four incidents in a week about one format being read by two
+# implementations that disagree. One more reason this direction and not the
+# other: `pipeline/skill_revision.py`'s Modal image carries `skill_eval.py` and
+# does not carry this file, so a reviewer inside that image can reach the reader
+# only if it lives there.
+history_entries = skill_eval.history_entries
+summary_entry = skill_eval.summary_entry
+ENTRY_FIELDS = skill_eval.ENTRY_FIELDS
 
 
 def regression(history: list[dict], subject: str) -> str:
@@ -428,7 +404,6 @@ def subject_for(slug: str) -> str:
     policy in the file. `tools/skill_eval.py`'s default, which comes from
     `pipeline/budget.py`'s table, is the answer for a suite that names none.
     """
-    import skill_eval
 
     try:
         spec, problems = skill_eval.load_tasks(slug)

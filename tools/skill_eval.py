@@ -283,6 +283,82 @@ def gate_problems(result: dict, previous: dict | None) -> list[str]:
     return problems
 
 
+def history_entries(doc: dict) -> list[dict]:
+    """Every measured version, oldest first.
+
+    `history` is the record ADR-37 asks for. A document written before the
+    history existed is one entry, synthesised from its own top-level fields, so
+    the first run after this lands compares against the number that was
+    published rather than against nothing.
+    """
+    history = doc.get("history")
+    if isinstance(history, list) and history:
+        return [e for e in history if isinstance(e, dict)]
+    if doc.get("delta") and doc.get("date"):
+        return [summary_entry(doc)]
+    return []
+
+
+ENTRY_FIELDS = ("version", "date", "subject_model", "judge_model", "tasks",
+                "repetitions", "verdict", "skill_md_sha256", "trigger",
+                "spend_usd")
+
+
+def summary_entry(result: dict, version: str = "", trigger: str = "") -> dict:
+    """One history entry: what a version measured, and what asked for it."""
+    entry = {"version": str(version or result.get("version") or ""),
+             "trigger": trigger or str(result.get("trigger") or "")}
+    for field in ENTRY_FIELDS:
+        if field in ("version", "trigger"):
+            continue
+        if result.get(field) is not None:
+            entry[field] = result[field]
+    delta = result.get("delta") or {}
+    entry["delta"] = {"mean": delta.get("mean"), "ci95": delta.get("ci95")}
+    controls = result.get("controls")
+    if controls:
+        entry["controls_unchanged"] = bool(controls.get("unchanged"))
+    return entry
+
+
+def previous_measurement(previous: dict | None) -> dict | None:
+    """The run this one is compared against, read from the history.
+
+    Not the top level of the previous file. The top level is the newest summary
+    and a file that was overwritten has no older number in it at all, which is
+    the hole the append below closes: before this, two runs on the same day
+    left the second one comparing itself against itself.
+
+    A document written before the history existed has one entry synthesised
+    from its own top-level fields, which is `tools/skill_triggers.py`'s rule
+    and not a second one, so the first run after this lands still compares
+    against the number that was published.
+    """
+    if not previous:
+        return None
+    entries = history_entries(previous)
+    # No entries and no synthesisable summary means there is nothing to compare,
+    # and the previous document itself is the honest fallback: it is what the
+    # gate read until today.
+    return entries[-1] if entries else previous
+
+
+def appended_history(previous: dict | None, result: dict) -> list[dict]:
+    """Every measurement of this skill, oldest first, with this run last.
+
+    `history` is the key ADR-37 asks for, `tools/skill_triggers.py` has read it
+    since 2026-09-30, and until today nothing in this repository wrote it. The
+    writer belongs here because this is the only place a measurement is
+    produced, and it appends because the Agent Memory Leaderboard's rule is the
+    right one: a version may not be replaced because its result was
+    unflattering. What code can enforce is that discarding a number takes a
+    deliberate edit to a file rather than a second run of the harness.
+    """
+    history = list(history_entries(previous or {}))
+    history.append(summary_entry(result))
+    return history
+
+
 def verdict_of(delta: float, low: float, high: float, min_delta: float) -> str:
     """What the numbers are allowed to be called.
 
@@ -320,6 +396,25 @@ def read_skill(slug: str) -> tuple[str, str]:
     return body.strip(), hashlib.sha256(raw.encode()).hexdigest()
 
 
+def skill_version(slug: str) -> str:
+    """The version in `SKILL.md`'s frontmatter, or "".
+
+    A history entry carries it because ADR-37's second trigger asks for edges
+    recorded "since the skill's version date", and
+    `tools/skill_triggers.py`'s `version_date` answers that by finding the
+    history entry whose `version` matches the one in the frontmatter. An entry
+    with no version is an entry that trigger cannot use, so the run reads the
+    same field the registrar reads, through the same parser.
+    """
+    import skill_registrar as registrar
+
+    path = skill_dir(slug) / "SKILL.md"
+    if not path.exists():
+        return ""
+    fm, _ = registrar.split_frontmatter(path.read_text())
+    return str(registrar.parse_frontmatter(fm).get("version") or "")
+
+
 # The skill seat writes `evals/evals.json`, which is also the name the
 # skill-creator plugin's own suites use. `evals/tasks.json` is accepted as an
 # alias because this harness proposed that name first, on 2026-09-30, in the same
@@ -335,6 +430,17 @@ def tasks_path(slug: str) -> pathlib.Path:
         if (evals / name).exists():
             return evals / name
     return evals / TASK_FILENAMES[0]
+
+
+def shown(path: pathlib.Path) -> str:
+    """A path as a reader wants it: relative to the repository when it is inside
+    it, absolute when it is not. `relative_to` raises on anything else, and a
+    print statement is not worth an exception on the line after a measurement
+    that cost money."""
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def results_path(slug: str) -> pathlib.Path:
@@ -1091,7 +1197,7 @@ def is_indicator(task: dict) -> bool:
 
 def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
               subject_model: str, judge_model: str, reps: int, spend: float,
-              today: str) -> dict:
+              today: str, version: str = "") -> dict:
     """The result document. This shape is the contract site/app/skills/README.md
     describes, and nothing renders a number this function did not compute."""
     measured = [t for t in per_task if t["with_scores"] and t["without_scores"]]
@@ -1121,6 +1227,7 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         "contract": RESULT_CONTRACT,
         "skill": slug,
         "skill_md_sha256": sha,
+        "version": version,
         "date": today,
         "subject_model": subject_model,
         "judge_model": judge_model,
@@ -1190,6 +1297,10 @@ def render(result: dict) -> str:
         lines.append(f"  controls         {c['tasks']} {noun}, delta "
                      f"{c['delta']:+.2f}, {moved}")
     lines.append(f"  spend            ${result['spend_usd']:.4f}")
+    history = result.get("history") or []
+    if len(history) > 1:
+        lines.append(f"  on the record    {len(history)} measurements, this one "
+                     f"last. The earlier ones are not replaced.")
     if result["verdict"] != "gain":
         lines.append("  This is a finding, not a failure of the harness. "
                      "ADR-36: a skill whose eval shows no gain is retired with "
@@ -1383,30 +1494,40 @@ def main(argv=None) -> int:
 
     result = summarize(args.skill, sha, spec, per_task, subject_model,
                        judge_model, reps, cap.spent,
-                       dt.date.today().isoformat())
+                       dt.date.today().isoformat(),
+                       version=skill_version(args.skill))
     if stopped:
         result["incomplete"] = stopped
         result["verdict"] = "incomplete: " + result["verdict"]
     if args.reps:
         result["repetitions_overridden"] = True
     out = results_path(args.skill)
-    # Read before writing. The gate compares against the previous version's
-    # measured delta, and this is the only moment the previous one still exists.
+    # Read before writing. Every number this skill has ever been measured at
+    # lives in that file and nowhere else, so this is the only moment the older
+    # ones still exist.
     previous = None
     if out.exists():
         try:
             previous = json.loads(out.read_text())
         except json.JSONDecodeError:
+            # An unreadable file is still the only copy of whatever it held, and
+            # this run is about to write over it. Keep the bytes, say where they
+            # went, and carry on: the measurement that just cost money is not
+            # thrown away either.
+            kept = out.with_name(f"results.unreadable-{dt.date.today()}.json")
+            kept.write_bytes(out.read_bytes())
             print(f"warning: {out.name} is not JSON, so there is nothing to "
-                  "compare this run against")
+                  f"compare this run against. Its bytes are kept at "
+                  f"{shown(kept)} rather than overwritten.")
+    result["history"] = appended_history(previous, result)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print()
     print(json.dumps(result, indent=2, sort_keys=True) if args.json
           else render(result))
-    print(f"\nwritten to {out.relative_to(ROOT)}")
+    print(f"\nwritten to {shown(out)}")
     if args.gate:
-        problems = gate_problems(result, previous)
+        problems = gate_problems(result, previous_measurement(previous))
         for line in problems:
             print(f"gate: {line}")
         if problems:
