@@ -329,11 +329,14 @@ def test_a_conformant_file_has_no_problems(tmp_path):
 
 
 @pytest.mark.parametrize("spec,fragment", [
-    (base_spec(contract=99), "this harness speaks 1"),
+    (base_spec(contract=99), "this harness speaks 1 and 2"),
+    (base_spec(contract=2), None),
     (base_spec(skill="other"), "the file says skill"),
     (base_spec(policy={}), "not pre-registered"),
     (base_spec(policy={"repetitions": 3, "subject": "m", "judge": "m"}),
      "the same model"),
+    (base_spec(policy={"repetitions": 3, "subject": "gpt-9", "judge": "m"}),
+     "not a model in pipeline/budget.py's table"),
     (base_spec(tasks=[]), "no tasks"),
     (base_spec(tasks=[{"id": "a", "ask": "?"}]), "neither a hard check nor a rubric"),
     (base_spec(tasks=[{"id": "a", "check": {"type": "contains_all",
@@ -357,8 +360,12 @@ def test_a_conformant_file_has_no_problems(tmp_path):
      "is neither"),
 ])
 def test_conformance_catches(spec, fragment, tmp_path):
+    """A `None` fragment is a case that must produce no problem at all."""
     problems = ev.conformance(spec, "s", tmp_path)
-    assert any(fragment in p for p in problems), problems
+    if fragment is None:
+        assert problems == [], problems
+    else:
+        assert any(fragment in p for p in problems), problems
 
 
 def test_two_tasks_with_one_id_is_caught(tmp_path):

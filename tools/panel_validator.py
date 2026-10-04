@@ -317,9 +317,13 @@ def review_suite(slug: str, skills_dir: pathlib.Path,
 
     It is not decoration. The three open skill-seat pull requests that each
     carry eight `evals/evals.json` files (#151, #152, #159) write
-    `suite_version: 2`, and this harness speaks contract 1, so `conformance`
-    refuses every one of them. A reviewer that only compared policies would
-    have reported those suites as present and fine.
+    `suite_version: 2`, and until 2026-10-04 this harness spoke only contract
+    1, so `conformance` refused every one of them for their version number. It
+    speaks both now. What it reports on those eight files instead is the real
+    defect underneath: none of them carries a `policy` block, so the
+    repetitions rule 1 asks the author to pre-register are not in the file, and
+    the harness no longer supplies them. A reviewer that only compared policies
+    would have reported those suites as present and fine.
     """
     if receipts.suite is None:
         return []
@@ -346,9 +350,13 @@ def review_pre_registration(result: dict, suite: dict | None,
     **Not registered** is a key the suite never wrote. The run then chose it,
     which is what rule 1 forbids, and the honest finding names which of the
     three are missing. The suites the skill seat has actually written are in
-    this state: they carry the two model names at the top level and no `policy`
-    block, so `skill_eval.normalize` fills in a default of three repetitions
-    and there is no threshold anywhere.
+    this state: they carry the two model names at the top level, in prose
+    rather than as model ids, and no `policy` block, so there is no threshold
+    anywhere and no registered repetitions. This reviewer and
+    `skill_eval.conformance` both say so as of 2026-10-04, which is one defect
+    reported by the two reviewers whose question it falls under rather than a
+    double count: a suite that registers no n cannot be run, and a run that
+    chose its own n is not pre-registered.
 
     **Disagreement** is a key both documents wrote and wrote differently. That
     one means somebody edited one after the other, and the only edit in that
@@ -356,9 +364,13 @@ def review_pre_registration(result: dict, suite: dict | None,
     misses a registered 0.2 and clears a 0.15 written in afterwards.
 
     The raw suite is read here rather than the normalized one, deliberately.
-    `normalize` invents a repetitions default, so a normalized suite always
-    looks as though it registered one, and a check reading it would report
-    every suite in the library as compliant with the rule it breaks.
+    `normalize` invented a repetitions default until 2026-10-04, so a
+    normalized suite always looked as though it had registered one, and a check
+    reading it would report every suite in the library as compliant with the
+    rule it breaks. That is exactly the state `skill_eval.conformance` was in,
+    because it is handed the normalized suite and has no raw one to read, which
+    is why reading raw here is still the rule even now that the default is
+    gone: this check's correctness should not depend on another file's default.
     """
     if suite is None:
         return [Finding(

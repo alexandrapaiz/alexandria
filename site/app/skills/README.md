@@ -127,12 +127,31 @@ says so in its own output.
 harness or by the skill's own author where the library can help it. The
 disjointness argument is in `docs/product/skill-validation.md` §2.
 
-The six suites on `skill/2026-09-30-skill-evals` are the real thing and they are
-the format of record: `suite_version`, `kind: treatment|control`, `form:
-prompt|project`, `prompt`, and rubric criteria carrying 0/1/2 anchors. The
-harness reads that shape and also the shorter one below, which it proposed on
-the same day. `tests/fixtures/skill-eval-suite/evals.json` holds one task of
+The eight suites on `alexandria-skill/2026-09-30-window` are the real thing and
+they are the format of record: `suite_version: 2`, `kind: treatment|control`,
+`form: prompt|project`, `prompt`, and rubric criteria carrying 0/1/2 anchors.
+The harness reads that shape and also the shorter one below, which it proposed
+on the same day. `tests/fixtures/skill-eval-suite/evals.json` holds one task of
 every form and check type the real suites use.
+
+Two things about the version and the two model fields, settled 2026-10-04,
+because a suite is written against `skills/_validation/evals/README.md` and read
+by `tools/skill_eval.py` and the two documents did not agree.
+
+- **`suite_version` 1 and 2 are both accepted**, and they mean the same thing to
+  the reader. The number is the suites' own, so the reader is the one that moves.
+- **`subject_model` and `judge` at the top level are documentation.** The skill
+  seat's contract document describes both in prose and every real suite fills
+  them in prose, so the harness lifts them into `policy` only when the value
+  could be a model id at all, and otherwise keeps the sentence where a reader
+  can still see it. A model this organization cannot call, including a typo, is
+  a conformance failure that `--check` catches with no key and no dollar.
+- **`policy` is required, and the harness will not fill it in.** Rule 1 of
+  `docs/product/skill-validation.md` §V5 asks the author to pre-register the
+  repetitions, the models and the threshold. The reader supplied a default of
+  three repetitions until 2026-10-04, which made the check for rule 1 unable to
+  fail, so a suite with no `policy` block is now refused with the block it needs
+  printed in the error.
 
 ```json
 {
