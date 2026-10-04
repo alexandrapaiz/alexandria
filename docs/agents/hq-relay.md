@@ -1,6 +1,8 @@
 # Relay to HQ — what alexandria owes Alexandra Systems upward
 
-**Enforced at:** prompts/exo-agent.md §3e. The ExO seat writes entries.
+**Enforced at:** prompts/exo-agent.md §3f, which also carries every
+undelivered entry into that seat's pull request description. The ExO seat
+writes entries.
 The chair carries them, because no automated channel exists yet.
 
 Seats never message each other and no seat in this repository can write
@@ -283,6 +285,77 @@ this repository running eleven seats into one human's review. That is one
 command per repository and the centralizer already has the cross-repo
 read.
 
+### Updated 2026-10-04, five days later, with the numbers the first version could only project
+
+The 2026-09-30 table above read its last row as a snapshot of a day still
+running. It was not. It was the first day of a five-day stop, and the
+completed table is the argument this entry was trying to make.
+
+| Day opened | Opened | Merged | Still open |
+|---|---|---|---|
+| 2026-09-24 | 27 | 25 | 0 |
+| 2026-09-26 | 13 | 13 | 0 |
+| 2026-09-27 | 7 | 7 | 0 |
+| 2026-09-28 | 6 | 6 | 0 |
+| 2026-09-29 | 5 | 5 | 0 |
+| 2026-09-30 | 32 | 1 | 30 |
+| 2026-10-01 | 6 | 0 | 6 |
+| 2026-10-02 | 5 | 0 | 5 |
+| 2026-10-03 | 4 | 0 | 4 |
+| 2026-10-04 | 4 | 0 | 4 |
+
+**49 pull requests opened since the last merge, 1 merged. Fifty open.
+`main` unchanged for 112 hours and red for ten days with the fix sitting in
+an open pull request.** Twenty-four scheduled agent runs in the window, all
+`success`. Zero commits by any human on any ref, zero pull request
+comments, zero `workflow_dispatch` events.
+
+Four consequences HQ should have, because they are not what a throughput
+argument usually predicts and three of them are new since 2026-09-30.
+
+1. **Latency does not only delay output, it disables the proactive
+   mechanism.** alexandria's PM seat may not dispatch a seat that has an
+   open pull request from its own last run. After two days of no merges
+   every dispatchable seat has one. `PM_DISPATCH_ENABLED` is `true` and the
+   queue has been necessarily empty for five days. **A safety rule whose
+   unstated precondition was a daily-converting queue became a lock on the
+   whole dispatch system**, and the seat reported it, correctly and
+   unhelpfully, as "queue is empty". If HQ's other products carry the same
+   hard stop, they carry this.
+2. **Latency makes governance fixes inert, including the fixes for
+   latency.** Every seat is fed its charter from `main`. alexandria's ExO
+   run of 2026-09-30 edited all twelve charters to make a seat close its own
+   superseded pull request. The 2026-10-04 run read its own charter from
+   `main` at its first turn and none of it was there. **An org whose laws
+   ship through the gate cannot legislate its way around the gate.**
+3. **Latency and turn-cap collisions are the same failure.** A seat whose
+   last run is open must read, merge and re-ship that branch before it
+   starts today's work. alexandria's October cap re-derivation found seven
+   of thirteen caps below its measured rule, peaks up 157% to 179% in two
+   weeks, the writer at 91% of its cap. Nothing had connected merge latency
+   to cap exhaustion before. Any product running seats on turn caps should
+   re-derive after a queue stall rather than after a failure.
+4. **Latency reaches the public surface.** Four of eleven rows in
+   alexandria's `quality-claims.md` name mechanisms that are, in that
+   file's own words, on unmerged branches. The site tells readers a skill
+   is proven with and without it. The harness that proves it is in the
+   queue.
+
+**What alexandria is asking for, unchanged and now urgent.** Decision 041,
+prioritised as a throughput fix. Nothing else. The full account is
+`INC-2026-10-04-four-days-of-output-and-no-delivery` in
+`docs/agents/incidents.md`.
+
+**And one thing about this file itself, which HQ should read as evidence
+about the relay rather than as a complaint.** This is the fifth entry on
+this page and the fifth consecutive one marked undelivered, the oldest
+written 2026-09-24. The outbox has never been emptied. From 2026-10-04 the
+ExO charter requires every undelivered entry to be quoted at the top of
+that seat's pull request description, because the pull request is the one
+surface the owner provably reads. **The relay had the same defect as the
+merge queue and for the same reason: a channel that depends on a human
+remembering it is not a channel.**
+
 ---
 
 ## Delivery log
@@ -292,4 +365,11 @@ read.
 | Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
 | An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
 | L-X6's missing half: the capability test | 2026-09-27 | not yet | |
-| Decision 041 is urgent, with the supersession numbers | 2026-09-30 | not yet | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 4 days | |
+
+**Nothing on this page has ever been delivered.** Four entries, ages 10,
+7, 7 and 4 days as of 2026-10-04. That is the finding the table was built
+to produce and no run had read it as one. The ExO charter §3f now carries
+every undelivered entry into that seat's pull request description, so the
+age is in front of the owner weekly instead of in a file she has no reason
+to open.
