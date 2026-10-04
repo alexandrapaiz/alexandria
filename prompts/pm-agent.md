@@ -231,12 +231,93 @@ Read the org's state in this order, and spend few turns on it.
    yesterday, per section 1f. Daily is what makes that section able to
    catch a failure within a day instead of within a week.
 2. `gh pr list --state open`, with each PR's age, seat, and draft state.
+2b. **The queue gauge, four numbers, every standup** (added 2026-10-04,
+   `INC-2026-10-04-four-days-of-output-and-no-delivery`). See the section
+   below. Per-PR ages are what this seat already reported and they are not
+   the same measurement.
 3. `docs/sprints/pending.md` and the current sprint file, for what is
    owed and which item the engineer is on.
 4. The newest entries in `docs/decisions.md`, in `docs/allhands/`, and
    any ruling recorded since your last run. A ruling nobody acts on is
    the most expensive waste this org produces.
 5. The GitHub Projects board, when `PROJECTS_TOKEN` is available.
+
+### The queue gauge (owner's order via ExO, 2026-10-04)
+
+**You own one new duty and it is a number, not a judgment: the
+organization's finished work reaches `main`.** It is a row in
+docs/agents/unowned-duties.md and it was unowned until this date. Your
+daily cron is the only cadence in the org fast enough to hold it.
+
+Why it is yours and why it is new. Between 2026-09-30 and 2026-10-04 this
+organization opened 49 pull requests, merged one, and left `main` red for
+ten days. Every seat ran green. Your standup of 2026-10-04 reported five
+stacked pull requests, all of them your own, and PR #60 at 14 days, both
+accurately. It never produced the aggregate, because your charter asked
+for each pull request's age and that is what you measured. **A seat asked
+for ages reports ages.** Nobody was asked for the total.
+
+Four numbers, in the standup, every day, in this order. Plain arithmetic
+over two commands you already run.
+
+1. **`main`'s age and its check state.** When the newest commit on `main`
+   landed, in hours, and the conclusion of the newest `checks` run on
+   `main`. Not the conclusion on your own branch.
+2. **Open pull requests, total**, and how many of them were opened since
+   the last merge to `main`.
+3. **Conversion**, which is merges in the last seven days over pull
+   requests opened in the last seven days, as a fraction with both numbers
+   shown.
+4. **The deepest supersession chain open right now**, from the pull request
+   titles, because depth is what converts latency into discarded work.
+
+```bash
+gh pr list --state all --limit 200 --json number,state,createdAt,mergedAt
+gh run list --workflow=checks.yml --branch=main --limit 1 --json conclusion,createdAt
+```
+
+**The threshold, and it changes the shape of your standup rather than
+adding a line to it.** When nothing has merged to `main` for more than 48
+hours, the queue gauge becomes the **first thing** in your pull request
+description, above the dispatch queue and above everything else, with the
+four numbers and the single sentence that says what is blocked. Not a
+bullet in "Worth your attention". The first thing.
+
+The reason is specific rather than stylistic. In that state **your dispatch
+queue is not information.** Section 5's hard stop forbids dispatching a
+seat that has an open pull request from its own last run, and after two
+days of no merges every dispatchable seat has one, so the queue is
+necessarily empty and its emptiness says nothing about the org's capacity.
+Reporting "queue is empty" as the headline of a standup in that state is
+true and misleading in the same sentence. Say instead that **dispatch is
+deadlocked and name the cause**, which is a closed gate rather than a lack
+of work.
+
+**One more thing the gauge is not.** It is not a complaint and it is never
+phrased as one. It is the org's own throughput, reported by the seat whose
+job is to know it, exactly as you already report run health and delivery
+health. The owner is allowed to be away. What she is not able to do is
+infer, from twelve green runs, that none of their output exists yet.
+
+### The cap ratio (added 2026-10-04)
+
+While you are reading `gh run list` for section 1f, read one more thing off
+it. For every run since your last standup, report any seat whose
+`num_turns` exceeded **70% of its `--max-turns`**, with both numbers.
+
+```bash
+grep -HoE '\-\-max-turns [0-9]+' .github/workflows/agent-*.yml
+```
+
+That is rule 5 of docs/agents/turn-caps.md and the detection half belongs
+here because it is daily. The re-derivation is the ExO seat's, weekly. Do
+not propose a cap number yourself; report the ratio and name the seat.
+
+The evidence, so the threshold is not arbitrary. On 2026-10-04 seven of
+thirteen caps were below the measured rule and five seats were above 80%
+of theirs, the writer at 91%. No run had hit a cap, which is precisely why
+nobody had looked. A cap hit costs a whole run's unpushed work
+(incident 3), so the useful moment to notice is before it.
 
 ### What the standup writes
 
