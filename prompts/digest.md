@@ -284,19 +284,20 @@ same fixed template, that is the failure mode this section exists to prevent.
   those are the audience.
   Those three are examples and never the test, because the test is the
   sentence this bullet opens with. Put it to every character in the issue
-  before you output: is this plain ASCII? The last issue carried eight
-  different non-ASCII characters and 134 of them, and a rule naming three
-  would have passed the curly apostrophe, the bullet separator, the en dash
-  and a Greek capital inside a system name. The one exception is a person's
+  before you output: is this plain ASCII? A rule naming three would pass the
+  curly apostrophe, the bullet separator, the en dash and a Greek capital
+  inside a system name, and issues have carried all four. The one exception is a person's
   or an institution's name as the payload spells it. Punctuation, spacing,
   separators and mathematical symbols get no exception at all, so a paper
   called "Psi-Spec" is written that way here.
   Where these characters come from decides where you catch them, and they
   are not typed by you. They arrive in the payload, whose claim text is
-  machine-extracted from PDFs: today's carries 286 non-ASCII characters
-  across 42 of its 48 claim strings, and 188 of those are the non-breaking
-  hyphen sitting inside ordinary words like "on-policy" and "inference-time",
-  where nothing looks wrong on the page. So the rule binds every string you
+  machine-extracted from PDFs, and most of its claim strings carry at least
+  one. The commonest by far is the non-breaking hyphen sitting inside ordinary
+  words like "on-policy" and "inference-time", where nothing looks wrong on
+  the page. Assume every string you were handed is contaminated rather than
+  checking whether this one is, because the rate is high and the character is
+  invisible. So the rule binds every string you
   lift as you lift it, from `claim`, `evidence`, `procedure`, a paper title
   or a triage note, and quoting the payload is not an exception to it. The
   `dates` normalization described below is one instance of this rule and not
@@ -703,12 +704,11 @@ one, or from one to two, is a single reader rather than the field moving.
 Ask that of the movers you were actually handed, one at a time, and count how
 many clear it. **This file does not know how many you have or how big they
 are, and a sentence here that says it does is a sentence to distrust.** One
-stood here until today asserting that all of today's movers were of the
-signal-free size. It was a true observation about the payload of 2026-09-23
-and it stayed in the file, so for ten days every run read a verdict on its own
-traction stream before looking at it, and the newest print carried no traction
-section at all while its payload held twelve movers and twelve supported
-claims. This is the impact section and it is section one, so the bar is real
+stood here asserting that all of the day's movers were too small to signal
+anything. It was a true observation about one past payload, it stayed in the
+file, and an issue went out with no traction section at all. A verdict read
+before the stream is looked at is a verdict about a day that has gone.
+This is the impact section and it is section one, so the bar is real
 and the finding has to be yours: movement earns a slot where a builder could
 act on it, and a stream with nothing that size in it is a stream you report.
 Where genuinely nothing clears the bar, say plainly that nothing older moved
@@ -792,10 +792,12 @@ makes a thin week look broad, which is the dishonesty this whole section's
 label exists to prevent.
 Check it by counting, because the payload makes this easy to fall into rather
 than hard. `new_claims` returns up to 22 rows, and they are distilled claims
-rather than papers, so a few papers can fill the entire list: today's 22 rows
-are 5 papers, four of which contribute 5 claims each. Group the rows by paper
-before you choose anything, and let the count of distinct papers decide how
-long this section runs.}
+rather than papers, so a handful of papers can fill the entire list. **This
+file does not know how many papers are under your rows, and a sentence here
+that says it does is a sentence to distrust.** One stood here naming a row
+count and a paper count for a single past day. Group the rows by paper
+yourself, before you choose anything, and let the count of distinct papers
+decide how long this section runs.}
 
 ## {The heading for the fell-behind slot, written from what actually lost
 ground today. Name the belief that fell if one belief carries the section. The
@@ -1039,9 +1041,10 @@ paper, never its contents, and never its method. Where the line opens on the
 paper, the repair is to start from the choice and let the paper arrive inside
 the sentence, which is usually shorter as well.
 Expect the payload to hand you one ready-made, because `deep_reads` carries
-triage notes written in exactly this register, and one of today's opens
-"Provides a comprehensive framework for continual learning". That note is a
-retrieval artifact and never a draft of your line. Address the reader, name the choice, and let
+triage notes written in exactly this register: a verb of presentation, then
+the paper's contents, then an adjective about how comprehensive it is. Read
+the notes you were handed and you will recognise the shape. Every one of them
+is a retrieval artifact and never a draft of your line. Address the reader, name the choice, and let
 no two entries take the same shape.}
 
 ---
