@@ -8341,6 +8341,21 @@ graphs.
   second run on the same skill leaves the first run's entry intact. The site's
   result contract in `site/app/skills/README.md` names `history` as a field a
   reader may rely on.
+- 2026-10-04 (engineer, second window): **built, in the pull request that
+  follows this morning's.** The write path appends, the gate compares against
+  the last entry, ADR-13's validator makes the same comparison for the first
+  time, and `site/app/skills/README.md` carries the field and the entry shape.
+  Two notes for whoever reads this next. The test went into
+  `tests/test_skill_eval.py` rather than `test_skill_receipts.py`, because the
+  write path is the harness's and that file had never executed it at all: the
+  first test to run it found `relative_to(ROOT)` raising on any path outside the
+  repository, one line after a measurement that had cost money. And the reader
+  moved into `tools/skill_eval.py`, which is the file that writes the format, so
+  `tools/skill_triggers.py`'s three names are now aliases of it; the direction
+  was forced by `pipeline/skill_revision.py`'s Modal image, which carries
+  `skill_eval.py` and not `skill_triggers.py`. The publication rule itself is
+  still a line for ADR-36 and the owner's to write. **Status left as the owner
+  found it**, since this seat does not move `proposed`.
 - Cost: $0
 - Status: proposed
 
@@ -8437,3 +8452,138 @@ graphs.
   twenty entries, and it is a claim a reader can check.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-04 — The agent-facing index of this library is a brochure, and it is the one page our own thesis says agents read (engineer seat, second window)
+
+- Trigger: today's craft scan read Exa's documentation surface (note below).
+  Every page of it carries one line above the content: *"Fetch the complete
+  documentation index at: /docs/llms.txt. Use this file to discover all
+  available pages before exploring further."* That index is 179 lines, one per
+  page, each a link to a `.md` version of the page with a one-sentence
+  description, and it opens with an Agent Instructions block naming the API
+  base, the auth header, both SDKs, the hosted MCP endpoint, the one-line skill
+  install, and the OpenAPI specs as "the source of truth for request and
+  response schemas". Read `site/app/llms.txt/route.js` against that. Ours is a
+  hand-written brochure in a `const BODY`, `force-static`, four paths, and it
+  enumerates neither the weekly issues nor the skills, so it does not grow when
+  the library does. It names no MCP endpoint although this repository ships
+  `mcp/server.py` and deploys it. It names no machine-readable form of
+  anything, although `site/app/skills/README.md` is a published data contract
+  and `/api/*` routes exist. The product's own sentence is "the person reads
+  the digest, their agents load the same findings as skills", and the file
+  written for those agents is the least machine-readable page on the site.
+- What: generate `llms.txt` from the content the way `/library` and `/skills`
+  are generated, keep the prose at the top, and add three things under it. One,
+  an Agent Instructions block: the MCP endpoint, what the free tier answers
+  without a key, and the sentence naming where schema truth lives. Two, an
+  index with one line per weekly issue and one per skill, each with its version
+  and date, so an agent can see what changed without crawling. Three, a
+  machine-readable form beside each: the issue as text and the skill's
+  frontmatter as JSON, which the site already has the readers for. The
+  in-band pointer is the cheapest part and the one that makes the rest
+  reachable: one line in the footer or the head of every page naming
+  `/llms.txt`, since today only `/skills` links to it.
+- First step: make the route read the same content helpers `/library` uses and
+  emit one line per issue, which turns the file from a constant into a
+  function of the library, and costs nothing else. The Agent Instructions
+  block is the second commit and wants one decision from the owner, which is
+  how much the unpaid agent is told.
+- Cost: $0
+- Whose call: frontend seat owns the route; the MCP sentence is the owner's.
+- Status: proposed
+
+### 2026-10-04 — A docstring that names a file is a claim, and `ls` settles it (engineer seat, second window)
+
+- Trigger: `tools/skill_triggers.py` has said since it was written that
+  `tests/test_skill_triggers.py` asserts the one property that keeps its
+  maintenance lines out of distill's fetch drain. That file did not exist
+  (INC-2026-10-04-named-test-file-never-written, written in this run). It is
+  the fifth sighting in a week of a file claiming a check it does not have,
+  after the markdown suite, the panel reviewer, the receipts step and the eval
+  harness's own `--check`. Four of the five would have been caught by reading
+  the sentence and then looking.
+- What: one test, no model and no network, that collects every repository path
+  named in any docstring, comment or markdown file under `tools/`, `pipeline/`,
+  `tests/`, `prompts/` and `docs/product/`, and asserts the path exists. The
+  pattern is narrow enough to be cheap: `tests/test_*.py`, `tools/*.py`,
+  `pipeline/*.py`, `.github/workflows/*.yml`, `skills/*/SKILL.md`. A path that
+  moved is caught by the same test, which is the half worth more than the
+  missing-file half, because a rename that leaves five documents pointing at
+  the old name is this repository's most common stale-prose defect.
+- The second half, which is the one the register actually asks for: a claim
+  that a file *runs in CI* is not settled by `ls`. The same test can read
+  `.github/workflows/*.yml`, collect every path any step invokes, and report
+  any file whose own prose says "runs in CI", "is a CI gate" or "on every pull
+  request" and which no step names. That is the check that would have caught
+  all five sightings, and it is a `grep` over two lists.
+- First step: the first half alone, as `tests/test_the_prose_names_real_files.py`,
+  run over the whole repository, and count what it finds on the first pass.
+  That number decides whether the second half is urgent or tidy.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-04 — The queue is a sink with several writers, and the defence lives in one of them (engineer seat, second window)
+
+- Trigger: writing the missing test file above found the claimed property
+  false. `pipeline/reading_queue.py` treats any `arxiv:<id>` in a checklist
+  line as a request to fetch that paper and puts it at the front of distill's
+  drain. `tools/skill_triggers.py` defended that by naming papers by title and
+  url in one function, and its other records interpolate claim text and paper
+  titles straight out of the corpus, so one claim sentence quoting an arXiv id
+  queues a re-fetch of a paper the corpus already holds. Fixed today at that
+  module's one chokepoint. The shape is not fixed: the queue file is appended
+  to by more than one writer, and the next one will not know.
+- What: move the invariant to the sink. `pipeline/reading_queue.py` is the only
+  reader, so it is the only place that can say what a line means. Two
+  candidates, and the first is cheaper than the fix it replaces: a line
+  carrying a `key:` from a maintenance trigger is never a fetch request, which
+  is one condition in `parse` and makes the defusing in every writer
+  unnecessary; or `parse` reports lines it is about to act on and the daily job
+  logs them, so a surprise fetch is visible the day it happens rather than in
+  a bill. The second is worth having regardless of the first.
+- First step: read every writer that appends to `docs/research/reading-queue.md`
+  today and list which ones can carry corpus text into a line. That list is
+  the size of the problem and it is three greps.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-04 — Craft scan: Exa (exa.ai), the agent-facing documentation surface (engineer seat, second window)
+
+- Trigger: the engineer seat's craft scan, rotating through
+  `docs/market/landscape.md`. Exa has sat on that file's watchlist since
+  2026-09-18 with the note "do not compete here directly, integrate and cite,
+  don't rebuild", and no craft scan had opened it. The morning window took the
+  Agent Memory Leaderboard, so this is the second of the day and the last
+  unscanned watchlist entry other than SemiAnalysis. Read live:
+  `docs.exa.ai/reference/getting-started`, `/reference/search`, and
+  `exa.ai/docs/llms.txt`.
+- **What is worth stealing: the index is in-band, generated, and it tells the
+  agent where truth lives.** Three layers, and the third is the one nobody
+  copies. Every documentation page opens with a line pointing at
+  `/docs/llms.txt` before any prose, so an agent that lands anywhere finds the
+  map. The map is one line per page with a one-sentence description, generated
+  from the docs tree rather than written. And its header is an Agent
+  Instructions block: the API base, the auth header, both SDK install commands,
+  the hosted MCP endpoint, a one-line skill install, and the sentence "the
+  OpenAPI specs are the source of truth for request and response schemas".
+  That last sentence is the craft. It does not describe the schema, it names
+  the artifact that is authoritative about the schema, which is exactly what a
+  reader who will be wrong about details needs. The ledger entry above is this
+  one applied to `/llms.txt`.
+- Worth noting beside it: `Snapshot` pins a search to a stored version of a
+  page at a datetime you choose, and `Monitors` is a saved query that runs on
+  a schedule and emits events. Both are shapes alexandria already has in
+  rougher form, the first as the sha pinning a result to the text it measured,
+  the second as the four staleness triggers.
+- **What alexandria does better: a result you can argue with.** Exa's
+  highlights are query-relevant excerpts, ranked, with a url. There is nothing
+  in the response that says what the excerpt claims, whether anything
+  contradicts it, when it was last checked, or what happens when it is
+  overturned. Alexandria's unit is a claim with an id, the paper it came from,
+  dated evidence, `contradicts` and `refines` edges at a confidence the graph
+  records, and a retirement path with the reason attached. A retrieval API
+  returns the best passage it can find today; this library returns a claim and
+  tells you what the field has since done to it. The second difference is
+  arithmetic: every number this system publishes carries its n and its
+  interval or it does not render, which is a rule no retrieval product has to
+  keep because none of them publish a number about themselves.

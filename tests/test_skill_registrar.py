@@ -294,7 +294,8 @@ def test_a_very_long_claim_is_truncated_rather_than_pasted_whole():
 
 def test_the_dispatch_names_the_pairs_and_warns_about_a_wrong_edge():
     text = job.dispatch_instructions([ROW], "2026-09-30")
-    assert "skills/context-window-engineering, claim 85" in text
+    assert "[deprecated] skills/context-window-engineering" in text
+    assert "cites claim 85," in text
     assert "2026-09-28" in text, (
         "the dispatch has to carry the research seat's finding that four of six "
         "contradicts edges were wrong, or the skill seat rewrites a skill over a "
@@ -305,8 +306,8 @@ def test_a_long_list_names_only_what_one_run_can_do():
     rows = [{"skill_path": f"skills/s{n}", "deprecated_claim_id": n,
              "deprecated_claim": "x"} for n in range(20)]
     text = job.dispatch_instructions(rows, "2026-09-30")
-    assert text.count("\n- skills/") == job.MAX_PAIRS_PER_DISPATCH
-    assert "further pairs are in the queue" in text
+    assert text.count("\n- [deprecated] skills/") == job.MAX_PAIRS_PER_DISPATCH
+    assert "further findings are in the queue" in text
 
 
 def test_the_job_is_not_in_the_kimi_window_table():
@@ -363,4 +364,4 @@ def test_the_pause_path_is_where_the_amendment_put_it():
     source = (ROOT / "pipeline" / "skill_revision.py").read_text()
     assert "guardrail 2" in source.lower()
     # Read before the queue append and the dispatch, never after.
-    assert source.index("PAUSED:") < source.index("# Step 3, the queue.")
+    assert source.index("PAUSED:") < source.index("# Step 4, the queue.")

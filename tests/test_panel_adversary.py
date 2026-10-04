@@ -561,7 +561,7 @@ def test_both_reviewers_run_in_the_daily_job_before_the_early_return():
     second = source.index("log.extend(adversary_reviewed(")
     early = source.index("if not pending:")
     assert first < second < early
-    assert source.index("pending = reg.revisions(conn)") > second
+    assert source.index("triggers.live(conn") > second
 
 
 def test_each_reviewer_files_its_own_row():

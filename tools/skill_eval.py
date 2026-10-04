@@ -403,8 +403,11 @@ def skill_version(slug: str) -> str:
     recorded "since the skill's version date", and
     `tools/skill_triggers.py`'s `version_date` answers that by finding the
     history entry whose `version` matches the one in the frontmatter. An entry
-    with no version is an entry that trigger cannot use, so the run reads the
-    same field the registrar reads, through the same parser.
+    with no version is an entry that trigger cannot use.
+
+    Parsed by `tools/skill_registrar.py`, which is the one frontmatter reader on
+    the Python side: a second one written here is how `validated` and every
+    claim id read as the empty string on every skill for eleven days (PR #133).
     """
     import skill_registrar as registrar
 
@@ -1297,10 +1300,18 @@ def render(result: dict) -> str:
         lines.append(f"  controls         {c['tasks']} {noun}, delta "
                      f"{c['delta']:+.2f}, {moved}")
     lines.append(f"  spend            ${result['spend_usd']:.4f}")
+    if result.get("trigger"):
+        lines.append(f"  asked for by     {result['trigger']}")
     history = result.get("history") or []
     if len(history) > 1:
         lines.append(f"  on the record    {len(history)} measurements, this one "
                      f"last. The earlier ones are not replaced.")
+        before = history[-2]
+        mean = (before.get("delta") or {}).get("mean")
+        if mean is not None:
+            lines.append(f"  version {before.get('version') or '?'} measured "
+                         f"{float(mean):+.2f} on {before.get('date')}, "
+                         f"{before.get('subject_model')}")
     if result["verdict"] != "gain":
         lines.append("  This is a finding, not a failure of the harness. "
                      "ADR-36: a skill whose eval shows no gain is retired with "
@@ -1370,6 +1381,11 @@ def main(argv=None) -> int:
                     help="run inside a reserved Kimi window anyway")
     ap.add_argument("--gate", action="store_true",
                     help="exit 1 unless the verdict is a gain (ADR-37's gate)")
+    ap.add_argument("--trigger", default="",
+                    help="what asked for this run: one of ADR-37's four "
+                         "triggers, or a sentence. It is recorded against this "
+                         "version in the history and it is what the skill's "
+                         "page shows as the reason for the revision.")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
 
@@ -1502,9 +1518,11 @@ def main(argv=None) -> int:
     if args.reps:
         result["repetitions_overridden"] = True
     out = results_path(args.skill)
-    # Read before writing. Every number this skill has ever been measured at
-    # lives in that file and nowhere else, so this is the only moment the older
-    # ones still exist.
+    # Read before writing. `history` is ADR-37's version history: one entry per
+    # measured version, with the trigger that asked for it. It is appended to
+    # rather than replaced, so a skill's whole measured life is in one file,
+    # every number this skill has ever been measured at lives there and nowhere
+    # else, and this is the only moment the older ones still exist.
     previous = None
     if out.exists():
         try:
@@ -1519,6 +1537,7 @@ def main(argv=None) -> int:
             print(f"warning: {out.name} is not JSON, so there is nothing to "
                   f"compare this run against. Its bytes are kept at "
                   f"{shown(kept)} rather than overwritten.")
+    result["trigger"] = args.trigger.strip() or "asked for by hand"
     result["history"] = appended_history(previous, result)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")

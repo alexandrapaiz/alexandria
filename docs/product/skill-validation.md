@@ -282,8 +282,24 @@ interval. A regression blocks the edit, it does not merely annotate it.
 
 *Receipt field.* `last_revalidated`, plus the version the numbers belong to.
 
-*Built.* No. Cheap once V1 and V3 exist, since it is those two plus a
-comparison against the stored bundle.
+*Where the stored bundle is, as of 2026-10-04.* This rule's instrument is "a
+comparison against the stored bundle", and until this date there was no stored
+bundle to compare against: `skills/<slug>/evals/results.json` was one slot that
+each run overwrote, so the previous version's numbers were gone by the time the
+new ones existed. The file is now append-only. Every run appends one entry to
+`history` carrying the version, the date, the sha of the text it measured, the
+subject model, the repetitions, the delta and its interval, and the top level
+stays the newest summary so the page's contract does not move. Three readers
+make the comparison this rule asks for: `tools/skill_eval.py --gate` against the
+last entry, `tools/panel_validator.py`'s `trial-direction` finding, and ADR-37's
+fourth trigger, which until now compared the newest result against itself
+because the reader had to synthesise a one-entry history out of the only
+document that existed.
+
+*Built.* Half. The record and the V3 comparison over it exist. What is still
+missing is V1 over the same record, since the trigger-test receipts live in
+`skills/_validation/results/` as library-level files rather than per skill, and
+the blocking half of the pass rule, which is a workflow nobody has written.
 
 ### V5. Statistical honesty
 

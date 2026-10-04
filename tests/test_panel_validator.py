@@ -869,8 +869,15 @@ def test_the_image_carries_the_validator_and_the_harness_it_calls():
     """
     source = (ROOT / "pipeline" / "skill_revision.py").read_text()
     for name in ("panel.py", "panel_provenance.py", "panel_adversary.py",
-                 "panel_validator.py", "skill_eval.py"):
+                 "panel_validator.py", "skill_eval.py", "skill_triggers.py"):
         assert f'.add_local_file("tools/{name}", "/root/{name}")' in source
+
+    # The image mounts each tool as a flat file at /root, and `tools()` is what
+    # imports two of them, so the directory it searches has to be the one the
+    # image writes. This pairing is the whole content of the 2026-10-04 merge
+    # between the branch that mounted a directory and the branch that mounted
+    # files: either half alone imports nothing at 16:00 UTC.
+    assert 'for path in ("/root", "/root/tools", here)' in source
 
 
 def test_all_three_reviewers_run_in_the_daily_job_before_the_early_return():
@@ -880,7 +887,8 @@ def test_all_three_reviewers_run_in_the_daily_job_before_the_early_return():
     third = source.index("log.extend(validator_reviewed(")
     early = source.index("if not pending:")
     assert first < second < third < early
-    assert source.index("pending = reg.revisions(conn)") > third
+    assert source.index("triggers.live(conn") > third, (
+        "the four triggers run after the panel and inside the same connection")
 
 
 class FakeConn:

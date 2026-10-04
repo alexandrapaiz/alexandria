@@ -604,15 +604,15 @@ def test_the_image_carries_the_reviewer():
 def test_the_review_runs_before_the_early_return():
     """A day with nothing to revise is still a day the evidence is sound or not.
 
-    `run()` returns early when `skills_needing_revision` is empty, which is most
-    days. A review added after that line would run almost never, which is the
+    `run()` returns early when the triggers find nothing, which is most days. A
+    review added after that line would run almost never, which is the
     merged-but-inert failure this sprint is about.
     """
     source = (ROOT / "pipeline" / "skill_revision.py").read_text()
     reviewed = source.index("log.extend(reviewed(")
-    early = source.index("nothing needs revision today")
+    early = source.index("nothing needs maintenance today")
     assert reviewed < early
-    assert source.index("pending = reg.revisions(conn)") > reviewed
+    assert source.index("triggers.live(conn") > reviewed
 
 
 def test_the_owner_alarm_keys_on_the_string_the_pass_prints():

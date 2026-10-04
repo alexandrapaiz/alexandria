@@ -943,3 +943,112 @@ def test_the_record_and_the_version_are_in_the_contract_the_frontend_reads():
         assert f"`{field}`" in contract, (
             f"{field} is written into every result and the page cannot know it "
             "exists")
+
+# ------------------------------------------------------- the version history
+#
+# Written 2026-09-30 on PR #153's branch, merged here 2026-10-04 beside the
+# block above, which is a second set written the same day for the same
+# behaviour because the chain this seat was building on had dropped #153.
+# Both are kept: this one patches `ROOT` and exercises the real library layout,
+# the one above patches the seams and exercises the scripted model.
+
+def _library(tmp_path, version="1"):
+    """A one-skill library on disk, so main() writes where a test can read."""
+    skill_dir = tmp_path / "skills" / "x"
+    (skill_dir / "evals").mkdir(parents=True)
+    (skill_dir / "SKILL.md").write_text(
+        f"---\nname: x\nversion: {version}\nstatus: active\n"
+        "provenance:\n  extracted: 2026-09-15\n  claims: [1]\n---\n\n"
+        "# x\n\nThe body the with-arm loads.\n")
+    return skill_dir
+
+
+def _run(monkeypatch, tmp_path, trigger, version="1"):
+    """One eval run against a scripted model, writing a real results.json."""
+    spec = {"contract": 1, "skill": "x", "policy": {"repetitions": 2},
+            "tasks": [{"id": "a", "ask": "?",
+                       "check": {"type": "contains_all",
+                                 "patterns": ["harness"]}}]}
+    monkeypatch.setattr(ev, "ROOT", tmp_path)
+    monkeypatch.setattr(ev, "load_tasks", lambda slug: (spec, []))
+    monkeypatch.setattr(ev, "window_conflict", lambda now: "")
+    scripted = ev.ScriptedSubject(with_answer="adapt the harness",
+                                  without_answer="fine-tune it")
+    monkeypatch.setattr(ev, "Subject",
+                        lambda model, env, cap, available: scripted)
+
+    class FreeCap:
+        spent = 0.0
+
+    import llm
+
+    monkeypatch.setattr(llm, "Cap", lambda *a, **k: FreeCap())
+    monkeypatch.setattr(llm, "usable_models", lambda models, env: ({}, []))
+    argv = ["--skill", "x", "--subject", "kimi-k2.6",
+            "--judge", "openai/gpt-oss-120b"]
+    if trigger:
+        argv += ["--trigger", trigger]
+    code = ev.main(argv)
+    doc = json.loads((tmp_path / "skills" / "x" / "evals" /
+                      "results.json").read_text())
+    return code, doc
+
+
+def test_a_run_records_the_version_and_what_asked_for_it(tmp_path, monkeypatch,
+                                                         capsys):
+    _library(tmp_path, version="1")
+    code, doc = _run(monkeypatch, tmp_path, "deprecated: claim 85")
+    assert code == 0
+    assert doc["version"] == "1"
+    assert doc["trigger"] == "deprecated: claim 85"
+    assert len(doc["history"]) == 1
+    assert doc["history"][0]["trigger"] == "deprecated: claim 85"
+    assert doc["history"][0]["version"] == "1"
+
+
+def test_a_second_run_appends_to_the_history_rather_than_replacing_it(
+        tmp_path, monkeypatch, capsys):
+    """ADR-37: version history, with the trigger per version."""
+    skill_dir = _library(tmp_path, version="1")
+    _run(monkeypatch, tmp_path, "asked for by hand")
+    skill_dir.joinpath("SKILL.md").write_text(
+        skill_dir.joinpath("SKILL.md").read_text().replace("version: 1",
+                                                           "version: 2"))
+    code, doc = _run(monkeypatch, tmp_path, "refines: claim 199 gained 0.82")
+    assert code == 0
+    assert [e["version"] for e in doc["history"]] == ["1", "2"]
+    assert [e["trigger"] for e in doc["history"]] == [
+        "asked for by hand", "refines: claim 199 gained 0.82"]
+    assert all("history" not in e for e in doc["history"]), (
+        "a history entry that carries the whole history grows without bound"
+    )
+    assert all("per_task" not in e for e in doc["history"])
+
+
+def test_a_run_with_no_trigger_says_so_rather_than_leaving_it_blank(
+        tmp_path, monkeypatch, capsys):
+    _library(tmp_path)
+    _, doc = _run(monkeypatch, tmp_path, "")
+    assert doc["trigger"] == "asked for by hand"
+
+
+def test_the_history_entry_is_what_the_gate_compares_against(tmp_path,
+                                                             monkeypatch,
+                                                             capsys):
+    """The gate's `previous` is the last history entry, so its shape is a contract."""
+    _library(tmp_path)
+    _, doc = _run(monkeypatch, tmp_path, "by hand")
+    entry = doc["history"][-1]
+    for field in ("subject_model", "delta", "verdict", "date"):
+        assert field in entry, field
+    worse = dict(doc, delta={"mean": -1.0, "ci95": [-1.2, -0.8]},
+                 verdict="regression")
+    assert ev.gate_problems(worse, entry), (
+        "a collapsed delta against the previous entry has to be a gate problem")
+
+
+def test_the_version_comes_from_the_frontmatter_and_is_parsed_once(tmp_path,
+                                                                  monkeypatch):
+    _library(tmp_path, version="7")
+    monkeypatch.setattr(ev, "ROOT", tmp_path)
+    assert ev.skill_version("x") == "7"

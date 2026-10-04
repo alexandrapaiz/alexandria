@@ -21,32 +21,54 @@ This job closes the loop, once a day, in five steps.
    row that had to be created is itself a finding: it means a merge shipped a
    skill that nothing was watching, and the owner is told.
 
-2. **Review.** Two of ADR-13's three reviewers run over the same skills and
+2. **Review.** All three of ADR-13's reviewers run over the same skills and
    each files its own `panel_verdicts` row per skill.
    `tools/panel_provenance.py` asks whether the claim ids a skill cites exist
    in the corpus and whether it attributes the papers behind them.
    `tools/panel_adversary.py` asks the opposite question: whether the claim
    graph has since contradicted or refined anything the skill cites, and
-   whether it was ever asked at all. Both read and neither merges, so the only
-   write is the verdict row, and a `fail` from either mails the owner for the
-   same reason an unregistered skill does. They run here rather than in CI
-   because both questions need Neon and CI holds no database credential
-   anywhere. The validator is the third and is not built: it runs the A/B
-   trial (`tools/skill_eval.py`) and needs a model key in this job, which is
-   the open question `docs/product/reviewer-panel.md` records.
+   whether it was ever asked at all. `tools/panel_validator.py` asks whether a
+   trial exists, measured this text, pointed the right way, and was
+   pre-registered. All three read and none merges, so the only write is the
+   verdict row, and a `fail` from any of them mails the owner for the same
+   reason an unregistered skill does. They run here rather than in CI because
+   the first two need Neon and CI holds no database credential anywhere.
 
-3. **Read the view.** `skills_needing_revision` returns one row per (skill,
-   deprecated claim) pair.
+3. **Run all four triggers.** ADR-37 names four things that make a skill stale
+   and the first pass of this job read one of them. `tools/skill_triggers.py`
+   computes them all:
 
-4. **Queue the reading.** Each new pair is appended to
+       deprecated   a cited claim is the target of a confident contradiction,
+                    which is what `skills_needing_revision` returns
+       refines      a cited claim gained a `refines` neighbour at confidence
+                    0.7 or better, recorded after the skill's version date
+       citations    a cited paper's citation count moved by more than 2x, or
+                    by 20 or more, between the slow loop's last two checks
+       eval         the skill's last eval regressed on the current subject
+                    model, or the budget table's subject has moved under it
+
+4. **Queue the reading.** Each new finding is appended to
    `docs/research/reading-queue.md` in the format that file documents, which is
    the same queue the skill seat writes into by hand under ADR-35 and the
-   research seat drains. Only NEW pairs are appended, so a skill that waits a
-   week for its revision does not collect seven identical lines.
+   research seat drains. Every line carries a `key:`, and only findings whose
+   key the file does not already hold are appended, so a skill that waits a week
+   for its revision does not collect seven identical lines.
 
-5. **Dispatch the skill seat**, with the list in its owner instructions, and
-   only when step 4 appended something. A cron that dispatches a seat every day
+4. **Dispatch the skill seat once**, with the whole list in its owner
+   instructions, and only when step 3 appended something. One dispatch a day
+   whatever the trigger count, because a cron that dispatches a seat every day
    about the same unfinished job is a cron nobody reads.
+
+5. **Publish the claim-status snapshot.** `docs/research/claim-status.json` says
+   which claim ids exist and which are deprecated, with the date it was
+   measured. It exists because the gate in `tools/skill_gate.py` runs in GitHub
+   Actions, where this organization holds no database credential at all, and
+   ADR-37's gate requires that a revision's provenance resolve to claims that
+   exist and are not deprecated. This job is the only thing in the org that can
+   answer that question daily, so it writes the answer down with a date on it,
+   and a snapshot the gate finds stale is a failing gate rather than a passing
+   one. Claim ids are stored as ranges, which keeps a file rewritten daily at a
+   few hundred bytes.
 
 ## Why this is a Modal job and not a GitHub Action
 
@@ -102,6 +124,10 @@ import modal
 QUEUE_PATH = "docs/research/reading-queue.md"
 QUEUE_BRANCH = "main"
 
+# Step 5's file. Read by tools/skill_gate.py on every skills-only pull request,
+# because CI has no database and ADR-37's gate has a clause about the graph.
+SNAPSHOT_PATH = "docs/research/claim-status.json"
+
 # Guardrail 2 of ADR-37's amendment of 2026-09-29: a file at this path on main
 # pauses automatic skill maintenance. Any seat may create it with a reason and
 # only the owner or the chair removes it. This job is where the loop starts, so
@@ -118,6 +144,17 @@ DISPATCH_INPUT = "owner_instructions"
 # The rest are still queued in the file, which is the durable half.
 MAX_PAIRS_PER_DISPATCH = 6
 
+# How many triggers one run will queue at all. Four triggers over six skills can
+# produce a long list on the day the slow loop refreshes citations, and a queue
+# file that grows by forty lines in one morning is a file the research seat stops
+# reading. The rest are not lost: they are recomputed tomorrow, because every
+# trigger is derived from the corpus rather than from a cursor.
+MAX_QUEUED_PER_RUN = 12
+
+# `tools` lands as a directory rather than as loose files on purpose. Both tools
+# resolve the repository root as the parent of their own directory, so a file
+# copied to /root would compute `/skills` and find nothing, and the trigger that
+# reads a skill's eval policy would silently fall back to the default subject.
 image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1")
@@ -132,27 +169,40 @@ image = (
     # `skill_eval` pulls in no third-party package at module scope, so it costs
     # nothing but the file.
     .add_local_file("tools/skill_eval.py", "/root/skill_eval.py")
+    # ADR-37's four triggers, which step 3 runs. It imports `skill_registrar`
+    # and `skill_eval`, both already above, and nothing third-party.
+    .add_local_file("tools/skill_triggers.py", "/root/skill_triggers.py")
     .add_local_dir("skills", "/root/skills")
 )
 
 app = modal.App("alexandria-skill-revision", image=image)
 
 
-def registrar():
-    """tools/skill_registrar.py, wherever this is running from.
+def tools():
+    """(registrar, triggers), wherever this is running from.
 
-    The same two-path trick weekly.py and llm.py use: `/root` when Modal built
-    the image, the repository when a person runs it locally.
+    Three places, in this order: `/root`, where this image mounts each tool it
+    needs as a single file, `/root/tools` for an image that mounted the whole
+    directory, and the repository's own `tools/` when a person runs it locally.
+    The flat `/root` form is first because it is what the image above actually
+    builds, and a missing entry here is an ImportError at 16:00 UTC rather than
+    a test failure.
     """
     import sys
 
     here = str(pathlib.Path(__file__).resolve().parent.parent / "tools")
-    for path in ("/root", here):
+    for path in ("/root", "/root/tools", here):
         if path not in sys.path:
             sys.path.insert(0, path)
-    import skill_registrar as module
+    import skill_registrar
+    import skill_triggers
 
-    return module
+    return skill_registrar, skill_triggers
+
+
+def registrar():
+    """Kept because `tests/test_skill_registrar.py` and the first pass call it."""
+    return tools()[0]
 
 
 def _reviewer(module_name: str):
@@ -217,87 +267,115 @@ def pair_key(skill_path: str, claim_id: int) -> str:
     return f"{skill_path}#{claim_id}"
 
 
+def as_records(rows: list[dict]) -> list[dict]:
+    """Legacy `skills_needing_revision` dicts, or records, as records.
+
+    The first pass of this job passed the view's rows around directly and its
+    tests still do. `tools/skill_triggers.py` is the one place that knows what a
+    finding looks like now, so everything here converts and delegates rather
+    than keeping a second format alive.
+    """
+    _, triggers = tools()
+    out = []
+    for row in rows:
+        if "trigger" in row:
+            out.append(row)
+            continue
+        out.append(triggers.deprecated_record(
+            row["skill_path"], row["deprecated_claim_id"],
+            row.get("deprecated_claim") or ""))
+    return out
+
+
 def queue_line(skill_path: str, claim_id: int, claim: str, today: str) -> str:
     """One line in the format `docs/research/reading-queue.md` documents.
 
-    That file's format is `- [ ] arxiv:<id> — why — asked by skills/<slug> —
-    YYYY-MM-DD`, and `pipeline/reading_queue.py` reads it: a line with an arXiv
-    id is a paper to fetch and a line without one is a question for the research
-    seat. This line has no arXiv id on purpose. The paper that deprecated the
-    claim is not known here, finding it is the reading, and inventing an id
-    would put a fetch request in front of distill for a paper nobody named.
+    That file's format is `- [ ] arxiv:<id> \u2014 why \u2014 asked by
+    skills/<slug> \u2014 YYYY-MM-DD`, and `pipeline/reading_queue.py` reads it: a
+    line with an arXiv id is a paper to fetch and a line without one is a
+    question for the research seat. No line this job writes carries an arXiv id,
+    and for the deprecated trigger the reason is that the paper which deprecated
+    the claim is not known here. Finding it is the reading, and inventing an id
+    would put a fetch request in front of distill for a paper nobody named. For
+    the citation trigger the reason is the opposite one: the paper is already in
+    the corpus, so naming it as an id would ask distill to fetch what it has.
     """
-    text = " ".join((claim or "").split())
-    if len(text) > 240:
-        text = text[:237] + "..."
-    return (f"- [ ] Revision: {skill_path} cites claim {claim_id}, which the "
-            f"graph now marks deprecated. The claim says: \u201c{text}\u201d. "
-            f"Read what contradicts it, then either revise the skill or retire "
-            f"it with the reason \u2014 asked by {skill_path} \u2014 {today}")
+    _, triggers = tools()
+    return triggers.line(
+        triggers.deprecated_record(skill_path, claim_id, claim), today)
 
 
 def new_pairs(queue_text: str, rows: list[dict]) -> list[dict]:
-    """The (skill, claim) pairs this file does not already carry.
+    """The findings this file does not already carry.
 
-    Idempotence lives here and nowhere else. The match is on the pair rather
-    than on the whole line, because the claim text in the line may be truncated
-    or may have been edited by whoever struck the line, and a line struck with
-    an `[x]` still counts as carried: the research seat has already read it.
+    Idempotence lives in `skill_triggers.fresh` and nowhere else. The match is on
+    the finding's key rather than on the whole line, because the evidence text in
+    the line may be truncated or may have been edited by whoever struck the line,
+    and a line struck with an `[x]` still counts as carried: the research seat
+    has already read it.
     """
-    out = []
-    for row in rows:
-        path = row["skill_path"]
-        claim_id = row["deprecated_claim_id"]
-        needle = f"{path} cites claim {claim_id},"
-        if needle in queue_text:
-            continue
-        if not any(p["skill_path"] == path
-                   and p["deprecated_claim_id"] == claim_id for p in out):
+    _, triggers = tools()
+    keep = {r["key"] for r in triggers.fresh(queue_text, as_records(rows))}
+    out, seen = [], set()
+    for row, rec in zip(rows, as_records(rows)):
+        if rec["key"] in keep and rec["key"] not in seen:
+            seen.add(rec["key"])
             out.append(row)
     return out
 
 
 def queue_block(pairs: list[dict], today: str) -> str:
     """The section appended to the queue, heading and all."""
-    lines = [f"\n## Queued {today} by pipeline/skill_revision.py\n",
-             "Every line below is a skill whose evidence moved: a claim in its "
-             "provenance block is now the target of a confident `contradicts` "
-             "edge, so `skills_needing_revision` returns it. ADR-37 makes the "
-             "revision the skill seat's first job, ahead of new skills.\n"]
-    for row in pairs:
-        lines.append(queue_line(row["skill_path"], row["deprecated_claim_id"],
-                                row.get("deprecated_claim") or "", today))
-    return "\n".join(lines) + "\n"
+    _, triggers = tools()
+    return triggers.block(as_records(pairs), today)
 
 
 def dispatch_instructions(pairs: list[dict], today: str) -> str:
-    """The owner instructions the skill seat's run receives."""
-    named = pairs[:MAX_PAIRS_PER_DISPATCH]
+    """The owner instructions the skill seat's run receives.
+
+    One dispatch a day, whatever the trigger count, with the whole list in it.
+    """
+    _, triggers = tools()
+    records = as_records(pairs)
+    named = records[:MAX_PAIRS_PER_DISPATCH]
+    counts = {}
+    for rec in records:
+        counts[rec["trigger"]] = counts.get(rec["trigger"], 0) + 1
     body = [
-        f"Automated revision dispatch, {today}, from "
+        f"Automated maintenance dispatch, {today}, from "
         "pipeline/skill_revision.py under ADR-36 and ADR-37. Read ADR-37 in "
         "docs/decisions.md first: a revision outranks a new skill.",
         "",
-        "`skills_needing_revision` returns the pairs below. Each one is a skill "
-        "whose provenance cites a claim the graph now marks deprecated. The "
-        "same lines were appended to docs/research/reading-queue.md this run.",
+        "The four triggers ADR-37 names found "
+        + ", ".join(f"{n} {triggers.LABELS[t]}"
+                    for t, n in sorted(counts.items(),
+                                       key=lambda kv: triggers.TRIGGERS.index(kv[0])))
+        + ". The same lines were appended to docs/research/reading-queue.md "
+        "this run, each with the key that stops it being queued twice.",
         "",
     ]
-    for row in named:
-        body.append(f"- {row['skill_path']}, claim "
-                    f"{row['deprecated_claim_id']}")
-    if len(pairs) > len(named):
-        body += ["", f"{len(pairs) - len(named)} further pairs are in the queue "
-                 "file and are not named here, because one run revises one "
-                 "skill."]
+    for rec in named:
+        body.append(f"- [{rec['trigger']}] {rec['skill_path']}: "
+                    f"{rec['evidence']}")
+    if len(records) > len(named):
+        body += ["", f"{len(records) - len(named)} further findings are in the "
+                 "queue file and are not named here, because one run revises "
+                 "one skill."]
     body += [
         "",
-        "Before you accept the trigger, check it. The research seat's brief of "
+        "Before you accept a trigger, check it. The research seat's brief of "
         "2026-09-28 judged four of the six `contradicts` edges in the graph "
         "wrong, mostly same-paper co-reported results read as refutations. A "
         "deprecation that is itself a misclassification is a finding about the "
-        "graph, not a reason to rewrite a skill. Say which one you found, and "
-        "re-run the skill's eval either way (ADR-36).",
+        "graph, not a reason to rewrite a skill. The same caution applies to a "
+        "`refines` edge and to a citation count that moved because Semantic "
+        "Scholar merged two records. Say which one you found, and re-run the "
+        "skill's eval either way (ADR-36).",
+        "",
+        "Your pull request carries the before and after eval result, the "
+        "trigger in the version history, and nothing outside skills/<slug>/. "
+        "That last one is not style: it is what ADR-37's gate checks, and a "
+        "diff that touches anything else cannot merge on its own.",
     ]
     return "\n".join(body)
 
@@ -332,11 +410,17 @@ class GitHub:
 
     def append(self, path: str, branch: str, sha: str, text: str,
                message: str) -> str:
-        resp = self.client.put(
-            f"/repos/{self.repo}/contents/{path}",
-            json={"message": message, "branch": branch, "sha": sha,
-                  "content": base64.b64encode(text.encode()).decode()},
-        )
+        """Write `text` to `path`. `sha` is None for a file that does not exist.
+
+        The snapshot in step 5 is the first file this job may have to create
+        rather than append to, and the contents API answers 422 for a PUT that
+        carries a sha for a path it cannot find.
+        """
+        body = {"message": message, "branch": branch,
+                "content": base64.b64encode(text.encode()).decode()}
+        if sha:
+            body["sha"] = sha
+        resp = self.client.put(f"/repos/{self.repo}/contents/{path}", json=body)
         if resp.status_code not in (200, 201):
             raise RuntimeError(
                 f"PUT contents/{path} answered {resp.status_code}: "
@@ -360,12 +444,19 @@ def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str], pathlib.P
     Deliberately not the bundled copy. The image is built at deploy time and
     this job runs daily, so a skill merged after the last deploy would be
     invisible to a job reading its own filesystem. That is the exact failure
-    incident 24 and PR #110 are both instances of, and it costs one API call to
-    avoid. The bundled copy is the fallback, and the run says which it used.
+    incident 24 and PR #110 are both instances of, and it costs a handful of API
+    calls to avoid. The bundled copy is the fallback, and the run says which it
+    used.
+
+    The eval files come down with the SKILL.md, because trigger 4 is computed
+    from `evals/results.json` and the subject model is pre-registered in
+    `evals/evals.json`. A trigger read from a stale copy of a results file is
+    worse than no trigger: it would dispatch the skill seat about a regression
+    that was fixed the day before.
     """
     import tempfile
 
-    reg = registrar()
+    reg, _ = tools()
     resp = gh.client.get(f"/repos/{gh.repo}/contents/skills", params={"ref": ref})
     if resp.status_code != 200:
         raise RuntimeError(f"GET contents/skills@{ref} answered "
@@ -375,9 +466,10 @@ def skills_from_github(gh: GitHub, ref: str) -> tuple[list, list[str], pathlib.P
     for entry in resp.json():
         if entry["type"] != "dir" or entry["name"] in reg.NOT_A_SKILL:
             continue
-        (root / entry["name"]).mkdir()
+        slug = entry["name"]
+        (root / slug).mkdir()
         try:
-            text, _ = gh.read_file(f"skills/{entry['name']}/SKILL.md", ref)
+            skill_md, _ = gh.read_file(f"skills/{slug}/SKILL.md", ref)
         except RuntimeError:
             continue        # read_skills reports the missing SKILL.md itself
         (root / entry["name"] / "SKILL.md").write_text(text)
@@ -552,6 +644,39 @@ def validator_reviewed(conn, rows, problems, skills_root,
     return review_pass(validator(), "validator", conn, rows, problems,
                        skills_root, dry_run)
 
+def snapshot_text(doc: dict) -> str:
+    return json.dumps(doc, indent=2, sort_keys=True) + "\n"
+
+
+def publish_snapshot(gh: GitHub, doc: dict, today: str) -> str:
+    """Step 5. Write `docs/research/claim-status.json` when it has moved.
+
+    Unchanged content is not committed, so the file's history is a record of the
+    days the graph actually changed rather than one commit a day forever.
+    """
+    fresh = snapshot_text(doc)
+    try:
+        current, blob = gh.read_file(SNAPSHOT_PATH, QUEUE_BRANCH)
+    except RuntimeError:
+        current, blob = "", ""
+    if current:
+        try:
+            before = json.loads(current)
+            before.pop("generated_at", None)
+            after = json.loads(fresh)
+            after.pop("generated_at", None)
+            if before == after:
+                return (f"{SNAPSHOT_PATH} already says what the graph says "
+                        "today, so nothing was committed")
+        except json.JSONDecodeError:
+            pass
+    commit = gh.append(SNAPSHOT_PATH, QUEUE_BRANCH, blob, fresh,
+                       f"claim status: {len(doc['deprecated_claim_ids'])} "
+                       f"deprecated claims as of {today}")
+    return (f"wrote {SNAPSHOT_PATH} in {commit}: "
+            f"{len(doc['deprecated_claim_ids'])} deprecated claims, "
+            f"{len(doc['claim_id_ranges'])} id ranges")
+
 
 # ------------------------------------------------------------ the run
 
@@ -560,7 +685,7 @@ def run(dry_run: bool = False) -> str:
 
     import psycopg
 
-    reg = registrar()
+    reg, triggers = tools()
     today = dt.date.today().isoformat()
     log: list[str] = []
 
@@ -570,11 +695,12 @@ def run(dry_run: bool = False) -> str:
     if gh is None:
         log.append(
             "DORMANT: no GITHUB_TOKEN and GITHUB_REPO in this environment, so "
-            "nothing was queued and nobody was dispatched. Steps 1 and 2 ran. "
-            "`modal secret create github GITHUB_TOKEN=<paste> "
-            "GITHUB_REPO=alexandrapaiz/alexandria` is the whole activation.")
+            "nothing was queued, no snapshot was written and nobody was "
+            "dispatched. Steps 1 and 2 ran. `modal secret create github "
+            "GITHUB_TOKEN=<paste> GITHUB_REPO=alexandrapaiz/alexandria` is the "
+            "whole activation.")
 
-    # Step 1, and 2. Read main, register, then ask the view.
+    # Step 1. Read main, or the image's own copy, and register what is there.
     if gh is not None:
         rows, problems, skills_root = skills_from_github(gh, QUEUE_BRANCH)
         log.append(f"read {len(rows)} skills from {repo}@{QUEUE_BRANCH}")
@@ -588,9 +714,9 @@ def run(dry_run: bool = False) -> str:
         log.append(f"failing: {line}")
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
-        live = reg.registered_paths(conn)
-        missing = reg.unregistered(rows, live)
-        out_of_date = reg.stale(rows, live)
+        registered = reg.registered_paths(conn)
+        missing = reg.unregistered(rows, registered)
+        out_of_date = reg.stale(rows, registered)
         if dry_run:
             log.append(f"dry run: would register {len(missing)} missing and "
                        f"{len(out_of_date)} stale rows")
@@ -615,14 +741,36 @@ def run(dry_run: bool = False) -> str:
         log.extend(adversary_reviewed(conn, rows, problems, skills_root, dry_run))
         log.extend(validator_reviewed(conn, rows, problems, skills_root, dry_run))
 
-        pending = reg.revisions(conn)
+        # Step 3. All four triggers, and the snapshot the gate reads. Trigger 1
+        # is `skills_needing_revision`, which `triggers.live` reads itself, so
+        # the view has one caller rather than two answers.
+        pending, unmeasured = triggers.live(conn, skills_dir=skills_root,
+                                            today=today)
+        status = triggers.claim_status(conn, today)
 
-    log.append(f"skills_needing_revision returns {len(pending)} pairs")
+    counts = {t: sum(1 for r in pending if r["trigger"] == t)
+              for t in triggers.TRIGGERS}
+    log.append("triggers: " + ", ".join(f"{t} {n}" for t, n in counts.items()))
+    for line in unmeasured:
+        log.append(f"unmeasured: {line}")
+    log.append(f"{len(status['deprecated_claim_ids'])} deprecated claims in the "
+               "corpus today")
+
+    # Step 6 runs whatever the triggers found, because the gate needs today's
+    # answer on a day nothing is stale as much as on a day something is.
+    if gh is not None and not dry_run:
+        log.append(publish_snapshot(gh, status, today))
+    elif gh is not None:
+        log.append(f"dry run: would write {SNAPSHOT_PATH} with "
+                   f"{len(status['deprecated_claim_ids'])} deprecated claims")
+
     if not pending:
-        return "\n".join(log + ["nothing needs revision today"])
+        return "\n".join(log + ["nothing needs maintenance today"])
 
-    # Guardrail 2, before anything is written or dispatched. Registration in
-    # step 1 still ran, because knowing which skills exist is not maintenance.
+    # Guardrail 2, before anything is queued or dispatched. Registration in
+    # step 1 still ran, because knowing which skills exist is not maintenance,
+    # and so did the snapshot, because pausing maintenance is not a reason to
+    # blind the gate.
     if gh is not None:
         why = paused(gh, QUEUE_BRANCH)
         if why:
@@ -632,35 +780,39 @@ def run(dry_run: bool = False) -> str:
                 "Only the owner or the chair removes it (ADR-37, amended "
                 "2026-09-29, guardrail 2)."])
 
-    # Step 3, the queue.
+    # Step 4, the queue.
     if gh is None:
-        for row in pending:
-            log.append("would queue: " + queue_line(
-                row["skill_path"], row["deprecated_claim_id"],
-                row.get("deprecated_claim") or "", today))
+        for rec in pending:
+            log.append("would queue: " + triggers.line(rec, today))
         log.append("would dispatch " + SKILL_WORKFLOW)
         return "\n".join(log)
 
     text, blob = gh.read_file(QUEUE_PATH, QUEUE_BRANCH)
-    fresh = new_pairs(text, pending)
+    fresh = triggers.fresh(text, pending)
     if not fresh:
         return "\n".join(log + [
-            f"every pair is already in {QUEUE_PATH}, so nothing was appended "
+            f"every finding is already in {QUEUE_PATH}, so nothing was appended "
             "and the skill seat was not dispatched again"])
+    if len(fresh) > MAX_QUEUED_PER_RUN:
+        log.append(f"{len(fresh)} findings, queueing the first "
+                   f"{MAX_QUEUED_PER_RUN}; the rest are recomputed tomorrow "
+                   "because every trigger is derived, not consumed")
+        fresh = fresh[:MAX_QUEUED_PER_RUN]
 
-    block = queue_block(fresh, today)
+    block = triggers.block(fresh, today)
     if dry_run:
         return "\n".join(log + ["dry run, would append:", block])
 
-    commit = gh.append(QUEUE_PATH, QUEUE_BRANCH, blob, text.rstrip() + "\n" + block,
-                       f"reading queue: {len(fresh)} skill revisions the graph "
-                       f"asked for ({today})")
+    commit = gh.append(QUEUE_PATH, QUEUE_BRANCH, blob,
+                       text.rstrip() + "\n" + block,
+                       f"reading queue: {len(fresh)} skill maintenance "
+                       f"findings ({today})")
     log.append(f"appended {len(fresh)} lines to {QUEUE_PATH} in {commit}")
 
-    # Step 4, the dispatch. Only because step 3 appended something.
+    # Step 4, the one dispatch. Only because step 3 appended something.
     gh.dispatch(SKILL_WORKFLOW, QUEUE_BRANCH,
                 {DISPATCH_INPUT: dispatch_instructions(fresh, today)})
-    log.append(f"dispatched {SKILL_WORKFLOW} with {len(fresh)} pairs")
+    log.append(f"dispatched {SKILL_WORKFLOW} with {len(fresh)} findings")
     return "\n".join(log)
 
 
@@ -681,10 +833,14 @@ def skill_revision(dry_run: bool = False) -> str:
         out = run(dry_run=dry_run)
     except Exception as exc:
         detail = (f"pipeline/skill_revision.py raised {type(exc).__name__}: "
-                  f"{exc}\n\nNo skill was registered and no revision was "
-                  "queued on this run, which means the library's "
-                  "revise-when-the-research-moves promise is not being kept "
-                  "today.")
+                  f"{exc}\n\nNo skill was registered, no trigger was "
+                  "computed and no revision was queued on this run, which "
+                  "means the library's revise-when-the-research-moves promise "
+                  "is not being kept today. The claim-status snapshot the "
+                  "skills-only gate reads is also a day older, and a stale "
+                  "snapshot fails that gate rather than passing it, so skill "
+                  "revisions will stop merging on their own until this run "
+                  "succeeds again.")
         print(notify_owner("alexandria: the skill revision job failed",
                            detail,
                            ["modal app logs alexandria-skill-revision",

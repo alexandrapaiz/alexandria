@@ -139,7 +139,7 @@ def record(trigger: str, skill_path: str, key: str, evidence: str,
             "detail": detail or {}}
 
 
-def truncate(text: str, limit: int = 240) -> str:
+def truncate(text: str, limit: int = 200) -> str:
     text = " ".join((text or "").split())
     return text if len(text) <= limit else text[:limit - 3] + "..."
 
@@ -426,23 +426,30 @@ def eval_records(skill_path: str, doc: dict, subject: str) -> list[dict]:
     return out
 
 
-def subject_for(slug: str) -> str:
+def subject_for(slug: str, skills_dir: pathlib.Path | None = None) -> str:
     """The subject model this skill's eval is pre-registered on.
 
     The suite's own `policy.subject` wins, because ADR-36 pre-registers the
     policy in the file. `tools/skill_eval.py`'s default, which comes from
     `pipeline/budget.py`'s table, is the answer for a suite that names none.
+
+    `skills_dir` is for the daily job, which reads the library from GitHub into
+    a temporary directory rather than from its own image: a skill merged after
+    the last deploy is invisible to a job that reads its own filesystem, and
+    that is the failure incident 24 and PR #110 are both instances of.
     """
 
-    try:
-        spec, problems = skill_eval.load_tasks(slug)
-    except Exception:
-        return skill_eval.DEFAULT_SUBJECT
-    if spec and not problems:
-        named = (spec.get("policy") or {}).get("subject")
-        if named:
-            return str(named)
-    return skill_eval.DEFAULT_SUBJECT
+    spec = None
+    root = (skills_dir or registrar.SKILLS_DIR) / slug / "evals"
+    for name in skill_eval.TASK_FILENAMES:
+        if (root / name).exists():
+            try:
+                spec = json.loads((root / name).read_text())
+            except json.JSONDecodeError:
+                spec = None
+            break
+    named = ((spec or {}).get("policy") or {}).get("subject")
+    return str(named) if named else skill_eval.DEFAULT_SUBJECT
 
 
 # --------------------------------------------------------------- the queue
@@ -674,7 +681,8 @@ def offline(skills_dir: pathlib.Path | None = None,
                 "could not be computed for it. ADR-36 makes such a skill draft "
                 "rather than active.")
             continue
-        records += eval_records(row.path, doc, subject_for(row.slug))
+        records += eval_records(row.path, doc,
+                                subject_for(row.slug, skills_dir))
     return records, problems
 
 
