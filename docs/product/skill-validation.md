@@ -304,6 +304,17 @@ check first when reading any number this system produces.
 *Receipt field.* Every numeric field carries its n and its interval, or it
 does not render.
 
+*Enforced at.* Rule 1 has two gates as of 2026-10-04, and until that date it
+had one and a half. `tools/skill_eval.py`'s `conformance` refuses to run a
+suite that pre-registers no repetitions, and prints the `policy` block the file
+needs; before that date the same check could not fail for any input, because
+`normalize` supplied a default three lines earlier
+(INC-2026-10-04-two-checks-that-could-not-fail). `tools/panel_validator.py`'s
+`trial-pre-registered` check reads the raw suite against the result's own
+policy, and separates a key nobody registered from a key that was edited after
+the numbers came in. Neither gate may supply a threshold, which is the one
+number this rule exists to keep out of the harness's hands.
+
 *Built.* Slice 1, in this PR, for V1 only.
 
 ## 4. From a validation run to the receipts and the badge
