@@ -140,7 +140,7 @@ is missing is worse than an absent one, because it reports.
 | --- | --- | --- | --- | --- |
 | The press, weekly issue | Modal cron, Monday 09:00 UTC after PR #75 | newest row in `digests` | shipped in PR #75, unmerged at this writing | **named, not performed**: PM §1f watches it daily and has no `NEON_RO_URL`, so the site is read instead (guardrail 5) |
 | The press, daily pipeline | Modal crons, 11:00 to 14:00 UTC, windows now checked by `budget.check_kimi_windows()` | newest rows in the corpus tables | budget guard only, no availability check | no, and this is still the next gap |
-| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no. **And from 2026-09-29 20:37 the trigger has not fired at all**, see the 2026-10-04 note |
+| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no. **And the trigger has not fired since 2026-09-30 02:37 UTC**, see the 2026-10-04 note |
 | The MCP server | long-running | a probe query | none | no, and incident 21 is what that costs |
 
 ### What changed under the site row, and why it is now the weakest
@@ -194,11 +194,13 @@ If the second half is unanswered, the line says so.
 green" is a statement about the product and not only about the runs, and
 this week produced the cleanest example of the gap it was written for.**
 
-The site's deploy trigger is `site/**` changing on `main`. Nothing has
-merged to `main` since 2026-09-30 02:08 UTC, and the newest commit touching
-`site/` is `5a90fb3` from 2026-09-29 20:37. **So the site has been serving
-the same build for five days and `deploy-main` has not fired once.** Not
-because it is broken. Because its precondition never occurred.
+The site's deploy trigger is `site/**` changing on `main`. The newest
+commit touching `site/` is `5a90fb3`, pushed at **2026-09-30 02:37 UTC**,
+and `deploy-main`'s newest run is a `success` at **2026-09-30 02:37 UTC**
+for exactly that commit. **Both numbers are correct and the surface is five
+days stale**, because nothing has merged to `main` since 2026-09-30 02:08
+UTC and so the trigger's precondition has not occurred since. The
+mechanism is not broken. It has had nothing to carry.
 
 The PM's standup of 2026-10-04 reported `Site: ok, newest issue 2026-W39,
 matches expectation`. That is accurate and it is not a contradiction, and
