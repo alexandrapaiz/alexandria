@@ -124,6 +124,25 @@ workflow edit is queued and the disagreement itself is the finding. Do
 this whenever you edit a charter's boundaries, and once across all twelve
 when nothing else is pressing.
 
+**Correction, 2026-10-04: the prompt does not reliably win, so do not use
+the direction to decide whether a disagreement matters.** The paragraph
+above predicts that the run obeys the workflow and the charter edit is
+inert. The PM seat is the counter-example, and the evidence is three
+commits. Its `prompt:` block says "You write only docs/sprints/ and
+grooming notes in docs/ideas.md", and the seat has written
+`docs/agents/org-chart.md` three times, most recently 2026-09-28, because
+§1b of its charter tells it to. The reason is two sentences earlier in the
+same prompt: "Read prompts/<seat>-agent.md; it is your full charter."
+That licenses the charter to extend the list, so a prohibition in the
+prompt reads as a summary rather than as a boundary.
+
+So the outcome depends on wording a run has to interpret, which means
+**the finding is the disagreement and never its predicted direction.** A
+seat deciding which of its two instruction files it believes is a seat
+guessing at its own permissions, and the next run of the same seat may
+guess the other way. Queue the workflow edit either way. Queued as item
+15.
+
 Read docs/agents/incidents.md as a work queue, not only as history. Any
 entry whose fix is marked pending or queued is an unpaid debt this seat
 owes, and it outranks a new idea. Ship it, or say in the PR why it is
