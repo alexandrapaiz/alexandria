@@ -1722,12 +1722,18 @@ amended in place: the same two `paths` lists, in the same workflow, about the
 same subsystem. A reader applying item 19 and then meeting a separate item 20
 about those lists would have to work out which is current.
 
-`INC-2026-10-04-named-test-file-never-written`. `tools/skill_triggers.py` names
-`tests/test_skill_triggers.py` in its own docstring as the thing that holds its
-one dangerous property, which is that no maintenance line it writes may read as
-a request to fetch a paper. That file did not exist until this run. It exists
-now, 22 tests, no database, no model, no network, and writing it found the
+`INC-2026-10-04-the-property-was-checked-at-the-wrong-unit` and
+`INC-2026-10-04-supersession-dropped-the-branch-it-superseded`.
+`tools/skill_triggers.py` names `tests/test_skill_triggers.py` in its own
+docstring as the thing that holds its one dangerous property, which is that no
+maintenance line it writes may read as a request to fetch a paper. That file
+was on PR #153's branch, unmerged since 2026-09-30, and this run wrote a second
+copy before finding it. Both are merged here: 62 tests, no database, no model,
+no network. Neither copy ran anywhere, and writing the second one found the
 property false at the channel every line passes through.
+
+`tools/skill_gate.py` and `tests/test_skill_gate.py` arrive in the same merge,
+which is the subject of item 20 below.
 
 So four paths rather than two, in **both** lists:
 
@@ -1749,9 +1755,35 @@ is the only thing in CI that would notice if a queue line started asking
 ```
 
 Both files are pytest, so one step covers them and `requirements-dev.txt` is
-already installed by the step above. Verified in this run's sandbox: 22 passed
-for the triggers, 90 passed for the harness, and the whole suite 888 passed, 9
+already installed by the step above. Verified in this run's sandbox: 62 passed
+for the triggers, 95 passed for the harness, and the whole suite 976 passed, 1
 skipped.
+
+### 20. The skill gate's workflow, which has been written and queued since 2026-09-30
+
+**Queued 2026-10-04 by the engineer seat, second window.** Numbered 20 because
+19 is the highest on this page today, and the number is stated rather than
+counted (incident 29).
+
+`.github/workflows-pending/skill-gate.yml` arrives on main with this pull
+request, through the merge of PR #153. It is a complete workflow file in the
+lane this repository keeps for workflows no agent may push, and
+`.github/workflows-pending/README.md` describes what it does. Nobody has
+applied it, and until somebody does, `tools/skill_gate.py` is 642 lines of
+ADR-37 gate that runs nowhere.
+
+**The edit is a move, not a diff:** copy
+`.github/workflows-pending/skill-gate.yml` to `.github/workflows/`. Read the
+pending lane's README first, because it states the two preconditions the file
+itself cannot: the gate exits non-zero on a skill whose eval has not been run,
+and no skill in the library has one yet, so applying this before the skill
+seat's suites and results merge makes every skill pull request red. The same
+arithmetic that keeps the validator out of `checks.yml` today (item 18's last
+paragraph) applies here, and the day it stops applying is the same day for
+both.
+
+Verified in this run's sandbox: `python3 tools/skill_gate.py --smoke` passes
+every clause, and `tests/test_skill_gate.py` is in the 976.
 
 ## Not queued here, because it needs a key rather than a hand
 

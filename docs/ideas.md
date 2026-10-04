@@ -8356,6 +8356,16 @@ graphs.
   `skill_eval.py` and not `skill_triggers.py`. The publication rule itself is
   still a line for ADR-36 and the owner's to write. **Status left as the owner
   found it**, since this seat does not move `proposed`.
+- 2026-10-04, later the same run: **this entry's trigger was wrong in one
+  sentence and it matters.** "Nothing in this repository writes that key" was
+  true of `main` and of every branch this chain sits on, and false of PR #153,
+  open from this seat since 2026-09-30, which writes it with a `--trigger` flag
+  and a version reader, and which eleven pull request descriptions have claimed
+  to supersede without containing a line of it. The two implementations are
+  merged in this pull request, function by function.
+  `INC-2026-10-04-supersession-dropped-the-branch-it-superseded` is the entry,
+  and the standing lesson is that `supersedes #N` is a claim about content that
+  `git log HEAD..origin/<branch>` settles in one command.
 - Cost: $0
 - Status: proposed
 
@@ -8496,12 +8506,14 @@ graphs.
 
 - Trigger: `tools/skill_triggers.py` has said since it was written that
   `tests/test_skill_triggers.py` asserts the one property that keeps its
-  maintenance lines out of distill's fetch drain. That file did not exist
-  (INC-2026-10-04-named-test-file-never-written, written in this run). It is
-  the fifth sighting in a week of a file claiming a check it does not have,
-  after the markdown suite, the panel reviewer, the receipts step and the eval
-  harness's own `--check`. Four of the five would have been caught by reading
-  the sentence and then looking.
+  maintenance lines out of distill's fetch drain. That file was not in the
+  working tree, so this run wrote it; it turned out to exist on PR #153's
+  branch, unmerged for five days
+  (INC-2026-10-04-supersession-dropped-the-branch-it-superseded). Four earlier
+  sightings this week were the plain form, where the named check does not exist
+  anywhere: the markdown suite, the panel reviewer, the receipts step and the
+  eval harness's own `--check`. All five would have been caught by reading the
+  sentence and then looking.
 - What: one test, no model and no network, that collects every repository path
   named in any docstring, comment or markdown file under `tools/`, `pipeline/`,
   `tests/`, `prompts/` and `docs/product/`, and asserts the path exists. The

@@ -6927,54 +6927,98 @@ must not turn a build red). Both branches of that step were verified in this
 run: exit 0 on the library as it stands, exit 1 with one real non-conformant
 suite dropped into `skills/`.
 
-## INC-2026-10-04-named-test-file-never-written — a module named the test file holding its one dangerous property, the file did not exist, and the property was false (2026-10-04, engineer seat, second window)
+## INC-2026-10-04-supersession-dropped-the-branch-it-superseded — eleven pull requests said they superseded #153 and none of them contained it, so two seats-of-one-seat built the same feature twice (2026-10-04, engineer seat, second window)
 
-**Observed** 2026-10-04 by the engineer seat, writing the file.
+**Observed** 2026-10-04 by the engineer seat, in the second window, running
+L-E10's survey late.
 
-**Fifth sighting of the shape** `INC-2026-10-02-markdown-suite-claims-a-ci-
-step-it-never-had` named first, after `INC-2026-10-03-panel-reviewer-claims-a-
-ci-step-it-never-had`, `INC-2026-09-29-receipts-step-had-no-paths` and
-`INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had` earlier the same
-day. It is also a repeat of `INC-2026-09-29-gate-unit-three-more`, and it is the
-first instance where the two shapes are the same event.
+**What happened.** PR #153 has been open since 2026-09-30, from this seat, and
+holds 2,245 lines: `tools/skill_gate.py`, `tools/ban_list.py`, a 413-line
+`tests/test_skill_triggers.py`, `tests/test_skill_gate.py`, the queued gate
+workflow, the daily job's four-trigger step, the claim-status snapshot, and an
+append-only `history` writer for `evals/results.json` with a `--trigger` flag
+and a `skill_version` reader.
 
-**What happened.** `tools/skill_triggers.py`, 851 lines, carries this sentence
-in its module docstring: "`tests/test_skill_triggers.py` asserts that every line
-this module can produce parses as zero papers to fetch." There was no
-`tests/test_skill_triggers.py`. The module had no pytest file at all.
+Every engineer PR since has carried a line of the form "supersedes #182, #181,
+#178, #176, #172, #170, #166, #158, **#153**, #149, #142, #141". None of them
+contained #153's work. The chain branched from a commit that had part of that
+branch and not the rest, and the supersession list was assembled from the
+previous description rather than from a diff.
 
-The property is real and it matters. `pipeline/reading_queue.py` reads any
-`arxiv:<id>` in a queue line as a request to fetch that paper and puts it at the
-front of distill's drain, so a maintenance line about a paper the corpus already
-holds would spend the drain re-fetching it. The module defends it in
-`paper_reference`, which names a paper by title and url.
+**What it cost, concretely.** This morning's window read the repository, found
+that `tools/skill_triggers.py` reads a `history` key nothing writes, filed it as
+a ledger entry, and this window built it: an append-only writer, a version
+reader, the gate comparison, 95 tests. All of it already existed on #153, in a
+form that agreed with this one almost line for line, including the choice to
+synthesise one entry from a pre-history document. Two builds of one feature by
+one seat, five days apart, because the survey the law requires was run with the
+wrong search string (`git log --all -S "suite_version"`) and `gh pr list --head`
+was never run.
 
-**The half that was worse than the missing file.** The assertion did exist,
-inside `--smoke`, which no workflow runs. And it was written at the wrong unit:
-it checks the lines the four callers that exist today produce, not the channel
-every line passes through. Written at the channel it is false. The evidence of a
-`deprecated` or a `refines` record interpolates claim text and paper titles
-straight out of the corpus, so one claim whose sentence quotes an arXiv id
-queues a fetch. That input is a database row, not a hypothetical. The new file's
-`test_a_claim_whose_own_text_quotes_a_paper_id_does_not_queue_a_fetch` fails
-without the fix.
+The second cost is the one that would have shipped. Had the owner merged this
+chain and closed #153 on the strength of the word "supersedes", the gate, the
+ban list, three of the four staleness triggers in the daily job, and the
+claim-status snapshot would have been deleted without anyone reading them.
+
+**Fixed in this PR.** #153's branch is merged into this one, both
+implementations reconciled function by function, and the daily job now runs the
+three reviewers and then all four triggers inside one connection. The merge
+itself introduced one defect that a test caught immediately: the two sides named
+the same read `previous` and `previous_doc`, so the appended history was always
+empty.
+
+**The lesson worth carrying past this instance.** Three rules, and the third is
+new.
+
+1. `supersedes #N` is a claim about content, so it is checked with
+   `git log HEAD..origin/<that branch>` and never by copying the previous
+   description's list. An empty output is the only thing that licenses the word.
+2. L-E10's survey is `gh pr list --state open --head <your own seat's prefix>`
+   before it is anything else. A string search over `git log` finds the words
+   you already know; the branch list finds the work you do not.
+3. A supersession list that grows by one entry per day is itself the signal.
+   Eleven numbers in one line means eleven unreviewed branches, and no one
+   reading that line can tell which of them are actually inside it.
+
+## INC-2026-10-04-the-property-was-checked-at-the-wrong-unit — a module's one safety invariant was asserted against four specimens, and it was false for the channel they share (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, writing a second copy of
+`tests/test_skill_triggers.py` without knowing the first existed (see the entry
+above).
+
+**Repeat of `INC-2026-09-29-gate-unit-three-more`**, which is itself a repeat of
+`INC-2026-09-27-gate-unit-is-the-line`. Recorded because the standing rule at
+the top of this file leaves no judgment call.
+
+**What happened.** `pipeline/reading_queue.py` reads any `arxiv:<id>` in a
+checklist line as a request to fetch that paper and puts it at the front of
+distill's drain. `tools/skill_triggers.py` writes checklist lines, knows this,
+says so in its docstring, and defends it in `paper_reference`, which names a
+paper by title and url. Both the module's `--smoke` and #153's test file assert
+the property, and both assert it against the four specimen records the four
+current callers produce, whose inputs are clean.
+
+The property is about every line the module can produce. Written that way it is
+false: the evidence of a `deprecated` or a `refines` record interpolates claim
+text and paper titles straight out of the corpus, so one claim whose sentence
+quotes an arXiv id queues a re-fetch of a paper the corpus already holds. The
+input is a database row, not a hypothesis.
 
 **Fixed in this PR.** `record`, the one function every record is built by,
 defuses `arxiv:<id>` to `arXiv <id>`: the queue reader does not act on it and a
-person can still follow it. `tests/test_skill_triggers.py` now exists, 22 tests,
-no database and no model, and the docstring says what is true instead of what
-was intended.
+person can still follow it. Two tests fail without the fix, one on the reachable
+corpus path and one over every spelling the reader's own pattern matches.
 
 **The lesson worth carrying past this instance.** The register already holds the
 question that finds this class: name the unit the check inspects, name the unit
-the defect lives in, and say whether they are the same size. This instance adds
-the reason a demonstration cannot answer it. `--smoke` runs the callers that
-exist, so it is a sample of the inputs; the property is about every input. When
-a module names an invariant over everything it can produce, the check belongs at
-the chokepoint the producers share, and the enforcement belongs in the producer
-rather than in each caller. The second rule, cheaper still: a docstring that
-names a file is a claim, and `ls` settles it. Four of the five sightings of this
-shape would have been caught by reading the sentence and then looking.
+the defect lives in, and say whether they are the same size. What this instance
+adds is why a demonstration can never answer it. A smoke run exercises the
+callers that exist, so it samples the inputs; an invariant over everything the
+module can produce has to be enforced at the chokepoint the producers share, and
+tested with an input no current caller supplies. A second rule, cheaper: when a
+docstring names the file that holds a property, open the file. Here it existed
+on another branch, which is the entry above; four earlier sightings this week it
+did not exist at all.
 
 ## INC-2026-10-04-one-constant-for-two-documents — widening the dialect the harness reads silently changed the version number of the document it writes (2026-10-04, engineer seat, second window)
 
