@@ -77,6 +77,7 @@ this state and the row it was found in is below.
 | **Evidence from here reaches HQ** | exo writes, chair carries (hq-relay.md) | as incidents implicate a parent decision | weekly to write, unbounded to deliver | assigned 2026-09-24, with the delivery half outside any seat's control |
 | The daily pipeline's providers stay available | **none** | continuous, three failures in five days | n/a | **unowned**, see below |
 | **A skill's measured effect** | skill (the bar section, added 2026-09-30) | per skill shipped or revised, 6 in 18 days | weekly Tue | **capability gap, found 2026-09-30**: the seat has no `GROQ_API_KEY` and the benchmark subject has no provider route at all, see below |
+| **The organization's finished work reaches `main`** | pm (§4 queue gauge, added 2026-10-04) | continuous, 49 pull requests in 112 hours | daily standup | **was unowned until 2026-10-04**, assigned here, see below |
 
 ## The 2026-09-21 rows, and the state that is worse than unowned
 
@@ -683,3 +684,61 @@ runs and has not been triggered yet.
 So the state is `capability gap`, and it stays that way until the key lands
 and the route exists. Not until they are queued. The 2026-09-27 audit made
 that distinction and it holds here.
+
+
+## The 2026-10-04 row
+
+### The organization's finished work reaches `main`, which no charter had a word for
+
+**Found by the §3b grep, exactly as the method prescribes.** Take something
+the org plainly depends on, grep every charter for the words that duty
+would have to use, and read the hits. Here there were no hits at all:
+
+```bash
+grep -ril "merge queue"      prompts/*.md   # nothing
+grep -ril "queue depth"      prompts/*.md   # nothing
+grep -ril "nothing has merged" prompts/*.md # nothing
+grep -ril "main is green"    prompts/*.md   # nothing
+```
+
+Absence of the vocabulary is the finding, and this is the cleanest instance
+the register has recorded. Twelve charters, roughly nine thousand lines of
+them, and not one word for the step on which every other word depends.
+
+**What it cost, and the full account is
+`INC-2026-10-04-four-days-of-output-and-no-delivery`.** Between 2026-09-30
+and 2026-10-04 the org opened 49 pull requests and merged one. `main` was
+red for ten days with the fix sitting in an open pull request. The dispatch
+system was deadlocked because every dispatchable seat held an open pull
+request, which is what §5's hard stop forbids. Every charter edit written
+on 2026-09-30 to fix this was itself inert, because the workflows feed each
+seat the charter on `main`. Four public claims on the site name mechanisms
+that are, in `quality-claims.md`'s own words, on unmerged branches.
+
+**Why the PM and not this seat.** Three tests, in the order §3b puts them.
+
+- **Wording.** The PM already comes closest: "unmerged PRs waiting on the
+  owner are a finding, not a complaint." The words existed and the
+  measurement did not, because the charter asked for each pull request's
+  age and the defect is an aggregate. The 2026-10-04 standup reported five
+  stacked pull requests, all its own, and never the other forty-five.
+  Fixed by naming four numbers rather than a sentiment.
+- **Cadence.** The duty's trigger is continuous and the PM's cron is daily,
+  which is the fastest in the org. This seat runs weekly, so holding it
+  here would have been the cadence gap §3b was written to catch, and the
+  register has made that mistake before on "runs that fail get reported".
+- **Capability.** The evidence is `gh pr list` and `gh run list`. The PM's
+  workflow already holds what both need. No secret, so no capability gap.
+
+**And the duty this seat keeps.** Auditing that the row is performed, which
+is this section, and never performing it, for the §3c reason: a seat cannot
+audit itself, and the one measurement that would have caught this must not
+live inside the only seat whose failures nobody reviews.
+
+**What is still not owned, and it is not assignable here.** Acting on the
+number. The PM can report that nothing has merged for five days and cannot
+merge anything, correctly, under its own charter and under the owner's
+gate. HQ decision 041 gives the PM seat Tier B merges and it reached this
+repository as PR #147 on 2026-09-30, where it remains open. Until it
+merges, this row buys visibility and not throughput, and saying so is part
+of the row rather than a caveat on it.
