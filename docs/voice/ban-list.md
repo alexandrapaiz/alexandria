@@ -24,8 +24,24 @@ the thirty-five entries carrying that ending, one quotes the text that landed
 and thirty-four describe it, so checking them is a close reading of the
 generator rather than a command, and nothing re-runs a close reading. All
 thirty-four are intact today and that is luck, not a gate. So where the change
-is a sentence, the ending QUOTES it, and a later run checks the whole register
-with one loop. Where the change is a gate rather than a sentence, the ending
+is a sentence, the ending QUOTES it on its own line, in this exact form:
+
+```
+LANDED prompts/digest.md: "the exact text that is now in that file"
+```
+
+`docs/voice/check_voice.py enforcements` verifies every such line against the
+named file, matching on normalised whitespace because every file in this
+register wraps its prose, and exits non-zero when one is gone. Nine entries
+carry one as of 2026-10-04 and twenty-nine do not, so the ratio is printed
+every run and is meant to climb. Seed the convention on the entries a run
+touches rather than backfilling all of them at once, because a LANDED line
+asserted without checking the generator is worse than the prose it replaced.
+The quote goes on its own line and not loose in the sentence, because the
+obvious heuristic does not work: a string quoted near the word "Enforced" is as
+often the BANNED specimen as the landed repair, and entry 46 quotes two banned
+labels in exactly that position. A check that cannot tell a ban from a fix
+reports the ban as a pass. Where the change is a gate rather than a sentence, the ending
 names the gate and the step inside it, which is entry 51's own correction of
 2026-09-27 promoted from a remark inside one entry to a rule over all of them:
 "An enforcement ending has to name the gate the defect would pass through, not
@@ -569,6 +585,7 @@ gap that the same collision had left empty (incident 25).
     prompts/digest.md now counts the term the reader meets rather than the
     term the writer defined, and gives the join to write when the sources
     force both words.
+    LANDED prompts/digest.md: "the smaller count is the one to delete"
 55. The greeting that narrates the reader's week. Entry 45 is the opening
     billed to a reader who was not there, and its tell is a pointer at a
     previous issue. This is the same charge with the pointer removed. The
@@ -808,6 +825,7 @@ gap that the same collision had left empty (incident 25).
     Enforced the same day: the sentence now says "the two measures do not
     match", and the rule under it names the class, which is every word the file
     uses for the pipeline and every word it uses for its own checks.
+    LANDED prompts/digest.md: "the two measures do not match"
 67. The promise the issue does not keep. Entry 23 is the issue that never says
     what is in it, and this is the opposite failure by the same measure. The
     contents line of 2026-09-28 named three findings. Its second one, "a memory
@@ -1185,6 +1203,7 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-01. Enforced the same day: the title's own nouns are a
     closed list, checked first and on their own, with the clause required in
     the title's sentence or the opening's first sentence and nowhere later.
+    LANDED prompts/digest.md: "Start with the title, because it is a closed list"
 
 82. The nickname that arrives with "the". The owner's ruling of 2026-09-19
     named this pair in her own words, that nicknames printed "before anyone
@@ -1207,6 +1226,7 @@ gap that the same collision had left empty (incident 25).
     Added 2026-10-01. Enforced the same day: the role nouns get their own
     paragraph inside the first-use pass and the check is on the article, with
     naming the thing in that sentence or dropping the nickname as the two fixes.
+    LANDED prompts/digest.md: "the role nouns have their own tell, and the tell is the article"
 
 83. The general sentence over the particular number. The claims pass has four
     questions. Three compare one number against another and the fourth compares
@@ -1266,6 +1286,7 @@ gap that the same collision had left empty (incident 25).
     step loses both punctuation-shaped halves in favour of one positional
     unit, any run of bold or italic that BEGINS a line, whatever punctuates
     it and whether or not the line continues.
+    LANDED prompts/digest.md: "any run of bold or italic text that BEGINS a line"
 
 85. The hour recommended with nothing behind it, in the one slot whose format
     had no room for a grade. In-line evidence grades are house law in
@@ -1294,6 +1315,7 @@ gap that the same collision had left empty (incident 25).
     rule is restated there too, because the same print set its picks as
     bolded short names and one of them as a bare acronym where the paper's
     title goes.
+    LANDED prompts/digest.md: "The title is the paper's own title, in italic"
 
 86. The posture kept by deleting the verb. A rule written against a class of
     words is obeyed by writing the same thing without any word from that
@@ -1322,6 +1344,7 @@ gap that the same collision had left empty (incident 25).
     paper arriving inside the sentence rather than at the front of it. The
     frame ban in the same slot is also stated to bind its heading, because
     the sentence banned on the entries printed in the heading instead.
+    LANDED prompts/digest.md: "What are the first words of the line ABOUT"
 
 87. The law graded by grep, and the violation that used the synonym. A law
     written as a closed set of exact strings gets enforced with a string
@@ -1441,6 +1464,7 @@ gap that the same collision had left empty (incident 25).
     non-ASCII census in the voice section, a row-and-paper count in the
     new-work slot, a quoted triage note in the reading list, and a payload
     count beside "the newest print" in the replacement above.
+    LANDED prompts/digest.md: "This file does not know how many you have or how big they are"
 90. The class named and not swept. Entry 89 is the specific defect. This is
     what the run that found it did with it, and the shape is general enough to
     bind every entry in this file from here on.
@@ -1482,6 +1506,7 @@ gap that the same collision had left empty (incident 25).
     inside entry 89's repair are struck in `prompts/digest.md`, and the sweep
     with its command is written into entry 89's own ending and into pass 4 of
     the canon's grading procedure, where the ban list is read.
+    LANDED prompts/digest.md: "This file does not know how many papers are under your rows"
 91. The measurement carried forward from the wrong artifact. Not a sentence in
     an issue. A number in the instrument that grades them, which is worse,
     because a figure in a review is the only thing a later run inherits without
@@ -1554,7 +1579,17 @@ gap that the same collision had left empty (incident 25).
     reading. Where the change is a gate rather than a sentence, the ending
     names the gate and the step inside it, which is entry 51's correction
     promoted to law.
-    Added 2026-10-04. Enforced the same day: the standing rule at the top of
-    this file carries the requirement and entry 51's correction is cited there
-    as its source. The checker is nine lines and it is in the review of
-    2026-10-04 so the next run can re-run it rather than rebuild it.
+    Added 2026-10-04. Enforced the same day as a command rather than a
+    sentence, which is `L-A22` and is the only ending this entry could honestly
+    carry: `docs/voice/check_voice.py enforcements`. The standing rule at the
+    top of this file defines the `LANDED` line the command checks, cites entry
+    51's correction as its source, and says to seed the convention on the
+    entries a run touches rather than backfilling thirty-four assertions
+    nobody verified. Nine entries carry a checked line today.
+    Tested against a known failure before being trusted, per `L-A21`: entry
+    84's landed text was reworded in a scratch copy of the generator and the
+    command reported `FAIL entry 84 (not in file)` and exited 1.
+    What is NOT enforced, said plainly because `L-A22` requires it: nothing
+    calls this command. Until a command that already runs does, this entry and
+    the two before it are enforced at the reliability of someone choosing to
+    type it. Filed in docs/ideas.md for the engineer.

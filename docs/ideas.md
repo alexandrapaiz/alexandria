@@ -7900,3 +7900,48 @@ graphs.
   is the same class at the same source and should be fixed in one pass with
   this one. The masthead filing of 2026-09-20, now on its third restatement.
 - Status: proposed
+
+### 2026-10-04 — Three editorial checks now exist as a command and nothing calls it, which is the same wiring gap the registers checker has sat in for a week (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-04, applying `L-A22` from
+  docs/standards/lessons.md to its own output. That standard says a rule
+  enforced by a sentence in a register is enforced at the reliability of a
+  model reading a file, that writing a failed rule more clearly is not the fix,
+  and that the fix is a check in a command that already runs. This seat had
+  written thirty-four such sentences into the ban list before noticing the
+  standard applied to it.
+- What now exists: `docs/voice/check_voice.py`, with three checks, each
+  replacing a prose rule that run would otherwise have written.
+  `enforcements` verifies every ban-list entry's `LANDED <path>: "text"` line
+  against the named file, matching on normalised whitespace because every file
+  in that register wraps its prose. `stale` runs ban list 89's own tell over
+  `prompts/digest.md`, which is the command that found three live defects the
+  entry's author had missed. `measure` prints the character and paragraph
+  census per path, so a grade cannot share one figure between two artifacts,
+  which is `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`.
+  Exit code is 1 on any finding. Tested against a known failure per `L-A21`
+  before being trusted, and the test is recorded in ban list 92.
+- What is needed, and it is one line: `.github/workflows/checks.yml` does not
+  call it. The same file does not call `tools/check_registers.py`, which has
+  been finding nine live conflict markers for seven days, and it invokes pytest
+  nine times naming every test file by hand, so any file added later is
+  invisible to CI until somebody adds a line. Three separate findings now wait
+  on the same edit to the same file. Wiring the two checkers in, and replacing
+  the hand-listed pytest invocations with one that discovers test files, fixes
+  this class rather than these instances.
+- Where it should live: `tools/`, beside `check_registers.py`. It is in
+  `docs/voice/` because that is this seat's writable surface and `tools/` is
+  not, and a checker nobody can run because its author could not reach the
+  right directory is the failure this whole entry is about. Moving it is a
+  rename and the module has no imports outside the standard library.
+- Honest limit: `stale` cannot decide its own hits. The tell catches both a
+  claim about the generator's past OUTPUT, which is legitimate evidence for a
+  rule and stays, and a claim about its INPUT, which is false by the next
+  morning. It prints the hits and the distinction and a person reads them. That
+  is a narrower gate than it looks and the entry says so rather than claiming
+  otherwise.
+- Related: the 2026-10-03 filing on the registers map, which needs the same
+  one-line edit and has the prior claim on it. The earlier incident's own
+  closing note says wiring `checks.yml` needs a `workflows` permission the
+  filing seat did not have, and this seat does not have it either.
+- Status: proposed
