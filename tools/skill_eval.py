@@ -352,6 +352,29 @@ CHECK_TYPES = {"contains_all", "contains_none", "number_in_range",
 #   check.type: parses    parses, a deterministic gate plus judged assertions
 #   check.type: tests_pass  tests_pass, an exit code
 #   check.type: number_in_range  the judge extracts, the range is arithmetic
+#   subject_model (top level)    policy.subject, when it is a model id
+#   judge (top level)            policy.judge, when it is a model id
+#
+# The last two rows are a mapping and not a rename, because the skill seat's
+# own contract document (skills/_validation/evals/README.md) describes those
+# two fields in prose and every suite written against it fills them in prose:
+# `"subject_model": "kimi (ADR-32 funded account) by default; a Claude run is
+# the monthly OKR benchmark"`. That sentence is documentation. Dialling it into
+# the slot a model id goes in would send an English sentence to the provider,
+# and `skill_triggers.subject_for` would print it on the library page as the
+# model a skill was measured on. So the lift happens only when the value could
+# be a model id at all, and the prose is kept where a reader can still see it.
+
+
+def looks_like_a_model_id(value) -> bool:
+    """Could this string be sent to a provider as a model name.
+
+    Deliberately crude, and crude in the safe direction: a model id has no
+    spaces, and a sentence does. Anything this returns False for is prose, and
+    prose is kept as documentation rather than dialled.
+    """
+    return isinstance(value, str) and bool(value.strip()) and \
+        not any(c.isspace() for c in value.strip())
 
 
 def normalize(spec: dict) -> dict:
@@ -359,7 +382,24 @@ def normalize(spec: dict) -> dict:
     out = dict(spec)
     out["contract"] = spec.get("contract", spec.get("suite_version"))
     policy = dict(spec.get("policy") or {})
-    policy.setdefault("repetitions", DEFAULT_REPS)
+    for top, key in (("subject_model", "subject"), ("judge", "judge")):
+        value = spec.get(top)
+        if value is None or policy.get(key) is not None \
+                or policy.get(key + "_described") is not None:
+            continue
+        if looks_like_a_model_id(value):
+            policy[key] = value.strip()
+        else:
+            policy[key + "_described"] = value
+    # No `policy.setdefault("repetitions", DEFAULT_REPS)`. It was here until
+    # 2026-10-04 and it is the reason `conformance`'s rule-1 check below could
+    # never fail: every suite arrived at the check with a repetitions count,
+    # because this line had just written one. Rule 1 of
+    # docs/product/skill-validation.md section V5 is that the policy is
+    # pre-registered, so the one thing this function must not do is supply a
+    # number the author did not. `DEFAULT_REPS` is still the default the CLI's
+    # `--reps` documents and the number a suite should copy; it is no longer a
+    # number a run can acquire by saying nothing.
     out["policy"] = policy
     tasks = []
     for raw in spec.get("tasks") or []:
@@ -385,6 +425,32 @@ def normalize(spec: dict) -> dict:
     return out
 
 
+def unknown_models(policy: dict, slug: str) -> list[str]:
+    """A registered model id this organization cannot call is not runnable.
+
+    `pipeline/budget.py`'s table is the one list of models the crons may use,
+    it is a dict in a file, and reading it costs no key and no dollar. So a
+    typo or a prose placeholder in `policy.subject` is catchable by `--check`
+    rather than at call time, three minutes and part of a cap into a run.
+    """
+    if not isinstance(policy, dict):
+        return []
+    try:
+        import budget
+    except Exception:                               # pragma: no cover
+        return []
+    out = []
+    for key in ("subject", "judge"):
+        name = policy.get(key)
+        if name is None:
+            continue
+        if not looks_like_a_model_id(name) or name not in budget.MODELS:
+            out.append(f"{slug}: policy.{key} is {name!r}, which is not a "
+                       "model in pipeline/budget.py's table, so no run can "
+                       "send it anywhere")
+    return out
+
+
 def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
     """Everything wrong with one `tasks.json`. Empty means it can be run.
 
@@ -392,17 +458,24 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
     without a key, a model or a dollar.
     """
     problems = []
-    if spec.get("contract") != CONTRACT:
+    if spec.get("contract") not in CONTRACTS:
         problems.append(f"{slug}: contract is {spec.get('contract')!r}, this "
-                        f"harness speaks {CONTRACT}")
+                        f"harness speaks "
+                        f"{' and '.join(str(c) for c in CONTRACTS)}")
     if spec.get("skill") != slug:
         problems.append(f"{slug}: the file says skill {spec.get('skill')!r}")
     policy = spec.get("policy") or {}
     if not isinstance(policy, dict) or "repetitions" not in policy:
-        problems.append(f"{slug}: policy.repetitions is not pre-registered, so "
-                        "the run would choose its own n. Rule 1.")
+        problems.append(
+            f"{slug}: policy.repetitions is not pre-registered, so the run "
+            f'would choose its own n. Rule 1. Add `"policy": '
+            f'{{"repetitions": {DEFAULT_REPS}, "subject": "{DEFAULT_SUBJECT}", '
+            f'"judge": "{DEFAULT_JUDGE}", "min_delta": 0.2}}` to the file and '
+            "pick the numbers deliberately, because a threshold chosen after "
+            "the delta is not a threshold.")
     if policy.get("subject") and policy.get("subject") == policy.get("judge"):
         problems.append(f"{slug}: the subject and the judge are the same model")
+    problems += unknown_models(policy, slug)
 
     tasks = spec.get("tasks")
     if not isinstance(tasks, list) or not tasks:
@@ -1221,6 +1294,16 @@ def main(argv=None) -> int:
     policy = spec.get("policy") or {}
     subject_model = args.subject or policy.get("subject") or DEFAULT_SUBJECT
     judge_model = args.judge or policy.get("judge") or DEFAULT_JUDGE
+    # A suite that described its models in prose instead of registering them
+    # has not chosen them, and this run has. Say which, rather than printing a
+    # model id that looks pre-registered because it is printed next to one.
+    for key, described, used in (("subject", "subject_described", subject_model),
+                                 ("judge", "judge_described", judge_model)):
+        if policy.get(described) and not policy.get(key):
+            print(f"note: the suite describes its {key} in prose "
+                  f"({policy[described]!r}) and registers none, so this run "
+                  f"chose {used}. The result records what ran, and rule 1 "
+                  f"wants `policy.{key}` to be the model id itself.")
     reps = args.reps or int(policy.get("repetitions") or DEFAULT_REPS)
     if args.reps:
         print(f"note: repetitions overridden to {reps}; the file registered "
