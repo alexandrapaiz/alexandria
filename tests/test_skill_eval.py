@@ -503,24 +503,84 @@ def fixture_suite():
     return ev.normalize(json.loads((FIXTURE / "evals.json").read_text()))
 
 
-def test_the_skill_seat_s_vocabulary_is_read_without_a_single_problem():
+def test_the_skill_seat_s_vocabulary_leaves_one_problem_and_it_is_rule_one():
     """The suites were written in a different vocabulary than this harness proposed.
 
-    The skill seat wrote six suites under `evals/evals.json` on 2026-09-30, in the
+    The skill seat wrote its suites under `evals/evals.json` on 2026-09-30, in the
     same window this harness was written, with `suite_version` for `contract`,
     `kind: treatment|control`, `form` for `kind`, `prompt` for `ask`, and rubric
     criteria carrying 0/1/2 anchors. `normalize` is the one place the two meet.
-    This fixture holds one task of every form and check type those six use.
+    This fixture holds one task of every form and check type they use.
+
+    It asserted zero problems until 2026-10-04 and passed, on a fixture that
+    said `suite_version: 1`. Every one of the eight real files says 2. The
+    version was the single field where the two vocabularies did not meet, and
+    it was the one field this fixture did not copy, so the test that existed to
+    prove the reader speaks the suites' language was passing because the one
+    sentence of that language it got wrong was the one under test.
+
+    One problem is left, on all eight real files and on this one: no `policy`
+    block, so the repetitions and the threshold rule 1 asks the author to
+    pre-register are not in the file. That is not a problem the reader may
+    solve, which is the subject of the next test.
     """
     spec = fixture_suite()
-    assert ev.conformance(spec, "fixture-skill", FIXTURE) == []
-    assert spec["contract"] == ev.CONTRACT
+    problems = ev.conformance(spec, "fixture-skill", FIXTURE)
+    assert len(problems) == 1 and "policy.repetitions" in problems[0], problems
+    assert spec["contract"] == 2 and spec["contract"] in ev.CONTRACTS
     ids = {t["id"] for t in spec["tasks"]}
     assert ids == {"fx-t1", "fx-t2", "fx-t3", "fx-t4", "fx-c1", "fx-c2"}
     controls = {t["id"] for t in spec["tasks"] if t.get("control")}
     assert controls == {"fx-c1", "fx-c2"}
     rubrics = {t["id"] for t in spec["tasks"] if t.get("rubric")}
     assert rubrics == {"fx-t1", "fx-c2"}
+
+
+def test_one_policy_block_is_the_whole_fix_for_a_real_suite():
+    """Measured against the eight real files, not asserted: adding the block
+    the error message prints is the only edit any of them needs."""
+    raw = json.loads((FIXTURE / "evals.json").read_text())
+    raw["policy"] = {"repetitions": 3, "subject": ev.DEFAULT_SUBJECT,
+                     "judge": ev.DEFAULT_JUDGE, "min_delta": 0.2}
+    assert ev.conformance(ev.normalize(raw), "fixture-skill", FIXTURE) == []
+
+
+def test_a_prose_model_field_is_kept_as_prose_and_never_dialled():
+    """The two top-level model fields are sentences in every real suite.
+
+    `"subject_model": "kimi (ADR-32 funded account) by default; a Claude run is
+    the monthly OKR benchmark"` is documentation. Lifting it into
+    `policy.subject` verbatim, which is what the obvious reading of the
+    2026-10-03 ledger entry asks for, would send that sentence to a provider as
+    a model name and would publish it on the library page as the model a skill
+    was measured on, through `skill_triggers.subject_for`.
+    """
+    policy = fixture_suite()["policy"]
+    assert "subject" not in policy and "judge" not in policy
+    assert policy["subject_described"].startswith("kimi (ADR-32")
+    assert policy["judge_described"].startswith("a model other than")
+
+
+def test_a_model_id_at_the_top_level_is_lifted():
+    """The same fields filled in the way the contract document's example shows."""
+    raw = json.loads((FIXTURE / "evals.json").read_text())
+    raw["subject_model"] = ev.DEFAULT_SUBJECT
+    raw["judge"] = ev.DEFAULT_JUDGE
+    policy = ev.normalize(raw)["policy"]
+    assert policy["subject"] == ev.DEFAULT_SUBJECT
+    assert policy["judge"] == ev.DEFAULT_JUDGE
+    assert "subject_described" not in policy
+
+
+def test_a_registered_model_outside_the_budget_table_is_not_runnable():
+    """A typo costs $0 to catch here and three minutes of a cap to catch live."""
+    raw = json.loads((FIXTURE / "evals.json").read_text())
+    raw["policy"] = {"repetitions": 3, "subject": "kimi-k2.5",
+                     "judge": ev.DEFAULT_JUDGE, "min_delta": 0.2}
+    problems = ev.conformance(ev.normalize(raw), "fixture-skill", FIXTURE)
+    assert len(problems) == 1
+    assert "policy.subject is 'kimi-k2.5'" in problems[0]
+    assert "pipeline/budget.py" in problems[0]
 
 
 def test_normalize_is_idempotent():

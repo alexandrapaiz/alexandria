@@ -516,17 +516,27 @@ def test_a_suite_the_harness_would_refuse_to_run_fails(tmp_path):
     """`conformance` is the harness's answer to "is this file runnable", and
     the reviewer reads it rather than keeping a second opinion.
 
-    This is live, not hypothetical. The three open skill-seat pull requests
-    that carry eight `evals/evals.json` files each write `suite_version: 2`,
-    and the harness speaks contract 1.
+    The refusal tested here used to be `suite_version: 2`, which is the number
+    every real suite carries. The harness accepts 1 and 2 since 2026-10-04, so
+    the case is now a version nobody writes, and the live case moved to
+    `test_the_skill_seat_s_real_suite_shape_is_reported_the_way_it_is` below.
     """
     suite = suite_for()
-    suite["contract"] = 2
+    suite["contract"] = 99
     v = verdict(tmp_path, suite=suite, result=gained())
     finding = checks(v, "suite-runnable")[0]
     assert finding["severity"] == "fail"
-    assert "contract is 2" in finding["detail"]
+    assert "contract is 99" in finding["detail"]
     assert v["verdict"] == "fail"
+
+
+def test_the_version_every_real_suite_carries_is_not_a_refusal(tmp_path):
+    """The eight suites on #151, #152 and #159 all say `suite_version: 2`."""
+    suite = suite_for()
+    suite["contract"] = 2
+    v = verdict(tmp_path, suite=suite, result=gained())
+    assert checks(v, "suite-runnable") == [], (
+        "the version the suites are written in is not a reason to refuse them")
 
 
 def test_the_skill_seat_s_real_suite_shape_is_reported_the_way_it_is(tmp_path):
@@ -547,7 +557,12 @@ def test_the_skill_seat_s_real_suite_shape_is_reported_the_way_it_is(tmp_path):
     v = verdict(tmp_path, suite=suite, result=gained())
 
     runnable = checks(v, "suite-runnable")
-    assert any("contract is 2" in f["detail"] for f in runnable)
+    assert not any("contract" in f["detail"] for f in runnable), (
+        "the harness speaks this suite's version, so the version is not the "
+        "finding")
+    assert len(runnable) == 1 and "policy.repetitions" in runnable[0]["detail"], (
+        "one problem is left on the real shape and it is the one line the "
+        "author writes")
 
     registration = checks(v, "trial-pre-registered")
     assert len(registration) == 1, "one cause, one finding"
@@ -570,24 +585,32 @@ def test_a_missing_key_and_an_edited_key_are_two_different_findings(tmp_path):
     assert any("repetitions: the run used 5" in d for d in details)
 
 
-def test_the_registration_check_reads_the_raw_suite_and_not_the_default(tmp_path):
-    """`skill_eval.normalize` invents a repetitions default.
+def test_neither_reviewer_nor_harness_invents_the_repetitions(tmp_path):
+    """`normalize` supplied a repetitions default until 2026-10-04.
 
-    A check reading the normalized suite would find a repetitions value on
+    This check read the raw suite to get around that, and the docstring said
+    why: a check reading the normalized suite would find a repetitions value on
     every file in the library and report every one of them as compliant with
-    the rule they break, which is the quietest possible way for this gate to
-    be useless.
+    the rule they break. That was the quietest possible way for a gate to be
+    useless, and `skill_eval.conformance` was in exactly that state, because it
+    is handed the normalized suite and has no raw one to read.
+
+    Both halves are asserted here. Reading raw still works, and there is no
+    longer a default to read around.
     """
     import skill_eval as ev
     suite = suite_for()
     del suite["policy"]["repetitions"]
-    assert ev.normalize(suite)["policy"]["repetitions"], (
-        "normalize stopped defaulting, so this test is testing nothing"
-    )
+    assert "repetitions" not in ev.normalize(suite)["policy"], (
+        "a number the author did not write is a number the run chose")
     v = verdict(tmp_path, suite=suite, result=gained())
     assert any("repetitions" in f["detail"]
                for f in checks(v, "trial-pre-registered")
                if f["severity"] == "fail")
+    assert any("repetitions" in f["detail"]
+               for f in checks(v, "suite-runnable")
+               if f["severity"] == "fail"), (
+        "and the harness refuses to run it, which is the half that was dead")
 
 
 def test_a_result_with_no_suite_cannot_have_its_registration_checked(tmp_path):

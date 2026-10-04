@@ -1,9 +1,11 @@
 {
   "skill": "fixture-skill",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "engineer seat, mirroring the skill seat's shape exactly",
-  "note": "One task of every form and every check type the skill seat's six real suites use, so this harness's reader is tested against that vocabulary rather than against its own. Copied in shape, not in content, from skills/<slug>/evals/evals.json on branch skill/2026-09-30-skill-evals.",
+  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+  "judge": "a model other than the subject; rubric tasks only",
+  "note": "One task of every form and every check type the skill seat's real suites use, so this harness's reader is tested against that vocabulary rather than against its own. Copied in shape, not in content, from skills/<slug>/evals/evals.json. Three fields were corrected on 2026-10-04 after reading the eight real files on PRs #151, #152 and #159: every one of them says suite_version 2 and this fixture said 1, which was the one field where the two vocabularies do not meet and the one the test here asserted agreement on. The two model fields are prose in every real file, because the skill seat's contract document describes them in prose, and no real file carries a policy block at all.",
   "tasks": [
     {
       "id": "fx-t1",
