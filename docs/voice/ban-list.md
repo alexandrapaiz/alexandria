@@ -19,6 +19,29 @@ findings from that grade into the generator, and neither of them reached it.
 A tell that only gets written down is a tell the next issue is free to
 commit.
 
+**The second ending is quoted, not described (writer seat, 2026-10-04).** Of
+the thirty-five entries carrying that ending, one quotes the text that landed
+and thirty-four describe it, so checking them is a close reading of the
+generator rather than a command, and nothing re-runs a close reading. All
+thirty-four are intact today and that is luck, not a gate. So where the change
+is a sentence, the ending QUOTES it, and a later run checks the whole register
+with one loop. Where the change is a gate rather than a sentence, the ending
+names the gate and the step inside it, which is entry 51's own correction of
+2026-09-27 promoted from a remark inside one entry to a rule over all of them:
+"An enforcement ending has to name the gate the defect would pass through, not
+merely a place in the file where the rule is now written down." Entry 92 is why
+this paragraph exists.
+
+**An entry that names a class carries a sweep (writer seat, 2026-10-04).** The
+endings above are about whether a fix landed. This is about whether it landed
+everywhere. An entry is written from the one specimen the artifact happened to
+show, and the generator usually holds more. So where an entry's text
+generalises, run its own tell over the whole file, print the count in the
+review, and fix every hit in the same pull request or say why one stays. Where
+the tell is a command, the command goes in the entry. Entry 90 is why, and
+entry 89 is the evidence: it named the class, struck its two specimens, and
+left three more live where its own one-line grep would have found them.
+
 **A third ending, for the entry a prompt cannot reach (writer seat,
 2026-09-30).** Both endings above are written once and neither of them
 runs again. That is enough for an entry the generator can be taught,
@@ -1408,3 +1431,130 @@ gap that the same collision had left empty (incident 25).
     replaced by the question asked of the payload actually handed over, and
     the first replacement says in its own words that this file does not know
     how many movers there are or how big they are.
+    **The sweep, added 2026-10-04, which is what the entry above was missing
+    (entry 90).** The two sentences this entry was written from were struck and
+    the rest of the file was never checked for the class. The command is
+    `grep -n "today's\|of today\|the last issue\|the newest print"
+    prompts/digest.md`, and run it every grade until it comes back empty of
+    claims about the input. On 2026-10-04 it returned three live hits and a
+    fourth inside this entry's own repair, all four struck that day: a
+    non-ASCII census in the voice section, a row-and-paper count in the
+    new-work slot, a quoted triage note in the reading list, and a payload
+    count beside "the newest print" in the replacement above.
+90. The class named and not swept. Entry 89 is the specific defect. This is
+    what the run that found it did with it, and the shape is general enough to
+    bind every entry in this file from here on.
+    Entry 89 was added 2026-10-03 from two sentences in the traction slot of
+    `prompts/digest.md`. It is correct, it states its general tell well, and it
+    names the giveaway: "Any 'today', 'this week', 'all five', 'today's twelve'
+    in an instruction is either a rule stated as an observation or an
+    observation that has escaped into the rules." The entry then struck the two
+    sentences it had been written from, and nobody ran the entry's own giveaway
+    over the rest of the file. One command, the next morning:
+    `grep -n "today's\|of today" prompts/digest.md` returned three more. A
+    census of one past payload's non-ASCII characters, inside the rule that
+    forbids them. A row-and-paper count in the new-work slot, at a writing
+    position, pre-deciding how long the section runs. And a quoted triage note
+    from one day's `deep_reads`, printable verbatim, in the reading list. A
+    fourth sat inside entry 89's own repair, which named a payload count and
+    "the newest print", a referent that moves to the issue being written.
+    The tell is the asymmetry between how an entry is found and how it is
+    fixed. A defect is found in one specimen, because one specimen is what the
+    artifact showed. The fix is applied to that specimen, because that is what
+    the diff is for. Nothing in between asks the question the entry was just
+    taught to ask. An entry that names a CLASS and repairs an INSTANCE has
+    recorded a rule and left its own evidence lying around.
+    So an entry whose text generalises carries a third thing beside its
+    specimen and its enforcement: the sweep. Run the entry's own tell over the
+    generator, print the count in the review, and fix every hit in the same
+    pull request or say why a hit stays. Where the tell is a command, the
+    command goes in the entry so the next run can re-run it rather than
+    re-derive it. A count of one, written down, is also a result: it says the
+    class has one member and the entry is closed.
+    The boundary, because over-correcting this is the obvious next failure. A
+    claim about the file's past OUTPUT is evidence for a rule and stays: "the
+    last issue printed this file's example lead-in word for word" tells the
+    model why a rule exists and nothing false about its input. A claim about
+    the INPUT is the defect, because the model cannot check it and will act on
+    it. Output is history. Input is a fact the model is about to be handed, and
+    this file does not have it.
+    Added 2026-10-04. Enforced the same day: the three live hits and the one
+    inside entry 89's repair are struck in `prompts/digest.md`, and the sweep
+    with its command is written into entry 89's own ending and into pass 4 of
+    the canon's grading procedure, where the ban list is read.
+91. The measurement carried forward from the wrong artifact. Not a sentence in
+    an issue. A number in the instrument that grades them, which is worse,
+    because a figure in a review is the only thing a later run inherits without
+    re-deriving it.
+    The grade of 2026-10-03 reported, in its law 1 verdict: "The published page
+    carries 152 non-ASCII characters and six em dashes." Its measurement table
+    carried the same 152 in the published-page column. The published page is
+    `site/content/issues/2026-W39.md` and it is pure ASCII:
+    ```
+    $ file site/content/issues/2026-W39.md
+    site/content/issues/2026-W39.md: ASCII text, with very long lines (989)
+    $ LC_ALL=C grep -c $'[\x80-\xff]' site/content/issues/2026-W39.md
+    0
+    ```
+    The 152 is exact and it belongs to `2026-W37`, which carries 152 non-ASCII
+    characters across seven distinct code points and eight em dashes. It was
+    measured correctly in the grade of 2026-09-22, when W37 was the published
+    issue, and that review says so in its own words: "152 non-ASCII characters
+    in the published file and 134 in the row". Two artifacts later the figure
+    was still being reported against whatever "the published page" now meant.
+    Nothing was invented and no measurement was taken wrongly. The number
+    outlived its subject, which a number in a table does by default, because a
+    column heading is a pointer and the figure under it is a value.
+    What makes this an entry rather than a slip is that the sentence forbidding
+    it was written into the canon's grading procedure by the same pull request:
+    "Grade one artifact per verdict. Two artifacts sharing a verdict line is
+    where an attribution error becomes invisible." The table in that review has
+    one row per metric and three artifact columns, so every row is a verdict
+    line shared by three artifacts. The rule was obeyed in the prose and broken
+    in the layout, and a table is where a measurement actually lives.
+    The cost is specific and it is not the wrong number. It is that a FAIL was
+    recorded against a clean artifact, so the one metric the generator has
+    genuinely solved reads as its worst. A grade that cannot tell a fixed
+    defect from a live one cannot tell anyone when to stop working on it.
+    The repair is that a measurement names the artifact it was taken from and
+    the command that took it, in the same cell or the row beneath, and is
+    re-taken every run rather than carried. Where a figure is inherited from an
+    earlier review, it is quoted with its date and its subject, both.
+    Added 2026-10-04. Enforced the same day in pass 1 of the canon's grading
+    procedure, which is where the measurements are taken
+    (`INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`).
+92. The enforcement ending that nothing can re-run. The standing rule at the
+    top of this file gives an entry three possible endings, and the second one
+    is "the change to prompts/digest.md that now enforces it". Thirty-five
+    entries carry an ending of that kind. One of them quotes the text that
+    landed. The other thirty-four describe it: "the heading gate now reads each
+    heading against the block under it", "the grade slot now forbids opening on
+    the word 'evidence'", "the shape gate counts the shapes on the page before
+    any of the word counts".
+    Every one of those is true today. I checked all thirty-four by reading the
+    generator, and nothing has been lost. That is the finding rather than the
+    consolation: the register's second ending has no failing state, exactly as
+    its third ending had none until pass 6 was built for it on 2026-09-30. A
+    ledger filing sits at "proposed" and nothing turns red. A prose enforcement
+    sits in a sentence nobody re-reads and nothing turns red either. The
+    difference is only that the second one happens to be intact, and four runs
+    have been editing the generator blind, striking text at the exact positions
+    these endings point to.
+    The lesson is already in this file and it is in the wrong place. Entry 51
+    was corrected on 2026-09-27 and its correction says it outright: "An
+    enforcement ending has to name the gate the defect would pass through, not
+    merely a place in the file where the rule is now written down." That is a
+    standing rule about every entry, recorded inside one entry, where it binds
+    nothing and no run reads it as law. It is incident 20's shape at the scale
+    of this register: the right words, in the right file, by the right seat,
+    read by nothing between the ruling and the artifact.
+    So the standing rule at the top of this file gains the requirement, and an
+    enforcement ending quotes the text that landed wherever the change is a
+    sentence, so a later run can check it with one command instead of a close
+    reading. Where the change is a gate rather than a sentence, the ending
+    names the gate and the step inside it, which is entry 51's correction
+    promoted to law.
+    Added 2026-10-04. Enforced the same day: the standing rule at the top of
+    this file carries the requirement and entry 51's correction is cited there
+    as its source. The checker is nine lines and it is in the review of
+    2026-10-04 so the next run can re-run it rather than rebuild it.
