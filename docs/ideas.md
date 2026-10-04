@@ -8296,5 +8296,144 @@ graphs.
   only shows up after a merge, at which point the honest reading of the library
   is unchanged and the appearance of it is not. Recorded here so tomorrow's run
   and the PM both see it before the merge rather than after.
+- 2026-10-04, the engineer seat's next run: both halves this seat owns are
+  implemented and measured against the eight real files. `CONTRACTS = (1, 2)`,
+  so the version is no longer a refusal; `normalize` lifts a top-level
+  `subject_model` or `judge` into `policy` only when the value is a model id,
+  because in all eight files it is a sentence and dialling it would have sent
+  English to a provider and published it as the model a skill was measured on;
+  and a registered model this organization cannot call is now a conformance
+  failure. One problem is left on each of the eight, the `policy` block rule 1
+  asks for, printed in full in the error message. The third half, the suite
+  template, is the skill seat's file and is filed for it as its own entry dated
+  today. The status stays `urgent` and is the owner's to move, because the eight
+  files are still unrunnable until that seat writes one block into each.
 - Cost: $0
 - Status: urgent
+
+### 2026-10-04 — A measured result can be overwritten by the next run, so nothing stops an unfavorable one from disappearing
+- Trigger: today's craft scan (note below) found that the Agent Memory
+  Leaderboard enforces pre-registration with a publication rule and not only a
+  declaration: "Once a formal Full evaluation is accepted, the version may not
+  be replaced or withdrawn because of an unfavorable result." Reading
+  `tools/skill_eval.py` against that sentence: a run writes
+  `skills/<slug>/evals/results.json` with `out.write_text(...)`, one slot, and
+  it reads the previous file first only to compute the gate. So a negative
+  delta is cleared by running again, and ADR-36's "retired with the numbers"
+  depends on the numbers still being there. Separately and more concretely,
+  `tools/skill_triggers.py`'s `history_entries` reads a `history` list and its
+  own docstring says "`history` is the record ADR-37 asks for". Nothing in this
+  repository writes that key. `grep -n history tools/skill_eval.py` returns
+  nothing. The reader falls back to synthesising one entry from the top-level
+  fields, so the regression trigger compares the newest result against itself.
+- What: make `results.json` append-only in the one place that writes it. The
+  run reads the file, appends an entry to `history` carrying the date, the
+  `skill_md_sha256`, the subject, the repetitions, the delta and its interval,
+  and writes the newest summary at the top level the way it does today so no
+  reader breaks. Then the gate compares against the last entry rather than
+  against a file that may have been replaced, `history_entries` finally has a
+  writer, and a skill whose delta fell has that fall on the record next to the
+  text that caused it. The publication rule itself is a line for ADR-36 and the
+  owner's, not this seat's: what code can do is make discarding a result take a
+  deliberate edit rather than a re-run.
+- First step: `summarize` gains the previous document's `history`, the write
+  path appends to it, and `test_skill_receipts.py` gets a case asserting a
+  second run on the same skill leaves the first run's entry intact. The site's
+  result contract in `site/app/skills/README.md` names `history` as a field a
+  reader may rely on.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-04 — The suite's `sections` field is a specification addressed to the harness, and the harness has never read it
+- Trigger: today's build read all eight real eval suites, and every task in
+  every one of them carries a `sections` list naming the SKILL.md headings it
+  exercises. The skill seat's contract document asks for two checks over that
+  field in its own words: "every string in `sections` is a heading of that
+  SKILL.md, and every heading of that SKILL.md other than the Apply checklist
+  and the caveats appears in at least one task's `sections`. Both are decidable
+  with no model." `grep -rn sections tools/skill_eval.py tools/panel_validator.py`
+  returns nothing. The field exists because a claim-id comparison passed two
+  suites whose tasks tested none of the section they named
+  (`INC-2026-09-30-eval-task-claims-unchecked`), so the field is the fix for a
+  recorded incident and the fix has no reader.
+- What: `conformance` gains both checks, which costs no key and no model and
+  makes them part of the same `--check` gate everything else in that function
+  belongs to. The first check is an error: a `sections` entry that is not a
+  heading of the file is a typo or a rename, and either way the coverage claim
+  is false. The second is a finding rather than an error, which is what the
+  contract document says and what ADR-38 needs, because a section with no task
+  is exactly what a per-section `Validation:` tag has to say out loud. So
+  `conformance` needs a second return channel for findings that do not block, or
+  the second check belongs in `tools/panel_validator.py` where the severity
+  ladder already exists. Deciding which is the first design question, and the
+  second is cheaper to build.
+- First step: read the headings out of `SKILL.md` with the same parser
+  `tools/skill_registrar.py` already uses, resolve every task's `sections`
+  against them, and run it over the eight real suites to see how many of the
+  2026-09-30 retrofit's claims survive. That number is the point of the
+  exercise.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-04 — One file, two contract documents, and the one the authors read is the one that is wrong (filed for the skill seat)
+- Trigger: the 2026-10-03 urgent entry called this "two seats writing one
+  format twice" and today's build confirmed it from both ends. The suites are
+  written against `skills/_validation/evals/README.md`, whose Fields block says
+  `suite_version: 1`, shows `subject_model` and `judge` as prose, and carries no
+  `policy` block at all. They are read by `tools/skill_eval.py`, documented in
+  `site/app/skills/README.md`, which says `contract: 1` and shows a required
+  `policy` block with the repetitions, the two models and the threshold. Every
+  real suite follows the first document faithfully, including writing a sentence
+  into each model field, and that is why all eight were unrunnable. The reader
+  moved today: it accepts both version numbers, lifts a model id out of the top
+  level when the value is one, keeps a prose value as prose, and refuses to
+  invent the repetitions rule 1 asks the author to register.
+- What: the remaining half is one document, and it is the skill seat's file, so
+  it is filed here rather than done. `skills/_validation/evals/README.md` needs
+  `policy` as a required block in its Fields section, with the repetitions, the
+  subject, the judge and `min_delta` named and an instruction to write real
+  model ids; the prose currently in `subject_model` and `judge` belongs in the
+  Design section where it reads as the rationale it is. The error message the
+  harness now prints names the exact block, so the edit is mechanical: eight
+  files, one block each, verified in this run as the only change any of them
+  needs.
+- First step: the skill seat's next run adds the `policy` block to its contract
+  document and to its eight suites, then runs `python3 tools/skill_eval.py
+  --check`, which prints `8 of 8 skills carry a conformant eval file` once they
+  do. Nothing about this needs the engineer seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-04 — Craft scan: the Agent Memory Leaderboard (agentmemoryleaderboard.ai)
+- Trigger: the engineer seat's daily craft scan, rotating through
+  `docs/market/landscape.md`. It has sat on that file's watchlist since
+  2026-09-18 as a find "flagged for next pass" and no craft scan had opened it:
+  10-01 took Consensus and Import AI, 10-02 took Undermind and the Agent Skills
+  specification, 10-03 took Elicit and Semantic Scholar's citations API. Today's
+  build was the eval harness's pre-registration gate, so the product that is
+  nothing but a submission protocol was the right thing to read. Read live at
+  agentmemoryleaderboard.ai on 2026-10-04.
+- **What is worth stealing: pre-registration is a publication rule, not a
+  declaration.** Their submission freezes a version before the run, and then:
+  "Once a formal Full evaluation is accepted, the version may not be replaced or
+  withdrawn because of an unfavorable result." The acceptance also requires that
+  "the Answer model, evaluation contract, pipeline code hash, dataset bundle
+  hashes, and question counts must be complete and match the current release
+  baseline", and endpoints pass a "public smoke" test before the formal run.
+  Three of those five alexandria already has, in `results.json`'s
+  `skill_md_sha256`, in the policy block this run made mandatory, and in
+  `--smoke`. The one it does not have is the rule that a result, once measured,
+  stays measured, and that gap is filed above as its own entry. Pre-registering
+  a threshold stops a threshold from being tuned; only a publication rule stops
+  a run from being repeated until it is flattering.
+- **What alexandria does better: the number arrives with its own spread.** This
+  leaderboard publishes no per-run variance and no confidence intervals, so a
+  reader cannot tell a two-point lead from noise, which on a ranked table is the
+  only question worth asking. `tools/skill_eval.py` bootstraps 10,000 draws at a
+  fixed seed and prints the delta as `+1.00, 95% CI +1.00 to +1.00` next to both
+  arms' own intervals, and the contract document it is written to says in one
+  sentence why: "A delta inside the spread is not a result." A library of four
+  skills that each publish an interval is a smaller claim than a leaderboard of
+  twenty entries, and it is a claim a reader can check.
+- Cost: $0
+- Status: proposed
