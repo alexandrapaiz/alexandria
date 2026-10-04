@@ -6489,7 +6489,7 @@ for a chore is a rule that generates owner work at the rate the org runs,
 and it reads as correct in every audit because every seat obeys it. Check
 the verbs in a rule, not only the rule.
 
-## INC-2026-10-04-four-days-of-output-and-no-delivery — the org ran autonomously for 113 hours, opened 49 pull requests, merged one, and left main red the whole time (2026-10-04, ExO seat)
+## INC-2026-10-04-four-days-of-output-and-no-delivery — the org ran autonomously for 112 hours, opened 49 pull requests, merged one, and left main red the whole time (2026-10-04, ExO seat)
 
 **This is the fifth occurrence of the class named in
 `INC-2026-09-28-repair-written-never-deployed`, and the first at the scale
@@ -6503,7 +6503,7 @@ it, and that is part of what happened.
 ### What happened, measured
 
 Nothing has merged to `main` since 2026-09-30 at 02:08 UTC, which is PR
-#143. At the time of writing that is **4 days and 17 hours**. In that
+#143. At the time of writing that is **4 days and 16 hours**. In that
 window the org opened 49 pull requests and merged one.
 
 | Day opened | Opened | Merged | Closed | Still open |
@@ -6531,7 +6531,7 @@ pull requests, inheriting a red `main`.
 ### The three channels, and why this is one incident rather than three
 
 Every path by which work leaves this organization terminates in one human,
-and all three were at zero for the same 113 hours.
+and all three were at zero for the same 112 hours.
 
 | Channel | Mechanism | Throughput in the window |
 |---|---|---|
@@ -6660,3 +6660,55 @@ not be lost, fixed it on a branch, and reported honestly every day that
 their own output was piling up. The organization's weakness is not its
 judgment. It is that **an org can be good at everything except the one
 step that makes any of it true**, and that step has no cron.
+
+## INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule — the sweep that finds a false "nothing else touches this file" was written, documented with its command, and run against one file (2026-10-04, ExO seat)
+
+**Repeat, recorded under the standing rule. This is the second occurrence
+of an ordering-paragraph rot on
+[pending-workflow-changes.md](pending-workflow-changes.md) and the second
+occurrence of the "recording is not enforcing" class from incident 20.**
+
+**What happened.** On 2026-09-30 the ExO window run found that item 11's
+ordering paragraph said "no other item on this page touches
+`agent-skill.yml`" while item 13 had just been queued against that file. It
+fixed item 11, wrote the general rule into `prompts/exo-agent.md` §5, and
+wrote out the one-line sweep that settles it for the whole page:
+
+```bash
+grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+  | sort | uniq -c | sort -rn
+```
+
+It did not run that command. Item 4, "The writer's cap goes to 200",
+carried the identical sentence about `agent-writer.yml`, which stopped
+being true on 2026-09-21 when item 4a was queued against the same file.
+The 2026-10-04 run found it by running the command the 2026-09-30 run had
+published, on the first try, in one second.
+
+**Why.** The run fixed the instance it was looking at and generalised the
+rule in prose, which is the correct response, and then shipped without
+executing its own generalisation across the artifact. The gap between
+"write the rule" and "run the rule once, now, everywhere" is the whole of
+incident 20, and it happened inside the run that was fixing a different
+instance of it.
+
+**The sharper point, because the prose fix was not the weak part.** The
+charter text added on 2026-09-30 is good: it names the shape, gives the
+command and says any file named by two items needs both ordering
+paragraphs to name the other. What it does not say is **run it now across
+the page you are already editing**. A rule written for the next run
+protects the next run. The artifact in front of this run stays wrong.
+
+**The fix.** Two words in `prompts/exo-agent.md` §5, turning the sweep
+from a check on new items into a check on the whole page every run, and
+the sentence that generalises it: when a run writes a new mechanical
+check, it runs that check across the entire artifact before it ships,
+in the same run, and says in the pull request how many instances it
+found. Item 4 was deleted as overtaken rather than repaired, so the
+instance itself is gone.
+
+**And the same class, a third time, in the same file, from this run's own
+edit.** Deleting item 11 left item 13's ordering paragraph naming a
+deleted item. Caught in the same run by re-running the sweep after the
+edit rather than before it, which is the practical form of the fix above:
+**the sweep runs after your own changes, not only before them.**
