@@ -248,17 +248,79 @@ a cap that depends on which provider answered.
 +          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
 ```
 
-**Ordering.** Checked with the whole-page sweep rather than from memory.
-`agent-skill.yml` is also named by item 13, `agent-writer.yml` by item 4a,
-`agent-engineer.yml` and `agent-exo.yml` by items 6 and 7. Every one of
-those items edits a `prompt:` block or an `env:` block and this item edits
-only `claude_args`, so no anchor here moves any anchor there and either
-order works. Items 4 and 11 are deleted by this item and must not be
-applied.
+**Ordering.** Checked with the whole-page sweep, re-run after this item
+was written, rather than from memory. The complete overlap list, by file:
+`agent-skill.yml` with items 12 and 13, `agent-writer.yml` with item 4a,
+`agent-engineer.yml` with items 6, 9 and 10, `agent-exo.yml` with item 7,
+`agent-pm.yml` with items 6 and 15. `agent-market.yml`,
+`agent-research.yml` and `agent-security.yml` are named by this item alone.
+Every overlapping item edits a `prompt:` block, an `env:` block or a step
+body, and this item edits only `claude_args` lines, so no anchor here moves
+any anchor there and any order works. Items 4 and 11 are deleted by this
+item and must not be applied.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
 budget, and this is the sentence the page has repeated since 2026-09-18
 because it is the one that keeps getting re-litigated.
+
+### 15. The PM's dispatch prompt forbids two duties its charter assigns
+
+**Queued 2026-10-04 by the ExO agent, from the §2 charter-versus-prompt
+check. This is the 4a shape in a second seat**, so the check is now worth
+running across all twelve rather than only where a boundary was just
+edited.
+
+**The disagreement.** `prompts/pm-agent.md` §1b tells the seat to maintain
+`docs/agents/org-chart.md`, and §4 as of 2026-10-04 tells it to write the
+queue gauge. The inline `prompt:` block in `.github/workflows/agent-pm.yml`
+says:
+
+> You write only docs/sprints/ and grooming notes in docs/ideas.md.
+
+`docs/agents/org-chart.md` is in neither place. So the workflow forbids a
+duty the charter assigns, and the duty this run adds lands inside a
+boundary the workflow does not describe.
+
+**And the interesting half: the charter won.** The charter in
+`prompts/exo-agent.md` §2 predicts the opposite, that "the inline prompt
+arrives last and closest, so when the two disagree the run most likely
+obeys the workflow and the charter edit is inert." The PM has in fact
+written `docs/agents/org-chart.md` three times, most recently on
+2026-09-28. The reason is in the prompt itself, two sentences earlier:
+"Read prompts/pm-agent.md; it is your full charter." That licenses the
+charter to extend the list, so the prohibition reads as a summary rather
+than as a boundary.
+
+**That makes this lower-severity than 4a and still worth fixing**, because
+a seat that has to decide which of its two instruction files it believes is
+a seat guessing at its own permissions, and the next run may guess the
+other way. The prediction in the ExO charter is corrected in the same pull
+request: the prompt does not reliably win, and the finding is the
+disagreement itself rather than its direction.
+
+**How.** Two edits to `.github/workflows/agent-pm.yml`. The file has two
+run steps, open-routed and Claude fallback, with **identical** prompt
+blocks, so each `-` line below appears exactly twice and **both copies get
+the same edit**. This is the incident 26 shape named in advance: patching
+one of two identical copies makes the seat's permissions depend on which
+provider answered.
+
+```diff
+-            exactly one pull request with `gh pr create`. You write only
+-            docs/sprints/ and grooming notes in docs/ideas.md. Never write
++            exactly one pull request with `gh pr create`. You write
++            docs/sprints/, grooming notes in docs/ideas.md, and
++            docs/agents/org-chart.md, which charter §1b assigns you. Never
++            write
+```
+
+**Ordering.** `agent-pm.yml` is also named by item 6, which adds
+`NEON_RO_URL` to the `env:` block. This item edits only the two `prompt:`
+blocks, so neither anchor moves the other and either order works. Verified
+with the whole-page sweep in this run, after this item was written rather
+than before it.
+
+**Cost.** $0.
 
 ### 5. An HQ-origin commit should announce itself when it lands
 
@@ -354,7 +416,17 @@ failure mode for a notifier whose backstop is a weekly human-read audit.
 
 **Cost.** $0, a few seconds per push to main.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04**, because this paragraph said
+"independent of every other item on this page" and that stopped being true
+when items 9, 10, 14 and 15 were queued. This item edits the `env:` block
+of `agent-engineer.yml` and `agent-pm.yml`. Item 14 edits `claude_args` in
+the first, items 9 and 10 edit step bodies in the first, and item 15 edits
+the two `prompt:` blocks in the second. No anchor here moves any anchor
+there and any order works. The old sentence is the shape named in
+`INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`: a blanket
+"independent of everything" cannot be kept true by anyone, because it has
+to be rechecked whenever any other item is queued against any file, and
+nothing points a reader at it.
 
 ### 3. The caps are not done. See item 14.
 
@@ -493,7 +565,11 @@ supplies and the prompt does not contradict.
 spends rediscovering a four-week-old incident, and it is the only place a
 seat is told the second lane exists at the moment it needs it.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04.** This said "independent of every
+other item on this page", which stopped being true when item 14 was queued
+against `agent-exo.yml`. Item 14 edits the `claude_args` line and this item
+edits the `prompt:` block, so neither anchor moves the other and either
+order works. Same shape as item 6's correction above, same run, same cause.
 
 ### 8. Every seat run reports onto the board
 
@@ -608,6 +684,15 @@ double run is the one with evidence behind it, and the other eleven after a
 day of it behaving.
 
 ---
+
+**Ordering.** **Added 2026-10-04; this item shipped with no ordering
+paragraph at all, which is the third shape of the same defect and the
+quietest.** A rotted paragraph is at least visible once someone looks. A
+missing one gives a reader nothing to check and no signal that there was
+anything to check. This item edits `agent-engineer.yml` and the other
+eleven agent workflows' step bodies; items 6 and 14 edit the `env:` block
+and the `claude_args` line of the same files, and item 10 edits the run
+report step. Any order works.
 
 ### 10. The run report calls a tested script, because dash's echo ate the body
 
@@ -735,6 +820,13 @@ file.
 
 ---
 
+**Ordering.** **Added 2026-10-04**, for the same reason item 9's was: this
+item had none. It edits the run report step in all twelve agent workflows.
+Items 6 and 14 edit the `env:` block and the `claude_args` line of the same
+files, item 9 edits the concurrency block, and items 4a, 13 and 15 edit
+`prompt:` blocks. None of those anchors touch a run report step, so any
+order works.
+
 ### 12. The skill seat cannot measure a skill, because it has no `GROQ_API_KEY`
 
 **Queued 2026-09-30 by the ExO agent, under the owner's directive of the
@@ -770,9 +862,11 @@ seat sandbox is acceptable.
 +      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 ```
 
-**Ordering.** Independent of item 11, which touches the `claude_args` line
-of the same file. Apply in either order. If both are applied in one hand,
-item 11's warning about the non-unique anchor still holds.
+**Ordering.** **Corrected 2026-10-04.** This named item 11, which was
+deleted and replaced by item 14 in that run. Item 14 touches the
+`claude_args` line of this file and raises the skill cap to 350 rather than
+200. Item 13 touches the `prompt:` block. This item touches the `env:`
+block. All three can be applied in one hand, in any order.
 
 **Cost.** $0. The groq free tier is what the daily pipeline already runs
 on, and `budget.MODELS` prices both models at 0.0 in and 0.0 out. The rate
