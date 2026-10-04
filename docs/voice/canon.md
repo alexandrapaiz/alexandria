@@ -530,6 +530,26 @@ on a generator five commits out of date without once noticing.
    puts on the page: paragraphs, bullets, a line standing alone, a
    bold lead. One shape for a whole issue is itself the finding.
    2026-W39 scored 191, five, ten, and one.
+   **Every measurement names the artifact it came from and the command
+   that took it, and is re-taken rather than carried** (added
+   2026-10-04, `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`,
+   ban list 91). Pass 3 already says "grade one artifact per verdict",
+   because two artifacts sharing a verdict line is where an attribution
+   error becomes invisible. That holds harder for a number than for a
+   sentence, and a measurement table is the place the rule gets broken,
+   because a table has one row per metric and a column per artifact, so
+   every row is a verdict line shared by all of them. The grade of
+   2026-10-03 reported 152 non-ASCII characters against a published page
+   that `file` calls "ASCII text"; the figure is exact and it belongs to
+   `2026-W37`, measured correctly on 2026-09-22 when W37 was what
+   "published" pointed at. A number outlives its subject by default,
+   because a column heading is a pointer and the figure under it is a
+   value.
+   So no figure enters a grade without the path it was measured on and
+   the command, and a figure quoted from an earlier review carries that
+   review's date and its subject, both. A FAIL recorded against a clean
+   artifact is worse than no grade, because it hides the one thing the
+   generator has solved and nobody can tell when to stop working on it.
 2. **The taste gate.** docs/voice/taste.md, ruling by ruling,
    against the issue and against the generator (incident 20:
    recording a ruling is not enforcing it).
@@ -583,6 +603,17 @@ on a generator five commits out of date without once noticing.
    because an item can name three. A pass on a coverage law with no
    number beside it has not been graded.
 4. **The ban list**, including new tells to append.
+   **An entry that names a class is swept, not just fixed** (added
+   2026-10-04, ban list 90). A tell is found in the one specimen the
+   artifact showed and fixed in that specimen, because that is what a
+   diff is for, and nothing in between asks the question the entry was
+   just written to ask. Entry 89 was added on 2026-10-03 with its own
+   giveaway stated in its own text, its two specimens were struck, and
+   one grep the next morning found three more live in the generator
+   plus a fourth inside the repair itself. So where a new or existing
+   entry generalises, run its tell over `prompts/digest.md`, print the
+   count in the review, and fix every hit in this pull request or say
+   why one stays. A count of one is a result too: it closes the entry.
 5. **The claims pass**, added 2026-09-24 after the fourth grade of
    2026-W39 found a false comparison that the four passes above had
    no way to see. Those four all ask how the issue is written. This
@@ -669,6 +700,28 @@ on a generator five commits out of date without once noticing.
    they are the only prose in the product that no prompt gate can reach.
    A standing line is the cheapest place in the product to be wrong for a
    fortnight.
+   **The inventory is the delivery path, not the module constants** (added
+   2026-10-04). The step above was executed for the first time on
+   2026-10-03 and it listed seven names, all of them assignments in
+   `pipeline/weekly.py` and `pipeline/email_render.py`, because that is
+   what "constant the pipeline splices" reads as. A reader-facing string
+   does not have to be a constant. Three were missed in one file. The
+   email template `site/emails/digest.html` carries its own standing text
+   and its own `{{masthead}}` region, so the masthead a grade reads once
+   at the top of the page renders a second time in the footer of every
+   email. `normalise()` at `email_render.py:70` substitutes one character
+   for another on the way out, which is a reader-facing edit made after
+   the last gate. And a glyph chosen in code is a standing line too: the
+   bullet marker at `:115` is a middle dot, so the first issue that obeys
+   law 14 and sets a list prints a character law 1 forbids on every
+   bullet of it.
+   So walk the path the words take, from the model's output to the
+   reader's eye, and grade every string that joins or changes them on the
+   way: the generator's splices, the template's own text and regions, any
+   fill-time substitution, and every character the code picks rather than
+   the writer. Where the file declares a boundary of its own, as this one
+   does with "fill-time typography, not editing", say which side each
+   finding falls on and let the owner rule rather than deciding it here.
 
 ## Maintenance
 
