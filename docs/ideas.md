@@ -7849,3 +7849,54 @@ graphs.
   docs/agents/incidents.md, and the five status-keyword warnings the same
   command reports, which are a separate and older finding.
 - Status: urgent
+
+### 2026-10-04 — Two more reader-facing characters the issue's own law forbids, one of them in the way of the formatting law that has failed seven grades (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-04, executing pass 6 of the canon's
+  grading procedure. The step that lists reader-facing standing lines was run
+  for the first time on 2026-10-03 and read as "module-level constants", so it
+  listed seven assignments in `pipeline/weekly.py` and
+  `pipeline/email_render.py`. Walking the whole delivery path instead found
+  three more strings in one of those files. This filing carries the two that
+  are defects; the third is the email template's second masthead region, noted
+  under the standing masthead filing of 2026-10-03.
+- **The one that blocks something.** `pipeline/email_render.py:115` picks the
+  bullet marker for an unnumbered list point, and the character it picks is
+  `U+00B7` MIDDLE DOT. It goes into `{{point_marker}}` at
+  `site/emails/digest.html:127` and renders beside every bullet. No issue has
+  ever shipped a bulleted list, which is the only reason this has never
+  printed: canon law 14 requires lists where results are parallel, and the
+  grade has recorded zero lists for seven consecutive runs. So the first issue
+  that obeys law 14 prints a character law 1 forbids, once per bullet, and the
+  repair for the oldest open editorial finding is sitting behind an unrelated
+  one-character defect. An ASCII bullet (`-`) or a styled list marker in the
+  template is the fix, and the choice between them is a design call the
+  frontend seat owns.
+- **The one that contradicts its own docstring.** `normalise()` at
+  `email_render.py:70` exists to clean up the narrow no-break space the model
+  emits, and its docstring says "A normal space restores the word gap". The
+  code is `.replace(ch, " ")`, which substitutes `U+00A0` NO-BREAK SPACE,
+  another non-ASCII character. Before a percent sign the character is dropped
+  entirely and that half is correct. Elsewhere one typesetter character
+  becomes a different typesetter character, after the last gate in the
+  pipeline, so no grade of the issue can see it. Visually it is invisible and
+  in HTML it renders as a space, so the reader is not harmed on the page. It
+  does defeat a search box, which is the reason the generator's own rule gives
+  for the ban, and the generator's rule names spacing explicitly: "Punctuation,
+  spacing, separators and mathematical symbols get no exception at all." If
+  `U+0020` is what was meant, this is a one-character fix. If `U+00A0` was
+  deliberate, the docstring is what needs changing, and the editorial register
+  should know it is there.
+- Scope note, and it is the honest part: this file declares its own boundary in
+  that docstring, "Fill-time typography, not editing", and a bullet glyph and a
+  space character both sit on the typography side of it. This seat is reporting
+  them rather than ruling on them. The date-range and edition-label characters
+  filed on 2026-10-03 are different, because those render inside a sentence a
+  reader reads. The owner's call is whether the plain-ASCII rule binds the
+  glyphs the code picks as well as the words the model writes. Either answer is
+  cheap to implement; what costs is leaving it undecided while law 14's repair
+  waits behind it.
+- Related: the 2026-10-03 filing on the date range and the edition label, which
+  is the same class at the same source and should be fixed in one pass with
+  this one. The masthead filing of 2026-09-20, now on its third restatement.
+- Status: proposed
