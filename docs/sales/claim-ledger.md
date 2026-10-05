@@ -1,7 +1,9 @@
 # The claim ledger — every sendable sentence, and what makes it true today
 
-Verified 2026-09-30, T-13 to launch. Re-verify before any send; the
-right-hand column is a reading, not a constant.
+First verified 2026-09-30 (T-13). **Re-verified 2026-10-05 (T-8), and the
+re-verification is the next section.** Re-verify before any send; the
+right-hand column is a reading, not a constant, and two of its 2026-09-30
+readings turned out to be wrong in the direction that costs us.
 
 ## Why this file exists
 
@@ -24,6 +26,60 @@ So the fix is not a better memory. It is this table. Every claim any draft
 makes gets one row, and the row carries the command or the file that settles
 it. The pre-send step is reading down the "Checked" column, not recalling
 what was true two weeks ago.
+
+## The re-verification, 2026-10-05 (T-8)
+
+Every command in the pre-send gate at the bottom of this file was run between
+03:00 and 03:30 UTC on 2026-10-05. **Not one reading moved.** That is the
+finding, and it is a larger one than any individual row.
+
+| Row | 2026-09-30 | 2026-10-05 | Moved |
+|---|---|---|---|
+| A1 six skills | six | six | no |
+| A3 one skill has a trial | one of six | one of six | no |
+| A4 newest retrieval score | 2026-09-29, 40 of 43 | still 2026-09-29, no newer file | no |
+| A6 twelve skills | false | false | no |
+| B1 the false reading verb on the home page | live, 4 days old | live, 9 days old | no |
+| C1 issues in the archive | stated as two | **one serves. The ledger was wrong** | corrected below |
+| C2 a gap in the weekly run | W38 missing | W38 and W40 missing | worse |
+| D3 purchasable end to end | "not true yet" | **not started, and nothing in flight starts it** | corrected below |
+| D5 the waitlist works | true | true | no |
+
+The reason nothing moved has nothing to do with the seats. `main` took two
+commits in those five days, both of them the same vendored standards sync, while
+the open pull request count went from 16 on 2026-09-30 to 64 on 2026-10-05. The
+work exists and it is not in `main`, and a sales draft cites what a stranger can
+open. `launch-gate.md` is the file that works out what that costs, sentence by
+sentence, and it is the document to read beside this one from now on.
+
+```bash
+git log --oneline --since=2026-09-30 main | wc -l                     # 2
+gh pr list --state open --limit 200 --json number -q 'length'         # 64
+```
+
+**Two corrections this seat owes, both of them overstatements, which is the
+direction that matters.**
+
+**C1 was wrong. The archive serves one issue, not two.** `site/lib/content.js`
+line 23 holds `HIDDEN_WEEKS = new Set(["2026-W37"])`, retiring the pilot on her
+order of 2026-09-19 so the next issue would be the first a stranger reads. The
+order was carried out in code. The ledger counted files with `ls` and never
+read the module that decides what is served, so C4's open question — whether
+W37 renders — was answerable in one grep on 2026-09-30 and was left open
+instead. Five drafts said two issues. All five are fixed in this pull request.
+
+The general form of the mistake, worth more than the fix: **a claim about what
+a reader sees is never settled by listing files.** It is settled by reading the
+code that chooses which files are served. `ls` answers a question about the
+repository and every sendable sentence is a question about the site.
+
+**D3 was understated.** "Not true yet" reads as late. The reading at T-8 is
+that it has not been started and that no open pull request starts it: no
+payment integration in the tree, `currentEmail()` returning null by
+construction so `hasSpine()` can never be true, and both pricing pills still
+reading "Opens October 13". Full evidence in `launch-gate.md` §1. This is the
+difference between a date slipping and a committed KR having no work behind it,
+and the copy consequence is six drafts rather than one.
 
 ## How to read a row
 
@@ -114,10 +170,10 @@ it is fixed. Whose call: frontend, from the writer's candidate.
 
 | # | Claim | True today | Check |
 |---|---|---|---|
-| C1 | There is a digest archive. | True, and thin: two issues, 2026-W37 and 2026-W39. | `ls site/content/issues/` |
+| C1 | There is a digest archive. | **Corrected 2026-10-05: one issue serves, 2026-W39.** Two files are on disk and `site/lib/content.js:23` hides 2026-W37 on her order of 2026-09-19. The 2026-09-30 reading said two and was taken with `ls`. | `ls site/content/issues/`; `grep -n HIDDEN_WEEKS site/lib/content.js` |
 | C2 | An issue every week, unbroken. | **FALSE.** W38 is absent from the archive. Any "every week" phrasing invites the reader to count, and the count is two files with a gap between them. | `ls site/content/issues/` |
 | C3 | The digest is free and arrives in full. | True as the stated plan and priced that way on the page. Not yet purchasable: both plans read "Opens October 13". | `site/app/pricing/page.jsx` |
-| C4 | The first issue a stranger reads is the pilot. | Her ruling of 2026-09-19 removed W37 from the site. W37 is still in `site/content/issues/`. Whether it renders is a frontend question this seat could not settle from the repo alone. | `site/app/library/` |
+| C4 | The first issue a stranger reads is the pilot. | **Settled 2026-10-05: it does not render.** `site/lib/content.js:23` excludes 2026-W37 from the index and from every path the library serves. The question was answerable from the repo on 2026-09-30 and this seat recorded it as unanswerable instead. | `grep -n HIDDEN_WEEKS site/lib/content.js` |
 
 **C2 is the reason no pre-launch or launch draft claims a cadence.** Say what
 is there. Two issues in the archive is a true sentence and a small one, and a
@@ -130,10 +186,12 @@ clicking twice.
 |---|---|---|---|
 | D1 | The digest is free, in full, with no paywall on the writing. | True, and decided at the first all-hands. | `docs/vision.md` §0 |
 | D2 | Full access is $20 a month. | True. Sales never restates, discounts, or reframes this; pricing is the owner's and is argued for in market's positioning doc. | `docs/vision.md` §0 |
-| D3 | Both are purchasable end to end on launch day with no manual steps. | **Not true yet, and it is the launch's committed result.** The pricing page shows two plans and a waitlist, and both plans say "Opens October 13". | O1 KR1 |
+| D3 | Both are purchasable end to end on launch day with no manual steps. | **Reading hardened 2026-10-05: not started, and no open pull request starts it.** No payment integration exists (`polar` appears four times in the tree, all comments and legal pages). `site/lib/entitlement.js` has `currentEmail()` returning null by construction, so `hasSpine()` can never be true for anyone. Both pricing pills still read "Opens October 13". Zero of 64 open pull requests touch pricing, checkout, Polar or entitlement. | `launch-gate.md` §1; O1 KR1 |
 | D4 | You choose whether the subscription renews itself or stops each month until you say yes. | True as stated policy, and already on the pricing page in her words. It is a hard requirement on the payment implementation, not a marketing line. | `site/app/pricing/page.jsx` |
 | D5 | You can put your email in and hear when it opens. | **True, and this is the biggest change since the drafts were written.** A real capture on the home page and the pricing page, writing to Postgres, and a duplicate submit is treated as success rather than an error. | `site/app/api/waitlist/route.js` |
 | D6 | We have N subscribers. | **Unsendable in any form.** The list is comped friends. No count, no "hundreds of builders", no "our subscribers" phrased to sound larger. | `docs/roadmap.md` sprint 1 |
+| D7 | You can make an account. | **New since 2026-09-30, and sendable with one qualifier.** `@clerk/nextjs` runs in `site/middleware.js`, `/sign-in` and `/sign-up` are routes in the tree, `/api/clerk-webhook` verifies Clerk's signature and writes users into Neon, and ADR-34 makes Neon the system of record. What this seat cannot confirm from the repository is that it serves in production, which is L-A16, so no draft says "sign up today" until someone has signed up. | `ls site/app/sign-up`; `cat site/app/api/clerk-webhook/route.js` |
+| D8 | An account gets you anything. | **False, and it is the gap people will find.** An account can be created and entitlement is hard-wired shut, so a signed-in user and a stranger see exactly the same site. No draft invites a reader to create an account, because an account that does nothing is worse than no account. | `cat site/lib/entitlement.js` |
 
 **D5 retires the single hardest constraint the campaign has carried.** The
 2026-09-18 calendar forbade every pre-launch post from asking for anything,
@@ -147,9 +205,10 @@ one email, on the day subscriptions open, and nothing before it.
 | # | Claim | True today | Check |
 |---|---|---|---|
 | E1 | Every decision is a public, dated entry, including the ones that did not work. | True. | `docs/decisions.md` |
-| E2 | The org is mostly autonomous agents, each with a written charter, each opening its own pull request, and the owner merges. | True. Twelve charters in `prompts/`, and sixteen pull requests were open at once on the morning of 2026-09-30. | `ls prompts/`; `gh pr list --state open` |
+| E2 | The org is mostly autonomous agents, each with a written charter, each opening its own pull request, and the owner merges. | True, and the number moved hard. Twelve seat charters in `prompts/` (`*-agent.md`; the other six files are pipeline prompts, so "eighteen charters" is the wrong count). Sixteen pull requests were open on 2026-09-30 and **64 on the morning of 2026-10-05, twenty of them drafts she cannot merge**. Any draft quoting the queue number states what it means in the same breath, per `launch-gate.md` §5. | `ls prompts/*-agent.md \| wc -l`; `gh pr list --state open --limit 200 --json number -q 'length'` |
 | E3 | This post was drafted by an agent under a charter that forbids it from sending anything. | True, and checkable by a stranger in one click, because the charter is in the repo. | `prompts/sales-agent.md` |
-| E4 | The org keeps a numbered public register of its own failures, written by the agents that caused them. | True, and it is the largest register in the repo by a wide margin. | `docs/agents/incidents.md` |
+| E4 | The org keeps a numbered public register of its own failures, written by the agents that caused them. | True, and the precise form is better than the summary. Eighty entries over 6,211 lines. Fifty-four use a date-and-subject identifier. Twenty-six are numbered and those twenty-six numbers resolve to fourteen distinct ones, because incidents 24, 25 and 26 each exist three times and 27 through 31 twice each. The collision has its own entry, written by the seat that caused it. | `grep -cE '^## INC-' docs/agents/incidents.md`; `grep -oE '^## Incident [0-9]+' docs/agents/incidents.md \| sort -u \| wc -l` |
+| E5 | The register is complete, or can say which of its incidents are open. | **False, and saying so is the strongest line available.** The generated company-wide view reports 57 entries carrying no status marker, so the register cannot report its own open count. Recorded as company lesson L-A28 rather than fixed. | `docs/standards/lessons.md` L-A28 |
 
 **E4 is an asset no draft has ever used.** See
 `docs/sales/campaigns/obsolescence-report/` for what this run proposes doing
