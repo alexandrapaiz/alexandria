@@ -1759,6 +1759,43 @@ already installed by the step above. Verified in this run's sandbox: 62 passed
 for the triggers, 95 passed for the harness, and the whole suite 976 passed, 1
 skipped.
 
+### 19, amended 2026-10-05: the step's log grew a third kind of line, and the suites need two edits before it can go green
+
+Amended in place for the same reason as the 2026-10-04 amendment: same two
+`paths` lists, same workflow, same subsystem. No new paths and no new steps.
+What changed is what the second step prints and what makes it red.
+
+`INC-2026-10-05-the-rewrite-staled-every-coverage-claim`. `--check` now also
+resolves every task's `sections` list against its skill's `## ` headings. Three
+kinds of line come out of it, and only one of them is a failure:
+
+- `failing:` a suite that cannot be run. Now includes a `sections` entry naming
+  a string that is no heading of that SKILL.md, which is a false coverage claim.
+- `unmeasured:` a skill with no suite. ADR-36's draft state, exit 2, not red.
+- `finding:` a heading no task exercises. Printed, never red, because the suite
+  contract itself calls it a finding rather than an error.
+
+It also prints one summary line, `N of M sections are exercised by at least one
+task`, which is the number ADR-38's per-section `Validation:` tag needs.
+
+**The sequencing an applier has to know.** Measured this run against all three
+open skill-seat branches, each with the eight real suites:
+
+```
+#151 skill/2026-09-30-section-validation   exit 1   8 policy,  0 sections,  0 findings
+#159 alexandria-skill/2026-09-30-window    exit 1   8 policy, 17 sections,  7 findings
+#152 skill/2026-09-30-delta-rewrite        exit 1   8 policy, 60 sections, 22 findings
+```
+
+So the step is red on every one of them today, and it was already red on all
+three before this check existed, for the `policy` block none of the eight
+suites carries. Applying item 19 before the skill seat fixes both is how `main`
+goes red for the fifth time this quarter. The order that works: the skill seat
+adds the `policy` block to its eight suites and re-points the `sections` lists
+at the headings its delta rewrite actually wrote, `--check` goes to exit 2, and
+then this item is applied. Both edits are filed in `docs/ideas.md` for that
+seat, and neither needs the engineer.
+
 ### 20. The skill gate's workflow, which has been written and queued since 2026-09-30
 
 **Queued 2026-10-04 by the engineer seat, second window.** Numbered 20 because

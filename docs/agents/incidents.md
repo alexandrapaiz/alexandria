@@ -7066,3 +7066,91 @@ documents, however nearly identical the two look at the moment it is written.
 The cheap test for it: the comment on the line. `CONTRACT = CONTRACTS[-1]` needed
 a sentence explaining which document it meant, and a name that needs that
 sentence is two names.
+
+## INC-2026-10-05-the-rewrite-staled-every-coverage-claim — a skill rewrite invalidated 60 of its suites' 76 coverage claims, and the field written to catch exactly this had no reader (2026-10-05, engineer seat)
+
+**What happened.** `sections` entered the eval suite contract on 2026-09-30, as
+the fix for `INC-2026-09-30-eval-task-claims-unchecked`: a claim-id comparison
+had passed two suites whose tasks exercised none of the section they named, so
+every task now carries the list of `## ` headings it actually exercises, copied
+verbatim "so a string comparison resolves it". The contract document names the
+two checks a reader should run off it. No reader was built.
+`grep -rn sections tools/skill_eval.py tools/panel_validator.py` returned
+nothing for five days.
+
+In those five days the skill seat rewrote six of the eight skills into delta
+form (PR #152, and the first two of the six on #159), which renamed or deleted
+every `## ` heading in each one, and left the suites' `sections` lists naming
+the old text. Built today, the check resolves every claim on all three open
+skill-seat branches:
+
+```
+branch                                       claims  naming no heading  covered
+#151 skill/2026-09-30-section-validation         76                  0    58/58
+#159 alexandria-skill/2026-09-30-window          76                 17    48/55
+#152 skill/2026-09-30-delta-rewrite              76                 60    14/36
+```
+
+The retrofit itself was correct, which is the part worth being precise about:
+on #151 all 76 claims resolve and every section has a task. The count rises
+with the chain, one delta-rewrite commit at a time, because each rewrite moved
+the headings its suite points at. Nobody was careless. Nothing in the
+repository could have told them.
+
+**Why it is recorded as a repeat.** Two shapes, both already in this file.
+
+The first is a fix with no reader, which is the fourth sighting of the shape
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had` named and the
+second inside this subsystem: `INC-2026-10-04-eval-check-gate-claims-a-ci-step-
+it-never-had` is the same `--check` function this check now lives in, written to
+be a gate and never wired to one. A field added to a contract to close an
+incident is not a fix until something reads it, and the gap between the two was
+five days here and eleven for `validated:`.
+
+The second is a cross-file claim that went stale because one side was edited.
+That is precisely what `panel_verdicts.target_sha` exists for at the skill
+level, and what `results.json`'s `skill_md_sha256` exists for at the receipt
+level. Both were built because an edit to a skill must invalidate what was
+claimed about it. `sections` is a third claim of the same kind, pointing at
+headings rather than at a hash, and it shipped without the guard its two
+siblings have.
+
+**What was built.** Both of the contract's checks, in the places their severities
+belong. A `sections` entry that names no heading of the file is a
+`conformance` problem, so the harness refuses to run a suite whose coverage
+claim is false, and `panel_validator`'s `suite-runnable` reports it as a `fail`.
+A heading no task exercises is a `section-coverage` note on the validator and a
+`finding:` line in `--check`, because the contract calls it a finding rather
+than an error and a gate that blocked on it would stop a skill being measured
+over a gap in what its suite proves.
+
+**What is still open, and it is the part a reader should carry.** The suites are
+the skill seat's files and the stale `sections` lists are theirs to fix. Until
+they do, two consequences follow in this order, and the merge order matters:
+
+1. `python3 tools/skill_eval.py --check` exits 1 on all three branches, and it
+   did before this check existed: not one of the eight suites carries a
+   `policy` block, which is the 2026-10-04 ledger entry already filed for the
+   skill seat. The stale coverage claims stack on top of that, 17 more failing
+   lines on #159 and 60 on #152, so the suites now need two edits rather than
+   one before pending-workflow item 19 can be applied without turning `main`
+   red. Verbatim, this run:
+
+   ```
+   #151   exit 1    8 failing (no policy block)
+   #159   exit 1    8 failing (no policy block)  17 failing (sections)   7 findings
+   #152   exit 1    8 failing (no policy block)  60 failing (sections)  22 findings
+   ```
+
+   Written here rather than left to a build, because a red `main` discovered by
+   a build is `INC-2026-10-01-checks-red-on-main-across-four-prs` and the whole
+   point of this register is that the second time is cheaper than the first.
+2. A per-section `Validation:` tag under ADR-38 cannot be written for any
+   section whose coverage claim does not resolve, which is 60 of 76 on #152.
+
+**The lesson worth carrying past this instance.** A field that names something in
+another file is a claim about that file, and it goes stale the moment the other
+file is edited. The question to ask of every such field, on the day it is
+added, is not whether it is correct now but what will notice when it stops
+being. For `sections` the answer was nothing, for five days, across sixty
+claims.

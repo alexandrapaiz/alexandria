@@ -298,14 +298,26 @@ The panel's `fail` means do not promote this text. ADR-36 says the response to
 the numbers is retirement rather than a rewrite. Two decisions about one
 measurement, and the skill seat owns the second.
 
-**Two findings are evidence and never move a verdict**, the line the adversary's
-`evidence-grade` also stays on. `trigger-firing` reports the newest
+**Three findings are evidence and never move a verdict**, the line the
+adversary's `evidence-grade` also stays on. `trigger-firing` reports the newest
 `skills/_validation/results/` receipt, its pass rate and whether it measured the
 current text: the trigger test asks whether a skill fires, which is a different
 question from whether it helps, and no register fixes a number for it. A
 reviewer that failed a skill on it would be legislating. `eval-spend` records
 `spend_usd` with its date, because the ledger already asks for skill-eval spend
 in the opex table before it becomes a habit.
+
+`section-coverage`, added 2026-10-05, reports how many of a skill's `## `
+headings at least one task in its suite claims to exercise, excluding the Apply
+checklist and the caveats. It is a note for a reason the suite contract states
+itself: a section with no task "is what a per-section *Validation:* tag has to
+say out loud (ADR-38), so it is a finding rather than an error". A reviewer that
+failed a skill for it would make that tag unwritable. The other half of the same
+contract rule is not a note at all. A `sections` entry naming a string that is
+no heading of the file is a false claim rather than a gap, so it is a
+`conformance` problem and arrives above as a `suite-runnable` fail, and
+pointing it at the three open skill-seat branches is what found the defect
+recorded as INC-2026-10-05-the-rewrite-staled-every-coverage-claim.
 
 **Its file half is its whole verdict**, which is the far end of a range the other
 two define. The provenance reviewer's `--files-only` runs a subset of its

@@ -263,6 +263,21 @@ into a verified badge, carrying the rubric delta, the n, and the interval.
 *Built.* No. This is the upgrade of the existing A/B, and the natural second
 slice.
 
+*Coverage, added 2026-10-05.* "Does the delta cover the skill" is a different
+question from "is the delta real", and until now nothing asked it. Every task
+in every suite carries `sections`, the `## ` headings of its skill that the task
+exercises, and both checks the suite contract asks of that field now run with no
+model and no key: a `sections` entry naming no heading of the file is a
+`conformance` problem, since the coverage claim is false, and a heading no task
+exercises is a `section-coverage` note on ADR-13's validator and a `finding:`
+line in `--check`, since the contract calls it a finding rather than an error.
+The number that comes out, `N of M sections exercised`, is what a per-section
+`Validation:` tag under ADR-38 has to be able to print, including when the
+honest value is nothing. Pointing it at the three open skill-seat branches is
+also how `INC-2026-10-05-the-rewrite-staled-every-coverage-claim` was found:
+a delta rewrite renamed the headings six suites point at, and 60 of 76 coverage
+claims had been false for five days.
+
 ### V4. Regression on revision
 
 *Question.* When the skill is edited or one of its claims changes status,
