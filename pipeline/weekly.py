@@ -864,7 +864,8 @@ def legacy_html(body: str) -> str:
     )
 
 
-def build_messages(key: str, body: str, rows, addr: str) -> list[tuple[str, str, str, str]]:
+def build_messages(key: str, body: str, rows, addr: str,
+                   prior_subject: str = "") -> list[tuple[str, str, str, str]]:
     """(email, subject, plain_text, html) per recipient, and nothing sent.
 
     Split out from the SMTP loop so a rehearsal can print exactly what the
@@ -874,7 +875,7 @@ def build_messages(key: str, body: str, rows, addr: str) -> list[tuple[str, str,
     reach is a renderer nobody checks before it goes out.
     """
     render = email_render()
-    subject = render.subject_for(body)
+    subject = render.disambiguate_subject(render.subject_for(body), prior_subject, key)
     # No unsubscribe endpoint exists yet, and the slot contract
     # (site/emails/README.md) accepts a mailto until one does.
     unsubscribe = f"mailto:{addr}?subject=Unsubscribe"
@@ -926,7 +927,16 @@ def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -
     # the address it was sent to. Subject stays the issue's own editorial
     # title, and the plain-text part stays the markdown body: a multipart
     # alternative without a real text part is what filters read as spam.
-    messages = build_messages(week, body, rows, addr)
+    # The previous issue's title, so a repeated title goes out with its dates
+    # on the subject line rather than as what looks like a duplicate send.
+    prior = conn.execute(
+        "select body from digests where week <> %s order by created_at desc limit 1",
+        (week,),
+    ).fetchone()
+    prior_subject = ""
+    if prior and prior[0].startswith("# "):
+        prior_subject = prior[0].split("\n", 1)[0][2:].strip()
+    messages = build_messages(week, body, rows, addr, prior_subject=prior_subject)
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(addr, pw)

@@ -248,3 +248,17 @@ if __name__ == "__main__":
                 print(f"FAIL  {name}: {type(exc).__name__}: {exc}")
     print("\n" + ("all green" if not failed else f"{failed} failing"))
     sys.exit(1 if failed else 0)
+
+
+def test_a_repeated_title_carries_its_dates_in_the_subject():
+    """2026-09-28: the Monday issue went out under the same subject as the two
+    sends before it and read as a repeat. The subject of a repeated title now
+    ends with the week's dates; a fresh title is left alone."""
+    same = er.disambiguate_subject("Harness distillation without the harness at runtime",
+                                       "Harness distillation without the harness at runtime", "2026-W39")
+    assert same.startswith("Harness distillation without the harness at runtime ("), same
+    assert "2026" in same, same
+    fresh = er.disambiguate_subject("A new title", "An old title", "2026-W39")
+    assert fresh == "A new title", fresh
+    none = er.disambiguate_subject("A new title", "", "2026-W39")
+    assert none == "A new title", none
