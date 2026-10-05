@@ -1,0 +1,690 @@
+{
+  "skill": "recursive-harness-self-improvement",
+  "suite_version": 2,
+  "written": "2026-09-30",
+  "author": "skill agent (ADR-22)",
+  "adr": "ADR-36",
+  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+  "judge": "a model other than the subject; rubric tasks only",
+  "note": "Nine treatment tasks and two controls from the nine cited papers (ADR-35). rhsi-t8 is arithmetic rather than recall: the compaction decision the source paper computes, with the prices supplied, so the answer is checkable as a number. Revised 2026-09-30 (ADR-38 retrofit): the per-section tagging pass found section 9, certifying the gain, uncovered by any task, so rhsi-t10 was added and the suite is version 2. Ten treatment tasks and two controls. Every task also gained a `sections` list in the same pass.",
+  "tasks": [
+    {
+      "id": "rhsi-t1",
+      "kind": "treatment",
+      "sections": [
+        "1. Write the freeze list before the first cycle"
+      ],
+      "form": "prompt",
+      "situation": "Every working design in the cluster splits the system into a part that moves and a part held still and alternates: ScienceBuddy's two nested loops with opposite freezes and a fixed auxiliary diagnostician, RSIAgent's memory frozen on a curriculum signal, SoL-Pi pinning source, configuration, tolerances and acceptance rules before the run.",
+      "source": {
+        "paper": "ScienceBuddy; RSIAgent; SoL-Pi",
+        "arxiv": "arxiv.org/abs/2609.17523",
+        "claims": [
+          335,
+          336,
+          337,
+          338,
+          392,
+          393
+        ]
+      },
+      "prompt": "Starting a nightly loop next week. Each night it reads the day's failed runs, and a strong model proposes changes to whichever of these it judges most promising: the agent's system prompt, the tool implementations, the retrieval config, the evaluation rubric it scores itself against, or the diagnosing prompt itself. It keeps whatever scores better the next morning. Give me the first week's implementation order.",
+      "without_skill": "Implements it roughly as described, adding version control and a score log. The loop can change its own rubric and its own diagnostician on the same night as the harness, so nothing it reports is attributable.",
+      "with_skill": "Insists on a freeze list before the first cycle, catches that the rubric and the diagnostician must not move while the harness does, and makes a change to the list a new experiment.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "freeze_list",
+            "criterion": "Requires a written freeze list before the first cycle, splitting what moves from what is held still.",
+            "anchors": {
+              "0": "No freeze concept.",
+              "1": "Says to change one thing at a time.",
+              "2": "Requires the list as a file in the repository and alternates a moving part against a held part."
+            }
+          },
+          {
+            "id": "diagnostician",
+            "criterion": "Catches specifically that the diagnosing model and its prompt must be fixed while the harness is being edited.",
+            "anchors": {
+              "0": "Lets the diagnoser evolve alongside.",
+              "1": "Mentions it in passing.",
+              "2": "Fixes the diagnostician and gives the reason: if the thing judging the edits also changes, an apparent improvement can be a drifting judge."
+            }
+          },
+          {
+            "id": "rubric_frozen",
+            "criterion": "Catches that the rubric the loop scores itself against is the worst thing to let it edit in the same cycle.",
+            "anchors": {
+              "0": "Allows it.",
+              "1": "Unclear.",
+              "2": "Freezes the rubric while the harness moves, and only revisits it in a separate outer cycle."
+            }
+          },
+          {
+            "id": "new_experiment",
+            "criterion": "Treats a change to the freeze list as a new experiment rather than a continuation.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Implied.",
+              "2": "Stated, with the score history reset or segmented at that boundary."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t2",
+      "kind": "treatment",
+      "sections": [
+        "2. The whole gain can come from the scaffold"
+      ],
+      "form": "prompt",
+      "situation": "Procedural Graphs began from a minimal skeleton, matched or surpassed hand-designed graphs, and repaired a deliberately flawed expert prior rather than inheriting it; RSIAgent lifted two open models past frontier closed models without updating a parameter.",
+      "source": {
+        "paper": "Procedural Graphs; RSIAgent",
+        "arxiv": "arxiv.org/abs/2609.09153",
+        "claims": [
+          462,
+          465,
+          466,
+          354,
+          355
+        ]
+      },
+      "prompt": "Before we switch on the self-improvement loop I want to spend two weeks hand-building the best seed scaffold we can, because the loop will only ever refine what we give it and a weak starting point will cap the whole thing. Two of us on it. The gates and rollback machinery can come after, in week three, once there is something worth gating. Agree?",
+      "without_skill": "Agrees, because garbage in, garbage out is a sound instinct and a strong seed sounds like leverage. It accepts the deferral of the gates, which is the part that actually decides whether the loop converges.",
+      "with_skill": "Inverts the order, on the evidence that the seed matters less than the loop and that a flawed prior was repaired rather than inherited.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "inverts",
+            "criterion": "Recommends spending the two weeks on the gates and rollback machinery instead of on the seed.",
+            "anchors": {
+              "0": "Agrees with the plan.",
+              "1": "Suggests doing both.",
+              "2": "Inverts it explicitly: a thin seed with good gates converges and a good seed with no gates decays."
+            }
+          },
+          {
+            "id": "evidence",
+            "criterion": "Supports it with the measured results on seed quality.",
+            "anchors": {
+              "0": "Asserts it.",
+              "1": "One example.",
+              "2": "Cites that a self-evolving system from a minimal skeleton matched or surpassed hand-designed structures, and that the same process repaired a deliberately flawed expert prior."
+            }
+          },
+          {
+            "id": "scaffold_headroom",
+            "criterion": "Makes the case that the scaffold carries real headroom, so the loop is worth running at all.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Generic.",
+              "2": "Cites the recursion ablation, 71.97 to 78.98 partial and 37.80 to 42.68 binary on OSWorld with no parameter updated."
+            }
+          },
+          {
+            "id": "not_zero_seed",
+            "criterion": "Does not overcorrect into claiming the seed is irrelevant.",
+            "anchors": {
+              "0": "Says the seed does not matter at all.",
+              "1": "Silent.",
+              "2": "Keeps a working minimal seed as a requirement and puts the effort saved into the gates."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t3",
+      "kind": "treatment",
+      "sections": [
+        "3. Localize the failure before proposing an edit"
+      ],
+      "form": "project",
+      "situation": "ModularRSI's conversion of task-level outcomes into function-level evidence: roll out K times per task, label each trajectory by binary reward, sort tasks into all-success, mixed and all-failure, pair a success against a failure of the same task for the mixed group, pair a past success from memory for all-failure tasks, and fall back to single-sided diagnosis when none exists.",
+      "source": {
+        "paper": "ModularRSI",
+        "arxiv": "arxiv.org/abs/2609.14857",
+        "claims": [
+          411,
+          412,
+          413
+        ]
+      },
+      "prompt": "rollouts.json holds last night's results: eight tasks, each rolled out five times, with a binary reward per trajectory, and a memory flag saying whether we have a stored past success for that task. Our diagnoser currently reads all forty trajectories and writes one paragraph about what went wrong. Give me the diagnosis plan instead. Write answer.json mapping each task id, as a string, to an object with \"group\" (one of \"all_success\", \"mixed\", \"all_failure\"), \"method\" (one of \"skip\", \"contrast_pair\", \"memory_pair\", \"single_sided\") and \"pair\" (the two trajectory indices to compare, or null).",
+      "files": {
+        "rollouts.json": "{\n \"1\": {\n  \"rewards\": [\n   1,\n   1,\n   1,\n   1,\n   1\n  ],\n  \"memory_has_past_success\": true\n },\n \"2\": {\n  \"rewards\": [\n   0,\n   1,\n   0,\n   1,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"3\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"4\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n },\n \"5\": {\n  \"rewards\": [\n   1,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n },\n \"6\": {\n  \"rewards\": [\n   1,\n   1,\n   1,\n   1,\n   1\n  ],\n  \"memory_has_past_success\": false\n },\n \"7\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   1,\n   0\n  ],\n  \"memory_has_past_success\": true\n },\n \"8\": {\n  \"rewards\": [\n   0,\n   0,\n   0,\n   0,\n   0\n  ],\n  \"memory_has_past_success\": false\n }\n}"
+      },
+      "without_skill": "Keeps reading all forty trajectories, or groups them by pass rate and summarises each group, producing a paragraph rather than function-level evidence and treating the two kinds of all-failure task the same way.",
+      "with_skill": "Sorts into the three groups, contrasts within mixed tasks, reaches to memory only for all-failure tasks that have a stored success, and falls back to single-sided diagnosis exactly where nothing can be paired.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "answer.json has exactly the keys '1' through '8', each with 'group', 'method' and 'pair' of the stated types."
+          },
+          {
+            "id": "grouping",
+            "statement": "Groups match the key: 1 and 6 all_success, 2, 5 and 7 mixed, 3, 4 and 8 all_failure. Scored as a fraction of eight."
+          },
+          {
+            "id": "methods",
+            "statement": "Methods match the key: 1 and 6 skip, 2, 5 and 7 contrast_pair, 3 memory_pair, 4 and 8 single_sided. Scored as a fraction of eight."
+          },
+          {
+            "id": "pairs_valid",
+            "statement": "For every contrast_pair task the 'pair' holds two indices of the same task whose rewards are 1 and 0 respectively; for skip and single_sided it is null."
+          },
+          {
+            "id": "memory_discriminated",
+            "statement": "Task 3 and task 4 receive different methods. Treating both all-failure tasks alike is the specific error this task is built to catch."
+          }
+        ],
+        "pass_condition": "schema and pairs_valid hold, grouping and methods are both 8/8, and memory_discriminated holds"
+      }
+    },
+    {
+      "id": "rhsi-t4",
+      "kind": "treatment",
+      "sections": [
+        "3. Localize the failure before proposing an edit"
+      ],
+      "form": "prompt",
+      "situation": "Root-Cause Attribution: four turns of continual search over an execution log raised attribution F1 from 0.349 to 0.498 and 0.478 to 0.620, search let lower-tier judges match higher-tier ones, and on short trajectories the extra turns did not help and sometimes hurt.",
+      "source": {
+        "paper": "Root-Cause Attribution Is a Search Problem",
+        "arxiv": "arxiv.org/abs/2609.13463",
+        "claims": [
+          593,
+          594,
+          597
+        ]
+      },
+      "prompt": "Our loop has to name which function caused a failure, reading an execution log that runs from about 400 lines on a short task to 30,000 on a long one. Right now a mid-tier model reads the log once and names a function, and it is right maybe a third of the time. The budget increase I can get will buy either our frontier model doing the same single pass, or the mid-tier model doing several passes. Which, and how many passes?",
+      "without_skill": "Buys the stronger model, because a harder judgment calls for a better judge, and sets a fixed number of passes if it uses passes at all.",
+      "with_skill": "Buys search turns over model tier, and gates the turn count on log length rather than fixing it.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "search_over_scale",
+            "criterion": "Spends the budget on more search turns before a more expensive diagnostician.",
+            "anchors": {
+              "0": "Buys the frontier model.",
+              "1": "Suggests trying both.",
+              "2": "Buys search turns, citing that with continual search lower-tier judges matched or surpassed higher-tier ones."
+            }
+          },
+          {
+            "id": "magnitude",
+            "criterion": "Attaches the measured gain, and distinguishes search from simply reading on.",
+            "anchors": {
+              "0": "No numbers.",
+              "1": "Says multiple passes help.",
+              "2": "Cites roughly 0.35 to 0.50 and 0.48 to 0.62 F1 over four turns, against 0.40 and 0.56 for passively continuing to read."
+            }
+          },
+          {
+            "id": "stop_rule",
+            "criterion": "Gates the turn count on log length rather than using a constant.",
+            "anchors": {
+              "0": "Fixes a constant number of turns.",
+              "1": "Says to tune it.",
+              "2": "Gates on log length, because on short trajectories the extra turns did not help and sometimes hurt."
+            }
+          },
+          {
+            "id": "mechanism",
+            "criterion": "Names why extra turns can hurt on short logs.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says diminishing returns.",
+              "2": "States that the first pass had already covered the evidence and further turns pressured the judge into flipping correct labels."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t5",
+      "kind": "treatment",
+      "sections": [
+        "4. Bound what one edit is allowed to touch"
+      ],
+      "form": "prompt",
+      "situation": "The two bounds the cluster uses: ModularRSI restricts each modification to one of five functional modules and integrates only after all have evolved, while ScienceBuddy bounds by size, one scoped skill, instruction or context setting per edit, enforced by a schema check before evaluation.",
+      "source": {
+        "paper": "ModularRSI; ScienceBuddy",
+        "arxiv": "arxiv.org/abs/2609.14857",
+        "claims": [
+          414,
+          415,
+          337,
+          338
+        ]
+      },
+      "prompt": "Our loop's proposed diffs are getting large. Last night's winner changed the agent loop's retry logic, added a tool, and rewrote the observation truncation, all in one commit, and it scored 1.8 points better so we kept it. What is the rule going forward?",
+      "without_skill": "Sets a line-count cap on the diff, or requires a human to review anything large. Both are about diff size rather than about attributability, and neither says what the gate can do with a mixed diff.",
+      "with_skill": "Bounds by module or by edit count, enforces it before evaluation, and names what a spanning diff does to the gate.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "bound",
+            "criterion": "Gives a concrete bound: one functional module per edit, or exactly one scoped addition, removal or revision.",
+            "anchors": {
+              "0": "A line-count cap or a review requirement.",
+              "1": "Says keep edits small.",
+              "2": "Names a module decomposition or a one-edit budget, and notes the two bounds compose."
+            }
+          },
+          {
+            "id": "enforced_early",
+            "criterion": "Enforces the bound by a schema or static check before the candidate is evaluated.",
+            "anchors": {
+              "0": "Enforced at review time or not at all.",
+              "1": "Unclear.",
+              "2": "Checked before evaluation, so an over-broad candidate never consumes a run."
+            }
+          },
+          {
+            "id": "why",
+            "criterion": "States what a spanning diff costs: the gate can then only accept or reject the pair, so nothing is attributable or cleanly revertible.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says it is hard to review.",
+              "2": "Gives the attribution and rollback argument."
+            }
+          },
+          {
+            "id": "last_night",
+            "criterion": "Says what to do about the change already kept.",
+            "anchors": {
+              "0": "Silent.",
+              "1": "Says to watch it.",
+              "2": "Splits it into its three parts and re-runs them separately, since 1.8 points on a three-part diff attributes to none of them."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t6",
+      "kind": "treatment",
+      "sections": [
+        "5. Gate every edit, and roll back by default"
+      ],
+      "form": "project",
+      "situation": "ModularRSI's three gates in series after every function update, static program check then a separate diff-reviewing agent whose job is to reject task-specific heuristics then execution validation on two randomly sampled tasks, with any failure rolling the function back; plus Procedural Graphs accepting only on held-out performance and retaining rejected edits as negative signal.",
+      "source": {
+        "paper": "ModularRSI; Procedural Graphs; ScienceBuddy",
+        "arxiv": "arxiv.org/abs/2609.14857",
+        "claims": [
+          414,
+          415,
+          462,
+          465,
+          337
+        ]
+      },
+      "prompt": "Write the gate specification our loop must pass before an edit is kept. Output gates.json with keys \"gates\" (an ordered list, each an object with \"name\", \"rejects\" and \"blocking\"), \"on_failure\", \"acceptance_metric\", and \"rejected_edits\".",
+      "without_skill": "Writes one or two gates, usually a test run and a score comparison, accepts on the score that motivated the edit, treats a failed gate as a warning, and discards rejected candidates.",
+      "with_skill": "Writes the three gates in series with rollback as the default, accepts on held-out performance rather than the diagnosis, and keeps rejected edits as negative signal.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "gates.json has all four keys, and 'gates' is a list of objects each with 'name', 'rejects' and a boolean 'blocking'."
+          },
+          {
+            "id": "three_gates",
+            "statement": "The list contains at least three gates covering a static program check (syntax, imports, protocol compliance), a diff review by a separate reviewer, and execution validation on sampled tasks, in that order."
+          },
+          {
+            "id": "adversarial_reviewer",
+            "statement": "The diff-review gate's 'rejects' field names task-specific heuristics or hard-coded answers to the evolution tasks, not general code quality."
+          },
+          {
+            "id": "all_blocking",
+            "statement": "Every gate has blocking true, and on_failure is a rollback of the edit rather than a warning or a human review queue."
+          },
+          {
+            "id": "held_out",
+            "statement": "acceptance_metric is held-out or development-set performance against the parent, not the diagnosis or the score on the tasks the edit was proposed from."
+          },
+          {
+            "id": "negative_signal",
+            "statement": "rejected_edits specifies retaining rejected candidates so the loop stops re-proposing them."
+          }
+        ],
+        "pass_condition": "every assertion holds; the harness reports the count"
+      }
+    },
+    {
+      "id": "rhsi-t7",
+      "kind": "treatment",
+      "sections": [
+        "6. Evolve on tasks the benchmark never sees"
+      ],
+      "form": "prompt",
+      "situation": "ModularRSI curated 2,000 executable evolution tasks disjoint from the downstream benchmarks, with instance-level similarity filtering and a domain analysis, which is what licenses its claim that the evolved harness transferred to unseen in-domain and out-of-domain tasks.",
+      "source": {
+        "paper": "ModularRSI",
+        "arxiv": "arxiv.org/abs/2609.14857",
+        "claims": [
+          411,
+          412,
+          413,
+          414,
+          415
+        ]
+      },
+      "prompt": "Six weeks in, our loop's score on the evolution set has gone from 34 to 71 percent and the curve is still climbing. I am writing this up for the board as evidence the approach works. The evolution set is 900 tasks we sampled from the same internal corpus our quarterly evaluation suite is drawn from, which we did deliberately so the tasks would be representative. Draft the slide.",
+      "without_skill": "Drafts the slide with the curve, because a climbing curve on representative tasks is exactly what the request asks for and the contamination is presented as a design virtue.",
+      "with_skill": "Refuses to present the curve as evidence of generalisation, names the contamination, and says what measurement would support the claim.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "catches_contamination",
+            "criterion": "Identifies that the evolution set and the evaluation suite come from one corpus, so the curve cannot distinguish improvement from memorisation.",
+            "anchors": {
+              "0": "Drafts the slide as asked.",
+              "1": "Notes a mild overlap risk.",
+              "2": "States that the loop optimises whatever it is scored on, so the evolution tasks are a training set and this one overlaps the evaluation."
+            }
+          },
+          {
+            "id": "reframes_virtue",
+            "criterion": "Addresses the claim that sampling from the same corpus makes the tasks representative.",
+            "anchors": {
+              "0": "Accepts it.",
+              "1": "Silent.",
+              "2": "Separates representativeness from disjointness, and says representativeness is achieved by matching the distribution, not by sharing the instances."
+            }
+          },
+          {
+            "id": "filtering",
+            "criterion": "Names the filtering discipline that would license the claim.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to hold out a test set.",
+              "2": "Instance-level similarity filtering plus a domain analysis to hold overlap down, and an out-of-domain arm as well as an unseen in-domain one."
+            }
+          },
+          {
+            "id": "honest_slide",
+            "criterion": "Still produces something presentable rather than refusing outright.",
+            "anchors": {
+              "0": "Refuses, or presents the curve anyway.",
+              "1": "Vague.",
+              "2": "Presents the curve labelled as progress on the evolution set, with the generalisation claim marked as not yet measured and the measurement scheduled."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t8",
+      "kind": "treatment",
+      "sections": [
+        "7. Make feedback cheap, and score tokens as well as accuracy"
+      ],
+      "form": "prompt",
+      "situation": "SoL-Pi's compaction gate, which computes at each subtask boundary the tokens compaction would save against the rewrite cost, from the current context size and the cache write-to-read price ratio, and compacts only when the saving wins.",
+      "source": {
+        "paper": "SoL-Pi",
+        "arxiv": "arxiv.org/abs/2609.20519",
+        "claims": [
+          535,
+          537,
+          538,
+          539
+        ]
+      },
+      "prompt": "We compact our agent's context whenever it passes 60 percent of the window, which someone picked a while ago. I want the rule to be arithmetic instead. Here are today's numbers. The context is 120,000 tokens and compaction would rewrite it to 30,000. Cached input reads cost 0.10 dollars per million tokens and a cache write costs 1.25 dollars per million. Every future provider request in this run re-reads the whole context once. Compaction itself costs one cache write of the compacted context. How many further requests does this run need before compacting pays, and what is the rule I should ship?",
+      "without_skill": "Keeps a percentage-full threshold, or reasons qualitatively that compaction is obviously worth it at 120,000 tokens, without computing the crossover.",
+      "with_skill": "Computes the breakeven from the two prices and the size delta, and ships a rule that compares estimated saving against rewrite cost at each subtask boundary.",
+      "check": {
+        "type": "number_in_range",
+        "extract": "the number of further requests at which compacting becomes cheaper than not compacting",
+        "range": [
+          4,
+          5
+        ],
+        "secondary_assertions": [
+          {
+            "id": "arithmetic",
+            "statement": "The answer computes a breakeven from the numbers given, showing the saving per request of 90,000 tokens at the read price against the one-off write of 30,000 tokens at the write price, giving a crossover at about 4.17 requests and so from the fifth."
+          },
+          {
+            "id": "rule_shape",
+            "statement": "The shipped rule compares estimated token saving against estimated rewrite cost at each subtask boundary, rather than triggering on a percentage of the window."
+          },
+          {
+            "id": "margin",
+            "statement": "The rule requires a larger margin as the context approaches the window limit, since a failed compaction near the limit is more costly than one taken early."
+          },
+          {
+            "id": "boundary",
+            "statement": "The decision is evaluated at subtask boundaries rather than mid-subtask."
+          }
+        ],
+        "pass_condition": "the extracted number is 4 or 5 and arithmetic, rule_shape and boundary all hold; margin is scored separately"
+      }
+    },
+    {
+      "id": "rhsi-t9",
+      "kind": "treatment",
+      "sections": [
+        "8. When several agents evolve one shared artifact"
+      ],
+      "form": "prompt",
+      "situation": "Agora's 13 coding-agent workers on one shared Git repository for about 12 days, 1,703 contributions, the metric driven from 3.39 to 1.899 bits per byte with no central planner, credit assigned by an evidence score weighting downstream builds by other accounts, and a recorded convergence on one idea broken by a human intervention.",
+      "source": {
+        "paper": "Agora; ScienceBuddy",
+        "arxiv": "arxiv.org/abs/2609.18094",
+        "claims": [
+          147,
+          148,
+          150,
+          337
+        ]
+      },
+      "prompt": "We are scaling from one self-editing agent to twelve, all committing to one repository, each scored on our shared benchmark and rewarded for improving it. No central planner, that is the point. What do we build into it on day one that we would not need with a single agent?",
+      "without_skill": "Answers with ordinary concurrency engineering: locks, branch conventions, merge queues, conflict resolution. All necessary and none of it specific to a population of agents optimising one metric.",
+      "with_skill": "Adds the credit rule, version retention and a diversity signal, and is honest that the one recorded fix for convergence was a human.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "credit",
+            "criterion": "Assigns credit by what other workers actually built on, not by what scored well.",
+            "anchors": {
+              "0": "Rewards benchmark improvement per contribution.",
+              "1": "Mentions attribution.",
+              "2": "Uses an evidence score computed as the weighted count of downstream builds by other accounts, and says why that differs from scoring well."
+            }
+          },
+          {
+            "id": "retention",
+            "criterion": "Retains every harness and environment version after each cycle.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says to keep history.",
+              "2": "Retains each version explicitly, because cross-cycle reuse and re-evaluation of an old configuration is otherwise impossible."
+            }
+          },
+          {
+            "id": "diversity",
+            "criterion": "Budgets for a diversity signal against convergence on one idea.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Notes agents may duplicate work.",
+              "2": "Plans a diversity signal that steers workers toward under-explored branches, having identified convergence as the population-specific failure."
+            }
+          },
+          {
+            "id": "human_honesty",
+            "criterion": "Does not present the convergence fix as automated.",
+            "anchors": {
+              "0": "Claims an automated diversity mechanism is proven.",
+              "1": "Silent on provenance.",
+              "2": "States that in the one recorded case the intervention was human, so the automated version is a design to test."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-t10",
+      "kind": "treatment",
+      "sections": [
+        "9. Certify the gain before you believe it"
+      ],
+      "form": "prompt",
+      "situation": "The Discovery Certification Protocol's three gates, and the narrowing this skill made on 2026-09-30 after reading the protocol in full: the third gate is optional and returned Inconclusive on both real-data audits, at 9 of 30 and 16 of 30 truthful continuations against 0 of 30 neutral, with 99 percent intervals straddling or undershooting the required lower bound of 0.30, while the first two gates passed. The task tests whether a reader gets the order and the expectation right, which is where a skill most easily oversells a protocol it admires.",
+      "source": {
+        "paper": "Scores Alone Do Not Prove Discovery: The Discovery Certification Protocol",
+        "arxiv": "arxiv.org/abs/2609.09219",
+        "claims": [
+          286
+        ]
+      },
+      "prompt": "Our nightly self-improving loop has been editing its own scaffold for three weeks and reports a 9 point gain on our internal suite. Before I take this to the board I want an audit standard we can hold ourselves to, and I would rather adopt a published one than invent one. Give me the gates, in the order we should build them, and tell me what to expect from each so I can budget the engineering.",
+      "without_skill": "Proposes a sensible home-made audit, usually a held-out set, a significance test, and a human review, and treats a reported gain plus statistical significance as the standard to meet.",
+      "with_skill": "Names the protocol, puts the matched-challenger gate second and first in value, warns that the feedback gate is optional and that Inconclusive is the expected result at thirty pairs rather than a sign the loop failed, and requires pre-registration of the analysis before the run.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "challenger_gate",
+            "criterion": "Identifies the matched-challenger gate as the one an ordinary review lacks, and states what it asks.",
+            "anchors": {
+              "0": "Absent. Proposes significance testing and human review only.",
+              "1": "Mentions a baseline or a control arm without giving the challenger the same starting knowledge and observations.",
+              "2": "Requires a matched challenger with the same starting information and observations but not the answer, and states that a result a fresh equally equipped agent reaches without the loop is not evidence for the loop."
+            }
+          },
+          {
+            "id": "gate_order",
+            "criterion": "Gives the three gates in order and treats the third as optional rather than as a requirement to clear.",
+            "anchors": {
+              "0": "Presents three gates as a set that must all pass, or omits the ordering.",
+              "1": "Gives the order without saying the third is optional.",
+              "2": "Gives significance, then zero challenger recoveries, then the feedback effect, and says the protocol itself marks the third optional and the most expensive, so the first two carry most of the available evidence."
+            }
+          },
+          {
+            "id": "inconclusive_expected",
+            "criterion": "Sets the expectation that the feedback gate returns Inconclusive at small pair counts, with the source's own numbers.",
+            "anchors": {
+              "0": "Implies the feedback gate is routinely passable, or treats Inconclusive as a failure of the loop.",
+              "1": "Says the gate is hard to pass without numbers.",
+              "2": "Reports that both real-data audits in the source came back Inconclusive on this gate, 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, with intervals against a required lower bound of 0.30, and says a wide interval is the normal result at thirty pairs."
+            }
+          },
+          {
+            "id": "prereg_and_bound",
+            "criterion": "Requires pre-registration of the analysis before the run, and reports an absence of failures as a bound rather than as zero.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentions writing the analysis plan down.",
+              "2": "Pre-registers the analysis before the run, decides the bound to be stated first and derives the episode count from it, and reports zero recoveries as a finite-sample upper bound rather than as impossibility."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "rhsi-c1",
+      "kind": "control",
+      "sections": [],
+      "form": "project",
+      "situation": "Ordinary version-control tooling. It carries this skill's exact vocabulary, localise, attribute, regression, rollback, gate, and is a bisection with no agent and no self-editing anywhere in it.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "bisect.py is unimplemented. Implement it from the docstring. No third-party dependencies, and it must not call the predicate more than ceil(log2(n)) + 1 times. Keep the name and signature. Write the whole file to answer.py.",
+      "files": {
+        "bisect.py": "def first_bad(is_bad, n: int):\n    \"\"\"Return the smallest index i in [0, n) with is_bad(i) True.\n\n    is_bad is monotonic: once True it stays True. Return None if no index is\n    bad. n == 0 returns None. Call is_bad at most ceil(log2(n)) + 1 times.\n    \"\"\"\n    raise NotImplementedError\n"
+      },
+      "without_skill": "A correct binary search with the call budget respected and the empty and all-good cases handled.",
+      "with_skill": "The same. The skill must not intrude: no freeze lists, no gate chains, no contrast pairs, no continual-search turn budget.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_bisect.py -q",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+        "files": {
+          "test_bisect.py": "import math\n\nfrom answer import first_bad\n\n\nclass Counted:\n    def __init__(self, first):\n        self.first = first\n        self.calls = 0\n\n    def __call__(self, i):\n        self.calls += 1\n        return i >= self.first\n\n\ndef test_finds_the_boundary():\n    for n in (1, 2, 3, 7, 8, 9, 1000):\n        for first in range(0, n):\n            p = Counted(first)\n            assert first_bad(p, n) == first, (n, first)\n\n\ndef test_none_when_all_good():\n    p = Counted(10**9)\n    assert first_bad(p, 64) is None\n\n\ndef test_empty():\n    assert first_bad(Counted(0), 0) is None\n\n\ndef test_respects_call_budget():\n    n = 1000\n    for first in (0, 1, 499, 999):\n        p = Counted(first)\n        first_bad(p, n)\n        assert p.calls <= math.ceil(math.log2(n)) + 1, (first, p.calls)\n"
+        }
+      }
+    },
+    {
+      "id": "rhsi-c2",
+      "kind": "control",
+      "sections": [],
+      "form": "prompt",
+      "situation": "Ordinary incident process for a human team. Root cause, attribution, failure, localise and rollback are all this skill's words, and there is no self-editing loop in sight.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "Write the postmortem template our on-call engineers fill in after an incident. We want it to actually get filled in, so keep it short, and we want it to surface the systemic cause rather than stopping at whoever pushed the change.",
+      "without_skill": "A good short template: timeline, customer impact with numbers, detection and how long it took, contributing conditions rather than a single cause, what made it worse, what made it better, action items with owners and dates, and an explicit blameless framing.",
+      "with_skill": "The same template. A skill that intrudes here will propose contrast pairs across rollouts, a freeze list, a three-gate acceptance chain, or a continual-search budget for the diagnosis, none of which belongs on a form a tired engineer fills in at 3 a.m.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "on_subject",
+            "criterion": "Produces a postmortem template for human on-call engineers.",
+            "anchors": {
+              "0": "Produces a specification for an automated self-improvement loop.",
+              "1": "A template with agent-loop machinery bolted on.",
+              "2": "A template, throughout."
+            }
+          },
+          {
+            "id": "short",
+            "criterion": "Short enough to be filled in, as asked.",
+            "anchors": {
+              "0": "Many pages or dozens of fields.",
+              "1": "Longer than it needs to be.",
+              "2": "Compact, with every field justified by what it is for."
+            }
+          },
+          {
+            "id": "systemic",
+            "criterion": "Surfaces the systemic cause rather than the individual.",
+            "anchors": {
+              "0": "Asks who caused it.",
+              "1": "Says blameless without structuring for it.",
+              "2": "Asks for contributing conditions, what made detection slow, and what would have caught it, with an explicit blameless framing."
+            }
+          },
+          {
+            "id": "no_intrusion",
+            "criterion": "Imports nothing from recursive harness self-improvement: no freeze list, no contrast pairs across rollouts, no three-gate acceptance chain, no evolution-set disjointness, no continual-search turn budget.",
+            "anchors": {
+              "0": "Two or more such intrusions.",
+              "1": "One.",
+              "2": "None."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+# company.yaml — alexandria's declaration to HQ (standards/company-interface.md §1)
+#
+# Derived by reading the repo on 2026-09-20, not from HQ's records: every seat
+# below is a workflow file that exists in .github/workflows/, every cadence is
+# the cron actually live in that file, and every surface path was fetched and
+# confirmed present. Where the repo and HQ's org chart disagreed, the repo won
+# and the disagreement is reported in the HQ PR.
+company: alexandra-systems
+product: alexandria
+posture: flagship
+priority: 1
+owner: alexandrapaiz
+surfaces:
+  incidents: docs/agents/incidents.md
+  pending: docs/backlog.md          # alexandria's consolidated board (ADR-15) is its owner-action surface
+  sprints: docs/sprints/
+  okrs: docs/okrs/
+  decisions: docs/decisions.md
+  ideas: docs/ideas.md
+  prfaq: docs/prfaq/
+  # No `lessons:` surface: this repo carries the vendored HQ register
+  # (docs/standards/lessons.md, pinned under `standards:` below) but no local
+  # lessons file of its own yet, so there is nothing here awaiting harvest.
+  # The exo seat creates docs/agents/lessons.md on its first local lesson.
+standards:
+  lessons: 47779de
+seats:
+  - { name: engineer, workflow: .github/workflows/agent-engineer.yml, cadence: daily,        model_class: build,      status: active }
+  - { name: pm,       workflow: .github/workflows/agent-pm.yml,       cadence: weekly-mon,   model_class: structured, status: active }
+  - { name: research, workflow: .github/workflows/agent-research.yml, cadence: weekly-mon,   model_class: judgment,   status: active }
+  - { name: skill,    workflow: .github/workflows/agent-skill.yml,    cadence: weekly-tue,   model_class: build,      status: active }
+  - { name: frontend, workflow: .github/workflows/agent-frontend.yml, cadence: weekly-wed,   model_class: build,      status: active }
+  - { name: market,   workflow: .github/workflows/agent-market.yml,   cadence: weekly-fri,   model_class: structured, status: active }
+  - { name: exo,      workflow: .github/workflows/agent-exo.yml,      cadence: weekly-sun,   model_class: judgment,   status: active }
+  - { name: okr,      workflow: .github/workflows/agent-okr.yml,      cadence: monthly,      model_class: structured, status: active }
+  - { name: security, workflow: .github/workflows/agent-security.yml, cadence: semimonthly,  model_class: build,      status: active }
+  # Live daily cron ("0 16 * * *") but absent from docs/agents/org-chart.md.
+  # The workflow is the ground truth, so it is active here; the org chart is
+  # the surface that needs fixing, by alexandria's pm seat.
+  - { name: writer,   workflow: .github/workflows/agent-writer.yml,   cadence: daily,        model_class: judgment,   status: active }
+  # Dormant per this repo's ADR-24: charter and workflow installed, no cron,
+  # awaiting the owner's activation.
+  - { name: finance,  workflow: .github/workflows/agent-finance.yml,  cadence: none,         model_class: structured, status: dormant }
+  - { name: sales,    workflow: .github/workflows/agent-sales.yml,    cadence: none,         model_class: judgment,   status: dormant }
+deploy:
+  vercel: { team: alexandrapd, project: alexandria }   # HQ ADR-018
+  domain: libraryofalexandria.dev
