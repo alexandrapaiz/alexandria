@@ -1,3 +1,67 @@
+## Updated 2026-10-05, ~18:30 UTC (message run, the six-hour pass): a quiet fleet, the same two things still waiting on you, and one new repeat finding
+
+**Inbox, checked first per the board protocol.** `board.messages` for
+`pm`/`alexandria` carries nothing new since the chair's distill-timeout
+ask (05:15 UTC), which #221 already answered in full. No other ask or
+handoff addressed to this seat sits unanswered.
+
+**The fleet has not run at all for about thirteen hours.** `gh run
+list` shows nothing, success or failure, since the pm-agent run at
+05:15:26 UTC that closed out the last pass. There is nothing to triage
+from "the last six hours" because nothing happened in them: zero runs,
+zero failures, zero merges. That silence is itself the finding, not an
+absence of one.
+
+**The merge-authority grant is still unconfirmed, checked fresh rather
+than carried on yesterday's word.** `docs/decisions.md` still stops at
+two ADR-39s (see the new incident below) and names nothing as ADR-041,
+which is the citation `docs/standards/pm.md` §10 rests on. The PR that
+would even fix that citation, #216, is still open. One extra data point
+this pass: #216 is the one open pull request that would mechanically
+pass every other Tier B condition today (clean merge, no Tier C path,
+no failing checks, not a draft), and its own author still declined to
+claim merge authority over it, in its own description, because vendoring
+a standard is the chair's call and not a grant you can use to merge the
+thing that defines the grant. Nothing qualifies for a Tier B merge this
+pass, the grant question aside: see the dispatch-queue's Tier B check
+for the other eight PRs, each excluded on its own separate, ordinary
+ground (draft, conflict, red checks, or a charter file in the diff).
+
+**New since the last pass: a second ADR number collision, and the first
+one is still unfixed.** Recorded in `docs/agents/incidents.md` as
+`INC-2026-10-05-adr-39-duplicate`: two different 2026-10-05 and
+2026-09-30 decisions both carry the header "ADR-39", the same allocator
+failure `INC-2026-10-01-adr-38-duplicate` named four days ago for
+ADR-38, whose own pair is still unrenumbered on `main` right now. Fixing
+either is the chair's, not this seat's.
+
+**`main`'s checks have now been red for about fifteen hours straight**
+(since 03:36 UTC), unchanged through this pass, and are the reason
+PR #219 cannot land after seven identical failed attempts. Nothing has
+merged to `main` in the last 14.5 hours either, which is inside the
+48-hour threshold that would otherwise make this the headline of the
+standup, but is worth naming here before it gets there.
+
+**Posted to the board**, as a first-person note from this seat,
+summarizing this pass. See below for the reference once the write
+confirms.
+
+**What waits on you, in one line each.**
+
+1. **The merge-authority grant** (#216, and the ADR-041 citation it
+   rests on) — ratify or revoke it; nothing merges under it either way
+   until it has a record in this repo.
+2. **PR #60**, the pre-send quality checklist, now 15 days open — Tier C
+   (`prompts/daily.md`), only your merge opens it.
+3. **The ADR-38 and ADR-39 number collisions** — a renumbering call in
+   `docs/decisions.md`, which is the chair's register, not a seat's.
+4. **The Polar Merchant-of-Record account (ADR-30)** — 9 days overdue,
+   named again because O1 KR1 needs it 8 days from now.
+
+Nothing shipped against the sprint since the 05:50 UTC pass: items 1
+through 4 in `docs/sprints/sprint-2026-10-05.md` carry forward
+unchanged, same as the quiet thirteen hours they sat in.
+
 ## Updated 2026-10-05 (message run): the merge-authority grant is unconfirmed, and no "bus-door decision" exists anywhere in this repo
 
 Two notes arrived tonight, both pressing on the Tier B PM-merge grant in

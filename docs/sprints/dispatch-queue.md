@@ -3,6 +3,96 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
+## 2026-10-05 (the six-hour pass, ~18:30 UTC)
+
+**Run health.** `gh run list` shows no run of any kind, success or
+failure, since the pm-agent run at 05:15:26 UTC — about thirteen hours
+of total silence from every workflow in this repository. Nothing to
+triage from the last six hours because nothing ran in them. This is
+not the same claim as "all green": it is "nothing happened," and
+saying so plainly is the point of this section rather than a gap in it.
+
+**The queue gauge, recomputed at 18:29 UTC:**
+
+1. **`main`'s age and check state.** Newest merge: still PR #211,
+   04:00:37 UTC, now 14h29m old. Newest `checks` run on `main`: still
+   **failure**, 03:36:14 UTC, unchanged — about 14h53m red, across at
+   least the six pushes the last pass already counted. The panel-
+   provenance defect (`skills/agent-containment/SKILL.md`'s empty
+   `claims`) is still live in the tree.
+2. **Open pull requests: 9 total, 5 opened since the last merge**
+   (#216, #219, #220, #221, and this PR, #224).
+3. **Conversion, trailing 7 days: 85 merged / 95 opened** (≈0.89).
+4. **Deepest open supersession chain: 1.** #219 and #220 each supersede
+   a closed PR, not an open one; this PR's own chain (#224 → #223 →
+   #222 → #218/#217 → #215/#213) is five deep but every link below
+   #224 is now closed, so no stacked chain is live on `main`'s queue.
+   Noted anyway per the chain-depth rule: **this seat has been blocked
+   on merges all day**, five PM pull requests deep with none landed.
+
+Threshold unchanged: last merge was under 48 hours ago (14h29m), so
+this stays informational rather than the headline. It is fifteen hours
+from crossing that line if the pattern holds.
+
+**Tier B merge check, redone at 18:29 UTC.** All 8 other open PRs
+checked against `docs/standards/pm.md` §10's five conditions, grant
+status aside (see `pending.md`): #221 is a PM-seat PR (condition 1);
+#219 has 7 straight failing `checks` runs (condition 3); #220 touches
+`prompts/triage.md`, a Tier C path, despite clean checks (condition 4);
+#205, #203, #202 are drafts (condition 2); #60 is `CONFLICTING`
+(condition 5) on top of its own Tier C path (`prompts/daily.md`). One
+PR, **#216**, passes all five mechanical conditions (clean merge, no
+Tier C path, no failing checks, not a draft) — and still does not
+qualify, because its own description declines merge authority over
+itself and the grant it would rely on has no record in this repo's
+decisions file. **No PR qualifies for a Tier B merge this pass, for
+reasons independent of whether the grant itself is live.**
+
+**The cap ratio.** Not computed this pass, same limitation as the last
+one: `gh run list` gives conclusions, not `num_turns`, and there were
+no runs in the window to measure regardless. No cap-related failure
+appears anywhere in the last 24 hours.
+
+**One proposed dispatch, not fired.**
+
+### 1. engineer — the same provenance defect has blocked `main` for fifteen hours and seven straight failed runs
+
+**Trigger.** PR #219 (`engineer/2026-10-05-skill-eval-program`) has
+failed `checks` 7 times in a row, 04:44-05:12 UTC, on the same two
+assertions in `tests/test_skill_receipts.py`:
+`skills/agent-containment` carries no claim ids, and harness-
+engineering's rendered list is missing claim `'199'`. `main` has been
+red on this exact defect since 03:23 UTC. No attempt since has changed
+the content that fails.
+
+**Cost of skipping it today.** `main` stays red, #219 stays stuck, and
+every sprint item this week (the subscribers write path, the
+unsubscribe endpoint) sits behind a build that cannot land clean.
+
+**Dispatch, drafted and not fired.** The owner-present guard that held
+the last several passes is gone (no dispatch anywhere in the last
+thirteen hours, let alone two), and engineer's open PR is exactly the
+case the hard stop's own exception covers: an instruction that names
+the open branch. This run is not firing it anyway, for a narrower
+reason than the guardrails above: `gh variable get PM_DISPATCH_ENABLED`
+returned a 403 from this session's token (`Resource not accessible by
+personal access token`), so this pass cannot confirm the switch is
+still `true` rather than assume it. Firing a dispatch on an unverified
+switch is the same mistake as merging on an unconfirmed grant, so this
+is queued for the owner or the chair to run directly instead:
+
+```bash
+gh workflow run agent-engineer.yml \
+  -f owner_instructions='Build on the open branch for PR #219
+(engineer/2026-10-05-skill-eval-program). Its `checks` run has failed
+7 times in a row, 2026-10-05 04:44-05:12 UTC, on
+tests/test_skill_receipts.py: skills/agent-containment/SKILL.md still
+has an empty claims list, and harness-engineering is missing claim
+id 199 from its rendered page. Fix the provenance gap so both
+assertions pass, rather than retrying the same content. main has been
+red on this exact defect since 03:23 UTC today.'
+```
+
 ## 2026-10-05 (ceremony reconciliation, refresh at 05:50 UTC)
 
 This PR (#222) reconciles two open PM-seat PRs from earlier tonight,
