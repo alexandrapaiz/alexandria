@@ -224,10 +224,22 @@ edited, and a draft that has not been through this is not sendable.
 ```bash
 ls -d skills/*/ | grep -v _validation | wc -l      # A1: is it still six
 grep -c 'validated: ""' skills/*/SKILL.md          # A3: how many still have no trial
-tail -1 skills/_validation/results/*.txt | tail -3 # A4: the newest retrieval score
-ls site/content/issues/                            # C1, C2: what is actually in the archive
+ls -t skills/_validation/results/*.txt | head -1   # A4: the newest retrieval score's date
+ls site/content/issues/                            # C1, C2: what files exist
+grep -n HIDDEN_WEEKS site/lib/content.js           # C1, C4: which of them actually serve
 grep -n 'papers read' site/app/page.jsx            # B1: is the false verb still live
+git grep -li polar -- site db pipeline tools       # D3: is there a payment path yet
+grep -n 'return null' site/lib/entitlement.js      # D3: can hasSpine() ever be true
 ```
+
+**Three of those eight were added on 2026-10-05 and two of them exist because
+the gate passed while the claim was false.** The `HIDDEN_WEEKS` line is there
+because `ls site/content/issues/` answered a question about the repository when
+the claim was about the site, and the gate reported a pass on a row that was
+wrong by one issue. The two D3 lines are there because the old gate had no
+command for the claim the entire launch rests on. A gate that cannot see the
+most expensive sentence in the directory is L-A21's first half, and this one
+could not.
 
 A sixth check is the one this run was nearly caught by, and it does have a
 command. Every file in `docs/sales/launch/` declares the date it was written
