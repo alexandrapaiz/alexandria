@@ -10574,3 +10574,278 @@ provenance reviewer exists to catch.
   enough.
 - Whose call: engineer seat.
 - Status: proposed
+
+### 2026-09-30 — Competitive scan: The Pragmatic Engineer leads with the reversal, which is alexandria's own thesis in someone else's hands
+
+- Craft scan for 2026-09-30, engineer seat. Rotated to the one entry in
+  docs/market/landscape.md filed as "pricing comp, not an AI peer", last
+  observed 2026-09-18, because today's build taught the pipeline to read
+  engineering-practice writing and this is the reference product for it.
+  Observed directly at newsletter.pragmaticengineer.com/archive.
+- **What is worth stealing: the reversal is the lede, not the caveat.** Its
+  newest post is "Why has Shopify dropped React Native?", subtitled "It's only
+  been a year since the e-commerce platform declared it was very happy with
+  React Native, but now Shopify is dumping it". Both dates are in the subtitle.
+  The most-read practice newsletter in the industry puts a named company
+  abandoning its own public endorsement at the top of the page, and alexandria
+  files the same material in a section called "left behind" that does not exist
+  as a page yet (two accepted ledger entries, 12 days old). The form is the
+  lesson: a reversal reads as news when it names who reversed, what they said
+  before, and how long the earlier belief lasted.
+- **What alexandria does better: the newsletter cannot query itself.** It tells
+  a reader Shopify reversed. Nothing in it connects the 2025 endorsement to the
+  2026 reversal as data, because an archive of essays has no edges. alexandria
+  holds both as dated claims with a contradiction edge between them, so the
+  older claim is marked rather than merely forgotten, and `deprecated_claims`
+  computes the list instead of an editor remembering it. That is the one thing
+  in this category that cannot be copied by writing more essays.
+- A scan note carries no status by the ledger contract's own list, the way the
+  other competitive scans in this file do not. The proposal it produced is the
+  next entry.
+
+### 2026-09-30 — The reversal, as a first-class shape in the graph and the lede of the left-behind page
+
+- Trigger: today's competitive scan above, read against today's build. The
+  Pragmatic Engineer's top story is a company abandoning a technology it
+  endorsed a year earlier, with both dates in the subtitle. Separately, this
+  run added `claims.broke` and a practices prompt that asks a field report what
+  went wrong, so from today the corpus captures the raw material for that shape
+  and has nowhere to put it.
+- What: `deprecated_claims` currently finds a claim contradicted by newer
+  evidence, which is the general case. A reversal is the special case worth
+  naming: the same institution, contradicting itself, with the interval between
+  the two dates as the number that makes it a story. `claims.paper_id` resolves
+  to `papers.institutions`, which distill has always filled in, so the pair is
+  computable today with no new ingestion. Surface it as the ordering of the
+  Left-Behind Index page (sprint item 5, frontend), where "Shopify, 14 months"
+  is a headline and "a practice was contradicted" is not.
+- First step: a `reversals` view beside `deprecated_claims`, joining a
+  contradiction edge to matching institutions on both sides, plus the interval;
+  then count what it returns against the live corpus before any page is drawn,
+  because a view that returns four rows is a paragraph and not a page.
+- Cost: $0, one view over data already held.
+- Status: proposed
+
+### 2026-09-30 — A concurrency group on the twelve agent workflows
+
+- Trigger: two `engineer-agent` runs were live at once this morning, 80 seconds
+  apart, one on `schedule` and one on `workflow_dispatch`
+  (INC-2026-09-30-two-engineer-runs-at-once). Neither could see the other's
+  branch when it started, because the first run's PR did not exist yet when the
+  second began. No file collided, and that was a choice this run made after
+  reading the other PR's title, not a property of the machinery.
+- What: `concurrency: {group: engineer-agent, cancel-in-progress: false}` on
+  each agent workflow, so a second trigger queues behind the first instead of
+  racing it. The two triggers a seat's workflow carries are two doors to one
+  room and nothing checks whether the room is occupied. `cancel-in-progress:
+  false` rather than `true`, because a run cancelled at turn 90 is incident 3,
+  work lost at teardown, and queueing costs only time.
+- First step: one workflow, `agent-engineer.yml`, since it is the seat that runs
+  daily and the only one with a same-day repeat on record; then the other eleven
+  once a dispatched run has been seen to queue rather than race.
+- Cost: $0. It is a workflow edit, so it is the owner's to apply, and it belongs
+  in `docs/agents/pending-workflow-changes.md` rather than in a seat's PR.
+- Status: proposed
+
+### 2026-09-30 — Run the register checker and read main's colour: the two gates that exist and fire at nothing
+
+- Trigger: two findings from this run's own ship checks, and both are repeats.
+  `docs/agents/registers.md` on main carried three unresolved git conflict
+  blocks, one of them 176 lines
+  (INC-2026-09-30-conflict-markers-in-registers). `tools/check_registers.py`
+  was written on 2026-09-24 to catch exactly that, its own incident entry ends
+  with "Still open ... Nothing runs this one yet", and six days later the damage
+  landed in a larger form. Separately, `checks.yml` went live on 2026-09-29 and
+  has run twice on main and failed twice
+  (INC-2026-09-30-ci-red-on-main-since-it-went-live): the gate that guards main
+  has never once been green on it, and two real faults sat there across a
+  lessons sync and three merges.
+- What: two lines and one command. Add `tests/test_check_registers.py` to the
+  nine pytest files `checks.yml` already names, so the conflict-marker and
+  duplicate-id checks run on every pull request instead of only in a full local
+  suite. And add `gh run list --branch=main --workflow=checks.yml --limit 3` to
+  the engineer charter's §0 machinery diff, which today asks whether a runtime
+  change was explained and smoke-tested but never asks whether main is green
+  right now.
+- First step: the `checks.yml` line, since the test exists and passes and the
+  edit is one entry in a list that already has nine.
+- Cost: $0. Both halves are outside a seat's reach: the first needs a
+  `workflows` permission, the second is a charter edit, which only the owner
+  merges. That is the whole reason this is an entry and not a commit.
+- Status: urgent
+
+### 2026-09-30 — Competitive scan: Undermind publishes a reading benchmark with a method page, and alexandria publishes a masthead (engineer seat)
+
+- Craft scan for 2026-09-30, the distill dispatch. Rotated to
+  undermind.ai, last observed 2026-09-18 at search-snippet confidence
+  only, because today's work is about reading depth and Undermind is the
+  one entry in docs/market/landscape.md whose pitch is reading depth.
+  Observed directly at undermind.ai.
+- **What is worth stealing: the benchmark is a product surface, not a blog
+  post.** The home page carries three linked charts and a method page.
+  "Share of the 20 most relevant papers found over time." "Mean recall
+  over 23 research goals through 10 minutes." "How we designed and ran
+  the benchmark." The claim above them, "our v2 engine outperforms
+  frontier agents with web search by a wide margin", is not the
+  interesting part. The interesting part is that a reader who does not
+  believe it has somewhere to go. Alexandria's equivalent claim is the
+  masthead, "read in full and distilled weekly", and until tonight it
+  was true of 164 papers out of 8,956 with nothing to click. That is ban
+  list 60 and canon law 15, and both of them are the writer seat patching
+  a sentence. The product answer is the chart.
+- **What alexandria does better: the corpus is standing and Undermind's is
+  query-time.** Undermind reads hundreds of papers for your question and
+  then the reading is gone; the next user starts over, and nothing in the
+  system can tell you that a result you relied on in March was overturned
+  in August. Alexandria's claim graph holds contradiction edges across
+  time, so "what fell behind" is a query rather than a memory. Their
+  fourth step, "Undermind keeps tabs on your areas of interest and
+  notifies you", is the weekly issue with a worse substrate under it.
+- Feeds the entry below.
+
+### 2026-09-30 — Time to read, as the number the product publishes (engineer seat)
+
+- Trigger: the craft scan above, plus tonight's distill work, which
+  produced two honest counts the pipeline never had. The run now prints
+  how many papers were read from full text and, separately, how many
+  arrived complete with nothing cut, and `papers.fulltext_chars` has the
+  per-paper number behind both. What is still missing is the axis
+  Undermind's benchmark actually plots, which is time.
+- What: one metric, measurable from columns that already exist. For a
+  named thread, the median hours from `papers.fetched_at` to the first
+  claim written from that paper's full text. Compute it per standing
+  thread, since the threads are what the owner asked to go first, and
+  publish it on the library page beside the masthead. It answers the
+  question the masthead currently asserts, it degrades honestly (a thread
+  with no reads has no median and says so), and it is the one number that
+  gets worse when the queue outgrows the drain, which is the failure mode
+  ADR-39 says will arrive.
+- First step: the query, printed by `modal run
+  pipeline/distill.py::drain` beside the queue depth. It needs no new
+  column and no new job.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — The deployed sha, as a command rather than an inference (engineer seat)
+
+- Trigger: `INC-2026-09-30-triage-runtime-change-with-no-rehearsal`, filed
+  tonight by the daily machinery diff. `ea61cbc` changed
+  `pipeline/triage.py` and `prompts/triage.md` on main by direct push,
+  with no pull request and no rehearsal receipt, so nothing says whether
+  the running job has it.
+- The count that makes this a class rather than an incident: the org has
+  now worked out a prompt's deploy state by inference four times.
+  `INC-2026-09-26-interpret-stale-third-sighting` found the interpret
+  prompt seven days stale after its output had reached readers.
+  `INC-2026-09-28-repair-written-never-deployed` is the general form.
+  `docs/research/briefs/2026-09-30.md` does it again, in a table, for
+  three prompts at once, and had to note that `prompts/distill.md` could
+  not be checked at all because `claims.prompt_sha` was null for every
+  row written before 2026-09-26. Every one of those was a person reading
+  output and guessing.
+- What: one script, `tools/deployed_shas.py`. For each of the four
+  prompts that carry a sha onto their output, compare
+  `sha256(prompts/<name>.md)[:12]` on main against the newest
+  `prompt_sha` in the table that job writes, and print agree or disagree
+  with both values and the age of the newest row. Run it in the daily PM
+  check and in the engineer charter's step 0, where the machinery diff
+  already asks the neighbouring question.
+- Why this is the shape rather than a rule: L-A22 says a rule enforced by
+  a sentence is enforced at the reliability of a model reading a file. The
+  rule already exists in `docs/agents/runtime-changes.md` and it has been
+  read and not fired four times. This is the same rule with a shell
+  behind it.
+- First step: the script and one row of its output for triage, which is
+  the one whose sha is known good.
+- Cost: $0. It needs a read-only `DATABASE_URL`, which
+  `docs/agents/delivery-health.md` already records as a missing
+  credential (`NEON_RO_URL`) blocking two other guardrails, so this makes
+  a third caller for one secret the owner has to create once.
+- Status: proposed
+
+### 2026-09-30 — Price the Moonshot tier upgrade against what it buys (engineer seat, for the owner)
+
+- Trigger: ADR-39's arithmetic. Distill can now read whole papers, and
+  the ceiling on how many is no longer the code and no longer the money.
+  It is Moonshot's tier-0 daily token allowance, 1,500,000 tokens for
+  this account, of which the three Kimi jobs already expect 1,195,090, or
+  80 per cent. One paper at the 250,000-character window is about 40,000
+  tokens, so distill's share buys twenty papers a day, which is 140 a
+  week.
+- Why that number is the interesting one: the distill queue was 33 papers
+  when the research seat measured it tonight, so 140 a week clears it
+  many times over. But the same brief measured the stage above:
+  5,917 papers have never been judged by the triage model, and triage is
+  capped at 700 a run. When triage drains, whatever share of those route
+  to `distill` lands here, and at any plausible yield that is more than
+  140 a week. The reading rate stops being a code question at that
+  moment and becomes a purchasing one.
+- What the owner is being asked to price, not decide tonight: what the
+  next Moonshot tier costs, what it raises the daily token allowance and
+  the 3-requests-a-minute rate to, and therefore how many papers a day it
+  buys at $0.042 each. The three caps in the code do not need to change
+  for the answer to be useful; `budget.check_kimi_tpd()` and `modal run
+  pipeline/distill.py::drain` both print the arithmetic that the new
+  numbers would go into.
+- What a seat must not do: raise `MAX_PAPERS_PER_RUN` or
+  `TOKENS_PER_RUN` to make the drain forecast look better. Over the
+  allowance is not a slow run, it is every Kimi call in the org failing
+  for the rest of the UTC day, press included.
+- Cost: a proposal, not an action. The current line is booked in
+  docs/finance/opex.md at ~$28.70/month expected against a $72.60
+  ceiling.
+- Status: proposed
+
+### 2026-09-30 — A measured constant carries the window it was measured at (engineer seat)
+
+- Trigger: two defects found in one afternoon, both by re-measuring
+  something that was correct when it was written.
+  `budget.FULLTEXT_CHARS_PER_TOKEN` was 3.35, measured over a paper's
+  first 12,000 characters, and a whole paper runs 2.53, because a paper
+  opens with a title block and an abstract and only later reaches its
+  equations. Widening `FULLTEXT_CHARS` without re-measuring would have
+  under-sized every distill request by about a third. Separately,
+  `budget.count_tokens` raised on any text containing `<|endoftext|>`,
+  which a cleaned arXiv paper carries whenever it quotes a prompt
+  template, and a 12,000-character window had simply never reached one.
+- The pattern in both: a number and a check that were valid for a window
+  nobody wrote down, and stayed in the code after the window moved. The
+  local fix is in place, because
+  `tests/test_distill_fulltext_budget.py` now asserts that the receipt's
+  `window_chars` and `model` equal the job's. The general form is not.
+- What: every receipt under `docs/evals/` that a guard reads states the
+  runtime parameters it was measured under, and the test that reads it
+  asserts those parameters equal today's. Three exist already
+  (`fulltext-token-density`, the distill bake-off, the skill eval
+  results) and only one of them does this.
+- First step: a shared helper in `tests/conftest.py`, `assert_receipt_matches(receipt, **params)`, and one call from each of the three.
+- Cost: $0.
+- Status: proposed
+
+### 2026-09-30 — The charter's own-PR clause is written in the singular and the material arrives in groups (engineer seat)
+
+- Trigger: `INC-2026-09-30-two-engineer-runs-at-once`, third occurrence,
+  recorded tonight. One seat held three open pull requests on one day.
+  The charter's clause, "Your own last run may still be open", says to
+  find *a* pull request from your own seat and choose between two
+  options. With three open, the third run has to work out which one it
+  is superseding, which one it is merely ordering behind, and what to
+  say about the one it is doing neither to. It got there, and it got
+  there by reasoning rather than by reading.
+- This is the unit question the writer seat filed on 2026-09-29: name
+  the unit the check inspects, name the unit the defect lives in, and
+  say whether they are the same size. The clause inspects one PR. The
+  defect lives in a set of them.
+- What: three sentences in the clause. Run `gh pr list` and count. With
+  one, the existing two options stand. With more than one, merge every
+  branch that touches a file you will touch, in the order they were
+  opened, say which you supersede, and name the rest with the merge
+  order you expect. And say the count at the top of the description, so
+  the owner sees the pile rather than one link at a time.
+- Why it is a ledger entry and not a commit: charters are edited only by
+  the owner's merge.
+- First step: the owner decides whether the clause moves. The engineer
+  charter, the PM charter and `docs/agents/registers.md` all carry a
+  version of it.
+- Cost: $0.
+- Status: proposed

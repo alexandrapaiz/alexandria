@@ -117,8 +117,12 @@ begin
     end if;
 end $$;
 
--- prompt_sha: which prompts/distill.md wrote this claim, the first 12 hex of its
--- sha256. The press has recorded this on every issue since it existed and triage
+-- prompt_sha: which distill prompt wrote this claim, the first 12 hex of its
+-- sha256. As of 2026-09-30 there are two of them, prompts/distill.md for papers
+-- and prompts/distill-practices.md for field reports, so this column now answers
+-- which prompt as well as which version of it, and the two shas are what
+-- separate a claim mined from a paper from one mined from a blog post.
+-- The press has recorded this on every issue since it existed and triage
 -- on every decision; claims had nothing, so the deploy state of the distill
 -- prompt was only knowable by inference from the shape of its output. That is
 -- how the interpret prompt went seven days stale unnoticed
@@ -126,6 +130,17 @@ end $$;
 -- arrival cannot be seen in the data is a rubric nobody can show is live.
 -- NULL means a claim written before this column existed.
 alter table claims add column if not exists prompt_sha text;
+
+-- broke: what failed, regressed, or had to be abandoned, as the source reports
+-- it. Only the practices prompt asks for this, because only a field report has
+-- it to give: a paper publishes the configuration that worked and an engineering
+-- blog post is the one place the industry writes down what it tried first. That
+-- half of a field report is the half most often dropped in summary, and it is
+-- the material the deprecated-claims view and the left-behind index are made of,
+-- so it gets a column rather than being folded into `evidence` where no query
+-- can find it. NULL means the source reported no failure, which for a field
+-- report is a fact about the source worth reading rather than a missing value.
+alter table claims add column if not exists broke text;
 
 create index if not exists claims_evidence_grade_idx on claims (evidence_grade);
 create index if not exists claims_prompt_sha_idx on claims (prompt_sha);

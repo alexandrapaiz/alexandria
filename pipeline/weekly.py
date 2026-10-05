@@ -1219,9 +1219,9 @@ def preflight() -> str:
     # users". ADR-32 ends that argument. The press has its own provider and its
     # own prepaid account, so it no longer competes with triage, distill or
     # interpret for anything. The Groq fallbacks still would, which is one more
-    # reason for the press to keep out of the 11:00-to-15:00 band the daily
-    # crons occupy (11:00 ingest, 11:30 distill, 12:00 triage, 14:00 interpret,
-    # each with a one-hour timeout).
+    # reason for the press to keep out of the 11:00-to-16:30 band the daily
+    # crons occupy (11:00 ingest, 12:00 triage, 14:00 interpret, 15:00 distill
+    # with a 90-minute timeout, the rest with an hour).
     #
     # The reason to keep 09:00 is editorial. The issue covers the week that
     # ended Sunday, so Monday's own ingest is not in it, and 09:00 UTC is 5am

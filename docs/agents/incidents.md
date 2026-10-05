@@ -9260,3 +9260,241 @@ edit.** Deleting item 11 left item 13's ordering paragraph naming a
 deleted item. Caught in the same run by re-running the sweep after the
 edit rather than before it, which is the practical form of the fix above:
 **the sweep runs after your own changes, not only before them.**
+
+## INC-2026-09-30-conflict-markers-in-registers — the register map carried three unresolved conflicts, and the checker built to catch that is still wired to nothing (2026-09-30, engineer seat)
+
+**Recorded under the standing rule as a repeat of
+INC-2026-09-24-conflict-marker-on-main**, which is itself recorded as a
+repeat of incident 6's class. This is the third occurrence of the class
+and the second in one file family.
+
+**What happened.** `docs/agents/registers.md` on main carried three
+complete git conflict blocks: two single-row conflicts in the register
+table, at `press-rehearsal.md` and `delivery-health.md`, and one block
+spanning 176 lines that held two additive sections written by two seats
+on two dates. All nine marker lines were committed. The file is the map
+a seat reads to find out which register has which gate, so for an
+unknown number of runs it has been answering that question twice, in two
+voices, with a `>>>>>>> origin/main` between them.
+
+**Why this one is worse than its predecessor.** The 2026-09-24 incident
+was a single stray `=======` in `incidents.md`, and its fix was not just
+the removal. It was `tools/check_registers.py`, written that day, which
+reads all eight shared registers for exactly this damage, with
+`tests/test_check_registers.py` driving it. That entry's own closing
+paragraph says what was left undone:
+
+> **Still open.** The checker is a command, and per runtime-changes.md's
+> closing rule a gate is worth the number of commands that run it.
+> Nothing runs this one yet.
+
+Six days later the damage it was built for landed in a bigger form, and
+the checker did catch it the moment anything ran it. `checks.yml` went
+live on 2026-09-29 and runs nine named pytest files; neither
+`tests/test_check_registers.py` nor `tools/check_registers.py` is among
+them, so a full `python3 -m pytest tests/ -q` finds the damage and the
+CI that runs on every pull request does not. The gate was built, tested,
+documented, and left unreachable, which is L-A9 and incident 20 for the
+third time: recording is not enforcing, and neither is building.
+
+**The fix, applied.** The three conflicts are resolved in this pull
+request and nothing is dropped. The two row conflicts take main's newer
+text, and the `delivery-health.md` row keeps the one fact only the stale
+side carried, which workflow is missing the credential. The 176-line
+block was two additive sections, both kept, ordered by date, so the page
+now reads 09-24, 09-26, 09-27, 09-28.
+
+**Still open, and it is the same sentence as last time.** Wiring
+`tests/test_check_registers.py` into `checks.yml` needs a `workflows`
+permission this seat does not have. It is filed in the ledger and in
+`docs/agents/pending-workflow-changes.md`'s lane for the owner. Writing
+"still open" twice in six days about the same gate is the finding: the
+queue for changes only the owner can apply is where gates go to wait,
+and nothing measures how long they wait.
+
+---
+
+## INC-2026-09-30-two-engineer-runs-at-once — a scheduled run and a dispatched run of the same seat, 80 seconds apart (2026-09-30, engineer seat)
+
+**Recorded under the standing rule as a repeat of incident 14's class,**
+two runs of one seat racing, which incident 14 says was "saved only by
+`--force-with-lease`". Incident 6 and incident 25 are the same anchor
+contention one level down.
+
+**What happened.** Two `engineer-agent` runs were in flight at the same
+time. Run 36657646763 started at 01:58:40 UTC on a `workflow_dispatch`
+carrying the owner's ADR-36 directive, and opened draft PR #141 at
+02:00:52. Run 36657749002, this one, started at 02:00:00 UTC on the
+`schedule` trigger with empty owner instructions. Neither run could see
+the other's branch when it started, because PR #141 did not exist yet
+when the second run began.
+
+**What it cost, which this time is nothing, and why that is luck.** The
+dispatched run took the owner-directed work (ADR-36's skill registrar
+and eval harness). This run read the sprint, found every engineer item
+already merged, and fell back to an accepted ledger entry whose files
+are `prompts/`, `pipeline/`, `db/` and the tests. No file is touched by
+both. That was a choice made after reading #141's title, not a property
+of the machinery: had the scheduled run reached for sprint item 3, the
+skill-receipts work, the two runs would have written the same files with
+no knowledge of each other.
+
+**The charter clause that nearly fired backwards.** The engineer charter
+says "One PR per day, maximum", and two live runs on one day cannot both
+honour it. The clause assumes one run per day, which was true until
+today. This run opened its PR anyway, named #141 at the top of the
+description with the expected merge order, and said which of the two
+branch choices it made, because the alternative reading, standing down
+silently with work unshipped, is the one outcome the ship-first rule
+says is never acceptable.
+
+**What the org should take from it.** The `workflow_dispatch` and
+`schedule` triggers on a seat's workflow are two doors to one room and
+nothing checks whether the room is occupied. A concurrency group on the
+agent workflows would close it, which is a workflow edit and therefore
+the owner's, so it is filed in the ledger. Until then the mitigation is
+the one the charters already carry, and it worked: survey the open PRs
+before branching, and say in the description which PR you branched
+around.
+
+**Third occurrence the same night, recorded under the standing rule
+(2026-09-30, third engineer run).** A third `workflow_dispatch` landed
+at 02:4x UTC carrying the owner's distill directive, while #141 and #142
+were both still open and unmerged. So one seat held three open pull
+requests at once, on one calendar day, against a charter clause that
+says one. This time the overlap was real rather than lucky: the
+dispatched work needed `pipeline/distill.py` and `pipeline/budget.py`,
+which #142 had already rewritten. The mitigation held again, because the
+charter's own "build on it" branch was available and taken: #142 was
+merged into the third branch before any work started, and PR #149
+supersedes it and says so.
+
+What the third occurrence adds to the finding: the mitigation is
+manual, it has now been exercised twice in one night, and it scales
+badly. Two runs need one survey; three runs need three, and the third
+run has to reason about which of two open branches it is superseding
+and which it is merely ordering behind. The concurrency group filed
+above would not have helped here either, because these were three
+separate dispatches the owner meant to send. What would help is the
+charter saying what a seat does when it finds **more than one** of its
+own PRs open, which today it does not: the clause is written in the
+singular and the material arrived in a group, which is the unit mismatch
+the writer seat named in the ledger on 2026-09-29.
+
+---
+
+## INC-2026-09-30-ci-red-on-main-since-it-went-live — the new CI gate has never once been green on main, and both failures were minutes of work (2026-09-30, engineer seat)
+
+**Recorded under the standing rule as a repeat of the incident 8 class,**
+judge a run by its artifacts and never by its conclusion, and of
+INC-2026-09-24-test-suite-ran-zero-tests, a suite that reported one error
+and ran nothing. This is the same shape with the polarity reversed: the
+suite ran, it reported the truth, and nobody read it.
+
+**What happened.** `checks.yml` went live on main in commit 4ef55df
+(2026-09-29, queued by this seat, applied by the chair). It has run twice
+on main, for commits d6bf2a43 and ea61cbc6, and both runs failed. The
+gate has a 0 for 2 record and no green run has ever existed on the
+branch it guards. Two distinct real faults, both in the job named "digest
+request fits the model's budget":
+
+1. `tests/test_run_report.py::test_the_script_runs_under_the_container_shell`.
+   `tools/run_report.py` printed its `::warning::` annotations on stdout.
+   The job has no `GH_TOKEN`, so `gh pr list` fails, so the warning landed
+   ahead of the JSON and `--dry-run`'s stdout stopped being parseable. The
+   file's own docstring says it never fails the run, because "a red job
+   for an undelivered message is a lie to every reader of `gh run list`".
+   It failed the run, on its first day, for exactly that.
+2. `tests/test_press_resilience.py`, one check: "it backed off between
+   attempts, honouring retry-after". It asserted `slept == [1.0, 1.0]`,
+   which is the behaviour the press was deliberately fixed for on
+   2026-09-24, when it honoured a `retry-after: 1` three times in four
+   seconds and gave up while another seat's Kimi call held the single
+   concurrency slot. The production code is right and has been since. The
+   test kept the pre-incident contract and went red when the gate that
+   reads it went live.
+
+**Why the second one matters more than a stale assertion usually would.**
+A test asserting the behaviour an incident was filed about is worse than
+no test, because it is a standing argument for reintroducing the bug. Any
+seat reading that failure could reasonably have "fixed" it by making
+`call_model` honour a one-second retry-after again, which is
+INC-2026-09-24's fault put back by the hand of the gate meant to prevent
+it.
+
+**The fix, applied.** Both are fixed in this pull request. Annotations go
+to stderr, which Actions reads just as well and which leaves `--dry-run`'s
+promise intact. The press test now asserts the real invariant, that a
+short `retry-after` cannot shorten the job's own backoff, with the
+incident named in the comment so the next reader does not undo it.
+
+**What the org should take from it.** A new gate needs one green run on
+the branch it guards before it is called live, and nothing in this org
+asks for that. Two red runs in a row on main went unremarked between
+19:43 on 2026-09-29 and 02:00 on 2026-09-30, across a lessons sync, an
+ADR amendment and three other merges to main. The engineer's §0 machinery
+diff asks whether a merged PR explained a runtime change and whether a
+smoke run stands behind it; it does not ask whether main is green right
+now. That is one command, `gh run list --branch=main --workflow=checks.yml
+--limit 3`, and this seat proposes it be added to §0 in the ledger rather
+than editing its own charter.
+
+## INC-2026-09-30-triage-runtime-change-with-no-rehearsal — the priority list and the triage prompt changed on main, by direct push, with no pull request and no rehearsal receipt (2026-09-30, engineer seat)
+
+**Found by:** the daily machinery diff, which is step 0 of the engineer
+charter's "check the register before you ship" and exists for exactly
+this. One command:
+
+```
+git log --since="36 hours ago" --format='%h %ci %an %s' main -- .github/ pipeline/
+```
+
+**What it found.** `ea61cbc`, 2026-09-29 20:09 -0600, owner-authored,
+pushed straight to main: nine lines added to `pipeline/triage.py`
+(fourteen new terms in `PRIORITY_TERMS`) and twenty-eight to
+`prompts/triage.md`. `gh api repos/:owner/:repo/commits/ea61cbc/pulls`
+returns nothing, so no pull request explains it, and there is no
+rehearsal receipt for it anywhere this seat can read.
+
+**Why it counts as a runtime change.** Both files are baked into the
+triage image at `modal deploy`. `PRIORITY_TERMS` decides which papers
+reach the model first and `prompts/triage.md` decides how they are
+judged; the prompt's sha is written onto every `triage_log` row, so the
+change is observable in the database the moment it deploys and invisible
+until then. `docs/agents/runtime-changes.md` names a prompt change large
+enough to move the budget arithmetic as one of the four triggers for
+re-running the three gates, and this one moved `prompts/triage.md` from
+1,133 tokens to 1,498, which is a third of the way to the next cap
+revision.
+
+**The repeat this is.** The research brief of 2026-09-30 records the
+same class from the other end: `prompts/distill.md` was "measurably not
+running" and `prompts/triage.md` was current, and the only way anyone
+could tell was by inferring it from the shape of the output.
+`INC-2026-09-26-interpret-stale-third-sighting` is the same shape, and
+`INC-2026-09-28-repair-written-never-deployed` is the general form:
+merged is not deployed. What is new here is that the gap opened by a
+direct push rather than by a merge, which means the pull-request gate
+that normally carries the deploy chain never ran at all.
+
+**No blame in it.** The change is correct, it is the owner's own
+directive, and the four threads it adds are the point of tonight's work.
+The defect is that nothing between the commit and the running job says
+whether the running job has it.
+
+**What this run did about it.** Not a fix, because the fix is a deploy
+and this seat cannot run one. But the engineer PR of 2026-09-30 changes
+`pipeline/triage.py` anyway (the priority terms move into
+`pipeline/priority.py`, shared with distill), so triage has to be
+redeployed for that PR regardless, and `ea61cbc` rides along. The deploy
+chain in that PR names triage explicitly for this reason. If that PR is
+not merged, `ea61cbc` still needs its own `modal deploy
+pipeline/triage.py` behind the three gates.
+
+**What would actually close it.** A deployed-sha check: one query that
+reads the newest `triage_log.prompt_sha` and compares it against
+`sha256(prompts/triage.md)[:12]` on main, run daily, failing loudly when
+they disagree. The org has now inferred this state by hand four times.
+`docs/research/briefs/2026-09-30.md` does the inference again, in a
+table, for three prompts at once, which is the strongest evidence yet
+that it should be a command. Filed as a ledger entry the same day.
