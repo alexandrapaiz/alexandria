@@ -3142,3 +3142,5 @@ lost, and said honestly every single day that their own output was piling
 up. **Nothing in this organization's judgment failed. An org can be good at
 everything except the one step that makes any of it true, and that step is
 the only one with no cron.**
+
+<!-- run marker: alexandria-exo 2026-10-05 window run in progress -->
