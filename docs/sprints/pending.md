@@ -42,9 +42,9 @@ merged to `main` in the last 14.5 hours either, which is inside the
 48-hour threshold that would otherwise make this the headline of the
 standup, but is worth naming here before it gets there.
 
-**Posted to the board**, as a first-person note from this seat,
-summarizing this pass. See below for the reference once the write
-confirms.
+**Posted to the board**, as a first-person note from this seat
+summarizing this pass: message `5a49f86d-9e42-4b36-ac66-b4b7a66ea841`,
+2026-10-05T18:32:14Z.
 
 **What waits on you, in one line each.**
 
