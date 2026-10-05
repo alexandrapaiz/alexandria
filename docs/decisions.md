@@ -1573,3 +1573,81 @@ to every revision; the engineer adds the second axis to the results
 contract and the evidence page; the market seat may use a survival
 number on the skill page only when it came from Ursa's record. The
 handoff to Ursa's PM is on the company board.
+
+## ADR-40: Skill testing and refinement follow the RL feedback and evaluation research the library holds
+
+**Status.** Accepted 2026-10-05, owner-directed: "look at all the RL
+feedback / evaluation / refinement methods and use that research to
+develop testing and refinements for the skills." Drawn from the corpus
+on the day (claims cited by id; 507 claims under evals, 480 under
+post-training, 134 under skills), to be deepened by the research seat
+and built by the engineer.
+
+**Testing a skill: the eval harness (extends ADR-36 and ADR-38).**
+1. *Matched ablation.* The with and without arms differ in the skill file
+   and nothing else: same model, same tools, same retrieval, same seed
+   where the provider allows (C362, C1090).
+2. *Differential tasks.* Only tasks the bare subject fails or scores
+   partial on count; tasks it already passes are controls (C412's
+   contrastive pairing of failed and succeeded trajectories of the same
+   task makes the effect observable).
+3. *Repetitions and spread.* No conclusion from one sample; the delta is
+   reported with its spread over repetitions, and pass@k alongside
+   pass@1 where the task has a hard check (C248 on misreading small
+   measurements).
+4. *Executable tasks in a sandbox.* Where a task can run, it runs: real
+   files, a Docker sandbox, the trajectory logged, scored by a check that
+   passes or fails (Skill-Use, C858; the sandbox is also the containment
+   practice the library sells).
+5. *Rubrics that cannot be gamed.* Every rubric criterion is tied to a
+   verifiable certificate in the task (a test, a number, a named
+   artifact); generated rubrics without that tie were exploited 8 to 26
+   percent of the time and up to 36 percent under stress, certificate-
+   faithful ones 0 percent (C476, C479). Each rubric ships with an
+   exploit test: an answer that games the rubric must not score.
+6. *Judge separate from subject, and audited.* The judge is a different
+   model from the subject; each task is audited once for ambiguity,
+   gameability and realism before it counts (PACT, C561); length and
+   style effects are checked by scoring the same content at two lengths
+   (C934).
+7. *Credit to the section.* The harness records which skill section the
+   judged criterion maps to, so a delta is attributed to a section and
+   not to the file (DRACO's per-step credit, C40; role-level credit read
+   from traces, C1442). This is what makes section-level validation
+   status (the consumer report's ask) measurable.
+
+**Refining a skill: the maintenance loop (extends ADR-37).**
+1. *One intervention at a time, pinned inputs.* A revision changes one
+   section; the eval reruns with everything else pinned; the change is
+   attributed before the next one (AgentGrad, C244).
+2. *Bounded edits with held-out gating and a rejected-edit buffer.* A
+   proposed edit must raise the held-out differential score, not the
+   score on the tasks it was written against; rejected edits are kept so
+   the same mistake is not proposed twice (SkillOpt, C865; ScienceBuddy
+   accepts only edits that raise mean normalized rubric score, C392).
+3. *Cluster corrections before applying them.* Consumer reports, Ursa's
+   survival signal and failed-task notes are embedded and clustered;
+   each cluster becomes one generalized edit; the raw pile is never
+   applied (C244).
+4. *Compact over exhaustive.* A skill stays at most three modules;
+   compact skills outperform exhaustive bundles and let a small model
+   match a larger one without skills (SkillsBench, C848). Self-generated
+   skills underperform curated ones (C850), so the loop curates: it
+   edits what a consumer kept and retires what nobody acted on.
+5. *Revealed preference as the second axis.* Ursa's per-section survival
+   signal (ADR-39) sits beside the measured delta; a section no consumer
+   ever acts on is a retirement candidate even when its eval holds.
+6. *Known trap.* Self-refinement by small models consolidates on what
+   they can already reach rather than finding new solutions (C965), so
+   refinement proposals come from the benchmark subject or from
+   consumers, and the cheap subject only verifies.
+
+**Consequences.** The research seat writes the full brief with the
+papers read in full (ADR-35) and names what the corpus lacks (process
+versus outcome rewards for long-horizon tasks, and preference
+optimization on usage data, both absent today). The engineer builds
+items 1 to 7 into the harness and 1 to 3 into the gate. The skill seat
+rewrites evals to the differential, certificate-faithful form and caps
+skills at three modules. The evidence page shows deltas per section with
+their spread, the exploit test's result, and the survival axis when Ursa
+supplies it.
