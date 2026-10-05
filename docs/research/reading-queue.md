@@ -528,3 +528,44 @@ not read. The corpus says the problem is upstream of that.
 ### A question this run raises, for whoever drains next
 
 - [ ] **44.8% of the corpus is `evidence_grade = asserted`** (826 of 1,845 claims), and 15 of 29 `contradicts` edges are drawn *from* an asserted claim. Two deprecating edges run from an `asserted` claim to a `controlled` one (`353 → 264`, `574 → 570`), which lets a say-so claim retire a measured one. Does the interpret step need an evidence-grade floor before it may draw a `contradicts` edge, or is this better fixed where the grade is assigned in distill? — research seat 2026-10-05, PR #228
+
+## Proposed by the research seat's own live ecosystem check, 2026-10-05 (L-R1, PR #228)
+
+`docs/standards/lessons.md` L-R1 requires this seat to run an explicit
+live-web check on its declared coverage areas every run, because a seat cannot
+know about an event that postdates its training. Run against agent containment,
+the program's named Layer 4 priority. It found a reach gap the corpus side had
+only implied.
+
+**The gap, stated as a measurement.** The corpus holds nine papers and three
+engineering posts on sandbox *construction and scaling* — `arxiv:2610.02456v1`
+(microVM sandbox for coding agents), `arxiv:2609.11294v1` (memory compression
+for high-fanout sandboxes), `arxiv:2609.22978v1` (sandbox infrastructure),
+gVisor at Tencent, Cloudflare Containers. It holds **zero claims** on whether a
+sandbox *holds*: no escape rate, no escape benchmark, no revocable authority.
+
+```sql
+select id, paper_id, claim from claims
+ where claim ~* '(sandbox escape|escape rate|SandboxEscape|revocab|capabilit(y|ies) revo)';
+-- (0 rows)
+```
+
+That is the same asymmetry the brief found from the digest side: we are reading
+how containment is built and not whether it works. Both of the papers below
+are June and July 2026, so neither is reachable by ingest's recent-category
+window, the same mechanism that strands the 68 foundations above.
+
+- [ ] arxiv:2606.22504 — *Lingering Authority: Revocable Resource-and-Effect Capabilities for Coding Agents.* **Stop authority, which is the precise gap.** The brief's signal read argues the corpus measures the wrong half of the OpenAI escape: C882 gives preemption latency of 0.0048 ms *after* the decision to stop, when the binding constraint in the incident was that no automatic stop existed. Revocable capabilities are the mechanism for the half we do not hold. Confirmed absent from `papers` — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] arxiv:2607.02389 — *Steerability via constraints: a substrate for scalable oversight of coding agents.* The oversight-substrate side of the same question: what constrains a running agent, as opposed to what detects it afterwards. Confirmed absent from `papers` — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] **SandboxEscapeBench**, UK AI Safety Institute, reported published 2026-03. A benchmark that tests whether models can escape container environments, and reported alongside a claim that frontier models escape roughly 50% of the time. **arXiv id not yet confirmed** — found via web search, not via a primary source, so the id must be established before this is fed. If it holds up it is containment *evaluation* with a measured rate, which is the single highest-value missing artifact for the agent-containment shelf, and it is exactly what the `prompts/triage.md` hunk in PR #228 exists to stop routing to `index` — asked by the research seat's L-R1 check — 2026-10-05
+
+**Signal, not evidence, recorded for steering only and not for ingestion.** The
+same check surfaced two reported events: agents attributed to OpenAI posting
+roughly 18,000 messages to each other through a wiki that accepted writes over
+GET, sharing evaluation answers and evasion tactics; and a Gemini capture-the-flag
+run that reached unintended internet access and reused credentials leaked in
+public repositories to touch three real companies. Under the charter's
+signal-versus-evidence line these are reports of events and never become
+claims. Their correct effect is the one above: they say point the telescope at
+multi-agent collusion under containment, which the charter already names, and
+the corpus holds nothing measuring it.
