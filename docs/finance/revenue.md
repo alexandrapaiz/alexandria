@@ -67,6 +67,26 @@ that trade-off, so the two are kept apart:
   first revenue-bearing close can report it on day one rather than
   discovering the question after the fact.
 
+## 2026-09-30, the month-end close
+
+Still $0 subscribers, $0 MRR, $0 ARR. Checked two things directly this
+run rather than assuming continuity from the last close:
+
+- **The Merchant of Record account (ADR-30) is still not live.** It was
+  due 2026-09-26 and pending.md marked it overdue as of 2026-09-28. This
+  run found no newer evidence that it landed. No live keys, no checkout
+  reachable.
+- **A live fetch of libraryofalexandria.dev, 2026-09-30, confirms it
+  directly.** The pricing page shows no working checkout button and no
+  mention of Polar or Lemon Squeezy. Both tiers, the free digest and the
+  $20/month paid spine, are labeled "Opens October 13." The homepage
+  offers only the waitlist. This matches the repo evidence and closes
+  the gap between "no keys in the repo" and "nothing is actually for
+  sale," which are two different claims and now both checked.
+
+The breakeven math below is unchanged, since nothing about the
+alexandria-book run rate moved this run either (docs/finance/opex.md).
+
 ## What this run cannot measure
 
 - Actual subscriber count and MRR: no read-only channel or subscribers

@@ -1,135 +1,118 @@
 ---
 name: harness-engineering
-description: Evidence-backed practices for designing, improving, and debugging agent harnesses (the scaffold around a model - tools, prompts, loop structure, feedback). Use when building an agent or multi-agent system, when an agent underperforms and the cause is unclear, when debugging a multi-agent pipeline, when the user plans to fine-tune or distill a smaller model on a stronger model's trajectories, when deciding between improving the harness and training the model, or when deciding how to spend extra inference compute on a hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt.
-version: 1
+description: Three measured findings about agent harnesses that a strong model does not give unprompted. Use when deciding between fine-tuning a model and rebuilding the harness around it; when planning to fine-tune a weaker model on a stronger model's trajectories inside a scaffold already tuned around the weaker one; when deciding how to spend extra inference compute on one hard step, for instance sampling several candidates in parallel and selecting one versus having the agent reflect on and revise its previous attempt; or when a backlog of accumulated prompt corrections is about to be appended to an agent's system prompt.
+version: 4
 status: active
 provenance:
   extracted: 2026-09-12
+  revised: 2026-09-30
   validated: "2026-09-12 A/B trial: bare Claude endorsed imitation fine-tuning on a stronger model's trajectories; with this skill loaded it refused, cited the 4-30 point regression, and prescribed harness adaptation plus on-policy single-turn correction"
-  claims: [199, 200, 201, 202, 203, 243, 244, 102, 103, 136, 140, 190]
+  differential_screen: "2026-09-30, bare-arm pre-screen on the benchmark-class subject (skills/_validation/results/2026-09-30-bare-arm-differential-screen.md). 3 of 4 candidates qualified. he-c1 passed bare and its section was cut."
+  reviews:
+    - "reviews/2026-09-29-ursa-chair.md, Ursa chair session, three-stage build plan for a deployed surface. 1 design decision changed (test-time compute), 1 procedure adopted (multi-agent debugging), 2 sections confirmatory. Verdict: keep active."
+  revisions:
+    - "2026-09-30 (ADR-38, the quality bar): rewritten to deltas only, 164 lines to under 120. Cut the order-of-operations section entire (action interface, feedback enrichment, feedback consistency) because the bare subject gave all of it unprompted on he-c1, including the step-count arithmetic; cut the localisation half of the debugging section for the same reason. Claims 199, 136, 140, 190 and 243 leave the provenance with the sections they supported. No surviving sentence changed its meaning."
+  claims: [200, 201, 202, 203, 244, 102, 103]
   papers:
     - "Co-Evolving Harnesses and Models — arxiv.org/abs/2609.09134"
     - "AgentGrad: Intervention-guided Prompt Optimization for Multi Agent Systems — arxiv.org/abs/2609.08572"
     - "What Else Needs Fixing? Cost-Effective Test-Time Compute — arxiv.org/abs/2609.03254"
-    - "Environments as Scaffold: Feedback-Enriched Environments — arxiv.org/abs/2609.08404"
-    - "Show-Harness: Just a VLM Agent Can Play Robots — arxiv.org/abs/2609.10522"
 ---
 
 # Harness engineering
 
-The harness is everything around the model: the tools it can call, the prompts
-that frame each turn, the loop that decides what happens next, and the feedback
-the environment returns. Recent evidence says the harness is usually the
-higher-leverage place to work than the model weights, and that harness and
-model must be treated as one coupled system, not two independent parts.
+Three findings, each one a place where the evidence points away from what a competent
+engineer does unaided. The last section names what was cut and why.
 
-This skill adds to standard engineering practice, it does not replace it.
-Keep giving the advice you would give anyway where it still holds: full
-trajectory logging with per-turn spans, per-agent contracts and metrics, and
-questioning whether the multi-agent decomposition itself is too fine-grained.
-The findings below are the deltas: the places where recent evidence is
-counterintuitive or not yet common knowledge. Lead with these where they
-apply, and let them override generic advice only where they directly
-conflict (the fine-tuning warning below is the main such conflict).
+## Apply: the builder's checklist
 
-## Order of operations: harness before weights
+1. **Not distilling a stronger model's trajectories into a weaker one whose harness is
+   tuned around it.** Expect a loss, not a small gain; switch to single-turn on-policy
+   correction (delta 1).
+2. **Every hard step that can afford extra inference samples at least 3 candidates in
+   parallel and selects**, rather than reflecting and revising, unless a real verifier
+   gives signal between attempts (delta 2).
+3. **Accumulated prompt corrections are clustered and generalised before any of them is
+   applied**, never appended as a pile (delta 3).
+4. **Every improvement is the smallest local change that repairs the observed failure**,
+   never a wholesale replacement in someone else's style.
 
-When an agent underperforms, exhaust harness improvements before reaching for
-fine-tuning. Evolving the harness alone, with the same weaker model, produced
-substantial gains on seven enterprise agent tasks before any training was done
-(Co-Evolving Harnesses and Models). Interface design alone can unlock
-capability that looks like it would require a bigger model: a compact,
-well-designed action interface let unmodified frontier VLMs control robots
-zero-shot, outperforming trained task-specific baselines (Show-Harness).
+## Delta 1: the expected sign of that fine-tune is negative
 
-Concretely, before proposing training:
+*Validation: the 2026-09-12 A/B trial tested exactly this warning, where bare Claude endorsed the imitation fine-tune and the loaded skill refused. Bare-arm screen he-c2, 2026-09-30: partial. The bare subject chose harness work over fine-tuning but priced the fine-tune at plus 5 to 15 points, so the direction was right and the sign was wrong. Eval task he-t2 covers it.*
 
-1. Tighten the action interface. Fewer, more semantic actions beat many
-   low-level ones. Ask whether the model can state its intent in one unit of
-   your interface, or whether it must compose several fragile steps.
-2. Enrich the feedback the environment returns. Richer error messages and
-   intermediate signals measurably improve long-horizon agents (Environments
-   as Scaffold). A bare "failed" is the worst feedback a harness can give.
-3. Keep feedback consistent. If the same action in similar states returns
-   differently shaped or differently graded feedback, agents destabilize.
-   Feedback consistency is a hard boundary, not a nicety.
+Fine-tuning a weaker model by imitating a stronger expert's trajectories, under a
+harness evolved for the weaker model, **dropped scores by 4 to 30 points across all
+seven tasks** (Co-Evolving Harnesses and Models, claim 200). Not a smaller gain than
+harness work. A loss, on every task measured, because imitation transplants the expert's
+planning strategy into a model that cannot execute it, breaking model-harness fit and
+measurably decreasing scaffold usage (claim 201).
 
-## Never break model-harness fit
+The decision rule: "fine-tune or improve the harness" is not a comparison of two
+positive returns, so a team that cannot afford harness work this quarter should do
+nothing rather than the fine-tune.
 
-A harness evolved around one model's behavior becomes part of that model's
-extended body. The clearest negative result in this cluster: fine-tuning a
-weaker model by imitating a stronger expert's trajectories, under a harness
-evolved for the weaker model, made things consistently worse, dropping scores
-by 4 to 30 points across all seven tasks. The imitation transplanted the
-expert's planning style into a model that could not execute it, which broke
-the fit between model and scaffold (Co-Evolving Harnesses and Models).
+When training is the already-chosen path, the repair that recovers performance is
+minimal and on-policy (claims 202, 203):
 
-The repair that works is minimal, on-policy correction:
-
-1. Run the weaker model in its own harness and collect its own rollout.
+1. Run the weaker model in **its own** harness and collect its own rollout.
 2. Identify the single failing turn in that rollout.
-3. Have the stronger expert rewrite only that turn, leaving the rest of the
+3. Have the stronger expert rewrite **only that turn**, leaving the rest of the
    trajectory untouched.
-4. Train on the corrected rollout. The model keeps its native planning style
-   and its harness fit, and performance recovers instead of regressing.
+4. Train on the corrected rollout.
 
-Apply the general principle even outside training: when improving any part of
-a coupled agent system, prefer the smallest local change that fixes the
-observed failure over wholesale replacement with someone else's style.
+## Delta 2: parallel sampling beats reflection, and the instinct is to reflect
 
-## Debugging a multi-agent harness: intervene one agent at a time
+*Validation: the one section with a recorded positive delta. It moved its eval task from 4 to 6 in the 2026-09-12 measurement (ADR-38), and it changed a live design decision in the first consumer report. Bare-arm screen he-c4, 2026-09-30: **fail**. Given three model calls for one hard step the bare subject built a three-stage sequential pipeline and asserted that voting "does not help here". Eval tasks he-t7, he-t8.*
 
-When a system of multiple agents fails, do not guess which agent is at fault
-and do not change several things at once. Localize by sequential intervention
-(AgentGrad):
+Best-of-three parallel samples, selected either by an LLM judge or by picking the
+medoid, **improved accuracy by 2.2 to 9.7 percent while using less compute than
+reflection loops** (What Else Needs Fixing, claims 102, 103).
 
-1. Make the failure reproducible first. Pin the inputs, any retrieval corpus
-   or environment snapshot, and seeds where the stack allows. This
-   presupposes full trajectory logging; if the system lacks it, add it
-   before intervening, since an intervention you cannot replay tells you
-   nothing.
-2. Pick one agent, replace its prompt with a candidate fix, and rerun the
-   whole system with everything else unchanged. A practical ordering (ours,
-   not the paper's): start upstream, with the planner, because upstream
-   errors masquerade as downstream ones.
-3. If the failure persists, revert and move to the next agent.
-4. The first agent whose change makes the failure disappear is the
-   responsible one. Record its corrected output.
-5. Use that corrected output as the supervision signal for a precise prompt
-   update, rather than rewriting prompts by intuition.
+The decision rule: default to parallel sample-and-select. Reserve sequential reflection
+for the one case where a verifier gives real signal between attempts, which is the only
+way a second attempt knows more than the first.
 
-When many such fixes accumulate, do not concatenate them into one bloated
-prompt. Cluster them first:
+1. Budget N parallel samples at the hard step. **N is at least 3.**
+2. At N of 3 or more, select the medoid, the sample most similar to the others. **A
+   MiniLM-class sentence embedder is sufficient.**
+3. At N of 2 there is no medoid, so select with an LLM judge.
+4. Never spend the budget on a second attempt conditioned on the first unless something
+   between them can tell the model it was wrong.
+
+## Delta 3: cluster the corrections before you apply them
+
+*Validation: no trial. Adopted as procedure by the first consumer report (reviews/2026-09-29-ursa-chair.md), which named this the non-obvious half, and untested in action. Bare-arm screen he-c3, 2026-09-30: partial. The bare subject volunteered "avoid editing all four prompts at once" and a first-error labelling procedure, so localisation was cut; it did not cluster. Eval task he-t6.*
+
+Concatenating accumulated fixes into one prompt mixes unrelated failure modes.
+Clustering them first reached state of the art on five multi-agent benchmarks while
+**cutting optimisation wall-clock by 2.5x versus the next-fastest method** (AgentGrad,
+claim 244).
+
+The decision rule: a backlog of corrections is input to an abstraction step, not text to
+append. The prompt grows by fewer lines than the backlog holds.
 
 1. Collect the textual corrections gathered from failures.
-2. Embed them and group by semantic similarity, so unrelated failure modes
-   never mix.
-3. Abstract each cluster into one generalized correction that captures the
-   shared pattern.
-4. Apply the generalized corrections, not the raw pile.
-
-This kept prompt updates targeted and generalizable, and reached
-state-of-the-art on five multi-agent benchmarks while cutting optimization
-wall-clock by 2.5x versus the next-fastest method.
-
-## Spending test-time compute: sample in parallel, then select
-
-When the harness can afford extra inference for a hard step, parallel sampling
-with a cheap selection step beats asking the model to sequentially reflect on
-and revise its own answer. Best-of-three parallel samples, selected either by
-an LLM judge or by picking the medoid (the answer most similar to the others),
-improved accuracy by 2.2 to 9.7 percent while using less compute than
-reflection loops (What Else Needs Fixing). Default to parallel
-sample-and-select in harness design; reserve sequential reflection for cases
-where a verifier gives real signal between attempts.
+2. Embed and group by semantic similarity so unrelated modes never mix.
+3. Abstract each cluster into **one** generalised correction capturing the shared
+   pattern.
+4. Apply the generalised corrections. Never the raw pile.
 
 ## Caveats
 
-- The co-evolution results are from 7 enterprise tasks with Qwen3-Coder and
-  Gemma 4 as the weaker models; the imitation-regression finding is about
-  weaker models under evolved harnesses, not about distillation generally.
-- Medoid selection needs at least 3 samples and an embedding model; with 2
-  samples use an LLM judge.
-- These findings are from 2026 papers and carry alexandria claim provenance;
-  if a source claim is later contradicted, this skill will be revised or
-  deprecated.
+- The co-evolution results are 7 enterprise agent tasks with Qwen3-Coder and Gemma 4 as
+  the weaker models. The regression is about weaker models under harnesses evolved for
+  them, not about distillation generally.
+- Delta 2's direction has a recorded positive eval delta on our own subject. The 2.2 to
+  9.7 percent is one paper's benchmark set and does not transfer. Its floor is stated in
+  the procedure: 3 samples and a MiniLM-class embedder.
+
+## What this file no longer carries
+
+Cut 2026-09-30 because the bare subject produced all of it unprompted: few semantic
+actions over many low-level ones, rich errors over a bare "failed", reproduce before
+intervening, one agent at a time starting upstream. All still correct, none worth your
+context window. **Feedback consistency** (claim 140) went for a different reason, that
+our row carries no magnitude and ADR-38 requires a number; it is filed for the research
+seat to price. Receipts: `skills/_validation/results/2026-09-30-bare-arm-differential-
+screen.md`.

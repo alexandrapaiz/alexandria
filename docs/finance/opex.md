@@ -171,3 +171,36 @@ gives more runway than the launch needs. If the account runs dry the
 symptom is legible rather than silent: every Kimi call 401s or 402s, the
 fallback walk drops to Groq's free tier, and the run says which model
 answered.
+
+## 2026-09-30, the month-end close (finance seat, hand-dispatched)
+
+No line in this ledger changed this run. What follows is what was
+re-checked, not what moved.
+
+- **GitHub Actions confirmed $0 again.** `gh repo view` still shows
+  `isPrivate: false`, so the public-repo free-minutes rule still applies.
+  No cost to book.
+- **Vercel Pro is still a forecast, not a cost.** Commercial launch is
+  2026-10-13, still ahead of this close. The site itself confirms it: a
+  live fetch of libraryofalexandria.dev this run shows both tiers
+  labeled "Opens October 13" and no working checkout button. The $20/month
+  line stays booked as a near-term commitment, not a September charge.
+- **The Kimi/Moonshot figures are carried forward unchanged** from the
+  2026-09-26 measurement above: no evidence this run that
+  `prompts/triage.md`, `prompts/interpret.md`, or the weekly press prompt
+  changed token count since that section was written, and
+  `pipeline/budget.py` is the arithmetic, not a spend log, so it has
+  nothing new to report without a fresh prompt change to measure against.
+- **Neon, Modal, and Clerk billing stay unmeasured.** Same gap as every
+  prior close: this seat has no provider console access and found no
+  public or repo evidence this run that changes that. Carried as open
+  questions below, not guesses.
+- **The Claude subscription's monthly figure is still missing.** Checked
+  `docs/sprints/pending.md` and every finance-relevant merged PR back to
+  the 2026-09-18 first ask: no dollar figure has been supplied. This is
+  the fourth time this seat has repeated this ask (2026-09-18, 2026-09-24,
+  and now 2026-09-30). It stays the one number only the owner can give.
+
+**Alexandria-book known/forecast monthly run rate, unchanged: ~$21.35 once
+Vercel Pro is live.** Nothing was spent in cash this run beyond what the
+2026-09-18 close already booked.

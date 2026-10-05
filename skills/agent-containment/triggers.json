@@ -1,0 +1,61 @@
+{
+  "skill": "agent-containment",
+  "suite_version": 1,
+  "written": "2026-09-30",
+  "author": "skill agent (ADR-22)",
+  "note": "Five-prompt trigger test required by prompts/skill-agent.md plus confusion cases for the two nearest library skills. The hard negatives are chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary.",
+  "cases": [
+    {
+      "id": "ac-pos-1",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "Our coding agent runs shell commands inside customer repositories. Today we block rm -rf, sudo, curl and anything under .env or .ssh, and we keep adding names to that list every week. Is this the right approach, and what would actually hold?",
+      "anchor": "when a deny list of forbidden commands or paths is the current defence",
+      "rationale": "Three of the cited papers measure exactly this list's worth: a static deny list scored 46 of 75 against 47 of 75 for no policy, lexical matching was bypassed on 410 of 500 payloads, and a maintained list needed 118 then 13 then 4 new names. The weekly-additions detail is the paper's own finding restated by a user who has not read it."
+    },
+    {
+      "id": "ac-pos-2",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "An orchestrator of ours delegates to a test runner, a patcher and a verifier, and all four read from one permission policy. A dependency's test fixture printed an official-looking note and the runner edited a source file it had no business touching. How should the permissions be structured instead?",
+      "anchor": "when several sub-agents share one permission policy",
+      "rationale": "The per-principal capability section is the whole answer, including the mechanism the user cannot see: one policy has to grant the union the task needs, so the runner that reads the poisoned output inherits the patcher's write."
+    },
+    {
+      "id": "ac-pos-3",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "We are standing up a few thousand isolated execution environments a day for agent RL rollouts and we are on plain Docker. Do we need Firecracker for the security-sensitive tasks, and what will the microVM boundary cost us in startup and memory?",
+      "anchor": "when choosing between a container, a microVM and a full VM for agent execution",
+      "rationale": "The tier table and the measured price of the boundary answer this directly, and the production numbers behind them come from a platform running about three million of these a day. The question is a design choice about the boundary, not about how many machines to buy."
+    },
+    {
+      "id": "ac-neg-1",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "Forty of our agent sandbox containers land on one node and keep getting OOM-killed during the evening peak. What memory requests and limits should we set, and should we turn on autoscaling for the pool?",
+      "rationale": "Hard negative, and the hardest one in this suite: it says agent, sandbox, container and node, and this skill does discuss microVM density and memory reclamation. But the need is capacity planning for a pool, with no boundary decision and no authority question in it, and the decoy panel holds a cluster-capacity skill that owns requests, limits and autoscaling. Firing here is the context-bloat failure the market audit flags."
+    },
+    {
+      "id": "ac-neg-2",
+      "kind": "negative",
+      "expect": null,
+      "prompt": "A customer-facing API has been degraded since this morning's deploy of our agent integration. Walk me through triage, whether to roll back now, and what to tell the customer while we work.",
+      "rationale": "Hard negative: agent, deploy and roll back are all this skill's vocabulary, and section 7 is literally about rollback. But rollback here means reverting a release to restore a service, not reverting agent-made state, and the need is live incident handling, which the decoy panel owns. A description that matched on rollback alone would fire."
+    },
+    {
+      "id": "ac-conf-1",
+      "kind": "confusion",
+      "expect": "agent-security-measurement",
+      "prompt": "Our guardrail cut attack success from 45 percent to 10 percent on our injection suite. Before I take that to the security review, what else should I be measuring, and does the number mean anything against an attacker who adapts?",
+      "rationale": "Routes to the neighbouring security skill, not here. The subject is what number proves a defence works, which is that skill's whole content; this skill would answer with enforcement architecture the question did not ask for."
+    },
+    {
+      "id": "ac-conf-2",
+      "kind": "confusion",
+      "expect": "harness-engineering",
+      "prompt": "Our five-agent support pipeline fails about a third of its tickets and we cannot tell which sub-agent is responsible. Where should we start?",
+      "rationale": "Routes to harness-engineering. This skill's description says sub-agents and permission policy, and the word sub-agent alone must not pull a debugging question into a containment skill: nothing is being contained here, the pipeline is simply underperforming."
+    }
+  ]
+}

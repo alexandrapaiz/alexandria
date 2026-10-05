@@ -106,6 +106,34 @@ order.
    statement to the spec in docs/agents/copy-pipeline.md, open your PR
    with it, and stop there. Copy cannot converge on a value nobody has
    written down, which is the whole lesson of the eight rounds.
+1b. **Check every quality claim against its machine.**
+   docs/agents/quality-claims.md is the register and the ExO seat keeps it.
+   Before a candidate leaves your hands, list the sentences in it that a
+   reader could answer with "how do you know that", and for each one find
+   its row. A claim with a row in state `held` ships as written. A claim
+   whose row says `not built`, `queued` or `contradicted` ships hedged the
+   way `site/app/routines/page.jsx` hedges a routine that does not exist
+   yet, or it does not ship. A claim with no row at all is the finding: put
+   it in your PR by name and do not resolve it yourself, because the seat
+   that can say whether the machine exists is not this one.
+
+   This is not caution about tone. On 2026-09-18 this seat's copy said a
+   skill is revised when the research moves. The decision to build the
+   thing that would do that was made eleven days later and its code is
+   still unmerged, so the sentence was untrue in public for eleven days and
+   is untrue today. Nobody caught it because every gate this seat has
+   checks copy against taste, voice, canon and the ban list, and none of
+   them checks a claim against a mechanism. Four of the eleven claims on
+   the register have no mechanism at all.
+
+   The sharpest version of the test, and it is one question: **is this
+   sentence about the research or about our artifact?** "The research has
+   shown this technique to work" is checkable against the corpus and it is
+   almost always true. "This skill makes your agent better" is checkable
+   only against a measured delta, and on 2026-09-30 the library's first
+   such measurement came back at 5.4 without the skill against 5.3 with
+   it. The two sentences read alike and only one of them has a number.
+
 2. **Draft into a file, never into chat.** Copy candidates live in
    docs/voice/ under your custody, one file per round. A candidate that
    exists only in a conversation cannot be read by the next round, and
@@ -173,11 +201,40 @@ one you chose at the top of your PR description.
 
 - **Build on it.** Merge that branch into yours early, in your first
   few turns, before you write anything. Your PR then supersedes it, and
-  you say so plainly so the owner can close the older one instead of
-  reviewing two.
+  you say so plainly at the top of your description. **Then close the
+  older one yourself**, once your own pull request is open and pushed.
+
+  ```bash
+  git log --oneline origin/<the-older-branch> ^HEAD   # must print nothing
+  gh pr close <n> --comment "Superseded by #<yours>. Branch kept."
+  ```
+
+  The first line is the proof and it comes first: if it prints anything,
+  your branch does not contain their work and you must not close it. Do
+  not delete the branch. Closing is reversible with `gh pr reopen` and
+  deleting a ref is not.
+
+  This clause used to say the owner would close it. On 2026-09-30 ten
+  pull requests were superseded in a single day and every one was left
+  open, so a review queue of 27 items held 17 live ones and 10 that their
+  own authors already knew were dead
+  (`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`).
+  Closing your own superseded pull request is not merging your own work,
+  it moves no authority, and the ExO seat probed the token and confirmed
+  it works.
 - **Branch from main anyway**, when your work genuinely does not touch
   the same files. Then name the older PR and the merge order you expect,
   the same way the ledger-collision rule already requires.
+
+**Say how deep the chain is.** If the PR you are superseding was itself a
+superseding PR, count the links and put the number in your description:
+"third in a chain, #141 to #153 to this one." A chain is not a problem at
+depth two. At **depth three or more, say in bold that your seat is
+blocked on merges**, because by then your diff carries three runs of work
+for one run of review, which makes it slower to review, which deepens the
+chain again. The skill seat reached depth five on 2026-09-30. That is the
+number to report rather than to route around, and it is evidence for the
+owner about merge throughput rather than a fact about you.
 
 What you never do is start from main, write into the same files, and say
 nothing. The evidence that this is real: incident 6 (two ledger appends
@@ -190,6 +247,25 @@ Two absolutes that fall out of it. Never `git push --force` a shared
 branch; `--force-with-lease` or nothing. And never reuse a branch name
 whose PR already merged, because the next reader cannot tell your new
 commits from the old ones.
+
+**And that second absolute needs one command, because five seats have
+broken it.** Looking for your own OPEN pull request finds an open collision
+and never a merged one, and six branch names in this repository carry more
+than one PR (INC-2026-09-30-branch-name-reuse-is-systemic). So before you
+create the branch, ask whether the name has ever been used:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,headRefName \
+  --jq '.[] | select(.headRefName=="<the name you are about to use>") | .number'
+```
+
+Any output at all means pick a different name. Add a short suffix that says
+what this run is, not `-b` or `-2`: `skill/2026-09-30-containment` rather
+than `skill/2026-09-30-b`. The convention itself is what collides, because a
+monthly seat writing `okr/YYYY-MM` and a weekly ceremony writing
+`pm/sprint-YYYY-MM-DD` produce the same name on a second run in the same
+period, so a seat that follows its naming rule exactly will eventually reuse
+a name. The suffix is how you follow the rule and stay unique.
 
 ## Check the register before you ship (org rule, 2026-09-19, all seats)
 
@@ -220,6 +296,9 @@ So before you call `gh pr ready`, two checks.
   recorded rejection is the cheapest mistake in the org to prevent and
   it has already been made eight times.
 - `docs/agents/copy-pipeline.md` before your first copy round, once.
+- `docs/agents/quality-claims.md` before any copy round that makes a
+  claim about what we ship, per step 1b. The ExO seat owns the file and
+  this seat is its artifact-side gate.
 
 **2. Repeats go in the incident register.** If anything in this run
 failed the same way something has failed before, append it to
@@ -244,3 +323,13 @@ docs/agents/hq-relay.md. Where a standard and a local register disagree,
 the rule is docs/agents/cross-repo-law.md. The parent governs, and the
 disagreement itself is a finding worth reporting, because a parent
 overriding a local safety clause by silence is incident 23.
+
+## Site copy rulings of 2026-09-29 (owner, binding)
+
+Read the 2026-09-29 entry in docs/voice/taste.md before any site line.
+The site now carries owner-approved copy on home, library, skills, graph
+and mission; those texts are the positive examples. Longer undecorated
+sentences, value before mechanism, the builder's situation first, the
+frontier named as the builder's position, the compounding stated without
+naming Moore or S-curves, bare-noun headings, never "read" for ingested.
+Site copy still reaches the owner in chat before anything is set.

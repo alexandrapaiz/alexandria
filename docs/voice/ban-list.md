@@ -19,6 +19,67 @@ findings from that grade into the generator, and neither of them reached it.
 A tell that only gets written down is a tell the next issue is free to
 commit.
 
+**The second ending is quoted, not described (writer seat, 2026-10-04).** Of
+the thirty-five entries carrying that ending, one quotes the text that landed
+and thirty-four describe it, so checking them is a close reading of the
+generator rather than a command, and nothing re-runs a close reading. All
+thirty-four are intact today and that is luck, not a gate. So where the change
+is a sentence, the ending QUOTES it on its own line, in this exact form:
+
+```
+LANDED prompts/digest.md: "the exact text that is now in that file"
+```
+
+`docs/voice/check_voice.py enforcements` verifies every such line against the
+named file, matching on normalised whitespace because every file in this
+register wraps its prose, and exits non-zero when one is gone. Nine entries
+carry one as of 2026-10-04 and twenty-nine do not, so the ratio is printed
+every run and is meant to climb. Seed the convention on the entries a run
+touches rather than backfilling all of them at once, because a LANDED line
+asserted without checking the generator is worse than the prose it replaced.
+The quote goes on its own line and not loose in the sentence, because the
+obvious heuristic does not work: a string quoted near the word "Enforced" is as
+often the BANNED specimen as the landed repair, and entry 46 quotes two banned
+labels in exactly that position. A check that cannot tell a ban from a fix
+reports the ban as a pass. Where the change is a gate rather than a sentence, the ending
+names the gate and the step inside it, which is entry 51's own correction of
+2026-09-27 promoted from a remark inside one entry to a rule over all of them:
+"An enforcement ending has to name the gate the defect would pass through, not
+merely a place in the file where the rule is now written down." Entry 92 is why
+this paragraph exists.
+
+**An entry that names a class carries a sweep (writer seat, 2026-10-04).** The
+endings above are about whether a fix landed. This is about whether it landed
+everywhere. An entry is written from the one specimen the artifact happened to
+show, and the generator usually holds more. So where an entry's text
+generalises, run its own tell over the whole file, print the count in the
+review, and fix every hit in the same pull request or say why one stays. Where
+the tell is a command, the command goes in the entry. Entry 90 is why, and
+entry 89 is the evidence: it named the class, struck its two specimens, and
+left three more live where its own one-line grep would have found them.
+
+**A third ending, for the entry a prompt cannot reach (writer seat,
+2026-09-30).** Both endings above are written once and neither of them
+runs again. That is enough for an entry the generator can be taught,
+because the next issue either commits the tell or does not. It is not
+enough for an entry whose fix belongs to another seat, because a ledger
+filing is a request and a request has no failing state: it sits at
+"proposed", the artifact stays broken, and nothing anywhere turns red.
+Entry 64 is the proof. It carries the second ending correctly and
+completely, with the incident id beside it, and the false line it
+describes was still the second line of the only published issue four
+days later.
+So an entry of that kind carries the filing and a check. The check is
+pass 6 of the canon's grading procedure: the entry is re-verified against
+the live artifact by every grade until the artifact is clean, and the
+grade prints the check, its output, and how many days the entry has been
+open. A standing defect that is still true is a FAIL line in every
+review, not a note in one. Where the check can be a command rather than a
+reading, the command is filed too, scoped to the published surfaces,
+because a grep for a defect's own words over the whole repository fires
+on every register that records it (L-A22, and the scoping is the reason
+nobody wrote the command earlier).
+
 Entries 30 and 31 were numbered 26 and 27 until 2026-09-20, when two
 parallel writer runs were found to have appended at the same numbers.
 The text of both is untouched, and only the numerals moved, into the
@@ -524,6 +585,7 @@ gap that the same collision had left empty (incident 25).
     prompts/digest.md now counts the term the reader meets rather than the
     term the writer defined, and gives the join to write when the sources
     force both words.
+    LANDED prompts/digest.md: "the smaller count is the one to delete"
 55. The greeting that narrates the reader's week. Entry 45 is the opening
     billed to a reader who was not there, and its tell is a pointer at a
     previous issue. This is the same charge with the pointer removed. The
@@ -763,6 +825,7 @@ gap that the same collision had left empty (incident 25).
     Enforced the same day: the sentence now says "the two measures do not
     match", and the rule under it names the class, which is every word the file
     uses for the pipeline and every word it uses for its own checks.
+    LANDED prompts/digest.md: "the two measures do not match"
 67. The promise the issue does not keep. Entry 23 is the issue that never says
     what is in it, and this is the opposite failure by the same measure. The
     contents line of 2026-09-28 named three findings. Its second one, "a memory
@@ -917,3 +980,616 @@ gap that the same collision had left empty (incident 25).
     now run off one list, and filed in docs/ideas.md for the pre-send gate,
     where both are arithmetic and belong in a command rather than in a reading
     (`L-A22`).
+
+75. The finding handed to another seat, with nothing that checks whether it
+    is still true. Entry 61 is the reader-facing string no pass grades, and
+    entry 64 is the correction that reaches the next issue and not the
+    published one. This is the third failure in that chain and it happens
+    after both of those entries have been acted on correctly. By
+    2026-09-30 the masthead's false reading claim had a canon law written
+    from it (law 15), two entries in this list, an incident id
+    (`INC-2026-09-27-law-15-live-in-the-archive`), and a ledger entry for
+    the engineer stating two repairs and a recommendation. Every one of
+    those artifacts is accurate and none of them is wrong about anything.
+    The line was still printed, above the fold, on the only published
+    issue, and the two editorial grades that ran in between say nothing
+    about it. The page had even been edited that morning, to apply a taste
+    ruling given that morning, four lines from the bottom of the same file.
+    The tell is not a phrase and it is not in the prose at all, which is
+    why this list is where it belongs: every other entry here is checked
+    by reading the artifact, and this one is checked by reading the
+    register's own tail for entries that are still true. The question to
+    ask of any entry ending in a ledger filing is whether anything that
+    runs again would notice if the fix never arrives. Where the answer is
+    no, the entry is a description and not a defence, and the register has
+    confused writing something down with doing something about it (L-A9
+    at one remove, because the rule was recorded and the recording was
+    itself the enforcement anybody expected).
+    Added 2026-09-30 from the grade of the published 2026-W39. Enforced
+    the same day in the canon's grading procedure, which gains a sixth
+    pass re-verifying every entry of this kind against the live artifact
+    and printing the check, and in the standing rule at the top of this
+    file, which gains a third ending. Both are enforced at the reliability
+    of a model reading a file, which is the weak enforcement L-A22 names,
+    so the command form is filed for the engineer in docs/ideas.md in the
+    same pull request: a grep for the withdrawn string scoped to
+    `site/content/issues/` and the stored bodies, which has no false
+    positives and fails until the archive is correct
+    (`INC-2026-09-30-standing-defect-unverified-for-three-grades`).
+
+76. The specimen that fits the payload. Entry 53 is the prohibition that
+    quotes the string, entry 56 is the example that supplies the frame, and
+    entry 65 is the test that asks for the banned sentence. All three were
+    answered with the same remedy, which is to hold specimens at the end of
+    the generator where finished output is read rather than where a line gets
+    written. That remedy is not the rule, and this entry is the proof.
+    The heading gate added on 2026-09-28 to enforce entry 69 sits at the very
+    end of prompts/digest.md, exactly where those three entries say a specimen
+    is safe, and it quoted the offending heading verbatim. The print of
+    2026-09-30, written by the prompt carrying that sentence, printed that
+    heading verbatim over the same self-dismantling body, on the same two
+    numbers. Meanwhile the four slot names are quoted eight times in the same
+    file, several of them in the same gate, and have never printed once.
+    So position is not what makes a specimen dangerous. Aboutness is. The slot
+    names are about nothing a paper could be, so there is no moment where
+    writing one is the obvious next move. "The 82.2% ceiling was not a
+    ceiling" is a well-formed heading about a result sitting in the payload,
+    so at the instant the model reaches that section it is not a warning, it
+    is the best available draft. The test, and it applies to any prompt and
+    any register: ask whether the specimen could be true of the material the
+    writer is holding. Where it could, the specimen is a draft however loudly
+    the sentence around it says otherwise, and no amount of moving it down the
+    file helps.
+    **The count, because one case is an anecdote and this is three for three.**
+    The generator held exactly three worked examples about a real paper in the
+    payload: the heading above, the claims pass's specimen of two results that
+    share only a percent sign, and the same-measure pair of one method printed
+    with two scores. All three defects appear in the print of 2026-09-30. Every
+    other specimen in the file is about nothing a paper could be, including the
+    four slot names quoted eight times and the number line's invented night
+    shift, and not one of those has ever printed. The correlation is total and
+    it runs the opposite way from position, since the heading gate and the slot
+    names sit in the same paragraph block at the end of the file.
+    The generator already knew the fix and used it in one place, at the number
+    line, whose example is written "in a subject no payload will ever hand
+    you, so that copying it is obviously wrong." Added 2026-09-30 from the
+    grade of the newest print. Enforced the same day: all three specimens are
+    rewritten in invented subjects, the heading gate states the aboutness test
+    in its own text, and no worked example anywhere in the generator names a
+    real result (`INC-2026-09-30-gate-supplied-its-own-banned-heading`).
+    **A footnote that is really the entry's best evidence.** The run that wrote
+    this entry broke it about an hour later, in the same pull request, by
+    putting two real arrival counts into the instruction that tells the
+    generator which count to print. It was caught by re-reading the diff
+    against this entry and struck in the next commit. The pull is toward the
+    concrete example, it does not spare the person writing the rule, and the
+    only defence that has worked is a mechanical sweep of the file for figures
+    and quoted output.
+
+77. The evidence grade built on a frame rather than a stem. Entry 70 is the
+    grade as a stamp, where three accurate grades opened on "The evidence is"
+    and the third had stopped being read. Its fix named the stem: the gate
+    forbids opening on the word "evidence" or on any stem already used, and
+    requires the grade folded into a sentence doing other work.
+    The print of 2026-09-30 obeyed that and produced four grades shaped the
+    same way anyway: "One team, three domains, and the effect is large
+    enough...", "One benchmark suite, one model family, and the forgetting is
+    measured...", "One team, one benchmark, and the latency numbers are
+    self-measured", "One benchmark, four models, and the CCE metric is...".
+    Two of them open on the same two words, so the print also fails the 2026-09-28
+    gate as literally written. All four are one frame with the nouns swapped, and
+    the fourth is not a grade at all, because what follows its "and" is a
+    compliment rather than a limit.
+    The unit is the tell. Entry 70's gate reads the opening words, and a form
+    survives every change to its opening words. This is entry 72 inverted: not a
+    gate whose unit is wider than the thing it governs, but one whose unit is
+    narrower, checking a phrase where the reader sees a pattern. The general
+    test: lift every grade out of the issue and line them up. If they read as a
+    matching set, they are furniture, whatever their first words are.
+    Added 2026-09-30. Enforced the same day: the grade check's unit becomes the
+    whole sentence and forbids two grades built on one frame, meaning the same
+    parts in the same order however the words change, with the lift-them-out
+    test written into the gate.
+
+78. The scale sentence that prints a zero. Entry 60 is a count printed with
+    the neighbouring count's verb, and canon law 15 was written from it: the
+    library never claims to have read what it only ingested. The law worked.
+    The print of 2026-09-30 closed on the week's arrivals with the correct
+    verb and then reported, accurately, that none of them had been read in
+    full. Every number was right, every verb was right, and the line told a
+    reader deciding whether to pay twenty dollars that the product had read
+    nothing.
+    This is what an honesty law looks like when it is obeyed with no zero case
+    written. The instruction offered both numbers in one sentence as the honest
+    shape and said nothing about what to do when the second number is zero, so
+    the generator printed the zero, which is the one reading of the law that
+    damages the product while satisfying it. Law 15 already carries the answer
+    in its own text, that an issue saying nothing about its own scale has lost
+    nothing a reader came for, and the standing repair for a claim that cannot
+    be made is to drop it rather than soften it. Printing its absence is a
+    third option the law never offered and it is worse than either.
+    A second half rides with it, about reach rather than value. The sentence
+    said none were read in full "for this issue", which a subscriber reads as a
+    statement about the papers in front of them. Three of the eight papers that
+    print carried twelve thousand characters of full text each, and they were
+    precisely the three in the reading list. Their distillation timestamps are
+    03:18, 03:19 and 03:20 against a payload gathered at 03:13, so the count is
+    taken before the reading it counts and understates by the reading list's
+    size every single time. The sentence was true for five minutes and false
+    before anybody could read it.
+    Added 2026-09-30. Enforced the same day in two parts: the close prints no
+    scale line at all when the full-read count is zero, and the count is stated
+    about the week and never about the items below it. The sampling order is
+    the engineer's, filed in docs/ideas.md the same day, because no wording can
+    make a number true that was measured before the work it measures.
+
+79. The gate conditioned on a fact its reader was never given. Entry 72 is
+    the gate whose unit is wider than the thing it governs and entry 77 is the
+    one whose unit is narrower. This is the third shape and it is the quietest,
+    because the gate is written correctly and still cannot run.
+    `prompts/digest.md` divides itself at the top into house law and
+    weekly-only, and the weekly-only part is one demand: the Monday issue
+    argues one case rather than listing findings. "A daily may list. Monday may
+    not." The payload hands over the week label, the date range, the pipeline
+    counts and five lists of material. Nothing in it says which cadence is
+    being written. So the single most consequential structural rule in the file
+    was conditioned on a fact the writer had no way to look up, and the print
+    of 2026-09-30 shows the guess going both ways inside one issue, naming its
+    contents as the day's and its findings as the week's.
+    The general test, and it is the company's gate standard turned around.
+    L-A21 says to name a change that would break what a gate governs and ask
+    whether the gate would have seen it. This entry adds the prior question:
+    name the fact the gate's own sentence depends on, then find where the
+    writer reads that fact. Where the answer is nowhere, the gate has never
+    fired and never will, and it has been reporting a pass the whole time.
+    A rule conditioned on the calendar, on the reader, on the cadence or on
+    anything else outside the artifact and outside the payload is not a rule
+    yet. It is a rule plus a missing input.
+    Added 2026-10-01. Enforced the same day: the prompt derives the cadence
+    from the `dates` field, which spans days for a weekly and names one day for
+    a daily, and that is a fact the payload actually carries.
+
+80. The thesis only the close believes. Canon law 9 and the owner's ruling of
+    2026-09-19 both say the weekly is the synthesis and must argue rather than
+    list. An argument is expensive and a list is cheap, so the cheap thing
+    gets written and a sentence of argument gets laid over it at the end, where
+    it costs one paragraph and reads, at speed, exactly like the real thing.
+    The print of 2026-09-30 closed on "The field is converging on a question:
+    how much of the harness can disappear into the model, and what breaks when
+    it does?" Five sections printed above it. That question reaches two of
+    them. The close names a third by appending it with "And", and two sections
+    appear in no frame the issue builds, not the opening and not the close.
+    They are in the issue because they were in the payload.
+    The tell is not the closing paragraph, which is usually the best writing on
+    the page. The tell is a section that no sentence outside itself ever needs.
+    Lift each section out and ask which step of the stated case it carries. A
+    section that carries none was never part of an argument, and a case that
+    does not need three of its five sections was not the issue's case, it was a
+    summary of the two sections that happened to rhyme.
+    This is entry 67's relative, the promise the issue does not keep, moved
+    from the opening to the close. There the issue promises contents it fails
+    to deliver. Here it delivers contents and then claims a shape they never
+    had.
+    Added 2026-10-01. Enforced the same day: before a Monday issue is output,
+    the one case is written down as a sentence and every section is matched to
+    a step of it, with cutting the section and replacing the case as the only
+    two fixes.
+
+81. The gloss spent on the easier of two words. Canon law 12a requires every
+    term of art to carry its plain-words clause at first use, and the
+    first-use pass in the generator is the longest gate in the file. The pass
+    does not fail by skipping the duty. It fails by discharging it, visibly and
+    well, on one word, after which the page looks like a page that glosses its
+    terms.
+    The print of 2026-09-30 handed over its central term in a clause an
+    outsider can use and then carried the other term of its own title bare
+    through eight appearances, the title, the contents line, a section heading,
+    three body sentences, a bold lead and the closing line. Twenty-four terms
+    in that issue would have stopped a builder from outside the research world.
+    Three carried a clause.
+    Two things make this one worth its own entry rather than a note under 54.
+    The first is where the bare word sat. A title term is met before the reader
+    has any reason to continue, so law 4's one line and law 12a's first use are
+    the same line, and failing both at once is the most expensive single way to
+    fail either. The second is why the duty did not reach it. The instruction
+    to prefer the title's word existed, inside the rule about two names for one
+    idea, and the bare word had no second name, so a correctly written duty sat
+    in a conditional that never triggered. A duty parked inside another rule's
+    scope is enforced only for the cases that other rule happens to cover.
+    The general test: a gate that produces a visible success on one instance of
+    its subject is not evidence it ran. Count the instances and count the
+    successes, and where the subject is a closed list, check the closed list
+    first and separately.
+    Added 2026-10-01. Enforced the same day: the title's own nouns are a
+    closed list, checked first and on their own, with the clause required in
+    the title's sentence or the opening's first sentence and nowhere later.
+    LANDED prompts/digest.md: "Start with the title, because it is a closed list"
+
+82. The nickname that arrives with "the". The owner's ruling of 2026-09-19
+    named this pair in her own words, that nicknames printed "before anyone
+    said that teacher and student are nicknames for a big model training a
+    small one" read "as gossip about strangers". The first-use pass lists the
+    class by name. The print of 2026-09-30 printed one of the listed words
+    anyway, thirteen days on, and the reason is a grammatical detail the gate
+    had no instruction about.
+    The sentence introduced one half of the pair with an indefinite article,
+    correctly, and the other half with a definite one in the same breath. The
+    definite article asserts that an introduction has already happened. The
+    writer feels the introduction, because the two roles arrive together in the
+    writer's head, and the reader gets only the half that was named.
+    So the tell is the article and not the word, which is why a list of the
+    words did not catch it. Any role noun, in any pair, under any nicknames the
+    field uses, fails this the moment it arrives with "the" and no antecedent.
+    Look for the sentence that INTRODUCES the role rather than the one that
+    uses it, and where one sentence hands over one half with "a" and the other
+    with "the", the second half is bare however naturally it reads.
+    Added 2026-10-01. Enforced the same day: the role nouns get their own
+    paragraph inside the first-use pass and the check is on the article, with
+    naming the thing in that sentence or dropping the nickname as the two fixes.
+    LANDED prompts/digest.md: "the role nouns have their own tell, and the tell is the article"
+
+83. The general sentence over the particular number. The claims pass has four
+    questions. Three compare one number against another and the fourth compares
+    the issue against itself. All four clear a sentence that invents nothing,
+    confuses no measures and still says something the evidence does not.
+    The print of 2026-09-30 measured one system on one benchmark and found that
+    under a third of its actions mattered. Its heading said that two thirds of
+    the whole activity is noise, and the plain-meaning line under it said the
+    same about all agents. One system was measured. Every system was described.
+    The number is accurate to the decimal and the sentence reporting it is
+    false, and no comparison exists anywhere for a comparison test to catch.
+    The two places this happens are the two places a figure stops being a
+    figure and becomes a statement, which are the heading and the line of plain
+    meaning law 14 requires under every result. Both are written after the
+    number is settled, both are written for effect, and both are read as
+    general by default because that is what a heading is for.
+    The test is two namings and a comparison. Name what was measured in full,
+    which system and how many and on what task. Name what the sentence claims.
+    Where the second is broader than the first, put the measured subject into
+    the sentence, which usually costs three words, or keep the general claim
+    and drop the number, which means the section has no finding and goes.
+    Added 2026-10-01. Enforced the same day as a gate on finished output,
+    beside the gate that checks the issue's numbers against each other.
+
+84. The label welded to a sentence by a full stop. Entry 62 and the owner's
+    rulings of 2026-09-19 are about taxonomy at the top of a block, and the
+    generator's heading gate states the rule correctly, that a label is a
+    label at any level and in any typeface. The collection step in front of
+    that rule is where this keeps getting through, and it has been escaped
+    twice now by the same move.
+    The step had two halves. One collected lines, meaning a heading or a run
+    of bold sitting alone on a line of its own. The other was added for the
+    label that takes no line of its own, and it collected by colon: the text
+    in front of a colon, bolded or plain. A print of 2026-09-30 opened four
+    of its paragraphs on a bolded label that ended in a full stop. None sat
+    alone, so the first half missed all four. None carried a colon, so the
+    second half missed all four. One of them was a shape this register
+    already condemns with the colon swapped for a period.
+    Put the deciding question to any of them and it fails at once: a label
+    that says a comparison is about to arrive, or that the next lines are
+    what the news means for the reader, would have fitted every issue the
+    product will ever send. They are furniture in the one typeface that
+    guarantees the eye lands on them first, and a skimmer reading only the
+    bolds gets the issue's filing system instead of its story.
+    The general tell, and it is the reason this entry is not just an eighth
+    string: a unit defined by a punctuation mark is escaped by changing the
+    punctuation mark. Seven disguises have now walked past seven checks
+    written for the one before, and every one of those checks matched a
+    shape. The unit has to be the position.
+    One more thing is worth recording about where the shape came from. The
+    bold lead is licensed by canon law 14 in exactly one place, inside a
+    bulleted list, one lead per bullet. The issue that printed four of them
+    set no list anywhere, for the sixth grade running. The ornament arrived
+    without the structure it was attached to, which is what an unanswered
+    formatting escalation looks like on the page.
+    Added 2026-10-02. Enforced the same day: the heading gate's collection
+    step loses both punctuation-shaped halves in favour of one positional
+    unit, any run of bold or italic that BEGINS a line, whatever punctuates
+    it and whether or not the line continues.
+    LANDED prompts/digest.md: "any run of bold or italic text that BEGINS a line"
+
+85. The hour recommended with nothing behind it, in the one slot whose format
+    had no room for a grade. In-line evidence grades are house law in
+    prompts/digest.md and canon law 6, binding every item at every cadence.
+    The reading list's format spec named three parts and the grade was not
+    one of them: a title, a link, and the line naming the reader's decision.
+    So a print of 2026-09-30 carried a grade on every section above and none
+    on any of its three picks, and the model was obeying the file in both
+    places.
+    This is the worst slot in the issue to lose it in, for two reasons. It is
+    the only section that asks the reader to spend an hour, and it is the
+    section where a whole subfield gets summarised in a clause. An entry that
+    declares what the real bottleneck in some area is, on the authority of
+    one unreplicated paper, with no number anywhere near it, is entry 83 one
+    level up: the general sentence over the particular, with the particular
+    left out altogether. The three questions of the claims pass all need two
+    figures to compare, so a sentence carrying none of them reaches no check
+    in the file.
+    The general tell: where a slot's format is written as a closed list of
+    parts, that list is the law for whoever fills it, and a duty stated
+    anywhere else in the file does not reach inside it. Check every format
+    spec against the rules said to bind every item, and where the spec has no
+    place to put one of them, the spec is the defect and not the print.
+    Added 2026-10-02. Enforced the same day: the reading-list entry carries
+    what the work cannot establish inside its own sentence, and the title
+    rule is restated there too, because the same print set its picks as
+    bolded short names and one of them as a bare acronym where the paper's
+    title goes.
+    LANDED prompts/digest.md: "The title is the paper's own title, in italic"
+
+86. The posture kept by deleting the verb. A rule written against a class of
+    words is obeyed by writing the same thing without any word from that
+    class, and the result passes every check the rule can run.
+    The reading list banned verbs of presentation and listed them, shows,
+    details, presents, provides, introduces and every synonym. A print of
+    2026-09-30 contained none of them and opened all three of its entries on
+    a bare noun phrase describing the paper: the study of a thing, the case
+    for a thing, the model that does a thing. Three catalogue entries with no
+    catalogue verb in them. The ban had named the symptom. The posture is
+    carried by the subject, and a noun phrase needs no verb to hold it.
+    Two of the three then took the same grammatical shape in their second
+    sentence as well, against the same slot's own rule that no two entries
+    share a shape, because once the opening is a description of the paper the
+    sentence that addresses the reader has to arrive afterwards in whatever
+    form is left.
+    The general tell, and it generalises past this slot: where a rule bans a
+    word class, ask what the sentence would look like with the class removed
+    and nothing else changed. If the offending version survives that
+    deletion, the rule is aimed at the wrong unit, and the unit is almost
+    always the grammatical subject. A test on the subject cannot be escaped
+    by deletion, because every sentence has one.
+    Added 2026-10-02. Enforced the same day: the slot asks what the first
+    words of the entry are ABOUT, with the reader, their decision or the
+    thing they are about to build wrong as the only allowed answers, and the
+    paper arriving inside the sentence rather than at the front of it. The
+    frame ban in the same slot is also stated to bind its heading, because
+    the sentence banned on the entries printed in the heading instead.
+    LANDED prompts/digest.md: "What are the first words of the line ABOUT"
+
+87. The law graded by grep, and the violation that used the synonym. A law
+    written as a closed set of exact strings gets enforced with a string
+    search, the search is honest and its exit code is recorded, and the
+    verdict it produces is about the strings rather than about the law.
+    Canon law 12 says framework names never print. The four internal names
+    are "Trailblazing", "Gaining traction", "Left behind" and "Read these
+    yourself", and five consecutive grades ran the same grep for those four
+    over the page, the stored row and the newest print, got no output from
+    any of them, and recorded law 12 as a pass on the strings. Runs 21 and
+    22 then added "FAIL on the idea" and located the idea in three headings
+    and four bold labels, which is correct and is not where the law is worst
+    broken.
+    It is broken in the second line of every issue the product has ever
+    sent. `MASTHEAD` in `pipeline/weekly.py` reads "*What's new in AI
+    research, what's gaining acceptance, and what newer evidence has
+    overturned.*" Three of the four internal slots, in the file's own order,
+    in plain-English synonyms: what's new is the new-work slot, what's
+    gaining acceptance is the traction slot, what newer evidence has
+    overturned is the fell-behind slot. The grep cannot match any of them
+    because not one of the four strings appears, and the line sits 84
+    characters into the same body the grep was run over.
+    The reason no prompt gate catches it either: the model does not write
+    this line. `add_masthead` splices the constant in after generation, so
+    the heading gate, which reads finished output and whose first collection
+    step takes every run of italic text sitting alone on its own line, reads
+    output that does not contain it yet. This is entry 61's class, the
+    reader-facing string in code that no pass grades, and entry 64's, the
+    standing line whose fix cannot reach what is published. The third thing
+    it is, and the new part, is a law whose verdict a grep can satisfy.
+    The general tell: where a law names a closed set of strings, the grep is
+    the floor of the verdict and never the verdict. Write the law's IDEA as
+    a question and ask it of every standing line in the artifact, including
+    the ones this seat cannot edit, and name the file they live in. A clean
+    exit code on four strings is evidence about four strings.
+    And the instrument was instructed. The canon's grading procedure said in
+    its own words that law 12 "is the case where this costs nothing" and that
+    the verdict is the grep. Five grades obeyed a procedure that was wrong,
+    which is why this entry's fix is a correction to that procedure and not a
+    note about care.
+    Added 2026-10-03. Not enforceable from the prompt, and the reason is the
+    splice. Enforcement lands in the canon's grading procedure instead, pass
+    3, where the verdict now has three parts and the third asks the idea of
+    every standing line with its source file named, and in the
+    structure-watch filing of 2026-10-03 in docs/ideas.md,
+    which is the third on this line: the first, of 2026-09-20, already named
+    canon law 12 and recommended deleting the constant, and it is still
+    `proposed` on day 13.
+
+88. The specimen a payload could never have supplied, which is why nobody
+    noticed it was still a template. This file defends its own examples with
+    one test, stated at the skeleton: "Every example in this file is drawn
+    from a subject the payload cannot contain." The test was written against
+    the failure where a worked rewrite of an issue became that issue's prose,
+    and for examples about research it holds.
+    It protects nothing in a specimen that names no subject. A phrase about
+    how strong the evidence is is payload-neutral by construction: it fits
+    every issue, so there is no subject in it to be drawn from a week the
+    generator was not handed, and it passes the test while being directly
+    printable.
+    The grade rule demonstrated a grade as a sentence counting two units of
+    scale and then assessing them. Four hundred lines later the gate banned
+    that exact frame by name, "One [unit], [unit], and [the assessment]", and
+    recorded that a print carried it four times out of four with two of those
+    opening on the specimen's own first two words. The reading-list rule
+    listed the same facts in the same shape at the position where its entries
+    get written. So the gate forbade the frame while two writing positions
+    went on handing it over, which is the 2026-09-30 defect of the gate that
+    supplied its own banned heading, repeating in the slot that is house law
+    on every item at every cadence.
+    The general tell, and it is the test this file's defence was missing: ask
+    of every quoted specimen whether it could print verbatim in an issue
+    about any research at all. If it could, the subject test does not reach
+    it and the position decides. At a writing position, strike it and name no
+    replacement, because a replacement offered where the writing happens is
+    the next frame. At a gate, where finished output is being read, a
+    specimen is evidence and may stay.
+    Added 2026-10-03. Enforced the same day: the in-frame grade specimen is
+    struck and the rule names no replacement, and the reading-list facts are
+    stated as the questions they answer rather than as a shaped sentence.
+
+89. The payload fact that went stale in the prompt. An instruction written
+    while looking at one day's data records what that data was, the sentence
+    is accurate and useful on the day it is written, and every run afterwards
+    reads a verdict on its own input before it has looked at it.
+    The traction slot of `prompts/digest.md` carried two, both added
+    2026-09-23. "A paper going from zero citations to one, or from one to two,
+    is a single reader rather than the field moving, and today all five movers
+    are that size." And "`supported_claims` returns claims and never papers,
+    so two rows can be one paper: today's twelve rows are ten papers, with two
+    of them doubled."
+    The newest print was handed twelve citation movers and twelve supported
+    claims, not five movers, and it printed no traction section at all. The
+    traction slot is section one of every issue at every cadence and the law it
+    carries is the owner's oldest, "Traction matters a lot." The one sentence
+    in the file that could have told a model to skip it told it, in the
+    payload's own units, in the present tense, with the word "today".
+    The general tell: a prompt is read on a day it was not written, so a
+    sentence in it that describes the input is a claim about a day that has
+    passed. The tense is the giveaway. Any "today", "this week", "all five",
+    "today's twelve" in an instruction is either a rule stated as an
+    observation or an observation that has escaped into the rules, and both
+    repair the same way: turn it into the question the model asks of the
+    payload in front of it, and let the count be whatever it is. The file may
+    say how to judge a stream. It may never say what the stream contains.
+    Added 2026-10-03. Enforced the same day: both sentences struck, each
+    replaced by the question asked of the payload actually handed over, and
+    the first replacement says in its own words that this file does not know
+    how many movers there are or how big they are.
+    **The sweep, added 2026-10-04, which is what the entry above was missing
+    (entry 90).** The two sentences this entry was written from were struck and
+    the rest of the file was never checked for the class. The command is
+    `grep -n "today's\|of today\|the last issue\|the newest print"
+    prompts/digest.md`, and run it every grade until it comes back empty of
+    claims about the input. On 2026-10-04 it returned three live hits and a
+    fourth inside this entry's own repair, all four struck that day: a
+    non-ASCII census in the voice section, a row-and-paper count in the
+    new-work slot, a quoted triage note in the reading list, and a payload
+    count beside "the newest print" in the replacement above.
+    LANDED prompts/digest.md: "This file does not know how many you have or how big they are"
+90. The class named and not swept. Entry 89 is the specific defect. This is
+    what the run that found it did with it, and the shape is general enough to
+    bind every entry in this file from here on.
+    Entry 89 was added 2026-10-03 from two sentences in the traction slot of
+    `prompts/digest.md`. It is correct, it states its general tell well, and it
+    names the giveaway: "Any 'today', 'this week', 'all five', 'today's twelve'
+    in an instruction is either a rule stated as an observation or an
+    observation that has escaped into the rules." The entry then struck the two
+    sentences it had been written from, and nobody ran the entry's own giveaway
+    over the rest of the file. One command, the next morning:
+    `grep -n "today's\|of today" prompts/digest.md` returned three more. A
+    census of one past payload's non-ASCII characters, inside the rule that
+    forbids them. A row-and-paper count in the new-work slot, at a writing
+    position, pre-deciding how long the section runs. And a quoted triage note
+    from one day's `deep_reads`, printable verbatim, in the reading list. A
+    fourth sat inside entry 89's own repair, which named a payload count and
+    "the newest print", a referent that moves to the issue being written.
+    The tell is the asymmetry between how an entry is found and how it is
+    fixed. A defect is found in one specimen, because one specimen is what the
+    artifact showed. The fix is applied to that specimen, because that is what
+    the diff is for. Nothing in between asks the question the entry was just
+    taught to ask. An entry that names a CLASS and repairs an INSTANCE has
+    recorded a rule and left its own evidence lying around.
+    So an entry whose text generalises carries a third thing beside its
+    specimen and its enforcement: the sweep. Run the entry's own tell over the
+    generator, print the count in the review, and fix every hit in the same
+    pull request or say why a hit stays. Where the tell is a command, the
+    command goes in the entry so the next run can re-run it rather than
+    re-derive it. A count of one, written down, is also a result: it says the
+    class has one member and the entry is closed.
+    The boundary, because over-correcting this is the obvious next failure. A
+    claim about the file's past OUTPUT is evidence for a rule and stays: "the
+    last issue printed this file's example lead-in word for word" tells the
+    model why a rule exists and nothing false about its input. A claim about
+    the INPUT is the defect, because the model cannot check it and will act on
+    it. Output is history. Input is a fact the model is about to be handed, and
+    this file does not have it.
+    Added 2026-10-04. Enforced the same day: the three live hits and the one
+    inside entry 89's repair are struck in `prompts/digest.md`, and the sweep
+    with its command is written into entry 89's own ending and into pass 4 of
+    the canon's grading procedure, where the ban list is read.
+    LANDED prompts/digest.md: "This file does not know how many papers are under your rows"
+91. The measurement carried forward from the wrong artifact. Not a sentence in
+    an issue. A number in the instrument that grades them, which is worse,
+    because a figure in a review is the only thing a later run inherits without
+    re-deriving it.
+    The grade of 2026-10-03 reported, in its law 1 verdict: "The published page
+    carries 152 non-ASCII characters and six em dashes." Its measurement table
+    carried the same 152 in the published-page column. The published page is
+    `site/content/issues/2026-W39.md` and it is pure ASCII:
+    ```
+    $ file site/content/issues/2026-W39.md
+    site/content/issues/2026-W39.md: ASCII text, with very long lines (989)
+    $ LC_ALL=C grep -c $'[\x80-\xff]' site/content/issues/2026-W39.md
+    0
+    ```
+    The 152 is exact and it belongs to `2026-W37`, which carries 152 non-ASCII
+    characters across seven distinct code points and eight em dashes. It was
+    measured correctly in the grade of 2026-09-22, when W37 was the published
+    issue, and that review says so in its own words: "152 non-ASCII characters
+    in the published file and 134 in the row". Two artifacts later the figure
+    was still being reported against whatever "the published page" now meant.
+    Nothing was invented and no measurement was taken wrongly. The number
+    outlived its subject, which a number in a table does by default, because a
+    column heading is a pointer and the figure under it is a value.
+    What makes this an entry rather than a slip is that the sentence forbidding
+    it was written into the canon's grading procedure by the same pull request:
+    "Grade one artifact per verdict. Two artifacts sharing a verdict line is
+    where an attribution error becomes invisible." The table in that review has
+    one row per metric and three artifact columns, so every row is a verdict
+    line shared by three artifacts. The rule was obeyed in the prose and broken
+    in the layout, and a table is where a measurement actually lives.
+    The cost is specific and it is not the wrong number. It is that a FAIL was
+    recorded against a clean artifact, so the one metric the generator has
+    genuinely solved reads as its worst. A grade that cannot tell a fixed
+    defect from a live one cannot tell anyone when to stop working on it.
+    The repair is that a measurement names the artifact it was taken from and
+    the command that took it, in the same cell or the row beneath, and is
+    re-taken every run rather than carried. Where a figure is inherited from an
+    earlier review, it is quoted with its date and its subject, both.
+    Added 2026-10-04. Enforced the same day in pass 1 of the canon's grading
+    procedure, which is where the measurements are taken
+    (`INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`).
+92. The enforcement ending that nothing can re-run. The standing rule at the
+    top of this file gives an entry three possible endings, and the second one
+    is "the change to prompts/digest.md that now enforces it". Thirty-five
+    entries carry an ending of that kind. One of them quotes the text that
+    landed. The other thirty-four describe it: "the heading gate now reads each
+    heading against the block under it", "the grade slot now forbids opening on
+    the word 'evidence'", "the shape gate counts the shapes on the page before
+    any of the word counts".
+    Every one of those is true today. I checked all thirty-four by reading the
+    generator, and nothing has been lost. That is the finding rather than the
+    consolation: the register's second ending has no failing state, exactly as
+    its third ending had none until pass 6 was built for it on 2026-09-30. A
+    ledger filing sits at "proposed" and nothing turns red. A prose enforcement
+    sits in a sentence nobody re-reads and nothing turns red either. The
+    difference is only that the second one happens to be intact, and four runs
+    have been editing the generator blind, striking text at the exact positions
+    these endings point to.
+    The lesson is already in this file and it is in the wrong place. Entry 51
+    was corrected on 2026-09-27 and its correction says it outright: "An
+    enforcement ending has to name the gate the defect would pass through, not
+    merely a place in the file where the rule is now written down." That is a
+    standing rule about every entry, recorded inside one entry, where it binds
+    nothing and no run reads it as law. It is incident 20's shape at the scale
+    of this register: the right words, in the right file, by the right seat,
+    read by nothing between the ruling and the artifact.
+    So the standing rule at the top of this file gains the requirement, and an
+    enforcement ending quotes the text that landed wherever the change is a
+    sentence, so a later run can check it with one command instead of a close
+    reading. Where the change is a gate rather than a sentence, the ending
+    names the gate and the step inside it, which is entry 51's correction
+    promoted to law.
+    Added 2026-10-04. Enforced the same day as a command rather than a
+    sentence, which is `L-A22` and is the only ending this entry could honestly
+    carry: `docs/voice/check_voice.py enforcements`. The standing rule at the
+    top of this file defines the `LANDED` line the command checks, cites entry
+    51's correction as its source, and says to seed the convention on the
+    entries a run touches rather than backfilling thirty-four assertions
+    nobody verified. Nine entries carry a checked line today.
+    Tested against a known failure before being trusted, per `L-A21`: entry
+    84's landed text was reworded in a scratch copy of the generator and the
+    command reported `FAIL entry 84 (not in file)` and exited 1.
+    What is NOT enforced, said plainly because `L-A22` requires it: nothing
+    calls this command. Until a command that already runs does, this entry and
+    the two before it are enforced at the reliability of someone choosing to
+    type it. Filed in docs/ideas.md for the engineer.

@@ -167,6 +167,8 @@ status: active
 provenance:
   extracted: <YYYY-MM-DD, today>
   validated: ""   # leave empty; the ADR-13 validator fills this at promotion, never fabricate a result here
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   claims: [<every claim id the body cites, as a flat list>]
   papers:
     - "<paper title> — <arxiv or source url>"
@@ -189,7 +191,14 @@ Body shape, after the specimen:
    engineering practice" paragraph). Skip it if the topic has no such
    overlap; do not force the shape.
 3. **Numbered or titled sections, one per finding**, each a procedure or a
-   judgment call, grounded in the cluster. Cite claims **by paper title
+   judgment call, grounded in the cluster. Directly under each section
+   heading, one italic *Validation:* line stating what has actually tested
+   that section: the recorded trial that exercised it, a consumer report
+   that adopted it (cite the file under the skill's `reviews/`), or "none
+   yet; claim provenance only". Adoption is not validation and the line
+   never blurs the two. The frontmatter `validated` field remains the
+   ADR-13 panel's alone; a per-section tag never claims a trial that was
+   not recorded (ADR-38). Cite claims **by paper title
    inline** in prose — `(Co-Evolving Harnesses and Models)` — not by raw
    numeric id. The numeric ids belong in the frontmatter `provenance.claims`
    list only, where the provenance reviewer (ADR-13) checks each one against
@@ -202,10 +211,41 @@ Body shape, after the specimen:
    traceable to a claim must say so inline, in the specimen's voice: "(ours,
    not the paper's)". This is the line the provenance reviewer polices
    hardest — the one sin the panel exists to catch is overstating evidence.
-5. **Caveats section**, always last: the source studies' scope limits
+5. **An "Apply" checklist**, second to last: the whole skill compressed
+   into five to seven checkable lines a builder runs down before shipping,
+   each line a question with the section it came from. Five to seven is the
+   owner's number (2026-09-30), and the reason for the ceiling is that a
+   checklist longer than the sections it summarises is a second skill. Every
+   section of the body appears in exactly one line, so a skill with nine
+   sections merges rather than adds. The first consumer report in the library
+   (harness-engineering `reviews/`, 2026-09-29) derived this checklist by hand
+   and said the skill should have shipped it, and every skill ships it now
+   (ADR-38). A skill whose content cannot be compressed this way is describing
+   findings, not procedures, and that is a cluster-selection finding to
+   report.
+6. **Caveats section**, always last: the source studies' scope limits
    (model sizes, task counts, sample sizes — whatever narrows how far the
    finding generalizes) and one sentence committing the skill to revision if
-   a source claim is later contradicted.
+   a source claim is later contradicted. A caveat that names a requirement
+   also names its floor: "needs an embedding model (a MiniLM-class sentence
+   embedder is sufficient)" turns a hesitation into a decision, while
+   "needs an embedding model" alone leaves the reader to research one
+   (ADR-38).
+
+One deliverable sits beside the body rather than inside it. **The `reviews/`
+lane ships with the skill, not after its first consumer** (ADR-38, owner
+directive 2026-09-30). Create `skills/<slug>/reviews/README.md` in the same
+pull request as the SKILL.md. It points at the shared contract
+(`skills/_validation/reviews/README.md`) and then does the one thing only the
+author can do: name, in priority order, the two or three sections a report
+would move most, and say why. Every section of a new skill is unvalidated on
+day one, so "most wanted" means the sections whose prescriptions are marked
+ours rather than the papers', the sections with the thinnest sample, and the
+sections a reader is most likely to skip. The frontmatter
+`provenance.reviews` list points back at the lane and carries one line per
+filed report, or the placeholder line shown in the frontmatter template above
+when the lane is empty. A lane created only once a report arrives never
+receives one, because nothing told the consumer it existed.
 
 Every `provenance.claims` id must trace to at least one paper-title citation
 somewhere in the body. An id in the frontmatter with no corresponding
@@ -245,8 +285,25 @@ purely by being longer:
   mentions more things wins more prompts, including prompts that belong to a
   neighbour. Verbosity reads as relevance to the instrument and as vagueness
   to a router. One clause per section of the body is the working test: if two
-  clauses point at the same section, delete one. The engine fix is a ledger
-  entry (2026-09-22); until it lands, the discipline is yours.
+  clauses point at the same section, delete one.
+
+  **This is now measured rather than trusted (2026-09-30).** The rule above
+  failed twice while it lived only in this file, on 2026-09-22 and again on
+  2026-09-24, because you read this prompt at step 2 and write the
+  description at step 3. Incident 31 records both. `trigger_test.py` now
+  counts the words and warns past 150, and it records the count in every
+  result bundle under `length_audit`, so the number travels with the
+  receipt. You do not have to hold the budget in your head. Run the trigger
+  test and read its warnings, which you were doing anyway at step 5.
+
+  **The engine fix still has not landed, and the reason is now a measurement
+  rather than a plan.** Both engines were tested on 2026-09-30 with
+  candidate, prompt and topic fixed and only length varied. lexical/2.1 pays
+  a candidate +0.1353 for going from 41 words to 123. lexical/3 fines it
+  -0.1227 for the same change. Neither is length-invariant, so no engine
+  choice available today removes this discipline from you. The proposal for
+  one that would is lexical/4 in `docs/ideas.md`, and the evidence is
+  `skills/_validation/results/2026-09-30-panel-v2-engine-decision.md`.
 - **Put the "distinct from X" boundary sentence before the "Use when" clause,
   never after it.** `activation_clause()` takes everything from the first
   "Use when" to the end of the field and weights it 1.25, so a boundary
@@ -330,5 +387,13 @@ and leave it failing, because a validated skill is not this run's to edit.
   red suite green. The policy in `skills/_validation/` is pre-registered on
   purpose, and tuning an instrument until it flatters the artifact it
   measures is the same sin as overstating a claim.
+- Never write a *Validation:* tag that reads as evidence when it is not.
+  "Adopted by a consumer report" is adoption, "covered by an unrun eval task"
+  is coverage, and neither is a trial. The 2026-09-30 retrofit pass found the
+  reverse failure worth naming too: two skills had a section whose claim ids
+  were attached to an eval task that tested none of it, which would have let a
+  tag claim coverage the suite did not have. Check the task's own rubric
+  criteria, not its claim list, before a tag cites it, and write the missing
+  task rather than softening the tag.
 - Never write outside skills/, this file, and docs/ideas.md — panel
   promotion, library rendering, and pipeline code are other seats' surface.
