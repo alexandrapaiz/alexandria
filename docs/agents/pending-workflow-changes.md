@@ -89,228 +89,6 @@ page.
 
 ## Pending, queued 2026-09-18 by the ExO agent
 
-### 2. The PM goes daily, so the org has a seat that is present
-
-**CANCELLED IN PART 2026-09-27. Read this paragraph and then decide
-whether to read any further.** The cadence half was applied on
-2026-09-23 and the README half has been applied too. The remaining half
-is the cap raise from 300 to 400, and the standup's share of it is now
-cancelled on measurement rather than on judgment. Four standup runs have
-completed since the split (2026-09-24, 25, 26, 27) and their turn demand
-is 62, 44, 81 and 38 against a cap of 300. The rule in
-[turn-caps.md](turn-caps.md) is twice the peak, which gives 162. There is
-no shortfall and there is no headroom argument left either.
-
-What survives is narrower and it is honest about being unmeasured: **the
-Monday ceremony run has not completed once since the cron split.** The
-last Monday, 2026-09-21, failed at turn 30. Its last good measurement is
-a peak of 141 from before the split, when the ceremony and the standup
-were one run, and the ceremony has since taken the grooming and the
-dispatch queue that the standup does not carry. So the ceremony's cap is
-the one open question on this item, and the next ExO run answers it from
-the 2026-09-28 run rather than from a feeling. **Until then, apply
-nothing on this item.** If 2026-09-28 comes in under 150 like the
-standups, delete the item.
-
-The two `-` anchors below still match the live file exactly once each, so
-the item is not rotted. It is simply not evidenced, which is a different
-and more common reason not to apply something.
-
-**Queued 2026-09-19 by the ExO agent, on the owner's order. THE CADENCE
-HALF WAS APPLIED 2026-09-23 by the chair, in commit 2ae2650, and the cap
-half was not. Read the next three paragraphs before the diffs below,
-because two of them are now historical.**
-
-**What the chair applied, and it is better than what this page
-proposed.** This item asked for one daily cron, `35 10 * * *`, with the
-charter branching on the day. The live file instead carries two crons,
-`35 10 * * 1` for the Monday ceremony and `5 11 * * 0,2-6` for the
-standup, plus a `RUN_MODE` env var computed from
-`github.event.schedule` and `actions: write` for the dispatch grant. Two
-crons and an explicit mode beat one cron and a charter that has to infer
-the day, because the run knows which schedule fired it and never has to
-reason about the calendar. Recorded here as the correction it is: this
-page proposed the cheaper version and the chair shipped the better one.
-
-**What was not applied: the cap. And this run is downgrading its own
-predecessor's proposal rather than repeating it.** `agent-pm.yml` still
-reads `--max-turns 300` on both steps, and both `-` lines below match
-the live file exactly, once each. But the duty-growth re-check in
-turn-caps.md, run today, gives 300 as the rule's answer: the PM's peak
-is 141, twice that rounds to 300, and the peak has not moved because the
-seat has not completed a run since 2026-09-19. So **the raise to 400 is
-optional headroom, not a shortfall, and whoever applies this page should
-feel free to skip it.** The methodology exists to stop caps being set
-from a feeling that a seat has more to do, and the feeling in question
-was this seat's own on 2026-09-21. The two failed PM runs died at turn 1
-and turn 30 and contribute nothing in either direction.
-
-**What is now moot.** The cron diff and the two documentation lines
-below are superseded by what the chair shipped, and as of 2026-09-27 the
-two documentation lines are moot for a second reason: README.md already
-reads `pm · daily, Mon is the ceremony` in the STEER node and
-`daily 6:35 ET standup, Mon is the ceremony` in the seat table, so both
-`-` anchors for those lines are gone from the live file. Verified this
-run. They are left in place
-rather than deleted so that the next reader can see what was proposed
-against what landed, and they are marked here rather than there.
-
-**Original item follows.**
-
-**Why.** Her words: "right now i feel like im doing the PMs job, i want
-the pm to be proactive." The evidence is one day. On 2026-09-19 the org
-started twenty-five agent runs and opened fifteen pull requests, and the
-PM seat ran zero times, because `35 10 * * 1` fires once every
-168 hours. A seat that is awake for one hour a week in a company that
-changes state every forty minutes cannot be proactive no matter what its
-charter says, so the charter half of this fix (prompts/pm-agent.md
-sections 0, 4 and 5) is worth nothing until this cron changes. The
-diagnosis in full is in docs/agents/learning-log.md under the presence
-gradient.
-
-**REWRITTEN 2026-09-20 by the ExO agent, because the diffs below had
-rotted.** When this item was queued on 2026-09-19, `agent-pm.yml` had
-one run step. Commit 609d7cc added a second one four hours later (open
-routing, PR #49), and the queued diffs targeted lines that now exist
-twice or not at all. Applying the old version would have raised the cap
-on the Sonnet step that never runs, rewritten one of two identical
-prompt blocks, and left the live open-routed step untouched. The diffs
-below are checked against the file as it stands today. Whoever applies
-them should still diff before committing, because this page is only as
-fresh as the last ExO run.
-
-**REWRITTEN AGAIN 2026-09-21, because two of the diffs had rotted a
-second time.** Commit 440163a raised the timeout from 60 to 120 and
-renamed the model flag from `sonnet` to `claude-sonnet-5`, five hours
-before the 2026-09-20 run that re-verified this item. That run checked
-the step structure, which is what had broken the first time, and did not
-re-check the values inside the steps. This is incident 26, and the rule
-it produces is below in item 3's note: **re-verify every line of a queued
-diff against the live file, not the part that broke last time.**
-
-**How.** Four edits to `.github/workflows/agent-pm.yml`, plus the prompt
-rewrite in both run steps. The cron change is one character.
-
-```diff
- on:
-   schedule:
--    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
-+    # Daily at 6:35 AM ET. Monday is the ceremony run (retro, grooming,
-+    # sprint plan, and the day's dispatch queue); every other day is the
-+    # standup alone. prompts/pm-agent.md section 0 branches on the day,
-+    # so one workflow covers both modes and there is no second file to
-+    # keep in sync.
-+    - cron: "35 10 * * *" # 6:35 AM ET daily
-   workflow_dispatch:
-```
-
-**The timeout edit is CANCELLED.** It read
-`-timeout-minutes: 60 / +timeout-minutes: 75` when it was queued. Commit
-440163a raised the PM's timeout to 120 on 2026-09-20, so the anchor no
-longer exists and applying the diff's intent would **lower** the timeout
-by 45 minutes. Nothing to do here. 120 is more than the 75 this item
-wanted.
-
-Both turn caps move, because either step can be the one that runs. The
-open-routed step is the one that fires today, so leaving it at 300 would
-make the raise a no-op.
-
-```diff
--          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
-+          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
-```
-
-```diff
--          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
-+          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model claude-sonnet-5"
-```
-
-**The second one's model flag was corrected on 2026-09-21.** It read
-`--model sonnet` through two ExO runs. Commit 440163a renamed it to
-`--model claude-sonnet-5` on 2026-09-20 at 12:34, which was five hours
-before the run that rewrote this item against the live file and did not
-catch it. See incident 26.
-
-And the prompt block, replaced in full **in both steps**. The file
-carries two identical copies, one per run step, and a PM that behaves
-differently depending on which model served it is a bug waiting for the
-day the fallback fires:
-
-```yaml
-          prompt: |
-            You are alexandria's project manager agent (ADR-15 in
-            docs/decisions.md), running in GitHub Actions with this repository
-            already checked out. Read prompts/pm-agent.md; it is your full
-            charter. Section 0 tells you which of two runs this is. On Monday,
-            or when the owner instructions below say so, execute the ceremony
-            run: retrospective on the ending sprint, grooming of
-            docs/ideas.md, the new sprint file in docs/sprints/ in the format
-            docs/sprints/README.md defines, and then the dispatch queue of
-            section 4. On every other day, execute the standup run of section
-            4 alone and nothing else: read fleet state, open PRs, pending, the
-            board and the newest rulings, then write
-            docs/sprints/dispatch-queue.md with at most three proposed
-            dispatches, each one a copy-pasteable `gh workflow run` command
-            with its owner_instructions drafted in full. You propose
-            dispatches; you never fire them, because section 5 is dormant
-            until the owner activates it. Commit on a branch named
-            pm/sprint-YYYY-MM-DD for a ceremony run or pm/standup-YYYY-MM-DD
-            for a standup run, push it, and open exactly one pull request with
-            `gh pr create`, carrying the dispatch queue in the PR description
-            in full. You write only docs/sprints/ and grooming notes in
-            docs/ideas.md. Never write code, never edit charters, never merge
-            your own PR, never push to main, never touch secrets or digests/.
-            If the charter file is missing, stop and fail loudly instead of
-            improvising.
-            Owner instructions for this dispatch, binding for this run and
-            extending the charter (empty on scheduled runs):
-            ${{ inputs.owner_instructions }}
-```
-
-**Apply item 1b first, or this item makes things worse.** A daily cron on
-a seat whose only reachable model is the failing open-routed one turns
-one failure a week into seven. The two items are ordered, not
-independent.
-
-
-**On the cap and the timeout, per the methodology.** The standup run is
-a new run shape with no measurement, so rule 2 of
-[turn-caps.md](turn-caps.md) applies and it inherits rather than guesses.
-It shares the seat's cap, which is correct, because a cap is a tripwire
-and not a budget and an unspent cap costs the org nothing. The raise from
-300 to 400 is not for the standup. It is because Monday's ceremony run
-just gained a whole section, which is duty growth, and the pm row is the
-only censored measurement in the table (a run that died at 140, so real
-demand is known only to be at least 141). The timeout goes to 75 to match
-the rest of the fleet, which at roughly nine turns a minute clears 400
-with room.
-
-**On cost.** Seven runs a week instead of one, on sonnet, on the owner's
-existing subscription. No new service and no new secret, so the cash cost
-stays $0. The real cost is six more short sonnet runs a week and six more
-small pull requests, and the charter caps that by requiring an empty
-queue to be reported and closed cheaply.
-
-**Two documentation lines change in the same hand, so the repo never
-describes a cadence it does not have.** The ExO run that queued this
-deliberately left README.md alone, because the README's job is to
-describe the system as it actually is and the cron is still weekly until
-someone applies the diff above. Apply these two at the same time:
-
-```diff
--        STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
-+        STEER["<b>Steer</b><br/>pm · daily<br/>okr · monthly<br/>exo · Sun"]
-```
-
-```diff
--| pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
-+| pm | daily 6:35 ET, Mon is the ceremony | the day's dispatch queue, sprints, backlog, board, org chart | ADR-15 |
-```
-
-**How to tell it worked.** One test, and it is the owner's to judge: a
-week goes by in which she dispatches seats without composing a single
-instruction herself, because the queue had already drafted them.
-
 ### 4a. The writer's dispatch prompt forbids the duty this PR assigns it
 
 **Queued 2026-09-21 by the ExO agent. This is the item that makes the
@@ -378,47 +156,185 @@ seat's §2 and the charter edit is in this PR. The audit itself is the next
 run's work, because finding a second contradiction is a run's worth of
 reading and this run has one confirmed case to fix.
 
-### 4. The writer's cap goes to 200
+### 14. Seven caps go to the measured rule, in one item
 
-**Queued 2026-09-21 by the ExO agent.** Measured, not guessed. See the
-2026-09-21 duty-growth re-check in [turn-caps.md](turn-caps.md).
+**Queued 2026-10-04 by the ExO agent, from the October re-derivation in
+[turn-caps.md](turn-caps.md). This item replaces items 4 and 11**, which
+both proposed 200 and are both overtaken: the writer's measured peak is
+now 136 and the skill seat's is 156, so 200 is below the rule for both.
+Applying either of the old items would have looked like a fix and left
+both seats short.
 
-**RE-VERIFIED 2026-09-27, unchanged.** The one `-` line below appears
-exactly once in the live file, at line 46. The writer has run daily since
-and its runs have all concluded `success`, so the evidence behind the
-raise has not moved in either direction. Still worth applying: a cap
-below the measured rule is a run that dies without warning, and the
-writer is the seat whose duties grew most this month.
+**Why one item rather than seven.** Seven items touching seven files would
+need seven ordering paragraphs and would rot independently. These seven
+diffs are one line each, they share one justification, and nothing in the
+org depends on the order they land in. Split it only if the owner applies
+part of it.
 
-**Why.** The writer's cap of 150 was derived on 2026-09-19 from two runs
-whose peak was 53. The seat runs daily now and has run eight more times,
-peaking at **80 turns** in run 35459141039. The standing rule is twice the
-peak rounded up to the next 50, which is 200. So the cap is below the rule
-already, and this run also gave the seat three new duties: drafting site
-copy, drafting the value statement, and recording preference data. No
-writer run has hit the cap, which is exactly why nobody noticed.
+**Why now, before anything has failed.** No run has hit a cap. Five seats
+are above 80% of theirs, the writer at 91%. A cap below the rule is a run
+that dies without warning and loses whatever it has not pushed
+(incident 3), and the measurement is what the page exists for.
 
-**How.** One edit to `.github/workflows/agent-writer.yml`. The file has a
-single run step, verified 2026-09-21.
+| Seat | Peak | Cap now | Cap after |
+|---|---|---|---|
+| writer | 136 | 150 | 300 |
+| skill | 156 | 180 | 350 |
+| engineer | 168 | 200 | 350 |
+| market | 131 | 160 | 300 |
+| research | 145 | 180 | 300 |
+| security | 134 | 250 | 300 |
+| exo | 134 | 200 | 300 |
+
+**How. Every `-` line below was grepped against the live file in this run
+and appears exactly once, except market, which is two steps and gets two
+diffs.**
+
+`.github/workflows/agent-writer.yml`:
 
 ```diff
 -          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
 ```
 
-The writer seat runs on `claude-opus-5`, not on Sonnet. This diff was
-first written here with the Sonnet flag, from memory rather than from the
-file, and the incident 26 rule caught it in the same run that wrote the
-rule down. Recorded because it is the cheapest possible demonstration that
-the rule is worth running: grep the live file for every `-` line, every
-time, including the ones you just typed.
+`.github/workflows/agent-skill.yml`:
 
-**Ordering.** Independent. No other item on this page touches
-`agent-writer.yml`, so it can be applied in any order with respect to
-items 1b and 2.
+```diff
+-          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-engineer.yml`:
+
+```diff
+-          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-research.yml`:
+
+```diff
+-          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-security.yml`:
+
+```diff
+-          claude_args: "--max-turns 250 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-exo.yml`:
+
+```diff
+-          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-market.yml` has **two** run steps, the
+open-routed one and the Claude fallback, and either can be the step that
+executes. Both get the raise, because a cap belongs to a job. This is the
+incident 26 shape named in advance: one of two identical copies patched is
+a cap that depends on which provider answered.
+
+```diff
+-          claude_args: "--max-turns 160 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
+```
+
+```diff
+-          claude_args: "--max-turns 160 --permission-mode bypassPermissions --model claude-sonnet-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
+```
+
+**Ordering.** Checked with the whole-page sweep, re-run after this item
+was written, rather than from memory. The complete overlap list, by file:
+`agent-skill.yml` with items 12 and 13, `agent-writer.yml` with item 4a,
+`agent-engineer.yml` with items 6, 9 and 10, `agent-exo.yml` with item 7,
+`agent-pm.yml` with items 6 and 15. `agent-market.yml`,
+`agent-research.yml` and `agent-security.yml` are named by this item alone.
+Every overlapping item edits a `prompt:` block, an `env:` block or a step
+body, and this item edits only `claude_args` lines, so no anchor here moves
+any anchor there and any order works. Items 4 and 11 are deleted by this
+item and must not be applied.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
-budget.
+budget, and this is the sentence the page has repeated since 2026-09-18
+because it is the one that keeps getting re-litigated.
+
+**The smoke run this change owes, because a turn cap is a runtime change.**
+[runtime-changes.md](runtime-changes.md) names `--max-turns` explicitly and
+says no runtime change takes effect without a smoke run on a throwaway
+branch. This seat cannot smoke it: the push that would create the branch is
+the push the runner's token refuses, which is the first section of this
+page. **So the obligation transfers to whoever applies the diffs, and
+naming it here is the only way it survives.** One seat is enough, and
+`agent-market.yml` is the right one because it is the only file in this item
+with two steps: a dispatch of the market seat after the edit should print
+`--max-turns 300` in whichever step executed, and the step that executed
+should be the one the `OPENROUTE` condition selects. If it prints 160, one
+of the two copies was missed, which is the failure this item was written to
+prevent.
+
+### 15. The PM's dispatch prompt forbids two duties its charter assigns
+
+**Queued 2026-10-04 by the ExO agent, from the §2 charter-versus-prompt
+check. This is the 4a shape in a second seat**, so the check is now worth
+running across all twelve rather than only where a boundary was just
+edited.
+
+**The disagreement.** `prompts/pm-agent.md` §1b tells the seat to maintain
+`docs/agents/org-chart.md`, and §4 as of 2026-10-04 tells it to write the
+queue gauge. The inline `prompt:` block in `.github/workflows/agent-pm.yml`
+says:
+
+> You write only docs/sprints/ and grooming notes in docs/ideas.md.
+
+`docs/agents/org-chart.md` is in neither place. So the workflow forbids a
+duty the charter assigns, and the duty this run adds lands inside a
+boundary the workflow does not describe.
+
+**And the interesting half: the charter won.** The charter in
+`prompts/exo-agent.md` §2 predicts the opposite, that "the inline prompt
+arrives last and closest, so when the two disagree the run most likely
+obeys the workflow and the charter edit is inert." The PM has in fact
+written `docs/agents/org-chart.md` three times, most recently on
+2026-09-28. The reason is in the prompt itself, two sentences earlier:
+"Read prompts/pm-agent.md; it is your full charter." That licenses the
+charter to extend the list, so the prohibition reads as a summary rather
+than as a boundary.
+
+**That makes this lower-severity than 4a and still worth fixing**, because
+a seat that has to decide which of its two instruction files it believes is
+a seat guessing at its own permissions, and the next run may guess the
+other way. The prediction in the ExO charter is corrected in the same pull
+request: the prompt does not reliably win, and the finding is the
+disagreement itself rather than its direction.
+
+**How.** Two edits to `.github/workflows/agent-pm.yml`. The file has two
+run steps, open-routed and Claude fallback, with **identical** prompt
+blocks, so each `-` line below appears exactly twice and **both copies get
+the same edit**. This is the incident 26 shape named in advance: patching
+one of two identical copies makes the seat's permissions depend on which
+provider answered.
+
+```diff
+-            exactly one pull request with `gh pr create`. You write only
+-            docs/sprints/ and grooming notes in docs/ideas.md. Never write
++            exactly one pull request with `gh pr create`. You write
++            docs/sprints/, grooming notes in docs/ideas.md, and
++            docs/agents/org-chart.md, which charter §1b assigns you. Never
++            write
+```
+
+**Ordering.** `agent-pm.yml` is also named by item 6, which adds
+`NEON_RO_URL` to the `env:` block. This item edits only the two `prompt:`
+blocks, so neither anchor moves the other and either order works. Verified
+with the whole-page sweep in this run, after this item was written rather
+than before it.
+
+**Cost.** $0.
 
 ### 5. An HQ-origin commit should announce itself when it lands
 
@@ -514,16 +430,37 @@ failure mode for a notifier whose backstop is a weekly human-read audit.
 
 **Cost.** $0, a few seconds per push to main.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04**, because this paragraph said
+"independent of every other item on this page" and that stopped being true
+when items 9, 10, 14 and 15 were queued. This item edits the `env:` block
+of `agent-engineer.yml` and `agent-pm.yml`. Item 14 edits `claude_args` in
+the first, items 9 and 10 edit step bodies in the first, and item 15 edits
+the two `prompt:` blocks in the second. No anchor here moves any anchor
+there and any order works. The old sentence is the shape named in
+`INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`: a blanket
+"independent of everything" cannot be kept true by anyone, because it has
+to be rechecked whenever any other item is queued against any file, and
+nothing points a reader at it.
 
-### 3. Nothing else. The caps are done.
+### 3. The caps are not done. See item 14.
 
-The earlier item 2 of this page (frontend 400 to 600, pm 250 to 300,
-security 200 to 250) was applied by the chair and verified against the
-workflow files in the 2026-09-19 ExO run. Every cap in the org clears the
-measured rule, and the pm raise proposed in item 2 above is duty growth
-rather than a shortfall. See the re-measured table in
-[turn-caps.md](turn-caps.md).
+**Rewritten 2026-10-04, because this item asserted the opposite for
+fifteen days and was read as a clearance.** Its original text said "every
+cap in the org clears the measured rule", which was true of the
+2026-09-19 measurement and stopped being true as the seats' turn demand
+rose. The October re-derivation in [turn-caps.md](turn-caps.md) found
+**seven of thirteen rows under the rule**, five of them above 80% of the
+cap in force.
+
+The raises are item 14. This item is kept rather than deleted because its
+old sentence is the useful part: **a page of pending changes should never
+carry a standing "nothing to do here" claim about a measured quantity.**
+The claim does not expire, nothing re-checks it, and it reads as evidence
+to the next person who opens the page looking for exactly this. The
+earlier raises it describes (frontend 400 to 600, pm 250 to 300, security
+200 to 250) were genuinely applied and verified in the 2026-09-19 run,
+and that part of the record moves to "Applied and deleted" when item 14
+lands.
 
 ### 6. The read-only database URL, for the engineer seat and now the PM seat
 
@@ -642,9 +579,23 @@ supplies and the prompt does not contradict.
 spends rediscovering a four-week-old incident, and it is the only place a
 seat is told the second lane exists at the moment it needs it.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04.** This said "independent of every
+other item on this page", which stopped being true when item 14 was queued
+against `agent-exo.yml`. Item 14 edits the `claude_args` line and this item
+edits the `prompt:` block, so neither anchor moves the other and either
+order works. Same shape as item 6's correction above, same run, same cause.
 
-### 5. Every seat run reports onto the board
+### 8. Every seat run reports onto the board
+
+**Renumbered from 5 to 8 on 2026-10-04**, because this page carried two
+items numbered 5 and the owner applies these by hand. The other 5 is the
+HQ-origin notice above. Nothing else about this item changed. This is the
+second time the page has had to do this, after the two items numbered 4
+on 2026-09-27, and the cause is the same allocator the ADR numbers have
+collided on four times: a run reads the page, takes the next number it
+sees, and another run on another branch takes the same one. Numbers on
+this page are now allocated by reading every `###` heading, not the last
+one.
 
 **Rewritten 2026-09-28.** The step is unchanged in shape and the diff below is
 still one line, but everything this entry said about *why* it was safe was
@@ -747,6 +698,15 @@ double run is the one with evidence behind it, and the other eleven after a
 day of it behaving.
 
 ---
+
+**Ordering.** **Added 2026-10-04; this item shipped with no ordering
+paragraph at all, which is the third shape of the same defect and the
+quietest.** A rotted paragraph is at least visible once someone looks. A
+missing one gives a reader nothing to check and no signal that there was
+anything to check. This item edits `agent-engineer.yml` and the other
+eleven agent workflows' step bodies; items 6 and 14 edit the `env:` block
+and the `claude_args` line of the same files, and item 10 edits the run
+report step. Any order works.
 
 ### 10. The run report calls a tested script, because dash's echo ate the body
 
@@ -874,42 +834,133 @@ file.
 
 ---
 
-### 11. The skill seat's cap goes to 200
+**Ordering.** **Added 2026-10-04**, for the same reason item 9's was: this
+item had none. It edits the run report step in all twelve agent workflows.
+Items 6 and 14 edit the `env:` block and the `claude_args` line of the same
+files, item 9 edits the concurrency block, and items 4a, 13 and 15 edit
+`prompt:` blocks. None of those anchors touch a run report step, so any
+order works.
 
-*The number 11 is the next one free on this branch, which is not the same
-as the next one free. PR #123 renumbered items on its own branch the same
-day. This item is identified by its seat, its date and its diff, so
-renumber it freely when they land together (incident 29).*
+### 12. The skill seat cannot measure a skill, because it has no `GROQ_API_KEY`
 
-**Queued 2026-09-27 by the engineer agent, under the owner's directive of
-2026-09-25.** Measured, not guessed. See the 2026-09-27 duty-growth
-re-check in [turn-caps.md](turn-caps.md).
+**Queued 2026-09-30 by the ExO agent, under the owner's directive of the
+same day and ADR-38.** This is the capability half of the new row in
+[unowned-duties.md](unowned-duties.md).
 
-**Why.** ADR-35 gave the skill seat three new steps on 2026-09-26: survey
-the claim graph, fetch the papers in full from arXiv, and append what it
-could not read to docs/research/reading-queue.md. The first run under
-those duties (36206676462, 2026-09-26) finished freely at **92 turns**,
-against a peak of 81 across the five runs before it. Twice 92 rounded up
-to the next 50 is 200, and the cap in force is 180. The seat has never
-hit its cap, which is why nothing had flagged it.
+**Why.** ADR-38 makes a measured delta the gate on a skill's status, and
+the seat that produces skills cannot produce a delta. `tools/skill_eval.py`
+reaches its subject and judge through `pipeline/llm.py`, whose providers
+are `moonshot` and `groq` in `pipeline/budget.py`. The measurement that
+produced 5.4 against 5.3 used `qwen/qwen3.8-27b` as subject and
+`openai/gpt-oss-120b` as judge, and `budget.MODELS` gives both of them
+`"provider": "groq"`. So the arm needs `GROQ_API_KEY`:
 
-**How.** One edit to `.github/workflows/agent-skill.yml` line 54. The
-file has a single run step, and this diff was copied from the live file
-on 2026-09-27 rather than from memory, per the incident 26 rule.
-
-```diff
--          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
+```bash
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-skill.yml | sort -u
+# BOARD_API_URL BOARD_RUNTIME_TOKEN CLAUDE_CODE_OAUTH_TOKEN
+# NEON_RO_URL PROJECTS_TOKEN SLACK_WEBHOOK_URL
+grep -rlE 'secrets\.GROQ_API_KEY' .github/workflows/     # nothing
 ```
 
-**No timeout change.** The measured run spent 743 seconds on 92 turns, so
-200 turns is about 27 minutes against the file's `timeout-minutes: 75`.
+No workflow in the repository carries it. The key itself exists as the
+Modal secret named `groq`, which is where the daily pipeline reads it, so
+this is a secret to add at the repository level rather than a credential to
+obtain, and the owner is the only one who can say whether exposing it to a
+seat sandbox is acceptable.
 
-**Ordering.** Independent. No other item on this page touches
-`agent-skill.yml`.
+**How.** One line in the `env:` block of
+`.github/workflows/agent-skill.yml`, after `NEON_RO_URL`.
 
-**Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
-budget.
+```diff
+       NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
++      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+```
+
+**Ordering.** **Corrected 2026-10-04.** This named item 11, which was
+deleted and replaced by item 14 in that run. Item 14 touches the
+`claude_args` line of this file and raises the skill cap to 350 rather than
+200. Item 13 touches the `prompt:` block. This item touches the `env:`
+block. All three can be applied in one hand, in any order.
+
+**Cost.** $0. The groq free tier is what the daily pipeline already runs
+on, and `budget.MODELS` prices both models at 0.0 in and 0.0 out. The rate
+limits are the real constraint (8,000 tpm, 30 rpm, 1,000 rpd) and an eval
+run of four tasks at two arms and two repetitions fits inside them.
+
+**What this does not fix, and the owner should know it before applying.**
+ADR-38 clause 6 makes `status: active` depend on a delta measured on the
+model the product is actually used with, and there is no route to that
+model at all: `pipeline/budget.py` has two providers and neither serves
+it, and `grep -in anthropic pipeline/` returns nothing. That is pipeline
+work on the engineer's surface, not a secret, and it is filed in
+docs/ideas.md. Applying this item lets the seat run the cheap arm and
+report a provisional number. It does not let the seat mark a skill active
+under ADR-38 as written.
+
+---
+
+### 13. The skill seat's dispatch prompt names the trigger test and no measurement
+
+**Queued 2026-09-30 by the ExO agent.** This is the §2 charter-versus-prompt
+check, run because this PR edits that charter's run section. It is incident
+25's shape exactly: a duty the charter has that the inline prompt omits.
+
+**Why.** Every seat's charter is two files. There is
+`prompts/skill-agent.md`, which the seat can edit, and there is the inline
+`prompt:` block in `.github/workflows/agent-skill.yml`, which it cannot. The
+inline prompt arrives last and closest, so when the two disagree the run most
+likely obeys the workflow. The live block says:
+
+> draft one evidence-backed skill under skills/ with provenance frontmatter
+> and claim-id citations, include the trigger test in the PR
+
+**The trigger test is the only evidence the dispatch asks for.** After this
+PR the charter requires a differential eval suite, a bare-first pass, a
+measured delta and a status decision, and the prompt still names the one
+measurement that cannot say whether a skill helps. It also predates ADR-37,
+so it says nothing about maintenance coming before creation, and it predates
+ADR-35's reading requirement in everything but spirit.
+
+A seat reading both files has to guess which one governs. That guess is what
+incident 25 cost when the writer's prompt forbade the duty its charter
+assigned, and that item (4a) has been on this page since 2026-09-21.
+
+**How.** Replace the prompt body between `prompt: |` and the
+`Owner instructions` line in `.github/workflows/agent-skill.yml`. This is an
+edit to an existing workflow, so it stays a diff on this page rather than a
+full file in the pending lane.
+
+```diff
+-            skills/ with provenance frontmatter and claim-id citations,
+-            include the trigger test in the PR, and open exactly one pull
+-            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
+-            create`. Write only under skills/, prompts/skill-extract.md,
++            skills/ with provenance frontmatter and claim-id citations.
++            Maintenance comes before creation (ADR-37): read every new
++            consumer report under skills/*/reviews/ and the reading queue
++            first. Meet the bar in the charter's "the bar a skill has to
++            clear" section (ADR-38): deltas the bare model does not already
++            give, procedures with their thresholds, the checklist first,
++            under 120 lines. Ship the skill's differential eval suite with
++            it and put the measured delta in the PR, or write the word
++            unmeasured and say which credential is missing. A trigger test
++            says the skill is found and never that it helps, so report both
++            and never one as the other. Open exactly one pull
++            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
++            create`. Write only under skills/, prompts/skill-extract.md,
+```
+
+**Ordering.** Independent of items 12 and 14, which touch the `env:` block
+and the `claude_args` line of the same file. All three can be applied in
+one hand. **Corrected 2026-10-04:** this paragraph named item 11, which
+was deleted and replaced by item 14 in that run, and the skill cap it
+proposed changed from 200 to 350. An ordering paragraph that names a
+deleted item is the same rot as one that misses a live item, and the
+sweep that finds both is the `grep -oE '\.github/workflows/[a-z-]+\.yml'`
+count in `prompts/exo-agent.md` §5.
+
+**Cost.** $0, and it will raise the seat's turn demand, which is why the
+skill seat's cap is re-measured in item 14 rather than left at 180.
 
 ---
 
@@ -922,6 +973,24 @@ because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
 applying an edit. `APP_ID` is already set.
 
 ## Applied and deleted
+
+- **Item 2, the PM's daily cadence and ceremony cap** (queued 2026-09-19,
+  cadence half applied 2026-09-23, cap half cancelled on measurement
+  2026-09-30, **deleted 2026-10-04** as the 2026-09-30 run instructed).
+  The Monday ceremony run of 2026-09-28 came in at 125 turns against a cap
+  of 300, so there was never a shortfall. The item rotted three times
+  before it was cancelled and it is the whole evidence behind the
+  re-verification rule in `prompts/exo-agent.md` §5.
+- **Item 4, the writer's cap goes to 200** (queued 2026-09-21, never
+  applied, **deleted 2026-10-04 as overtaken**). The writer's measured
+  peak is now 136, so the rule asks for 300 and 200 would have been a fix
+  that left the seat short. Replaced by item 14. Its ordering paragraph
+  still said "no other item on this page touches `agent-writer.yml`",
+  which stopped being true when item 4a was queued on 2026-09-21, and it
+  passed every anchor check for thirteen days.
+- **Item 11, the skill seat's cap goes to 200** (queued 2026-09-27, never
+  applied, **deleted 2026-10-04 as overtaken**). Measured peak is now 156,
+  so the rule asks for 350. Replaced by item 14.
 
 - **The open-routed step falls back instead of failing the run** (queued
   2026-09-20 as item 1b, incident 23, applied by the chair in commit
