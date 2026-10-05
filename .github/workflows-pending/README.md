@@ -10,7 +10,26 @@ owner or the chair moves it one directory up.
 Nothing in this directory runs. Anything still sitting here is a guard that is
 not guarding yet.
 
-## checks.yml — does the digest request fit the model's budget?
+## checks.yml — APPLIED 2026-09-29, and this section is history
+
+**Moved to `.github/workflows/checks.yml` by the chair in `4ef55df` on
+2026-09-29** ("checks.yml goes live (queued by engineer, applied by
+chair)"), ten days after it was filed. The file is no longer in this
+directory. Everything below is kept because it is the record of what the
+guard is for, and because the near miss in it is the best example this
+directory has. Read it in the past tense.
+
+One thing the move taught, and it belongs at the top of this file rather
+than buried here: the applied version runs on `push: branches: [main]` as
+well as on pull requests. It did not have that trigger while it sat here,
+and two runtime changes were pushed directly to main in the gap and left
+two guards red for six days
+(`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`). **A guard
+scoped to pull requests is not a guard on a repository whose owner
+commits directly.** Any workflow filed here that is meant to protect main
+gets both triggers before it is filed.
+
+### What it was filed for
 
 Filed by the engineer seat 2026-09-19 for incident 22. Runs
 `python3 pipeline/budget.py` on every pull request that touches a generator
@@ -68,7 +87,7 @@ real money, and it belongs to the chair's deploy command
 has teeth: that a rehearsal cannot write to `digests`, cannot mount a
 mail credential, and cannot pass on a receipt naming a different model.
 
-## Still pending as of 2026-09-26, and the cost is now larger
+### It was pending for ten days, and this was the cost while it was
 
 Filed by the engineer seat 2026-09-19. Seven days later it is still here,
 which means the repository's 279 Python tests and 66 Node tests run in
@@ -88,3 +107,75 @@ one directory up they stop it only for whoever remembers to run the command.
 
 One command, and it is the owner's or the chair's: a seat's token has no
 `workflows` permission, for the reason the top of this file gives.
+
+<<<<<<< HEAD
+## adr-numbers.yml — every ADR number names one decision
+
+Filed by the ExO seat 2026-09-30. Fails a pull request, or a push to main,
+when `docs/decisions.md` contains two `## ADR-N:` headings with the same
+number, printing both line numbers and the next free number.
+
+**It will fail on its first run, and that is the point.** ADR-38 is
+currently two different decisions on main: "Skills close the loop with
+their consumers" at line 1337 and "The skill quality bar" at line 1384,
+written eight minutes apart on 2026-09-29. Renumbering the second to
+ADR-39 and updating its references is the chair's edit, because
+`docs/decisions.md` is not a seat's surface.
+
+**Why a check and not a convention.** The incident register hit the same
+defect four times with its own sequential numbers and fixed it by
+convention, moving to `INC-YYYY-MM-DD-slug`. The story it tells about
+itself is that seats write on branches and read different snapshots. That
+story is not what happened to ADR-38: one author, one branch, eight
+minutes, two consecutive direct commits to main. The allocator is "read
+the file, add one", and the file was read once. A convention would not
+have helped, and `docs/agents/registers.md` already names the general
+form of this: **recording is not enforcing.**
+
+It reads one file, needs no key, no network and no database, and runs in
+about a second. All three of its paths were exercised before it was
+filed: the duplicate (exit 1, both lines named), a fixture with the
+second heading renumbered to ADR-39 (exit 0, "39 ADRs, every number
+unique"), and a `decisions.md` with no ADR headings at all, which exits 1
+rather than passing silently, because a heading-format change would
+otherwise turn this check into a guard in name.
+
+    git mv .github/workflows-pending/adr-numbers.yml .github/workflows/adr-numbers.yml
+=======
+## skill-gate.yml — does this revision merge on its own?
+
+Filed by the engineer seat 2026-09-30 for ADR-37, amended the day before when
+the owner confirmed no human in the loop for skill maintenance. It runs
+`python3 tools/skill_gate.py` on every pull request that touches `skills/**`,
+labels the pull request `skill-gate/passed` or `skill-gate/failed`, and comments
+with the state of all seven clauses and the reason behind each one. One comment
+that it edits on each push, never a new one.
+
+**It does not merge anything, and that is deliberate.** ADR-37 allows a measured
+revision of an existing skill onto main without the owner, and the step that
+would act on this verdict is not queued here yet. The gate has to be seen to be
+right on real revisions first, and a label is reversible in a way a merge is not.
+When it is queued it will be a separate workflow with its own permissions, so
+that the thing which judges and the thing which acts are never one file.
+
+A pull request that edits a skill alongside code gets no label at all. The
+`paths:` filter can only say `skills/**`, and the question ADR-37 actually asks is
+whether the diff touches nothing else; the tool answers that one and reports the
+pull request as not applicable, because a red label on every engineer pull request
+that happens to edit a skill is how a label stops being read.
+
+`fetch-depth: 0` is load-bearing. Three clauses compare the revision against the
+base branch: the eval against the previous version's own lower bound, the ban list
+against what the revision adds, and the trigger test against which cases were
+already failing. On a shallow checkout those clauses report `unknown`, and an
+unmeasured clause is never a pass, so the gate would fail closed. That is the
+right direction to fail, and it is still worth not failing.
+
+Until it is moved, nothing enforces the gate on a pull request. The same clauses
+can be run by hand from a checkout, which is how the seven refusals were
+rehearsed on 2026-09-30 (a deprecated cited claim, a month-old claim-status
+snapshot, a SKILL.md edited after its eval, a delta below the previous version's
+lower bound, a version with no trigger, the kill switch set, and a revision that
+introduces a ban-list tell). No key, no network, no database: the graph clause
+reads `docs/research/claim-status.json`, which the daily Modal job writes.
+>>>>>>> origin/main

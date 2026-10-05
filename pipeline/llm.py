@@ -384,6 +384,11 @@ def pace(model: str) -> float:
 #                the cost is that a claim written today is linked by interpret
 #                tomorrow rather than this afternoon, which is a day of latency
 #                against a window nobody can overrun into.
+#   16:00-16:15  skill revision (skill_revision.py). Calls no model, and is
+#                deliberately absent from the table below: KIMI_WINDOWS is the
+#                Kimi concurrency ledger, and a job in it that never calls Kimi
+#                would make check_kimi_windows() report on a collision that
+#                cannot happen.
 #
 # `budget.check_kimi_windows()` reads this table and the crons themselves and
 # fails CI if two windows overlap. That is the gate in the command rather than

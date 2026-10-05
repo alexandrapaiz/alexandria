@@ -339,3 +339,92 @@ def test_the_table_the_store_writes_to_is_in_the_schema():
     assert "create table if not exists consumed_codes" in schema
     for column in ("jti", "consumed_at", "expires_at", "revoked"):
         assert column in schema, f"consumed_codes is missing {column}"
+
+
+# ---------------- the access token, after the session is revoked ----------------
+#
+# Added by the security seat 2026-10-01. The tests above prove the refresh half
+# of OAuth 2.1 section 4.1.2 and stopped there, so the access token the first
+# exchange issued outlived the revocation that was meant to kill it. The audit
+# confirmed it against the real handlers before the fix: `read_access_token`
+# returned a valid claim set for a session the ledger reported revoked, and that
+# function is the entire bearer guard on /mcp in mcp/server.py.
+
+
+@pytest.fixture
+def guarded():
+    """The flow, plus the `read_access_token` the server's /mcp guard calls.
+
+    The `client` fixture above throws that return value away, which is why the
+    gap these tests cover could not be seen from any test in this file.
+    """
+    api = FastAPI()
+    ledger = oauth.CodeLedger()
+    read_access_token = oauth.install_oauth(
+        api, jwt_secret=SECRET, passphrase=PASSPHRASE, code_ledger=ledger)
+    with TestClient(api) as c:
+        yield c, read_access_token, ledger
+
+
+def test_a_revoked_sessions_access_token_stops_opening_mcp(guarded):
+    """The gap this file's own docstring claimed was closed. A replay revokes the
+    session, and the access token minted from that code must stop verifying."""
+    client, read_access_token, ledger = guarded
+    cid = register(client)
+    code = get_code(client, cid)
+    good = exchange(client, code, cid).json()
+    access = good["access_token"]
+
+    assert read_access_token(access), \
+        "the token must work before the replay, or this proves nothing"
+
+    exchange(client, code, cid)  # the replay, which revokes the session
+
+    session = claims_of(access)["sid"]
+    assert ledger.is_revoked(session), "the replay must have revoked the session"
+    assert read_access_token(access) is None, \
+        "a revoked session's access token must not open /mcp for the rest of its 24 hours"
+
+
+def test_an_unrevoked_access_token_is_untouched(guarded):
+    """The other half, so the fix cannot pass by refusing everything."""
+    client, read_access_token, _ = guarded
+    cid = register(client)
+    good = exchange(client, get_code(client, cid), cid).json()
+    assert read_access_token(good["access_token"]), \
+        "an ordinary session's access token still opens /mcp"
+
+
+def test_a_legacy_access_token_without_a_session_still_works():
+    """Same carve-out the refresh grant makes: a token minted before sessions
+    existed carries no `sid`, and merging this must not log the owner out."""
+    api = FastAPI()
+    read_access_token = oauth.install_oauth(
+        api, jwt_secret=SECRET, passphrase=PASSPHRASE)
+    legacy = jwt.encode({"typ": "access", "iat": 0, "exp": 2 ** 31}, SECRET,
+                        algorithm="HS256")
+    assert read_access_token(legacy), "a session-less access token predates sessions"
+
+
+def test_the_revocation_check_is_fail_open_on_a_database_outage():
+    """The ledger's standing choice, asserted here too: an outage costs the check
+    its memory, never the owner her connector."""
+    class Broken:
+        def consume(self, jti, expires_at):
+            raise RuntimeError("connection refused")
+
+        def revoke(self, jti):
+            raise RuntimeError("connection refused")
+
+        def is_revoked(self, jti):
+            raise RuntimeError("connection refused")
+
+    api = FastAPI()
+    read_access_token = oauth.install_oauth(
+        api, jwt_secret=SECRET, passphrase=PASSPHRASE,
+        code_ledger=oauth.CodeLedger(Broken()))
+    with TestClient(api) as c:
+        cid = register(c)
+        good = exchange(c, get_code(c, cid), cid).json()
+        assert read_access_token(good["access_token"]), \
+            "a database that cannot answer must not turn every token into a 401"

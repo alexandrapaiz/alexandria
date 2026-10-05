@@ -144,7 +144,10 @@ nothing, [model routing](docs/agents/model-routing.md) for which seat gets which
 model, [turn caps](docs/agents/turn-caps.md) for how much room each seat is
 given to work, measured from run logs rather than guessed, and the
 [register map](docs/agents/registers.md), which says for every rule the org
-keeps where that rule is actually checked before something ships.
+keeps where that rule is actually checked before something ships, and
+[quality claims](docs/agents/quality-claims.md), which lists every claim the
+public site makes about what we ship beside the machine that would have to
+run for it to be true.
 
 ## Deployment view
 
@@ -250,7 +253,8 @@ docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
-tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the site, the MCP server
+tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the deploy, the site, the MCP server
+site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
@@ -285,13 +289,30 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
-- [ ] **The press is currently silent.** The last issue written is 2026-W37
-      (2026-09-14). No model on the provider's free tier can print the weekly
-      issue at the current prompt size, so the fix is a shorter generator prompt
-      or an issue split across several requests. Availability checks, an ordered
-      fallback list and an alarm to the owner are in flight. Incident 24 has the
-      diagnosis and [delivery health](docs/agents/delivery-health.md) has the
-      standing guardrails
+- [ ] **The archive publishes the record, written and not yet running.** Every
+      issue a reader can read reached the public because a person committed a
+      markdown file under `site/content/issues/`: four commits, four times
+      somebody noticed, while the Monday cron wrote its row to `digests` and
+      stopped there. `site/lib/issues-live.js` makes `/library` and every issue
+      route read that table, so a send is public the moment it is mailed. The
+      record decides which weeks exist and a committed file still decides the
+      text of any week that has one, which is why turning it on changes nothing
+      that is live today. A database the site cannot read publishes exactly what
+      it publishes now. This box closes on the same evidence as the box below:
+      `/api/delivery` answering 200 proves the site's environment can reach
+      Neon, and that is the one condition this needs
+- [ ] **The press prints, and nobody outside Modal could see whether it had.**
+      `2026-W39` is live on `/library` and is the newest issue a reader can read,
+      checked by `python3 tools/delivery_health.py` rather than asserted. The
+      long silence after `2026-W37` was a provider whose free tier could not
+      print the issue at the current prompt size, and incident 24 has that
+      diagnosis. What stayed broken afterwards was the watch on it: the evidence
+      guardrail 4 names is the newest row in `digests` and no agent seat holds a
+      credential for that table, so the question went unanswered for a week. The
+      site publishes that fact at `/api/delivery` as of 2026-10-01 and the
+      command reads it with no credential. Still open: this box closes when a
+      run of that command reports the press green from a seat sandbox, which
+      needs the receipt deployed
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations
@@ -301,8 +322,53 @@ The pipeline, built bottom-up.
       exact text on the page. The provenance had been in the files since
       2026-09-12 and reached no reader until today, because the frontmatter
       reader could not see an indented field
-- [ ] ADR-13 reviewer panel (provenance, adversary, validator) as the gate on gold.
-      Until it exists, the owner's merge is that gate
+- [ ] **Skills prove themselves and revise themselves, written and not yet
+      running** (ADR-36, ADR-37). `skills_needing_revision` has been in the
+      schema since the founding and had never returned a row, because a skill
+      reached `main` with no `promotions` row for the view to join, so seven
+      deprecated claims sat there and no skill knew.
+      `tools/skill_registrar.py` derives that row from each skill's own
+      provenance block, `pipeline/skill_revision.py` reads the view daily and
+      queues the reading and dispatches the skill seat, and
+      `tools/skill_eval.py` runs each skill's tasks with and without it loaded
+      on one model and prints the delta with an exact interval. Live when the
+      chair applies the CI step
+      ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
+      12) and deploys the daily job with a `github` secret
+- [ ] **ADR-13 reviewer panel, all three reviewers built (2026-10-03).** The
+      provenance reviewer is built (`tools/panel_provenance.py`) and files a
+      `panel_verdicts` row per skill: the claim ids a skill cites have to exist
+      in the corpus, the paper behind each one has to be in the skill's own
+      citation list, and judgment the papers do not support has to say so. The
+      adversary is built too (`tools/panel_adversary.py`) and asks the opposite
+      question, which ADR-10's edge direction makes a query rather than a
+      judgment: for every claim a skill cites, has the corpus since contradicted
+      or refined it, and does the skill cite what did. A contradiction the draft
+      ignored fails the skill, and a claim the interpret job never judged is
+      reported by id as unmeasured, because the dangerous output here is a clean
+      pass that means nobody asked the graph. Both run daily inside
+      `pipeline/skill_revision.py`, so both are live when the chair deploys that
+      job. Two duties are not decidable against today's format and the panel
+      reports them rather than guessing: a skill cites its claim ids once for
+      the whole document, so nothing says which claim supports which section,
+      and nothing says whether a skill citing both sides of a contradiction
+      discusses it. The validator is built as well
+      (`tools/panel_validator.py`), and it needs no model key either: ADR-13
+      asks whether behaviour moved in the direction the evidence supports, and
+      the A/B trial is a dated receipt `tools/skill_eval.py` writes under a
+      policy registered in advance, so the reviewer judges the receipt rather
+      than running a trial whose threshold it would be choosing at review time.
+      It asks four things of that receipt, all of them file facts: that it
+      exists, that it measured the text under review rather than an earlier
+      revision, that the harness's own gate passes it, and that nobody edited
+      the threshold after seeing the numbers. It also holds ADR-36's own
+      sentence, that a skill with no eval is `status: draft` and never
+      `active`, which **fails all six skills on main today**. So the panel is
+      complete and `panel_consensus`'s three passes on one text are reachable
+      for the first time. **The merge is the only slice left** (a
+      PR-merge-scoped token only the owner can mint), in
+      docs/product/reviewer-panel.md. Until the panel passes a skill, the
+      owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21
@@ -367,6 +433,12 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
+- [ ] The org's output reaches main without the owner present. This is the open one that
+      bounds all the others: between 2026-09-30 and 2026-10-04 the seats ran 24 times, all
+      green, opened 49 pull requests and merged one, because every channel out of the org
+      ends at one person. ADR/HQ decision 041 hands Tier B merges to the PM seat and is
+      itself waiting in the queue. See `docs/agents/incidents.md`,
+      `INC-2026-10-04-four-days-of-output-and-no-delivery`
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 

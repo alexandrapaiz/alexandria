@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { listIssues } from "../../lib/content";
+import { publishedIssues } from "../../lib/issues-live.js";
 import ShelvesLive from "../components/ShelvesLive";
 
 export const metadata = { title: "Library — library of alexandr.ia" };
 
-export default function Library() {
-  const issues = listIssues();
+// Per request, for the reason the issue route gives at more length: the list
+// of published weeks is the `digests` table now, and that table gains a row
+// on Monday morning without a deploy. A build-time listing would show last
+// week until somebody noticed.
+export const dynamic = "force-dynamic";
+
+export default async function Library() {
+  const issues = await publishedIssues();
   return (
     <main>
       <section className="hero lib-hero">

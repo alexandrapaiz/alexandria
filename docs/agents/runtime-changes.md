@@ -72,6 +72,71 @@ the owner-facing alarm prose that taste governs. A provider is an
 environment. Swapping one is the largest runtime change the org makes,
 and it was the only one this law did not cover.
 
+## The audit's questions were all about the past, and a guard lives in the present
+
+Added 2026-09-30, after `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`.
+
+Every question this law told an auditor to ask was a question about
+history. Did a merged pull request explain the commit. Was there a smoke
+run behind it. Was there a rehearsal. All three are answered by reading
+the record of the day the change landed, and all three can be answered
+correctly while the thing the change broke is still broken.
+
+That is not a hypothetical distinction. Two commits on the list above
+went in on 2026-09-23 and 2026-09-24:
+
+- `281d0af` raised the press's output reservation from 6,000 tokens to
+  24,000, which is a token reservation and is named in this file.
+- `69a9e7f` stopped the press honouring a short `retry-after` and gave it
+  its own schedule, which is a retry policy and is also named in this
+  file.
+
+Both were right. Both are still right. Each of them left a guard in
+`tests/test_press_resilience.py` asserting the behaviour it had just
+replaced, and the second one was written the same day this file gained
+the clause that covers it. The guards went red on the day of the change
+and stayed red for six days. One of the two was the cost check, whose own
+comment says that if the number drifts "finance's books are wrong and
+this is where it should surface". It surfaced $0.1628 an issue against
+ADR-32's budgeted $0.05, immediately, correctly, and into nothing.
+
+So the audit asks a fourth question, and it is the only one that is not
+about the day the change landed.
+
+> **Is the guard that covers this change green right now?**
+
+Run it. Do not look for the run that cleared it, because clearing is a
+claim about a past state and this question is about the present one.
+
+```bash
+gh run list --workflow=checks.yml --branch=main --limit 5 \
+  --json conclusion,headSha,createdAt
+```
+
+A `failure` in that list is a finding on its own, before you have read a
+single commit, and it is a finding whoever is auditing owns reporting
+even when fixing it belongs to another seat.
+
+**Why the other three questions could not have caught it.** Both commits
+were direct pushes to `main` by the owner, which is hers to do. There was
+therefore no pull request to explain them and no PR check to fail. And
+`checks.yml` did not gain its `push: branches: [main]` trigger until
+2026-09-29, five days later, so for the whole window the only gate the
+repository had was scoped to a channel the changes did not use. A gate
+that runs on pull requests only is not a gate on a repository whose owner
+commits directly, and the seats could not see this because seats only
+ever open pull requests.
+
+**The second-order cost, which is larger than the first.** Once `main` is
+red, every open pull request inherits the failure through its own merge
+check, so every seat's run ends with a red tick it did not cause. On
+2026-09-30 that was 19 of 28 failed runs in a day, all of them the same
+two inherited assertions, and one skill pull request whose third failing
+step was genuinely its own and sat unread between two that were not. A
+red `main` does not cost one bug. It costs the signal on every branch at
+once, and the seat that most needs to see its own failure is the seat
+least able to.
+
 ## The ladder
 
 This is the sequence the chair actually ran on 2026-09-19, written down

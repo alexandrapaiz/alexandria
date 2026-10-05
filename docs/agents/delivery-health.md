@@ -140,7 +140,7 @@ is missing is worse than an absent one, because it reports.
 | --- | --- | --- | --- | --- |
 | The press, weekly issue | Modal cron, Monday 09:00 UTC after PR #75 | newest row in `digests` | shipped in PR #75, unmerged at this writing | **named, not performed**: PM §1f watches it daily and has no `NEON_RO_URL`, so the site is read instead (guardrail 5) |
 | The press, daily pipeline | Modal crons, 11:00 to 14:00 UTC, windows now checked by `budget.check_kimi_windows()` | newest rows in the corpus tables | budget guard only, no availability check | no, and this is still the next gap |
-| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no |
+| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no. **And the trigger has not fired since 2026-09-30 02:37 UTC**, see the 2026-10-04 note |
 | The MCP server | long-running | a probe query | none | no, and incident 21 is what that costs |
 
 ### What changed under the site row, and why it is now the weakest
@@ -186,3 +186,125 @@ PM to groom rather than as an assignment.
 Before any seat writes "all green" in a pull request description, it
 answers this: green on what evidence, and did anything reach a reader.
 If the second half is unanswered, the line says so.
+
+## Guardrail 4 has a reader, 2026-10-01 (engineer seat)
+
+The four guardrails above were written as law on 2026-09-24 and the fourth one
+had no reader for a week. Its evidence is named exactly, "the newest row in
+`digests`", and no agent seat holds a credential for that table, so every seat
+ever asked whether the press printed reached for a proxy or answered `unknown`.
+`tools/delivery_health.py` shipped on 2026-09-28 and made the gap legible rather
+than closing it: two surfaces green, two `unknown`, exit status 2, and a message
+naming the missing variable.
+
+It is closed now, and not by distributing a credential. The site already reads
+Neon from its own environment, so the site publishes the facts and every seat
+reads them at `GET /api/delivery`, with no token and no secret anywhere in a
+workflow. `site/lib/delivery-core.js` has the field-by-field rule that keeps the
+issue body and the claim text out of it.
+
+Three things a reader of this file should carry away rather than infer.
+
+**The receipt carries facts and never verdicts.** It says the newest week is
+2026-W39. It never says the press is broken. The judgement stays in
+`tools/delivery_health.py`, in one copy, taking rows from either reader, because
+two readers of one question is the shape that grows two answers. That is also
+why a bad week reads as a date to a passer-by rather than as an alarm.
+
+**Second-hand evidence says so.** Every surface reports `read_via` in its
+evidence: `DATABASE_URL` when a connection answered, the receipt's URL when it
+did not. A report that hides which one it had is the kind of report incident 24
+was full of.
+
+**A reader with no credential cannot write, and one guardrail needs to.** The
+deploy-drift alarm keeps a once-a-day cooldown in `deploy_runtime.notified_at`.
+Read through the receipt, a drift is reported in full and nobody is mailed, and
+the surface says that in its own evidence. Mailing without a cooldown would be
+one mail every time the standup runs.
+
+What this does not close is the paragraph above about the site's own deploy. The
+hook still returns 200 when a build is merely queued, and the receipt is now one
+more thing that reaches production through it. The receipt could publish the
+site's own build commit and make that measurable, which is in the ledger as a
+proposal rather than here as a fact.
+
+## Guardrail 6, added 2026-10-01 (engineer seat): the record and the page have to agree
+
+The archive used to be files committed by hand. `site/lib/issues-live.js` makes
+`/library` and every issue route read the `digests` table instead, so a Monday
+send is public on Monday. It falls back to the committed markdown when it cannot
+reach the database, which is the right way to fail and is exactly why the
+failure needed a guardrail of its own.
+
+**The rule.** When the site's environment cannot read `digests`, the archive
+keeps serving the committed files and every surface in this file stays green.
+The record path would be dead and nothing would say so. That is L-A16 in
+`docs/standards/lessons.md` in its own words: the gap between intent and effect
+is silent by construction, because a well-built fallback makes the run succeed
+anyway. So the two answers are compared rather than trusted separately. The
+press surface knows the newest week in `digests`. The site surface knows the
+newest week a reader can open. Agreement between them is the only evidence that
+the connection between them exists.
+
+**The reader.** `python3 tools/delivery_health.py --surface archive`, a sixth
+surface beside the five above. It derives its answer from the press and site
+surfaces rather than from a read of its own, so it needs no credential the other
+two do not already have, and it fetches both of them even when only `archive` is
+asked for.
+
+**What it will not call a failure.** A week the owner retired is not a gap:
+`HIDDEN_WEEKS` is read out of `site/lib/content.js` rather than copied here, so
+her veto over the archive lives in one place. And a week published by hand that
+the record does not hold reads as the old path still working, with both weeks
+named, because that is informative and not broken.
+
+**What it costs to ignore.** The press can print perfectly and the archive can
+show last month, and until this surface existed the org had no way to tell those
+two apart from the outside.
+
+
+## 2026-10-04: the trigger that cannot fire, and the reason "all green" was true all week
+
+**Added by the ExO seat, because this file's standing claim is that "all
+green" is a statement about the product and not only about the runs, and
+this week produced the cleanest example of the gap it was written for.**
+
+The site's deploy trigger is `site/**` changing on `main`. The newest
+commit touching `site/` is `5a90fb3`, pushed at **2026-09-30 02:37 UTC**,
+and `deploy-main`'s newest run is a `success` at **2026-09-30 02:37 UTC**
+for exactly that commit. **Both numbers are correct and the surface is five
+days stale**, because nothing has merged to `main` since 2026-09-30 02:08
+UTC and so the trigger's precondition has not occurred since. The
+mechanism is not broken. It has had nothing to carry.
+
+The PM's standup of 2026-10-04 reported `Site: ok, newest issue 2026-W39,
+matches expectation`. That is accurate and it is not a contradiction, and
+the reason is worth writing into this file because it is the shape every
+future reader will hit. **The issue is data and the page is code.** The
+weekly issue is written to the database by a Modal cron and rendered
+dynamically, so a new issue appears on a five-day-old build. A check that
+reads the newest issue is a check on the pipeline, and it reports healthy
+while every editorial fix, every copy ruling and every frontend change of
+the last five days is undeployed.
+
+**The guardrail this adds, and it generalises past the site.** For any
+surface whose deploy fires on a change rather than on a clock, the check is
+two questions and not one.
+
+1. Is the artifact current? The existing guardrails ask this.
+2. **When did the deploy mechanism last fire, and is that the same date as
+   the newest change it was supposed to carry?** A change-triggered deploy
+   is indistinguishable, from the artifact side, between "nothing needed
+   deploying" and "everything needs deploying and nothing can".
+
+```bash
+gh run list --workflow=deploy-main.yml --limit 3 --json conclusion,createdAt
+git log origin/main -1 --format='%ci %h' -- site/
+```
+
+Same dates means current. The deploy older than the commit means a failed
+deploy, which is loud. **The commit older than the queue is the quiet one**,
+and it is the state this week was in: every pending change to the surface
+sitting in a pull request, so the trigger is correct, the deploy is correct,
+the artifact is stale, and no check in the org returns anything but ok. The
+full account is `INC-2026-10-04-four-days-of-output-and-no-delivery`.

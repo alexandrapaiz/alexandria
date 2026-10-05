@@ -184,4 +184,18 @@ def test_the_script_runs_under_the_container_shell():
     result = subprocess.run(["sh", "-e", "-c", script],
                             capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
-    assert json.loads(result.stdout)["text"].startswith("*engineer-agent*")
+    # stdout is not only the payload, and it must not be. A `::warning::` line
+    # is how a step annotates a GitHub Actions run, and Actions reads those off
+    # stdout, so the script prints them there on purpose. This test asserted
+    # `json.loads(result.stdout)` until 2026-09-30, which passed on any machine
+    # holding a `GH_TOKEN` and failed in `checks.yml`, which holds none: `gh pr
+    # list` refuses without a token, the script warns as designed, and the
+    # warning landed in front of the JSON. The guard this test exists for is
+    # dash's `echo` eating the body, so it reads the payload out of stdout and
+    # leaves the warnings alone.
+    # The warning text itself contains `${{ github.token }}`, so the payload is
+    # found by the line that is exactly `{`, which is where `json.dumps(indent=2)`
+    # starts, and never by the first brace on the stream.
+    start = result.stdout.rindex("\n{\n") + 1 if "\n{\n" in result.stdout else 0
+    payload = json.loads(result.stdout[start:])
+    assert payload["text"].startswith("*engineer-agent*")
