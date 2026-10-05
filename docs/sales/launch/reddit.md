@@ -124,3 +124,20 @@ attached unless it is the full-read count beside the arriving count. No cropped
 screenshot of a result with the failures cut out of it. Plain ASCII throughout,
 including the separator between two links, which is a comma or a new line and
 never a middle dot.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. "Subscriptions opening today" is the
+line that fails, and on these subs a dead-end click is also a rule problem,
+because several of them forbid promotion of a thing that is not available.
+
+The repair, in the where-it-actually-is paragraph:
+
+```
+Where it actually is: six skills live, one issue in the archive, and no
+checkout yet. The digest is free and arrives in full. The library is $20 a
+month and is not open, so there is nothing to buy today.
+```
+
+A post that says there is nothing to buy is the most self-promotion-rule-safe
+version of this post that exists, which is an accident worth taking.

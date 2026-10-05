@@ -118,3 +118,20 @@ No subscriber count and nothing that implies one. No countdown graphic and no
 manufactured deadline. No paper count carrying the verb "read" unless it is the
 full-read count beside the arriving count. No claim that our number beats the
 216-skill audit's number, because the two were not measured the same way.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. Post 6 claims a price for a thing a
+reader cannot buy, so post 6 is replaced and the rest of the thread stands.
+
+```
+The weekly digest is free and arrives in full. A written summary of the week is
+a commodity and paywalling it would misdescribe what it is worth.
+
+The library costs $20 a month and is not open yet, because the payment
+integration is not built. Leave an email and you hear once on the day it opens.
+```
+
+The fuller Shape B thread, which leads on the register instead of the audit
+number, is `../campaigns/merge-day/x.md`. On this venue that thread is the
+better post and this patch is the cheaper one.

@@ -67,3 +67,19 @@ No subscriber count and nothing that implies one. No "excited to announce",
 which is enthusiasm claimed rather than demonstrated. No paper count with the
 verb "read" attached unless it is the full-read count beside the arriving
 count. Nothing about a roadmap stated as if it had already shipped.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. Two lines in this post become false:
+"Alexandria opens today" and "The library is $20 a month", read together by a
+reader who then clicks. The replacement post is
+`../campaigns/merge-day/linkedin.md`.
+
+If she wants this post, the two repairs are "Alexandria is public as of today"
+in place of "opens today", and this sentence in place of the pricing line:
+
+```
+The library is $20 a month and it is not open yet, because the payment
+integration is not built. I would rather launch the record on the date I named
+than open a checkout I have to apologise for next week.
+```

@@ -135,3 +135,25 @@ No subscriber count and nothing that implies one. No paper count carrying the
 verb "read" unless it is the full-read count beside the arriving count. No
 "growing fast", no roadmap stated as present tense, and no comparison that
 claims to beat a research tool at its own job.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. If a stranger still cannot buy the
+spine, this post does not go out in this form, because the paragraph beginning
+"What costs money is the library" invites a click that dead-ends on a page
+reading "Opens October 13". The replacement submission is
+`../campaigns/merge-day/hn.md`, which is a different post rather than this one
+with a caveat, and it is already written.
+
+If she wants this post anyway, the one change that makes it honest is to
+replace that paragraph with:
+
+```
+The weekly digest is free and arrives in full. The library it is drawn from
+costs $20 a month and is not open yet, because the payment integration is not
+built. Leave an email and you will hear once on the day it opens, and nothing
+before that.
+```
+
+That is weaker than the paragraph it replaces and it is sendable. The original
+is not.

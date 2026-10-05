@@ -106,3 +106,14 @@ found is on the page below with the paper that overturned each one.
   between them.
 - Any urgency that is not real. No first-hundred, no closing-soon, no founding
   price that is not actually a price that changes.
+
+## If the checkout has not landed by 2026-10-12 (Shape B)
+
+Checked against `../launch-gate.md` §1. The subject line "The library opens
+today" is the single most expensive false sentence in this directory, because
+an email cannot be corrected the way a page can and this list is the people
+most likely to click immediately.
+
+The replacement send is `../campaigns/merge-day/email.md`, written for this
+same list and leading with what is actually public. It is not this email with
+a caveat bolted on, and the reason is that this list knows the difference.

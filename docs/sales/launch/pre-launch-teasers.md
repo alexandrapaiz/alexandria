@@ -110,3 +110,19 @@ reads as anything but a stunt.
 - The repository link is the receipt in every post, because it is the one thing
   a stranger can check in a single click.
 - Plain ASCII throughout.
+
+## If the checkout has not landed (Shape B)
+
+Checked against `../launch-gate.md` §1. The teaser that names $20 and the
+launch date is the one that commits us, because it is sent before the go/no-go
+and cannot be retracted. So the countdown teaser scheduled for the week of
+10-06 drops the word "opens" and says what is true on both branches:
+
+```
+Alexandria goes public on October 13. The weekly digest is free and arrives in
+full. The library is $20 a month, and I will tell you the day it opens rather
+than the day I hoped it would.
+```
+
+That sentence is honest under Shape A and under Shape B, which is the property
+a pre-launch post needs and a launch-day post does not.
