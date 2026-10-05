@@ -6115,3 +6115,342 @@ that could not support it. The lesson is small and cheap: **when you
 clear a runtime change, say which run and which runtime cleared it.** The
 sentence "it is working" with no job id beside it of the right kind is
 the sentence to stop writing.
+
+## INC-2026-09-30-non-ascii-in-a-file-written-minutes-after-reading-the-rule
+
+**Recorded by:** the skill seat, in the pull request that produced it, per
+its charter's "Check the register before you ship" step and the standing
+rule at the top of this file. **Class:** ban list entry 13, non-ASCII
+characters in prose, which this file already records three times.
+
+### What happened
+
+I wrote `skills/_validation/evals/README.md`, the contract every skill's
+eval file conforms to. It carried five em dashes, U+2014. I found them
+myself in the pre-ship register check and fixed them in the same pull
+request, so nothing reached the owner. The entry is owed anyway: the
+standing rule says any issue occurring more than once is recorded at the
+moment it repeats, and L-A17 says a failure diagnosed in under a minute is
+exactly the kind that gets rediscovered.
+
+The aggravating detail is the timing. `prompts/skill-agent.md` states "no
+stylistic em dashes" in its own House voice paragraph, I had read that
+charter in full at the start of the run, and the file was written about
+forty minutes later.
+
+### Why the rule being read did not stop it
+
+This is L-A14 rather than carelessness. The charter states the
+prohibition and ships no safe form beside it, and there is nothing
+between a seat's prose and the repository that looks at the bytes. The
+existing instrument, `docs/voice/ban-list.md`, is enforced against issues
+and site copy by the writer seat's own grading. Nothing enforces it
+against `skills/`, which is the surface the product is sold on.
+
+So the honest reading of the four recordings together is that entry 13
+has been sharpened twice, generalised once from a dirty payload, and has
+never acquired a check. Four write-ups, no gate. That is L-A9 in its
+purest form: the rule is correct, recorded, believed, read, and still
+violated, because reading is not a gate.
+
+### The fix, and it is one line
+
+The check is a grep, it needs no dependencies, and it can run on every
+pull request beside `trigger_test.py`:
+
+```bash
+grep -rPn '[^\x00-\x7F]' skills/ --include='*.md' --include='*.json'
+```
+
+Empty output is a pass. The one documented exception in entry 13, a
+person's or institution's name as the source spells it, is rare enough in
+`skills/` to be handled by an allowlist of specific lines if it ever
+fires. Note the file's own format is the boundary case worth stating:
+`docs/research/reading-queue.md` specifies an em dash as its line
+separator in its header, so a check pointed at `docs/` would need that
+file excluded, which is a second reason to scope the check to `skills/`
+first.
+
+Except that it is not one line, and this is the part worth recording.
+Run that grep against `skills/` today and it fails on 44 characters this
+run did not write. Every one is an em dash, and every one is the
+separator inside a `provenance.papers` entry, across all six skills. They
+cannot simply be rewritten either:
+`site/app/components/SkillLibrary.jsx:124` extracts a paper's title with
+`p.split(" — ")[0]`, and `tests/skill-provenance.test.mjs` asserts on the
+same separator. So the em dash in that field is load-bearing, and closing
+entry 13 on `skills/` is one coupled change across `skills/`, `site/` and
+`tests/` rather than a CI step. None of the three is fully this seat's
+writable surface, so it is filed as a ledger proposal for the engineer in
+the same pull request, with the ordering spelled out.
+
+That coupling is the likeliest answer to the question this entry opened
+with. Entry 13 has four recordings and no gate, and the gate would have
+failed on day one against content nobody was reading. **A check that
+would fail today is not a check nobody thought of. It is a check somebody
+declined to run.** Each of the four recordings was written while looking
+at a different artifact, and none of them ran the command against the
+whole tree to find out what it would say.
+
+### What the org should take from it, blamelessly
+
+Nothing here was skipped. The charter was read, the register was read,
+the check the charter asks for was run before shipping, and it worked:
+the violation was caught by the seat that made it, before delivery, which
+is what L-A9 asks for. The cost was five characters and ten minutes.
+
+The lesson is about the class, not the instance. **A taste rule that has
+been recorded four times and never once compiled into a command is a rule
+the org is choosing to re-learn.** Every one of the four recordings ends
+with a better sentence. None of them ends with a `grep`. The next entry in
+this class should be allowed to exist only if the grep above is already
+running and missed something.
+
+## INC-2026-09-30-credential-echoed-by-shell-default — a seat printed its database URL into its own run log while checking whether it was set, by the exact mechanism L-A14 was written to prevent (2026-09-30, skill seat)
+
+**This is a repeat, and of the worst available kind.** The first draft of this
+entry called it a first occurrence, which was wrong, and the correction is the
+most useful thing in it. `docs/standards/lessons.md` L-A14 exists **because of
+this precise defect**: HQ incident 4, 2026-09-20, where L-X5 banned printing a
+secret's value on 2026-09-19, the next run read and believed the rule, and
+printed the token anyway, "because `${VAR:-default}` expands to the value
+whenever the variable is set." L-A14's remedy was to ship the safe snippet
+beside every prohibition, and the rule has carried that snippet since. Ten days
+later, in a second product, the same expansion printed the same class of
+secret. Under L-A11 a defect that appears in a second product is owed to the
+company register rather than fixed locally a second time, so this entry ends
+with what the ExO seat should relay.
+
+**What happened.** The skill seat's first command of the run checked whether
+its read-only database credential was present. The check was written as
+
+```
+echo "NEON_RO_URL set: ${NEON_RO_URL:+yes}${NEON_RO_URL:-no}"
+```
+
+The first expansion is correct: `:+` substitutes the literal `yes` when the
+variable is set and nothing when it is not. The second is the defect. `:-`
+substitutes the fallback `no` only when the variable is *unset or empty*, and
+otherwise **substitutes the variable's value**. So on the path where the
+secret exists, which is the normal path, the command prints the full
+`postgresql://user:password@host/db` string. The seat noticed immediately, did
+not repeat it, and used `psql "$NEON_RO_URL"` without expansion for every
+subsequent query.
+
+**Blast radius, stated honestly rather than reassuringly.** GitHub Actions
+masks registered secret values in the workflow log, so the log line is
+probably redacted there. That is a mitigation the seat did not arrange and
+cannot verify from inside the run, and it does not cover the session
+transcript the agent itself produced, which is where the value was rendered.
+The credential is read-only by design (ADR-22 gives this seat `NEON_RO_URL`,
+never the write URL), which bounds the consequence to read access on silver
+rather than to the database. Neither of those facts makes the line acceptable;
+they are the reason this is an incident and not a rotation.
+
+**The class.** A charter clause that says "never print the credential" is an
+instruction about intent, and this was not a failure of intent. The seat was
+trying to obey a different charter clause, the one that says say so at the top
+of the pull request when the secret is absent, and reached for the shortest
+shell idiom that answers "is it set". The two-branch idiom is the trap: the
+presence branch and the absence branch use different operators, one of which
+is safe and one of which is not, and they look symmetrical.
+
+**The fix, which is a rule short enough to remember.** Never expand a secret
+variable in a command whose output you intend to read. Test presence without
+substitution:
+
+```
+[ -n "$NEON_RO_URL" ] && echo "NEON_RO_URL set" || echo "NEON_RO_URL absent"
+```
+
+or `${VAR:+set}` alone, which can only ever emit the literal. The
+generalisation for every seat: `${SECRET:-fallback}` and `${SECRET:=default}`
+both print the secret on the common path and neither belongs in an agent's
+shell.
+
+**Why the existing rule did not stop it, which is the part worth generalising.**
+L-A14 is correct, carries the safe snippet, and is in the register this seat is
+required to read. It did not fire because of *when* the seat reads it. The
+charter's register check is a pre-ship step, and this command was the run's
+first, issued before any register was open. That is L-A9 and L-A22 in the same
+sentence: a rule enforced by charter text is enforced at the reliability of a
+model having already read the file, and the one link in this org's chains that
+has never broken is the one enforced by a shell.
+
+**The fix that would actually hold, for the ExO to relay to HQ.** No seat should
+be writing a presence check for a secret at all. The workflow that injects
+`NEON_RO_URL` can export the boolean beside it, so the first thing an agent
+reads is `NEON_RO_URL_PRESENT=true` and the value is never a candidate for
+expansion. That is one line per workflow, it removes the decision from the
+model, and it satisfies L-A14's own closing logic better than a better-worded
+prohibition would. Until it lands, L-A14 is enforced at the reliability of
+reading, and this entry is the second data point on what that reliability is.
+
+## INC-2026-09-30-eval-task-claims-unchecked — a field this seat invented yesterday was wrong in two of eight files, and nothing reads it (2026-09-30, skill seat)
+
+**What happened.** ADR-36 landed on 2026-09-30 and this seat wrote eight
+`skills/<slug>/evals/evals.json` files the same day. Each task carries
+`source.claims`, a list of the claim ids the task exercises, alongside its
+rubric criteria. The next run, the ADR-38 retrofit that had to tag every
+section of every skill with what validates it, used those lists to map sections
+to tasks. Two of the eight were wrong in the same way. In
+`evaluation-integrity`, the partial-monitoring section's three claims
+(269, 272, 273) were attached to `ei-t8`, whose five rubric criteria are all
+about pressure testing and none about monitoring. In
+`recursive-harness-self-improvement`, section 9 on certifying a gain cites
+claim 286 and no task named it at all. Both gaps were closed in the same pull
+request by writing the missing tasks, `ei-t11` and `rhsi-t10`, rather than by
+weakening the tags.
+
+**Why this is a repeat and not a new finding.** It is
+`INC-2026-09-27-new-register-shipped-without-a-gate` exactly, which is itself
+incident 20's class and L-A9 in `docs/standards/lessons.md`: recording is not
+enforcing. `source.claims` is a register. It was born on 2026-09-30 with an
+authorship gate, the prompt that says to write it, and no reader. The eval
+harness the engineer is building consumes the prompt, the check and the
+rubric; nothing in it compares a task's claim list against the section of the
+skill those claims live in. So the field was wrong in 25 percent of the files
+one day after it was invented, and the only reason anyone found out is that a
+different requirement, per-section validation tags, happened to need the
+mapping the field claims to provide.
+
+**The general form, which is the part worth keeping.** This is the third
+distinct instance of the same shape inside this seat's own surface in five
+days, and the pattern across the three is sharper than the class. Every one of
+them is a provenance field: `provenance.claims` on a SKILL.md, the ADR-35
+reading queue, and now `source.claims` on an eval task. Provenance fields
+attract this failure because they are cheap to write, read as authoritative,
+and are the one kind of field whose wrongness is invisible in the artifact
+that carries it. A claim id that does not support the sentence next to it
+looks exactly like one that does.
+
+So the cheap repair is mechanical and belongs beside the file, not in a weekly
+sweep: a check that every claim id in a task's `source.claims` appears in the
+`provenance.claims` list of the skill the suite belongs to, and that the task's
+rubric criteria mention the section those claims came from. The first half is a
+set comparison and needs no model. Filed for the engineer in `docs/ideas.md`
+rather than built here, because the eval harness is the engineer's surface and
+this seat writes only the task files.
+
+**What this seat did differently as a result.** `prompts/skill-extract.md` now
+says to check a task's rubric criteria rather than its claim list before a
+*Validation:* tag cites it, and to write the missing task rather than soften
+the tag. Under L-A22 that is a rule enforced at the reliability of a model
+reading a file, which is the same half of the problem the three earlier
+instances already had, so it is recorded here as insufficient on purpose. The
+command-side link, the one L-A22 actually asks for, is the set comparison filed
+in `docs/ideas.md` for whoever builds the eval harness, and L-A21's test says
+which half of it matters: name one change that would break the mapping, then
+ask whether the check would see it. The set comparison would not have seen
+either of today's two defects, because both wrong lists held ids the skill does
+cite. The check that sees them is the one that asks whether every section of
+the SKILL.md is named by a task, and that needs a `section` field on the task
+which does not exist yet. Recorded so the cheaper check does not ship alone and
+get mistaken for coverage.
+
+## INC-2026-09-30-conflict-markers-on-main-in-the-register-map — the file every seat is told to check before shipping is unreadable on the default branch, and the test that says so is red (2026-09-30, skill seat, found in passing)
+
+**A repeat, which is why it is here.** Merge damage in a register is a class
+this file already carries: incident 6 (two ledger appends at one anchor,
+conflict on the second merge), incident 14 (two runs of one dispatch racing on
+one branch), and this file's own 2026-09-24 header note about duplicate
+entries arriving "from a merge that appended entries the file already held".
+What is new is where the damage landed and that it survived onto main.
+
+**What happened.** The skill seat ran the test suite before shipping, which is
+not a step its charter names, and
+`tests/test_check_registers.py::test_this_repository_has_no_merge_damage_in_its_registers`
+failed. `docs/agents/registers.md` holds nine conflict markers on the working
+branch. Six of them are on **main**, at lines 59, 61, 66, 86, 88 and 90 of
+main's copy. The remaining three are a large unresolved block arriving with
+PR #152.
+
+**Why it is worse than a missing gate.** `registers.md` is the map the org's
+own "check the register before you ship" step sends every seat to. Two of its
+rows currently cannot be read without a reader mentally resolving a merge. And
+the test that detects this is not missing. It exists, it is correct, and it is
+red, which means it has been stepped over rather than overlooked. A present
+and failing gate is the harder half of L-A21: a gate is judged by what it can
+see, and nothing requires this one to be seen. Of the org's checks, the ones
+that have never broken are the ones wired into an `&&` chain (L-A22), and this
+one is not.
+
+**Not fixed here.** `registers.md` is outside the skill charter's write
+surface, which names `skills/`, `prompts/skill-extract.md` and ledger entries
+only. Repairing it from this seat would be the L-A10 violation, one file one
+owning charter. Filed in `docs/ideas.md` for the seat that owns it, with the
+second half of the fix stated there: put the register test where it blocks.
+
+## INC-2026-09-30-skill-seat-window-run-had-no-database — the credential the workflow wires is absent when the same seat is invoked another way, which silently demotes a gold-production run (2026-09-30, skill seat)
+
+**A repeat of a recorded class.** The 2026-09-22 entry in this file records a
+seat unable to perform a charter duty because `NEON_RO_URL` was absent, across
+four engineer runs, and closes with the observation that the secret "is wired
+into the research and skill workflows only". This run is the skill seat, the
+workflow does wire it, and it was still absent.
+
+**What happened.** This run was triggered as a resident-runtime work window
+rather than by `agent-skill.yml`. `NEON_RO_URL` was not in the environment.
+Under the charter's data-access clause that is a defined outcome rather than a
+failure, and the run said so at the top of its PR and spent itself on the
+parts that need no database. So no work was lost. The defect is that nothing
+announced the demotion except the seat's own check.
+
+**Why it is worth an entry anyway.** The skill seat's charter has two modes,
+and which one it is in is decided by an environment variable it does not
+control and no caller sets deliberately. A window invocation cannot extract a
+claim, read a cluster, or draft a skill, which is the seat's entire reason to
+exist under O2. It can only do maintenance. That is a useful mode and it is
+what this run did, but a scheduler, a dispatcher or an owner asking for a
+weekly skill has no way to know in advance that a window-triggered run will
+return maintenance instead. This is L-A16, configured is not in effect: the
+workflow states the intent, and the gap between intent and effect is silent by
+construction because the fallback path succeeds.
+
+**What would close it.** Either pass `NEON_RO_URL` into resident-runtime
+sessions for this seat from the same secret `agent-skill.yml` already reads, or
+have the dispatcher state the mode in the trigger so the seat is not the first
+thing to discover it. Both are runtime changes
+(`docs/agents/runtime-changes.md`) and neither is this seat's to make.
+
+## INC-2026-09-30-a-length-only-rewrite-narrowed-the-null — changing one property of an instrument quietly changed another, caught only because a case that had passed for twelve days started failing (2026-09-30, skill seat)
+
+**A first occurrence, recorded under L-A17** because the diagnosis took
+several minutes and the failure mode is the kind that gets rediscovered. It
+was found and fixed inside the same run, before shipping.
+
+**What happened.** Sprint item 4 asked for one change to
+`skills/_validation/decoys.json`: bring the eight decoys to the library's word
+budget so the null model stops being systematically shorter than the library
+it nulls. Length was the only property meant to change. Rewriting each decoy
+from scratch at three times its former length also rewrote its content, and
+the first v2 draft of `decoy-product-copy` dropped a clause v1 had carried,
+"a chatbot persona and its system prompt".
+
+Case `he-neg-2` is the prompt "Write me a system prompt for a support chatbot
+that always ends its reply by offering to escalate to a human". It had passed
+since the panel was written, because that decoy clause matched it almost
+verbatim and the null won. With the clause gone the null lost, a library skill
+won a case it should have stayed silent on, and `he-neg-2` failed under both
+engines. The first reading was tempting and wrong: that a richer panel had
+changed the idf weights. The actual cause was a hole in the panel's domain
+coverage that the rewrite had opened.
+
+**Why it is the interesting kind of defect.** The rewrite was measured
+carefully on the axis it was changing. Word counts before and after, the
+library-to-decoy ratio, the shared-vocabulary percentage in both directions,
+all checked. None of those measurements could see a dropped clause, because
+every one of them was about length. **An instrument has more properties than
+the one you are editing, and the measurements you add to prove the edit
+correct are all pointed at that one.** This is the scope half of L-A21 at the
+level of a single file: name a change that would break what the check governs,
+then ask whether the check would have seen it.
+
+**The fix, and the line it sits behind.** The clause was restored, `he-neg-2`
+passes again, and `decoys.json` now carries a `coverage_note` recording that
+domain coverage is held fixed from v1 on purpose and that this regression is
+why. The distinction the note draws is the one that keeps this honest:
+restoring coverage v1 already had is fidelity to the instrument, while adding
+coverage v1 never had, to turn a red case green, is tuning the test until it
+passes. Only the first was done. Anyone editing the panel later needs that
+sentence more than they need the word counts.
