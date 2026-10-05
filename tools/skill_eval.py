@@ -1235,15 +1235,24 @@ def sandbox_decision(mode: str) -> tuple[str, str]:
                     "not get one")
 
 
-def docker_argv(command: str, work: pathlib.Path, timeout: int) -> list[str]:
-    """The container a task's command runs in. One place, so one thing to read."""
-    return ["docker", "run", "--rm", "--network", "none",
-            "--memory", SANDBOX_MEMORY, "--pids-limit", SANDBOX_PIDS,
-            "--workdir", "/work", "--volume", f"{work}:/work",
-            sandbox_image(), "/bin/sh", "-lc", command]
+def docker_argv(command, work: pathlib.Path) -> list[str]:
+    """The container a task's command runs in. One place, so one thing to read.
+
+    A suite writes its command either as one shell string or as an argv list,
+    and both forms predate this function. A string needs a shell inside the
+    container; a list does not, and wrapping one in `sh -lc` would re-introduce
+    the quoting the list form exists to avoid.
+    """
+    run = ["docker", "run", "--rm", "--network", "none",
+           "--memory", SANDBOX_MEMORY, "--pids-limit", SANDBOX_PIDS,
+           "--workdir", "/work", "--volume", f"{work}:/work",
+           sandbox_image()]
+    if isinstance(command, str):
+        return run + ["/bin/sh", "-lc", command]
+    return run + [str(part) for part in command]
 
 
-def run_in_sandbox(command: str, work: pathlib.Path, timeout: int,
+def run_in_sandbox(command, work: pathlib.Path, timeout: int,
                    sandbox: str) -> dict:
     """Run one command and report everything about the run. Never raises.
 
@@ -1252,15 +1261,17 @@ def run_in_sandbox(command: str, work: pathlib.Path, timeout: int,
     check ran the command, and the exit code is in the same field either way.
     """
     started = time.monotonic()
-    entry = {"command": command, "sandbox": sandbox, "timeout_s": timeout,
+    entry = {"command": command if isinstance(command, str)
+                        else " ".join(str(part) for part in command),
+             "sandbox": sandbox, "timeout_s": timeout,
              "network": "none" if sandbox == "docker" else "the host's"}
     if sandbox == "docker":
-        argv = docker_argv(command, work, timeout)
+        argv = docker_argv(command, work)
         entry["image"] = sandbox_image()
         shell = False
     else:
         argv = command
-        shell = True
+        shell = isinstance(command, str)
     try:
         done = subprocess.run(argv, cwd=None if sandbox == "docker" else work,
                               shell=shell, capture_output=True, text=True,
@@ -1461,9 +1472,8 @@ def run_project_check(task: dict, answer: str, base: pathlib.Path, check: dict,
         target = work / task["answer_file"]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(extract_code(answer))
-        run = check["run"]
-        entry = run_in_sandbox(run if isinstance(run, str) else " ".join(run),
-                               work, int(check.get("timeout", 120)), sandbox)
+        entry = run_in_sandbox(check["run"], work,
+                               int(check.get("timeout", 120)), sandbox)
         entry["answer_path"] = task["answer_file"]
         log_trajectory(trajectory, task, arm, rep, answer, entry)
         code = entry.get("exit_code")
