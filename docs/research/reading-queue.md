@@ -416,3 +416,59 @@ from f left join papers p on p.id = 'arxiv:' || f.aid             -- wrong
 
 That is also why the first query of this run reported five of the containment
 skill's six papers as missing when five are held.
+
+## Skill-evals batch, 2026-10-05 (research seat, PR #220)
+
+Owner directive 2026-10-05, the RL feedback / evaluation / refinement
+research. Appended by the brief at
+`docs/research/briefs/2026-10-05-skill-evals-from-rl-research.md`. The chair
+queued twenty gap papers above this section on the same day; these do not
+repeat them. Two of the three groups below exist because reading the papers
+in full changed what the gap is.
+
+### Group 1 — re-pointing the preference-from-usage gap
+
+The chair's nine queued papers under "preference optimization from usage
+data" are the weight-training branch (DPO, KTO, Nash, iterative PO). Our
+artifact is a text file and no weights are trained, so that branch answers a
+question we do not have. The branch we do need is preference-gated refinement
+of a *text artifact* from logged usage, and the corpus already holds its best
+instance, unread in full.
+
+- [ ] arxiv:2609.22086 — Designer-RSI, read IN FULL for the replay gate's mechanics: it admits an edit that beats the incumbent on >=1 replayed case with no regression on any (C891), which is the gate design closest to our constraints and the only one of the three we hold that survives one-report-at-a-time arrival. We have it only through claim rows and the W40 draft — research seat 2026-10-05
+- [ ] arxiv:2605.23904 — SkillOpt, re-read for the held-out gating THRESHOLD and the validation set's composition: the full text establishes "strictly improves a held-out validation score" but not what is held out or how much, and our gate needs both numbers — research seat 2026-10-05
+
+### Group 2 — the contradiction that blocks a cluster
+
+C322 (COBRA-Skills: performs effectively when the target model itself
+generates and refines the skills) sits directly against C850 (SkillsBench:
+self-generated skills underperform curated ones) and C965 (self-refinement
+consolidates rather than discovers). All three are `asserted`, so none
+settles it, and the answer decides whether our cheap subject may propose its
+own skill edits or only verify them. Reading COBRA-Skills' page today
+confirmed it offers no evidence for that sentence — no comparison, no
+ablation.
+
+- [ ] arxiv:2609.11682 — COBRA-Skills, read IN FULL for any evidence behind C322's self-generation sentence. If the full text has no ablation either, C322 should be downgraded or split, because it is currently load-bearing against two other claims — research seat 2026-10-05
+- [ ] arxiv:2602.12670 — SkillsBench, re-read for the self-generated-vs-curated EXPERIMENT behind C850. The full HTML read today states the three-module and model-parity findings but the abstract does not carry the self-generation comparison at all, so C850's evidence lives in a section we have not read — research seat 2026-10-05
+
+### Group 3 — RLAIF, a zero the chair did not name
+
+Layer 3 of the standing program names "RLHF and RLAIF by name... constitutional
+and AI-feedback approaches." Measured today across all 1,801 claims with
+word-bounded matching: 2 claims mention human feedback, and **0 mention
+RLAIF, AI feedback, or constitutional AI**. It is the oldest named coverage
+order in the charter and the emptiest shelf in the corpus. Foundations first,
+the same shape as the chair's gap batch.
+
+- [ ] arxiv:2212.08073 — RLAIF gap: Constitutional AI, harmlessness from AI feedback (the paper that named the method) — research seat 2026-10-05
+- [ ] arxiv:2309.00267 — RLAIF gap: RLAIF vs RLHF, scaling reinforcement learning from human feedback with AI feedback (the direct comparison, which is the claim we most lack) — research seat 2026-10-05
+- [ ] arxiv:2212.09251 — RLAIF gap: Discovering language model behaviors with model-written evaluations (AI-written eval items, directly relevant to our generated rubrics) — research seat 2026-10-05
+- [ ] arxiv:2310.01377 — RLAIF gap: UltraFeedback, scaled AI preference data — research seat 2026-10-05
+- [ ] arxiv:2401.10020 — RLAIF gap: Self-rewarding language models. ALREADY QUEUED by the chair under the preference-from-usage gap; relisted here because its AI-feedback half is the part this gap needs, so whoever reads it should file claims against both — research seat 2026-10-05
+
+### Questions this run raised and could not answer from the corpus
+
+- [ ] Is the 227-claim null-embedding window (every one created 2026-10-04 or 10-05) the normal lag of a nightly embed job, or incident 30's first occurrence returning? Not decidable from the corpus; needs the job's schedule from the engineer — research seat 2026-10-05
+- [ ] C887 is internally inconsistent: "from 72.7% to 99.3%, a +11.99-point improvement" (72.7 to 99.3 is +26.6). Designer-RSI's full text should say which quantity the +11.99 is, and the claim needs splitting or correcting. The W40 draft reproduced the inconsistency faithfully — research seat 2026-10-05
+- [ ] Does SkillsBench's "module" mean a `##` section or a separate file? Our skills are single-file, so the brief read it as a section, which puts six of eight skills over the cap. A file-level reading would put all eight at one module and void the finding. The full text's skill format decides it — research seat 2026-10-05
