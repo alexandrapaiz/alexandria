@@ -209,6 +209,76 @@ Proposing prompt words here would be the third interpret sha in three weeks,
 and incident 25's own closing reason for proposing none applies with the
 freeze removed: a fix that looks like progress and changes nothing.
 
+### 4a. The press could not have caught it, and the fix already exists one
+### function away
+
+The W39 issue (2026-09-28) is the reason this section is not simply "the press
+ignored its own rule." W39 received the 82.2% pair and **caught it in print**:
+
+> The problem is that these numbers share a percent sign and little else.
+> RMBench measures end-to-end agent construction on software tasks; the
+> air-combat result measures win rate in a physics simulator. **The edge between
+> them fails the kind test**, and the ceiling that was not a ceiling is better
+> understood as a category error.
+
+So `prompts/digest.md`'s KIND test fires. It fired a week before W40 printed a
+false overturn, on an edge from this same class. The question is why it fired
+there and not on 288/289, and the answer is in `pipeline/weekly.py`.
+
+The `deprecated` payload, the one that feeds the left-behind section from
+`contradicts` edges:
+
+```sql
+select old.claim, new.claim, l.confidence, p.title, p.url
+from claim_links l
+join claims old on old.id = l.to_claim
+join claims new on new.id = l.from_claim
+join papers p on p.id = old.paper_id          -- only the OLD claim's paper
+where l.relation = 'contradicts'
+  and coalesce(l.confidence, 0) >= 0.7
+```
+
+The press is handed two claim texts, a confidence, and **one** paper — the old
+claim's. The new claim's paper is never passed. W39's pair was catchable by
+reading, because "software tasks" and "air-combat simulation" are visible in
+the claim text. W40's pair was not, because the only fact that reveals it —
+that 288 and 289 are both `arxiv:2609.09219` — is the one fact the payload
+withholds. The press was not ignoring the rule. It was blind to the input.
+
+**And the repair is already written in the same function, applied to the weaker
+relation.** The `superseded` payload, ten lines above, handles `refines` edges:
+
+```sql
+select old.claim, new.claim, l.confidence,
+       po.title, po.url, pn.title, pn.url      -- BOTH papers
+from claim_links l
+join claims old on old.id = l.to_claim
+join claims new on new.id = l.from_claim
+join papers po on po.id = old.paper_id
+join papers pn on pn.id = new.paper_id
+where l.relation = 'refines'
+  and coalesce(l.confidence, 0) >= 0.75
+  and old.paper_id != new.paper_id  -- a paper refining itself is not a supersession
+```
+
+Both papers passed, and a same-paper guard in SQL with a comment explaining
+itself. Someone thought of this exactly once, for `refines`, which only
+announces a supersession — and not for `contradicts`, which marks a claim
+**deprecated** and feeds both the digest's left-behind evidence and
+`skills_needing_revision`. The stronger consequence has the weaker guard.
+
+So the smallest sufficient fix for the published error is two lines in
+`pipeline/weekly.py`: join `papers` for the new claim as well, and add
+`and old.paper_id != new.paper_id` to the `deprecated` query. It would have
+stopped W40's section cold, it needs no model judgment, and its precedent is
+in the same function. That is item 0 for the engineer, ahead of everything in
+§4, and it is a strictly smaller change than any of them.
+
+The interpret-side items still stand — the bad edges should not be written in
+the first place, and 13 of 20 deprecated claims are wrong for other consumers
+of `deprecated_claims` besides the press — but the reader-facing bleeding stops
+with two lines.
+
 ---
 
 ## 5. Citation tracking has not run for seven days

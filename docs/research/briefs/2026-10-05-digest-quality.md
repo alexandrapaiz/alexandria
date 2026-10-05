@@ -74,6 +74,16 @@ currently carrying weight they cannot hold.
 
 ## 3. For the engineer, in priority order
 
+0. **Two lines in `pipeline/weekly.py`, and the reader-facing error stops.**
+   The `deprecated` payload that feeds the digest's left-behind section joins
+   `papers` only on the *old* claim, so the press is handed one paper for a
+   two-claim pair and cannot see that W40's 288 and 289 are the same paper.
+   The `superseded` payload ten lines above, for the weaker `refines` relation,
+   joins both papers *and* carries `and old.paper_id != new.paper_id` with a
+   comment explaining itself. The stronger consequence has the weaker guard.
+   Join the new claim's paper and add the same one-line condition. No model
+   judgment, in-file precedent, and it would have stopped W40's section cold.
+   **Do this one first; it is smaller than everything below.**
 1. **Feed the reading queue's 68 missing ids.** They are the field's
    foundations — InstructGPT (2203.02155), Constitutional AI (2212.08073), DPO
    (2305.18290), RLAIF (2309.00267), process-versus-outcome reward (2211.14275,
@@ -239,7 +249,13 @@ sibling run's evidenced work to spend the slot on mine is not this seat's call.
 That hunk also happens to address the exact thin spot §5 identifies, which is
 the argument for leaving it there rather than swapping it.
 
-**And the finding this run produced is not a prompt fix.** The evidence is a
+**And the finding this run produced is not a prompt fix.** The press is not
+ignoring its rule — W39 caught this exact class in print a week earlier and
+told readers the edge "fails the kind test." It could not catch W40's pair
+because `pipeline/weekly.py` hands the `deprecated` payload one paper for a
+two-claim pair, so the fact that both claims come from `arxiv:2609.09219` never
+reaches the writer. The repair is two lines of SQL with its precedent ten lines
+away in the same function (§3, item 0). The evidence is a
 pattern by any standard: five intra-paper `contradicts` edges, all five
 mislabelled, two of them written *after* the corrected prompt deployed; roughly
 18 of 29 `contradicts` edges failing the KIND test; 13 of 20 deprecated claims
