@@ -15,12 +15,12 @@ and none of the twelve is in the `papers` table at all, so the corpus holds
 the skill-library cluster's 2026 results without the work they are measured
 against. The first six are the load-bearing ones.
 
-- [ ] arxiv:2602.12670 — SkillsBench, the source of "an ill-suited skill leaves the task worse off than no skill at all," which is the premise three of the five read papers build on and which alexandria currently asserts on their say-so — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.22455 — SkillRouter, the ~80K-skill routing benchmark and the finding that full skill bodies carry routing signal beyond names and descriptions; it is the baseline in two read papers and the reason the description-versus-body question has an answer — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2608.04828 — Skill-Use, the 177-task executable benchmark behind the trigger-rate table; the frontier-model numbers this skill quotes are quoted from this paper rather than measured by the paper that reports them — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2602.12670 — SkillsBench, the source of "an ill-suited skill leaves the task worse off than no skill at all," which is the premise three of the five read papers build on and which alexandria currently asserts on their say-so — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2603.22455 — SkillRouter, the ~80K-skill routing benchmark and the finding that full skill bodies carry routing signal beyond names and descriptions; it is the baseline in two read papers and the reason the description-versus-body question has an answer — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2608.04828 — Skill-Use, the 177-task executable benchmark behind the trigger-rate table; the frontier-model numbers this skill quotes are quoted from this paper rather than measured by the paper that reports them — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [ ] arxiv:2605.05726 — SkillRet, the skill-retrieval benchmark whose training split is what the native router's two projections were trained on — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2604.24594 — Skill retrieval augmentation for agentic AI (SRA-Bench), the out-of-domain library where metadata menus collapsed and dense retrievers fell below BM25 — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26
@@ -147,7 +147,7 @@ and not one of them is in the `papers` table.
 - [ ] arxiv:2604.13630 — SafeHarness, lifecycle-integrated security architecture for agent deployment, the closest published relative of the harness-level enforcement both new skills recommend — asked by skills/agent-containment — 2026-09-30
 - [ ] arxiv:2601.04688 — ToolGate, contract-grounded and verified tool execution, the contract-based alternative to capability scoping that neither new skill can currently compare against — asked by skills/agent-containment — 2026-09-30
 - [ ] arxiv:2412.04984 — Frontier Models are Capable of In-context Scheming, the prior that the shutdown-sabotage study extends by removing the incentive. Needed to say whether the no-incentive result is new or a replication — asked by skills/agent-security-measurement — 2026-09-30
-- [ ] arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30
+- [x] ~~arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [ ] no arXiv id — Anatomy of a Frontier Lab Agent Intrusion, Hugging Face Security Team, 2026, and the METR independent investigation of the same incident. These are the external ground truth for the July 2026 escape that agent-containment's section 6 narrates, and the library has read only a single-author monograph's retelling of them — asked by skills/agent-containment — 2026-09-30
 - [ ] no arXiv id — Firecracker (Agache et al., NSDI 2020) and EROFS (Gao et al. 2019), the two systems the production sandbox platform's boundary and image path are built from. Not urgent for a skill, but the corpus holds no systems substrate at all for this thread — asked by skills/agent-containment — 2026-09-30
 
@@ -332,3 +332,40 @@ the enforcement point in three different places — the dispatch interceptor
 currently orders these by "how much privilege the deployment has". Nothing in
 the corpus measures them against each other on one workload. If one of these
 papers does, that comparison is the skill's missing section.
+
+## Correction to this file's standing blocker, 2026-10-05 (research seat, PR #210)
+
+**The blocker recorded on 2026-09-30 and re-confirmed the same night is false,
+and it should stop being planned around.** That record says every arXiv id in
+this file is absent from `papers`. Measured tonight against the 56 ids this
+file held before this run: **19 distinct papers are held, and 13 of them have
+claims in the corpus.** Recorded as
+`INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join`.
+
+Seven unchecked lines above are struck accordingly, each one a paper that is
+held and distilled. Six more are held with claims but are recorded in tables
+or question lines rather than as checkbox items, so they are named here instead
+of struck: `arxiv:2609.05903` (EvoSafeHarness, 5 claims), `arxiv:2609.06966`
+(MOLE, 5), `arxiv:2609.07103` (Revisiting Complete Reasoning Traces, 4),
+`arxiv:2609.08404` (Environments as Scaffold, 5), `arxiv:2609.28274` (Shutdown
+Sabotage Propensities, 5), `arxiv:2609.29808` (Hard Stop, 5). The table row
+above that records Hard Stop as `0` claims is wrong; it has five, 882-886.
+
+Six are held and genuinely unread, so their lines stand: `arxiv:2609.06500`
+(CAPMAS, never triaged), `arxiv:2609.22978` (DSec), `arxiv:2609.26761` (A2M),
+`arxiv:2609.29647` (AgentKernel), `arxiv:2609.35366` (Planarian),
+`arxiv:2609.35557` (The Compiler May Read It). All but CAPMAS are routed to
+`distill` and waiting in a 1,189-paper queue.
+
+**Use this join, not an equality test.** `papers` holds arXiv ids in two
+shapes because source `arxiv` writes `arxiv:2610.02206v1` and source
+`hf-daily` writes `arxiv:2610.02206`, so an equality join silently misses
+every paper that arrived through the `arxiv` feed:
+
+```sql
+from f left join papers p on p.id like 'arxiv:' || f.aid || '%'   -- correct
+from f left join papers p on p.id = 'arxiv:' || f.aid             -- wrong
+```
+
+That is also why the first query of this run reported five of the containment
+skill's six papers as missing when five are held.
