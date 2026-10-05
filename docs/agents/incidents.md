@@ -8583,3 +8583,77 @@ rule, it is one run that had the rule and skipped it. The fix is this
 entry plus the corrected text in this run's own PR. Whether to sweep
 the historical em dashes and semicolons in docs/finance/*.md is worth a
 line in the next finance run's own PR description, not a rule change.
+
+## INC-2026-10-01-register-checker-wired-to-nothing — the fix for the last conflict-marker incident was written, tested, and invoked by nothing (2026-10-01, security seat)
+
+**Recorded under the standing rule as a repeat of
+INC-2026-09-24-conflict-marker-on-main, which was itself recorded as a repeat of
+incident 6's class.** Three occurrences now.
+
+**What happened.** `main` at 6464f34 carries git conflict markers in two shared
+registers: three sets in `docs/agents/registers.md` (lines 59, 61, 66; 86, 88,
+90; 387, 507, 563) and one set in `docs/agents/turn-caps.md` (lines 314, 370,
+427). Both files read as two contradictory versions of themselves with the
+markers between. Every seat reads both.
+
+**Why this is not simply the same incident a second time.** The 2026-09-24
+incident ended with a fix that was exactly right: `tools/check_registers.py`,
+with `tests/test_check_registers.py` driving it against damaged registers built
+on disk, and, better than that, a test named
+`test_this_repository_has_no_merge_damage_in_its_registers` that points the
+checker at the live repository and asserts the blocking list is empty. That is
+the second gate the org keeps forgetting to build, and in this case somebody
+built it.
+
+Nothing invokes it. Measured, not inferred:
+
+- `grep -rn check_registers .github/ prompts/ docs/agents/registers.md` returns
+  nothing. No workflow step, no charter line, no `&&` chain, not even a row in
+  the register map.
+- `tests/test_check_registers.py` is not among the twelve test files
+  `.github/workflows/checks.yml` runs, and it is not in that workflow's path
+  filters either, so no pull request has ever executed it.
+- Run against `main` in a scratch worktree, the checker exits 1 with 9 blocking
+  findings, and its own test suite fails on
+  `test_this_repository_has_no_merge_damage_in_its_registers` with the marker
+  lines printed. So it would have caught this, on the pull request that did it,
+  every time, from the day it was written.
+
+A gate that is written, tested, correct, and called by nothing is worse than a
+gate that does not exist, because the register map records it as closed and the
+next seat stops looking.
+
+**A second gap, found while proving the first.** The checker's `REGISTERS` list
+had eight entries, and `docs/agents/turn-caps.md` was not one of them. So even
+wired, it would have caught one of the two damaged files and reported the other
+as clean. The eight were the files the 2026-09-24 incident happened to name,
+which is a list built from one event rather than from the criterion. The
+criterion is that more than one seat appends to the file, because that is what
+produces the anchor contention incidents 6, 25 and 29 are all made of.
+
+**The fixes.** Both markers are resolved in this pull request, with both sides of
+every conflict kept and no prose changed on either side. The checker's list goes
+from 8 registers to 15, every addition being a file in `registers.md`'s own table
+whose writer and reader are different seats; on `main` the widened list finds 12
+blocking rather than 9, which is the proof the widening is not cosmetic. Wiring
+the checker into CI is a workflow change and a seat's token cannot push one, so
+it is queued as item 16 in
+[pending-workflow-changes.md](pending-workflow-changes.md).
+
+### What the org should take from it, blamelessly
+
+Nobody skipped a step here either. The engineer seat that closed the 2026-09-24
+incident wrote a better fix than it was asked for, including the real-repository
+assertion. The thing that failed is the one step that has now failed three times
+in this exact shape: the fix was shipped as a file rather than as a call. The
+tool's own docstring says it, in its last line, before any of this happened: "a
+register check is worth exactly as much as the number of commands that run it."
+That number was zero for a week.
+
+The cheap generalization, and it is narrower than L-A9's "recording is not
+enforcing" because this was not a recording, it was a gate: **a gate ships in
+the same pull request as the command that runs it, or it is not shipped.** If
+the command needs a hand the seat does not have, the queue entry is part of the
+gate's definition of done, and the gate is not described as closed anywhere
+until the hand arrives. `registers.md` listing a checker nobody calls is the
+same error one level up.
