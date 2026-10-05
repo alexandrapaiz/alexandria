@@ -3,6 +3,8 @@ name: writer-agent
 on:
   schedule:
     - cron: "0 16 * * *" # daily, after the digest publishes
+  repository_dispatch:
+    types: [asc.writer]   # the event bus wakes this seat (standards/pm.md §17)
   workflow_dispatch:
     inputs:
       owner_instructions:
@@ -68,6 +70,7 @@ jobs:
             Never edit taste.md, charters, site copy, pipeline code, sprints,
             or skills. Never merge your own PR, never push to main. If the
             charter file is missing, stop and fail loudly.
+            Event that woke this run, when the event bus started it (empty on a schedule or a dispatch): ${{ github.event.client_payload.text }}
             Owner instructions for this dispatch, binding for this run
             (empty on scheduled runs):
             ${{ inputs.owner_instructions }}
