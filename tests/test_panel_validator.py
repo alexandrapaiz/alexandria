@@ -1117,3 +1117,80 @@ def test_one_measurement_is_not_compared_against_itself(tmp_path):
     assert v["verdict"] == "pass", v["findings"]
     record = checks(v, "trial-record")
     assert len(record) == 1 and "no earlier number" in record[0]["detail"]
+
+
+# ------------------------------------------------------- section coverage
+#
+# The suite contract's second coverage check, which this reviewer carries
+# because this is where the severity ladder is. The contract calls a section
+# with no task a finding rather than an error, so it is a `note`: it is
+# recorded, it is readable, and it never decides a verdict. The first half of
+# the rule, a `sections` entry naming no heading of the file, is a false claim
+# and arrives through `suite-runnable` as a `fail`.
+
+BODY_WITH_SECTIONS = ("# fixture\n\n## First rule\n\nBody.\n\n"
+                      "## Second rule\n\nBody.\n\n"
+                      "## Apply: the builder's checklist\n\nBody.\n\n"
+                      "## Caveats\n\nBody.\n")
+
+
+def suite_with_sections(*per_task):
+    """A runnable suite whose three tasks claim the sections given."""
+    suite = suite_for()
+    for spec, claimed in zip(suite["tasks"], per_task):
+        spec["sections"] = list(claimed)
+    return suite
+
+
+def test_full_coverage_is_recorded_as_evidence_and_passes(tmp_path):
+    v = verdict(tmp_path, body=BODY_WITH_SECTIONS,
+                suite=suite_with_sections(["First rule"], ["Second rule"], []),
+                result=gained())
+    note = checks(v, "section-coverage")[0]
+    assert note["severity"] == "note"
+    assert note["detail"].startswith("2 of 2 sections are exercised")
+    assert v["verdict"] == "pass", v["findings"]
+
+
+def test_a_section_with_no_task_is_named_and_still_passes(tmp_path):
+    """The whole point of the severity choice. ADR-38 wants a per-section
+    `Validation:` tag to be able to say "nothing proves this one", and a
+    reviewer that failed the skill for it would make that tag unwritable."""
+    v = verdict(tmp_path, body=BODY_WITH_SECTIONS,
+                suite=suite_with_sections(["First rule"], [], []),
+                result=gained())
+    note = checks(v, "section-coverage")[0]
+    assert note["severity"] == "note"
+    assert note["detail"].startswith("1 of 2 sections are exercised")
+    assert "'Second rule'" in note["detail"]
+    assert v["verdict"] == "pass", v["findings"]
+
+
+def test_a_coverage_claim_naming_no_heading_fails_through_the_suite_check(
+        tmp_path):
+    """The rename case. Not a second opinion: `conformance` is the one answer to
+    "can this suite be run", and a suite whose coverage claim points at text
+    that no longer exists cannot be run until somebody looks."""
+    v = verdict(tmp_path, body=BODY_WITH_SECTIONS,
+                suite=suite_with_sections(["Delta 1: the renamed rule"], [], []),
+                result=gained())
+    failures = [f for f in checks(v, "suite-runnable")
+                if "sections names" in f["detail"]]
+    assert len(failures) == 1
+    assert failures[0]["severity"] == "fail"
+    assert "'Delta 1: the renamed rule'" in failures[0]["detail"]
+    assert v["verdict"] == "fail"
+
+
+def test_a_skill_with_no_suite_reports_no_coverage_at_all(tmp_path):
+    """Absence of a suite is `trial-exists`'s finding. A coverage note of 0 of 2
+    beside it would read as a measured gap rather than as nothing measured."""
+    v = verdict(tmp_path, body=BODY_WITH_SECTIONS)
+    assert checks(v, "section-coverage") == []
+
+
+def test_a_skill_with_no_headings_asks_for_no_coverage(tmp_path):
+    v = verdict(tmp_path, suite=suite_for(), result=gained())
+    assert checks(v, "section-coverage") == [], (
+        "the default fixture body is one `#` title and no `## ` headings, so "
+        "there is nothing coverage could be asked of")

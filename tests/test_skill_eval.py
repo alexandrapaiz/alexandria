@@ -1052,3 +1052,157 @@ def test_the_version_comes_from_the_frontmatter_and_is_parsed_once(tmp_path,
     _library(tmp_path, version="7")
     monkeypatch.setattr(ev, "ROOT", tmp_path)
     assert ev.skill_version("x") == "7"
+
+
+# ------------------------------------------------- the sections a task claims
+#
+# `sections` entered the suite contract on 2026-09-30 as the fix for
+# INC-2026-09-30-eval-task-claims-unchecked, and nothing read it until
+# 2026-10-05. These tests hold the two things the contract asks of it and, more
+# importantly, the line between them: a claim that names no heading is false and
+# blocks the run, and a heading no task claims is a gap the contract itself calls
+# a finding. A build that collapsed the two would either publish false coverage
+# or refuse to measure a skill over a section nobody wrote a task for.
+
+SKILL_MD = """---
+name: x
+version: 1
+status: active
+---
+
+# x
+
+Prose above the first heading.
+
+## First rule
+
+Body.
+
+## Second rule
+
+Body.
+
+## Apply: the builder's checklist
+
+Body.
+
+## Caveats
+
+Body.
+"""
+
+
+def _skill_with_sections(tmp_path, skill_md=SKILL_MD, tasks=None):
+    """(evals dir, spec) for a one-skill library whose SKILL.md has headings."""
+    evals = tmp_path / "skills" / "x" / "evals"
+    evals.mkdir(parents=True)
+    (evals.parent / "SKILL.md").write_text(skill_md)
+    spec = {"contract": 2, "skill": "x", "policy": {"repetitions": 3},
+            "tasks": tasks if tasks is not None else [
+                {"id": "t1", "ask": "?", "sections": ["First rule"],
+                 "check": {"type": "contains_all", "patterns": ["x"]}},
+                {"id": "t2", "ask": "?", "sections": ["Second rule"],
+                 "check": {"type": "contains_all", "patterns": ["x"]}},
+            ]}
+    return evals, spec
+
+
+def test_a_suite_with_no_skill_md_beside_it_makes_no_coverage_claim(tmp_path):
+    """None, not an empty list. Every other caller in this file builds a suite
+    in a bare tmpdir, and reading that as "a skill with no headings" would turn
+    every one of their `sections` lists into a false claim."""
+    assert ev.skill_headings(tmp_path) is None
+    assert ev.coverage_counts({"tasks": []}, tmp_path) == (0, 0)
+    assert ev.uncovered_sections({"tasks": []}, "x", tmp_path) == []
+
+
+def test_the_headings_come_from_the_one_reader_and_skip_the_frontmatter(tmp_path):
+    evals, _ = _skill_with_sections(tmp_path)
+    assert ev.skill_headings(evals) == [
+        "First rule", "Second rule", "Apply: the builder's checklist",
+        "Caveats"]
+
+    import panel_provenance
+
+    assert ev.skill_headings(evals) == panel_provenance.sections(
+        ev.body_of((evals.parent / "SKILL.md").read_text())), (
+        "a second `## ` regex in the harness is how `validated:` read as the "
+        "empty string on every skill for eleven days")
+
+
+def test_a_section_claim_that_resolves_is_not_a_problem(tmp_path):
+    evals, spec = _skill_with_sections(tmp_path)
+    assert ev.conformance(spec, "x", evals) == []
+
+
+def test_a_section_claim_that_names_no_heading_blocks_the_run(tmp_path):
+    """The rename case, which is what happened for real: the skill seat's delta
+    rewrite changed six SKILL.md files and left their suites' `sections` lists
+    naming the old headings, so 60 of 76 coverage claims pointed at text that no
+    longer existed and the harness would have measured and published anyway."""
+    evals, spec = _skill_with_sections(tmp_path)
+    assert ev.conformance(spec, "x", evals) == []
+    (evals.parent / "SKILL.md").write_text(
+        SKILL_MD.replace("## First rule", "## Delta 1: the renamed rule"))
+    problems = ev.conformance(spec, "x", evals)
+    assert len(problems) == 1
+    assert "x/t1" in problems[0] and "'First rule'" in problems[0]
+    assert "coverage claim is false" in problems[0]
+
+
+def test_a_sections_field_that_is_not_a_list_is_a_problem(tmp_path):
+    evals, spec = _skill_with_sections(tmp_path)
+    spec["tasks"][0]["sections"] = "First rule"
+    problems = ev.conformance(spec, "x", evals)
+    assert len(problems) == 1
+    assert "x/t1: sections is 'First rule'" in problems[0]
+    assert "list of this skill's `## ` headings" in problems[0], (
+        "a bare string is iterable, so a reader that skipped the type check "
+        "would resolve 'First rule' one character at a time and report eleven "
+        "missing headings for one typo")
+
+
+def test_a_heading_no_task_exercises_is_a_finding_and_never_a_problem(tmp_path):
+    """The contract decides this severity in its own words: "A section with no
+    task is what a per-section *Validation:* tag has to say out loud (ADR-38),
+    so it is a finding rather than an error"."""
+    evals, spec = _skill_with_sections(tmp_path)
+    spec["tasks"] = spec["tasks"][:1]               # t2 and Second rule gone
+    assert ev.conformance(spec, "x", evals) == [], (
+        "a gap in what a suite proves is not a reason the harness cannot run it")
+    findings = ev.uncovered_sections(spec, "x", evals)
+    assert findings == ["x: no task exercises the section 'Second rule'"]
+    assert ev.coverage_counts(spec, evals) == (1, 2)
+
+
+def test_the_apply_checklist_and_the_caveats_are_the_only_exemptions(tmp_path):
+    evals, spec = _skill_with_sections(tmp_path)
+    assert ev.uncovered_sections(spec, "x", evals) == []
+    assert ev.coverage_counts(spec, evals) == (2, 2), (
+        "the Apply checklist and the caveats are the contract's two exemptions, "
+        "so coverage is asked of the two rules and of nothing else")
+    assert ev.SECTION_EXEMPT_PREFIXES == ("Apply", "Caveats")
+
+
+def test_an_empty_sections_list_is_a_statement_rather_than_an_omission(tmp_path):
+    """A control carries an empty list by the contract's own instruction, and so
+    does a treatment task that tests a boundary. Neither is a defect."""
+    evals, spec = _skill_with_sections(tmp_path)
+    spec["tasks"].append({"id": "c1", "ask": "?", "control": True,
+                          "sections": [],
+                          "check": {"type": "contains_all",
+                                    "patterns": ["x"]}})
+    assert ev.conformance(spec, "x", evals) == []
+    assert ev.claimed_sections(spec) == {"First rule", "Second rule"}
+
+
+def test_a_suite_written_before_the_field_existed_is_uncovered_not_malformed(
+        tmp_path):
+    """Contract-1 suites carry no `sections` at all. They are not errors; they
+    are suites that claim nothing, and the coverage finding says so."""
+    evals, spec = _skill_with_sections(tmp_path)
+    for task in spec["tasks"]:
+        del task["sections"]
+    assert ev.conformance(spec, "x", evals) == []
+    assert len(ev.uncovered_sections(spec, "x", evals)) == 2
+    assert ev.coverage_counts(spec, evals) == (0, 2)

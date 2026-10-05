@@ -479,11 +479,11 @@ def results_path(slug: str) -> pathlib.Path:
 #
 # So the first is in `conformance`, where a problem blocks a run, and the second
 # is `uncovered_sections`, which no gate reads as a failure. The exemption list
-# below is the contract's two and not one more. Three of the six skills on main
-# carry a provenance section ("Where the full text narrows our claim rows") that
-# no task can exercise either, and exempting it here would be this harness
-# deciding what a skill has to prove. That is the skill seat's call and ADR-38's,
-# so it is reported as a finding and filed in the ledger rather than silenced.
+# below is the contract's two and not one more. A heading this harness decided
+# not to require coverage of would be the instrument deciding what a skill has
+# to prove, which is the skill seat's call and ADR-38's; and the suites do not
+# need the help, since the two skills whose provenance section looks unprovable
+# ("Where the full text narrows our claim rows") each have a task for it.
 SECTION_EXEMPT_PREFIXES = ("Apply", "Caveats")
 
 

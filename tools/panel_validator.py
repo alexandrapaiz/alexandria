@@ -353,6 +353,45 @@ def review_suite(slug: str, skills_dir: pathlib.Path,
     return [Finding("suite-runnable", "fail", problem) for problem in problems]
 
 
+def review_section_coverage(slug: str, skills_dir: pathlib.Path,
+                            receipts: Receipts) -> list[Finding]:
+    """Which of this skill's sections the suite proves anything about. Evidence.
+
+    The suite contract's second coverage check (`skills/_validation/evals/
+    README.md`, "Task coverage"), and the contract decides the severity in its
+    own words: a heading no task exercises "is a finding rather than an error".
+    So it is a `note`, which never moves a verdict, beside `trigger-firing` and
+    `eval-spend` and for the same reason as both. No decision in any register
+    fixes a coverage number a skill has to clear, and a reviewer that invented
+    one would be legislating.
+
+    It belongs here rather than in the harness's gate because this is where the
+    severity ladder is, and because a coverage number is exactly what ADR-38's
+    per-section `Validation:` tag has to be able to say. The other half of the
+    contract's rule, a `sections` entry that names no heading of the file, is a
+    false claim rather than a gap, so it is a `conformance` problem and arrives
+    through `suite-runnable` above as a `fail`.
+    """
+    if receipts.suite is None:
+        return []
+    try:
+        spec = skill_eval.normalize(receipts.suite)
+        base = evals_dir(skills_dir, slug)
+        covered, asked = skill_eval.coverage_counts(spec, base)
+        uncovered = skill_eval.uncovered_sections(spec, slug, base)
+    except Exception as exc:                        # pragma: no cover
+        return [Finding("section-coverage", "unknown",
+                        f"coverage could not be read: {exc}")]
+    if not asked:
+        return []
+    detail = (f"{covered} of {asked} sections are exercised by at least one "
+              f"task, excluding the Apply checklist and the caveats")
+    if uncovered:
+        detail += ": " + "; ".join(
+            u.split(": ", 1)[1] for u in uncovered)
+    return [Finding("section-coverage", "note", detail)]
+
+
 def review_pre_registration(result: dict, suite: dict | None,
                             suite_why: str) -> list[Finding]:
     """Rule 1: the policy was fixed before the run, so nobody tuned until green.
@@ -567,6 +606,7 @@ def review(skills_dir: pathlib.Path | None = None, conn=None,
         receipts = Receipts(skills_dir, row.slug)
         findings = review_trial(row, receipts)
         findings += review_suite(row.slug, skills_dir, receipts)
+        findings += review_section_coverage(row.slug, skills_dir, receipts)
         findings += review_status(row, receipts)
         findings += review_validated_claim(row, raw, receipts)
         findings += review_evidence(row, skills_dir, receipts)
