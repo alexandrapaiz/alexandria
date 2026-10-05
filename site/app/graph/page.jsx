@@ -20,8 +20,18 @@ export default async function Graph() {
   const entitled = await hasSpine();
   const graph = entitled ? await loadGraph() : null;
 
+  // The wide shell is for the workspace, so it arrives with the workspace.
+  // `.graph-page` caps at 1280 because a canvas and its panel need the room,
+  // but a visitor who is not entitled never receives either: they get a
+  // masthead and a 480px offer card, stranded at the left of an 800px void,
+  // with the page title sitting 300px left of where every other page puts
+  // it. Measured at 1440 this run: the h1 started at x=104 here against
+  // x=404 on pricing, mission, routines, the issue and the 404, so moving
+  // between them slid the masthead across the screen. The gate is an
+  // article, so it gets the article shell, and the workspace keeps its width
+  // for the reader who actually has a graph to explore.
   return (
-    <main className="page graph-page">
+    <main className={entitled ? "page graph-page" : "page"}>
       <p className="page-kicker">Graph</p>
       <h1 className="page-title">Claim graph</h1>
       <p className="page-intro">

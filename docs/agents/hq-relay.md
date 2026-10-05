@@ -1,6 +1,8 @@
 # Relay to HQ — what alexandria owes Alexandra Systems upward
 
-**Enforced at:** prompts/exo-agent.md §3e. The ExO seat writes entries.
+**Enforced at:** prompts/exo-agent.md §3f, which also carries every
+undelivered entry into that seat's pull request description. The ExO seat
+writes entries.
 The chair carries them, because no automated channel exists yet.
 
 Seats never message each other and no seat in this repository can write
@@ -228,6 +230,227 @@ repository and it needs the cross-repo read the centralizer already has.
 
 ---
 
+## Decision 041 is urgent here, and alexandria can put a number on it
+
+**Written 2026-09-30 by the ExO seat, in the window run. For the chair to
+carry as written.**
+
+HQ decision 041 gives the PM seat Tier B merges and failed-run triage. It
+reached alexandria as PR #147 on 2026-09-30 and is still open, which is
+the whole message: **the fix for the merge queue is sitting in the merge
+queue.** What follows is the evidence for its priority, measured here
+rather than argued.
+
+Pull requests opened against merged, by day, in alexandria:
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+Seven days at essentially full merge rate, then a day at one. The 27-item
+day on 2026-09-24 cleared, so this is not a volume ceiling.
+
+**The number HQ does not have, and it is the one that matters.** Ten of
+2026-09-30's twenty-eight pull requests were superseded the same day by a
+later run of the same seat, in chains up to five deep
+(`INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close`). Each
+link merges its predecessor and re-ships the accumulation, so the fifth
+carries five runs of work for one run of review. Merge latency does not
+just delay output here. It converts output into discarded work, and the
+conversion accelerates: a deeper chain is slower to review, which deepens
+the chain again.
+
+**What alexandria is asking for.** Nothing beyond decision 041, which is
+already the right fix. This entry exists so that the decision is
+prioritized as a throughput fix with a measured loop behind it rather
+than as a governance tidy-up, and so that the other products can run the
+same two commands before they need them:
+
+```bash
+gh pr list --state all --limit 200 --json number,state,createdAt \
+  --jq 'group_by(.createdAt[0:10])[] | {day: .[0].createdAt[0:10],
+        opened: length, merged: (map(select(.state=="MERGED")) | length)}'
+gh pr list --state all --limit 200 --json number,title \
+  --jq '.[] | select(.title | test("supersede"; "i")) | .title'
+```
+
+**One thing alexandria cannot answer from here.** Whether the supersession
+chains exist in the other products, or whether they are an artefact of
+this repository running eleven seats into one human's review. That is one
+command per repository and the centralizer already has the cross-repo
+read.
+
+### Updated 2026-10-04, five days later, with the numbers the first version could only project
+
+The 2026-09-30 table above read its last row as a snapshot of a day still
+running. It was not. It was the first day of a five-day stop, and the
+completed table is the argument this entry was trying to make.
+
+| Day opened | Opened | Merged | Still open |
+|---|---|---|---|
+| 2026-09-24 | 27 | 25 | 0 |
+| 2026-09-26 | 13 | 13 | 0 |
+| 2026-09-27 | 7 | 7 | 0 |
+| 2026-09-28 | 6 | 6 | 0 |
+| 2026-09-29 | 5 | 5 | 0 |
+| 2026-09-30 | 32 | 1 | 30 |
+| 2026-10-01 | 6 | 0 | 6 |
+| 2026-10-02 | 5 | 0 | 5 |
+| 2026-10-03 | 4 | 0 | 4 |
+| 2026-10-04 | 4 | 0 | 4 |
+
+**49 pull requests opened since the last merge, 1 merged. Fifty open.
+`main` unchanged for 112 hours and red for ten days with the fix sitting in
+an open pull request.** Twenty-four scheduled agent runs in the window, all
+`success`. Zero commits by any human on any ref, zero pull request
+comments, zero `workflow_dispatch` events.
+
+Four consequences HQ should have, because they are not what a throughput
+argument usually predicts and three of them are new since 2026-09-30.
+
+1. **Latency does not only delay output, it disables the proactive
+   mechanism.** alexandria's PM seat may not dispatch a seat that has an
+   open pull request from its own last run. After two days of no merges
+   every dispatchable seat has one. `PM_DISPATCH_ENABLED` is `true` and the
+   queue has been necessarily empty for five days. **A safety rule whose
+   unstated precondition was a daily-converting queue became a lock on the
+   whole dispatch system**, and the seat reported it, correctly and
+   unhelpfully, as "queue is empty". If HQ's other products carry the same
+   hard stop, they carry this.
+2. **Latency makes governance fixes inert, including the fixes for
+   latency.** Every seat is fed its charter from `main`. alexandria's ExO
+   run of 2026-09-30 edited all twelve charters to make a seat close its own
+   superseded pull request. The 2026-10-04 run read its own charter from
+   `main` at its first turn and none of it was there. **An org whose laws
+   ship through the gate cannot legislate its way around the gate.**
+3. **Latency and turn-cap collisions are the same failure.** A seat whose
+   last run is open must read, merge and re-ship that branch before it
+   starts today's work. alexandria's October cap re-derivation found seven
+   of thirteen caps below its measured rule, peaks up 157% to 179% in two
+   weeks, the writer at 91% of its cap. Nothing had connected merge latency
+   to cap exhaustion before. Any product running seats on turn caps should
+   re-derive after a queue stall rather than after a failure.
+4. **Latency reaches the public surface.** Four of eleven rows in
+   alexandria's `quality-claims.md` name mechanisms that are, in that
+   file's own words, on unmerged branches. The site tells readers a skill
+   is proven with and without it. The harness that proves it is in the
+   queue.
+
+**What alexandria is asking for, unchanged and now urgent.** Decision 041,
+prioritised as a throughput fix. Nothing else. The full account is
+`INC-2026-10-04-four-days-of-output-and-no-delivery` in
+`docs/agents/incidents.md`.
+
+**And one thing about this file itself, which HQ should read as evidence
+about the relay rather than as a complaint.** This is the fifth entry on
+this page and the fifth consecutive one marked undelivered, the oldest
+written 2026-09-24. The outbox has never been emptied. From 2026-10-04 the
+ExO charter requires every undelivered entry to be quoted at the top of
+that seat's pull request description, because the pull request is the one
+surface the owner provably reads. **The relay had the same defect as the
+merge queue and for the same reason: a channel that depends on a human
+remembering it is not a channel.**
+
+---
+
+## 2026-10-04 — Two company standards already name these gaps and neither closes them. Proposed amendments to L-X7 and L-X3.
+
+**Status: undelivered.**
+
+**Written 2026-10-04 by the ExO seat. For the chair to carry as written.
+This is a standards correction and it leaves through this file rather than
+through an edit, because the vendored copy of `docs/standards/lessons.md`
+is never edited here (L-A10).**
+
+alexandria read its `exo` section before working, as the standard requires,
+and found that two lessons had predicted this week's failures and stopped
+one step short of preventing them. Both amendments are portable and neither
+costs anything.
+
+### L-X7 names one cost of queue depth. There are four.
+
+L-X7's 2026-09-28 amendment says queue depth "is what turns independent
+work into conflicting work", with alexandria's own incident-numbering
+collisions as evidence. That is correct and it is the smallest of the four
+costs, measured over the 112 hours from 2026-09-30 to 2026-10-04, during
+which alexandria opened 49 pull requests and merged one.
+
+1. **Collisions**, which L-X7 has.
+2. **It disables the proactive mechanism.** A PM seat may not dispatch a
+   seat holding an open pull request from its own last run. After two days
+   of no merges every dispatchable seat holds one, so the dispatch queue is
+   necessarily empty and its emptiness carries no information. alexandria's
+   PM reported "queue is empty" for five days, correctly, while the real
+   state was a deadlock. **Any product carrying that hard stop carries this,
+   and the general rule is worth stating in the standard: a guard should
+   record what has to stay true for it to be a guard.** A guard with a
+   silent precondition inverts into a lock without announcing it.
+3. **It makes governance fixes inert, including the fixes for queue
+   depth.** Seats are fed their charters from `main`. alexandria's ExO run
+   of 2026-09-30 edited twelve charters to reduce exactly this problem; the
+   2026-10-04 run read its own charter from `main` and none of it was there.
+   An org whose laws ship through the gate cannot legislate around the
+   gate. This is the cost that compounds, because it means the queue
+   suppresses the org's ability to learn about the queue.
+4. **It inflates turn demand and therefore collides with turn caps.** See
+   the L-X3 amendment below. Nothing in either standard connects these two.
+
+**Proposed amendment.** L-X7's reporting instruction becomes four numbers
+rather than two: queue depth, the oldest item's age, **the conversion rate
+over the last seven days**, and **the age of the default branch's newest
+commit**. The last is the one that matters most and the one no product is
+measuring, because it is the only number that is about delivery rather than
+about the queue.
+
+### L-X3 already describes the hole that cost seven caps, and has no trigger for it
+
+L-X3's 2026-09-28 amendment says, in its own words: "a seat whose peak
+drifts upward between the monthly review and a duty-growth trigger is
+measured by neither", and cites alexandria's writer going from 53 to 80
+turns in a day. The standard identified the gap and then left the triggers
+unchanged.
+
+What that cost, measured on 2026-10-04. **Seven of alexandria's thirteen
+caps were below the standard's own 2× rule.** The writer's peak reached 136
+against a cap of 150, which is 91%. The skill seat 156 against 180, the
+engineer 168 against 200, market 131 against 160, research 145 against 180.
+Peaks rose 157% to 179% in two weeks. **No run had hit a cap**, so no
+trigger fired and no seat had any reason to look.
+
+Why none of the existing triggers could fire: a cap hit, a duty growth, a
+cron split and a calendar. The first three ask an auditor to name a cause,
+and this drift has none that any single run can see. Charters grow two or
+three lines at a time, and a seat whose last run is still open spends turns
+reading, merging and re-shipping that branch before it starts today's work.
+
+**Proposed amendment, which alexandria has adopted as rule 5 of its own
+`turn-caps.md` and recommends for the standard.** Add a fifth trigger and
+make it a ratio rather than an event:
+
+> Any run that finishes above 70% of its seat's cap re-derives that seat's
+> row in the same week, whether or not anything is known to have changed.
+
+Split it across two cadences, because the detection and the derivation are
+different jobs. The daily seat reads the ratio off the run list it already
+fetches and names any seat above the line. The weekly seat re-derives the
+row. alexandria put the first in `prompts/pm-agent.md` §4 and kept the
+second in the ExO charter.
+
+**And one connection to carry, because it is new and it is not in either
+standard.** Merge latency and turn-cap exhaustion are the same failure.
+alexandria's largest single jump, the engineer from 82 to 168 turns, is a
+seat whose newest pull request supersedes eleven others: each link merges
+its predecessor and re-ships the accumulation. **Any product that stalls
+its queue should re-derive its caps afterwards rather than waiting for a
+run to die.**
+
+---
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
@@ -235,3 +458,12 @@ repository and it needs the cross-repo read the centralizer already has.
 | Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
 | An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
 | L-X6's missing half: the capability test | 2026-09-27 | not yet | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 4 days | |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet | |
+
+**Nothing on this page has ever been delivered.** Four entries, ages 10,
+7, 7 and 4 days as of 2026-10-04. That is the finding the table was built
+to produce and no run had read it as one. The ExO charter §3f now carries
+every undelivered entry into that seat's pull request description, so the
+age is in front of the owner weekly instead of in a file she has no reason
+to open.

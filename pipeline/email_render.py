@@ -33,7 +33,7 @@ IN_REPO = Path(__file__).resolve().parents[1] / "site" / "emails" / "digest.html
 
 # The closing line, from the 2026-09-19 design review. It is the one piece of
 # reader-facing copy this module owns, so it is a constant a writer can find.
-CLOSE = "You read to decide. Your agents load to act."
+CLOSE = "Accelerate every builder and agent to frontier speed."
 
 BULLET = re.compile(r"^(\s*)(?:[-*]\s+|(\d+)[.)]\s+)(.*)$")
 BOLD_ONLY = re.compile(r"^\*\*(.+?)\*\*[.:]?$")
@@ -81,14 +81,68 @@ def normalise(text: str) -> str:
     return text
 
 
+# The schemes a link in an issue is allowed to carry. An issue's body is
+# written by a model out of arXiv text, and the URL on a source line is copied
+# out of that text, so this list is the whole distance between a crafted paper
+# and a live link in a subscriber's inbox. The 2026-09-22 ledger entry asked
+# for exactly this list; the 2026-09-24 template rewrite escaped every text
+# slot and left the one URL slot alone.
+SAFE_SCHEMES = ("http://", "https://", "mailto:")
+
+# Mail clients and browsers drop these characters before they resolve a URL,
+# so "java<tab>script:alert(1)" navigates as javascript. The check has to see
+# what the client will see, not what the source says. Same character class as
+# `safeHref` in site/lib/markdown-core.js, deliberately.
+IGNORED = re.compile("[\u0000-\u0020\u007f-\u00a0\u2028\u2029\ufeff]")
+
+
+def url_allowed(url: str) -> str | None:
+    """The URL a client would resolve, or None when it is not allowed here.
+
+    The site's `safeHref` (site/lib/markdown-core.js) is the reference for the
+    scheme list and this is its email half, with one difference on purpose: the
+    site lets a URL carrying no scheme through, because a relative href is how
+    an archive page links to its own neighbours, and an email has no document
+    to resolve one against. So an email href has to be absolute and carry an
+    allowed scheme, which makes this the stricter of the two rules.
+
+    That strictness is also why there is no entity-decoding pass here and there
+    is one there. The site has to decode `&#106;avascript:` because its last
+    branch is permissive; an allowlist on the prefix refuses anything it cannot
+    read, so an encoded scheme is already refused by being unreadable.
+
+    Returns the cleaned URL unescaped, because `inline` pulls its links out of
+    text `html.escape` has already been over, and escaping twice would turn a
+    query string's `&amp;` into `&amp;amp;`.
+    """
+    href = (url or "").strip()
+    probe = IGNORED.sub("", href).lower()
+    # The probe decides and the original is what gets printed, the same way
+    # `safeHref` does it. Collapsing the URL to decide is right; shipping the
+    # collapsed form would quietly edit a link whose path contains a space.
+    return href if probe.startswith(SAFE_SCHEMES) else None
+
+
+def safe_href(url: str) -> str | None:
+    """`url_allowed` for a raw URL on its way into an href attribute."""
+    cleaned = url_allowed(url)
+    return None if cleaned is None else html.escape(cleaned)
+
+
 def inline(text: str) -> str:
     """The inline subset an issue actually uses: links, bold, italic."""
     out = html.escape(normalise(text).strip())
-    out = re.sub(
-        r"\[([^\]]+)\]\(([^)]+)\)",
-        r'<a href="\2" style="color:#0a0a0a; text-decoration:underline;">\1</a>',
-        out,
-    )
+
+    def anchor(match: re.Match) -> str:
+        label, url = match.group(1), url_allowed(match.group(2))
+        if url is None:
+            # A refused link still has a sentence to carry, so the label stays
+            # and only the href goes. Dropping the words would edit the issue.
+            return label
+        return (f'<a href="{url}" style="color:#0a0a0a; '
+                f'text-decoration:underline;">{label}</a>')
+
+    out = re.sub(r"\[([^\]]+)\]\(([^)]+)\)", anchor, out)
     out = re.sub(r"\*\*(.+?)\*\*", r'<span style="font-weight:600;">\1</span>', out)
     out = re.sub(r"(?<![\*\w])\*([^*]+?)\*(?!\*)", r"<em>\1</em>", out)
     return out
@@ -258,9 +312,22 @@ def render(issue: dict, meta: dict) -> str:
                 chunk = optional(chunk, "ITEM_POINTS", None)
             chunk = optional(chunk, "ITEM_EVIDENCE",
                              {"item_evidence": html.escape(item["evidence"])} if item.get("evidence") else None)
+            source_url = safe_href(item["url"]) if item.get("url") else None
+            if item.get("url") and source_url is None:
+                # Printed rather than swallowed: a refused URL in a real issue
+                # is a finding, and the rehearsal (docs/agents/press-rehearsal.md)
+                # is where a human reads this module's output.
+                print(f"refused a source URL, scheme not in {SAFE_SCHEMES}: "
+                      f"{item['url']!r}")
+            # A refused URL also loses its host line. The citation's words stay,
+            # because deleting those would edit the issue, but printing the
+            # string we just refused as decoration under it would be a reader
+            # being shown a link we would not let them follow.
+            source_meta = item.get("meta", "") if source_url or not item.get("url") else ""
             chunk = optional(chunk, "ITEM_SOURCE",
-                             {"item_source": html.escape(item["source"]), "item_url": item["url"],
-                              "item_meta": html.escape(item.get("meta", ""))} if item.get("source") else None)
+                             {"item_source": html.escape(item["source"]),
+                              "item_url": source_url or "",
+                              "item_meta": html.escape(source_meta)} if item.get("source") else None)
             items_html.append(chunk)
         sections_html.append(fill(sec_head, {"section_title": html.escape(section["title"])})
                              + "".join(items_html) + sec_tail)
@@ -276,9 +343,12 @@ def render(issue: dict, meta: dict) -> str:
         "edition": html.escape(meta["edition"]),
         "edition_short": html.escape(meta["edition_short"]),
         "close": html.escape(meta["close"]),
-        "web_url": meta["web_url"],
-        "archive_url": meta["archive_url"],
-        "unsubscribe_url": meta["unsubscribe_url"],
+        # SITE_URL and the gmail address are configuration rather than model
+        # output, so these three are not the hole. They go through the same
+        # rule anyway: one list of schemes, every href in the email.
+        "web_url": safe_href(meta["web_url"]) or "",
+        "archive_url": safe_href(meta["archive_url"]) or "",
+        "unsubscribe_url": safe_href(meta["unsubscribe_url"]) or "",
         "recipient_email": html.escape(meta["recipient_email"]),
     })
 
