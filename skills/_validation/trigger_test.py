@@ -85,6 +85,18 @@ USE_WHEN_BOOST = 1.25   # activation-condition terms outweigh framing prose
 ENGINE_VERSION = "lexical/2.1"
 ALPHA = 0.05            # 95% intervals
 
+# Description length is part of the decision policy, not a style preference.
+# LexicalEngine.score divides by the idf mass of the prompt's terms and never
+# by the candidate's own, so a longer description strictly dominates a terser
+# one on any prompt both cover. Incident 31 records two skills taking a
+# neighbour's trigger case that way, and the rule that would have caught it
+# (prompts/skill-extract.md: treat anything past 150 words as a defect) failed
+# twice because it lived in a prompt a run reads before it writes the field.
+# The runner is the one thing every skill run executes before shipping, so the
+# rule lives here as well.
+DESCRIPTION_WORD_MAX = 150   # past this, a description is a defect
+PANEL_LENGTH_TOLERANCE = 1.35  # library:decoy mean-length ratio a fair null allows
+
 STOPWORDS = {
     "a", "about", "actually", "after", "all", "already", "also", "an", "and",
     "any", "are", "as", "at", "be", "because", "been", "before", "being",
@@ -154,6 +166,13 @@ def activation_clause(description: str) -> str:
     finding describes, so the runner warns about it."""
     idx = description.lower().find("use when")
     return description[idx:] if idx != -1 else ""
+
+
+def word_count(text: str) -> int:
+    """Whitespace words, counted the way the 150-word budget in
+    prompts/skill-extract.md was measured, so the number here is the number
+    that rule talks about."""
+    return len(text.split())
 
 
 def load_skills(skills_dir: str) -> dict:
@@ -358,6 +377,27 @@ def run(skills_dir: str, decoys_path: str,
     warnings = [f"{sk['path']}: description states no 'Use when' activation "
                 f"conditions" for sk in skills.values() if not sk["activation"]]
 
+    # Incident 31's fix: measure the length at the moment anything ships.
+    warnings += [f"{sk['path']}: description is {word_count(sk['description'])} "
+                 f"words, past the {DESCRIPTION_WORD_MAX}-word budget; a longer "
+                 f"description outranks a terser one on any prompt both cover"
+                 for sk in skills.values()
+                 if word_count(sk["description"]) > DESCRIPTION_WORD_MAX]
+
+    # The same defect at panel scale. A null model systematically shorter than
+    # the library it nulls decides negative cases by length, not by topic.
+    lib_lens = [word_count(sk["description"]) for sk in skills.values()]
+    dec_lens = [word_count(d["description"]) for d in decoys.values()]
+    lib_mean = sum(lib_lens) / len(lib_lens)
+    dec_mean = sum(dec_lens) / len(dec_lens)
+    ratio = lib_mean / dec_mean if dec_mean else float("inf")
+    if ratio > PANEL_LENGTH_TOLERANCE or ratio < 1 / PANEL_LENGTH_TOLERANCE:
+        warnings.append(
+            f"{os.path.relpath(decoys_path)}: decoy panel averages "
+            f"{dec_mean:.0f} words against the library's {lib_mean:.0f}, a "
+            f"{ratio:.2f}x gap past the {PANEL_LENGTH_TOLERANCE}x tolerance; "
+            f"negative cases are partly decided by length rather than topic")
+
     case_files = sorted(glob.glob(os.path.join(skills_dir, "*", "triggers.json")))
     if not case_files:
         raise SystemExit(f"no triggers.json files found under {skills_dir}")
@@ -427,6 +467,16 @@ def run(skills_dir: str, decoys_path: str,
         },
         "library": {k: {"path": v["path"], "sha256": v["sha256"]}
                     for k, v in skills.items()},
+        "length_audit": {
+            "budget_words": DESCRIPTION_WORD_MAX,
+            "panel_tolerance": PANEL_LENGTH_TOLERANCE,
+            "library_mean_words": round(lib_mean, 1),
+            "decoy_mean_words": round(dec_mean, 1),
+            "ratio": round(ratio, 3),
+            "over_budget": sorted(sk["name"] for sk in skills.values()
+                                  if word_count(sk["description"])
+                                  > DESCRIPTION_WORD_MAX),
+        },
         "warnings": warnings,
         "suites": suites,
         "passed": total_pass,

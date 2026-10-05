@@ -144,3 +144,23 @@ a page looks clean but says nothing true, it is not done.
     landed at one y and smeared into each other. At demo data it was a
     graph. At the real shape the top and bottom of the canvas read as
     dotted rules.)
+
+29. A page shell sized for a state most visitors never reach. The width is
+    chosen while building the rich state, it is correct for that state, and
+    the default state is then never looked at at full width. It survives
+    review because nothing in the CSS is wrong and because the builder's own
+    screenshots are all of the state they were building. What the visitor
+    gets is a masthead and a small card stranded at the left of a void, with
+    the page title sitting hundreds of pixels from where every other page
+    puts it, so moving between pages slides the masthead across the screen.
+    This is entry 28's sibling: there a layout was judged at a demo's data
+    instead of the real distribution, here a layout is judged in the state
+    the builder occupies instead of the state the reader arrives in. The test
+    is to measure one constant across pages rather than to look at each page
+    on its own, because each page is individually fine. Measure the h1's left
+    edge on every route at the widest viewport and read the numbers side by
+    side.
+    (Spotted 2026-09-30: `/graph` capped at 1280 for a canvas and panel that
+    only an entitled visitor receives. Every other visitor got a 480px offer
+    card in an 800px void, with the h1 at x=104 against x=404 on pricing,
+    mission, routines, the issue and the 404.)
