@@ -9498,3 +9498,74 @@ they disagree. The org has now inferred this state by hand four times.
 `docs/research/briefs/2026-09-30.md` does the inference again, in a
 table, for three prompts at once, which is the strongest evidence yet
 that it should be a command. Filed as a ledger entry the same day.
+
+## INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join — the reading queue was held open on a blocker that the corpus contradicts, twice, by the seat that owns the queue (2026-10-05, research seat)
+
+**What happened.** The 2026-09-30 reading-queue drain note recorded that "all
+27 arXiv ids in this file are still absent from `papers`", and the PR #145
+addendum the same night recorded that the finding "was re-measured rather than
+assumed" and reached the same answer. Both then declined to strike any queue
+line, correctly under the standing rule that striking an unread line is worse
+than leaving it, but on a premise that is false.
+
+Measured tonight, against the 56 arXiv ids the queue held before this run:
+**21 rows, 19 distinct papers, are in `papers`.** Among them `arxiv:2609.05903`
+(EvoSafeHarness) and `arxiv:2602.12430` (Agent Skills for Large Language
+Models), which have already yielded claims the corpus serves today — claims
+306-308 and 867-868.
+
+**Why it is two failures, not one.** The first is mechanical. `papers` holds
+arXiv ids in two shapes, `arxiv:2610.02206` and `arxiv:2610.02206v1`, because
+source `hf-daily` writes one and source `arxiv` writes the other, so an
+equality join on the unversioned id misses every paper that arrived through the
+`arxiv` feed. This run made that exact error on its first query and reported
+five of the containment skill's six papers as absent before catching it.
+
+The second is not mechanical and matters more. **Ten of the nineteen are held
+under the plain unversioned id**, so an equality join would have found them:
+`arxiv:2609.29647`, `2609.07103`, `2609.06966`, `2609.05903`, `2608.04828`,
+`2605.23904`, `2603.25158`, `2603.22455`, `2602.12670`, `2602.12430`. Those
+were not missed by id shape. They were reported absent by a query that did not
+return what the note says it returned, and nothing between the query and the
+note checked it.
+
+**The repeat.** This is the shape of incident 20 and of lesson L-A9 in
+`docs/standards/lessons.md`: a measurement is recorded in the right register,
+by the right seat, and nothing afterwards opens the file to check it against
+the thing it describes. It is also the second time this specific assertion was
+written, which is what makes it a repeat rather than a first finding: the
+2026-09-30 addendum re-measured and confirmed it, so the error survived its own
+verification step.
+
+**Cost.** The queue carried 56 ids and a stated blocker that nothing in it was
+reachable. Nineteen were. Two of those have claims in production. Every run of
+this seat since 2026-09-30 has read that blocker and planned around it, and the
+skill seat reads the same file.
+
+**Fix, and what is not fixed.** No prompt change reaches this, because the
+defect is in what a seat does with a query result rather than in any prompt.
+Two things are in this pull request: the corrected measurement, in
+`docs/research/notes/2026-10-05-containment-census.md` section 1, and the
+version-insensitive join written out so the next run copies it rather than
+rewriting it:
+
+```sql
+-- correct: matches both id shapes
+from f left join papers p on p.id like 'arxiv:' || f.aid || '%'
+-- wrong, and silently so: misses everything from the `arxiv` feed
+from f left join papers p on p.id = 'arxiv:' || f.aid
+```
+
+What is not fixed is the cause of the id shapes. `papers` holds 322 arXiv
+papers twice, 656 rows, and 73 of those pairs were triaged twice and got
+different decisions. That is `pipeline/ingest.py`, outside the ADR-12
+whitelist, and it is routed to the engineer in the brief's section 9 rather
+than proposed here.
+
+**Blameless note.** The 2026-09-30 runs were right to refuse to strike lines
+they had not read, and that refusal is still the correct rule. The failure is
+narrower: a negative result was reported as measured, re-reported as
+re-measured, and used as a planning input, and a negative result is the one
+kind that looks identical whether the query was right or wrong. A query that
+returns nothing should be run once in the inverse direction before anything is
+built on it.
