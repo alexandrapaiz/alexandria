@@ -311,8 +311,6 @@ since the 2026-09-21 check, on a seat that runs daily and gained three
 duties that week. 150 has still never been hit, which is the reason
 nobody has noticed, and 200 remains the rule's answer.
 
-<<<<<<< HEAD
-
 ---
 
 ## The PM's two runs, measured apart (2026-09-27)
@@ -367,7 +365,9 @@ moment rather than from the moment somebody notices. The trigger for a
 re-measurement is therefore not only a cap hit and a duty change, which
 is what the rule above says. **It is also a cron change**, and that is
 now the third entry on the list in this page's opening rule.
-=======
+
+---
+
 ## Duty-growth re-check, 2026-09-27: the skill seat under ADR-35
 
 Rule 3 again, and this time the duty growth was an ADR rather than a
@@ -424,4 +424,3 @@ raise that outruns its job timeout buys nothing.
 This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
->>>>>>> origin/main
