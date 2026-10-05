@@ -10903,3 +10903,16 @@ rather than a wall of lines. The single most actionable cluster is the
 masthead/recipe problem, re-filed four times (2026-09-19, 09-20, 09-26,
 09-30) with escalating urgency and no action, which needs one ruling
 rather than a fifth filing.
+
+### 2026-10-05 — Grooming re-check, scheduled ceremony pass: unchanged
+
+Not a new proposal. The scheduled Monday cron run (sixth PM pull
+request today) re-read this ledger end to end rather than skipping the
+step because an earlier pass today already groomed it. Nothing has
+changed since the grooming pass above: no new `proposed` entries, no
+owner verdicts landed on the 92 entries awaiting one, and the leverage
+order on the 9 accepted-not-built entries still holds (institution
+backfill first, the Left-Behind Index second, both named above). Kept
+as a dated confirmation rather than a restatement, per the same logic
+the sprint file and pending tracker use this run: say "unchanged" once,
+plainly, instead of copying the analysis forward.

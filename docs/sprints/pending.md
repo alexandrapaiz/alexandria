@@ -1,3 +1,27 @@
+## Updated 2026-10-05, ~19:30 UTC (scheduled ceremony run): the send landed, the chain is now six deep, nothing else moved
+
+**This is the Monday cron**, not another message session: the sixth PM
+pull request in today's chain (#225, superseding #224). Full standup
+detail is in `docs/sprints/dispatch-queue.md`'s matching section; this
+note carries only what changed.
+
+**One real update: today's 09:00 UTC send reached the site.**
+`/library` now lists `2026-W40` as newest, up from `2026-W39` at the
+last pass, and `/library/2026-W40` returns 200. Sprint item 4's
+post-window check is satisfied.
+
+**`PM_DISPATCH_ENABLED` is confirmed `true`** this run, read directly
+from the job's own environment rather than the API (which returned 403
+the last two passes). It changes nothing: the org is in synchronous
+mode regardless, since a PM session posted to the board 51 minutes
+before this run started, inside charter §5's two-hour guard. Queued,
+not fired — see the dispatch-queue file.
+
+**Everything else is unchanged**: the merge-authority grant question,
+the ADR-38/39 duplicates, `main`'s red checks (now ~15h47m), and zero
+PRs qualifying for a Tier B merge. The four items below are the same
+four, re-verified fresh rather than carried on trust.
+
 ## Updated 2026-10-05, ~18:30 UTC (message run, the six-hour pass): a quiet fleet, the same two things still waiting on you, and one new repeat finding
 
 **Inbox, checked first per the board protocol.** `board.messages` for

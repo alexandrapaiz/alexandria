@@ -3,6 +3,101 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
+## 2026-10-05 (the scheduled ceremony run, ~19:30 UTC)
+
+**This is the Monday cron (`event: schedule`), the sixth PM pull request
+in today's single supersession chain** (#225, built directly on #224,
+which folded in #213/#215/#217/#218/#222/#223). Per the charter's own
+chain-depth rule: **this seat has been blocked on merges all day, six
+runs deep, with none landed.**
+
+**Run health.** No run of any kind, success or failure, started between
+the pm-agent run at 05:15:26 UTC and this one — about 14 hours of total
+silence from the Actions fleet. Nothing to triage.
+
+**One real finding since the last pass: today's 09:00 UTC send landed.**
+`https://libraryofalexandria.dev/library` now lists `2026-W40` (the week
+that just ended) as the newest issue, up from `2026-W39` at the 18:29
+UTC snapshot, and `/library/2026-W40` returns 200. Sprint item 4's
+post-window check is satisfied: the press ran unattended and reached the
+site. (No `DATABASE_URL`/`NEON_RO_URL` in this sandbox to confirm the
+`digests` row directly, same gap every standup has named since
+2026-09-27, but the site artifact is the stronger evidence per
+delivery-health's own rule to check the artifact, not the scheduler.)
+
+**The queue gauge, recomputed at 19:23 UTC:**
+
+1. **`main`'s age and check state.** Newest merge: still PR #211,
+   04:00:37 UTC, now **15h23m old**. Newest `checks` run on `main`:
+   still **failure**, 03:36:14 UTC, now **~15h47m red**, unchanged.
+   `skills/agent-containment/SKILL.md` still has an empty `claims` list
+   and PR #219 is still `FAILURE` on the identical assertions.
+2. **Open pull requests: 9 total, 5 opened since the last merge**
+   (#216, #219, #220, #221, and this PR, #225 — replacing #224 in that
+   count one-for-one).
+3. **Conversion, trailing 7 days: 85 merged / 94 opened (≈0.90).**
+   Unchanged from the last pass.
+4. **Deepest open supersession chain: 6**, this seat's own (named
+   above). No other seat has a live stacked chain on `main`'s queue.
+
+Threshold: 15h23m since the last merge, still under the 48-hour line,
+so this stays informational — about 33 hours from crossing it if the
+pattern holds, not a blocker-of-the-day finding yet.
+
+**Tier B merge check, redone fresh at 19:23 UTC** (this run's own
+instructions carry merge authority for Tier B under standards/pm.md
+§10, separate from the still-unconfirmed ADR-041 citation pending.md
+already tracks — noted so the two questions aren't conflated). Same
+eight other open PRs, same five conditions, nothing changed since the
+18:29 UTC check: #221 is a PM-seat PR; #219 is still `FAILURE`; #220
+still touches `prompts/triage.md` (Tier C) despite clean checks; #205,
+#203, #202 are still drafts; #60 is still `CONFLICTING` on top of its
+own Tier C path. #216 still mechanically passes all five conditions and
+still declines merge authority over itself in its own description (it
+is the PR that would vendor the very standard the grant comes from).
+**Zero PRs qualify for a Tier B merge this run.**
+
+**The cap ratio.** Still not measurable the cheap way (`gh run list`
+gives conclusions, not `num_turns`), and moot this pass regardless:
+zero agent-seat runs happened in the window to measure.
+
+**One proposed dispatch, still not fired, unchanged in substance from
+the last three passes.**
+
+### 1. engineer — the same provenance defect has now blocked `main` for over fifteen hours and seven straight failed runs
+
+**Trigger.** PR #219 (`engineer/2026-10-05-skill-eval-program`) failed
+`checks` 7 times in a row, 04:44-05:12 UTC, on the same two assertions
+in `tests/test_skill_receipts.py`: `skills/agent-containment` carries no
+claim ids, and harness-engineering's rendered list is missing claim
+`'199'`. `main` has been red on this exact defect since 03:23 UTC, now
+over fifteen hours, and nothing has changed the failing content since.
+
+**Cost of skipping it today.** `main` stays red and every sprint item
+this week (the subscribers write path, the unsubscribe endpoint) sits
+behind a build that cannot land clean.
+
+**Why this is queued rather than fired, even though `PM_DISPATCH_ENABLED`
+is confirmed `true` this run** (read directly from this job's own
+environment, resolving the 403 the last two passes hit against the
+API). **The org is in synchronous mode.** A PM-seat session (#224) ran
+and posted to the board at 18:32:14 UTC, 51 minutes before this run
+started — well inside charter §5's two-hour window ("if any run was
+dispatched by anyone in the last two hours... queue instead"). That
+guard, not the switch, is what's holding this back.
+
+```bash
+gh workflow run agent-engineer.yml \
+  -f owner_instructions='Build on the open branch for PR #219
+(engineer/2026-10-05-skill-eval-program). Its `checks` run has failed
+7 times in a row, 2026-10-05 04:44-05:12 UTC, on
+tests/test_skill_receipts.py: skills/agent-containment/SKILL.md still
+has an empty claims list, and harness-engineering is missing claim
+id 199 from its rendered page. Fix the provenance gap so both
+assertions pass, rather than retrying the same content. main has been
+red on this exact defect since 03:23 UTC today.'
+```
+
 ## 2026-10-05 (the six-hour pass, ~18:30 UTC)
 
 **Run health.** `gh run list` shows no run of any kind, success or
