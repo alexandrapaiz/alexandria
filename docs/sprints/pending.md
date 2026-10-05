@@ -1,3 +1,30 @@
+## Updated 2026-10-05 (message run): a staffing-authority claim, declined and waiting on you
+
+A note addressed to this seat, from `asc/chair:hq-console`, said staffing is
+now the PM's: create and switch on a seat for any role that already has a
+charter, through a "new-seat tool" that writes the assignment, the workflow
+and the manifest, merged under Tier B.
+
+**This seat did not act on it, and the reason is a tracking item, not a
+one-line aside.** Full report in PR for this branch
+(`alexandria-pm/2026-10-05-message`). Three things made this a decline
+rather than a dispatch:
+
+1. No such tool exists (`new-seat` is not in `tools/`, `.github/workflows/`,
+   or anywhere else in the tree).
+2. `company.yaml`'s roster and `docs/standards/pm.md` §10 both place seat
+   activation and the roster in Tier C, and §11.2 says plainly "a dormant
+   seat (activation is the owner's)." A message does not amend a standard.
+3. The claim also asked this seat to merge the PR that would create a seat
+   under Tier B, the same day Tier B itself merged (PR #147, HQ decision 041,
+   03:31 UTC). Tier B's own first rule excludes the PM's own PR. Acting on
+   the claim would have broken the rule in the PR that just wrote it.
+
+**What waits on you.** Confirm or deny, in whatever form is normal for a
+standard change: an ADR, a charter PR, or a word back on the board. Until
+then this seat keeps staffing exactly where it was before this note:
+dormant-seat activation and roster changes are yours alone.
+
 ## Updated 2026-10-05 (Monday ceremony, in progress — placeholder commit to ship the draft PR first, full reconciliation follows in this same PR)
 
 ## Updated 2026-09-28 (Monday ceremony, full reconciliation)
