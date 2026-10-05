@@ -9915,3 +9915,249 @@ provenance reviewer exists to catch.
   closing note says wiring `checks.yml` needs a `workflows` permission the
   filing seat did not have, and this seat does not have it either.
 - Status: proposed
+
+### 2026-09-30 — Model judgment runs at 5 percent of arrival, and every coverage directive lands on it (research seat, for the engineer)
+
+- Measured tonight against the live corpus, and it is the finding the
+  self-improvement census in `docs/research/briefs/2026-09-30.md` reduces to.
+  `papers` holds 10,026 rows. `triage_log` holds 4,109, of which **only 400
+  were written by a model**: the other 3,709 carry `method like
+  'rule:backfill%'`, decision `index`, and a null score, so nothing ever read
+  them. `triage_queue` holds 5,917 with its oldest waiting paper from
+  2026-08-01.
+- **The rates, which are the argument.** Papers arriving, last 7 days: 319,
+  545, 420, 43, 28, 350, 649, a mean near 336 a day. Papers a model judged,
+  last 10 days: 20, 10, 20, 10, 20, 10, 10, 20, 20, and 40 today. Arrival
+  exceeds judgment by roughly twenty times, so the backlog grows by about 320
+  a day and no drain forecast written from one run's output is meaningful.
+- **Why it is probably not the budget.** `CAP_USD` is 0.60 against a measured
+  expected cost of $0.00062 a paper, and `MAX_CALLS_PER_RUN` is 90 at
+  `BATCH = 10`, so the deployed cron should be able to judge up to 900 papers
+  in a run. Observed volumes are 1 to 4 calls. `pipeline/triage.py`'s
+  `@app.local_entrypoint()` carries `def main(max_calls: int = 2)`, which is
+  exactly 20 papers, and 20 is the modal daily figure. Stated as consistent
+  with rather than proven: whether the daily drain is the deployed cron at 90
+  or a `modal run` at the entrypoint default of 2 is answerable from Modal's
+  own run log and not from the database, and this seat has read-only SQL.
+  If it is the entrypoint, the fix is a default and the backlog clears in
+  about a week.
+- Why this outranks any rubric or sources change, including the two filed
+  below: a routing rule reaches only papers the model reads, which is 4.0
+  percent of the corpus, and a new source adds to a queue already twenty times
+  oversubscribed. The owner's reasoning priority is the worked example.
+  `pipeline/triage.py` prints its untriaged-reasoning count every run and its
+  own comment records 147 on 2026-09-26; tonight it is **177**. The priority
+  list reorders the queue correctly and cannot add capacity, so a standing
+  priority can lose ground while working exactly as designed.
+- Whose call: engineer, and worth the owner's eye because it bounds what any
+  coverage directive can achieve until it moves.
+- Cost: one line if it is the entrypoint default. A cap and a cron review
+  otherwise.
+- Status: proposed
+
+### 2026-09-30 — Self-improvement terms for PRIORITY_TERMS, the one lever that changes coverage (research seat, for the engineer)
+
+- `pipeline/triage.py`'s `PRIORITY_TERMS` is outside the ADR-12 whitelist, which
+  is `prompts/*.md` and `sources.yaml`, so this seat cannot propose the diff and
+  files the text instead. It is the same mechanism the reasoning directive used
+  and the owner asked for the same shape.
+- The census: 92 distinct self-improvement papers in the corpus, **70 of them
+  (76 percent) never judged by a model**, against a 59 percent corpus base rate.
+  Of the 22 a model did read, 19 went to `distill` or `deep_read`, an 86.4
+  percent yield against a 53.3 percent baseline. High yield, low exposure.
+  41 are waiting in `triage_queue` on a title match today.
+- Exact addition, in the tuple's existing style, terms chosen to match titles
+  rather than abstracts because `is_priority()` reads the title:
+
+```python
+    "self-improving",
+    "self-improvement",
+    "self-evolving",
+    "self-evolution",
+    "recursive self-improvement",
+    "self-play",
+    "self-refinement",
+    "self-rewarding",
+    "harness evolution",
+```
+
+- **Read the throughput entry above before applying this.** With judgment at
+  about 20 papers a day and the reasoning backlog already growing, adding a
+  second priority family puts two priorities in competition for the same slots.
+  The honest sequence is throughput first, then this. Applying this alone will
+  move self-improvement papers ahead of reasoning papers and the reasoning
+  number will get worse.
+- Deliberately omitted: `self-taught`, `bootstrap`, and bare `recursive`.
+  The first two are common in unrelated semi-supervised learning work and
+  `recursive` collides with recursion in program analysis. The census pattern
+  that produced the 110-row match is in the brief for anyone who wants to widen
+  it against measured noise.
+- Whose call: engineer.
+- Cost: nine lines in a tuple, plus a redeploy of `pipeline/triage.py`.
+- Status: proposed
+
+### 2026-09-30 — A `self-improvement` topic for prompts/distill.md, written out (research seat, for the engineer)
+
+- Filed here rather than applied because `prompts/distill.md` is measurably not
+  running. `pipeline/topics.py` landed 2026-09-26 to fold typographic hyphens
+  onto ASCII and drop off-list tags, and claims written on **2026-09-28** still
+  carry `post-training` spelled with U+2011, with off-list ASCII tags
+  continuing through 2026-09-29. The charter forbids spending a proposal into a
+  file that cannot reach production, so the text and the deploy belong in one
+  hand.
+- The tag is for retrievability and the case should not be overstated: these
+  claims already land on `harness-engineering` (43) and `loop-engineering`
+  (30), and their `other` rate is 22.8 percent against a 20.2 percent corpus
+  baseline, which is noise. What is missing is that no filter returns the
+  cluster, and both the skill seat and the writer seat need it to.
+- Exact text, to follow the `reasoning` block in the topics list, and `TOPICS`
+  in `pipeline/topics.py` must gain `"self-improvement"` in the same commit or
+  every claim carrying it is dropped by the fold:
+
+```
+  `self-improvement` covers a system that changes ITSELF, and the loop is the
+  subject. It holds harness evolution and harness search, scaffolds distilled
+  into weights, self-play and self-refinement and self-rewarding loops where
+  the model's own output becomes its next supervision, skill and tool libraries
+  that grow or prune themselves from execution traces, and autonomous research
+  agents whose loop is the contribution. Tag it beside `loop-engineering` when
+  the claim is about the loop's control flow, beside `harness-engineering` when
+  it is about the scaffold being changed, and beside `post-training` when the
+  loop's output is training data.
+
+  A paper that merely retries on failure, or refines once, is not
+  self-improvement; the loop has to close and the paper has to measure what
+  closing it bought. For a self-improvement claim, `procedure` is where the loop
+  goes: what proposes a change, what verifies it, what is kept, and the stopping
+  rule, with the thresholds the source states. A `self-improvement` claim with a
+  null `procedure` is usually `harness-engineering` that took the wrong tag.
+```
+
+- Whose call: engineer, in the same commit as the distill redeploy.
+- Cost: one paragraph in the prompt, one string in `TOPICS`, one redeploy.
+  `tests/test_reasoning_rubric.py` already asserts the prompt list and `TOPICS`
+  agree, so it will fail until both sides land.
+- Status: proposed
+
+### 2026-09-30 — cs.SE for sources.yaml, and two papers to ingest directly instead of a category (research seat, for the engineer)
+
+- Filed rather than applied for two reasons. `sources.yaml` is image-baked into
+  `pipeline/ingest.py`, and `ai2` and `lilianweng`, merged 2026-09-26, have
+  produced **zero rows** across the four ingest runs to 2026-09-29 while
+  `raschka-blog` and `raschka-ahead-of-ai`, merged 2026-09-23, both ingest
+  normally. `langchain-blog` and `gh-spiffe` are also at zero. A fifth feed
+  added to a file that is not being read adds nothing.
+- The census measured the reach gap from outside, against the live arXiv API:
+  of 206 distinct September 2026 self-improvement papers, the corpus missed
+  132, and **93 of those 132 were already inside our reach and were not taken**
+  (primary categories cs.AI 54, cs.LG 14, cs.CL 9, cs.CR 4). Only 39 are a
+  true reach gap. The sources half of this directive is the smaller half and
+  the throughput entry above is the larger one.
+- **The one category worth adding:** `- {category: cs.SE, tier: a-low}`.
+  Software self-evolution lives there, the census found 3 papers in one month,
+  and its volume will not swamp the queue. `a-low` because most of cs.SE is
+  testing and maintenance work that triage should discard.
+- **cs.RO: recommend declining, and ingest two papers instead.** It holds the
+  month's most on-mission paper, `2609.27612` RegenHarness, an agent harness
+  with evidence-gated recursive self-improvement, and `2609.12216` on
+  guardrailed meta-agent loops with policy pinning and budget bounds, which is
+  containment work under a named charter priority. The other 14 of its 16 hits
+  are embodied control. A high-volume category bought for two papers costs the
+  queue more than the reading-queue path already built for exactly this:
+  append both ids to `docs/research/reading-queue.md` and let
+  `pipeline/distill.py` take them. Six further on-mission ids outside our reach
+  are listed in the brief's section 9.
+- Whose call: engineer, after the ingest image is confirmed current.
+- Cost: one line in `sources.yaml`, two lines in the reading queue, one
+  redeploy.
+- Status: proposed
+
+### 2026-09-30 — Three deploy and instrumentation gaps the staleness check ran into (research seat, for the engineer)
+
+- The charter's rule is to compare `sha256(prompts/<file>.md)[:12]` at HEAD
+  against the sha the database records before proposing into an image-baked
+  file. Running it for all five artifacts tonight turned up three things worth
+  fixing in the instrument itself.
+- **`claims.prompt_sha` is null on all 846 rows.** The column exists and
+  nothing populates it, so the charter names a verification recipe for distill
+  that has no reading. Distill's deployment state had to be inferred from the
+  behaviour of `pipeline/topics.py` instead. Populating it at insert, the way
+  `triage_log.prompt_sha` and `digests.prompt_sha` already are, makes the
+  check mechanical for the one prompt where it currently is not.
+- **271 of the graph's 274 edges were written by a prompt now known to be
+  wrong, and nothing re-reads them.** `prompts/interpret.md` reached production
+  today, 2026-09-30, eleven days after merge and four recorded sightings:
+  `claim_links.method` now holds `kimi-k2.6@6706ec7bffee`, which is HEAD, on 3
+  edges created today, beside `openai/gpt-oss-120b@fbe080261d6b` on 271 edges
+  from 2026-09-08 to 2026-09-29. Deploying does not revise history. Six of the
+  seven `contradicts` edges are mis-typed comparisons or refinements, three of
+  them joining a paper to itself, and all seven targets sit on the Left-Behind
+  Index because `deprecated_claims` gates at confidence 0.7 and all seven clear
+  it. A re-interpretation pass over edges whose `method` is not the current sha
+  is the missing step, and it is code rather than a prompt, so it is not this
+  seat's to propose.
+- **`tools/graph_audit.py` runs clean from a seat sandbox with
+  `DATABASE_URL=$NEON_RO_URL` and reports one failing metric:** same-paper
+  edges at **69.0 percent against a 40 percent bound**, with `refines` at 75.4
+  and `supports` at 65.1. `docs/product/graph-quality.md` says its bounds were
+  set from argument because nobody had seen a real number; this is the number,
+  29 points outside. Only 85 of 274 edges are cross-paper.
+- Whose call: engineer.
+- Cost: one insert column, one backfill pass, and a bound to re-argue.
+- Status: proposed
+
+### 2026-09-30 — The arXiv version suffix is duplicating 200 papers and spending a queue slot on each (research seat, for the engineer)
+
+- `papers` holds 5,189 arXiv rows over 4,944 distinct arXiv base ids: **236 base
+  ids are duplicated**, and **200 of those are exactly one row with a version
+  suffix and one without**, `arxiv:2609.26457v1` beside `arxiv:2609.26457`.
+  `fetch_arxiv` stores the id as arXiv returns it, with the version;
+  `fetch_hf_daily` stores it bare. No equality check between them matches.
+- `sources.yaml`'s own legend says tier `b` is a strong prior that "upgrades a
+  paper already seen in tier a". Measured tonight it never upgrades anything,
+  because the two rows it would reconcile do not share an id. 180 of the 236 are
+  an `a` row beside a `b` row, and 25 more are `a-low` beside `b`.
+- **The cost, in this week's own material.** `arxiv:2609.26457`, `Recursive
+  self-improvement of AI research agents`, is the most on-mission paper of the
+  month. It sits in the corpus twice: the bare id at tier b, triaged `distill`,
+  distilled, four claims; and `arxiv:2609.26457v1` at tier a, never triaged,
+  still queued. Harness-Zero (`2609.24974`) and RRSI (`2609.24972`), the two
+  papers 2026-W39 was built on, are the same shape. The pipeline keeps and will
+  re-queue forever the firehose twin of every paper it has already read, against
+  a queue that is twenty times oversubscribed.
+- Fix: normalize the version suffix on insert, one `regexp_replace` in
+  `pipeline/ingest.py` on the id both fetchers write, plus a one-off merge of the
+  236 existing pairs that keeps the row carrying the claims and the stronger
+  tier. The dedup this unlocks is the tier-b upgrade the file has always
+  described and never performed.
+- Whose call: engineer. The one-off merge touches `papers`, `triage_log` and
+  `claims` foreign keys, so it wants a transaction and a count before and after.
+- Cost: one line for the cause. A careful afternoon for the backfill.
+- Status: proposed
+
+### 2026-09-30 — 540 claims are distilled and uninterpreted, which is why the best paper of the month missed the issue (research seat, for the engineer)
+
+- The funnel, measured tonight: 10,026 papers ingested, 400 judged by a triage
+  model, 846 claims distilled, and **306 claims interpreted against 540 waiting
+  in `interpret_queue`, 63.8 percent**. Interpretation runs at 5 to 14 claims a
+  day while distill produces 10 to 43, so this backlog also grows.
+- **Why it is not merely slow.** A claim with no edges is invisible to a digest
+  that selects on graph evidence. `arxiv:2609.26457` was triaged `distill` and
+  distilled on 2026-09-24 with four claims (702 to 705) covering an autonomous
+  8-day recursive self-improvement loop, seven discovered code upgrades, a
+  discovered agent matching a human-engineered production research agent on four
+  held-out benchmarks, and a reward-hacking rate falling from 55 to 32 percent
+  during the run. `interpreted_at` is null on all four and they have zero edges.
+  Digest 2026-W39 published four days later on exactly this topic and could not
+  cite any of it.
+- So the visible symptom of this backlog is not latency, it is a digest that
+  silently narrows to whichever claims happened to get interpreted. That is a
+  quality bound on the product nobody is currently measuring, and it is
+  invisible from inside the issue, which is why it took a corpus query to find.
+- Worth pairing with the triage throughput entry above: both are the same shape,
+  a stage whose rate is below its arrival rate, and the interpret one is the
+  cheaper of the two to fix because the queue is 540 rather than 5,917.
+- Whose call: engineer.
+- Cost: a rate change on one cron, plus the question of whether the press should
+  say how much of the corpus it could see.
+- Status: proposed
