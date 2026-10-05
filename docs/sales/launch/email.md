@@ -91,7 +91,7 @@ claims we got wrong.
 That is not modesty and it is not a stunt. The library keeps a record of which
 research findings later got contradicted, and a record like that is worth
 nothing if it never returns a verdict against the people who built it. So we
-ran it against our own two issues and our own six skills first, and what it
+ran it against our own archive and our own six skills first, and what it
 found is on the page below with the paper that overturned each one.
 ```
 

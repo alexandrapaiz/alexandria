@@ -94,8 +94,9 @@ supported.
 
 The weekly digest is free and arrives in full, and I am not paywalling the
 writing, because a written summary of the week is genuinely a commodity. What
-costs money is the library, at $20 a month. The archive holds two issues today,
-which is a small number and the true one.
+costs money is the library, at $20 a month. The archive holds one issue today.
+The pilot before it was pulled because it was not good enough to be the first
+thing you read.
 
 Repo: github.com/alexandrapaiz/alexandria
 Site: [SITE_URL]

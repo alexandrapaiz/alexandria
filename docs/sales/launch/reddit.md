@@ -110,7 +110,7 @@ numbered and dated, and that file is now the longest document in the project. It
 is public. This post was drafted by the agent whose charter says it prepares and
 I send, and it has never posted anything anywhere.
 
-Where it actually is: six skills live, two issues in the archive, and
+Where it actually is: six skills live, one issue in the archive, and
 subscriptions opening today. The digest is free and the library is $20 a month.
 
 github.com/alexandrapaiz/alexandria

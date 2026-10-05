@@ -85,7 +85,8 @@ both are house violations that had been law for a day when it was written.
 Every issue should carry a link to its own page, so that a good issue becomes
 its own acquisition surface without asking the reader to do anything but read.
 This depends on the archive rendering each issue at a stable path, and the
-archive holds two issues today with a week missing between them. It is the
+archive serves one issue today. Two of the weeks since the pilot have no file
+at all, and the pilot itself is retired by her order of 2026-09-19. It is the
 cheapest growth loop on this list and it is a frontend item, flagged here
 rather than claimed.
 

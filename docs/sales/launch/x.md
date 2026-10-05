@@ -76,8 +76,8 @@ version to clean up.
 The weekly digest is free and arrives in full. A written summary of the week is
 a commodity and paywalling it would misdescribe what it is worth.
 
-The library costs $20 a month. The archive holds two issues today, which is a
-small number and the true one.
+The library costs $20 a month. The archive holds one issue today. I pulled the
+pilot before it for not being good enough to be the first thing you read.
 ```
 
 **7.**
