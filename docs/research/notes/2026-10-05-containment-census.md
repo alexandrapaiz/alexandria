@@ -316,3 +316,46 @@ The external census is `OpenAlex /works`, five area query sets, filtered to
 `primary_location.source.id:S4306400194` and the 30-day window. The scripts
 this run used are not committed; the queries above and the area phrases in
 section 1 are enough to rebuild it.
+
+## 8. Addendum: the live-web check (L-R1), run after section 7
+
+`docs/standards/lessons.md` L-R1 requires an explicit ecosystem-events check
+against the live web every run. It was run after the rest of this file was
+written, and it changes the top of the engineer's list.
+
+**Hugging Face's forensic timeline of the July 2026 incident is in `papers`
+with an empty body.** `blog:hf-blog:8088c1dfd69d5216`, "Anatomy of a Frontier
+Lab Agent Intrusion: A Technical Timeline of the July 2026 Incident",
+published 2026-07-27, caught by the `hf-blog` feed, auto-indexed by
+`rule:backfill`, `length(abstract) = 0`, 0 claims. So the reach gap incident
+19 named is closed and a body gap replaced it.
+
+```sql
+-- 1,083 backfilled blog rows hold no body at all; 832 of them hf-blog
+with lt as (select distinct on (paper_id) paper_id, reasoning from triage_log
+            order by paper_id, created_at desc)
+select p.source, count(*) from papers p join lt on lt.paper_id = p.id
+where p.id like 'blog:%' and lt.reasoning like 'backfill%'
+  and coalesce(length(p.abstract),0) = 0
+group by 1 order by 2 desc;
+```
+
+| source | backfilled rows with no body |
+|---|---|
+| hf-blog | 832 |
+| blog | 125 |
+| openai-blog | 106 |
+| deepmind-blog | 19 |
+| lilianweng | 1 |
+
+`blog:openai:34e62ff4c7cf4def` ("The Hugging Face incident and the road
+ahead", 2026-08-26) is the counter-case that shows the routing rubric works:
+triage read it, routed it `distill` at 0.62, and wrote "production failure +
+response mechanism is evidence type". It has had zero claims for forty days,
+because of section 2.
+
+HF's timeline reconstructs ~17,600 attacker actions in ~6,280 operations
+between 2026-07-09 02:28 UTC and 2026-07-13 14:14 UTC, which are claim 883's
+numbers. That is independent confirmation that claim 883 records one real
+incident and a second reason its `controlled` grade is wrong.
+
