@@ -7303,3 +7303,83 @@ graphs.
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
 - Status: proposed
+
+## 2026-10-05 — Grooming pass (PM ceremony), dated notes only, no status changed
+
+Full inventory behind this note was produced by reading the ledger end
+to end this run. Nothing below changes a `Status:` field; every status
+stays the owner's to move.
+
+**Accepted, not yet built — ordered by leverage against vision.md, for
+this week's sprint and the next one:**
+
+1. L1441 / L330, Left-Behind Index as public page — the same idea filed
+   twice by two seats (sales, market). Treat as one entry; whichever
+   seat's PR ships it first, the other line can close without a
+   separate build. Highest leverage this week: O1's weakest benchmark
+   axis (product surface, 1.3-2.0 all quarter) and the most direct,
+   backend-free fix available. In sprint 2026-10-05, item 3.
+2. L18, reviewer panel harness (ADR-13) — serves O3 KR1, due
+   2026-11-15, still unbuilt 19 days after acceptance. Not a sprint
+   item this week (payments and the security fix outrank it in launch
+   week), but it is the next thing O3 needs if KR1 is to move before
+   its date.
+3. L38, institution backfill and digest resend — serves O1 KR3
+   (citation quality), unbuilt 19 days.
+4. L944, knowledge graph to industry standard — serves the judgment
+   axis broadly, but it is quarter-scoped work, not a day-sized item;
+   still carries, unscheduled.
+5. L988, corpus expansion spike — same shape as L944, carries.
+6. L62, skill-extract prompt proven against a real cluster — serves O2
+   KR2, which does not start its weekly cadence until 2026-11-01, so
+   this is not urgent yet.
+7. L46, member site auth and deploy (Clerk/Vercel) — mostly superseded
+   by what has since shipped (the site is live, Clerk is wired); the
+   remaining scope is thin. Lowest remaining leverage of the seven.
+
+**Contradiction, flagged again:** L1538-1600 ("adopt a second weekly
+skill-extraction session") carries a `Decision:` line that says
+**adopted** while `Status:` still reads **proposed**. The 2026-09-28
+ceremony flagged this exact self-contradiction and it is unresolved
+eight days later. Applying the charter-and-workflow text is the ExO's
+and the owner's, not this seat's; repeating the flag rather than
+letting it go another ceremony silent.
+
+**Duplicate finding, same event filed twice:** L5490 and L5739 are the
+same "distill misses Groq's free tier by 109 tokens" finding, both
+corrected on 2026-09-27, both still showing `Status: proposed`. Worth
+collapsing to one entry whenever either is next touched.
+
+**Status field used for prose instead of the five contracted values**
+(`proposed/accepted/rejected/built/urgent`), per `tools/check_registers.py`'s
+own warning, confirmed this run:
+
+- L1683 — "mostly moot as of run 3."
+- L4990 — "closed, no action."
+- L5269 and L6880 — "observation."
+
+None of these are invisible by accident: a `grep "Status: accepted"`
+style check, which is how several seats including this one read the
+ledger, cannot see any of the four. Flagging rather than correcting,
+since the field is the owner's to set; whoever next touches these four
+entries should move them to one of the five real values.
+
+**Entries whose own body says built or superseded while `Status:`
+was never flipped** (flagged, not changed): L603, L701, L1498, L1992,
+L2158, L3581, L3695. Seven entries, each citing its own merged PR or
+superseding entry in its text. Whichever seat owns the next touch on
+each should move its status; this run only confirmed the mismatch
+exists.
+
+**Proposed entries 14 or more days old with no verdict, per charter §2:**
+roughly 100 entries filed 2026-09-17 through 2026-09-21 remain
+`Status: proposed`, the great majority of this ledger's open proposed
+count. Listed in full in this PR's description under "Awaiting your
+verdict" is not practical at that count; the description instead names
+the handful with the most launch-relevant leverage and the total, and
+points here for the rest. This is itself worth naming as a finding: a
+ledger where a hundred proposals sit two-plus weeks unruled is not a
+grooming gap this seat can close by writing a longer note, it is a
+volume the owner's review time cannot clear any faster than her merge
+queue clears pull requests. Same shape as this week's retro, one layer
+over.

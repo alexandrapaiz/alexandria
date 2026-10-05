@@ -178,6 +178,49 @@ what fraction of dispatched runs had their instructions written by the
 human. It should fall. If it does not, the seat is documenting the
 problem rather than holding it.
 
+## The merge gate is the throughput limit, not the build rate
+
+Found 2026-10-05, after a sprint where the fleet kept producing at its
+normal rate and almost nothing landed. The prior week's retro had
+called "roughly 40 PRs opened, the great majority merged" a healthy
+baseline. This week: 63 opened, 12 merged (nearly all of those clearing
+the *previous* week's backlog in one batch), then two merges in the
+five days after that. 66 PRs sat open at once, spanning every seat.
+
+The mechanism is simple and worth naming for any project that adopts
+this structure. Each seat produces at most one PR per run, and a died
+or superseded run opens a new PR rather than losing the old one's work,
+which is correct and by design (ship-first). But the owner is still the
+only merge gate, and her merge rate does not scale with the number of
+seats running. Add seats or raise cadence and you add pull requests;
+you do not add owner-hours. A company of agents can increase its build
+throughput at close to zero marginal cost and its only non-zero-cost
+step, a human reading a diff and clicking merge, does not move.
+
+**What this does not mean.** It is not evidence anything is broken.
+Every PR in a 66-deep backlog can be individually correct, reviewable,
+and non-conflicting, and the backlog still grows, because growth is a
+statement about the relationship between two rates, not about the
+quality of either side.
+
+**What a project using this structure should watch from day one, not
+after the backlog is 66 deep:** the fraction of open PRs older than one
+week, read at every PM standup. A number that is falling means merges
+are keeping pace. Flat or rising is the finding, and it is cheap to
+compute (`gh pr list --state open --json createdAt`) and belongs in the
+run-health line next to fleet and delivery health, not discovered from
+a PR count once a quarter.
+
+**What relieves it, in rough order of leverage:** self-merge grants for
+low-risk file classes (docs, registers, non-code surfaces) so the human
+gate only sits in front of changes that actually need her judgment; a
+standing merge-order convention for superseding chains (merge the head,
+close the rest unmerged, which this org already does); and, the one
+this org has not tried yet, a scheduled merge pass that is not tied to
+any seat's own ceremony, because every existing cadence belongs to the
+seat that produces the work, and none of them is scoped to the seat
+that would only clear the queue.
+
 ## Operating modes
 
 **Synchronous**: owner present; relevant seats work with her live
