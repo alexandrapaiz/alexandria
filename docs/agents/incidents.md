@@ -8657,3 +8657,606 @@ the command needs a hand the seat does not have, the queue entry is part of the
 gate's definition of done, and the gate is not described as closed anywhere
 until the hand arrives. `registers.md` listing a checker nobody calls is the
 same error one level up.
+
+## INC-2026-09-30-four-seats-one-merge-from-silence
+
+**Observed** 2026-09-30 by the ExO agent, in the §2b failure sweep.
+
+**What happened.** Four workflow runs failed at 02:16:48 and 02:16:49 UTC
+on the branch `chair/langfuse-traces`, on the push of commit 9bf1b52:
+`pm-agent` (36659107421), `okr-agent` (36659106719), `market-agent`
+(36659105929) and `finance-agent` (36659105241). Each ran for 0 seconds,
+created zero jobs, and produced no log. `gh run view 36659107421` says
+
+> This run likely failed because of a workflow file issue.
+
+which is GitHub's startup failure. None of the four workflows has a `push`
+trigger, so these runs exist only because GitHub validates a workflow file
+when it is pushed and records the rejection as a run against that file.
+
+**Why it matters more than four red rows.** A startup failure is the one
+failure mode with no log, no job, no annotation reachable through the API,
+and no seat-run step to leave a trace. If PR #139 merges as it stands, the
+PM, OKR, market and finance seats stop firing on their crons and the only
+evidence anyone gets is an absence. The PM's daily standup is the org's
+run-health detector, so the detector is one of the four.
+
+**The diagnosis, and it is narrowed rather than confirmed.** The tracing
+patch on that branch is byte-identical across all twelve seat workflows,
+which rules it out as the cause on its own. What separates the four that
+failed from the eight that passed is a single property: they are exactly the
+four workflows that carry the two-step open-routed pattern, and exactly the
+four whose step-level `if:` expressions were changed by the L-E8 edit in PR
+#144 from
+
+```
+if: env.OPENROUTE != ''
+if: env.OPENROUTE == '' || steps.openrouted.outcome != 'success'
+```
+
+to
+
+```
+if: vars.OPEN_ROUTING == 'on' && env.OPENROUTE != ''
+if: vars.OPEN_ROUTING != 'on' || env.OPENROUTE == '' || steps.openrouted.outcome != 'success'
+```
+
+Four of four workflows whose `if:` gained a `vars.` reference failed at
+startup. Zero of eight that did not, failed. That is the whole correlation
+and it is clean, and it is still a correlation. **This entry does not claim
+the mechanism.** The confirming test is to push one of those files with
+that one line reverted and see whether the startup failure goes away, and
+this seat cannot run it: the runner's token refuses any push under
+`.github/workflows/`, verified by attempt in this run.
+
+```
+! [remote rejected] exo/probe-2026-09-30 -> exo/probe-2026-09-30 (refusing to
+allow a GitHub App to create or update workflow `.github/workflows/agent-exo.yml`
+without `workflows` permission)
+```
+
+So the confirmation belongs to the chair or to whoever holds the
+`workflows` permission, and it costs one push and one minute.
+
+**The real finding, which is about the check and not about the change.**
+The org's pre-merge validation of a workflow file is a PyYAML parse. Every
+one of the four files parses cleanly under `yaml.safe_load`, and they parse
+cleanly under a loader that also rejects duplicate keys, and their job and
+step structure is identical to the eight that work. GitHub's own parser
+rejects them anyway. **A YAML parse is not a workflow validation**, and
+believing otherwise is what let a change reach a merge queue in a state
+where four seats would have gone quiet.
+
+Two things follow, both cheap.
+
+1. **A workflow change is not smoke-tested until GitHub has parsed it.**
+   This is `docs/agents/runtime-changes.md`'s existing law with one word
+   sharpened. The evidence of a smoke run for a workflow edit is a run of
+   that workflow on that branch, or at minimum a push of that branch and
+   the absence of a 0-second failure against the file. PR #144 changed
+   twelve workflow files and no run of any of them exists on its branch,
+   because agent workflows do not fire on pull requests and `checks.yml`
+   does not either for a `.github/`-only diff. The change was invisible to
+   every gate until the chair merged it into a branch that happened to be
+   pushed.
+2. **`actionlint` is the missing gate, and it is free.** It is the only
+   checker that implements GitHub's expression and context rules rather
+   than YAML's syntax. Filed for the engineer seat in docs/ideas.md.
+
+**Class.** New. Name it **startup failure, which leaves no trace**, and its
+fingerprint is the cheapest of any class in this file: `conclusion: failure`,
+`0s` duration, zero jobs, `event: push` on a workflow with no push trigger.
+Any seat can spot it in `gh run list` output in one line, and no seat was
+looking for it because every other class in this register has a log.
+
+**Fix state.** Diagnosis narrowed and handed over. The confirming push and
+the revert, if confirmed, are the chair's. The `actionlint` gate is in the
+ledger. This entry is the trace.
+
+## INC-2026-09-30-queue-item-2-rotted-a-third-time
+
+**Observed** 2026-09-30 by the ExO agent, re-verifying the queue before
+adding to it, which is what prompts/exo-agent.md §5 requires.
+
+**What happened.** Item 2 of docs/agents/pending-workflow-changes.md
+contained three anchor lines that no longer match anything. The important
+one is the cron:
+
+```
+-    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
+```
+
+while the live `agent-pm.yml` carries `- cron: "35 10 * * 1"     # Monday:
+the ceremony run (charter §0)`. The comment was rewritten when the cron
+split landed. Two other anchors point at a mermaid node and a documentation
+table row that are not in any workflow file at all.
+
+**Why it is an incident rather than a finding.** This is the third time.
+The item rotted on 2026-09-19 when the chair added a run step to four
+workflows. It was rewritten on 2026-09-20 and shipped still rotted, because
+that rewrite checked the step structure and not the values inside the steps,
+which is incident 26. The standing rule at the top of this file makes any
+repeat an entry, and a third occurrence of one item rotting is squarely that.
+
+**The learning, which is different from incident 26's.** Incident 26's
+lesson was to check every line rather than the line that broke last time,
+and this run did exactly that, mechanically, and found the rot. The gate
+worked. What the gate cannot tell you is when to stop maintaining an item
+at all. Item 2's cadence half was applied on 2026-09-23, its README half
+after that, and its cap half was cancelled on measurement on 2026-09-27.
+What was left was one open question, and the answer arrived this run: the
+Monday ceremony ran at 125 turns against a cap of 300, so the raise was
+never needed.
+
+So the rule to carry forward: **an item that rots three times has usually
+been overtaken rather than disturbed.** Rot is a signal about the item's
+relevance and not only about its anchors. Ask on the second rot whether the
+live file has already done what the item wanted, because a queue item's
+cost is not the diff, it is that every future run re-verifies it and one of
+them eventually applies it.
+
+**Fix state.** Fixed in this PR. Item 2 is cancelled in full with the
+measurement written into it, and the next run deletes it. The charter rule
+it exercises is already in prompts/exo-agent.md §5 and gains one sentence
+about the third rot.
+
+## INC-2026-09-30-branch-name-reuse-is-systemic
+
+**Observed** 2026-09-30 by the ExO agent, in the §5b housekeeping sweep.
+
+**What happened.** Six branch names in this repository each carry more than
+one pull request, across five different seats:
+
+| Name | Pull requests |
+| --- | --- |
+| `exo/2026-09-18` | #4, #18, #30, all merged |
+| `okr/2026-09` | #2, #86, #114, all merged |
+| `fe/2026-09-18-email-capture-live-metric` | #26, #27, both merged |
+| `pm/sprint-2026-09-21` | #5, #24, both merged |
+| `pm/standup-2026-09-24` | #85 closed, #91 merged |
+| `writer/2026-09-19` | #36, #47, both merged |
+
+The org rule, in every charter's ship-first section, is never to reuse a
+branch name whose pull request already merged, because the next reader cannot
+tell the new commits from the old ones. `prompts/exo-agent.md` §5b says to
+check for duplicates every run and to register it if it happens twice. It has
+happened six times, by five seats, over twelve days.
+
+**Why it is registered now rather than earlier.** The check was added on
+2026-09-27 and this is the first run to execute it. So this entry is not six
+new failures. It is the first measurement of a rule the org has been breaking
+since roughly the day it was written, which is the same shape as the skills
+finding in this run's learning log: the rule existed and nothing read it.
+
+**What it actually cost, and what it nearly cost.** Nothing has been lost. The
+near-miss is recorded in the 2026-09-27 learning-log entry: `okr/2026-09`
+carried merged #86 and open #114 at the same time, and a sweep asking only
+"did this branch's PR merge" would have answered yes and destroyed the OKR
+seat's unmerged check-in. That is why §5b now requires every pull request
+that ever pointed at a name to be merged or closed before the ref is deleted,
+and the 29 branches deleted in this run were checked that way.
+
+**The diagnosis, and it is not carelessness.** Five seats broke the same rule
+independently, which means the rule is hard to obey rather than easy to
+ignore. Two reasons, both structural.
+
+1. **The naming convention collides by construction.** `okr/YYYY-MM` for a
+   monthly seat and `pm/sprint-YYYY-MM-DD` for a weekly ceremony both produce
+   the same name on a second run in the same period. A seat that follows its
+   charter's naming rule exactly will reuse a name eventually, and three of
+   the six cases are exactly that.
+2. **A seat cannot see the collision from inside its sandbox.** The check is
+   `gh pr list --state all` grouped by head ref, and no charter tells a seat
+   to run it before branching. The "your own last run may still be open"
+   rule tells a seat to look for its own open PR, which finds an open
+   collision and never a merged one.
+
+**Fix.** Two charter edits, both in this PR, both preventive rather than
+punitive: every seat's branch-naming instruction gains a disambiguating
+suffix rule, and the ship-first section's existing check is extended from
+"is my last PR open" to "has this name ever been used". The general lesson is
+the one the register keeps relearning: **when five seats break one rule, fix
+the rule's obeyability, not the seats.**
+
+## INC-2026-09-30-the-guard-went-red-and-nobody-read-it
+
+**Observed 2026-09-30 by the ExO seat, in the window run. Detected the
+same morning by the PM standup (#150) and handed to the engineer (#158),
+which is why the register entry is about the six days before that and not
+about the fix.**
+
+**What happened.** `main`'s own checks were red, and had been since
+2026-09-24. Two steps of the `digest request fits the model's budget` job
+failed on every push and on every open pull request:
+
+| Step | Assertion | Actual |
+| --- | --- | --- |
+| `tests/test_press_resilience.py` | the press honours a 1s `retry-after`, `slept == [1.0, 1.0]` | `[30, 60]` |
+| `tests/test_press_resilience.py` | per-issue cost under ADR-32's budget, `< 0.15` | `$0.1628` |
+| `tests/test_run_report.py` | `--dry-run` stdout parses as JSON | a `::warning::` line precedes the JSON |
+
+**Why it happened, and the tests are not the story.** The first two
+guards were correct when written and were made stale by two deliberate,
+correct changes to the press:
+
+- `281d0af`, 2026-09-23, raised `MAX_COMPLETION_TOKENS` from 6,000 to
+  24,000 because kimi-k2.6 spends its output budget reasoning before it
+  writes. That is a **token reservation**.
+- `69a9e7f`, 2026-09-24, stopped the press honouring a 1-second
+  `retry-after` on a concurrency 429 and gave it its own backoff, because
+  a concurrency limit is not a rate limit. That is a **retry policy**.
+
+Both phrases are named verbatim in `docs/agents/runtime-changes.md` as
+runtime changes, and the second clause was written on the same day as the
+second commit, in response to the same incident. The law had the right
+scope. Neither commit shipped an updated guard, and nothing noticed.
+
+The third failure is independent and simpler: `tools/run_report.py`
+prints its `::warning::` diagnostics to stdout, where `--dry-run` also
+prints the JSON payload the test parses. In CI `gh pr list` fails for
+want of a token, so the warning always fires and the parse always breaks.
+Diagnostics belong on stderr.
+
+**Why six days.** Three reasons, and only the first is about the tests.
+
+1. The runtime-change audit asks three questions and all three are about
+   the past: did a merged PR explain it, was there a smoke run, was there
+   a rehearsal. Every one of them can be answered correctly while the
+   thing the change broke is still broken.
+2. Both commits were direct pushes to `main` by the owner, which is hers
+   to do. So there was no pull request to explain them and, more to the
+   point, no pull request check to fail.
+3. `checks.yml` had no `push: branches: [main]` trigger until `4ef55df`
+   on 2026-09-29. For the whole window the repository's only gate was
+   scoped to pull requests, which is a channel these changes did not use.
+   **A gate scoped to pull requests is not a gate on a repository whose
+   owner commits directly**, and no seat can see this from inside a
+   sandbox, because seats only ever open pull requests.
+
+**What it cost, and the second-order cost is the larger one.** The cost
+guard exists to catch exactly this: its own comment says that if the
+number drifts "finance's books are wrong and this is where it should
+surface". It surfaced, correctly and immediately, that the press now
+costs **$0.1628 an issue against ADR-32's budgeted $0.05**, a factor of
+three, and it surfaced into nothing for six days. Finance has been
+working from a number the repository knew was wrong.
+
+Then the noise. A red `main` propagates to every open pull request
+through its merge check, so every seat's run ends with a red tick it did
+not cause. The PM counted **28 failed runs in 24 hours, 19 of them this
+same inherited pair**. On PR #146 the job failed on three steps, two
+inherited and one genuinely the skill seat's own, and the seat's real
+failure sat between two that were not its own. **A red main does not cost
+one bug. It costs the signal on every branch at once, and the seat that
+most needs to read its own failure is the seat least able to.**
+
+**Fix.**
+
+1. *Shipped here.* `docs/agents/runtime-changes.md` gains a fourth
+   question, the only one in the present tense: **is the guard that
+   covers this change green right now?** Run it; do not look for the run
+   that cleared it, because clearing is a claim about a past state.
+   Carried into the two charters that perform the audit, ExO §2 weekly
+   and the engineer's step 0 daily. The engineer's copy says to fix a red
+   main ahead of the sprint item, because `tests/` and `pipeline/` are
+   that seat's surface and nobody else's.
+2. *Shipped elsewhere, not duplicated here.* The two stale assertions and
+   the stdout/stderr split are in the engineer's PR #158, handed over by
+   PM standup #150. The detection chain worked on the day; this entry is
+   about the six days it did not.
+3. *Owner's.* The machinery half is already correct as of `4ef55df`.
+   Nothing more is queued, because the push-on-main trigger that would
+   have caught this landed five days late but did land.
+
+**What the org grew from it.** The law had the right scope and the wrong
+tense. Every question the org asks about a runtime change was a question
+about the day it landed, and a guard is a thing that is either green or
+red now. One command answers it, and no audit had ever run it.
+
+## INC-2026-09-30-superseded-prs-are-left-for-the-owner-to-close
+
+**Observed 2026-09-30 by the ExO seat, in the window run.**
+
+**What happened.** Ten of the twenty-eight pull requests opened on
+2026-09-30 were superseded by a later pull request from the same seat,
+and every one of the ten was still open when this run counted them. The
+review queue read 27 open items. Seventeen were live.
+
+| Seat | Chain | Depth |
+| --- | --- | --- |
+| skill | #140 to #146 to #151 to #152 to #159 | 5 |
+| engineer | #141 to #153 to #158 | 3 |
+| research | #145 to #162, #138 to #162 | 2 |
+| engineer | #142 to #149 | 2 |
+| exo | #148 to #160 | 2 |
+
+**Why it happened, and no seat did anything wrong.** The org rule "your
+own last run may still be open" tells a seat to merge its predecessor's
+branch and supersede it, which is correct: the alternative is two
+branches conflicting on the same files. But the rule's own words ended
+"you say so plainly **so the owner can close the older one** instead of
+reviewing two." The closing was assigned to the owner, in a sentence
+every seat obeyed exactly. Ten seats said so plainly. Nobody closed
+anything.
+
+This is the owner-as-seat class from ExO §3e, in its cheapest possible
+form. The work that landed on the only actor with no cron was `gh pr
+close`, ten times.
+
+**The measurement that makes it visible, and it is not about today's
+volume.** Opened against merged, by day:
+
+| Day | Opened | Since merged |
+| --- | --- | --- |
+| 2026-09-24 | 27 | 25 |
+| 2026-09-26 | 13 | 13 |
+| 2026-09-27 | 7 | 7 |
+| 2026-09-28 | 6 | 6 |
+| 2026-09-29 | 5 | 5 |
+| 2026-09-30 | 28 | 1 |
+
+A 27-pull-request day was absorbed on 2026-09-24, so volume alone is not
+the cause and today's count is a snapshot of a day still running. The
+supersession is not a snapshot: those ten are discarded whatever merges
+later.
+
+**The loop, which is the part worth keeping.** Each run in a chain must
+merge its predecessor and re-ship the whole accumulation, so the fifth
+link carries five runs of diff for one run of review. A deeper chain is
+harder to review, which slows the merge, which deepens the chain. The
+rule was written for an occasional collision and it behaves differently
+under a standing queue: it converts merge latency into discarded work,
+and it does so faster the longer the latency runs.
+
+**Fix.**
+
+1. *Shipped here, all twelve charters.* The seat closes its own
+   superseded pull request, after proving its branch contains the
+   predecessor's commits with `git log --oneline origin/<theirs> ^HEAD`
+   printing nothing, and never deletes the branch. Closing is reversible
+   and deleting a ref is not. **Probed before it was written**: this run
+   closed its own predecessor #148 and the seat token allowed it, so the
+   clause rests on a test rather than on an assumption about scopes.
+2. *Shipped here.* A superseding pull request states its chain depth, and
+   at depth three or more says in bold that the seat is blocked on
+   merges. The number is evidence about throughput, and no seat can see
+   the chain it is in without being told to count.
+3. *Not ours.* The structural fix is HQ decision 041, PM-owned Tier B
+   merges, arriving as PR #147 and still open. Relayed upward with these
+   numbers through `docs/agents/hq-relay.md`, because the fix for the
+   merge queue is currently sitting in the merge queue.
+
+**What the org grew from it.** A rule that names the owner as the actor
+for a chore is a rule that generates owner work at the rate the org runs,
+and it reads as correct in every audit because every seat obeys it. Check
+the verbs in a rule, not only the rule.
+
+## INC-2026-10-04-four-days-of-output-and-no-delivery — the org ran autonomously for 112 hours, opened 49 pull requests, merged one, and left main red the whole time (2026-10-04, ExO seat)
+
+**This is the fifth occurrence of the class named in
+`INC-2026-09-28-repair-written-never-deployed`, and the first at the scale
+of the whole organization rather than one seat's surface. Recorded under
+the standing rule.** That entry closed with "the general form, for the
+ExO: every seat that writes a repair it cannot deploy has this gap, and
+the org measures the writing rather than the deploying." It was written
+six days before this one and handed to this seat. This seat did not act on
+it, and that is part of what happened.
+
+### What happened, measured
+
+Nothing has merged to `main` since 2026-09-30 at 02:08 UTC, which is PR
+#143. At the time of writing that is **4 days and 16 hours**. In that
+window the org opened 49 pull requests and merged one.
+
+| Day opened | Opened | Merged | Closed | Still open |
+|---|---|---|---|---|
+| 2026-09-24 | 27 | 25 | 2 | 0 |
+| 2026-09-26 | 13 | 13 | 0 | 0 |
+| 2026-09-27 | 7 | 7 | 0 | 0 |
+| 2026-09-28 | 6 | 6 | 0 | 0 |
+| 2026-09-29 | 5 | 5 | 0 | 0 |
+| 2026-09-30 | 32 | 1 | 1 | 30 |
+| 2026-10-01 | 6 | 0 | 0 | 6 |
+| 2026-10-02 | 5 | 0 | 0 | 5 |
+| 2026-10-03 | 4 | 0 | 0 | 4 |
+| 2026-10-04 | 4 | 0 | 0 | 4 |
+
+Fifty pull requests are open. Seven consecutive days at essentially full
+conversion, then five days at one merge, so this is not a volume ceiling:
+the 27-item day of 2026-09-24 cleared.
+
+**No seat did anything wrong and no run failed.** Every scheduled agent
+run since 2026-09-30 concluded `success`. There were 24 of them. The twelve
+`failure` conclusions in the window are all the `checks` workflow on open
+pull requests, inheriting a red `main`.
+
+### The three channels, and why this is one incident rather than three
+
+Every path by which work leaves this organization terminates in one human,
+and all three were at zero for the same 112 hours.
+
+| Channel | Mechanism | Throughput in the window |
+|---|---|---|
+| Merge | the owner merges a pull request | 1 of 49 |
+| Dispatch | the owner or the PM fires `workflow_dispatch` | 0, and 0 by any actor |
+| Relay to HQ | the chair carries an entry out of `hq-relay.md` | 0 of 4, oldest written 2026-09-24 |
+
+For the same window: zero commits by any human author across every ref,
+116 by `claude[bot]`; zero comments on any pull request; zero
+`workflow_dispatch` events.
+
+**The reading that matters is not "the owner was away."** She is allowed
+to be away, and an org whose seats all ran green and produced 116 commits
+while she was away is, in one sense, working exactly as designed. The
+defect is that **the organization has no mechanism that makes its own
+output available to itself, and no detector that notices when the gate
+shuts.** Five days of green runs is indistinguishable, from inside any
+seat, from five days of delivered work.
+
+### What it cost, item by item
+
+1. **`main` has been red for ten days.** Two guards in
+   `tests/test_press_resilience.py` and `tests/test_run_report.py` have
+   failed since 2026-09-24, found and registered on 2026-09-30 as
+   `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`. **The fix
+   exists**, on `engineer/2026-10-04-b-result-history` (PR #187) and on
+   `engineer/2026-09-30-skill-maintenance-triggers` (PR #153). Neither
+   merged.
+2. **The red main has destroyed the PR check signal for the two seats that
+   touch the press, which is worse than the red itself.** `checks.yml` is
+   path-filtered to `pipeline/**`, `prompts/digest.md`, `prompts/daily.md`
+   and a named set of tests, so it fires on the writer's and the engineer's
+   pull requests and on nobody else's. Within that set, a branch cut from
+   `main` inherits both failures and a branch stacked on the engineer's
+   chain carries the fix and goes green. So on 2026-10-03 the writer's PR
+   #184 failed `checks` eight times in a row for a defect it did not cause,
+   while on 2026-10-04 the engineer's PRs passed. **Neither of those two
+   seats can learn anything from its own tick**, and the path filter is
+   what keeps this from being a ten-seat problem rather than anything
+   anyone designed.
+3. **The dispatch system is deadlocked, and the PM reported it as an empty
+   queue.** The PM's hard stop is "never dispatch a seat that already has
+   an open pull request from its own last run." All eight dispatchable
+   seats have one. `PM_DISPATCH_ENABLED` is `true`. So the PM's standup of
+   2026-10-04 correctly concluded that it could dispatch nothing, and will
+   conclude the same thing every day until a merge happens. **The rule's
+   unstated precondition was a queue that converts daily**, and when that
+   stopped holding the rule turned from a safety into a lock on the org's
+   only proactive mechanism.
+4. **Every charter fix written on 2026-09-30 is inert, including the ones
+   written to fix this.** The workflows feed each seat the charter on
+   `main`. The 2026-09-30 window run edited all twelve charters to make a
+   seat close its own superseded pull request, and added the fourth
+   runtime question and §3g to this seat's own charter. **This run read
+   `prompts/exo-agent.md` from `main` at its first turn and none of it was
+   there.** So the laws this organization wrote to stop rediscovering
+   things cannot stop it from rediscovering things.
+5. **Four public claims on the site are waiting on a merge.** Rows 1, 2, 3
+   and 4 of `quality-claims.md` name mechanisms that are, in that file's
+   own words, "on unmerged branches". The site tells readers a skill is
+   proven with and without it. The harness that proves it is in the queue.
+6. **Turn demand has roughly doubled fleet-wide, partly because of this.**
+   The October re-derivation in `turn-caps.md` found seven of thirteen caps
+   under the measured rule, the writer at 91% of its cap. One named cause
+   is that a seat whose last run is open must read, merge and re-ship that
+   branch before starting today's work. The engineer's newest pull request
+   supersedes eleven. **Merge latency and cap collisions are the same
+   failure**, which nothing in this org had connected before.
+7. **Supersession chains deepen as a direct function of latency.** Each
+   link merges its predecessor and re-ships the accumulation, so the
+   eleventh carries eleven runs of diff for one run of review, which makes
+   it slower to review, which deepens the chain again. This loop was
+   measured on 2026-09-30 at depth five and is now at eleven.
+
+### Why no audit caught it
+
+Every audit this organization runs measures a seat against its charter, or
+a register against its gate. Fifty open pull requests is not a property of
+any seat and not a property of any register. It is a property of the gap
+between them, and the grep that proves nobody owns it is three lines:
+
+```bash
+grep -ril "merge queue" prompts/*.md     # nothing
+grep -ril "queue depth" prompts/*.md     # nothing
+grep -ril "nothing has merged" prompts/*.md  # nothing
+```
+
+The PM comes closest. Its charter says "unmerged PRs waiting on the owner
+are a finding, not a complaint: flag them once, clearly, at the top of your
+PR description", and its standup reads `gh pr list --state open` with each
+PR's age. Both are **per pull request**. So the 2026-10-04 standup reported
+five stacked PRs, all of them its own, and PR #60 at 14 days, honestly and
+usefully, and never produced the aggregate. A seat asked for ages reports
+ages.
+
+### The fix
+
+1. **The duty is named and owned.** "The organization's finished work
+   reaches `main`" is a new row in
+   [unowned-duties.md](unowned-duties.md), assigned to the PM, whose daily
+   cron and `gh`-only evidence both clear §3b's cadence and capability
+   tests. `prompts/pm-agent.md` §4 gains a queue-health block: four
+   measured numbers, and a 48-hour threshold at which the queue becomes
+   the standup's first line, above the dispatch queue, because a dispatch
+   queue is meaningless in that state.
+2. **The relay stops being a drawer.** `prompts/exo-agent.md` §3f now
+   requires every undelivered `hq-relay.md` entry to be quoted at the top
+   of this seat's pull request description. The pull request is the one
+   surface the owner provably reads, because merging happens there. This
+   is the 2026-09-30 run's open question answered in the direction of
+   delivery rather than in the direction of admitting the file is a
+   reading list.
+3. **A closed-superseded branch is not a deletable branch.**
+   `prompts/exo-agent.md` §5b said delete when every pull request for the
+   name is "merged or closed". With a frozen queue the org now accumulates
+   branches whose pull request is closed as superseded and whose work
+   survives only inside another unmerged branch. `exo/2026-09-30` was the
+   first and this run declined to delete it.
+4. **Not fixed, and it cannot be fixed here.** The structural answer is HQ
+   decision 041, which gives the PM seat Tier B merges. It reached this
+   repository as PR #147 on 2026-09-30 and is still open. **The fix for the
+   merge queue is in the merge queue**, now for the fifth day. The relay
+   entry carrying its evidence is also undelivered. Both are relayed with
+   this entry's numbers appended.
+
+### The blameless part
+
+Every one of the twelve seats behaved well for five days with no
+supervision. They found a red main, diagnosed it by test name, declined to
+dispatch into a seat that was at its hard stop, filed the work so it would
+not be lost, fixed it on a branch, and reported honestly every day that
+their own output was piling up. The organization's weakness is not its
+judgment. It is that **an org can be good at everything except the one
+step that makes any of it true**, and that step has no cron.
+
+## INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule — the sweep that finds a false "nothing else touches this file" was written, documented with its command, and run against one file (2026-10-04, ExO seat)
+
+**Repeat, recorded under the standing rule. This is the second occurrence
+of an ordering-paragraph rot on
+[pending-workflow-changes.md](pending-workflow-changes.md) and the second
+occurrence of the "recording is not enforcing" class from incident 20.**
+
+**What happened.** On 2026-09-30 the ExO window run found that item 11's
+ordering paragraph said "no other item on this page touches
+`agent-skill.yml`" while item 13 had just been queued against that file. It
+fixed item 11, wrote the general rule into `prompts/exo-agent.md` §5, and
+wrote out the one-line sweep that settles it for the whole page:
+
+```bash
+grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
+  | sort | uniq -c | sort -rn
+```
+
+It did not run that command. Item 4, "The writer's cap goes to 200",
+carried the identical sentence about `agent-writer.yml`, which stopped
+being true on 2026-09-21 when item 4a was queued against the same file.
+The 2026-10-04 run found it by running the command the 2026-09-30 run had
+published, on the first try, in one second.
+
+**Why.** The run fixed the instance it was looking at and generalised the
+rule in prose, which is the correct response, and then shipped without
+executing its own generalisation across the artifact. The gap between
+"write the rule" and "run the rule once, now, everywhere" is the whole of
+incident 20, and it happened inside the run that was fixing a different
+instance of it.
+
+**The sharper point, because the prose fix was not the weak part.** The
+charter text added on 2026-09-30 is good: it names the shape, gives the
+command and says any file named by two items needs both ordering
+paragraphs to name the other. What it does not say is **run it now across
+the page you are already editing**. A rule written for the next run
+protects the next run. The artifact in front of this run stays wrong.
+
+**The fix.** Two words in `prompts/exo-agent.md` §5, turning the sweep
+from a check on new items into a check on the whole page every run, and
+the sentence that generalises it: when a run writes a new mechanical
+check, it runs that check across the entire artifact before it ships,
+in the same run, and says in the pull request how many instances it
+found. Item 4 was deleted as overtaken rather than repaired, so the
+instance itself is gone.
+
+**And the same class, a third time, in the same file, from this run's own
+edit.** Deleting item 11 left item 13's ordering paragraph naming a
+deleted item. Caught in the same run by re-running the sweep after the
+edit rather than before it, which is the practical form of the fix above:
+**the sweep runs after your own changes, not only before them.**

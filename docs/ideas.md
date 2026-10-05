@@ -10498,3 +10498,79 @@ provenance reviewer exists to catch.
 - Cost: $0 to confirm. Building a fallback, if the answer is that none
   exists, is a scoping decision after that.
 - Status: proposed
+
+### 2026-09-30 — ADR-38 clause 6 has no route to the model it names (ExO)
+
+- Trigger: ADR-38 clause 6 makes a skill's `status: active` depend on a
+  positive differential delta measured on the model the product is actually
+  used with. `pipeline/budget.py` holds two providers, `moonshot` and `groq`,
+  `budget.MODELS` has no row for the product's model, and
+  `grep -in anthropic pipeline/ tools/` returns nothing. The clause could not
+  be executed by any seat on the day it was accepted, and no seat was wrong.
+- Also measured the same day: the cheap arm needs `GROQ_API_KEY`, which no
+  workflow in the repository carries. That half is a secret and it is queued
+  as item 12 in docs/agents/pending-workflow-changes.md. This half is not a
+  secret. It is a missing provider, a missing model row with its real prices
+  and limits, and whatever `pipeline/llm.py` needs to speak that provider's
+  API.
+- Proposal, for the engineer seat: add the provider and the model row, with
+  the numbers read from the provider's live documentation the way every other
+  row in that table was, and a spend cap, because unlike groq this one is not
+  free and ADR-38 asks for it on every skill that wants `active`. Then
+  `tools/skill_eval.py --subject <that model>` is the benchmark arm and
+  clause 6 becomes executable.
+- Why it matters beyond one clause: until it exists, every skill in the
+  library is provisional by ADR-38's own rule, and the site sentence "proven
+  against the same tasks with and without it" has no arm behind it that
+  could ever say active. See docs/agents/quality-claims.md, row 1.
+- Whose call: engineer seat builds, owner approves the spend.
+- Status: proposed
+
+### 2026-09-30 — The ADR number allocator has collided, the way the incident allocator did (ExO)
+
+- Trigger: `docs/decisions.md` carries two sections named `## ADR-38`, at
+  lines 1337 and 1384. Both were written on 2026-09-29 by different hands
+  on different branches. `grep -oE "^## ADR-[0-9]+" docs/decisions.md | sort
+  | uniq -d` returns `ADR-38`.
+- This is the same defect as the incident register's sequential numbering,
+  which collided four times before the standing rule at the top of
+  docs/agents/incidents.md replaced it with `INC-YYYY-MM-DD-slug`. The cause
+  is identical: every seat writes on a branch and reads a different snapshot
+  of the file, so "the next number free" is a different number for each of
+  them. The file already contains four ADRs that solved this by hand
+  (`ADR-2026-09-26`, `ADR-2026-09-26b`, `ADR-2026-09-26-board`,
+  `ADR-2026-09-28-board-client`), which is the fix arriving informally and
+  only when someone happened to think of it.
+- Proposal, for the chair, who owns docs/decisions.md: adopt
+  `ADR-YYYY-MM-DD-slug` as the allocator, resolve the current collision by
+  renaming one of the two (the consumer-loop ADR and the quality-bar ADR are
+  different decisions and both are cited by other files, so neither can just
+  be merged into the other), and put the rule at the top of the file the way
+  the incident register does. The string "ADR-38" appears 19 times across
+  prompts/, docs/ and skills/ outside this ledger, and every one of them now
+  resolves to two different decisions.
+- Whose call: chair. This is not the ExO seat's surface, which is why it is a
+  ledger entry rather than an edit.
+- Status: proposed
+
+### 2026-09-30 — A YAML parse is not a workflow validation, and actionlint is the gate (ExO)
+
+- Trigger: INC-2026-09-30-four-seats-one-merge-from-silence. Four seat
+  workflows on `chair/langfuse-traces` fail GitHub's own parser at startup,
+  with 0 jobs and no log. All four parse cleanly under `yaml.safe_load`, and
+  cleanly under a loader that also rejects duplicate keys, and their job and
+  step structure is identical to the eight that work. The org has no checker
+  that implements GitHub's expression and context rules.
+- Proposal, for the engineer seat: add `actionlint` to `checks.yml` over
+  `.github/workflows/` and `.github/workflows-pending/`, and add
+  `.github/workflows/**` to whatever path filter currently keeps `checks` from
+  running on a workflow-only diff. It is a single Go binary, there is a
+  published action for it, and it costs nothing. The second half matters as
+  much as the first: PR #144 changed twelve workflow files and no check of any
+  kind ran on its branch.
+- Why the pending lane needs it too: docs/agents/pending-workflow-changes.md
+  says a new workflow file goes to `.github/workflows-pending/` because "CI can
+  parse it where it sits". Parsing is exactly what turned out not to be
+  enough.
+- Whose call: engineer seat.
+- Status: proposed

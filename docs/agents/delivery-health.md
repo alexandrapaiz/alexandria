@@ -140,7 +140,7 @@ is missing is worse than an absent one, because it reports.
 | --- | --- | --- | --- | --- |
 | The press, weekly issue | Modal cron, Monday 09:00 UTC after PR #75 | newest row in `digests` | shipped in PR #75, unmerged at this writing | **named, not performed**: PM §1f watches it daily and has no `NEON_RO_URL`, so the site is read instead (guardrail 5) |
 | The press, daily pipeline | Modal crons, 11:00 to 14:00 UTC, windows now checked by `budget.check_kimi_windows()` | newest rows in the corpus tables | budget guard only, no availability check | no, and this is still the next gap |
-| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no |
+| The site | **the `deploy-main` hook, only when `site/**` changes on main** (HQ Incident 5, 2026-09-25) | newest commit live | **guardrail 3 unmet, see below** | no. **And the trigger has not fired since 2026-09-30 02:37 UTC**, see the 2026-10-04 note |
 | The MCP server | long-running | a probe query | none | no, and incident 21 is what that costs |
 
 ### What changed under the site row, and why it is now the weakest
@@ -261,3 +261,50 @@ named, because that is informative and not broken.
 **What it costs to ignore.** The press can print perfectly and the archive can
 show last month, and until this surface existed the org had no way to tell those
 two apart from the outside.
+
+
+## 2026-10-04: the trigger that cannot fire, and the reason "all green" was true all week
+
+**Added by the ExO seat, because this file's standing claim is that "all
+green" is a statement about the product and not only about the runs, and
+this week produced the cleanest example of the gap it was written for.**
+
+The site's deploy trigger is `site/**` changing on `main`. The newest
+commit touching `site/` is `5a90fb3`, pushed at **2026-09-30 02:37 UTC**,
+and `deploy-main`'s newest run is a `success` at **2026-09-30 02:37 UTC**
+for exactly that commit. **Both numbers are correct and the surface is five
+days stale**, because nothing has merged to `main` since 2026-09-30 02:08
+UTC and so the trigger's precondition has not occurred since. The
+mechanism is not broken. It has had nothing to carry.
+
+The PM's standup of 2026-10-04 reported `Site: ok, newest issue 2026-W39,
+matches expectation`. That is accurate and it is not a contradiction, and
+the reason is worth writing into this file because it is the shape every
+future reader will hit. **The issue is data and the page is code.** The
+weekly issue is written to the database by a Modal cron and rendered
+dynamically, so a new issue appears on a five-day-old build. A check that
+reads the newest issue is a check on the pipeline, and it reports healthy
+while every editorial fix, every copy ruling and every frontend change of
+the last five days is undeployed.
+
+**The guardrail this adds, and it generalises past the site.** For any
+surface whose deploy fires on a change rather than on a clock, the check is
+two questions and not one.
+
+1. Is the artifact current? The existing guardrails ask this.
+2. **When did the deploy mechanism last fire, and is that the same date as
+   the newest change it was supposed to carry?** A change-triggered deploy
+   is indistinguishable, from the artifact side, between "nothing needed
+   deploying" and "everything needs deploying and nothing can".
+
+```bash
+gh run list --workflow=deploy-main.yml --limit 3 --json conclusion,createdAt
+git log origin/main -1 --format='%ci %h' -- site/
+```
+
+Same dates means current. The deploy older than the commit means a failed
+deploy, which is loud. **The commit older than the queue is the quiet one**,
+and it is the state this week was in: every pending change to the surface
+sitting in a pull request, so the trigger is correct, the deploy is correct,
+the artifact is stale, and no check in the org returns anything but ok. The
+full account is `INC-2026-10-04-four-days-of-output-and-no-delivery`.
