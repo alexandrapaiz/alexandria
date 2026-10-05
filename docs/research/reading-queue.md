@@ -224,3 +224,50 @@ is what HiSkill and SkillDAG measure and what no standard will answer. That line
 stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
+- [ ] arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.40115 — RLVR: Unlearnable, or Unmeasured? On the Reliability of Difficulty Labels in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.40360 — RLVR: Semifactual Credit-Augmented Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.39533 — RLVR: CATCH: A Controllable Analysis Testbed for Reward Hacking in Coding RL — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.37825 — RLVR: Privy to the Foil: a self-privileged critic for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.37868 — RLVR: Learning Beyond What You Sample: cross-model trajectory exchange for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.35259 — RLVR: On-Policy or Off-Policy Learning? distillation dynamics — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.35677 — RLVR: Verifier Errors in RLVR: Reward Hacking, Limits of Feedback, and Selective Control — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.34857 — RLVR: Beyond Verbalized Confidence: Calibrating Reasoners with Differentiable Readouts — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.28765 — RLVR: Reinforcement Learning with Verifiable Rewards for Small Search Agents — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.28385 — RLVR: When and Where to Trust the Teacher: on-policy distillation and GRPO through entropy — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.24380 — RLVR: Information-Time Proximal Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.23053 — RLVR: Attributable Post-Rationalization in RAG Citations: an RLVR fix — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.16639 — RLVR: ReDraft, Don't Just Distill: reference-driven revision for continual post-training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.15987 — RLVR: Bellman Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.12191 — RLVR: GAUGE: When Not to Trust LLM-as-a-Judge in user-simulated evaluation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.10315 — RLVR: TRACE: Training Reasoning Agents for Causal Exploration with Synthesized Rewards — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.09075 — RLVR: ThinkPrior: Zero-Rollout Difficulty Priors for Cold-Start Prompt Selection in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.06107 — RLVR: DataFlex-RL: An Evaluation Platform for RLVR Data Policies — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.05111 — RLVR: Unifying ICL, SFT, KL-Regularized RL Through a Bayesian Lens — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2608.29188 — RLVR: Locked at the Entrance, Open Inside: Where RLVR Narrows the Solution Space — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2608.27046 — RLVR: Performance Foundations of Parallel and Distributed Reasoning Language Models — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2211.14275 — gap: process versus outcome rewards over long horizons: Uesato et al., process- and outcome-based feedback for math word problems (the original comparison) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2305.20050 — gap: process versus outcome rewards over long horizons: Lightman et al., Let's Verify Step by Step (PRM800K, process supervision beats outcome) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2312.08935 — gap: process versus outcome rewards over long horizons: Math-Shepherd, automatic process supervision without human labels — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2406.06592 — gap: process versus outcome rewards over long horizons: OmegaPRM, automated process supervision by MCTS — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2410.08146 — gap: process versus outcome rewards over long horizons: Setlur et al., Rewarding Progress: scaling automated process verifiers — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2412.06559 — gap: process versus outcome rewards over long horizons: ProcessBench, where process reward models fail — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2501.07301 — gap: process versus outcome rewards over long horizons: Qwen, the lessons of developing process reward models in mathematical reasoning — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2502.01456 — gap: process versus outcome rewards over long horizons: PRIME, process reinforcement through implicit rewards — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2502.10325 — gap: process versus outcome rewards over long horizons: Process reward models for LLM agents, framework and directions (long-horizon credit) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2505.10978 — gap: process versus outcome rewards over long horizons: GiGPO, group-in-group policy optimization for long-horizon agent credit assignment — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2504.20073 — gap: process versus outcome rewards over long horizons: RAGEN, training agents by multi-turn RL and where it collapses — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2203.02155 — gap: preference optimization from usage data: InstructGPT, RLHF from human preference comparisons (the reference pipeline) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2305.18290 — gap: preference optimization from usage data: DPO, direct preference optimization without a reward model — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2402.01306 — gap: preference optimization from usage data: KTO, alignment from binary good-or-bad feedback, the shape usage data actually has — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2401.10020 — gap: preference optimization from usage data: Self-rewarding language models, the model judging its own preferences — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2404.19733 — gap: preference optimization from usage data: Iterative reasoning preference optimization, online preference loops — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2404.03715 — gap: preference optimization from usage data: Direct Nash optimization, general preferences beyond reward models — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2403.04132 — gap: preference optimization from usage data: Chatbot Arena, preference data from live usage at scale — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2411.15124 — gap: preference optimization from usage data: Tulu 3, the open post-training recipe where RLVR was named — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2407.21783 — gap: preference optimization from usage data: The Llama 3 herd of models, the preference-data pipeline in production — asked by the chair (owner: fix the gaps) — 2026-10-05
