@@ -1,4 +1,149 @@
-## Updated 2026-10-05 (Monday ceremony, in progress — placeholder commit to ship the draft PR first, full reconciliation follows in this same PR)
+## Updated 2026-10-05 (Monday ceremony, full reconciliation)
+
+**This run completes the ceremony.** An earlier synchronous session
+today (PR #197, merged 03:24 UTC) shipped the retrospective on sprint
+2026-09-28 and this file's placeholder line, then ended before
+grooming, the new sprint, or today's dispatch queue landed. This run
+builds on that rather than redoing it: the retro at the top of
+sprint-2026-09-28.md is already final.
+
+**A live synchronous session started partway through this run.** At
+03:41 UTC, seven minutes after this run began, someone dispatched
+`research-agent` and `engineer-agent` directly (`workflow_dispatch`),
+and new PRs (#208-#211) have opened since, including engineer and
+research work that already targets agent-containment's zero-claims gap
+named below. Per charter §5's hard stop, this run queues rather than
+fires any dispatch of its own for the rest of this ceremony. The
+open-PR snapshots in this file are accurate as of ~03:46 UTC and will
+be stale within the hour; that is the live session's pace, not a
+tracking gap.
+
+**Reconciliation against docs/decisions.md and docs/allhands/ since
+2026-09-28, per charter §1d.**
+
+- ~~`docs/agents/registers.md`'s nine conflict markers~~ — **resolved.**
+  Confirmed zero `<<<<<<<`/`=======`/`>>>>>>>` markers in the file as
+  of this run. Merge commit `bdfa4a7` ("Merge main into
+  alexandria-security/2026-10-05-window... main wins on files it
+  replaces in full") cleared them during today's merge session.
+- **The merge-backlog crisis the 2026-09-28 retro named is resolved,
+  dramatically.** That retro counted 66 open PRs and a 7-day conversion
+  of 12 merged against roughly 63 opened. Between 02:27 and 03:36 UTC
+  today, 45+ of those PRs merged in one synchronous session. As of this
+  run: 5-8 PRs open (climbing again as the live session above opens
+  new ones), 80 merged in the trailing 7 days against 78 opened — a
+  conversion over 1. The process-improvement the retro proposed
+  (counting this fraction daily) would have shown the turn exactly
+  where it happened; worth keeping as a standing standup line now that
+  there is a number to watch for the next time it drops.
+- **ADR-38 is still a live duplicate number in `docs/decisions.md`,
+  unresolved.** Two `## ADR-38` headers exist (2026-09-29 "Skills close
+  the loop with their consumers" and 2026-09-30 "The skill quality
+  bar"), landed as separate commits that never got renumbered. Same
+  shape as the ADR-32 duplicate from 2026-09-24, same resolution this
+  file asked for then: your one-line call on which keeps 38 and which
+  renumbers, applied in one pass that greps every citing file so no
+  cross-reference breaks. Not this seat's to fix (decisions.md isn't a
+  writable surface for any seat but the chair); flagging for you or
+  the ExO.
+- **New ADRs since 2026-09-28** (none dated after 2026-09-30; nothing
+  new arrived in the window this file could see before this run
+  started): ADR-36 (skills proven, not asserted — eval harness),
+  ADR-37 and its guardrail amendment (skills maintain themselves —
+  auto-merge triggers, six guardrails), two ADR-38s (above), and
+  ADR-39 (distill moves to Kimi, three ceilings, chair-run gates). All
+  name engineer/skill/security/frontend follow-up work; all of it has
+  already had a run since (today's window session touched exactly
+  these files per the merged PR list below), so none of it is a fresh
+  dispatch trigger under §11.3's "no run followed" test.
+- No all-hands newer than 2026-09-18 exists in `docs/allhands/`.
+
+**Critical, found this run: `main` is red right now.** Every push to
+`main` since 03:23 UTC has failed `checks` on the same cause:
+`tests/test_panel_provenance.py` (5 failures) — `skills/agent-containment`
+cites no claim ids, and three skills (`evaluation-integrity` among
+them) use "ours ..." phrasing outside the panel's recognized
+unsourced-judgment vocabulary. This is the provenance gate
+(`INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had`'s queued
+step) having just gone live in CI for the first time against real
+skill content, and the content doesn't clear it yet. **Already being
+worked**: PR #204 (engineer, open) touched exactly these files before
+being superseded minutes ago by PR #209 ("the containment threads
+become findable"), part of the live session above. Not re-flagged as a
+fresh incident this run because a run is already in flight against it;
+worth one line in next standup confirming `main` went green, not a new
+dispatch.
+
+**Critical, confirmed still open: the `sql_query` MCP tool can read
+`subscribers` and `users`, not just the corpus.** The 2026-09-28 retro
+named this as PR #174's finding (merged forward through #196 today,
+still without a code fix — security's own PR #196 description was
+never filled in past its draft placeholder). Checked directly against
+`mcp/server.py` this run: `sql_query`'s only checks are "single
+statement" and "starts with SELECT/WITH"; there is no table allowlist,
+and `db/schema.sql` confirms `subscribers`, `users`, `auth_attempts`,
+and `consumed_codes` live in the same database the corpus tables do.
+Open since 2026-10-01, now 4 days, and genuinely needs your call on
+the fix shape (an allowlist inside `sql_query`, or a restricted view it
+queries instead) before any seat should touch it — the same framing
+security gave it a week ago still holds.
+
+**Top three for you, this run, all launch-critical, 8 days out:**
+
+1. **The `sql_query` scope decision, above.** A real data-exposure
+   path, open 4 days, and the fix shape is yours to pick.
+2. **Merge PR #60** — the pre-send quality checklist (sprint
+   2026-09-21 item 4), finished and open **15 days**, still the oldest
+   open PR in the repository. It touches `prompts/daily.md`, which
+   makes it Tier C under standards/pm.md §10 (charters/prompts are
+   owner-merge only) — this seat genuinely cannot merge it for you even
+   under the new Tier B merge authority. Nothing further is owed from
+   any seat.
+3. **The Polar Merchant-of-Record account (ADR-30)** — due
+   2026-09-26, now **9 days overdue**. No live keys appear anywhere in
+   the codebase as of this run. O1 KR1 needs the $20 spine purchasable
+   end-to-end by 2026-10-13 (8 days out), and checkout wiring cannot
+   start until this account and its keys exist.
+
+**Tier B merge check, this run (standards/pm.md §10).** Every
+currently open PR was checked against the five Tier B conditions. None
+qualify: #202 (frontend), #203 (okr), #204/#209 (engineer), #205
+(finance), #210 (research) are all drafts; #60 (engineer) is not a
+draft but touches `prompts/daily.md`, a Tier C path. No merges
+performed this run.
+
+**A decision this file is surfacing rather than making: SEP-2640.**
+The 2026-09-30 research brief flags that the IETF/MCP community's
+"Final MCP standard for serving Agent Skills" (SEP-2640) has existed
+five months with zero awareness in this org, and that alexandria's
+skills are already shaped to match it, and asks the PM and skill seat
+to decide whether conformance is a 2026-10-13 launch item. Provisional
+call, pending your veto: **not a launch item.** Eight days out, with a
+`sql_query` data-exposure path and a $20 spine still unpurchasable,
+adding new launch scope for a standards-conformance question with no
+named customer complaint is the wrong trade. Filed as a `proposed`
+ledger entry for after launch rather than scheduled.
+
+**The design pre-mortem is due this week.** docs/agents/frameworks.md
+lists the pre-mortem as adopted, one hour, once, "week of Oct 6" — that
+week starts tomorrow. It needs the owner or chair to facilitate it, not
+a sprint item; naming it here so it does not slide past Oct 13 unused.
+
+**Register-integrity note, not this seat's to fix.** `docs/agents/turn-caps.md`
+has never been updated to list its own "rule 5" (the 70%-of-cap daily
+report this charter names and this standup runs below) — the rule
+lives only in prompts/pm-agent.md, citing a file that doesn't carry it.
+Same class as the ADR-38 duplicate: a register whose own text
+disagrees with what cites it. ExO's to fix on its weekly pass.
+
+**Resolved since last noted (added to the section below, not
+repeated):** registers.md conflict markers (above). PR #110's
+`modal deploy` gap (incident 24's shape) is very likely superseded by
+the deploy-drift guard that merged today (PR #166,
+`pipeline/runtime_sha.py` + the `deploy_runtime` table), which is
+designed to self-detect exactly this class going forward; this file
+will stop carrying it as a standing item once a standup confirms the
+guard has actually tripped or cleared once for real.
 
 ## Updated 2026-09-28 (Monday ceremony, full reconciliation)
 
