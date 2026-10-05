@@ -266,3 +266,11 @@ the chair and the PM record her rulings.
   "Accelerate every builder and agent to frontier speed." The mission
   heading on the site keeps its own form. Historical reviews and the
   preference record keep the old line as what was said then.
+- 2026-10-04 — TITLES. "two issues should never have the same title.
+  thats a big and quite obvious issue." The Monday 2026-09-28 issue
+  printed under the title of the two sends before it and read as a
+  repeat. Law: a title the library has already used is not a title. The
+  press now hands the generator the titles already used and refuses a
+  reused one (asks the model for a new title; dated title as the last
+  resort). The writer carries this into the digest prompt as a rule, not
+  a hint.

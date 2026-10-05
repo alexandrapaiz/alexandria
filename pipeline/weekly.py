@@ -795,6 +795,51 @@ MASTHEAD = (
 )
 
 
+def title_of(body: str) -> str:
+    return body.split("\n", 1)[0][2:].strip() if body.startswith("# ") else ""
+
+
+def same_title(a: str, b: str) -> bool:
+    norm = lambda s: " ".join(s.lower().replace("\u2019", "'").split())
+    return bool(a) and norm(a) == norm(b)
+
+
+def ensure_fresh_title(body: str, prior_titles: list[str], model: str, dates: str) -> str:
+    """Two issues never carry the same title (owner, 2026-10-04).
+
+    On 2026-09-28 the Monday issue printed under the title of the two sends
+    before it, and the owner read a new issue as a repeat of the last one. A
+    title is how a reader tells issues apart, so a title the library has
+    already used is not a title. If the generator reuses one, the press asks
+    the same model once for a new title that is not on the list, and if that
+    answer is still used or empty, it falls back to the title with the
+    week's dates, which is at least distinct. The body below the title is
+    never touched.
+    """
+    title = title_of(body)
+    if not title or not any(same_title(title, p) for p in prior_titles):
+        return body
+    print(f"title already used ({title!r}); asking {model} for a new one")
+    fresh = ""
+    try:
+        used = "\n".join(f"- {p}" for p in prior_titles[:12])
+        fresh = call_model(
+            model,
+            "You retitle a newsletter issue. Reply with the new title only: one "
+            "line, no quotes, no markdown, under 80 characters. It must state "
+            "the issue's main finding in plain words and must not repeat or "
+            "lightly reword any title in the used list.",
+            f"Used titles, never to be reused:\n{used}\n\nThe issue:\n\n{body[:6000]}",
+        ).strip().strip("#*\"' ").split("\n")[0].strip()
+    except Exception as exc:
+        print(f"retitle call failed ({exc}); falling back to the dated title")
+    if not fresh or len(fresh) > 120 or any(same_title(fresh, p) for p in prior_titles):
+        fresh = f"{title} ({dates})"
+    print(f"retitled: {fresh!r}")
+    rest = body.split("\n", 1)[1] if "\n" in body else ""
+    return "# " + fresh + ("\n" + rest if rest else "")
+
+
 def add_masthead(body: str) -> str:
     lines = body.split("\n")
     if lines and lines[0].startswith("#"):
@@ -1217,6 +1262,18 @@ def weekly() -> str:
             payload = gather(conn)
             payload["week"] = week
             payload["dates"] = dates
+            # Titles already used, so the generator and the guard below can
+            # keep this issue's title new. Owner, 2026-10-04: two issues
+            # should never have the same title.
+            prior_titles = [
+                r[0].split("\n", 1)[0][2:].strip()
+                for r in conn.execute(
+                    "select body from digests where week <> %s "
+                    "order by created_at desc limit 24", (week,)
+                ).fetchall()
+                if r[0].startswith("# ")
+            ]
+            payload["prior_titles"] = prior_titles
             print(payload_line(week, payload))
         # The read connection closes here, on purpose. Kimi reasons for
         # minutes before it writes, and Neon terminates a connection left
@@ -1224,6 +1281,7 @@ def weekly() -> str:
         # 2026-09-24: the issue was written and could not be saved). The
         # model call runs with no connection open; a fresh one saves and sends.
         body, model = write_digest(payload, prompt, available)
+        body = ensure_fresh_title(body, prior_titles, model, dates)
         body = add_masthead(body)
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             conn.execute(
