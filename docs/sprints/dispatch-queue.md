@@ -3,6 +3,85 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
+## 2026-10-05 (ceremony reconciliation, refresh at 05:50 UTC)
+
+This PR (#222) reconciles two open PM-seat PRs from earlier tonight,
+#217 (which itself already folded in #213's ceremony and #215's
+message) and #218 (the merge-authority governance note), rather than
+redoing their work from a clean `main` — see each file's own section
+below for what carried forward unchanged. This section refreshes the
+numbers that moved in the ~2 hours since #217's 03:51 UTC snapshot.
+Everything in the sections below this one is #217's and #218's own
+text, kept because it is still accurate; nothing in it is restated
+here unless it changed.
+
+**Queue gauge, recomputed at 05:49 UTC:**
+
+1. **`main`'s age and check state.** Newest merge to `main`: still PR
+   #211 (ADR-40), 04:00:37 UTC, now 1h48m old. Newest `checks` run on
+   `main`: still **failure**, 03:36:14 UTC, unchanged — confirmed
+   directly against the tree rather than just the run log:
+   `skills/agent-containment/SKILL.md` line 11 still reads `claims:
+   []`, so the provenance-gate defect #217 named is still live on
+   `main` right now, not fixed by anything that has merged since
+   (#208-#214 touched ADRs and other skills, not this file). This is
+   the same defect, still open, now at least 2h26m since it first
+   tripped `checks` (03:23 UTC).
+2. **Open pull requests: 11 total** (including this one), **7 opened
+   since the last merge**: #216, #217, #218, #219, #220, #221, and
+   this PR, #222.
+3. **Conversion, trailing 7 days: 85 merged / 94 opened** (≈0.90).
+   Still healthy; the 7-day window is rolling past some of the
+   09-30 batch-merge's "opened" count, which is why this reads a
+   little lower than #217's 0.97 snapshot rather than higher.
+4. **Deepest open supersession chain: still 1.** #219 supersedes #209
+   (closed) and #220 supersedes #210 (closed) — both point at a
+   closed PR, not an open one. No stacked chain is live.
+
+Threshold unchanged: last merge was under 2 hours ago, so this section
+stays informational, not the first thing in the description.
+
+**A third PM-seat PR opened after #217 and #218, and also collides on
+`pending.md`.** #221 (`alexandria-pm/2026-10-05-message-distill-timeout`,
+opened 05:32:53 UTC) triages the chair's distill-timeout question,
+substantively unrelated to this ceremony, and was correctly branched
+fresh from `main` rather than built on #217 or #218 (its own PR body
+makes the same "genuinely does not touch the same work" call this
+charter's collision rule asks for). It touches `pending.md` at the
+same top anchor this PR does. **Expected merge order:** this PR
+(#222) first, since it carries the full ceremony; #221 rebases on top
+after, the same order #221's own body already expects.
+
+**Tier B merge check, redone at this snapshot.** All 10 other open
+PRs checked against standards/pm.md §10's five conditions: #216,
+#217, #218, #221 are PM-seat PRs (excluded by condition 1); #219 has
+a **failing** `checks` run (condition 3, see Failures below); #220,
+#203, #202, #205 are drafts (condition 2); #60 is not a draft but
+`mergeable: CONFLICTING` (condition 5) on top of already being Tier C
+(`prompts/daily.md`). **No PR qualifies for a Tier B merge this run.**
+
+**Failures, refreshed.** #217's three classes below still hold. One
+addition: **#219** (`engineer/2026-10-05-skill-eval-program`, the
+ADR-40 skill-eval program, supersedes #209) has now failed `checks`
+**7 times in a row**, 04:44-05:12 UTC, on the same assertions each
+time: `tests/test_skill_receipts.py` — `agent-containment: no claim
+ids reached the page`, and a second assertion expecting claim `'199'`
+in harness-engineering's rendered list and not finding it. This is
+the exact defect named above, confirmed still live in the tree, and
+the run log shows the same two failing assertions on all 7 attempts —
+**real defect, not transient, no rerun.** Per charter §11.7 point 4,
+two failures in a row on one seat is already an incident-register
+matter and this is seven; this run cannot write
+`docs/agents/incidents.md` (outside this run's write scope, confined
+to `docs/sprints/` and ledger grooming), so flagging here for the
+seat that can: an entry is owed, `agent-containment` and the
+provenance test need the engineer's next pass to actually land claim
+ids rather than retry the same unchanged content. Not dispatched this
+run either, for the same synchronous-mode reason as everything else
+below — and dispatching it would need to say "build on #219" by name
+per the open-PR hard stop, which is itself only safe to write once a
+human is not already mid-session on the same branch.
+
 ## 2026-10-05 (Monday ceremony's standup half)
 
 **Synchronous mode is active. No dispatch fired this run.** At 03:41
