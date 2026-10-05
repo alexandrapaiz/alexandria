@@ -34,13 +34,6 @@ Three clauses make it work in practice.
    frontend gained Playwright screenshots, security gained a whole
    repository to sweep. A charter edit that adds work to a seat should
    be followed by a cap check, not by waiting for the failure.
-5. **Distance to the cap is a trigger on its own** (added 2026-10-04).
-   A run that finishes above 70% of its cap re-derives that row, with no
-   need to say what changed. The other three event triggers all ask an
-   auditor to name a cause, and the October re-derivation found seven
-   rows under the rule with no nameable cause in any of them. The full
-   reasoning is in that section below.
-
 4. **A cron change is a re-measurement trigger too** (added 2026-09-27).
    A cap belongs to a job, not to a seat. When one workflow grows a
    second schedule with a different mode, it has two turn profiles
@@ -58,9 +51,6 @@ Three clauses make it work in practice.
 - **On duty growth**, whenever a charter edit gives a seat more to do.
 - **On a cron change**, whenever a workflow gains or splits a schedule,
   because that splits the job behind the cap.
-- **On the ratio**, whenever any run finishes above 70% of its cap (rule
-  5, added 2026-10-04). This is the only trigger that fires on drift
-  nobody caused, and it is the one the other four missed for two weeks.
 
 Never set a cap from a feeling about how much work a seat "should"
 need. The commands below take about a minute.
@@ -117,86 +107,7 @@ gh run view <run-id> --json createdAt,updatedAt --jq '[.createdAt,.updatedAt]|@t
 git log --all --since="<createdAt>" --until="<updatedAt>" --format='%cI %h %s'
 ```
 
-## The October re-derivation, 2026-10-04 — seven of thirteen rows are under the rule
-
-**This is the monthly re-derivation the charter owes (§6, "re-derive it in
-your first run of each month"), and it is the first one that found the
-whole fleet drifting at once rather than one seat after a duty growth.**
-Every number below is a free-running `success` run, measured with command
-1 above, newest eight runs per seat. No run has hit a cap, which is
-exactly why nobody noticed.
-
-| Seat | New peak | Run | Prev peak | Cap in force | Required | Verdict |
-|---|---|---|---|---|---|---|
-| writer | **136** | 37145772400, 2026-10-03 | 53 | 150 | **300** | **UNDER by 150. 91% of cap** |
-| skill | **156** | 36660409051, 2026-09-30 | 114 | 180 | **350** | **UNDER by 170. 87% of cap** |
-| engineer | **168** | 37214213528, 2026-10-04 | 82 | 200 | **350** | **UNDER by 150. 84% of cap** |
-| market | **131** | 37034767759, 2026-10-02 | 47 | 160 | **300** | **UNDER by 140. 82% of cap** |
-| research | **145** | 36656358478, 2026-09-30 | 54 | 180 | **300** | **UNDER by 120. 81% of cap** |
-| exo | **134** | 36339095165, 2026-09-27 | 93 | 200 | **300** | **UNDER by 100. 67% of cap** |
-| security | **134** | 36908023121, 2026-10-01 | 108 | 250 | **300** | **UNDER by 50. 54% of cap** |
-| frontend | 174 | 35887060776, 2026-09-23 | 286 historical | 600 | 600 | ok, the 286 still sets the rule |
-| pm (ceremony) | 125 | 36463692579, 2026-09-28 | 125 | 300 | 250 | ok, no Monday since |
-| pm (standup) | 65 | 37034905425, 2026-10-02 | 81 | 300 | 200 | ok, 22% of cap |
-| okr | 75 | 36895754147, 2026-10-01 | 33 | 160 | 150 | ok |
-| sales | 76 | unchanged, dormant | 76 | 160 | 160 | ok, no headroom |
-| finance | 29 | unchanged, dormant | 29 | 120 | 100 | ok |
-
-The seven raises are queued as **one** item in
-[pending-workflow-changes.md](pending-workflow-changes.md), which replaces
-the separate writer and skill cap items that both proposed 200 and are
-both now overtaken.
-
-### Why every trigger on this page failed to fire, which is the real finding
-
-Read the four triggers in "When this gets reviewed" again. Three of them
-are events: a cap was hit, a charter edit added a duty, a cron split. The
-fourth is a calendar. **The drift that actually happened is none of those
-shapes.** Nothing was hit, no cron moved, and no single charter edit added
-enough work to a seat for any run to recognise it as duty growth. Peaks
-rose by 157% for the writer, 179% for market and 169% for research in
-about two weeks, two or three lines of charter at a time.
-
-Two mechanisms are behind it and both are worth writing down.
-
-1. **Charters grow every run, by design.** This seat and the PM seat each
-   add clauses weekly or daily. No one of them is duty growth. All of them
-   together are.
-2. **The frozen merge queue inflates turn demand directly.** A seat whose
-   last run is still open has to read that branch, merge it, prove
-   containment and re-ship the accumulation before it starts today's work.
-   The engineer's newest pull request supersedes eleven. That is the
-   measured cause of the single largest jump on this page, and it means
-   **merge latency and cap collisions are the same failure**, which
-   nothing in this org had connected before.
-
-So the page gains a fifth trigger, and it is a ratio rather than an event,
-because a ratio cannot be missed by a run that does not know what changed.
-
-### Rule 5, added 2026-10-04: the 70% ratio trigger
-
-> **Any run that finishes above 70% of its seat's cap re-derives that
-> seat's row in the same week, whether or not anything is known to have
-> changed.**
-
-A cap is a tripwire, so the number to watch is the distance to it rather
-than the event that moved it. Five rows were above 80% on the day this
-rule was written and not one had a trigger.
-
-The detection is a daily read and the re-derivation is weekly, so they
-belong to different seats. **The PM reports the ratio** in its standup,
-from the run list it already reads, and names any seat above 70%. **The
-ExO re-derives the row**, because the rule and the queue item are both on
-this page and both belong to this seat. Written into
-`prompts/pm-agent.md` §4 and `prompts/exo-agent.md` §6 in the same pull
-request as this table.
-
-One honest note on that division. Adding the ratio to the standup is
-itself duty growth for the PM, so rule 3 fires on it, and the measurement
-is above: the standup peaks at 65 against a cap of 300, 22%. It is one
-arithmetic step over a list the standup already fetches. No cap change.
-
-## The table, re-measured 2026-09-19 04:10 UTC — superseded by the October re-derivation above, kept as the record
+## The table, re-measured 2026-09-19 04:10 UTC
 
 Peak is the highest `num_turns` on record for the seat. Required is
 twice that, rounded up to the next 50, floor 100.
@@ -204,12 +115,12 @@ twice that, rounded up to the next 50, floor 100.
 | Seat | Runs measured | Peak turns | Cap in force | Required | Verdict |
 |---|---|---|---|---|---|
 | frontend | 8 | 286 | 600 | 600 | ok |
-| pm (ceremony) | 9, one since the cron split | 125 (run 36463692579, 2026-09-28) | 300 | 250 | **ok, measured 2026-09-30**. The first Monday to complete since the split came in under the pre-split peak of 141, so queue item 2 is cancelled in full |
+| pm (ceremony) | 8, none since the cron split | 141 (censored) | 300 | unknown | **stale**: last measured before the ceremony and the standup became separate runs, see below |
 | pm (standup) | 4 | 81 | shares the pm cap, 300 | 200 | **measured 2026-09-27**, comfortable, see below |
 | security | 3 | 108 | 250 | 250 | ok, re-checked 2026-09-20 after duty growth |
 | engineer | 8 | 82 | 200 | 200 | ok, re-checked 2026-09-20 after duty growth |
 | sales | 5 | 76 | 160 | 160 | ok, no headroom |
-| skill | 5 | 114 (run 36602825862, 2026-09-29) | 180 | **250** | **UNDER-CAPPED, re-measured 2026-09-30 after two duty growths**, see below |
+| skill | 3 | 67 | 180 | 150 | ok |
 | research | 1 | 54 | 180 | 120 | ok, first measurement |
 | writer | 2 | 53 | 150 | 110 | ok, first measurement |
 | exo | 4 | 93 | 200 | 200 | ok, no headroom |
@@ -400,8 +311,6 @@ since the 2026-09-21 check, on a seat that runs daily and gained three
 duties that week. 150 has still never been hit, which is the reason
 nobody has noticed, and 200 remains the rule's answer.
 
-<<<<<<< HEAD
-
 ---
 
 ## The PM's two runs, measured apart (2026-09-27)
@@ -456,7 +365,9 @@ moment rather than from the moment somebody notices. The trigger for a
 re-measurement is therefore not only a cap hit and a duty change, which
 is what the rule above says. **It is also a cron change**, and that is
 now the third entry on the list in this page's opening rule.
-=======
+
+---
+
 ## Duty-growth re-check, 2026-09-27: the skill seat under ADR-35
 
 Rule 3 again, and this time the duty growth was an ADR rather than a
@@ -513,56 +424,3 @@ raise that outruns its job timeout buys nothing.
 This measurement was taken by the engineer seat under the owner's
 directive of 2026-09-25, not by the ExO seat that maintains this page.
 The page stays the ExO's; one directed edit is not a transfer.
->>>>>>> origin/main
-
-## The 2026-09-30 re-derivation, on two seats
-
-Two triggers fired at once, which is why this is a re-derivation rather than
-a note: a cap was questioned by the previous run, and a charter edit in this
-run grew a seat's duties. The rule is unchanged, twice the measured peak
-rounded up to the next 50.
-
-**pm (ceremony): the open question is closed.** The 2026-09-27 run left one
-number outstanding on this page and one item outstanding on the queue page,
-and they were the same number. The Monday of 2026-09-28 completed at 125
-turns against a cap of 300. Twice 125 is 250. The cap in force is already
-above what the rule asks for, so the ceremony's share of the 300-to-400
-raise is cancelled on measurement, exactly as the standup's share was three
-days earlier. Both pm rows now read ok and queue item 2 is cancelled in
-full.
-
-**skill: under-capped, and it is about to get worse.** Measured over the
-five completed runs:
-
-| Run | Date | Turns | Cap |
-| --- | --- | --- | --- |
-| 36657649313 | 2026-09-30 | 91 | 180 |
-| 36602825862 | 2026-09-29 | 114 | 180 |
-| 36206676462 | 2026-09-26 | 92 | 180 |
-| 35949369039 | 2026-09-24 | 69 | 180 |
-| 35750031009 | 2026-09-22 | 81 | 180 |
-
-The peak is 114 and the rule gives 250. The cap in force is 180, and queue
-item 11 asks for 200, which was correct against the peak of 92 it was
-written from on 2026-09-27 and is short against 114.
-
-Two duty growths are behind the climb, and the second one is this run's own
-doing, which is why the re-derivation is not optional. ADR-35 (2026-09-26)
-added the graph survey, the full-text reading and the reading-queue append.
-ADR-38, put into this seat's charter today, adds a bare-first differential
-pass, an eval run with two arms, and a status decision per skill. The
-seat has never hit its cap, so nothing would have flagged either growth:
-**a cap is only tested by the run that needs it, and the run that needs it
-is the one that loses its work.**
-
-So item 11's number is revised from 200 to 250 on this page and in the item,
-with the measurement above as the reason. The timeout does not need to move:
-the 114-turn run spent well inside `timeout-minutes: 75`.
-
-**One thing this re-derivation could not do.** The new duties are measured
-here by the turns of runs that did not yet have them. A run that actually
-executes the eval harness spends turns on a subprocess that waits on two
-model arms, and nobody knows what that costs yet because no seat can run it
-(queue item 12). So 250 is the honest projection from twice the peak and it
-is not a measurement of the new shape. The first skill run that measures a
-skill is the one to re-read, and the next ExO run should look for it.

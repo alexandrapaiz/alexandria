@@ -709,6 +709,34 @@ def install_oauth(api, *, jwt_secret: str, passphrase: str,
         }
 
     def read_access_token(token_str: str) -> dict | None:
-        return read_token(token_str, "access")
+        """Verify an access token, and refuse one whose session was revoked.
+
+        The signature check alone is not enough, and the gap was real. A code
+        presented twice revokes the session, which `CodeLedger.revoke` documents
+        as killing "every token issued from this code", and /token enforces it on
+        the refresh grant. Nothing enforced it here, so the access token the
+        first exchange handed out stayed valid for its full 24 hours after the
+        revocation that was supposed to kill it. Whoever won the race to spend a
+        stolen code kept a working token for a day, and it reached every tool on
+        /mcp: the corpus, the subscriber-bearing database, and a GitHub token
+        that opens pull requests. OAuth 2.1 section 4.1.2 asks for all tokens
+        issued from a replayed code to be revoked, not only the refresh half.
+
+        This costs one ledger read per request on /mcp. The ledger degrades to
+        memory on a database error exactly as it does everywhere else, so an
+        outage still cannot lock the owner out of her own connector.
+
+        A token with no `sid` predates sessions and is allowed through, which is
+        the same carve-out the refresh grant makes a few lines above and for the
+        same reason: merging this must not log the owner out of a connector she
+        authorized months ago.
+        """
+        claims = read_token(token_str, "access")
+        if claims is None:
+            return None
+        session = claims.get("sid") or ""
+        if session and code_ledger.is_revoked(session):
+            return None
+        return claims
 
     return read_access_token

@@ -2,18 +2,9 @@
 
 You are the skill agent (prompts/skill-agent.md), at step 2 of the weekly
 run, with a cluster already picked at step 1. This prompt is the method for
-turning that cluster into one skills/<slug>/SKILL.md.
-
-Read the gold specimen (skills/harness-engineering/SKILL.md) before drafting,
-for its citation style, its per-section *Validation:* tags and its voice.
-**Do not copy its shape.** The specimen was written before ADR-38 and it
-fails two of that ADR's rules: it runs 162 lines against a bar of 120, and
-its checklist is near the end rather than first. Where the specimen and §2
-below disagree, §2 wins, and the specimen is retrofitted on its own
-maintenance pass. A format contract that points at an artifact predating the
-contract is how a superseded shape gets copied forward, which is what
-happened on 2026-09-30 when a 432-line skill shipped six minutes before the
-bar was recorded.
+turning that cluster into one skills/<slug>/SKILL.md, in the shape of the
+gold specimen (skills/harness-engineering/SKILL.md). Read the specimen
+before drafting; it is the format contract, not just an example.
 
 ## 1. Finding and judging the cluster
 
@@ -164,39 +155,6 @@ not, and where the reading changed what you would have written from the rows.
 
 ## 2. Drafting the skill
 
-**The bar first, because it decides what goes in.** ADR-38, 2026-09-30, on
-the library's first measurement: the specimen scored 5.4 without the skill
-and 5.3 with it, and the bare model had already given most of the advice. A
-skill is not a summary of what the papers found. A skill is the difference
-it makes to an agent that does not have it. Everything below is in service
-of producing that difference and then measuring it.
-
-Five tests, and run each one against the draft before the PR opens.
-
-1. **The cut test, per section.** Ask the bare subject model the question
-   the section answers, with no skill loaded, and read its answer. Whatever
-   the bare answer already contains is cut from the section. What survives
-   is the section. A section that does not survive this test is deleted, and
-   a cluster whose every section is cut is a finding for the ledger rather
-   than a skill. This is the cheapest test here and it is the one that would
-   have caught the first measurement three weeks early.
-2. **The threshold test, per section.** Every section ends in a numbered
-   procedure or one checklist line, with its numbers named: how many
-   samples, which floor, what to pin, when to stop. "Sample several
-   candidates and select one" is prose. "Sample four, select with the
-   verifier, stop at the first pass" is a procedure. The specimen's longest
-   prose section is the one that moved its task from 6 down to 4.
-3. **The length test, on the whole file.** Under 120 lines by `wc -l`,
-   frontmatter included. Put the number in the PR body. What does not fit
-   is a second skill or a link to the paper, and the choice between those
-   two is a ledger entry rather than a silent trim.
-4. **The checklist-first test.** The builder's checklist is the first thing
-   after the opening paragraph, not the last thing before the caveats. A
-   reader who stops after twenty lines has the procedure.
-5. **The honesty test, on every validation line.** No section claims a trial
-   that is not recorded, adoption is never written as validation, and
-   `validated` in the frontmatter stays the ADR-13 panel's.
-
 Frontmatter, exactly the fields the gold specimen carries and the site
 parser (site/lib/content.js `parseSkill`) reads:
 
@@ -205,10 +163,12 @@ parser (site/lib/content.js `parseSkill`) reads:
 name: <kebab-slug, matches the directory name>
 description: <one paragraph, concrete trigger conditions — see "the trigger test" below>
 version: 1
-status: provisional   # active only once a positive differential delta exists on the benchmark subject (ADR-38)
+status: active
 provenance:
   extracted: <YYYY-MM-DD, today>
   validated: ""   # leave empty; the ADR-13 validator fills this at promotion, never fabricate a result here
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
   claims: [<every claim id the body cites, as a flat list>]
   papers:
     - "<paper title> — <arxiv or source url>"
@@ -217,113 +177,85 @@ provenance:
 
 Never write a non-empty `validated` string. The gold specimen's validated
 field records a real recorded A/B trial result; that trial is the ADR-13
-validator's job, not this prompt's. **And `status` is now a measured field,
-not a default.** A skill ships `provisional` until a positive differential
-delta exists on the benchmark subject, and the PR says the word unmeasured
-where no number exists yet. A skill whose evals exist and show no positive
-delta ships `retired` with its numbers in the body.
+validator's job, not this prompt's. A draft skill ships with `validated: ""`
+and `status: active` is provisional until the panel passes it — say so in
+the PR body, not in the frontmatter.
 
-Body shape, in this order:
+Body shape, after the specimen:
 
-1. **Opening paragraph.** What the skill covers and, in one sentence, the
-   delta it is: the thing a strong model does not say unprompted. Not a
-   restatement of the description field.
-2. **The Apply checklist, first.** The whole skill compressed into five or
-   fewer checkable lines, each line a question or an instruction with the
-   section it came from. The first consumer report in the library
-   (harness-engineering `reviews/`, 2026-09-29) derived this by hand and
-   said the skill should have shipped it, and ADR-38 moved it to the front
-   because the report read the first screen and acted on it. A skill whose
-   content cannot be compressed this way is describing findings rather than
-   procedures, and that is a cluster-selection finding to report.
-3. **A short "adds to, does not replace" paragraph** if the topic overlaps
-   standard practice. The consumer report praised this framing, and ADR-38
-   makes it the shape of the whole file rather than its preface: each
-   section is written as what it adds, not as what the field believes.
-4. **Numbered or titled sections, one per delta**, each surviving the cut
-   test above, each ending in a procedure with its thresholds. Directly
-   under each section heading, one italic *Validation:* line stating what
-   has actually tested that section: the recorded trial that exercised it,
-   the eval task id whose delta it moved, a consumer report that adopted it
-   (cite the file under the skill's `reviews/`), or "none yet; claim
-   provenance only". Adoption is not validation and the line never blurs
-   the two. Cite claims **by paper title inline** in prose
-   — `(Co-Evolving Harnesses and Models)` — never by raw numeric id. The
-   numeric ids belong in the frontmatter `provenance.claims` list only,
-   where the provenance reviewer (ADR-13) checks each one against the
-   database and confirms it actually supports the sentence citing its
-   paper. This split exists because a reader wants a paper name and a
-   reviewer wants a stable id to verify against the corpus.
-5. **Mark unsupported judgment explicitly.** Any practical advice not
+1. **Opening paragraph.** What the skill covers and why it is a delta from
+   generic practice a competent engineer already has — not a restatement of
+   the description field.
+2. **A short "adds to, does not replace" paragraph** if the topic overlaps
+   standard practice (the specimen's "This skill adds to standard
+   engineering practice" paragraph). Skip it if the topic has no such
+   overlap; do not force the shape.
+3. **Numbered or titled sections, one per finding**, each a procedure or a
+   judgment call, grounded in the cluster. Directly under each section
+   heading, one italic *Validation:* line stating what has actually tested
+   that section: the recorded trial that exercised it, a consumer report
+   that adopted it (cite the file under the skill's `reviews/`), or "none
+   yet; claim provenance only". Adoption is not validation and the line
+   never blurs the two. The frontmatter `validated` field remains the
+   ADR-13 panel's alone; a per-section tag never claims a trial that was
+   not recorded (ADR-38). Cite claims **by paper title
+   inline** in prose — `(Co-Evolving Harnesses and Models)` — not by raw
+   numeric id. The numeric ids belong in the frontmatter `provenance.claims`
+   list only, where the provenance reviewer (ADR-13) checks each one against
+   the database and confirms it actually supports the sentence citing its
+   paper. This split exists because a reader wants a paper name, and a
+   reviewer wants a stable id to verify against the corpus; conflating them
+   in the body makes the prose unreadable and doesn't make citation more
+   checkable, the provenance block already does that job.
+4. **Mark unsupported judgment explicitly.** Any practical advice not
    traceable to a claim must say so inline, in the specimen's voice: "(ours,
    not the paper's)". This is the line the provenance reviewer polices
-   hardest, because overstating evidence is the one sin the panel exists to
-   catch.
+   hardest — the one sin the panel exists to catch is overstating evidence.
+5. **An "Apply" checklist**, second to last: the whole skill compressed
+   into five to seven checkable lines a builder runs down before shipping,
+   each line a question with the section it came from. Five to seven is the
+   owner's number (2026-09-30), and the reason for the ceiling is that a
+   checklist longer than the sections it summarises is a second skill. Every
+   section of the body appears in exactly one line, so a skill with nine
+   sections merges rather than adds. The first consumer report in the library
+   (harness-engineering `reviews/`, 2026-09-29) derived this checklist by hand
+   and said the skill should have shipped it, and every skill ships it now
+   (ADR-38). A skill whose content cannot be compressed this way is describing
+   findings, not procedures, and that is a cluster-selection finding to
+   report.
 6. **Caveats section**, always last: the source studies' scope limits
-   (model sizes, task counts, sample sizes) and one sentence committing the
-   skill to revision if a source claim is later contradicted. A caveat that
-   names a requirement also names its floor: "needs an embedding model (a
-   MiniLM-class sentence embedder is sufficient)" turns a hesitation into a
-   decision, while "needs an embedding model" alone leaves the reader to go
-   research one (ADR-38).
+   (model sizes, task counts, sample sizes — whatever narrows how far the
+   finding generalizes) and one sentence committing the skill to revision if
+   a source claim is later contradicted. A caveat that names a requirement
+   also names its floor: "needs an embedding model (a MiniLM-class sentence
+   embedder is sufficient)" turns a hesitation into a decision, while
+   "needs an embedding model" alone leaves the reader to research one
+   (ADR-38).
+
+One deliverable sits beside the body rather than inside it. **The `reviews/`
+lane ships with the skill, not after its first consumer** (ADR-38, owner
+directive 2026-09-30). Create `skills/<slug>/reviews/README.md` in the same
+pull request as the SKILL.md. It points at the shared contract
+(`skills/_validation/reviews/README.md`) and then does the one thing only the
+author can do: name, in priority order, the two or three sections a report
+would move most, and say why. Every section of a new skill is unvalidated on
+day one, so "most wanted" means the sections whose prescriptions are marked
+ours rather than the papers', the sections with the thinnest sample, and the
+sections a reader is most likely to skip. The frontmatter
+`provenance.reviews` list points back at the lane and carries one line per
+filed report, or the placeholder line shown in the frontmatter template above
+when the lane is empty. A lane created only once a report arrives never
+receives one, because nothing told the consumer it existed.
 
 Every `provenance.claims` id must trace to at least one paper-title citation
 somewhere in the body. An id in the frontmatter with no corresponding
 citation is exactly the failure mode the provenance reviewer is built to
-catch. Check this yourself before opening the PR, the same check the panel
+catch — check this yourself before opening the PR, the same check the panel
 will run.
-
-## 2b. The eval suite, and why it is drafted with the skill
-
-A skill and its eval are one artifact. Write them together, because the act
-of writing a task the bare model fails is what forces a section to be a
-delta, and writing the eval afterwards lets a skill full of restatement look
-finished.
-
-The file is `skills/<slug>/evals/evals.json` and the harness is
-`tools/skill_eval.py`. Four rules, all from ADR-38.
-
-1. **One task per section, aimed at the decision that section changes.**
-   Not at the section's topic. A task about the topic is a task the bare
-   model answers from what it already knows, and it will score the same in
-   both arms.
-2. **The bare-first pass decides which tasks count.** Run the without-arm
-   first. A task the bare subject passes is kept in the file as a control
-   and excluded from the delta, and the PR says how many of the written
-   tasks qualified. A suite of four tasks where three are controls has one
-   task of evidence behind it, and that is the honest way to report it.
-3. **Prefer a hard check to a rubric.** A task whose answer is a file, a
-   config, or a command, checked by a test that passes or fails, is worth
-   more than a judged paragraph. Keep judging for advice tasks, and the
-   judge is never the subject model.
-4. **Record the arms and the numbers, not the verdict.** Subject, judge,
-   repetitions, per-task scores in both arms, the delta, and the spread.
-   `tools/skill_eval.py` writes this. Paste it into the PR whole. A summary
-   sentence that survives without its numbers is how a 5.4 against a 5.3
-   gets read as a win.
-
-**When you cannot run it, say so in that word.** The cheap arm needs
-`GROQ_API_KEY` and the benchmark arm needs a route to the product's model
-that `pipeline/budget.py` does not yet have. Neither is in
-`.github/workflows/agent-skill.yml`. Both are queued in
-docs/agents/pending-workflow-changes.md. Until they land, run
-`python3 tools/skill_eval.py --check` and the scripted-model smoke, which
-prove the suite is well formed and cost nothing, ship the skill
-`status: provisional`, and write **unmeasured** in the PR. A well-formed
-suite that never ran is not a measurement and the PR must not read as though
-it were.
 
 ## 3. The trigger test
 
-**What this section does not measure.** A trigger test asks whether a router
-finds the skill. It says nothing about whether the skill helps the agent that
-loaded it, and the two are independent: the specimen passed 27 of 27 trigger
-cases and moved its eval mean by minus 0.1. Six skills shipped over eighteen
-days on trigger tests alone and no skill's effect was measured once in that
-time. So a green suite is reported as findability and never as evidence of
-value, and the number that decides `status: active` is the one in §2b.
-
-Per prompts/skill-agent.md: the market evidence says 69% of public
+Per prompts/skill-agent.md step 3: the market evidence says 69% of public
 skills never fire (docs/market/opportunities-2026-09-18.md), and the
 differentiator dies if ours join them. Write `description` as concrete
 activation conditions — situations and symptoms, not just a topic label
@@ -353,8 +285,25 @@ purely by being longer:
   mentions more things wins more prompts, including prompts that belong to a
   neighbour. Verbosity reads as relevance to the instrument and as vagueness
   to a router. One clause per section of the body is the working test: if two
-  clauses point at the same section, delete one. The engine fix is a ledger
-  entry (2026-09-22); until it lands, the discipline is yours.
+  clauses point at the same section, delete one.
+
+  **This is now measured rather than trusted (2026-09-30).** The rule above
+  failed twice while it lived only in this file, on 2026-09-22 and again on
+  2026-09-24, because you read this prompt at step 2 and write the
+  description at step 3. Incident 31 records both. `trigger_test.py` now
+  counts the words and warns past 150, and it records the count in every
+  result bundle under `length_audit`, so the number travels with the
+  receipt. You do not have to hold the budget in your head. Run the trigger
+  test and read its warnings, which you were doing anyway at step 5.
+
+  **The engine fix still has not landed, and the reason is now a measurement
+  rather than a plan.** Both engines were tested on 2026-09-30 with
+  candidate, prompt and topic fixed and only length varied. lexical/2.1 pays
+  a candidate +0.1353 for going from 41 words to 123. lexical/3 fines it
+  -0.1227 for the same change. Neither is length-invariant, so no engine
+  choice available today removes this discipline from you. The proposal for
+  one that would is lexical/4 in `docs/ideas.md`, and the evidence is
+  `skills/_validation/results/2026-09-30-panel-v2-engine-decision.md`.
 - **Put the "distinct from X" boundary sentence before the "Use when" clause,
   never after it.** `activation_clause()` takes everything from the first
   "Use when" to the end of the field and weights it 1.25, so a boundary
@@ -430,14 +379,6 @@ and leave it failing, because a validated skill is not this run's to edit.
 - Never invent a claim id, stretch a claim past its abstract, or launder a
   paper's hedge into a flat assertion. If the cluster does not support the
   sentence you want to write, do not write the sentence.
-- Never report a trigger-test pass where the PR asks for a measured delta,
-  and never write a delta the harness did not produce. The two questions are
-  "is it found" and "does it help", and only the second decides the status.
-- Never write a section the bare model already says. That is the cut test in
-  §2 and it is the whole reason this file was rewritten on 2026-09-30.
-- Never grow a skill past 120 lines because the cluster was generous. A long
-  skill is two skills or one skill and a link, and the specimen's own worst
-  section by measured delta was its longest.
 - Never fill `provenance.validated` before a real trial ran.
 - One skill per run. A cluster too thin for a good skill is a ledger
   finding, not a reason to pad or to draft two thin skills instead of one
@@ -446,5 +387,13 @@ and leave it failing, because a validated skill is not this run's to edit.
   red suite green. The policy in `skills/_validation/` is pre-registered on
   purpose, and tuning an instrument until it flatters the artifact it
   measures is the same sin as overstating a claim.
+- Never write a *Validation:* tag that reads as evidence when it is not.
+  "Adopted by a consumer report" is adoption, "covered by an unrun eval task"
+  is coverage, and neither is a trial. The 2026-09-30 retrofit pass found the
+  reverse failure worth naming too: two skills had a section whose claim ids
+  were attached to an eval task that tested none of it, which would have let a
+  tag claim coverage the suite did not have. Check the task's own rubric
+  criteria, not its claim list, before a tag cites it, and write the missing
+  task rather than softening the tag.
 - Never write outside skills/, this file, and docs/ideas.md — panel
   promotion, library rendering, and pipeline code are other seats' surface.
