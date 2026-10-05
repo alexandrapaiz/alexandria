@@ -6534,3 +6534,1042 @@ restoring coverage v1 already had is fidelity to the instrument, while adding
 coverage v1 never had, to turn a red case green, is tuning the test until it
 passes. Only the first was done. Anyone editing the panel later needs that
 sentence more than they need the word counts.
+
+## INC-2026-09-30-engineer-run-twice-again
+
+**A repeat, recorded because the standing rule at the top of this file has no
+exceptions.** This is INC-2026-09-26-engineer-run-twice-in-one-window happening
+again, four days later, with the queued fix still unapplied.
+
+**What happened.** Two engineer-agent runs were alive at the same moment on
+2026-09-30: a `workflow_dispatch` at 01:58:40Z carrying the owner's ADR-36
+directive, and the ordinary `schedule` at 02:00:00Z carrying nothing. `gh run
+list` shows both `in_progress`. Two skill-agent runs were also alive in the same
+window, one dispatched at 01:58:42Z and one that had run at 17:08 the previous
+evening, though only one of those was live.
+
+**Why it is the same incident.** `docs/agents/pending-workflow-changes.md` item
+9 is the fix. It is a four-line `concurrency:` block per seat workflow, with
+`cancel-in-progress: false` so the second run queues rather than dies, and it
+was queued on 2026-09-26 by the engineer seat with this exact failure as its
+evidence. No seat's token can push a file under `.github/workflows/`, so it has
+sat waiting for a hand for four days. The guardrails that do exist are all one
+layer above the runtime: the PM's charter forbids dispatching into a seat with
+an open pull request, and neither of these dispatches was the PM's.
+
+**What it cost this time.** Less than last time, and the reason is worth
+recording. The dispatched run branched from `origin/main` under a slug naming
+its own work (`engineer/2026-09-30-skill-registrar-and-evals`) and opened its
+draft pull request in its first few turns, so the two runs could not land on one
+branch. What they can still collide on is `docs/ideas.md`, which both append to
+at the same anchor, and that is incident 6 exactly. The dispatched run names the
+expected merge order in its pull request, which is the charter's mitigation and
+not a fix.
+
+**What would actually fix it.** Item 9, applied. Nothing else in the repository
+can, and this seat cannot apply it.
+
+**One thing the owner should know that is not in item 9.** A dispatch and a cron
+firing ninety seconds apart is not a coincidence: the owner dispatches when she
+has a directive, and the directive usually arrives shortly before the daily
+cron. So the two-runs case is the normal case on any day she dispatches, rather
+than an unlucky one, and the concurrency block is worth more than its evidence
+count suggests.
+
+## INC-2026-09-30-conflict-markers-merged-to-main
+
+**Unresolved merge conflict markers were committed to `main`** in
+`docs/agents/registers.md`, and `checks` has been red on `main` since
+2026-09-30T01:43Z as a result.
+
+**What was in the file.** Three conflicts. Two were single table rows, where
+both sides described the same register at different dates. The third spanned 176
+lines and held two whole sections appended by two different runs, `## The
+gate-3 row, corrected (engineer seat, 2026-09-26)` and `## The 2026-09-27
+sweep`, with neither of them lost and neither of them readable.
+
+**Why this one is worse than an ordinary red build.** The file is the org's map
+of which register has a gate that fires before something ships, and the rule it
+serves is the one every charter's ship check points at. So the artifact that
+tells twelve seats what to read before shipping was itself unreadable, at the
+exact place where the reading happens. Incident 20 is the ruling written into
+the right register and violated by the next artifact anyway because nothing
+opened the file. This is the same failure one layer down: the file was open and
+said `<<<<<<< HEAD`.
+
+**How it was resolved.** Twice, independently, by the two engineer runs of
+2026-09-30, and they agreed. Row one: `main`'s side, which is newer and a strict
+superset of the other, adding three rows. Row two: `main`'s newer cell kept its
+text, and the other side's distinct fact, that `agent-pm.yml` carries no
+`NEON_RO_URL`, was carried into it rather than dropped, since a table holds one
+row per file. Conflict three: both sections kept, oldest first, because they are
+additive and were never in conflict in any sense but the textual one. Nothing was
+deleted.
+
+That both runs reached the same three answers from the same evidence is the one
+cheerful line in this entry. What it cost is the point: the same work twice, and
+a fourth conflict in the making, since two PRs resolving one conflict differently
+is a conflict on the second merge. PR #141 therefore took PR #142's version of
+this file byte for byte, verified by `git hash-object`, so the two merge in
+either order with nothing to resolve. That is the standing resolution for this
+class and it is cheaper than either run's prose about it: when two seats fix one
+file, the second one adopts the first's bytes rather than its own.
+
+**The systemic half.** A repository whose tests can detect this already did:
+`tests/test_check_registers.py` fails on a conflict marker and has for some
+time. It runs in `pytest tests/`, and `pytest tests/` is not a step in
+`checks.yml`; the workflow runs eleven named test files and this is not one of
+them. So the guard existed, was correct, and was not wired to anything that runs
+on a merge. That is this org's most repeated shape, and it is the same sentence
+as PR #110 sitting merged and inert and as incident 24.
+
+## INC-2026-09-30-two-checks-steps-red-on-main-for-days
+
+**Two steps of `checks.yml` were failing on `main` and neither was a code
+defect.** Both were tests asserting behaviour the organization had deliberately
+changed, which is the failure mode where a red build teaches nobody anything
+because everyone already knows it is red.
+
+**The press's backoff.** `tests/test_press_resilience.py` asserted
+`slept == [1.0, 1.0]` under a provider answering `retry-after: 1` twice. The
+press was corrected on 2026-09-24 to treat `retry-after` as a floor and wait 30
+then 60 seconds, because Moonshot answers a concurrency refusal with
+`retry-after: 1`, the other call takes minutes, and a press that honours the
+header burns every retry in three seconds. That is failure 2 of
+INC-2026-09-24-press-provider-migration. The code is right, the test was left
+behind, and the step has been red since.
+
+**The run report's stdout.** `tests/test_run_report.py` parsed the whole of
+stdout as JSON. `tools/run_report.py` prints `::warning::` lines to stdout on
+purpose, because that is where GitHub Actions reads annotations, and it warns
+when `gh pr list` refuses. `checks.yml` passes no `GH_TOKEN`, so `gh` always
+refuses there, so the warning always landed in front of the JSON. The test
+passed on every machine holding a token and failed in the only place it ran.
+
+**Both fixed in PR #142**, the scheduled engineer run of the same day, which
+found them independently and fixed the run report at the tool rather than at the
+test: `tools/run_report.py` now prints `::warning::` to stderr, so `--dry-run`
+keeps its promise that stdout is the payload. PR #141, the dispatched run, had
+written a weaker fix on the test side and replaced it with #142's, byte for byte,
+for the reason the entry above gives. Every step of `checks.yml` now passes
+locally, run the way the workflow runs it and with `GH_TOKEN` unset: 613 passed,
+1 skipped.
+
+**The lesson is about who reads a red build.** `checks.yml` went live on
+2026-09-29 and its first two runs on `main` were red. A workflow that is red on
+its first day is indistinguishable from a workflow that is red forever, and the
+only seat positioned to notice is the one that runs daily. Worth a guardrail:
+the engineer seat's §0 machinery check reads `git log` over `.github/` and
+`pipeline/`, and it should also read `gh run list --workflow=checks.yml
+--branch=main`, because a merged workflow that fails is a runtime change that
+announced itself and nobody answered.
+
+## INC-2026-09-30-check-harness-green-under-pytest
+
+**Two test files reported 130 assertions to nobody, and the repository's own
+test command said green.** This is the mechanism behind the entry directly
+above, not a second instance of it, and it is the reason that entry's two
+defects sat on `main` for days with no one noticing.
+
+`tests/test_press_resilience.py` and `tests/test_press_rehearsal.py` predate
+pytest's presence here. Each carries its own harness: a module-level `FAILURES`
+list, a `check(name, condition, detail)` that appends to it and prints either
+`ok` or `FAIL`, and an `if __name__ == "__main__"` block that exits 1 when the
+list is not empty. `.github/workflows/checks.yml` runs both as scripts, so CI
+reads the exit code and the pattern does what it was built to do.
+
+Under `python3 -m pytest tests/ -q` it does nothing at all. pytest never runs
+`__main__`, nothing else reads `FAILURES`, and a test function that calls
+`check()` and returns normally is a test function that passed. Every failure
+prints `FAIL` to a stdout that `-q` swallows. That command is the one
+`requirements-dev.txt` prescribes in its own comment and the one both files'
+docstrings name.
+
+**Proved rather than argued, on the branch of this entry's PR, with tiktoken
+made unavailable:**
+
+```
+before the fix:  15 passed
+after the fix:   1 check() failure(s) in test_the_press_fits_its_primary_at_full_caps
+                   - the cost is in the range ADR-32 budgeted: $0.1628 an issue
+                 1 failed, 14 passed
+```
+
+**Why it is a repeat, twice over.** The entry above records
+`test_call_model_walks_and_backs_off` asserting a contract the press stopped
+honouring on 2026-09-24. The only reason that was ever found is that
+`checks.yml` happens to run its file as a script. Nobody running the repository's
+own test command, on any day in those six, would have seen it. And the specific
+check surfaced by the proof above is
+`INC-2026-09-25-budget-guard-estimates` recurring in a second file: `count_tokens`
+falls back to a pessimistic chars-per-token ratio when tiktoken is missing, so
+the same request reads $0.1628 estimated and $0.1376 exact, and this check
+compared whichever it got against a hard ceiling of 0.15. `pipeline/budget.py`
+learned that on 2026-09-25 and separates its estimated findings from its exact
+ones. The lesson was recorded in the code that produced it and nowhere else,
+which is incident 20's shape: the register was written and the next artifact
+never opened it.
+
+**Fixed in this PR.** A hook in `tests/conftest.py` enforces `FAILURES` for any
+test module that owns one, snapshotted per test so a failure is attributed to
+the test that produced it, and leaving a raising test its own traceback.
+`tests/test_check_helper_is_enforced.py` proves the hook by running pytest in a
+subprocess against throwaway modules using the pattern: 6 passed, and 2 failed
+with the hook deleted from `conftest.py`. The cost check now labels an estimate
+`ESTIMATED` and declines to compare it, the way `budget.py` already did. Script
+mode is untouched, because a conftest is not imported when a file runs directly.
+
+**One finding this run could not fix, and it is the larger half.**
+`checks.yml` names fourteen test files in its `paths` lists and no workflow in
+this repository runs the whole suite. `tests/conftest.py` is in neither list, so
+a change to the file that installs the Modal stub for every test module here
+triggers no check at all. That file's own docstring records what a bad version
+of it costs: the whole suite collecting zero tests and reporting one error. The
+engineer seat cannot push a workflow file, so the edit is queued as item 13 in
+`docs/agents/pending-workflow-changes.md` with both anchors verified.
+
+**The lesson, blamelessly.** Every gate in this organization is asked whether it
+passes. Almost none are asked whether they can still fail. These two files were
+green for a reason that had nothing to do with the code they test, and a green
+harness is indistinguishable from a working one from the outside, which is
+exactly why `tests/test_check_helper_is_enforced.py` runs pytest rather than
+reading the hook. The generalizable rule: a test harness that reports through
+anything other than an exception needs a test that deletes the reporting path
+and confirms red. Where the org has gates, it should keep a short list of which
+ones have ever been observed failing on purpose.
+
+**The guardrail the entry above proposed, executed.** That entry asks that the
+engineer seat's §0 machinery check also read
+`gh run list --workflow=checks.yml --branch=main`. This run did, before writing
+any code, and it is what established the position: five consecutive failures on
+`main` and green on this branch. Worth putting in the charter, which is the
+owner's file, so it is a ledger entry rather than an edit here.
+
+## INC-2026-09-30-dispatch-lost-with-no-model-call — incident 23's fingerprint on the Claude path, where its own diagnostic says to stop looking (2026-09-30, engineer seat)
+
+**A repeat, recorded because the standing rule at the top of this file has no
+exceptions.** Incident 23 wrote the fingerprint down so the next diagnosis
+would be a lookup. It happened again on 2026-09-30, the lookup was run, and it
+returned the wrong answer, because the one discriminator the entry gives is the
+model name and this time the model name was a Claude model.
+
+**What happened.** Engineer run 36667082941, a `workflow_dispatch` created
+2026-09-30T04:02:26Z carrying the owner's ADR-37 directive on self-maintaining
+skills. The result block:
+
+```
+"type": "result", "subtype": "success", "is_error": true,
+"duration_ms": 435, "num_turns": 1, "total_cost_usd": 0,
+"permission_denials_count": 0, "modelUsage": {}
+```
+
+with `"model": "claude-opus-5"` in the init line four hundred milliseconds
+earlier. No commit, no branch, no pull request, and no model ever answered. The
+owner's directive was silently dropped. Nothing reported it for thirteen hours,
+until this run's machinery check read `gh run list` for its own seat.
+
+**Why the register did not answer it.** Incident 23's fingerprint section ends
+with a diagnostic command and this instruction: "If the model name is not a
+Claude model and `modelUsage` is `{}`, the seat's problem is its endpoint and
+not its charter." The condition is an `and`, and half of it is false here, so
+the entry that describes this exact failure hands the reader nothing. The
+generalizable defect is in the entry rather than in the runtime: **a fingerprint
+written from one specimen encodes that specimen's cause as part of its
+identity.** `modelUsage: {}` is the fingerprint. Open routing was the cause of
+the one instance that produced it. Recording them as one fact makes the second
+instance unrecognisable.
+
+That is the same shape as `INC-2026-09-29-gate-unit-three-more`: a check phrased
+from a single example, which then answers for the example instead of the class.
+
+**The duration is the new discriminator, and it points somewhere else.**
+Incident 23's instance ran 190 seconds before failing, which it correctly reads
+as a network timeout. This one ran 435 milliseconds, which is a refusal
+answered immediately. The two runs before it on the same
+`CLAUDE_CODE_OAUTH_TOKEN` cost $10.46 (94 turns, finished 04:02:02Z) and $9.29
+(100 turns, 2026-09-29 17:12Z), and this dispatch was created twenty-four
+seconds after the first of those ended. A subscription usage ceiling reached
+mid-day is the leading hypothesis and it is a hypothesis, not a finding,
+because the action runs with full output hidden for security and the upstream
+error is not recoverable from the log. That is incident 23's own second finding,
+still open ten days later: **the org cannot read why any of its runs fail.**
+
+**What it cost.** One dispatch carrying an owner directive, and the thirteen
+hours before anyone noticed. It cost no money, which is the part that makes it
+easy to miss: a $0 run in a cost report looks like a run that did not happen.
+
+**Not concurrency, and worth saying so explicitly.** `INC-2026-09-30-engineer-
+run-twice-again` is the day's other engineer-lane incident and item 9 on
+`docs/agents/pending-workflow-changes.md` is its fix. It is not this. The two
+runs did not overlap: 36665217714 completed at 04:02:02Z and this one's action
+step began at 04:03:11Z. A `concurrency:` block would not have saved it.
+
+**What would make the next one diagnosable, in the order they are worth doing.**
+
+1. Amend incident 23's fingerprint section so the identity is `modelUsage: {}`
+   alone, with the model name and the duration listed as discriminators among
+   at least two known causes rather than as part of the test. That is a one
+   paragraph edit to an ExO-owned section of this file and this entry is the
+   request for it.
+2. A `$0` run is a reportable outcome in its own right. `tools/run_report.py`
+   already runs on `if: always()` in every seat workflow and already has the
+   run's outcome; a run whose model usage is empty is a distinct fingerprint
+   from a crash and should say so in the line it posts, rather than being one
+   more red square.
+3. The hidden-output problem is the owner's, not a seat's. Ten days and two
+   incidents have now turned on an error message that exists and cannot be read.
+
+## INC-2026-10-01-checks-red-on-main-across-four-prs — the fix for a red build has now shipped four times and landed none (2026-10-01, engineer seat)
+
+**A repeat of `INC-2026-09-30-two-checks-steps-red-on-main-for-days`, recorded
+because the standing rule at the top of this file has no exceptions.** That
+entry's own closing line is "Both fixed in PR #142". Today, `checks.yml` on
+`main` is still red, and #142 is still open.
+
+**What the numbers are.** `gh run list --workflow checks.yml --branch main`
+returns five runs and all five are `failure`, the newest at 2026-09-30T02:37Z.
+`main` has had no push since 2026-09-30T02:39Z, so that red run is the current
+state of the default branch and has been for twenty-four hours. The two failing
+assertions are exactly the ones that entry diagnosed: the press's `retry-after`
+floor in `tests/test_press_resilience.py`, and `tools/run_report.py` printing a
+`::warning::` to stdout in front of the JSON in `tests/test_run_report.py`.
+
+**Why it is a repeat rather than the same occurrence continuing.** The fix has
+been written four separate times, by four runs of this seat, and carried forward
+in a chain of superseding pull requests: #142, then #158, then #166, then this
+run's #170. Each run surveyed the open PRs, found its predecessor, merged it
+forward rather than rebuilding it, and shipped the same green suite again. Four
+authors of the same correction is the definition the standing rule uses. What
+none of them could do is merge.
+
+**What it costs, which is not the red badge.** `checks.yml` is the gate that
+holds the press's request inside the model's budget (incident 22), the
+rehearsal's teeth, the board client, the skill receipts and the graph audit's
+SQL. A permanently red gate cannot report a new failure, because there is no
+state left for it to change into. Every one of those protections is currently
+switched off in the only place it runs, and has been for two days, while the
+repository contains a branch on which all of them pass.
+
+**The engineer seat's queue is the mechanism.** Seven pull requests from this
+seat are open at once, each superseding the last: #141, #142, #149, #153, #158,
+#166, #170. The ship-first rule and L-E10's survey are both working exactly as
+written, and the result is a correct, tested, seven-deep stack that protects
+nothing until a hand merges it. L-E10 names this inventory one repository up;
+this is it one repository down. The remedy is not another PR.
+
+**What would actually fix it.** Merging the head of the chain, which is one
+action. #141, #142, #149, #153, #158 and #166 can then be closed rather than
+reviewed, because each is contained in its successor. Nothing in this repository
+can do that, and this seat is forbidden to.
+
+**Where to look next.** The incident this repeats left a guardrail suggestion:
+that the engineer's §0 machinery check also read `gh run list --workflow
+checks.yml --branch main`, because a merged workflow that fails is a runtime
+change that announced itself and nobody answered. This run ran that command and
+it is what found this. The suggestion is worth promoting into the charter, and
+only the owner's merge can put it there, so it is in the ledger as a proposal
+rather than here as a fix.
+
+**Update, 2026-10-01, second window of the same day, same seat.** Not a new
+entry, because this is the same occurrence continuing three hours later rather
+than a fresh repeat, and the allocator at the top of this file has collided four
+times already (incident 29). Two numbers move. The correction has now been
+written **five** times, because this run merged #170 forward and shipped the
+same green suite again. **Eight** pull requests from this seat are open at once:
+#141, #142, #149, #153, #158, #166, #170 and this run's #172.
+
+One clarification the earlier reading of this incident did not have, and it
+matters for anyone checking the claim. `main`'s head is `6464f34` and
+`checks.yml` has **no run at all** against it, because that commit touches only
+`docs/decisions.md` and the workflow is path-triggered. The newest run on `main`
+is the `failure` on `5a90fb3`, main's second-newest commit. Nothing checks.yml
+tests changed between the two, so the gate is red and the state is current, but
+the precise sentence is "the newest run that exists on main is red", not "main's
+head is red". A reader who ran the command on the head sha and found nothing
+would otherwise conclude this entry was stale.
+
+The remedy is unchanged and this run cannot perform it either.
+
+**Update, 2026-10-02, next day, same seat.** The correction has now been written
+a **sixth** time, by this run, which merged #172 forward and measured the same
+green suite again. Still not a new entry, for the reason the update above gives.
+The newest `checks.yml` run on `main` is still the `failure` on `5a90fb3` and
+nothing has changed on either side. Nine pull requests from this seat are open
+at once now: #141, #142, #149, #153, #158, #166, #170, #172 and this run's #176.
+
+**Update, 2026-10-03, next day, same seat.** The gate failed four more times on
+2026-10-02, all four on `writer/2026-10-02`: runs 37059221342, 37060594494,
+37060874090 and 37062267060. Same job, same two steps, and in every case the
+branch's own diff was prose and a ban list, so the writer seat paid for a defect
+it could not have caused and cannot fix. Six occurrences of the red gate are now
+on the record. Both steps are green on this seat's chain, measured again today
+the way the workflow runs them: `python3 tests/test_press_resilience.py` passes
+every check, and `python3 -m pytest tests/test_run_report.py` passes eighteen
+with `GH_TOKEN` unset, which is the condition that made it fail only in CI. So
+the correction has now been written a **seventh** time and landed none of them.
+Still not a new entry, for the reason the updates above give. What is new and
+worth the owner's eye is that the cost has moved off this seat. A red gate that
+only this seat's own pull requests carried was an embarrassment. A red gate that
+turns another seat's clean pull request red is a tax every seat pays, and the
+PM's 2026-10-02 standup named it the queue's top finding for that reason.
+
+## INC-2026-10-02-urgent-entry-half-applied — the ledger entry asked for two things, the fix did one, and the newsletter kept the hole the archive closed (2026-10-02, engineer seat)
+
+**What happened.** On 2026-09-19 the security seat filed an entry about the
+archive rendering an issue body into `dangerouslySetInnerHTML` through a parser
+that stopped sanitizing HTML at v8. PR #69 closed it on 2026-09-24, and closed
+it well: `site/lib/markdown-core.js` allows no raw HTML through at all, checks
+every href against a scheme list, decodes entities before it checks, and says in
+its own header why a sanitizer was the wrong instrument.
+
+Three days earlier, on 2026-09-22, this seat had filed the same finding against
+the other surface, status `urgent`, and it asked for two things in one sentence:
+escape raw HTML on the way into the email, and "refuse any href whose scheme is
+not http, https or mailto".
+
+The 2026-09-24 designed-template rewrite did the first. Every text slot in
+`pipeline/email_render.py`'s `render` goes through `html.escape`. One slot does
+not, `item_url`, and it lands in `<a href="{{item_url}}">` in
+`site/emails/digest.html`. `inline` escapes a link's text before it builds the
+anchor and never reads the scheme. And `legacy_html` in `pipeline/weekly.py`,
+the fallback render, still ran the markdown library with `extensions=["extra"]`
+over a body nothing had escaped.
+
+So for ten days the archive was the safe surface and the newsletter was not,
+which is the sentence the 2026-09-22 entry itself used, and it stayed true
+across every engineer run in between.
+
+**Measured, not argued.** Fourteen cases were written against the three sinks
+before any fix. Seven were red on the branch point:
+
+```
+FAIL  test_a_quote_in_a_source_url_cannot_open_a_new_attribute
+FAIL  test_a_javascript_source_url_does_not_survive
+FAIL  test_a_data_source_url_does_not_survive
+FAIL  test_inline_refuses_a_javascript_link_and_keeps_the_words
+FAIL  test_the_fallback_email_escapes_raw_html
+FAIL  test_the_fallback_email_refuses_a_javascript_href
+FAIL  test_an_ampersand_in_a_source_url_is_escaped_and_still_the_same_link
+```
+
+A source URL is copied out of arXiv text by a model, so the path from a crafted
+passage in a paper to a live attribute in a subscriber's inbox had no human in
+it. That is the chain the 2026-09-19 entry described, on the surface the product
+actually is.
+
+**Why it is in this register.** Nothing was falsely closed. The entry still
+reads `urgent` and no one ever marked it built, which makes this the cleaner and
+more worrying version of the failure: the record was correct for ten days and no
+gate ever asked it anything. That is `INC-2026-09-26-law-15-fixed-on-one-surface`
+exactly, a rule applied to the surface that produced it and left live on the
+other one, and it is `L-A9` in `docs/standards/lessons.md`, recording a rule is
+not enforcing it. The engineer charter's own "Check the register before you ship"
+step was written for this class and it names four registers. `docs/ideas.md` is
+not one of them, and `docs/ideas.md` is where this sat.
+
+**Fixed in this run.** `url_allowed` and `safe_href` in
+`pipeline/email_render.py` apply the site's scheme list to every href the email
+prints, `legacy_html` escapes before markdown sees the body and blanks any href
+markdown built from a refused scheme, and the fourteen cases are in
+`tests/test_email_template.py`, which is a file `checks.yml` already runs.
+
+**The lesson, blamelessly, and it is about shape rather than care.** An entry
+whose "What" paragraph names two requirements will be closed by a pull request
+that satisfies one of them, because a pull request is reviewed against the
+problem it describes and not against the ledger text it answers. The cheap
+control is a test per requirement rather than a pull request per entry. The
+second control, which this run also took: when two surfaces render one body,
+the second surface's rule should read the first surface's constant rather than
+restate it, so divergence is a red build instead of a discovery.
+
+## INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had — the file holding the site's whole XSS defence says in its docstring that it runs in CI, and no workflow runs it (2026-10-02, engineer seat)
+
+**What happened.** `tests/test_markdown.py` exists because of the 2026-09-19
+finding, and its docstring says this of `tests/markdown.test.mjs`:
+
+> It needs no node_modules, which is why it is the half that runs in CI.
+
+No workflow in this repository runs `tests/test_markdown.py`. `checks.yml` runs
+fourteen named test files as individual steps and that is not one of them.
+`site/lib/markdown-core.js`, the module that decides what markdown is allowed to
+become on the public site, is in neither of the workflow's two `paths` lists, so
+a pull request that changes nothing but that file triggers no check at all.
+
+The same is true of `tests/test_accounts.py` and `tests/accounts.test.mjs`,
+which hold the account and entitlement layer.
+
+**Measured this run.** `node --test tests/*.test.mjs` returns 122 pass, 0 fail,
+so the step this needs would land green today and the gap is a missing gate
+rather than a hidden break. Each of the five `.mjs` suites has a Python wrapper
+that runs it in a subprocess, which is the established pattern here. Three of
+the five wrappers are already reachable or already queued:
+`tests/test_skill_receipts.py` is a live step, `tests/test_delivery_receipt.py`
+is item 15 and `tests/test_issue_route.py` is item 16 in
+`docs/agents/pending-workflow-changes.md`. The two that are neither are the two
+named above.
+
+**Why it is a repeat.** `INC-2026-09-29-receipts-step-had-no-paths` is a step
+that could not fire because nothing it guarded was in the trigger paths, and
+`INC-2026-09-30-check-harness-green-under-pytest` has a paragraph headed "One
+finding this run could not fix" that is this finding one file over. The standing
+rule at the top of this file admits no judgment once something has happened
+twice, and this is at least the third time.
+
+**What makes it worse than either, and it is the part to read.** Those two were
+findable by looking at where a thing lived, or by running a command and reading
+an exit code. This one is a sentence of prose, inside the test file, asserting
+the coverage it does not have. A reader who opens the file to ask whether the
+site's XSS defence is under CI gets told yes. The claim is forty lines of
+docstring away from any workflow, in a file that has no way to check it, and it
+reads as the most trustworthy kind of evidence there is, which is a note the
+author left for exactly this question.
+
+**Not fixed in this run, because this seat cannot push a workflow file** (the
+structural blocker at the top of `docs/agents/pending-workflow-changes.md`).
+Queued there as item 17, with both anchors verified against the live file.
+
+**The docstring is corrected in this run rather than left standing.** The first
+draft of this entry argued for leaving it, on the grounds that a false claim is
+at least a legible trace. That is wrong, and it is wrong in the way this register
+keeps catching: a trace nobody is looking for is not a control, and this entry is
+the trace. So the sentence now says what is true, names this incident, and names
+the queued item, which means a reader who opens the file to ask whether the
+defence is under CI gets the real answer and the reason.
+
+## INC-2026-10-02-pending-queue-number-collision — three open pull requests are allocating the same five numbers on the workflow queue, and incident 29 is the entry that already says why (2026-10-02, engineer seat)
+
+**What happened.** `docs/agents/pending-workflow-changes.md` numbers its queued
+items sequentially. `main` stops at item 11. Measured this run against the live
+pull requests:
+
+- this seat's chain, carried into PR #176, holds items 12 through 16 (skill
+  registration, the conftest stub, the deploy-drift guard, the delivery receipt,
+  the archive) and adds 17
+- PR #174, the security seat, 2026-10-01, holds items 12 through 16 for five
+  entirely different changes: action pinning, `PROJECTS_TOKEN`, the budget step,
+  the no-ship tripwire, the register checker
+- PR #160, the ExO seat, holds items 12 and 13 for two more
+
+Thirteen items, six numbers. Every one of the three branches allocated correctly
+against the `main` it could see, and every one of them is wrong about what the
+highest number is, because the number depends on pull requests the branch cannot
+read.
+
+**Why it is a repeat, and it is the same words one file over.** Incident 29 is
+this exact mechanism in `docs/agents/incidents.md`, where the sequential
+allocator collided four times. The fix there was a slug: the note at the top of
+that register now says to use `INC-YYYY-MM-DD-short-slug` and never the next
+sequential number, with the reasoning that a seat writes on a branch so the
+highest number it can see is not the highest number that exists. That reasoning
+is about branches, not about incidents, and it transfers without a single change
+to any register a seat appends to. One register got the fix. This one has the
+same defect and more writers.
+
+**Not fixed in this run, because fixing it well is not this seat's call alone.**
+Renumbering would break the cross-references that already exist: this register
+cites "item 13", "item 15" and "item 16" by number in three places, and so do
+the pull request descriptions the owner reviews against. The structural fix is to
+convert the page to slugs the way the incident register was converted, which is a
+one-time edit to a page the ExO maintains, and it is filed as a ledger entry
+today rather than performed here. What this run does instead is say the number is
+provisional inside item 17 itself, so a reader who sees two items 12 after the
+merges knows this was foreseen rather than botched.
+
+**The generalizable rule, which is the reason this is worth more than a line.**
+Any append-only file that many branches write to cannot carry a sequential
+identifier, and the org now has two instances to prove it. The test to apply to
+the next register someone creates: can two seats, each correct about `main`,
+produce the same identifier. If yes, the identifier has to be derived from
+something the branch owns, which is its date and its own words.
+
+## INC-2026-10-02-fixture-pinned-to-a-wall-clock-date — a test with no code change behind it went red when the clock passed it (2026-10-02, engineer seat)
+
+**`tests/test_delivery_receipt.py` failed this morning and nothing in the
+repository had changed.** The file was written on 2026-10-01 by this seat's own
+run and shipped green. Its `receipt()` fixture builds a delivery receipt whose
+corpus "moved last night", and it built that timestamp from a hardcoded
+`datetime(2026, 10, 1, 2, 0)` minus fourteen hours. `judge_pipeline` in
+`tools/delivery_health.py` measures corpus age against the real clock, which is
+correct: a corpus is stale when it stopped moving and no caller gets to decide
+what day it is. `PIPELINE_STALE_DAYS` is 2. So the fixture read as fresh for
+about 38 hours and then read as a two-day-old corpus forever, and the assertion
+"a corpus that moved last night reads ok" became false at roughly 16:00 UTC on
+2026-10-02.
+
+**Why it matters more than one red file.** The same function in the same test
+file already had the right pattern six lines below, where the stale case is
+built as `datetime.now(timezone.utc) - timedelta(days=5)`. One case was
+relative and the other was pinned, in one fixture, so the file looked
+deliberate. And the failure is invisible where it would be caught: the file is
+not one of the fourteen `checks.yml` names, so no pull request runs it, and the
+only thing that would have shown it is `python3 -m pytest tests/ -q`, which is
+the command the repository documents and no workflow runs.
+
+**Fixed in the same pull request that found it** (engineer, 2026-10-02, second
+window): the fixture derives its freshness from `datetime.now`, with the reason
+written where the constant was, and `observed_at` is left pinned with a note
+saying what has to change if a reader ever starts judging a receipt's own age.
+
+**The repeat it belongs to.** INC-2026-09-30-two-checks-steps-red-on-main-for-days
+is the same class seen from one angle: a test whose verdict depends on
+something other than the code it tests. There it was the environment, a test
+that "passed on every machine holding a token and failed in the only place it
+ran". Here it is the clock. Both are assertions that decay, and the lesson
+generalises to one line worth a gate: a test fixture that names a date is a
+test that expires, so build every relative timestamp from `now` and keep the
+absolute ones for the labels nothing measures an age against.
+
+**What would have caught it earlier.** Nothing in this org runs the whole suite
+on a schedule. Every check is attached to a pull request that touches a path,
+which cannot catch a defect whose trigger is the passage of time. Filed in the
+ledger as its own entry (2026-10-02, a daily run of the whole suite), because
+the same gap hides anything else that expires: a pinned model id, a cap read
+from a dated document, an API that deprecates on a date.
+
+## INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had — a build note and the README both say the provenance reviewer runs on every pull request, and no workflow has ever run it (2026-10-03, engineer seat)
+
+**A repeat of `INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`,
+one day later, by the same seat, in the same shape.** That entry is about
+`tests/test_markdown.py`, whose docstring said it ran in CI while no workflow
+named it. This entry is about the sentence this seat wrote the following
+evening.
+
+**What happened.** `docs/product/reviewer-panel.md`, written yesterday with the
+panel's first reviewer, says the file half of that reviewer "runs on every pull
+request that touches `skills/**` or `db/schema.sql`, inside the skill-receipts
+step of `checks.yml`". The README's status line repeats it: "the file half runs
+on every pull request that touches `skills/**`". Neither is true.
+`.github/workflows/checks.yml` on this branch and on main contains no
+`panel_provenance` step, and neither `tools/panel_provenance.py` nor
+`tests/test_panel_provenance.py` is in either of its two `paths` lists. The
+skill-receipts step runs `tests/test_skill_receipts.py` and nothing else. So the
+46 tests in `tests/test_panel_provenance.py` have never been executed by CI, and
+the one thing CI exists to hold about that reviewer, that its three statements
+still resolve against `db/schema.sql`, has never been held.
+
+**Why the same seat wrote the same defect twice in two days.** The first entry
+blamed a docstring written at the same time as a queued workflow change, where
+the queue entry covered a different file. This one has no queued workflow change
+at all. The build shipped the reviewer, the schema, the tests and the prose
+describing where it runs, and the step was simply never written, because
+`.github/` is outside this seat's writable surface and the queue file is the
+substitute. A change this seat cannot make is a change it has to remember to
+file, and nothing in the run checked that the sentence had a queue entry behind
+it.
+
+**The general shape, which is worth more than either instance.** Both defects
+are one sentence in prose asserting a mechanism in a file the author could not
+edit. Neither was catchable by a test, because the prose was the only artifact
+that said the mechanism existed. The cheap fix is the one already applied to
+`tests/test_markdown.py`: a test that greps `checks.yml` for the step it claims.
+This run adds the same gate for the adversary
+(`tests/test_panel_adversary.py::test_the_adversary_has_no_files_only_mode_and_ci_never_runs_the_reviewer`),
+which asserts the opposite direction: the reviewer must NOT be a CI command,
+because CI holds no database credential and a green step could only ever mean
+that nobody asked the graph.
+
+**Three documents carried it, not two.** Row `panel_verdicts` of
+`docs/agents/registers.md` is the third, and it is the worst of them, because
+that file is the map of which register has a pre-ship gate and this row
+answered that exact question with a step that did not exist. The register whose
+job is to say what is enforced is the one that said it. That is the second gate
+of incident 20's own lesson failing on the file where the lesson is written
+down.
+
+**Fixed in this pull request, in four places.** The sentence in
+`docs/product/reviewer-panel.md`, the README's status line and the
+`panel_verdicts` row of `docs/agents/registers.md` now say the step is queued
+rather than running, and item 18 of
+`docs/agents/pending-workflow-changes.md` is the queue entry that was missing:
+the two test files in both `paths` lists, two pytest steps, and the provenance
+reviewer's `--files-only` command. The step itself still needs the chair's hand,
+which is the part this seat cannot do and the reason the entry exists.
+
+## INC-2026-10-03-reviewer-suites-never-resolved-the-insert-columns
+
+**Observed** 2026-10-03 by the engineer seat's second window, while checking
+that the test suite it had just written fails on a deliberate defect. Third
+occurrence of a shape this register already holds twice, so the standing rule at
+the top of this file applies and this entry is not a judgment call.
+
+**What happened.** Each of ADR-13's three reviewers keeps every SQL statement it
+sends in one `QUERIES` dict, and each reviewer's test suite parses those
+statements with libpg_query and resolves every relation and column against
+`db/schema.sql`. That instrument is the whole stated justification for running
+these suites in CI: item 18 of `docs/agents/pending-workflow-changes.md` argues
+for the steps in these words, "A migration that renames `claim_links.to_claim`
+or `claims.interpreted_at` should turn a pull request red, not turn a 16:00 UTC
+cron silently useless."
+
+It would not have. Renaming a column inside the `insert into panel_verdicts
+(...)` column list left all three suites green:
+`tests/test_panel_provenance.py` 47 passed, `tests/test_panel_adversary.py` 43
+passed, and the validator's new suite 60 passed, with
+`panel_verdicts.target_shaa` in the statement in each case.
+
+**Why.** An INSERT's target columns are `ResTarget` nodes in `stmt.cols`. The
+column test walks the AST for `ColumnRef` nodes, which is what a SELECT's
+columns are. So the resolution covered every column the reviewers read and no
+column any of them writes, which is the smaller set and the one with a sharper
+failure: a renamed column in a SELECT returns the wrong rows and a renamed
+column in the INSERT makes `file_verdicts` raise on every verdict the daily job
+tries to file. The whole panel would stop recording and the only signal would be
+the 16:00 UTC log.
+
+**Three occurrences of one shape.** INC-2026-10-02-markdown-suite-claims-a-ci-
+step-it-never-had and INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-
+had are the first two: a document asserting coverage that did not exist. This
+one is narrower and worse, because the asserting document is a passing test. The
+first two could be found by opening `checks.yml`. This one could only be found
+by breaking the thing on purpose and watching the test stay green, which is a
+step no charter asks for and which found it here only because the seat happened
+to be checking its own new suite that way.
+
+**Fixed in the same pull request**, in all three suites rather than only the one
+being written: `_table_columns(table)` reads one table's own `ColumnDef`s out of
+the schema, and `test_every_column_this_reviewer_writes_exists_in_panel_verdicts`
+resolves each `stmt.cols` entry against it and checks the count against the
+VALUES list. Deliberately tighter than the SELECT test it sits next to, which
+resolves against the union of every column name in the file: that looseness is
+right for a SELECT whose FROM the test does not resolve, and it would have let
+`panel_verdicts (model)` pass against `triage_log.model`. Verified by renaming a
+column and by dropping one, in each of the three reviewers.
+
+**The lesson worth carrying past this instance.** A test that resolves names
+against a schema has a coverage question of its own, and nothing was asking it.
+The cheap general form is the one `tests/test_panel_adversary.py` already
+applies to its walker (`test_the_walker_actually_walks`, written because its own
+first draft silently returned nothing): every test that reduces to "walk a tree
+and assert about what you find" needs a companion asserting the walk found
+something. Extended here with
+`test_the_schema_reader_finds_the_table_it_is_asked_for`, which fails if
+`_table_columns` ever returns an empty set and makes the assertion above
+vacuous.
+
+## INC-2026-10-04-two-checks-that-could-not-fail — the fixture agreed with the suites on the one field it did not copy, and the rule-1 check was handed its answer by the function that runs before it (2026-10-04, engineer seat)
+
+**Observed** 2026-10-04 by the engineer seat, while acting on the urgent ledger
+entry of 2026-10-03 about eight eval suites the harness refuses. Fourth
+occurrence of a shape this register already holds three times, so the standing
+rule at the top of this file applies and this entry is not a judgment call.
+
+**What happened, part one.** `tests/test_skill_eval.py` carried a test named
+`test_the_skill_seat_s_vocabulary_is_read_without_a_single_problem`, whose
+docstring said the skill seat wrote its suites in a different vocabulary than
+the harness proposed and that `normalize` is the one place the two meet. It
+asserted `conformance(spec, ...) == []` against
+`tests/fixtures/skill-eval-suite/evals.json`, a fixture whose own note said it
+was "copied in shape" from the real files. It passed every day since
+2026-09-30.
+
+Every one of the eight real suites says `suite_version: 2`. The fixture said
+`suite_version: 1`. The harness pinned `CONTRACT = 1`. So the single field on
+which the two vocabularies disagreed was the single field the fixture did not
+copy, and it was the field that decided the test's answer. The test existed to
+prove the reader speaks the suites' language, and it passed because the one word
+of that language it got wrong was the word under test.
+
+**What happened, part two.** `conformance` holds the harness's check for rule 1
+of `docs/product/skill-validation.md` §V5, the pre-registered policy:
+
+```python
+if not isinstance(policy, dict) or "repetitions" not in policy:
+    problems.append(f"{slug}: policy.repetitions is not pre-registered, ...")
+```
+
+`load_tasks` calls `normalize(...)` and passes its output to `conformance`, and
+`normalize` ran `policy.setdefault("repetitions", DEFAULT_REPS)` three lines
+earlier. The check could therefore never fail, for any input, ever. Not one of
+the eight real suites carries a `policy` block at all, and all eight passed this
+check, with the n the harness had just chosen for them sitting in the field the
+check was reading. `tools/panel_validator.py` had already noticed the hazard and
+worked around it in its own reviewer, reading the raw suite instead, and its
+docstring says exactly why: "a check reading the normalized suite would report
+every suite in the library as compliant with the rule it breaks". That docstring
+describes `conformance` and nobody looked.
+
+**Why these are one incident.** Both are assertions that cannot come out any
+other way: one because the fixture was built from the expectation rather than
+from the artifact, the other because a defaulting layer sits between the
+document and the check. The gap between them is three days and one function
+call.
+
+**Fixed in this pull request.** The fixture now says `suite_version: 2` and
+carries the two top-level model fields as the prose every real file writes, and
+the test asserts the true answer: exactly one problem remains, named, with a
+companion test proving the one `policy` block in the error message is the whole
+fix for all eight files. `normalize` no longer supplies a repetitions count, so
+the rule-1 check fires. Verified against the eight real suites read off
+`alexandria-skill/2026-09-30-window`: one problem each before the policy block,
+none after it.
+
+**The lesson worth carrying past this instance.** A fixture copied from an
+artifact must be diffed against the artifact field by field, not resembled; the
+cheap form is to read the real file in the test where the real file is reachable,
+and where it is not, to say in the fixture which fields were verified against it
+and when. And the general rule the third occurrence of this shape already
+reached for, extended one step: a check for a missing field must read the
+document, never an object some other function normalized, because normalization
+is the business of supplying what is missing. Where both a raw and a normalized
+form exist, the absence checks belong on the raw one and nowhere else.
+
+## INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had — the function written to be a CI gate, with the sentence saying so, has never run in CI (2026-10-04, engineer seat)
+
+**Observed** 2026-10-04 by the engineer seat, while queueing the step above.
+Fourth sighting of the shape INC-2026-10-02-markdown-suite-claims-a-ci-step-it-
+never-had named first, after INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-
+never-had and INC-2026-09-29-receipts-step-had-no-paths.
+
+**What happened.** `conformance` in `tools/skill_eval.py` carries this sentence
+from the day it was written, 2026-09-30: "Its own function so `--check` can be
+a CI gate over every skill's eval file without a key, a model or a dollar."
+There is no such step. Neither `tools/skill_eval.py` nor
+`tests/test_skill_eval.py` appears in either `paths` list in
+`.github/workflows/checks.yml`, and no step in any workflow invokes either. The
+same is true of `--smoke`, which runs the entire measurement path against a
+scripted model for $0.00 and has been a command nobody runs since the day it
+was written.
+
+**What it cost, concretely.** The eight suites on PRs #151, #152 and #159 were
+written on 2026-09-30 against a contract document the reader did not implement.
+Four days passed. The defect was found on 2026-10-03 by a seat reading one of
+those files by hand, for an unrelated reason, and it was found one day before
+the merges. A step that costs nothing would have printed it on the pull request
+that wrote them.
+
+**Not fixed here, and why.** No agent seat can push a file under
+`.github/workflows/`, which is the standing blocker at the top of
+`docs/agents/pending-workflow-changes.md`. The change is written out in full as
+item 19 on that page, both edits, with the exit-code handling the gate needs
+(`--check` exits 2 for a skill with no suite, which ADR-36 calls draft and which
+must not turn a build red). Both branches of that step were verified in this
+run: exit 0 on the library as it stands, exit 1 with one real non-conformant
+suite dropped into `skills/`.
+
+## INC-2026-10-04-supersession-dropped-the-branch-it-superseded — eleven pull requests said they superseded #153 and none of them contained it, so two seats-of-one-seat built the same feature twice (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, in the second window, running
+L-E10's survey late.
+
+**What happened.** PR #153 has been open since 2026-09-30, from this seat, and
+holds 2,245 lines: `tools/skill_gate.py`, `tools/ban_list.py`, a 413-line
+`tests/test_skill_triggers.py`, `tests/test_skill_gate.py`, the queued gate
+workflow, the daily job's four-trigger step, the claim-status snapshot, and an
+append-only `history` writer for `evals/results.json` with a `--trigger` flag
+and a `skill_version` reader.
+
+Every engineer PR since has carried a line of the form "supersedes #182, #181,
+#178, #176, #172, #170, #166, #158, **#153**, #149, #142, #141". None of them
+contained #153's work. The chain branched from a commit that had part of that
+branch and not the rest, and the supersession list was assembled from the
+previous description rather than from a diff.
+
+**What it cost, concretely.** This morning's window read the repository, found
+that `tools/skill_triggers.py` reads a `history` key nothing writes, filed it as
+a ledger entry, and this window built it: an append-only writer, a version
+reader, the gate comparison, 95 tests. All of it already existed on #153, in a
+form that agreed with this one almost line for line, including the choice to
+synthesise one entry from a pre-history document. Two builds of one feature by
+one seat, five days apart, because the survey the law requires was run with the
+wrong search string (`git log --all -S "suite_version"`) and `gh pr list --head`
+was never run.
+
+The second cost is the one that would have shipped. Had the owner merged this
+chain and closed #153 on the strength of the word "supersedes", the gate, the
+ban list, three of the four staleness triggers in the daily job, and the
+claim-status snapshot would have been deleted without anyone reading them.
+
+**Fixed in this PR, for #153.** Its branch is merged into this one, both
+implementations reconciled function by function, and the daily job now runs the
+three reviewers and then all four triggers inside one connection. The merge
+itself introduced one defect that a test caught immediately: the two sides named
+the same read `previous` and `previous_doc`, so the appended history was always
+empty.
+
+**Not fixed, and named instead: two more of the thirteen are also false.** The
+check run over every number the chain's supersession line carries,
+`git log HEAD..origin/<head branch>` per pull request:
+
+```
+#185 #182 #181 #178 #176 #172 #170 #166 #158 #141    0 commits missing
+#153                                                 0 after the merge above
+#149  engineer/2026-09-30-distill-on-kimi           18 commits missing
+#142  engineer/2026-09-30-evidence-grade-and-practices   7 commits missing
+```
+
+#142 is entirely contained in #149, so the two are one stack and 3,307 lines,
+and the top of it is a provider migration for distill. That is a runtime change
+under `docs/agents/runtime-changes.md`, whose third gate is a rehearsal this
+sandbox cannot run, so merging it into an unrelated skills pull request on the
+strength of a word would be the same mistake in the other direction. **Neither
+is superseded by anything, and neither should be closed as such.**
+
+**The lesson worth carrying past this instance.** Three rules, and the third is
+new.
+
+1. `supersedes #N` is a claim about content, so it is checked with
+   `git log HEAD..origin/<that branch>` and never by copying the previous
+   description's list. An empty output is the only thing that licenses the word.
+2. L-E10's survey is `gh pr list --state open --head <your own seat's prefix>`
+   before it is anything else. A string search over `git log` finds the words
+   you already know; the branch list finds the work you do not.
+3. A supersession list that grows by one entry per day is itself the signal.
+   Eleven numbers in one line means eleven unreviewed branches, and no one
+   reading that line can tell which of them are actually inside it.
+
+## INC-2026-10-04-the-property-was-checked-at-the-wrong-unit — a module's one safety invariant was asserted against four specimens, and it was false for the channel they share (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, writing a second copy of
+`tests/test_skill_triggers.py` without knowing the first existed (see the entry
+above).
+
+**Repeat of `INC-2026-09-29-gate-unit-three-more`**, which is itself a repeat of
+`INC-2026-09-27-gate-unit-is-the-line`. Recorded because the standing rule at
+the top of this file leaves no judgment call.
+
+**What happened.** `pipeline/reading_queue.py` reads any `arxiv:<id>` in a
+checklist line as a request to fetch that paper and puts it at the front of
+distill's drain. `tools/skill_triggers.py` writes checklist lines, knows this,
+says so in its docstring, and defends it in `paper_reference`, which names a
+paper by title and url. Both the module's `--smoke` and #153's test file assert
+the property, and both assert it against the four specimen records the four
+current callers produce, whose inputs are clean.
+
+The property is about every line the module can produce. Written that way it is
+false: the evidence of a `deprecated` or a `refines` record interpolates claim
+text and paper titles straight out of the corpus, so one claim whose sentence
+quotes an arXiv id queues a re-fetch of a paper the corpus already holds. The
+input is a database row, not a hypothesis.
+
+**Fixed in this PR.** `record`, the one function every record is built by,
+defuses `arxiv:<id>` to `arXiv <id>`: the queue reader does not act on it and a
+person can still follow it. Two tests fail without the fix, one on the reachable
+corpus path and one over every spelling the reader's own pattern matches.
+
+**The lesson worth carrying past this instance.** The register already holds the
+question that finds this class: name the unit the check inspects, name the unit
+the defect lives in, and say whether they are the same size. What this instance
+adds is why a demonstration can never answer it. A smoke run exercises the
+callers that exist, so it samples the inputs; an invariant over everything the
+module can produce has to be enforced at the chokepoint the producers share, and
+tested with an input no current caller supplies. A second rule, cheaper: when a
+docstring names the file that holds a property, open the file. Here it existed
+on another branch, which is the entry above; four earlier sightings this week it
+did not exist at all.
+
+## INC-2026-10-04-one-constant-for-two-documents — widening the dialect the harness reads silently changed the version number of the document it writes (2026-10-04, engineer seat, second window)
+
+**Observed** 2026-10-04 by the engineer seat, in its own morning's work.
+
+**What happened.** `tools/skill_eval.py` reads a suite file and writes a result
+file. They are two documents with two independent version numbers.
+`CONTRACTS = (1, 2)` was widened this morning so the harness would stop
+refusing the skill seat's eight suites, which say `suite_version: 2`. One line
+below it, `CONTRACT = CONTRACTS[-1]`, commented "what a result written today is
+tagged with", and `summarize` wrote that number into every result.
+
+So accepting a new input dialect moved the output document from `contract: 1` to
+`contract: 2`. `site/app/skills/README.md` is the contract for the result, it
+says `1`, and its own first rule is that a reader which does not know the number
+renders pending rather than guessing. Nothing reads the field yet, so this is a
+latent blank page and not a live one: the first component built as documented
+would have rendered every freshly measured skill as **pending validation**, with
+the measurement sitting in the file.
+
+**Fixed in this PR.** `SUITE_CONTRACTS` for what the harness reads,
+`RESULT_CONTRACT` for what it writes, and a line in the contract document saying
+the two numbers move independently.
+
+**The lesson worth carrying past this instance.** One constant may not serve two
+documents, however nearly identical the two look at the moment it is written.
+The cheap test for it: the comment on the line. `CONTRACT = CONTRACTS[-1]` needed
+a sentence explaining which document it meant, and a name that needs that
+sentence is two names.
+
+## INC-2026-10-05-the-rewrite-staled-every-coverage-claim — a skill rewrite invalidated 60 of its suites' 76 coverage claims, and the field written to catch exactly this had no reader (2026-10-05, engineer seat)
+
+**What happened.** `sections` entered the eval suite contract on 2026-09-30, as
+the fix for `INC-2026-09-30-eval-task-claims-unchecked`: a claim-id comparison
+had passed two suites whose tasks exercised none of the section they named, so
+every task now carries the list of `## ` headings it actually exercises, copied
+verbatim "so a string comparison resolves it". The contract document names the
+two checks a reader should run off it. No reader was built.
+`grep -rn sections tools/skill_eval.py tools/panel_validator.py` returned
+nothing for five days.
+
+In those five days the skill seat rewrote six of the eight skills into delta
+form (PR #152, and the first two of the six on #159), which renamed or deleted
+every `## ` heading in each one, and left the suites' `sections` lists naming
+the old text. Built today, the check resolves every claim on all three open
+skill-seat branches:
+
+```
+branch                                       claims  naming no heading  covered
+#151 skill/2026-09-30-section-validation         76                  0    58/58
+#159 alexandria-skill/2026-09-30-window          76                 17    48/55
+#152 skill/2026-09-30-delta-rewrite              76                 60    14/36
+```
+
+The retrofit itself was correct, which is the part worth being precise about:
+on #151 all 76 claims resolve and every section has a task. The count rises
+with the chain, one delta-rewrite commit at a time, because each rewrite moved
+the headings its suite points at. Nobody was careless. Nothing in the
+repository could have told them.
+
+**Why it is recorded as a repeat.** Two shapes, both already in this file.
+
+The first is a fix with no reader, which is the fourth sighting of the shape
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had` named and the
+second inside this subsystem: `INC-2026-10-04-eval-check-gate-claims-a-ci-step-
+it-never-had` is the same `--check` function this check now lives in, written to
+be a gate and never wired to one. A field added to a contract to close an
+incident is not a fix until something reads it, and the gap between the two was
+five days here and eleven for `validated:`.
+
+The second is a cross-file claim that went stale because one side was edited.
+That is precisely what `panel_verdicts.target_sha` exists for at the skill
+level, and what `results.json`'s `skill_md_sha256` exists for at the receipt
+level. Both were built because an edit to a skill must invalidate what was
+claimed about it. `sections` is a third claim of the same kind, pointing at
+headings rather than at a hash, and it shipped without the guard its two
+siblings have.
+
+**What was built.** Both of the contract's checks, in the places their severities
+belong. A `sections` entry that names no heading of the file is a
+`conformance` problem, so the harness refuses to run a suite whose coverage
+claim is false, and `panel_validator`'s `suite-runnable` reports it as a `fail`.
+A heading no task exercises is a `section-coverage` note on the validator and a
+`finding:` line in `--check`, because the contract calls it a finding rather
+than an error and a gate that blocked on it would stop a skill being measured
+over a gap in what its suite proves.
+
+**What is still open, and it is the part a reader should carry.** The suites are
+the skill seat's files and the stale `sections` lists are theirs to fix. Until
+they do, two consequences follow in this order, and the merge order matters:
+
+1. `python3 tools/skill_eval.py --check` exits 1 on all three branches, and it
+   did before this check existed: not one of the eight suites carries a
+   `policy` block, which is the 2026-10-04 ledger entry already filed for the
+   skill seat. The stale coverage claims stack on top of that, 17 more failing
+   lines on #159 and 60 on #152, so the suites now need two edits rather than
+   one before pending-workflow item 19 can be applied without turning `main`
+   red. Verbatim, this run:
+
+   ```
+   #151   exit 1    8 failing (no policy block)
+   #159   exit 1    8 failing (no policy block)  17 failing (sections)   7 findings
+   #152   exit 1    8 failing (no policy block)  60 failing (sections)  22 findings
+   ```
+
+   Written here rather than left to a build, because a red `main` discovered by
+   a build is `INC-2026-10-01-checks-red-on-main-across-four-prs` and the whole
+   point of this register is that the second time is cheaper than the first.
+2. A per-section `Validation:` tag under ADR-38 cannot be written for any
+   section whose coverage claim does not resolve, which is 60 of 76 on #152.
+
+**The lesson worth carrying past this instance.** A field that names something in
+another file is a claim about that file, and it goes stale the moment the other
+file is edited. The question to ask of every such field, on the day it is
+added, is not whether it is correct now but what will notice when it stops
+being. For `sections` the answer was nothing, for five days, across sixty
+claims.

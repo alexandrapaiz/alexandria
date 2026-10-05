@@ -1,0 +1,129 @@
+# ADR-37's gate, as a check on the pull request.
+#
+# ADR-37 (docs/decisions.md), amended 2026-09-29 after the owner confirmed no
+# human in the loop: a revision or retirement of an existing skill may merge on
+# its own when a harness has measured every clause of the gate, and anything else
+# stays a draft pull request for her. This workflow is the harness's report. It
+# labels the pull request `skill-gate/passed` or `skill-gate/failed` and comments
+# with the reasons, one comment that it updates rather than a new one per push.
+#
+# It does NOT merge anything. The merge is a separate decision and a separate
+# workflow, and it is not queued yet: the gate has to be seen to be right on real
+# revisions before anything is given permission to act on it. The engineer seat's
+# note in docs/agents/pending-workflow-changes.md item 13 says the same thing.
+#
+# Two things about the scope. The `paths` filter below is `skills/**`, because
+# that is all a workflow trigger can express, and the question ADR-37 actually
+# asks is whether the diff touches nothing else. `tools/skill_gate.py` answers
+# that one: a pull request that edits a skill alongside code is reported as not
+# applicable and gets no label at all, because a red label on every ordinary
+# engineer pull request is how a label stops being read.
+#
+# `fetch-depth: 0` is not decoration. Three clauses compare this revision against
+# the base branch: the ban list is judged on what the revision adds, the trigger
+# test on whether a case that passed before fails now, and the eval on the
+# previous version's own lower bound. A shallow checkout has no base to compare
+# against, and the gate reports `unknown` rather than passing, which fails.
+name: skill gate
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  gate:
+    name: does this revision merge on its own
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # pytest for the page clause, which runs tests/test_skill_receipts.py.
+      # Without it that clause is `unknown`, and an unmeasured clause is never a
+      # pass, so this install is load-bearing rather than convenience.
+      - name: install the test dependencies
+        run: pip install -r requirements-dev.txt
+
+      # The base branch has to exist locally for the three delta clauses.
+      - name: fetch the base branch
+        run: git fetch --no-tags origin "$GITHUB_BASE_REF"
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      # Never `set -e` off and never `echo` a body: the run report incident
+      # (INC-2026-09-26-run-report-dash-echo) was dash's builtin echo expanding
+      # escapes inside a JSON body. Everything here goes through a file.
+      - name: run the gate
+        id: gate
+        run: |
+          set +e
+          python3 tools/skill_gate.py \
+            --base "origin/${GITHUB_BASE_REF}" \
+            --comment /tmp/skill-gate-comment.md \
+            --github-output "$GITHUB_OUTPUT" \
+            --json > /tmp/skill-gate.json
+          cat /tmp/skill-gate.json
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      - name: say nothing about a pull request that is not a maintenance revision
+        if: steps.gate.outputs.applies != 'true'
+        run: |
+          echo "This pull request changes files outside skills/, so it is not the"
+          echo "automatic path ADR-37 describes. No label, no comment."
+
+      # The labels are created idempotently, because a label that does not exist
+      # makes `gh pr edit --add-label` fail and take the whole check red for a
+      # reason that has nothing to do with the revision.
+      - name: label the pull request, and say why
+        if: steps.gate.outputs.applies == 'true'
+        run: |
+          set -e
+          gh label create "skill-gate/passed" --color 0E8A16 --force \
+            --description "ADR-37's gate: every clause a harness can measure is clear"
+          gh label create "skill-gate/failed" --color B60205 --force \
+            --description "ADR-37's gate: at least one clause did not pass"
+          if [ "${VERDICT}" = "passed" ]; then
+            gh pr edit "${PR}" --add-label "skill-gate/passed" \
+              --remove-label "skill-gate/failed"
+          else
+            gh pr edit "${PR}" --add-label "skill-gate/failed" \
+              --remove-label "skill-gate/passed"
+          fi
+          printf '%s\n' "<!-- skill-gate -->" > /tmp/body.md
+          cat /tmp/skill-gate-comment.md >> /tmp/body.md
+          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
+            --jq '[.[] | select(.body | startswith("<!-- skill-gate -->")) | .id] | last // empty')
+          if [ -n "${EXISTING}" ]; then
+            gh api --method PATCH \
+              "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING}" \
+              -F body=@/tmp/body.md
+          else
+            gh pr comment "${PR}" --body-file /tmp/body.md
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          VERDICT: ${{ steps.gate.outputs.verdict }}
+
+      # Red when the gate did not pass on a revision it applies to, so the
+      # pull request's own checks say what the label says. An ordinary pull
+      # request that touches a skill alongside code stays green.
+      - name: the verdict is the check's result
+        if: steps.gate.outputs.applies == 'true' && steps.gate.outputs.verdict != 'passed'
+        run: |
+          echo "The skill gate did not pass. The comment on the pull request"
+          echo "carries the failing clause and its reason."
+          exit 1
