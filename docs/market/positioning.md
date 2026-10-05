@@ -50,6 +50,14 @@ record, and nearly half of those skills have exactly one install ever
 of security, of quality, and of what readers actually choose, now say the
 same thing: raw skill distribution needs a filter, and alexandria's claim
 graph is that filter with evidence attached rather than a popularity count.
+A fourth measurement, found 2026-10-05 though not new this week, raises the
+security number rather than merely repeating it: NVIDIA's SkillSpector
+scanner found 26.1% of 42,447 scanned skills carried a vulnerability and
+5.2% showed signs of deliberate malicious intent, a larger sample than
+Snyk's and from an infrastructure vendor's own tooling rather than a
+security-research firm's (docs/market/landscape.md). The why-pay argument
+does not change in kind, only in how many independent parties have now
+measured the same gap.
 
 ## The price ladder (observed, 2026-09-18)
 
@@ -71,11 +79,12 @@ it, and widens the gap between "pay for more reading" ($5-15/month,
 commoditizing) and "pay for a tool" ($20+/month).
 
 Actual research *tools*, as opposed to reading material, price meaningfully
-above the essay tier: Consensus Pro at roughly $20/month (a 2026-10-02
-pass found several aggregator sites converging on a different,
-also-unconfirmed figure of $15/month instead — see
-docs/market/landscape.md, recorded as a contested reading, not yet a
-correction), Elicit Pro at $49/month (Elicit Scale at $169/month).
+above the essay tier: Consensus Pro at $20/month ($12/month billed
+annually). A 2026-10-02 pass found aggregator sites reading a different
+figure, $15/month. A 2026-10-05 direct re-check of the same two sites
+found them back at $20/month, so the $15 reading is treated as a
+transient render rather than a correction (docs/market/landscape.md).
+Elicit Pro at $49/month (Elicit Scale at $169/month).
 Institutional-grade technical
 research goes further still: SemiAnalysis's retail newsletter is $500/year,
 and its separate "Core Research" institutional product is reported on track
@@ -228,3 +237,11 @@ already this doc's framing and needs no change.
   benchmark found: it closes a gap this doc has named since 2026-09-18
   without competing with the claim-graph pitch. No change to $20/month.
   Nothing found this run argues for one.
+- 2026-10-05 (synchronous work window): resolved last run's contested
+  Consensus pricing reading, re-confirming $20/month on direct
+  re-fetch of the same two secondary sources three days later,
+  recorded as a lesson about secondary-source stability rather than a
+  correction either way. Added NVIDIA SkillSpector's 42,447-skill scan
+  (26.1% vulnerable, 5.2% likely malicious) as a fourth independent
+  measurement behind the why-pay paragraph's curation argument. No
+  change to $20/month. Nothing found this run argues for one.

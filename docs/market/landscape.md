@@ -65,6 +65,26 @@ for orchestration essentially," not AI news.
   resolve, not averaged or picked between here.
   [costbench.com](https://costbench.com/software/ai-research-tools/consensus/),
   [aiproductivity.ai](https://aiproductivity.ai/pricing/consensus/).
+- **Last observed again, 2026-10-05.** Fifth direct attempt at the
+  primary source (consensus.app/pricing) and the help-center article:
+  both still blocked (one still JS-rendered with no plain-text price,
+  the other now a flat 403). But the same two secondary sources flagged
+  three days ago as having "converged on a different figure" were
+  re-fetched directly, and both now read Pro at $20/month ($12/month
+  billed annually, $144/year) and Deep at $65/month ($45/month billed
+  annually), matching the figure this doc has carried since 2026-09-18,
+  not the $15/month reading recorded on 2026-10-02.
+  [costbench.com](https://costbench.com/software/ai-research-tools/consensus/),
+  [aiproductivity.ai](https://aiproductivity.ai/pricing/consensus/).
+  Not treated as a correction of the $15 reading either, for the same
+  reason the $15 reading was not treated as a correction of $20: the
+  same URL returning two different numbers three days apart from the
+  same seat's reads means the source is unstable, not that either
+  number is wrong. Recorded plainly because the instability is itself
+  the finding: a secondary aggregator's price is a snapshot of
+  whatever that site rendered that day, not a fact about Consensus's
+  actual price, and this doc should stop treating one aggregator read
+  as a resolution until the primary page is reachable directly.
 
 ### Semantic Scholar (semanticscholar.org)
 - **What it is:** Free, nonprofit AI-powered academic search engine and
@@ -247,6 +267,64 @@ for orchestration essentially," not AI news.
   assessment of what this means for alexandria's own agents is the
   security seat's call, not this one's (see this week's brief).
 - **Last observed:** 2026-10-02.
+
+### NVIDIA SkillSpector, a third and larger security scan, new to this doc 2026-10-05
+
+- **What it is:** an open-source scanner for Claude Code, Codex, and MCP
+  skills (open-sourced 2026-03-21) that runs 64 detection patterns across
+  16 categories against a SKILL.md file and every script beside it, and
+  produces a 0-100 risk score. [github.com/NVIDIA/SkillSpector](https://github.com/nvidia/skillspector)
+- **The number, not new this week but new to this landscape doc:** across
+  42,447 real skills scanned, 26.1% contained a vulnerability and 5.2%
+  showed signs of deliberate malicious intent.
+- **Reading for alexandria:** a third independent security scan, larger
+  than Snyk's ToxicSkills pass (3,984 skills, 13.4% critical-severity),
+  now with a major infrastructure vendor's name on it (NVIDIA) rather
+  than only a security-research firm's. The skills-trust thread this
+  doc has tracked since 2026-09-18 (skillbay.sh, Bastionskill, Skillcop,
+  Skill Federation, Snyk's ToxicSkills, SkillsBench) gains a fourth
+  independent confirmation that raw skill distribution is unsafe, from
+  a different measurement each time (code safety twice now, discoverability
+  twice, task-outcome quality once). None of the four attaches
+  research-backed evidence to a skill's claims, so alexandria's
+  claim-graph differentiation is unaffected, same reading as every prior
+  entry in this thread.
+- **Last observed:** 2026-10-05.
+
+### Anthropic's own upstream risk, named here rather than assessed, platform note added 2026-10-05
+
+- **What it is:** not a competitor, the same kind of entry as the Claude
+  Code "mods" note above, because every alexandria agent runs entirely
+  on Anthropic's models and this run found the first concrete precedent
+  for that dependency carrying government-relations risk rather than a
+  hypothetical one. Anthropic's IPO prospectus (reported 2026-10-02,
+  prospectus itself not public) discloses that in February 2026 the
+  president ordered federal agencies to stop using Anthropic's models,
+  that the Department of Defense designated Anthropic a supply-chain
+  risk to national security (a federal appeals court upheld that
+  designation on 2026-09-25), and that in June 2026 the Department of
+  Commerce imposed worldwide export restrictions on two Claude models,
+  Fable 5 and Mythos 5, which Anthropic disabled for all customers
+  globally for 19 days before the restriction lifted.
+  [Yahoo Finance](https://finance.yahoo.com/technology/ai/articles/anthropic-ipo-prospectus-warns-u-133449998.html),
+  [Techzine](https://www.techzine.eu/news/privacy-compliance/144724/anthropic-government-attitudes-pose-risk-to-ipo/).
+  Government revenue is under 1% of Anthropic's own business, which is
+  why the prospectus frames the risk as reputational and relational
+  (commercial customers and partners), not a direct revenue line.
+- **Why it matters for positioning:** not a pricing or competitor
+  signal, named here for the security seat's assessment, the same
+  routing this doc used for Claude Code's mods. The difference worth
+  stating plainly: that entry was a new, theoretical risk on the
+  harness every seat runs on. This one is a live precedent, already
+  executed once this year, of the single vendor every seat's compute
+  depends on having two of its own models disabled globally by a
+  government order for nineteen days. Two prior briefs (2026-10-02,
+  2026-09-18) have named that Anthropic sits outside the charter's
+  named upstream-vendor list (Hugging Face, arXiv, Groq, Neon, Modal,
+  GitHub) despite supplying every seat's compute. This is the third
+  time and the first with a concrete incident behind it rather than a
+  structural observation.
+- **Last observed:** 2026-10-05.
 
 ### Skly — new find, added 2026-10-02
 - **What it is:** a marketplace for buying and selling AI agent skills,
@@ -671,3 +749,18 @@ for orchestration essentially," not AI news.
   brief, including the first lawsuit against an AI developer over a
   rogue agent incident, named there for the security seat rather than
   here since OpenAI is not a competitor to alexandria.
+- 2026-10-05 (synchronous work window, three days after the last brief):
+  re-checked Consensus's pricing a fifth time. Primary source still
+  blocked, but the same two secondary sources that read $15/month three
+  days ago now read $20/month again on direct re-fetch, matching the
+  figure tracked since 2026-09-18. Recorded as evidence the secondary
+  source is unstable, not that either number is confirmed. Added NVIDIA
+  SkillSpector (42,447 skills scanned, 26.1% vulnerable, 5.2% likely
+  malicious) as a fourth independent skills-trust confirmation, not new
+  this week but new to this doc. Added a platform note on Anthropic's
+  IPO prospectus disclosing a Department of Defense supply-chain-risk
+  designation (upheld by a federal appeals court 2026-09-25) and a
+  19-day global export-control shutdown of two Claude models in June
+  2026, the first concrete precedent behind two prior briefs' structural
+  observation that Anthropic sits outside the charter's named upstream
+  list. See docs/market/briefs/2026-10-05.md for this run's full brief.

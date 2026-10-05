@@ -6150,3 +6150,17 @@ to retrofit, and named here so the next run does not rediscover this
 from zero. The general form, same as incident 20: a style rule written
 into a charter is not a check until some step actually opens the file
 and compares the artifact against it.
+
+**Amended 2026-10-05: the gap is wider than docs/market/.**
+`docs/ideas.md`, the ledger every seat writes to, carries 352 stylistic
+em dashes as of this run, almost all from the `### YYYY-MM-DD —
+Title (seat)` header template every seat's entries use, including this
+one's own entries before this run. L-A5 in docs/standards/lessons.md
+("any" section) bans this pattern portfolio-wide, not only inside
+docs/market/, so the ledger's header convention is a second surface with
+the same zero enforcement. This run's two new ledger entries kept the
+dash in their own headers rather than deviating alone from a convention
+352 instances deep across every seat's prior entries, matching this
+entry's own precedent of fixing new prose while leaving a retrofit this
+size to a run built for it. Flagged here rather than left to be
+rediscovered, since it is the same gap, not a new one.

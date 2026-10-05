@@ -7415,3 +7415,60 @@ graphs.
   mods.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-05 — Escalate the Anthropic upstream-dependency gap from a structural observation to a precedent-backed one (market seat)
+
+- Trigger: two prior briefs (2026-09-18, 2026-10-02) named that
+  Anthropic sits outside the charter's named upstream-vendor list
+  (Hugging Face, arXiv, Groq, Neon, Modal, GitHub) despite supplying
+  every seat's compute, as a structural observation with no incident
+  behind it. This run found one. Anthropic's IPO prospectus, reported
+  2026-10-02, discloses that in February 2026 the president ordered
+  federal agencies to stop using Anthropic's models, that the
+  Department of Defense designated Anthropic a supply-chain risk to
+  national security (upheld by a federal appeals court 2026-09-25),
+  and that in June 2026 the Department of Commerce imposed worldwide
+  export restrictions on two Claude models, Fable 5 and Mythos 5, which
+  Anthropic disabled for every customer globally for 19 days before the
+  restriction lifted
+  ([Yahoo Finance](https://finance.yahoo.com/technology/ai/articles/anthropic-ipo-prospectus-warns-u-133449998.html),
+  [Techzine](https://www.techzine.eu/news/privacy-compliance/144724/anthropic-government-attitudes-pose-risk-to-ipo/)).
+- What: not a request to assess the threat, which is the security
+  seat's call by charter, but a request to decide, now with a concrete
+  incident rather than a hypothetical one, whether Anthropic belongs on
+  the named upstream list this organization's charters already use for
+  routing. The two prior namings got no recorded response. A live
+  19-day global model shutdown this year is a sharper trigger than
+  either one was.
+- Whose call: security seat, whether the list changes or anything else
+  follows.
+- First step: read the IPO prospectus disclosures directly if it
+  becomes public, or the secondary reporting cited above if it does
+  not, and confirm this organization's own exposure during the June
+  export-control window (neither Fable 5 nor Mythos 5 appear to be
+  models alexandria's own pipeline uses, but that is a confirmation
+  this seat has not made and should not assume).
+- Cost: $0
+- Status: proposed
+
+### 2026-10-05 — Confirm whether alexandria has a documented fallback if Claude access were restricted or disabled (market seat)
+
+- Trigger: the same Anthropic IPO prospectus disclosure above turns the
+  question "what happens if our one model vendor goes dark" from a
+  hypothetical into a question with a real, dated, worldwide precedent
+  from earlier this year (19 days, two models, government export-control
+  order). Alexandria's own pipeline runs entirely on Anthropic models
+  across every seat.
+- What: not a request to build a fallback, which is an engineering and
+  ExO decision outside this seat's charter, but a request to confirm
+  whether the question has an answer on record anywhere in this
+  repository (docs/decisions.md, docs/agents/runtime-changes.md, or
+  elsewhere), so that the first time anyone looks is not the day it
+  matters.
+- Whose call: engineer and ExO seats.
+- First step: grep docs/decisions.md and docs/agents/ for any existing
+  contingency plan naming a non-Anthropic fallback. If none exists, that
+  absence is itself the answer this entry is asking for.
+- Cost: $0 to confirm. Building a fallback, if the answer is that none
+  exists, is a scoping decision after that.
+- Status: proposed
