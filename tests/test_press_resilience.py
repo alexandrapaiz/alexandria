@@ -663,6 +663,16 @@ def test_the_schedule_is_outside_the_cron_band():
               not (11 <= hours[0] <= 15), f"runs at {hours[0]}:00 UTC")
 
 
+def test_a_used_title_is_replaced_and_a_fresh_one_kept():
+    body = "# Harness distillation without the harness at runtime\n\nopening\n\n## A\n\ntext"
+    kept = weekly.ensure_fresh_title(body, ["Some other title"], "no-model", "September 28-October 4, 2026")
+    check("a fresh title is kept", kept == body, kept[:60])
+    out = weekly.ensure_fresh_title(body, ["harness distillation without the harness at runtime"], "no-such-model", "September 28-October 4, 2026")
+    check("a used title is replaced", not weekly.same_title(weekly.title_of(out), weekly.title_of(body)), out.split("\n")[0])
+    check("the dated fallback carries the dates", "September 28-October 4, 2026" in out.split("\n")[0], out.split("\n")[0])
+    check("the body below the title is untouched", out.split("\n", 1)[1] == body.split("\n", 1)[1], "")
+
+
 if __name__ == "__main__":
     for fn in [test_fallback_list, test_withdrawn_model_is_explained,
                test_choose_model_skips_absent_models,
@@ -677,7 +687,8 @@ if __name__ == "__main__":
                test_a_missing_key_names_its_secret,
                test_the_press_fits_its_primary_at_full_caps,
                test_availability_survives_one_provider_being_down,
-               test_the_schedule_is_outside_the_cron_band]:
+               test_the_schedule_is_outside_the_cron_band,
+               test_a_used_title_is_replaced_and_a_fresh_one_kept]:
         fn()
     print()
     if FAILURES:

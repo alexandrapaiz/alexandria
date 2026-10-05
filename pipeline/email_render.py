@@ -413,6 +413,23 @@ def subject_for(body: str) -> str:
     return "This week's issue from the library"
 
 
+def disambiguate_subject(subject: str, prior_subject: str, key: str) -> str:
+    """The same title twice in a row reads as a duplicate, so the second carries its dates.
+
+    2026-09-28: the Monday issue printed under the exact subject the two
+    previous sends had carried, because all three covered the same week's
+    material, and the owner read a new issue as a repeat of the last one. A
+    subject is the one line a reader uses to tell issues apart, so when the
+    editorial title repeats, the week's dates go on the end of it. Nothing
+    inside the issue changes.
+    """
+    if prior_subject and plain(prior_subject.strip()) == subject:
+        edition, _ = edition_for(key)
+        dates = edition.split("\u00b7")[-1].strip() if "\u00b7" in edition else edition
+        return f"{subject} ({dates})"
+    return subject
+
+
 def preheader_for(issue: dict) -> str:
     """One plain sentence for the inbox preview, and never the title again.
 
