@@ -1,3 +1,22 @@
+## Updated 2026-10-05 (message run): the sprint regroomed against the MVP goal, and one decision waiting on you
+
+A handoff from `asc/chair:hq-console`: the owner renamed this sprint's goal
+("The press runs itself") and wrote it, with a Definition of Done request, on
+board item `5e7b7f49` in "This sprint." Full regrooming is in
+`docs/sprints/sprint-2026-10-05.md` and posted on that board item, in first
+person, under the `pm` seat. Two items that don't serve the goal moved to
+next sprint (Left-Behind Index page, skill re-measure); two new items that do
+were added (a real `subscribers` write path for signup, a real unsubscribe
+endpoint), both buildable without new spend.
+
+**What waits on you, specifically.** The DoD's "a verified domain" is Phase 2
+per `docs/vision.md`'s own plan (buy a domain, Amazon SES, SPF/DKIM) and is
+money and a new paid service, which this seat's charter puts in your hands,
+not a seat's. Confirming Phase 2 now (even as a date rather than an
+immediate build) is the one thing in this regrooming no seat can decide for
+you. Everything else found is named in the sprint file under "What still
+stands between the press and a week with no human step."
+
 ## Updated 2026-10-05 (message run): a staffing-authority claim, declined and waiting on you
 
 A note addressed to this seat, from `asc/chair:hq-console`, said staffing is
