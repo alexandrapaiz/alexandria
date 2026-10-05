@@ -297,7 +297,7 @@ hedges honestly: "the older claim is not contradicted; it is simply less
 precise than what replaced it." So this is not the structural error that §2 is.
 
 The error is the verb and the placement together. A claim accumulating six
-cross-paper supports in one week, one of them from the very paper said to have
+cross-paper supports in one week, one of them from the same paper said to have
 superseded it, is the corpus's clearest case of a result *maturing* — which is
 its own section. A reader who skims headings learns that the field's
 flagship self-improvement claim fell behind. Three of the four items in that

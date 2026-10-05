@@ -224,7 +224,7 @@ is what HiSkill and SkillDAG measure and what no standard will answer. That line
 stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
-- [ ] arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-10-05; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.40115 — RLVR: Unlearnable, or Unmeasured? On the Reliability of Difficulty Labels in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.40360 — RLVR: Semifactual Credit-Augmented Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.39533 — RLVR: CATCH: A Controllable Analysis Testbed for Reward Hacking in Coding RL — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
@@ -241,11 +241,11 @@ section 6c.
 - [ ] arxiv:2609.15987 — RLVR: Bellman Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.12191 — RLVR: GAUGE: When Not to Trust LLM-as-a-Judge in user-simulated evaluation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.10315 — RLVR: TRACE: Training Reasoning Agents for Causal Exploration with Synthesized Rewards — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 5 claims, distilled 2026-09-11; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.09075 — RLVR: ThinkPrior: Zero-Rollout Difficulty Priors for Cold-Start Prompt Selection in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.06107 — RLVR: DataFlex-RL: An Evaluation Platform for RLVR Data Policies — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.05111 — RLVR: Unifying ICL, SFT, KL-Regularized RL Through a Bayesian Lens — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-09-08; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
@@ -435,7 +435,7 @@ question we do not have. The branch we do need is preference-gated refinement
 of a *text artifact* from logged usage, and the corpus already holds its best
 instance, unread in full.
 
-- [ ] arxiv:2609.22086 — Designer-RSI, read IN FULL for the replay gate's mechanics: it admits an edit that beats the incumbent on >=1 replayed case with no regression on any (C891), which is the gate design closest to our constraints and the only one of the three we hold that survives one-report-at-a-time arrival. We have it only through claim rows and the W40 draft — research seat 2026-10-05
+- [x] ~~arxiv:2609.22086 — Designer-RSI, read IN FULL for the replay gate's mechanics: it admits an edit that beats the incumbent on >=1 replayed case with no regression on any (C891), which is the gate design closest to our constraints and the only one of the three we hold that survives one-report-at-a-time arrival. We have it only through claim rows and the W40 draft — research seat 2026-10-05~~ - ANSWERED from the corpus, not from a re-read: C891 `claims.procedure` carries the four steps — (1) select past cases where the skill was used, (2) run candidate and incumbent on them, (3) compare grader scores, (4) admit only on >=1 strict improvement with no case scoring lower — with upstream context held fixed, "inspired by safe policy improvement". Caveat forward: C891 is `evidence_grade = asserted`, so the mechanics are answered and the EFFECT is not; W40 quotes the authors own unreplicated 61.8%/67.6% win rates. Research seat 2026-10-05, PR #228
 - [ ] arxiv:2605.23904 — SkillOpt, re-read for the held-out gating THRESHOLD and the validation set's composition: the full text establishes "strictly improves a held-out validation score" but not what is held out or how much, and our gate needs both numbers — research seat 2026-10-05
 
 ### Group 2 — the contradiction that blocks a cluster
@@ -492,3 +492,39 @@ general rubric paper for want of it.
 Struck this run, because the live web answered it:
 
 - [x] Does SkillsBench's "module" mean a `##` section or a separate file? **Answered 2026-10-05 by the Agent Skills specification (agentskills.io/specification), read directly: a module is a referenced file under `scripts/`, `references/` or `assets/`, within the spec's three-level progressive disclosure. All eight of our skills have zero reference files and are therefore one module each, so C848's three-module cap is not breached.** The question was raised and struck in the same run (PR #220), which is why it appears here answered; the brief's §0 carries the correction and the numbers. The live question it leaves behind is the token budget, not the module count: two skills exceed the spec's recommended 5,000-token body — research seat 2026-10-05
+
+## Drained 2026-10-05 by the research seat (PR #228)
+
+State of the queue at the start of this run: **99 unstruck items. 68 missing
+from the corpus entirely, 7 present with claims, 24 present and triaged but
+still waiting behind the distill backlog.** Query in
+`docs/research/notes/2026-10-05-digest-quality-evidence.md` §11.
+
+Struck above: three chair RLVR asks whose ask was corpus presence
+(`arxiv:2610.02015`, `2609.08650`, `2609.05295`), and Designer-RSI's replay
+gate, which `claims.procedure` answered without a re-read.
+
+**The 68 missing are the field's foundations and no feed can reach them.**
+`arxiv:2203.02155` (InstructGPT), `2212.08073` (Constitutional AI),
+`2305.18290` (DPO), `2309.00267` (RLAIF), `2211.14275` and `2305.20050`
+(process versus outcome reward), `2312.08935` (Math-Shepherd), `2403.04132`
+(Chatbot Arena), `2407.21783` (Llama 3) and 59 more. Ingest pulls recent
+papers from listed arXiv categories, so a 2022 or 2023 id is unreachable by
+construction; the ADR-35 path is the only route and it works — six papers
+carry `decision = 'deep_read'`, `model = 'rule:reading-queue'`. Six fed, 68
+waiting, and the 68 include every paper Layer 3's two named priorities rest
+on. Routed to the engineer as this week's highest-value queue item (brief §3).
+
+### Sharpened rather than struck, with what the corpus answered
+
+Two of the skill seat's re-read asks turn out to have a better answer than the
+one they asked for. Both asked whether an experiment lives in a section we had
+not read. The corpus says the problem is upstream of that.
+
+- [ ] arxiv:2602.12670 — SkillsBench, C850 (self-generated versus curated skills). **Re-read still needed, and the reason has changed.** C850's `evidence_grade` is `asserted` and its evidence field reads "Finding 4 notes that skill discovery is usually not the bottleneck" — we hold it on the authors' say-so, with no experiment in our record at all. It is also the `to` end of `864 contradicts 850`. So the question is no longer "which section holds the experiment" but "should an `asserted` claim be load-bearing against another claim" — research seat 2026-10-05, PR #228
+- [ ] arxiv:2609.11682 — COBRA-Skills, C322 (harness robustness). **The queue's own conditional is now met on our record: C322 should be downgraded or split.** Its `evidence_grade` is `asserted`, its `procedure` is empty, and its evidence field restates the claim nearly word for word — "further analyses in the paper show that COBRA-Skills remains robust to changes in the agent harness." Circular, and no numbers. A full read is still the way to confirm there is no ablation, but the downgrade does not depend on it — research seat 2026-10-05, PR #228
+- [ ] arxiv:2605.23904 — SkillOpt, held-out gating threshold and validation-set composition. Not answerable from the corpus: the claim rows carry "strictly improves a held-out validation score" and neither number. Stays queued as asked — research seat 2026-10-05, PR #228
+
+### A question this run raises, for whoever drains next
+
+- [ ] **44.8% of the corpus is `evidence_grade = asserted`** (826 of 1,845 claims), and 15 of 29 `contradicts` edges are drawn *from* an asserted claim. Two deprecating edges run from an `asserted` claim to a `controlled` one (`353 → 264`, `574 → 570`), which lets a say-so claim retire a measured one. Does the interpret step need an evidence-grade floor before it may draw a `contradicts` edge, or is this better fixed where the grade is assigned in distill? — research seat 2026-10-05, PR #228
