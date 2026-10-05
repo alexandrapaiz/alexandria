@@ -206,6 +206,9 @@ image = (
     # numbers CI checks are the numbers this run uses.
     .add_local_file("pipeline/budget.py", "/root/budget.py")
     .add_local_file("pipeline/llm.py", "/root/llm.py")
+    # The drift guard travels with the job, so the job can say what it is
+    # actually running. db/schema.sql deploy_runtime carries the argument.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
 )
 
 app = modal.App("alexandria-triage", image=image)
@@ -232,6 +235,23 @@ def llm():
         if path not in sys.path:
             sys.path.insert(0, path)
     import llm as module
+
+    return module
+
+
+def runtime_guard():
+    """pipeline/runtime_sha.py, wherever this is running from.
+
+    Same shape as the accessor above, and for the same reason: `/root` inside
+    the image, this directory in a checkout.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import runtime_sha as module
 
     return module
 
@@ -365,6 +385,10 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
         print(f"availability: {note}")
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Guardrail, sprint 2026-09-28 item 2: say what this container is
+        # actually running before anything else happens. It cannot raise and
+        # cannot abort this transaction; pipeline/runtime_sha.py says how.
+        print(runtime_guard().record_runtime(conn, "triage", __file__)[1])
         backfilled = conn.execute(
             """
             insert into triage_log (paper_id, decision, reasoning, model, prompt_sha, method)
