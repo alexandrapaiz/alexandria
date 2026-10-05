@@ -40,7 +40,7 @@ definitions turn on.
 The one number the re-judgment depends on, the indexed count, matches within
 five. The rest do not, and the reason is visible in the last two rows: this
 predicate admits more already-distilled papers than the directive's did. The
-conclusions below do not rest on the 43-paper delta — they rest on the field
+conclusions below do not rest on the 43-paper delta - they rest on the field
 diff in section 1 and the backlog in section 2, both measured independently.
 
 **One term in the directive does not mean what the corpus column means.**
@@ -105,15 +105,15 @@ week. At the best observed week the backlog is six weeks of work; at the
 median it is over twenty.
 
 That is the whole containment story in one number. Triage routes containment
-papers to distill at a high rate — 83 of the 125 in-window papers we hold —
+papers to distill at a high rate - 83 of the 125 in-window papers we hold -
 and 1,189 papers are waiting for a stage that has not reached them. The
 missing topic tag (section 5) is why nobody can *find* the containment claims
 that do exist. The backlog is why most of them do not exist.
 
 The interpret stage is behind the same way: `interpret_queue` holds **785**,
 and **1,012 of 1,801 claims (56%) have `interpreted_at` null**. Every
-containment claim filed in the last fortnight — CounterSteer, Approval
-Laundering, Covert Assistance — therefore has zero graph edges, which is why a
+containment claim filed in the last fortnight - CounterSteer, Approval
+Laundering, Covert Assistance - therefore has zero graph edges, which is why a
 claim-graph query on containment returns nothing while the claims sit there.
 
 ## 3. A correctness defect: one arXiv paper, two rows, two verdicts
@@ -147,7 +147,7 @@ twice on one paper, and splits claims across two paper ids.
 
 This is `pipeline/ingest.py`, not a file in the ADR-12 whitelist, so it is
 routed to the engineer rather than proposed. The fix is id normalisation at
-ingest — canonicalise the version suffix one way before insert — plus a
+ingest - canonicalise the version suffix one way before insert - plus a
 backfill that merges the 322 pairs and keeps the better tier.
 
 The blog side of the same defect is **already fixed**: 1,172 documents are
@@ -168,13 +168,13 @@ predicate. First, what those 64 rows are:
 | how the decision was made | rows |
 |---|---|
 | judged by a model (`kimi-k2.6`, `gpt-oss-120b`) | 35 |
-| `rule:backfill` — auto-indexed, never judged | **29** |
+| `rule:backfill` - auto-indexed, never judged | **29** |
 
 So "re-judge the 69 indexed papers" is two different jobs. 29 of them have
 never been judged by anything; the string in `triage_log.reasoning` is
 `backfill: predates pipeline, auto-indexed by rule`.
 
-### 4a. Move to distill — 9 documents, 13 rows
+### 4a. Move to distill - 9 documents, 13 rows
 
 The duplicate defect in section 3 is why the row count is higher than the
 document count: five of these nine are the same OpenAI essays ingested twice.
@@ -187,11 +187,11 @@ document count: five of these nine are the same OpenAI essays ingested twice.
 | `blog:openai:18b7ee4fe5e46ca1`, `blog:openai-blog:18b7ee4fe5e46ca1` | Improving instruction hierarchy in frontier LLMs | Never judged. Instruction hierarchy is a containment primitive, not a capability result; area 5. |
 | `blog:openai-blog:0d2abbb0fa62c353` | Keeping your data safe when an AI agent clicks a link | Never judged. Injection-to-exfiltration chain; area 5. |
 | `arxiv:2609.36817v1` | pikit: A Composable Toolkit for Indirect Prompt Injection Research and Evaluation | Judged 0.52, declined for "no novel technique". The charter names **containment evaluation** as part of the priority: how you test that an agent cannot reach what it must not. Evaluation infrastructure is in scope here even when it is not a new defence. |
-| `blog:hn-frontpage:db811de4e7247bea` | 5x faster Edge Functions: V8 isolates to Firecracker MicroVMs | Judged 0.68, declined because "edge functions ≠ agent runtimes". Area 1 is isolation designs **with a measured escape or cost**. This is the isolate-versus-microVM cost, measured, which is the question the skill's section on choosing a boundary cannot currently answer with a number. |
+| `blog:hn-frontpage:db811de4e7247bea` | 5x faster Edge Functions: V8 isolates to Firecracker MicroVMs | Judged 0.68, declined because "edge functions is not agent runtimes". Area 1 is isolation designs **with a measured escape or cost**. This is the isolate-versus-microVM cost, measured, which is the question the skill's section on choosing a boundary cannot currently answer with a number. |
 | `arxiv:2609.37737v1` | Where Do LLMs Decide to Break the Rules? Mechanistic Localization of Prompt Injection Compliance | Judged 0.68, declined for ending "without an actionable intervention". Causal activation patching that localises injection compliance is a mechanism with a measurement, and CounterSteer (held, 5 claims) is the intervention built on exactly that localisation. The pair is the finding. |
 | `arxiv:2609.39631v1` | Kirin: Cloud-native WebAssembly Service Orchestration | Judged 0.50, declined as not agent-specific. Wasm isolation evaluated against containers is the same containment-cost question as the Firecracker item. Lowest priority of the nine. |
 
-### 4b. Second tier — defensible either way, flagged not moved
+### 4b. Second tier - defensible either way, flagged not moved
 
 - `blog:hn-frontpage:5b99ba2e157ec4e5` CVE-2025-13032, Avast sandbox escape part 2. The triage reasoning is the best in the whole sample and correctly says wrong domain with no agent metrics. Against it: this is a measured escape with its preconditions, and area 1 asks for those. Moves only if the engineer wants escape mechanics regardless of domain.
 - `arxiv:2609.39866v1` Preemptive LLM Unlearning against Forbidden Capability Acquisition via Gradient Sealing. Containment at the weights rather than the boundary. In scope only if "containment" covers denying a capability as well as denying an action; section 5's definition deliberately does not.
@@ -237,15 +237,15 @@ running now: HEAD `819694a98603` equals the sha on 955 claims, the newest
 written 2026-10-05. So these definitions can reach production this week.
 
 What replaces it is narrower and absolute. `pipeline/topics.py` now enforces
-the closed list — 0 of the claims written at the current distill sha carry an
-off-list tag, against 64 historically — and its own docstring says the prompt
+the closed list - 0 of the claims written at the current distill sha carry an
+off-list tag, against 64 historically - and its own docstring says the prompt
 list and `TOPICS` "must agree exactly". So a `containment` tag added to
 `prompts/distill.md` alone would be **dropped on every claim**, silently. The
 change is atomic across three files or it is worse than nothing:
 
-1. `prompts/distill.md` — the tag in the topics list and the rubric block.
-2. `pipeline/topics.py` — `"containment"` in `TOPICS`.
-3. `tests/test_reasoning_rubric.py` — parses the prompt and fails on drift, so
+1. `prompts/distill.md` - the tag in the topics list and the rubric block.
+2. `pipeline/topics.py` - `"containment"` in `TOPICS`.
+3. `tests/test_reasoning_rubric.py` - parses the prompt and fails on drift, so
    it has to see the new tag.
 
 And a fourth, separately: 64 legacy claims carry off-list tags, 13 of them a
