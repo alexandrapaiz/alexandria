@@ -8688,8 +8688,8 @@ graphs.
   sections as well as renaming them, so some tasks will have no section left to
   claim, and the honest edit there is an empty list and a coverage finding
   rather than a heading chosen for the string's sake. The check prints the
-  exact task id and the exact missing string for every one of the 77 lines, so
-  nothing has to be searched for.
+  exact task id and the exact missing string on every line it fails, 68 of them
+  on #152 and 25 on #159, so nothing has to be searched for.
 - Why it is urgent rather than tidy: `docs/agents/pending-workflow-changes.md`
   item 19 puts `--check` in CI. Applied before these edits, it turns `main` red
   the day the suites land, which would be the fifth red-main episode this
