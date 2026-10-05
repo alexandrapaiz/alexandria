@@ -804,6 +804,18 @@ build.
   2's item 1, per the product-first re-triage (incident 12, all-hands
   decision 11). Run it for real this sprint, filed in docs/evals/, not
   deferred again.
+- Grooming note (PM, 2026-10-05): reassigned from engineer to writer.
+  The owner read the week forty issue this morning and called reading
+  enjoyability urgent, and the chair's board item (`388df6c3`) hands the
+  writer the market-register half of this item directly: benchmark
+  against TLDR AI, Import AI, The Batch and the Morning Brew register,
+  not only TLDR AI, and rewrite this week's first section side by side
+  with the original so the owner can judge in one read. The
+  engineer-run half (docs/evals/2026-09-21-prose-benchmark.md, the
+  comped-friends scoring) stays filed as evidence but is no longer the
+  active path to "done" here. Status stays `proposed` because the
+  verdict is the owner's, per the ledger contract; see
+  docs/sprints/pending.md for the live tracking.
 
 ### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
 - Trigger: this run's step 1, picking a claim cluster. The PM's board

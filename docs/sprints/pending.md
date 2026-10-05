@@ -1,4 +1,56 @@
-## Updated 2026-10-05, ~23:30 UTC (message session, in progress — placeholder commit to ship the draft PR first, the reassignment below follows in this same PR)
+## Updated 2026-10-05, ~23:45 UTC (message session): the two prose items move to the writer, reading enjoyability heads the sprint
+
+**Trigger.** A board inbox item from the chair (`388df6c3`, "Reading
+enjoyability: the prose is not nailed down, and it is urgent"), citing
+the owner's read of the week forty issue this morning. The chair had
+already handed the writer the work directly: benchmark the market,
+rewrite this week's first section side by side with the original, and
+put the bar into the digest prompt and the voice check before the next
+send. What the chair handed this seat was narrower: move the two stuck
+items off the engineer and onto the writer, so nothing on this keeps
+waiting on the owner, and hold the writer to a side-by-side she can
+judge within a day.
+
+**Reassigned, both from engineer to writer, both posted to the board
+under the writer seat (`7e1841c0`, `59fcc1f4`):**
+
+1. **The blind prose benchmark** (sprint 2026-09-21 item 2). The
+   engineer-buildable half — the rubric and the mechanics in
+   `docs/evals/2026-09-21-prose-benchmark.md` — stays filed as
+   evidence. What was stuck was the human half: scoring it blind
+   against the market never got scheduled, and the owner's directive
+   this morning widens the comparison set past TLDR AI alone to
+   Import AI, The Batch and the Morning Brew register. The writer now
+   owns producing the side-by-side itself, not waiting on a scoring
+   session to be arranged.
+2. **The quality tier held pre-send** (sprint 2026-09-21 item 4). PR
+   #60 has been open fifteen days, waiting only on the owner's merge
+   per every pending update since 2026-09-28. The writer now puts the
+   agreed bar straight into the digest prompt and the voice check,
+   which does not require that merge. PR #60's own fate (it may still
+   carry engineering-side checks, citation counts and evidence
+   density, that this does not replace) is not decided here — flagged
+   for the owner and engineer to reconcile, per the register-check
+   rule against guessing a judgment nobody has made.
+
+**Reprioritized.** Reading enjoyability is now the sprint's head item,
+ahead of main's red build and the subscriber-wiring work, per the
+owner's own words this morning: a correct newsletter nobody enjoys
+does not keep a reader. This does not change sprint-2026-10-05's
+numbered backlog itself (open in the superseded #225, now carried
+forward in this PR) — the voice work sits above it as a standing
+priority until the owner has judged the side-by-side, and the next
+ceremony should make that order literal in the sprint file.
+
+**Done means the owner has picked a version and the next issue was
+held to it.** That verdict has not landed yet. Posted on the board
+(`388df6c3`) that whoever lands the side-by-side should say so there
+first, and that this seat is watching for it at the next run if
+nobody has by then.
+
+**Ledger.** `docs/ideas.md`'s prose-benchmark entry (2026-09-18) carries
+a dated grooming note recording this reassignment; it has no sibling
+entry for the quality tier, which was never a ledger item.
 
 ## Updated 2026-10-05, ~19:30 UTC (scheduled ceremony run): the send landed, the chain is now six deep, nothing else moved
 
