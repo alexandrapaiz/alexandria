@@ -10161,3 +10161,75 @@ provenance reviewer exists to catch.
 - Cost: a rate change on one cron, plus the question of whether the press should
   say how much of the corpus it could see.
 - Status: proposed
+
+### 2026-09-30 — The house grey carries most of the site's prose at 3.62:1 (frontend)
+
+- Trigger: this run computed the effective contrast of every visible string on
+  every page, at every viewport, with opacity folded in. `#86868b` on white is
+  3.62:1. WCAG AA wants 4.5 for text under 24px, so the failing strings are
+  the page intros, the kickers, the row metadata, the footer, the receipts and
+  the issue's standfirst. On the skills page at 52 entries that is 823
+  strings. The gray is Apple's own secondary label colour and it is named in
+  canon.md, so this is not drift. It is a law that has an accessibility cost
+  nobody has priced.
+- Proposal, for the owner, because the canon says the colour law is hers
+  alone: darken the secondary grey for text only, leaving hairlines and rules
+  at `#e5e5e5`. `#6e6e73` is Apple's own darker secondary and reaches 4.9:1.
+  `#767676` is the lightest grey that clears 4.5:1 exactly. Either keeps the
+  house monochrome and neither adds a colour. The alternative, equally hers,
+  is to record that 3.62:1 is accepted for secondary prose so that future runs
+  stop re-finding it.
+- Whose call: owner. The frontend seat implements either way and will not
+  touch the palette before she rules.
+- Cost: one token in `globals.css`, plus one sweep to confirm nothing that
+  uses the grey as a rule rather than as text went dark with it.
+- Status: proposed
+
+### 2026-09-30 — The masthead starts at three different left edges (frontend)
+
+- Trigger: measured at 1440 this run, the h1's left edge is 404 on pricing,
+  mission, routines, the issue, the 404, privacy, terms and library, 364 on
+  skills, and 264 on the desk. The graph's 104 was fixed this run, which is
+  ban list entry 29. The remaining two shells are wider for real reasons, the
+  skills shelves and the desk's dense rows, so this is not the same defect.
+  What it is is a masthead that slides when a reader moves between pages,
+  because the header and the content share one shell and only the content
+  needs the width.
+- Proposal: separate the two. The kicker, title and intro hold one left edge
+  and one measure on every route, and the content below keeps whatever width
+  it needs. That is what Apple and Stripe both do and it is why their pages
+  feel like one document.
+- Whose call: owner, because it changes how three pages sit at desktop and the
+  seat will not restructure four shells on its own judgment. The frontend seat
+  implements on her word, in one run, with before and after at all three
+  viewports.
+- Cost: one rule for the page header, plus the sweep.
+- Status: proposed
+
+### 2026-09-30 — A screenshot harness has to prove it photographed the right page (frontend, from this run's own failure)
+
+- Trigger: this run screenshotted all thirty page and viewport combinations,
+  ran a contrast, overflow, opacity and touch target audit over them, and got
+  back a perfectly clean result. All thirty were photographs of a Clerk error
+  document, because a `pk_test_` key makes `clerkMiddleware` issue a dev
+  browser handshake redirect and the browser leaves the site. curl reported
+  200 throughout, because curl does not follow it and the server's HTML was
+  correct. The audit reported clean because a two line error page genuinely
+  has no overflow and no low contrast. Only the charter's look-at-the-pixels
+  rule caught it.
+- Proposal, cheap and worth having in every seat that screenshots anything:
+  before a sweep counts, assert one string that only the real page can
+  produce, and assert that the set of files is not uniform. Both failures were
+  visible in the output the whole time. The thirty files landed within 1% of
+  one byte size, which is what identical renders look like and what ten
+  different pages never look like.
+- Related, same class: the harness reported 251 elements at opacity 0 on the
+  desk at the touch viewports, which is ban list entry 24's exact shape. It
+  was wrong. Headless Chromium reports `hover: hover` inside a touch context,
+  so every `@media (hover: none)` rule in a stylesheet goes untested unless
+  the media features are forced through CDP. Any seat testing touch behaviour
+  needs that or it is testing the desktop twice.
+- Whose call: frontend for its own harness, which is done. The ExO decides
+  whether it generalises to the other seats that render pages.
+- Cost: two assertions.
+- Status: proposed
