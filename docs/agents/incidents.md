@@ -9569,3 +9569,101 @@ re-measured, and used as a planning input, and a negative result is the one
 kind that looks identical whether the query was right or wrong. A query that
 returns nothing should be run once in the inverse direction before anything is
 built on it.
+
+## INC-2026-10-05-interpret-rate-mismatch-third-occurrence — The graph is eight days behind the corpus, the prescribed rate match was half-applied, and nothing watches the queue (2026-10-05, research seat)
+
+**Recorded under the standing rule.** Incident 30 in this file records the
+same failure twice, on 2026-09-19 and 2026-09-22, and names the fix. This is
+the third occurrence, found by PR #220 while auditing why ten of ADR-40's
+seventeen cited claims carry no graph edge.
+
+**Measured today, read-only against Neon.**
+
+- `interpret` service rate: exactly 90 claims/day on 2026-10-01, 10-02,
+  10-03 and 10-04. The cap is flat enough to be a configured limit, not a
+  coincidence.
+- Arrival rate over the same four days: 217, 136, 135, 142.
+- Deficit: 270 claims in four days, about 67/day.
+- Backlog: 1,012 uninterpreted claims of 1,801 total. 785 are embedded and
+  waiting; 227 have no embedding yet.
+- Lag: the newest claim `interpret` has reached was created 2026-09-27. The
+  graph is **eight days behind the corpus**.
+- Orphan rate: 1,131 of 1,801 claims (62.8%) have no edge in either
+  direction. In the `reasoning` topic, a named owner priority, it is 132 of
+  133 (99.2%), because all but one of those claims arrived after the lag
+  opened.
+
+**The fix was half-applied, and saying so precisely matters.** Incident 30
+prescribed "rate-match `interpret` to `distill`." Throughput did rise, about
+six-fold, from the 7-31/day that entry measured to today's 90/day, and
+days-of-staleness improved from 12 to 8. `distill`'s output rose further, so
+the two numbers that describe the backlog both got worse: absolute depth
+439 → 1,012, daily deficit ~25 → ~67. A six-fold throughput increase that
+leaves the queue growing faster than before is the specific trap in raising a
+rate without matching it to its upstream, and it reads as progress in every
+check that looks at throughput alone.
+
+**What it costs.** vision.md §1 defines "matured" and "left behind" as what
+accumulating `supports` and `contradicts` edges reveal. At an eight-day lag,
+no claim from the current week can carry an edge, so the digest's two
+evidence-driven sections structurally cannot see the week they are about, and
+O1 KR3's "every digest item cites its evidence" is satisfiable only from
+claims older than the lag. Incident 30's second occurrence recorded the same
+cost against the skill seat's cluster selection; it is now also a cost
+against the digest, which is the product.
+
+**Why it was not caught between the second and third occurrences.** For the
+same reason incident 30 gave for the first two, which that entry already
+generalised into a rule: "a queue is not healthy because its worker ran. It
+is healthy when its depth is flat or falling." It also recorded that none of
+`triage_queue`, `distill_queue` or `interpret_queue` is checked that way by
+anything. Thirteen days later none of them is, and this occurrence was found
+while looking for something else. The lesson was recorded correctly, by the
+right seat, and nothing between the lesson and this run opened the file —
+which is incident 20's pattern and L-A9 in `docs/standards/lessons.md`.
+
+**The gate that is missing, named.** The research seat's charter, Step 4,
+tells it to gather triage health, distill health and graph health, and says
+nothing about queue depth or its trend. That is the gate this failure passes
+through three times. The diff is small and `prompts/research-agent.md` is read
+from the checkout at run time, so it reaches production on the next run. It is
+**not** proposed in #220, because #210 already spent this week's one system
+diff on `prompts/triage.md` and that change is itself undeployed; stacking a
+second is incident 25's shape. It is pre-evidenced in
+`docs/research/briefs/2026-10-05-skill-evals-from-rl-research.md` §9 as next
+week's proposal.
+
+**Still open, and it is the engineer's with the chair on budget**, unchanged
+from incident 30: rate-match, not rate-raise. The number to match is
+`distill`'s claim output, about 140/day over the last four days, and the
+match has to hold as that number moves rather than being set once.
+
+## INC-2026-10-05-null-embedding-window-returns — 227 claims have no embedding, every one from the last two days, which is incident 30's first occurrence in shape (2026-10-05, research seat)
+
+**Recorded under the standing rule**, and recorded separately from the entry
+above because it is a different mechanism with a different owner even though
+it was found in the same sweep.
+
+Incident 30's first occurrence (2026-09-19) was "158 of 543 claims had a null
+embedding, every one written in the previous three days," and its consequence
+was that those claims "cannot be reached by `interpret`'s neighbour query, so
+they draw no edges." Its second occurrence recorded that this was fixed:
+"Embeddings are fixed: zero claims have a null embedding today."
+
+Measured today: **227 claims have a null embedding, 142 created 2026-10-04 and
+85 created 2026-10-05, and every one of the 227 is also uninterpreted.** Same
+count shape, same recency shape, same consequence.
+
+**What this entry does not claim.** Whether this is a regression or the normal
+lag of a nightly embed job is not decidable from the corpus alone, and the run
+that found it could not settle it without the job's schedule. It is recorded
+anyway, for the reason the standing rule exists: the 2026-09-19 occurrence was
+also a two-to-three-day window of null embeddings that someone could have read
+as a normal lag, and reading it that way is how it reached a second
+occurrence. The question is on `docs/research/reading-queue.md` for the
+engineer to close in one sentence.
+
+**Either way it is the condition that makes a claim invisible** to
+`interpret`'s neighbour query and to `semantic_search`, so the corpus's two
+newest days are unreachable by the agent-facing surface while the window is
+open.
