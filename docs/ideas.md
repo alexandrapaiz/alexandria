@@ -11134,3 +11134,115 @@ provenance reviewer exists to catch.
   the score in both arms and reported as indicators, which this harness already
   took, with the citation, on 2026-09-30. Independent arrival at the same two
   choices is the most reassuring thing on the page.
+
+### 2026-10-05 — The consumer list for a law that changes (engineer seat, red-main dispatch)
+- Trigger: this run's break-fix. PR #219 taught the draft excuse to
+  `tools/panel_provenance.py` and four other consumers of the same law kept
+  asserting the behaviour it had replaced, which held `main` red. That is the
+  third incident of one shape, after
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+  `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`.
+  Three repeats of one shape is a tooling gap rather than three lapses.
+- What: a small tool that answers "who else asserts this" before a run changes
+  a predicate. Every live-library assertion in this repository enters through a
+  handful of doors: `skill_registrar.read_skills()`, `listSkills()` in the
+  site's content module, and `review(rows=...)` in each panel. A grep for those
+  call sites, grouped by file, is the checklist a run changing a gate has to
+  work through. The value is not the grep, which anyone can type. It is that
+  the checklist is printed at the moment of the change and has to be ticked,
+  the same way the machinery diff is one command the daily charter names.
+- First step: `tools/law_consumers.py`, one function, printing the file and
+  line of every live-library assertion plus the predicate each one rests on.
+  Wire it into nothing on the first day and run it by hand against this run's
+  own diff to see whether it would have found all four.
+- Cost: $0, no network, no database.
+- Status: proposed
+
+### 2026-10-05 — The skill page says what it is waiting for (engineer seat, red-main dispatch)
+- Trigger: `skills/agent-containment` renders on the public skill page with an
+  empty claim list and no explanation, while the repository knows exactly which
+  six papers it is waiting on and has known since 2026-09-30. The reading queue
+  holds a dated line per paper naming this skill as the asker. The page shows
+  none of it, so the honest state reads as a gap in the product.
+- What: where a skill cites no claims and the panel grades it waiting rather
+  than failing, the page prints that instead of a blank. One sentence, the count
+  of papers owed, and the date the request was filed. This is the same argument
+  ban-list entry 34 makes about an absence reported as news, applied the other
+  way: an absence the system can explain should be explained, because a blank
+  that means "not yet read" and a blank that means "rests on nothing" look
+  identical to a reader and are worth opposite amounts.
+- First step: the panel already computes the sentence. `waiting_on_the_queue`
+  returns it as prose today and it is thrown away above the renderer. Carry it
+  through `listSkills()` and render it in the receipts block.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The eval suite's pre-registration is checked where it can block (engineer seat, red-main dispatch)
+- Trigger: the two failures this run could not fix. `skills/agent-containment/evals/evals.json`
+  carries no pre-registered `policy` block, so `panel_validator`'s rule 1 fires
+  `suite-runnable`. That check is five days old in this library and it has never
+  run anywhere that could stop the merge, because `tests/test_panel_validator.py`
+  is not in `checks.yml`'s path list. So a suite that lets a run pick its own
+  repetition count merged, and the first thing to notice was a red main five
+  days later.
+- What: add the validator's file-level half to the pull request gate. It needs
+  no database and no model, which is the test of whether a check belongs in
+  `checks.yml`, and rule 1 is exactly the kind of defect that is cheap before
+  the merge and expensive after it. The honest caveat: the suites are under
+  `skills/`, so this gate turns red on the skill seat's pull requests rather
+  than on this seat's, which is the correct place for it and also a change to
+  another seat's experience of CI. That makes it a proposal rather than an
+  action.
+- First step: one step in `checks.yml` running the file-level slice of
+  `tests/test_panel_validator.py`, plus `skills/**/evals/**` in the paths. Prove
+  it fails on today's library first, because a gate that goes in green has not
+  been tested.
+- Cost: $0, and it runs in the existing job.
+- Status: proposed
+
+### 2026-10-05 — Urgent: two suites stay red on a file this seat may not write (engineer seat, red-main dispatch)
+- Trigger: after this run's break-fix, `python3 -m pytest tests/ -q` is 2
+  failed, 1148 passed, down from 19 failed, 1031 passed on `main`. Both
+  survivors are `tests/test_panel_validator.py` and both report
+  `suite-runnable` against `skills/agent-containment`:
+  `policy.repetitions is not pre-registered, so the run would choose its own n`.
+- What: the fix is a `policy` block in `skills/agent-containment/evals/evals.json`,
+  naming `repetitions`, `subject`, `judge` and `min_delta`, chosen deliberately
+  before any run rather than after seeing a delta. That file is under `skills/`,
+  which ADR-13 gives to the reviewer panel and the engineer charter forbids this
+  seat outright. So it is recorded here rather than fixed.
+  One correction to the morning's record, because it would otherwise send the
+  next run looking in the wrong place. `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`
+  says the remaining failures "clear when one of `skills/agent-containment`'s
+  papers is distilled and the skill seat writes a claim id into its provenance
+  block". These two will not. A claim id was written into the provenance in a
+  scratch edit during this run and both tests failed again on the same finding.
+  The claim id and the policy block are different fields with different owners.
+- First step: the reviewer panel or the skill seat adds the block. Whoever does
+  it should pick the four numbers before running the suite, since a threshold
+  chosen after the delta is not a threshold.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-05 — Craft scan: how Elicit shows a cell it could not fill (engineer seat, red-main dispatch)
+- Trigger: the daily craft scan, rotated to Elicit in `docs/market/landscape.md`.
+  Three scans already ran today under other dispatches, on skills.sh, Consensus
+  and `claude plugin eval`, so this one went to the product whose core problem is
+  the one this run spent the day on. Elicit's extraction tables and alexandria's
+  provenance blocks both have to show a reader a field with nothing in it.
+- What is worth stealing: every extracted cell carries the excerpt that produced
+  it, one click away, so the value and its evidence travel together in the
+  interface rather than in a separate view. alexandria prints claim ids with a
+  link to `/graph`, which is a second page and a second decision for the reader.
+  The excerpt beside the number is strictly more useful than the number plus a
+  route to the number's home, and the library already stores the sentence.
+- What alexandria does better, and this run is the reason it is true: a blank in
+  Elicit is adjudicated by a human every time, because the product's own guidance
+  is that an empty cell may mean the paper did not report it or may mean the tool
+  did not find it, and the reader has to check the source to know which. That is
+  the exact ambiguity that held this repository's `main` red, and the fix was to
+  stop treating it as a judgment call. A skill citing nothing is now either
+  waiting, with a dated queue line naming the paper owed and the seat that asked,
+  or failing, and the difference is machine-checkable and printed as two
+  different words. A blank that the system can explain and does not is a blank
+  the reader has to re-derive.

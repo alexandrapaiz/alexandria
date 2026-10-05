@@ -9575,3 +9575,86 @@ signal, not to loosen the gate. Here the second signal already existed in the
 repository: a line in `docs/research/reading-queue.md`, written by the skill
 seat on the day it shipped the draft, saying precisely which papers it needed
 and could not read.
+
+## INC-2026-10-05-a-law-reached-one-consumer-and-the-rest-were-billed-to-another-seat — ten of twelve red tests were fixable by the seat that declared them someone else's, and the other two will not clear the way it predicted (2026-10-05, engineer seat)
+
+**What happened.** `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`,
+written earlier the same day, closed with this: "The 12 remaining failures are
+not fixed and are not this seat's to fix. They clear when one of
+`skills/agent-containment`'s papers is distilled and the skill seat writes a
+claim id into its provenance block. Until then `main` stays red."
+
+Both halves of that are wrong, and the second is wrong in a way no later run
+would have discovered by waiting.
+
+**Ten of the twelve were this seat's.** The run that wrote the entry taught the
+draft excuse to `tools/panel_provenance.py` and to nothing else. Four other
+consumers of the same law were left asserting the behaviour the fix had just
+replaced:
+
+- `tools/skill_registrar.py`'s files-only gate, still exiting 1 on the skill the
+  panel had just graded `unknown`.
+- `tests/test_skill_receipts.py`, asserting every skill on the page cites claims.
+- `tests/skill-provenance.test.mjs`, asserting the same thing over the renderer.
+- two fixtures in `tests/test_skill_registrar.py` that read `rows[0].claim_ids[0]`.
+
+The fixtures are the sharpest of the four. `skills/agent-containment` sorts
+first alphabetically and cites nothing, so `claim_ids[0]` raised IndexError and
+`claim_ids[:-1]` of an empty list perturbed nothing and then asserted that
+nothing had drifted. Both tests had been passing on a coincidence of directory
+order, and the skill that broke them did not break them at all. It revealed
+them.
+
+All ten were fixed in this run, in `tools/` and `tests/`, which that entry
+correctly names as this seat's surface.
+
+**The other two will not clear from a claim id.** They are
+`tests/test_panel_validator.py`, and the finding is `suite-runnable`, not the
+`status-vs-eval` the test knows about. `skills/agent-containment/evals/evals.json`
+carries no pre-registered `policy` block, so rule 1 fires. That was verified
+rather than assumed: a claim id was written into the skill's provenance in a
+scratch edit and both tests still failed on the same finding. Distilling a paper
+will not fix them. They need a `policy` block in a file under `skills/`, which
+is the reviewer panel's surface under ADR-13 and not this seat's.
+
+**Measured.** `main` was 19 failed, 1031 passed on `python3 -m pytest tests/ -q`
+at the start of this run, and 2 failed, 1148 passed at the end of it. Every step
+of `checks.yml` is green.
+
+**The repeat this is.** It is the third entry of one shape, after
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and the morning's
+entry: a correct change lands, the guards asserting the premise it replaced stay
+red, and the red is read as somebody else's. The new part, and the reason this
+is its own entry rather than a line appended to the morning's, is the
+**attribution**. The previous two incidents left red guards unnoticed. This one
+noticed them, counted them, and routed all twelve to a seat that owed two. A
+misrouted finding is worse than an unnoticed one, because it closes the
+question. The next run reads "not this seat's to fix", finds a red main that
+somebody is apparently already handling, and moves on.
+
+**Why the count was wrong.** The morning's run grouped the failures by their
+trigger rather than by their fix. Every one of the twelve was triggered by the
+same empty field, which made "they clear when the field is filled" feel like one
+inference rather than twelve. Ten of them were really assertions about the field
+that the run was free to correct, and two were about a different field entirely.
+Grouping by cause is the habit that produced a correct diagnosis and a wrong
+owner.
+
+**The fix, and it is a procedure rather than code.** When a run hands a red test
+to another seat, the handoff is only sound if the run has checked that the
+other seat's change would actually turn it green. Here that check is one scratch
+edit and one `pytest` invocation, it takes under a minute, and it would have
+caught both errors. A seat that cannot run that check says so, and the finding
+goes to the ledger as `urgent` rather than to a seat as an assignment.
+
+**Blamelessly.** The morning's run did the hard half. It found the red in one
+command, separated two causes that looked like one, fixed the false positives
+outright, and built the upstream queue priority that is the durable fix. The
+diagnosis in that entry is still correct and this entry rests on it. What it did
+not do is the cheap half, which is to try the fix it was prescribing to somebody
+else before prescribing it.
+
+**For the standards relay.** A finding assigned to another team needs the same
+evidence as a finding you fix yourself: not only that the cause is theirs, but
+that their change clears it. Routing is a claim about the future and it is
+testable. Test it.
