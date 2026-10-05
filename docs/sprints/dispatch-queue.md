@@ -17,16 +17,24 @@ the last hour. There is nothing this run could propose that the live
 session hasn't already overtaken. Queue is empty by design, not by
 oversight.
 
-**Second PM run detected mid-ceremony, named rather than hidden.** A
-`pm-agent` run (`repository_dispatch`, started 03:49:26Z) is running
-alongside this one (started 03:34:40Z). This seat has no mechanism to
-coordinate with a concurrent run of itself beyond the existing
-own-branch check; this run's branch (`pm/sprint-2026-10-05`, PR #213)
-was already pushed before 03:49, so a second PM run reading `gh pr
-list` after that point should see it and build on it rather than
-collide. Flagging here in case it doesn't, per the "repeats go in the
-incident register" rule — if two PM PRs land for the same date, that
-is the collision incident 14 already named, happening a third time.
+**Second PM run detected mid-ceremony, and it collides on one file.**
+A `pm-agent` run (`repository_dispatch`, started 03:49:26Z) ran
+alongside this one and opened PR #215
+(`alexandria-pm/2026-10-05-message`), a message-triggered session
+declining a staffing-authority claim — different branch, different
+topic, not a duplicate ceremony. But its own PR body says "no open PR
+collision... nothing on a PM branch before this one," which is wrong:
+this run's PR #213 (`pm/sprint-2026-10-05`) was already open, touching
+`docs/sprints/pending.md`, four minutes before #215 was created. #215
+also touches `pending.md`. Its own-PR check missed an open PR from the
+same seat, the exact failure mode incidents 6 and 14 already named.
+**Expected merge order, named per the ledger-collision rule:** merge
+this PR (#213) first — it is the full ceremony reconciliation — then
+#215's addition applies on top; if #215 merges first instead, this
+branch will need `main` merged into it before it can land clean. Not
+filed as a fresh incident this run (no seat's work was lost, both PRs
+are still open and reviewable), but worth the ExO's attention if it
+happens a third time with real content loss.
 
 ## The queue gauge (four numbers, charter §4)
 
