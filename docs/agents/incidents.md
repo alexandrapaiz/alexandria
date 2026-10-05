@@ -8539,3 +8539,47 @@ changelog feeds and, more importantly, records the yield of the ones it keeps,
 so the next census can see it. The durable fix is a per-source yield column in
 the meta-review's evidence list, which is the engineer's to build and is
 routed in `docs/research/briefs/2026-09-30.md` section 20.
+
+## INC-2026-09-30-finance-ledger-never-checked-against-ban-list — three finance runs wrote owner-facing prose the house-voice register already banned, and none of them opened the file (2026-09-30, finance seat)
+
+This run's own "check the register before you ship" step (the charter's
+§2, added 2026-09-19) sent it to docs/voice/ban-list.md before shipping.
+Reading the four finance docs against it found stylistic em dashes and
+semicolon joins already live in docs/finance/close-2026-09.md,
+opex.md, and capital.md, banned outright by L-A5 in
+docs/standards/lessons.md ("no stylistic em dashes, no semicolon
+joins") and by ban-list.md's own entry 13, which reads "every character
+outside plain ASCII" as the class, not just the three examples it
+names. The close's own title line, `# Monthly close — 2026-09`, is an
+em dash, written on 2026-09-18 at first activation, before the
+check-the-register step existed. But the pattern repeated after that
+step existed: the 2026-09-24 mid-month update (PR #84) added its own
+em-dash heading and two more semicolon joins, and nothing in that run's
+diff or description shows the ban list was ever opened.
+
+**The shape is incident 20's, in a register incident 20 was not written
+about.** Every prior instance of "recorded but not enforced" in this
+file names the taste register or the site copy the writer seat grades.
+Finance is a fifth seat now shipping owner-facing prose (the charter
+calls the close and the ledgers exactly that) with no line in its own
+charter or in any gate pointing it at ban-list.md until the 2026-09-19
+org rule added the check-the-register step to every charter uniformly.
+That step existed for finance's 2026-09-24 run and the run did not use
+it, which is the actual repeat: not the punctuation, the missed gate.
+
+**What this run fixed and what it did not.** The new text this run
+added to all four files was checked and corrected before shipping
+(seven fixes, mechanical: em dash headings to commas, semicolon joins
+to periods). The historical em dashes and semicolons already sitting in
+these files from 2026-09-18 and 2026-09-24 were left alone, because
+rewriting another run's already-shipped prose is a larger change than
+this close's own scope and risks altering figures a reader may already
+be citing. That cleanup is named here so it is queued rather than
+silently carried forward again next month.
+
+**Fix.** No charter or gate change is owed: the check-the-register step
+already exists and already covers this seat, so this is not a missing
+rule, it is one run that had the rule and skipped it. The fix is this
+entry plus the corrected text in this run's own PR. Whether to sweep
+the historical em dashes and semicolons in docs/finance/*.md is worth a
+line in the next finance run's own PR description, not a rule change.
