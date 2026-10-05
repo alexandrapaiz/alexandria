@@ -224,3 +224,30 @@ is what HiSkill and SkillDAG measure and what no standard will answer. That line
 stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
+- [ ] arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.40115 — RLVR: Unlearnable, or Unmeasured? On the Reliability of Difficulty Labels in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.40360 — RLVR: Semifactual Credit-Augmented Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.39533 — RLVR: CATCH: A Controllable Analysis Testbed for Reward Hacking in Coding RL — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.37825 — RLVR: Privy to the Foil: a self-privileged critic for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.37868 — RLVR: Learning Beyond What You Sample: cross-model trajectory exchange for RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.35259 — RLVR: On-Policy or Off-Policy Learning? distillation dynamics — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.35677 — RLVR: Verifier Errors in RLVR: Reward Hacking, Limits of Feedback, and Selective Control — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.34857 — RLVR: Beyond Verbalized Confidence: Calibrating Reasoners with Differentiable Readouts — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.28765 — RLVR: Reinforcement Learning with Verifiable Rewards for Small Search Agents — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.28385 — RLVR: When and Where to Trust the Teacher: on-policy distillation and GRPO through entropy — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.24380 — RLVR: Information-Time Proximal Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.23053 — RLVR: Attributable Post-Rationalization in RAG Citations: an RLVR fix — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.16639 — RLVR: ReDraft, Don't Just Distill: reference-driven revision for continual post-training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.15987 — RLVR: Bellman Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.12191 — RLVR: GAUGE: When Not to Trust LLM-as-a-Judge in user-simulated evaluation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.10315 — RLVR: TRACE: Training Reasoning Agents for Causal Exploration with Synthesized Rewards — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.09075 — RLVR: ThinkPrior: Zero-Rollout Difficulty Priors for Cold-Start Prompt Selection in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.06107 — RLVR: DataFlex-RL: An Evaluation Platform for RLVR Data Policies — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.05111 — RLVR: Unifying ICL, SFT, KL-Regularized RL Through a Bayesian Lens — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2608.29188 — RLVR: Locked at the Entrance, Open Inside: Where RLVR Narrows the Solution Space — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2608.27046 — RLVR: Performance Foundations of Parallel and Distributed Reasoning Language Models — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
