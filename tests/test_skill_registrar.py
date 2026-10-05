@@ -134,13 +134,54 @@ def test_the_partial_unique_index_the_upsert_infers_exists():
 # --------------------------------------------------------------- the parser
 
 def test_every_real_skill_yields_a_row():
+    """Every skill parses, and the only problem left standing is an excused one.
+
+    `problems == []` was the assertion here until 2026-10-05, and it was right
+    while every skill in the library cited claims. `skills/agent-containment`
+    landed on 2026-09-30 naming six papers and no claims, because none of the
+    six had a claim id in the database yet, and docs/research/reading-queue.md
+    carries the unchecked lines that fix that. The provenance panel calls that
+    waiting rather than opting out; `reg.waiting_problems` is the same judgment
+    read from the same function, so this test and the gate cannot disagree.
+    """
     rows, problems = reg.read_skills()
-    assert problems == [], problems
+    waiting = reg.waiting_problems(rows, problems)
+    assert [p for p in problems if p not in waiting] == [], problems
     assert len(rows) >= 6
     for row in rows:
         assert row.path == f"skills/{row.slug}"
-        assert row.claim_ids, f"{row.slug} cites no claims"
         assert all(isinstance(c, int) for c in row.claim_ids)
+        if not row.claim_ids:
+            assert (row.skill_status or "").strip().lower() == "draft", (
+                f"{row.slug} cites no claims and is not a draft")
+            assert waiting, f"{row.slug} cites no claims and nothing excuses it"
+
+
+def test_the_excuse_covers_one_skill_and_not_the_library():
+    """The companion that keeps the assertion above a gate.
+
+    A library where most skills cite nothing is the state the registrar's
+    sentence was written to catch, and it would pass the test above unnoticed.
+    """
+    rows, _ = reg.read_skills()
+    citing = [r.slug for r in rows if r.claim_ids]
+    assert len(citing) >= len(rows) - 1, (
+        f"{len(rows) - len(citing)} of {len(rows)} skills cite no claims: {citing}")
+
+
+def _a_row_that_cites_something(rows):
+    """The first row with claim ids, for the tests that need to perturb a list.
+
+    Not `rows[0]`: `read_skills` returns directory order and the first entry is
+    `skills/agent-containment`, whose claim list is legitimately empty, so
+    `rows[0].claim_ids[0]` raised IndexError and `claim_ids[:-1]` of an empty
+    list perturbed nothing and asserted that nothing had drifted. Both tests
+    were passing on a coincidence of alphabetical order.
+    """
+    for row in rows:
+        if row.claim_ids:
+            return row
+    raise AssertionError("no skill in the library cites a claim id")
 
 
 def test_the_claim_ids_match_the_text_of_the_file():
@@ -230,16 +271,17 @@ def test_a_row_whose_claims_drifted_is_stale():
     # Order must not count: a revision that reorders the list is not a change.
     live = {r.path: list(reversed(r.claim_ids)) for r in rows}
     assert reg.stale(rows, live) == []
-    first = rows[0]
+    first = _a_row_that_cites_something(rows)
     live[first.path] = first.claim_ids[:-1]
     assert reg.stale(rows, live) == [first]
 
 
 def test_the_offline_cross_reference_finds_the_skill_that_cites_the_claim():
     rows, _ = reg.read_skills()
-    cited = rows[0].claim_ids[0]
+    row = _a_row_that_cites_something(rows)
+    cited = row.claim_ids[0]
     hits = reg.touching(rows, [cited])
-    assert any(h["skill_path"] == rows[0].path for h in hits)
+    assert any(h["skill_path"] == row.path for h in hits)
     assert reg.touching(rows, [10 ** 9]) == []
 
 

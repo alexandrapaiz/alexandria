@@ -160,15 +160,71 @@ def _list_skills():
     return json.loads(proc.stdout)
 
 
+def _excused_for_citing_nothing():
+    """The slugs whose empty `provenance.claims` the provenance panel excuses.
+
+    Read from the place that owns the judgment rather than re-derived here.
+    `waiting_on_the_queue` in tools/panel_provenance.py decides whether a skill
+    citing no claim ids is a draft waiting on a read the pipeline owes it or a
+    skill that has quietly opted out of revision, and it is the gate that turns
+    `main` red when it decides the second.
+
+    Recomputing that judgment in this file with a looser rule is exactly how the
+    two answers drift apart, which is the defect these assertions were failing
+    on. The panel learned the draft excuse on 2026-10-05 and the page's own
+    assertions did not, so `main` stayed red on a library the panel had already
+    ruled clean. One law, one implementation, two callers.
+    """
+    sys.path.insert(0, str(REPO / "tools"))
+    import panel_provenance as panel      # noqa: E402
+    import skill_registrar as registrar   # noqa: E402
+
+    rows, _problems = registrar.read_skills()
+    excused = set()
+    for row in rows:
+        raw = (SKILLS / row.slug / "SKILL.md").read_text()
+        if panel.waiting_on_the_queue(row, raw):
+            excused.add(row.slug)
+    return excused
+
+
 def test_every_skill_the_page_receives_carries_its_provenance():
     """The acceptance criterion, executed against the real files."""
     skills = _list_skills()
+    excused = _excused_for_citing_nothing()
     assert len(skills) >= 4, skills
     for s in skills:
         assert s["name"], s
         assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", s["extracted"]), s["name"]
-        assert s["claims"], f"{s['name']}: no claim ids reached the page"
+        # Papers are required of everybody. A skill that names no source is
+        # unreviewable whatever its status, and no excuse reaches this line.
         assert s["papers"], f"{s['name']}: no papers reached the page"
+        if not s["claims"]:
+            assert s["name"] in excused, (
+                f"{s['name']}: no claim ids reached the page and the provenance "
+                "panel does not excuse it. Either the skill cites claims it does "
+                "not have, or it is published advice resting on nothing."
+            )
+            assert s["status"] == "draft", (
+                f"{s['name']}: excused for citing nothing while published. The "
+                "excuse is for drafts."
+            )
+
+
+def test_the_excuse_is_narrow_enough_to_still_be_a_gate():
+    """A carve-out that excused the whole library would read as green forever.
+
+    The assertion above is only worth having while most of the library is still
+    held to it, so this is the one that fails if the excuse ever becomes the
+    rule. It is also the test that notices when a draft finally gets its claim
+    ids and the excuse should be retired rather than carried.
+    """
+    skills = _list_skills()
+    citing = [s["name"] for s in skills if s["claims"]]
+    assert len(citing) >= len(skills) - 1, (
+        f"{len(skills) - len(citing)} of {len(skills)} skills cite no claim ids. "
+        f"Citing: {citing}"
+    )
 
 
 def test_every_skill_the_page_receives_shows_a_dated_validation_result():
@@ -186,9 +242,37 @@ def test_every_skill_the_page_receives_shows_a_dated_validation_result():
 
 
 def test_harness_engineering_shows_the_note_the_sprint_item_names():
+    """The sprint item's named case: this skill's validation note reaches the page.
+
+    This used to pin `199` in the claim list as its proof that ids arrive. That
+    is a proxy, and on 2026-09-30 the proxy broke for a correct reason: ADR-38's
+    quality bar cut three sections from this skill, and the skill's own
+    `revisions:` entry records that claims 199, 136, 140, 190 and 243 left the
+    provenance with the sections they supported. A test that pins one id forbids
+    the revision the library's own law requires.
+
+    So the proof is the law instead of the number. The ids the page shows are
+    the ids the file lists, and the ids a revision retired are gone from both.
+    """
     he = next(s for s in _list_skills() if s["name"] == "harness-engineering")
     assert "A/B trial" in he["validated"]
-    assert "199" in he["claims"]
+
+    sys.path.insert(0, str(REPO / "tools"))
+    import skill_registrar as registrar   # noqa: E402
+
+    raw = (SKILLS / "harness-engineering" / "SKILL.md").read_text()
+    fm, _body = registrar.split_frontmatter(raw)
+    listed = (registrar.parse_frontmatter(fm).get("provenance") or {}).get("claims") or []
+    assert listed, "the file itself lists no claim ids, so the page has nothing to show"
+    assert he["claims"] == [str(c).strip() for c in listed], (
+        "the claim ids on the page are not the ids in the file"
+    )
+
+    retired = {"199", "136", "140", "190", "243"}
+    assert not retired & set(he["claims"]), (
+        "a claim id the 2026-09-30 revision retired is back on the page without "
+        "the section that supported it"
+    )
 
 
 def test_a_corrupt_result_bundle_does_not_take_the_catalogue_down():
