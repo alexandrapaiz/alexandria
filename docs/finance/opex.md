@@ -171,3 +171,144 @@ gives more runway than the launch needs. If the account runs dry the
 symptom is legible rather than silent: every Kimi call 401s or 402s, the
 fallback walk drops to Groq's free tier, and the run says which model
 answered.
+
+## 2026-09-30 — distill reads the paper, and that is the bill (engineer seat, owner-directed)
+
+The owner's directive of 2026-09-29 asked for two numbers by name, the
+cost per paper and the projected monthly cost, so they lead this
+section. Both are printed by `modal run pipeline/distill.py::preflight`
+and by `python3 pipeline/budget.py`, from the same prices in
+`budget.MODELS`, so this table cannot drift away from the code without
+CI saying so.
+
+**Cost per paper: $0.042 expected, $0.103 at the ceiling.**
+**Projected monthly: ~$25 expected, $45 at the cap.**
+
+### Why there is a new cost
+
+Distill was the last corpus job on Groq's free tier, and the free tier's
+8,000 tokens a minute is less than one paper. So the job read 12,000
+characters of each paper, which on a 90,000-character paper is the first
+thirteen per cent of it, and "read in full" was true of 164 papers out
+of 8,956. Triage and interpret moved to Moonshot on 2026-09-26; this
+completes the move.
+
+kimi-k2.6 has a 262,144-token context, so the window went from 12,000
+characters to 250,000, and thirteen of the fourteen papers in
+`docs/evals/2026-09-30-fulltext-token-density.json` now arrive complete
+with nothing cut. That is the thing being bought, and it is twenty times
+the tokens of judging a paper at triage, which is why this is the line
+that moved most.
+
+### The numbers, from measured token counts
+
+| Job | Per call, expected | Per call, ceiling | Per-run cap | Monthly at the cap |
+|---|---|---|---|---|
+| Triage (10 papers a call) | $0.0066 | $0.00887 | $0.60 | $18.00 |
+| Interpret (1 claim a call) | $0.0018 | $0.00364 | $0.30 | $9.00 |
+| **Distill (1 paper a call)** | **$0.0419** | **$0.1028** | **$1.50** | **$45.00** |
+| **Total, the daily jobs** | | | **$2.40/run** | **$72.00** |
+
+"Expected" prices the mean payload of the fourteen measured papers,
+39,059 prompt tokens against a 1,200-token reply. "Ceiling" charges the
+whole 250,000-character window at the worst density any real paper has
+measured and the whole output reservation whether the model uses it or
+not, which is how the provider's own per-request accounting works and
+therefore the number a cap has to be set against.
+
+`budget.MONTHLY_CAP_CEILING_USD` rises from $30 to $75 in the same
+commit, because the guard refuses the deploy otherwise. That is the
+mechanism working as designed: a cap cannot be raised past the booked
+ceiling by a one-line edit to a job.
+
+### Two numbers, and the gap between them matters
+
+- **$72.00/month is the ceiling**, if all three caps are reached every
+  day for thirty days.
+- **~$28/month is the expectation.** Distill is capped at 20 papers a
+  run, which at $0.042 is $0.84 a day, or **$25.14 a month**, and it
+  reaches that only while there is a queue to read. Triage and
+  interpret's expectations are unchanged at ~$1.80 and ~$1.20 a month
+  once their backlogs clear.
+
+### The whole Kimi line
+
+| Caller | Frequency | Expected | Ceiling |
+|---|---|---|---|
+| Weekly press (ADR-32) | 4.3 issues/month | $0.57 | $0.57 |
+| Triage | daily | ~$1.80 | $18.00 |
+| Interpret | daily | ~$1.20 | $9.00 |
+| Distill | daily | ~$25.14 | $45.00 |
+| Chair's rehearsals | ad hoc, pre-deploy | ~$0.10 each | pennies |
+| **Moonshot total** | | **~$28.70/month** | **~$72.60/month** |
+
+Against the alexandria book's known run rate of ~$21.35/month once
+Vercel Pro is live, this takes the forecast to **~$50/month** expected
+and **~$94/month** at the enforced ceiling.
+
+One line moved that is worth naming separately: a distill rehearsal now
+costs about **$0.10**, because it sends a 250,000-character paper on
+purpose. It is run by hand before a deploy, so it is pennies a month,
+and it is the price of knowing the job can read a paper before the
+schedule is unattended.
+
+### The ceiling that is not money
+
+Moonshot's tier-0 daily token allowance for this account is 1,500,000
+tokens, shared by every Kimi caller. One paper is about 40,000 tokens,
+so distill's 20 papers is 805,180, triage's capped run is 329,910 and
+interpret's is 60,000: **1,195,090 a day, 80% of the allowance**.
+`budget.check_kimi_tpd()` is new and holds that arithmetic against the
+table, because busting a daily allowance is not a 413 on one request, it
+is every Kimi call in the org failing for the rest of the UTC day, press
+included.
+
+This is what actually caps the reading rate, and money is not what would
+lift it. Twenty full papers a day is 140 a week. If triage starts
+routing more than that, the next move is a Moonshot tier upgrade, which
+is a decision for the owner and not a constant a seat can raise.
+`modal run pipeline/distill.py::drain` prints the comparison against the
+live queue and says so in as many words when the queue stops clearing
+inside a week.
+
+### What this section could not measure
+
+The prepaid balance on the Moonshot account, unchanged from the
+2026-09-26 section: this seat never sees a provider console. At ~$28.70
+a month expected the runway question is now worth asking out loud, where
+at ~$3.60 it was not. If the account runs dry the symptom stays legible
+rather than silent: every Kimi call 401s or 402s, the fallback walk
+drops to Groq's free tier, and distill's run says which model answered
+and warns that the claims came from abstracts.
+## 2026-09-30, the month-end close (finance seat, hand-dispatched)
+
+No line in this ledger changed this run. What follows is what was
+re-checked, not what moved.
+
+- **GitHub Actions confirmed $0 again.** `gh repo view` still shows
+  `isPrivate: false`, so the public-repo free-minutes rule still applies.
+  No cost to book.
+- **Vercel Pro is still a forecast, not a cost.** Commercial launch is
+  2026-10-13, still ahead of this close. The site itself confirms it: a
+  live fetch of libraryofalexandria.dev this run shows both tiers
+  labeled "Opens October 13" and no working checkout button. The $20/month
+  line stays booked as a near-term commitment, not a September charge.
+- **The Kimi/Moonshot figures are carried forward unchanged** from the
+  2026-09-26 measurement above: no evidence this run that
+  `prompts/triage.md`, `prompts/interpret.md`, or the weekly press prompt
+  changed token count since that section was written, and
+  `pipeline/budget.py` is the arithmetic, not a spend log, so it has
+  nothing new to report without a fresh prompt change to measure against.
+- **Neon, Modal, and Clerk billing stay unmeasured.** Same gap as every
+  prior close: this seat has no provider console access and found no
+  public or repo evidence this run that changes that. Carried as open
+  questions below, not guesses.
+- **The Claude subscription's monthly figure is still missing.** Checked
+  `docs/sprints/pending.md` and every finance-relevant merged PR back to
+  the 2026-09-18 first ask: no dollar figure has been supplied. This is
+  the fourth time this seat has repeated this ask (2026-09-18, 2026-09-24,
+  and now 2026-09-30). It stays the one number only the owner can give.
+
+**Alexandria-book known/forecast monthly run rate, unchanged: ~$21.35 once
+Vercel Pro is live.** Nothing was spent in cash this run beyond what the
+2026-09-18 close already booked.

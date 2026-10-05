@@ -236,6 +236,162 @@ def test_a_render_failure_still_delivers_the_issue():
     assert msgs[0][2] == ISSUE
 
 
+# ---------------- 4. the links, which are the slot nothing escaped ----------
+#
+# The 2026-09-22 ledger entry filed `urgent` by the engineer seat asked for two
+# things in the emailed issue: escape raw HTML, and "refuse any href whose
+# scheme is not http, https or mailto". The 2026-09-24 template rewrite above
+# did the first and only the first. Every slot in `render` went through
+# `html.escape` except one, `item_url`, which lands in `<a href="{{item_url}}">`
+# in site/emails/digest.html; and `inline` escaped a link's text before it built
+# the anchor without ever looking at the scheme.
+#
+# So the body was safe and the links were not. A source URL is copied out of
+# arXiv text by a model, which makes it the shortest path there is from a
+# crafted paper to a live attribute in a subscriber's inbox.
+#
+# Three sinks reach a reader and all three are held here: `item_url`, `inline`,
+# and `legacy_html`, the fallback that runs the markdown library over the same
+# body and only ships when the designed render failed, which is exactly the
+# moment nobody is reading the output.
+
+def issue_with_source(url: str, label: str = "arXiv") -> str:
+    """The smallest issue carrying one item with one source link."""
+    return (
+        "# A week of small print\n\n"
+        "The opening paragraph, which the template needs.\n\n"
+        "## What shipped\n\n"
+        "- **An item with a source**\n"
+        f"  *A paper title* \u2014 [{label}]({url}) and a sentence after it.\n"
+        "  Evidence: 14 of 14 cases.\n"
+    )
+
+
+def render_body(body: str) -> str:
+    return er.render_issue(body, "2026-W40", RECIPIENT, UNSUB)
+
+
+def test_a_quote_in_a_source_url_cannot_open_a_new_attribute():
+    """`href="{{item_url}}"` with a raw quote in the value ends the attribute,
+    and everything after it is markup the reader's client will honour."""
+    html = render_body(issue_with_source('https://arxiv.org/abs/1" onmouseover="alert(1)'))
+    # The escaped form, `onmouseover=&quot;`, is inert text inside the href and
+    # is allowed to be there. What must not exist is the unescaped form, which
+    # is the same string having become an attribute of its own.
+    assert 'onmouseover="' not in html, "a quote in a source URL injected an attribute"
+
+
+def test_a_javascript_source_url_does_not_survive():
+    html = render_body(issue_with_source("javascript:alert(document.cookie)"))
+    assert "javascript:" not in html.lower()
+
+
+def test_a_data_source_url_does_not_survive():
+    """`data:` is refused for the same reason site/lib/markdown-core.js refuses
+    it: a data URL is a document the client will run, and no issue needs one."""
+    html = render_body(issue_with_source("data:text/html;base64,PHNjcmlwdD4="))
+    assert "data:text/html" not in html.lower()
+
+
+def test_a_refused_source_url_keeps_the_citation():
+    """Refusing a link must not delete the attribution. A reader who cannot
+    click the source should still be told what the source was."""
+    html = render_body(issue_with_source("javascript:alert(1)"))
+    assert "A paper title" in html
+
+
+def test_an_ordinary_source_url_is_untouched():
+    """The fix is not allowed to cost the product its links."""
+    html = render_body(issue_with_source("https://arxiv.org/abs/2509.01234"))
+    assert 'href="https://arxiv.org/abs/2509.01234"' in html
+
+
+def test_an_ampersand_in_a_source_url_is_escaped_and_still_the_same_link():
+    """A query string is a legitimate URL. It has to arrive escaped in the
+    attribute and still resolve to the link the issue cited."""
+    html = render_body(issue_with_source("https://example.org/p?a=1&b=2"))
+    assert "https://example.org/p?a=1&amp;b=2" in html
+    assert "?a=1&b=2" not in html
+
+
+def test_inline_refuses_a_javascript_link_and_keeps_the_words():
+    out = er.inline("see [this](javascript:alert(1)) for details")
+    assert "javascript" not in out.lower()
+    assert "this" in out, "a refused link loses its href, not its sentence"
+
+
+def test_inline_keeps_http_and_mailto():
+    assert 'href="https://example.org/x"' in er.inline("[a](https://example.org/x)")
+    assert 'href="mailto:hello@alexandr.ia"' in er.inline("[a](mailto:hello@alexandr.ia)")
+
+
+def test_inline_refuses_a_scheme_a_client_would_collapse():
+    """A mail client drops tabs, newlines and no-break spaces before it
+    resolves a URL, so `java<tab>script:` navigates. The check reads the
+    collapsed form for that reason, and case is not a defence either."""
+    for raw in ("JaVaScRiPt:alert(1", "\tjavascript:alert(1", "java\tscript:alert(1",
+                "\u00a0javascript:alert(1", "java\nscript:alert(1"):
+        out = er.inline(f"[x]({raw})")
+        assert "href" not in out, f"{raw!r} produced an anchor"
+
+
+def test_the_fallback_email_escapes_raw_html():
+    """`markdown` has not escaped raw HTML since v8, and this path runs it over
+    a body a model wrote. The designed render having been fixed is no defence:
+    this function exists for the send where the designed render failed."""
+    html = weekly.legacy_html(
+        "# Issue\n\nA line.\n\n<script>alert(1)</script>\n\n"
+        '<img src=x onerror="alert(2)">\n')
+    # Escaped, these are words on a page. Unescaped, they are a tag and an
+    # event handler, so the test is which of the two the reader receives.
+    assert "&lt;script&gt;" in html and "<script" not in html
+    assert "&lt;img" in html and "<img" not in html
+
+
+def test_the_fallback_email_refuses_a_javascript_href():
+    html = weekly.legacy_html("# Issue\n\n[c](javascript:alert(1)) and text.\n")
+    assert "javascript" not in html.lower()
+
+
+def test_the_fallback_email_still_renders_markdown():
+    """Escaping is done with `<` and a bare `&` rather than `html.escape`, on
+    purpose: `>` at the start of a line is markdown's blockquote, and escaping
+    it would cost the fallback email every quotation an issue carries."""
+    html = weekly.legacy_html(
+        "# Issue\n\nA & B with **bold**.\n\n> quoted\n\n"
+        "[d](https://x.org/a?p=1&q=2)\n")
+    assert "<h1" in html and "<strong>bold</strong>" in html
+    assert "<blockquote>" in html
+    assert "A &amp; B" in html
+    assert 'href="https://x.org/a?p=1&amp;q=2"' in html
+
+
+def test_the_fallback_path_is_really_exercised_by_the_build():
+    """Without `markdown` installed, `legacy_html` takes its own import-error
+    branch and the three tests above pass against a `<pre>` block instead of
+    against the production render. That is a green build measuring nothing, so
+    the dependency is pinned in the file CI installs and asserted here."""
+    reqs = (ROOT / "requirements-dev.txt").read_text()
+    assert "markdown==3.7" in reqs, "requirements-dev.txt must pin the email's markdown"
+    import markdown  # noqa: F401  the import is the assertion
+    assert "<pre" not in weekly.legacy_html("# Issue\n\nA line.\n")
+
+
+def test_the_email_and_the_site_allow_the_same_schemes():
+    """One body renders on two surfaces. The site's `safeHref` is the reference
+    implementation and the email is the half that lagged it by ten days, so a
+    scheme added to one and not the other is the divergence worth a red build.
+    The schemes are shared; the absolute-URL requirement is the email's alone
+    and is documented in `url_allowed`."""
+    source = (ROOT / "site" / "lib" / "markdown-core.js").read_text()
+    listed = re.search(r"SAFE_SCHEMES\s*=\s*\[([^\]]*)\]", source)
+    assert listed, "site/lib/markdown-core.js no longer declares SAFE_SCHEMES"
+    site_schemes = sorted(re.findall(r'"([a-z]+)"', listed.group(1)))
+    email_schemes = sorted(s.rstrip(":/") for s in er.SAFE_SCHEMES)
+    assert site_schemes == email_schemes, (
+        f"site allows {site_schemes}, the email allows {email_schemes}")
+
+
 if __name__ == "__main__":
     failed = 0
     for name, fn in sorted(globals().items()):

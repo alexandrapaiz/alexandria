@@ -81,3 +81,28 @@ yet:
 
 No action follows from this section. Raising, taking, or negotiating
 money stays the owner's alone, per the charter.
+
+## 2026-09-30, the month-end close
+
+**Invested-capital base is unchanged at $16.19, plus unpriced owner
+time.** No new cash was reported into alexandria this month beyond the
+domain already booked on 2026-09-18. The Moonshot prepaid account,
+funded 2026-09-20, is real cash the owner put in, but its amount was
+never disclosed to this seat (see docs/finance/opex.md's open
+questions), so it cannot be added to this base as a number. It is named
+here so the gap is visible rather than silently dropped.
+
+**CapEx this month: still $0 in cash terms.** Same reasoning as above:
+the pipeline, the corpus, and the skill library grew substantially in
+September, entirely through agent labor, and none of it carries a cash
+figure.
+
+**Cost-of-capital rate: still not set.** Repeating the standing ask from
+the first close: ROIC and EVA cannot run even once revenue exists until
+the owner names a rate. Revenue is still $0 this month
+(docs/finance/revenue.md), so this stays a named gap, not yet a blocker
+on anything measurable.
+
+The funding-scenarios analysis above has not been re-run this month:
+nothing changed in the cost base or the revenue picture that would move
+its conclusion.

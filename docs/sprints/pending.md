@@ -1,3 +1,5 @@
+## Updated 2026-10-05 (Monday ceremony, in progress — placeholder commit to ship the draft PR first, full reconciliation follows in this same PR)
+
 ## Updated 2026-09-28 (Monday ceremony, full reconciliation)
 
 **Reconciliation against docs/decisions.md and docs/allhands/, done

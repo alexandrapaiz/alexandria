@@ -27,6 +27,7 @@ prose, 750 tokens lighter than arxiv:2407.21783 at the same character count.
 """
 
 import json
+import os
 import pathlib
 import sys
 
@@ -51,10 +52,13 @@ NEEDS_TIKTOKEN = (
 )
 
 RECEIPT = json.loads((ROOT / "docs" / "evals"
-                      / "2026-09-27-fulltext-token-density.json").read_text())
+                      / "2026-09-30-fulltext-token-density.json").read_text())
 SPEC = budget.CRON_REQUESTS["distill (pipeline/distill.py)"]
 PROMPT = (ROOT / "prompts" / "distill.md").read_text()
-MODEL = "openai/gpt-oss-120b"
+#: The model whose per-request limit binds, read out of the job rather than
+#: named here. It was `openai/gpt-oss-120b` until 2026-09-30 and distill moved
+#: to kimi-k2.6 that day; a constant naming a fallback checks the wrong ceiling.
+MODEL = budget.distill_models()[0]
 
 
 def rehearsal_body() -> str:
@@ -66,18 +70,46 @@ def rehearsal_body() -> str:
 
 # ---------------- 1. it fits ----------------
 
-def test_the_full_text_request_fits_every_model_distill_can_reach():
+def test_the_full_text_request_fits_the_model_the_job_actually_calls():
+    """The head of the list, which is the one tomorrow's cron meets first.
+
+    This asked it of EVERY model until 2026-09-30, and at a 12,000-character
+    window every model could answer. At 250,000 none of the Groq fallbacks can,
+    by three orders of magnitude, and that is not a regression: their whole
+    per-request budget is 6,800 tokens. The invariant that survives the move is
+    that the model the job calls takes the request untrimmed, and the invariant
+    below is the one that keeps the fallbacks honest.
+    """
+    pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
+    report = budget.check_request(
+        PROMPT, budget.request_text(SPEC, distill.FULLTEXT_CHARS),
+        distill.MAX_COMPLETION_TOKENS, MODEL)
+    assert report.fits, (
+        f"distill cannot send a paper to {MODEL}: {report.summary()}. "
+        "The job will be refused and will write claims from the abstract "
+        "while reporting success.")
+
+
+def test_every_fallback_can_at_least_take_the_documented_abstract():
+    """A fallback that cannot take the abstract is not a fallback at all.
+
+    The Groq entries cannot read a paper and the job says so in three places.
+    What they can still do is keep a run alive when Moonshot is down, writing
+    claims from `abstract[:6000]` and marking `fulltext_chars` null so nothing
+    downstream calls it a full read. That is worth having and it is worth
+    checking, because a fallback list nobody measured is a list of comforts.
+    """
     pytest.importorskip("tiktoken", reason=NEEDS_TIKTOKEN)
     for model in budget.distill_models():
         if model not in budget.MODELS:
             continue
         report = budget.check_request(
-            PROMPT, budget.request_text(SPEC, distill.FULLTEXT_CHARS),
+            PROMPT, budget.request_text(SPEC, SPEC["degrades_to_chars"]),
             distill.MAX_COMPLETION_TOKENS, model)
         assert report.fits, (
-            f"distill cannot send a paper to {model}: {report.summary()}. "
-            "The job will be refused and will write claims from the abstract "
-            "while reporting success.")
+            f"{model} cannot even take the abstract distill falls back to: "
+            f"{report.summary()}. Take it off the list rather than leaving a "
+            "run pretending it has somewhere to go.")
 
 
 def test_the_job_declares_its_reservation_instead_of_leaving_it_assumed():
@@ -94,26 +126,34 @@ def test_the_reservation_is_actually_sent(monkeypatch):
 
     class Response:
         status_code = 200
+        text = ""
+        headers: dict = {}
 
         def raise_for_status(self):
             pass
 
         def json(self):
-            return {"choices": [{"message": {"content": '{"claims": []}'}}]}
+            return {"choices": [{"message": {"content": '{"claims": []}'},
+                                 "finish_reason": "stop"}],
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 5}}
 
     def fake_post(url, headers=None, json=None, timeout=None):
         sent.update(json)
         return Response()
 
-    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+    monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
     # load_prompt reads /root inside Modal; point it at the repo's own file.
-    monkeypatch.setattr(distill, "load_prompt", lambda: (PROMPT, "abc123def456"))
+    monkeypatch.setattr(distill, "load_prompt",
+                        lambda kind="paper": (PROMPT, "abc123def456"))
     import httpx
     monkeypatch.setattr(httpx, "post", fake_post)
-    distill.extract_claims("groq", "a title", "a body")
+    client = distill.llm()
+    distill.extract_claims("a title", "a body", env=os.environ,
+                           cap=client.Cap(1.0), models=[MODEL])
     assert sent["max_completion_tokens"] == distill.MAX_COMPLETION_TOKENS, (
         "the constant exists and the request does not carry it, so the guard "
         "is checking a number the provider never sees")
+    assert sent["model"] == MODEL
 
 
 # ---------------- 2. a paper is not prose ----------------
@@ -160,6 +200,19 @@ def test_the_rehearsal_payload_still_fits():
     report = budget.check_request(PROMPT, rehearsal_body(),
                                   distill.MAX_COMPLETION_TOKENS, MODEL)
     assert report.fits, report.summary()
+
+
+def test_most_of_a_real_paper_arrives_whole_at_this_window():
+    """The reason to widen the window at all, stated as a number.
+
+    Fitting is the provider's question. Completeness is the reader's, and it is
+    the one the product's masthead answers when it says "read in full". At
+    12,000 characters the honest answer was zero of fourteen.
+    """
+    assert RECEIPT["papers_complete"] >= 12, (
+        f"only {RECEIPT['papers_complete']} of {RECEIPT['papers_measured']} "
+        "measured papers arrive whole at this window, so 'read in full' is "
+        "again a claim about most of a paper rather than a paper")
 
 
 def test_the_rehearsal_measures_the_window_the_job_sends():

@@ -148,8 +148,9 @@ def main() -> int:
     ap.add_argument("--papers", help="comma-separated arXiv ids")
     ap.add_argument("--window", type=int, default=None,
                     help="characters to measure (default: distill's FULLTEXT_CHARS)")
-    ap.add_argument("--model", default="openai/gpt-oss-120b",
-                    help="the model whose per-request limit binds")
+    ap.add_argument("--model", default=None,
+                    help="the model whose per-request limit binds "
+                         "(default: the head of distill's own list)")
     ap.add_argument("--write", help="path to write the JSON receipt to")
     args = ap.parse_args()
 
@@ -164,7 +165,11 @@ def main() -> int:
               "ratio. Run `pip install tiktoken==0.8.0` first.", file=sys.stderr)
         return 2
 
-    model = args.model
+    # The head of distill's list, read out of the job, because the model whose
+    # limit binds is the model the job actually calls first. It was hardcoded
+    # to openai/gpt-oss-120b until 2026-09-30 and distill moved to kimi-k2.6
+    # that day; a default that names a fallback measures the wrong ceiling.
+    model = args.model or budget.distill_models()[0]
     print(f"measuring the first {window} characters of {len(papers)} papers "
           f"with o200k_base, against {model}\n")
     result = measure(papers, window, model)
@@ -206,6 +211,15 @@ def main() -> int:
               file=sys.stderr)
 
     if args.write:
+        # How many papers arrived WHOLE, with nothing cut at the window. This is
+        # the number behind the product's "read in full", and it is the reason
+        # to widen the window at all: fitting is the provider's question and
+        # completeness is the reader's. Added 2026-09-30, when the window went
+        # from 12,000 characters, where the answer was zero of fourteen.
+        complete = sum(1 for r in result["papers"]
+                       if r["cleaned_chars"] <= window)
+        print(f"  arrived complete         {complete} of "
+              f"{len(result['papers'])} papers, nothing cut at {window}")
         receipt = {
             "measured_on": date.today().isoformat(),
             "tokenizer": "o200k_base (tiktoken)",
@@ -213,6 +227,8 @@ def main() -> int:
             "window_chars": window,
             "worst_chars_per_token": worst,
             "worst_headroom_tokens": worst_headroom,
+            "papers_complete": complete,
+            "papers_measured": len(result["papers"]),
             "all_fit": not refused,
             "budget_filler_chars_per_token": prose,
             "guard_constant": budget.FULLTEXT_CHARS_PER_TOKEN,

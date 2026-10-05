@@ -43,6 +43,15 @@ if "modal" not in sys.modules:
 from pipeline import budget  # noqa: E402
 from pipeline import weekly  # noqa: E402
 
+# ADR-32 told finance to expect roughly $0.05 an issue, and the ceiling below is
+# the "far from that" this file has always used. Both are named rather than
+# inlined so that a reader who finds the check red can see which number moved.
+# Raising the ceiling is a finance decision and belongs to the owner: a ceiling
+# quietly raised to fit the current number is a ceiling that has stopped being
+# one.
+ADR_32_BUDGETED_USD = 0.05
+COST_CEILING_USD = 0.15
+
 FAILURES = []
 
 
@@ -308,8 +317,16 @@ def test_call_model_walks_and_backs_off():
         body = weekly.call_model("openai/gpt-oss-120b", "prompt", "user")
         check("two 429s are retried and the third attempt wins",
               body.startswith("# An issue"), body[:60])
-        check("it backed off between attempts, never less than the 30s/60s schedule (a 1s retry-after is a concurrency hint, 2026-09-30)",
-              len(slept) == 2 and slept[0] >= 30 and slept[1] >= 60, slept)
+        # This asserted `slept == [1.0, 1.0]` until 2026-09-30, which is the
+        # behaviour the press was fixed for on 2026-09-24: it honoured a
+        # `retry-after: 1` three times in four seconds and gave up while
+        # another seat's Kimi call still held the single concurrency slot. A
+        # concurrency limit is not a rate limit, so the wait is the job's own
+        # schedule and the header may only lengthen it. The test kept asserting
+        # the pre-incident contract and had been failing on main since.
+        expected = [weekly.BACKOFF_SECONDS * (2 ** i) for i in range(2)]
+        check("a short retry-after does not shorten the job's own backoff",
+              slept == expected, f"{slept} against {expected}")
         check("all three attempts went to the same model",
               sent == ["openai/gpt-oss-120b"] * 3, f"{sent}")
 
@@ -519,9 +536,15 @@ def test_the_press_fits_its_primary_at_full_caps():
     """The requirement ADR-32 exists to satisfy, asserted rather than hoped.
 
     Not "it fits after trimming". The worst payload gather() can produce, the
-    full 6,000-token reservation, the real generator prompt, untrimmed. A press
-    whose primary only fits after trimming prints a thinner issue every week
-    and never says so.
+    full `weekly.MAX_COMPLETION_TOKENS` reservation, the real generator prompt,
+    untrimmed. A press whose primary only fits after trimming prints a thinner
+    issue every week and never says so.
+
+    The docstring said "the full 6,000-token reservation" until 2026-09-30. It
+    has been 24,000 since 2026-09-24, when kimi-k2.6 was found to spend the
+    reservation on hidden thinking before writing anything. That is a 4x raise
+    in the single largest term in the cost below, and this file described the
+    old number for six days.
     """
     print("the primary model at full PAYLOAD_CAPS")
     prompt_path = Path(__file__).resolve().parents[1] / "prompts" / "digest.md"
@@ -538,8 +561,54 @@ def test_the_press_fits_its_primary_at_full_caps():
     # ADR-32 told finance to expect roughly $0.05 an issue. If the real number
     # ever drifts far from that, finance's books are wrong and this is where it
     # should surface.
-    check("the cost is in the range ADR-32 budgeted", report.cost < 0.15,
-          f"${report.cost:.4f} an issue")
+    #
+    # The split, printed whether or not the check passes, because "the cost is
+    # too high" is not actionable and "the reservation is 70% of the cost" is.
+    # At kimi-k2.6's $0.95/M in and $4.00/M out, the 24,000-token output
+    # reservation alone is $0.096 of it, and the whole prompt plus the whole
+    # worst-case payload is $0.042. So the number below is mostly a cap on what
+    # the model is allowed to write, not a measure of what the press sends.
+    reservation_cost = budget.cost_usd(0, weekly.MAX_COMPLETION_TOKENS, weekly.MODEL)
+    print(f"       ${report.cost:.4f} an issue = "
+          f"${report.cost - reservation_cost:.4f} in "
+          f"+ ${reservation_cost:.4f} reservation "
+          f"({reservation_cost / report.cost:.0%} of it), "
+          f"{'exact' if budget.exact() else 'ESTIMATED'} tokenizer")
+
+    # Arithmetic run on estimates is not arithmetic, which is
+    # INC-2026-09-25-budget-guard-estimates and the reason `pipeline/budget.py`
+    # separates its estimated findings from its exact ones. `count_tokens`
+    # falls back to a deliberately pessimistic chars-per-token ratio when
+    # tiktoken is missing, so without it this same request reads $0.1628 and
+    # with it $0.1376. One of those breaches the ceiling and the other does not,
+    # and only one of them is a cost. This check made that distinction nowhere,
+    # so it reported a $0.16 overrun on any machine without tiktoken: the exact
+    # mistake that was fixed in budget.py on 2026-09-25 and never carried here.
+    #
+    # checks.yml installs tiktoken, so CI takes the failing branch below and the
+    # ceiling keeps its teeth where it counts.
+    if budget.exact():
+        check(f"the cost is under the ${COST_CEILING_USD:.2f} ceiling ADR-32 implies",
+              report.cost < COST_CEILING_USD,
+              f"${report.cost:.4f} an issue against ${COST_CEILING_USD:.2f}")
+    else:
+        print(f"  note the ${COST_CEILING_USD:.2f} ceiling is not checked: "
+              f"${report.cost:.4f} is an estimate from a pessimistic "
+              f"chars/token ratio, not a cost. "
+              f"Run `pip install tiktoken` to check it.")
+
+    # And the drift ADR-32's own number has already taken, stated rather than
+    # left for a reader to compute. This is a finance finding, not a bug: the
+    # press costs what it costs. It is printed every run so that the gap between
+    # the booked figure and the real one cannot go another six days unsaid.
+    if budget.exact() and report.cost > ADR_32_BUDGETED_USD * 1.5:
+        print(f"  note ADR-32 books ~${ADR_32_BUDGETED_USD:.2f} an issue and the "
+              f"real figure is ${report.cost:.4f}, "
+              f"{report.cost / ADR_32_BUDGETED_USD:.1f}x it. "
+              f"Most of the gap is the 2026-09-24 reservation raise "
+              f"(6,000 -> {weekly.MAX_COMPLETION_TOKENS:,} tokens, "
+              f"${budget.cost_usd(0, 6000, weekly.MODEL):.3f} -> "
+              f"${reservation_cost:.3f}). Finance's books, not this test.")
 
 
 def test_availability_survives_one_provider_being_down():
@@ -594,13 +663,10 @@ def test_the_schedule_is_outside_the_cron_band():
               not (11 <= hours[0] <= 15), f"runs at {hours[0]}:00 UTC")
 
 
-# ---------------- a title is never reused (owner, 2026-10-04) ----------------
-
 def test_a_used_title_is_replaced_and_a_fresh_one_kept():
     body = "# Harness distillation without the harness at runtime\n\nopening\n\n## A\n\ntext"
     kept = weekly.ensure_fresh_title(body, ["Some other title"], "no-model", "September 28-October 4, 2026")
     check("a fresh title is kept", kept == body, kept[:60])
-    # a used title with no reachable model falls back to the dated title, body intact
     out = weekly.ensure_fresh_title(body, ["harness distillation without the harness at runtime"], "no-such-model", "September 28-October 4, 2026")
     check("a used title is replaced", not weekly.same_title(weekly.title_of(out), weekly.title_of(body)), out.split("\n")[0])
     check("the dated fallback carries the dates", "September 28-October 4, 2026" in out.split("\n")[0], out.split("\n")[0])
@@ -631,4 +697,3 @@ if __name__ == "__main__":
             print(f"  - {f}")
         sys.exit(1)
     print("all press-resilience checks passed")
-

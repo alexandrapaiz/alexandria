@@ -119,14 +119,29 @@ def test_the_off_list_rate_is_printed_every_run():
 def test_every_claim_records_which_prompt_wrote_it():
     assert "alter table claims add column if not exists prompt_sha text;" in SCHEMA
     source = (ROOT / "pipeline" / "distill.py").read_text()
-    assert "def load_prompt()" in source
+    # `load_prompt` takes a kind as of 2026-09-30: papers and field reports are
+    # read by different prompts, and the sha on the claim is what says which.
+    assert "def load_prompt(kind: str = \"paper\")" in source
     assert "cols.append(\"prompt_sha\")" in source
+    # The sha written onto the claim is the sha of the prompt that read that
+    # row, not whichever one was loaded first. A single `sha` variable here is
+    # how a field report comes to be stamped with the paper prompt's hash.
+    assert "vals.append(shas[kind])" in source
 
 
-def test_the_distill_prompt_is_read_in_exactly_one_place():
-    # Two readers is how a sha comes to describe a prompt that was not used.
+def test_the_distill_prompts_are_read_in_exactly_one_place():
+    """Two readers is how a sha comes to describe a prompt that was not used.
+
+    Until 2026-09-30 there was one prompt and this test counted the literal
+    `open("/root/prompts/distill.md")`. There are two now, papers and field
+    reports, both resolved by `prompt_path` and read by `load_prompt`. The
+    invariant did not change and the thing to count did: one read, reached
+    through one function, and no job code opening a prompt by hand and hashing
+    it itself.
+    """
     source = (ROOT / "pipeline" / "distill.py").read_text()
-    assert source.count('open("/root/prompts/distill.md")') == 1
+    assert source.count("prompt_path(kind).read_text()") == 1
+    assert 'open("/root/prompts/' not in source
 
 
 def test_the_sha_is_the_same_shape_the_press_and_triage_use():

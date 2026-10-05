@@ -89,228 +89,6 @@ page.
 
 ## Pending, queued 2026-09-18 by the ExO agent
 
-### 2. The PM goes daily, so the org has a seat that is present
-
-**CANCELLED IN PART 2026-09-27. Read this paragraph and then decide
-whether to read any further.** The cadence half was applied on
-2026-09-23 and the README half has been applied too. The remaining half
-is the cap raise from 300 to 400, and the standup's share of it is now
-cancelled on measurement rather than on judgment. Four standup runs have
-completed since the split (2026-09-24, 25, 26, 27) and their turn demand
-is 62, 44, 81 and 38 against a cap of 300. The rule in
-[turn-caps.md](turn-caps.md) is twice the peak, which gives 162. There is
-no shortfall and there is no headroom argument left either.
-
-What survives is narrower and it is honest about being unmeasured: **the
-Monday ceremony run has not completed once since the cron split.** The
-last Monday, 2026-09-21, failed at turn 30. Its last good measurement is
-a peak of 141 from before the split, when the ceremony and the standup
-were one run, and the ceremony has since taken the grooming and the
-dispatch queue that the standup does not carry. So the ceremony's cap is
-the one open question on this item, and the next ExO run answers it from
-the 2026-09-28 run rather than from a feeling. **Until then, apply
-nothing on this item.** If 2026-09-28 comes in under 150 like the
-standups, delete the item.
-
-The two `-` anchors below still match the live file exactly once each, so
-the item is not rotted. It is simply not evidenced, which is a different
-and more common reason not to apply something.
-
-**Queued 2026-09-19 by the ExO agent, on the owner's order. THE CADENCE
-HALF WAS APPLIED 2026-09-23 by the chair, in commit 2ae2650, and the cap
-half was not. Read the next three paragraphs before the diffs below,
-because two of them are now historical.**
-
-**What the chair applied, and it is better than what this page
-proposed.** This item asked for one daily cron, `35 10 * * *`, with the
-charter branching on the day. The live file instead carries two crons,
-`35 10 * * 1` for the Monday ceremony and `5 11 * * 0,2-6` for the
-standup, plus a `RUN_MODE` env var computed from
-`github.event.schedule` and `actions: write` for the dispatch grant. Two
-crons and an explicit mode beat one cron and a charter that has to infer
-the day, because the run knows which schedule fired it and never has to
-reason about the calendar. Recorded here as the correction it is: this
-page proposed the cheaper version and the chair shipped the better one.
-
-**What was not applied: the cap. And this run is downgrading its own
-predecessor's proposal rather than repeating it.** `agent-pm.yml` still
-reads `--max-turns 300` on both steps, and both `-` lines below match
-the live file exactly, once each. But the duty-growth re-check in
-turn-caps.md, run today, gives 300 as the rule's answer: the PM's peak
-is 141, twice that rounds to 300, and the peak has not moved because the
-seat has not completed a run since 2026-09-19. So **the raise to 400 is
-optional headroom, not a shortfall, and whoever applies this page should
-feel free to skip it.** The methodology exists to stop caps being set
-from a feeling that a seat has more to do, and the feeling in question
-was this seat's own on 2026-09-21. The two failed PM runs died at turn 1
-and turn 30 and contribute nothing in either direction.
-
-**What is now moot.** The cron diff and the two documentation lines
-below are superseded by what the chair shipped, and as of 2026-09-27 the
-two documentation lines are moot for a second reason: README.md already
-reads `pm · daily, Mon is the ceremony` in the STEER node and
-`daily 6:35 ET standup, Mon is the ceremony` in the seat table, so both
-`-` anchors for those lines are gone from the live file. Verified this
-run. They are left in place
-rather than deleted so that the next reader can see what was proposed
-against what landed, and they are marked here rather than there.
-
-**Original item follows.**
-
-**Why.** Her words: "right now i feel like im doing the PMs job, i want
-the pm to be proactive." The evidence is one day. On 2026-09-19 the org
-started twenty-five agent runs and opened fifteen pull requests, and the
-PM seat ran zero times, because `35 10 * * 1` fires once every
-168 hours. A seat that is awake for one hour a week in a company that
-changes state every forty minutes cannot be proactive no matter what its
-charter says, so the charter half of this fix (prompts/pm-agent.md
-sections 0, 4 and 5) is worth nothing until this cron changes. The
-diagnosis in full is in docs/agents/learning-log.md under the presence
-gradient.
-
-**REWRITTEN 2026-09-20 by the ExO agent, because the diffs below had
-rotted.** When this item was queued on 2026-09-19, `agent-pm.yml` had
-one run step. Commit 609d7cc added a second one four hours later (open
-routing, PR #49), and the queued diffs targeted lines that now exist
-twice or not at all. Applying the old version would have raised the cap
-on the Sonnet step that never runs, rewritten one of two identical
-prompt blocks, and left the live open-routed step untouched. The diffs
-below are checked against the file as it stands today. Whoever applies
-them should still diff before committing, because this page is only as
-fresh as the last ExO run.
-
-**REWRITTEN AGAIN 2026-09-21, because two of the diffs had rotted a
-second time.** Commit 440163a raised the timeout from 60 to 120 and
-renamed the model flag from `sonnet` to `claude-sonnet-5`, five hours
-before the 2026-09-20 run that re-verified this item. That run checked
-the step structure, which is what had broken the first time, and did not
-re-check the values inside the steps. This is incident 26, and the rule
-it produces is below in item 3's note: **re-verify every line of a queued
-diff against the live file, not the part that broke last time.**
-
-**How.** Four edits to `.github/workflows/agent-pm.yml`, plus the prompt
-rewrite in both run steps. The cron change is one character.
-
-```diff
- on:
-   schedule:
--    - cron: "35 10 * * 1" # 6:35 AM ET Mondays
-+    # Daily at 6:35 AM ET. Monday is the ceremony run (retro, grooming,
-+    # sprint plan, and the day's dispatch queue); every other day is the
-+    # standup alone. prompts/pm-agent.md section 0 branches on the day,
-+    # so one workflow covers both modes and there is no second file to
-+    # keep in sync.
-+    - cron: "35 10 * * *" # 6:35 AM ET daily
-   workflow_dispatch:
-```
-
-**The timeout edit is CANCELLED.** It read
-`-timeout-minutes: 60 / +timeout-minutes: 75` when it was queued. Commit
-440163a raised the PM's timeout to 120 on 2026-09-20, so the anchor no
-longer exists and applying the diff's intent would **lower** the timeout
-by 45 minutes. Nothing to do here. 120 is more than the 75 this item
-wanted.
-
-Both turn caps move, because either step can be the one that runs. The
-open-routed step is the one that fires today, so leaving it at 300 would
-make the raise a no-op.
-
-```diff
--          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
-+          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
-```
-
-```diff
--          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
-+          claude_args: "--max-turns 400 --permission-mode bypassPermissions --model claude-sonnet-5"
-```
-
-**The second one's model flag was corrected on 2026-09-21.** It read
-`--model sonnet` through two ExO runs. Commit 440163a renamed it to
-`--model claude-sonnet-5` on 2026-09-20 at 12:34, which was five hours
-before the run that rewrote this item against the live file and did not
-catch it. See incident 26.
-
-And the prompt block, replaced in full **in both steps**. The file
-carries two identical copies, one per run step, and a PM that behaves
-differently depending on which model served it is a bug waiting for the
-day the fallback fires:
-
-```yaml
-          prompt: |
-            You are alexandria's project manager agent (ADR-15 in
-            docs/decisions.md), running in GitHub Actions with this repository
-            already checked out. Read prompts/pm-agent.md; it is your full
-            charter. Section 0 tells you which of two runs this is. On Monday,
-            or when the owner instructions below say so, execute the ceremony
-            run: retrospective on the ending sprint, grooming of
-            docs/ideas.md, the new sprint file in docs/sprints/ in the format
-            docs/sprints/README.md defines, and then the dispatch queue of
-            section 4. On every other day, execute the standup run of section
-            4 alone and nothing else: read fleet state, open PRs, pending, the
-            board and the newest rulings, then write
-            docs/sprints/dispatch-queue.md with at most three proposed
-            dispatches, each one a copy-pasteable `gh workflow run` command
-            with its owner_instructions drafted in full. You propose
-            dispatches; you never fire them, because section 5 is dormant
-            until the owner activates it. Commit on a branch named
-            pm/sprint-YYYY-MM-DD for a ceremony run or pm/standup-YYYY-MM-DD
-            for a standup run, push it, and open exactly one pull request with
-            `gh pr create`, carrying the dispatch queue in the PR description
-            in full. You write only docs/sprints/ and grooming notes in
-            docs/ideas.md. Never write code, never edit charters, never merge
-            your own PR, never push to main, never touch secrets or digests/.
-            If the charter file is missing, stop and fail loudly instead of
-            improvising.
-            Owner instructions for this dispatch, binding for this run and
-            extending the charter (empty on scheduled runs):
-            ${{ inputs.owner_instructions }}
-```
-
-**Apply item 1b first, or this item makes things worse.** A daily cron on
-a seat whose only reachable model is the failing open-routed one turns
-one failure a week into seven. The two items are ordered, not
-independent.
-
-
-**On the cap and the timeout, per the methodology.** The standup run is
-a new run shape with no measurement, so rule 2 of
-[turn-caps.md](turn-caps.md) applies and it inherits rather than guesses.
-It shares the seat's cap, which is correct, because a cap is a tripwire
-and not a budget and an unspent cap costs the org nothing. The raise from
-300 to 400 is not for the standup. It is because Monday's ceremony run
-just gained a whole section, which is duty growth, and the pm row is the
-only censored measurement in the table (a run that died at 140, so real
-demand is known only to be at least 141). The timeout goes to 75 to match
-the rest of the fleet, which at roughly nine turns a minute clears 400
-with room.
-
-**On cost.** Seven runs a week instead of one, on sonnet, on the owner's
-existing subscription. No new service and no new secret, so the cash cost
-stays $0. The real cost is six more short sonnet runs a week and six more
-small pull requests, and the charter caps that by requiring an empty
-queue to be reported and closed cheaply.
-
-**Two documentation lines change in the same hand, so the repo never
-describes a cadence it does not have.** The ExO run that queued this
-deliberately left README.md alone, because the README's job is to
-describe the system as it actually is and the cron is still weekly until
-someone applies the diff above. Apply these two at the same time:
-
-```diff
--        STEER["<b>Steer</b><br/>pm · Mon<br/>okr · monthly<br/>exo · Sun"]
-+        STEER["<b>Steer</b><br/>pm · daily<br/>okr · monthly<br/>exo · Sun"]
-```
-
-```diff
--| pm | Mon 6:35 ET | sprints, backlog, board, org chart | ADR-15 |
-+| pm | daily 6:35 ET, Mon is the ceremony | the day's dispatch queue, sprints, backlog, board, org chart | ADR-15 |
-```
-
-**How to tell it worked.** One test, and it is the owner's to judge: a
-week goes by in which she dispatches seats without composing a single
-instruction herself, because the queue had already drafted them.
-
 ### 4a. The writer's dispatch prompt forbids the duty this PR assigns it
 
 **Queued 2026-09-21 by the ExO agent. This is the item that makes the
@@ -378,47 +156,185 @@ seat's §2 and the charter edit is in this PR. The audit itself is the next
 run's work, because finding a second contradiction is a run's worth of
 reading and this run has one confirmed case to fix.
 
-### 4. The writer's cap goes to 200
+### 14. Seven caps go to the measured rule, in one item
 
-**Queued 2026-09-21 by the ExO agent.** Measured, not guessed. See the
-2026-09-21 duty-growth re-check in [turn-caps.md](turn-caps.md).
+**Queued 2026-10-04 by the ExO agent, from the October re-derivation in
+[turn-caps.md](turn-caps.md). This item replaces items 4 and 11**, which
+both proposed 200 and are both overtaken: the writer's measured peak is
+now 136 and the skill seat's is 156, so 200 is below the rule for both.
+Applying either of the old items would have looked like a fix and left
+both seats short.
 
-**RE-VERIFIED 2026-09-27, unchanged.** The one `-` line below appears
-exactly once in the live file, at line 46. The writer has run daily since
-and its runs have all concluded `success`, so the evidence behind the
-raise has not moved in either direction. Still worth applying: a cap
-below the measured rule is a run that dies without warning, and the
-writer is the seat whose duties grew most this month.
+**Why one item rather than seven.** Seven items touching seven files would
+need seven ordering paragraphs and would rot independently. These seven
+diffs are one line each, they share one justification, and nothing in the
+org depends on the order they land in. Split it only if the owner applies
+part of it.
 
-**Why.** The writer's cap of 150 was derived on 2026-09-19 from two runs
-whose peak was 53. The seat runs daily now and has run eight more times,
-peaking at **80 turns** in run 35459141039. The standing rule is twice the
-peak rounded up to the next 50, which is 200. So the cap is below the rule
-already, and this run also gave the seat three new duties: drafting site
-copy, drafting the value statement, and recording preference data. No
-writer run has hit the cap, which is exactly why nobody noticed.
+**Why now, before anything has failed.** No run has hit a cap. Five seats
+are above 80% of theirs, the writer at 91%. A cap below the rule is a run
+that dies without warning and loses whatever it has not pushed
+(incident 3), and the measurement is what the page exists for.
 
-**How.** One edit to `.github/workflows/agent-writer.yml`. The file has a
-single run step, verified 2026-09-21.
+| Seat | Peak | Cap now | Cap after |
+|---|---|---|---|
+| writer | 136 | 150 | 300 |
+| skill | 156 | 180 | 350 |
+| engineer | 168 | 200 | 350 |
+| market | 131 | 160 | 300 |
+| research | 145 | 180 | 300 |
+| security | 134 | 250 | 300 |
+| exo | 134 | 200 | 300 |
+
+**How. Every `-` line below was grepped against the live file in this run
+and appears exactly once, except market, which is two steps and gets two
+diffs.**
+
+`.github/workflows/agent-writer.yml`:
 
 ```diff
 -          claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
 ```
 
-The writer seat runs on `claude-opus-5`, not on Sonnet. This diff was
-first written here with the Sonnet flag, from memory rather than from the
-file, and the incident 26 rule caught it in the same run that wrote the
-rule down. Recorded because it is the cheapest possible demonstration that
-the rule is worth running: grep the live file for every `-` line, every
-time, including the ones you just typed.
+`.github/workflows/agent-skill.yml`:
 
-**Ordering.** Independent. No other item on this page touches
-`agent-writer.yml`, so it can be applied in any order with respect to
-items 1b and 2.
+```diff
+-          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-engineer.yml`:
+
+```diff
+-          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 350 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-research.yml`:
+
+```diff
+-          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-security.yml`:
+
+```diff
+-          claude_args: "--max-turns 250 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-exo.yml`:
+
+```diff
+-          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+`.github/workflows/agent-market.yml` has **two** run steps, the
+open-routed one and the Claude fallback, and either can be the step that
+executes. Both get the raise, because a cap belongs to a job. This is the
+incident 26 shape named in advance: one of two identical copies patched is
+a cap that depends on which provider answered.
+
+```diff
+-          claude_args: "--max-turns 160 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model ${{ vars.OPENROUTE_MODEL || 'kimi-k2.7-code' }}"
+```
+
+```diff
+-          claude_args: "--max-turns 160 --permission-mode bypassPermissions --model claude-sonnet-5"
++          claude_args: "--max-turns 300 --permission-mode bypassPermissions --model claude-sonnet-5"
+```
+
+**Ordering.** Checked with the whole-page sweep, re-run after this item
+was written, rather than from memory. The complete overlap list, by file:
+`agent-skill.yml` with items 12 and 13, `agent-writer.yml` with item 4a,
+`agent-engineer.yml` with items 6, 9 and 10, `agent-exo.yml` with item 7,
+`agent-pm.yml` with items 6 and 15. `agent-market.yml`,
+`agent-research.yml` and `agent-security.yml` are named by this item alone.
+Every overlapping item edits a `prompt:` block, an `env:` block or a step
+body, and this item edits only `claude_args` lines, so no anchor here moves
+any anchor there and any order works. Items 4 and 11 are deleted by this
+item and must not be applied.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
-budget.
+budget, and this is the sentence the page has repeated since 2026-09-18
+because it is the one that keeps getting re-litigated.
+
+**The smoke run this change owes, because a turn cap is a runtime change.**
+[runtime-changes.md](runtime-changes.md) names `--max-turns` explicitly and
+says no runtime change takes effect without a smoke run on a throwaway
+branch. This seat cannot smoke it: the push that would create the branch is
+the push the runner's token refuses, which is the first section of this
+page. **So the obligation transfers to whoever applies the diffs, and
+naming it here is the only way it survives.** One seat is enough, and
+`agent-market.yml` is the right one because it is the only file in this item
+with two steps: a dispatch of the market seat after the edit should print
+`--max-turns 300` in whichever step executed, and the step that executed
+should be the one the `OPENROUTE` condition selects. If it prints 160, one
+of the two copies was missed, which is the failure this item was written to
+prevent.
+
+### 15. The PM's dispatch prompt forbids two duties its charter assigns
+
+**Queued 2026-10-04 by the ExO agent, from the §2 charter-versus-prompt
+check. This is the 4a shape in a second seat**, so the check is now worth
+running across all twelve rather than only where a boundary was just
+edited.
+
+**The disagreement.** `prompts/pm-agent.md` §1b tells the seat to maintain
+`docs/agents/org-chart.md`, and §4 as of 2026-10-04 tells it to write the
+queue gauge. The inline `prompt:` block in `.github/workflows/agent-pm.yml`
+says:
+
+> You write only docs/sprints/ and grooming notes in docs/ideas.md.
+
+`docs/agents/org-chart.md` is in neither place. So the workflow forbids a
+duty the charter assigns, and the duty this run adds lands inside a
+boundary the workflow does not describe.
+
+**And the interesting half: the charter won.** The charter in
+`prompts/exo-agent.md` §2 predicts the opposite, that "the inline prompt
+arrives last and closest, so when the two disagree the run most likely
+obeys the workflow and the charter edit is inert." The PM has in fact
+written `docs/agents/org-chart.md` three times, most recently on
+2026-09-28. The reason is in the prompt itself, two sentences earlier:
+"Read prompts/pm-agent.md; it is your full charter." That licenses the
+charter to extend the list, so the prohibition reads as a summary rather
+than as a boundary.
+
+**That makes this lower-severity than 4a and still worth fixing**, because
+a seat that has to decide which of its two instruction files it believes is
+a seat guessing at its own permissions, and the next run may guess the
+other way. The prediction in the ExO charter is corrected in the same pull
+request: the prompt does not reliably win, and the finding is the
+disagreement itself rather than its direction.
+
+**How.** Two edits to `.github/workflows/agent-pm.yml`. The file has two
+run steps, open-routed and Claude fallback, with **identical** prompt
+blocks, so each `-` line below appears exactly twice and **both copies get
+the same edit**. This is the incident 26 shape named in advance: patching
+one of two identical copies makes the seat's permissions depend on which
+provider answered.
+
+```diff
+-            exactly one pull request with `gh pr create`. You write only
+-            docs/sprints/ and grooming notes in docs/ideas.md. Never write
++            exactly one pull request with `gh pr create`. You write
++            docs/sprints/, grooming notes in docs/ideas.md, and
++            docs/agents/org-chart.md, which charter §1b assigns you. Never
++            write
+```
+
+**Ordering.** `agent-pm.yml` is also named by item 6, which adds
+`NEON_RO_URL` to the `env:` block. This item edits only the two `prompt:`
+blocks, so neither anchor moves the other and either order works. Verified
+with the whole-page sweep in this run, after this item was written rather
+than before it.
+
+**Cost.** $0.
 
 ### 5. An HQ-origin commit should announce itself when it lands
 
@@ -514,16 +430,37 @@ failure mode for a notifier whose backstop is a weekly human-read audit.
 
 **Cost.** $0, a few seconds per push to main.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04**, because this paragraph said
+"independent of every other item on this page" and that stopped being true
+when items 9, 10, 14 and 15 were queued. This item edits the `env:` block
+of `agent-engineer.yml` and `agent-pm.yml`. Item 14 edits `claude_args` in
+the first, items 9 and 10 edit step bodies in the first, and item 15 edits
+the two `prompt:` blocks in the second. No anchor here moves any anchor
+there and any order works. The old sentence is the shape named in
+`INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`: a blanket
+"independent of everything" cannot be kept true by anyone, because it has
+to be rechecked whenever any other item is queued against any file, and
+nothing points a reader at it.
 
-### 3. Nothing else. The caps are done.
+### 3. The caps are not done. See item 14.
 
-The earlier item 2 of this page (frontend 400 to 600, pm 250 to 300,
-security 200 to 250) was applied by the chair and verified against the
-workflow files in the 2026-09-19 ExO run. Every cap in the org clears the
-measured rule, and the pm raise proposed in item 2 above is duty growth
-rather than a shortfall. See the re-measured table in
-[turn-caps.md](turn-caps.md).
+**Rewritten 2026-10-04, because this item asserted the opposite for
+fifteen days and was read as a clearance.** Its original text said "every
+cap in the org clears the measured rule", which was true of the
+2026-09-19 measurement and stopped being true as the seats' turn demand
+rose. The October re-derivation in [turn-caps.md](turn-caps.md) found
+**seven of thirteen rows under the rule**, five of them above 80% of the
+cap in force.
+
+The raises are item 14. This item is kept rather than deleted because its
+old sentence is the useful part: **a page of pending changes should never
+carry a standing "nothing to do here" claim about a measured quantity.**
+The claim does not expire, nothing re-checks it, and it reads as evidence
+to the next person who opens the page looking for exactly this. The
+earlier raises it describes (frontend 400 to 600, pm 250 to 300, security
+200 to 250) were genuinely applied and verified in the 2026-09-19 run,
+and that part of the record moves to "Applied and deleted" when item 14
+lands.
 
 ### 6. The read-only database URL, for the engineer seat and now the PM seat
 
@@ -642,9 +579,23 @@ supplies and the prompt does not contradict.
 spends rediscovering a four-week-old incident, and it is the only place a
 seat is told the second lane exists at the moment it needs it.
 
-**Ordering.** Independent of every other item on this page.
+**Ordering.** **Corrected 2026-10-04.** This said "independent of every
+other item on this page", which stopped being true when item 14 was queued
+against `agent-exo.yml`. Item 14 edits the `claude_args` line and this item
+edits the `prompt:` block, so neither anchor moves the other and either
+order works. Same shape as item 6's correction above, same run, same cause.
 
-### 5. Every seat run reports onto the board
+### 8. Every seat run reports onto the board
+
+**Renumbered from 5 to 8 on 2026-10-04**, because this page carried two
+items numbered 5 and the owner applies these by hand. The other 5 is the
+HQ-origin notice above. Nothing else about this item changed. This is the
+second time the page has had to do this, after the two items numbered 4
+on 2026-09-27, and the cause is the same allocator the ADR numbers have
+collided on four times: a run reads the page, takes the next number it
+sees, and another run on another branch takes the same one. Numbers on
+this page are now allocated by reading every `###` heading, not the last
+one.
 
 **Rewritten 2026-09-28.** The step is unchanged in shape and the diff below is
 still one line, but everything this entry said about *why* it was safe was
@@ -747,6 +698,15 @@ double run is the one with evidence behind it, and the other eleven after a
 day of it behaving.
 
 ---
+
+**Ordering.** **Added 2026-10-04; this item shipped with no ordering
+paragraph at all, which is the third shape of the same defect and the
+quietest.** A rotted paragraph is at least visible once someone looks. A
+missing one gives a reader nothing to check and no signal that there was
+anything to check. This item edits `agent-engineer.yml` and the other
+eleven agent workflows' step bodies; items 6 and 14 edit the `env:` block
+and the `claude_args` line of the same files, and item 10 edits the run
+report step. Any order works.
 
 ### 10. The run report calls a tested script, because dash's echo ate the body
 
@@ -874,44 +834,1044 @@ file.
 
 ---
 
-### 11. The skill seat's cap goes to 200
+**Ordering.** **Added 2026-10-04**, for the same reason item 9's was: this
+item had none. It edits the run report step in all twelve agent workflows.
+Items 6 and 14 edit the `env:` block and the `claude_args` line of the same
+files, item 9 edits the concurrency block, and items 4a, 13 and 15 edit
+`prompt:` blocks. None of those anchors touch a run report step, so any
+order works.
 
-*The number 11 is the next one free on this branch, which is not the same
-as the next one free. PR #123 renumbered items on its own branch the same
-day. This item is identified by its seat, its date and its diff, so
-renumber it freely when they land together (incident 29).*
+### 12. The skill seat cannot measure a skill, because it has no `GROQ_API_KEY`
 
-**Queued 2026-09-27 by the engineer agent, under the owner's directive of
-2026-09-25.** Measured, not guessed. See the 2026-09-27 duty-growth
-re-check in [turn-caps.md](turn-caps.md).
+**Queued 2026-09-30 by the ExO agent, under the owner's directive of the
+same day and ADR-38.** This is the capability half of the new row in
+[unowned-duties.md](unowned-duties.md).
 
-**Why.** ADR-35 gave the skill seat three new steps on 2026-09-26: survey
-the claim graph, fetch the papers in full from arXiv, and append what it
-could not read to docs/research/reading-queue.md. The first run under
-those duties (36206676462, 2026-09-26) finished freely at **92 turns**,
-against a peak of 81 across the five runs before it. Twice 92 rounded up
-to the next 50 is 200, and the cap in force is 180. The seat has never
-hit its cap, which is why nothing had flagged it.
+**Why.** ADR-38 makes a measured delta the gate on a skill's status, and
+the seat that produces skills cannot produce a delta. `tools/skill_eval.py`
+reaches its subject and judge through `pipeline/llm.py`, whose providers
+are `moonshot` and `groq` in `pipeline/budget.py`. The measurement that
+produced 5.4 against 5.3 used `qwen/qwen3.8-27b` as subject and
+`openai/gpt-oss-120b` as judge, and `budget.MODELS` gives both of them
+`"provider": "groq"`. So the arm needs `GROQ_API_KEY`:
 
-**How.** One edit to `.github/workflows/agent-skill.yml` line 54. The
-file has a single run step, and this diff was copied from the live file
-on 2026-09-27 rather than from memory, per the incident 26 rule.
-
-```diff
--          claude_args: "--max-turns 180 --permission-mode bypassPermissions --model claude-opus-5"
-+          claude_args: "--max-turns 200 --permission-mode bypassPermissions --model claude-opus-5"
+```bash
+grep -oE 'secrets\.[A-Z_]+' .github/workflows/agent-skill.yml | sort -u
+# BOARD_API_URL BOARD_RUNTIME_TOKEN CLAUDE_CODE_OAUTH_TOKEN
+# NEON_RO_URL PROJECTS_TOKEN SLACK_WEBHOOK_URL
+grep -rlE 'secrets\.GROQ_API_KEY' .github/workflows/     # nothing
 ```
 
-**No timeout change.** The measured run spent 743 seconds on 92 turns, so
-200 turns is about 27 minutes against the file's `timeout-minutes: 75`.
+No workflow in the repository carries it. The key itself exists as the
+Modal secret named `groq`, which is where the daily pipeline reads it, so
+this is a secret to add at the repository level rather than a credential to
+obtain, and the owner is the only one who can say whether exposing it to a
+seat sandbox is acceptable.
 
-**Ordering.** Independent. No other item on this page touches
-`agent-skill.yml`.
+**How.** One line in the `env:` block of
+`.github/workflows/agent-skill.yml`, after `NEON_RO_URL`.
 
-**Cost.** $0 unless a run uses the turns. A cap is a tripwire and not a
-budget.
+```diff
+       NEON_RO_URL: ${{ secrets.NEON_RO_URL }}
++      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+```
+
+**Ordering.** **Corrected 2026-10-04.** This named item 11, which was
+deleted and replaced by item 14 in that run. Item 14 touches the
+`claude_args` line of this file and raises the skill cap to 350 rather than
+200. Item 13 touches the `prompt:` block. This item touches the `env:`
+block. All three can be applied in one hand, in any order.
+
+**Cost.** $0. The groq free tier is what the daily pipeline already runs
+on, and `budget.MODELS` prices both models at 0.0 in and 0.0 out. The rate
+limits are the real constraint (8,000 tpm, 30 rpm, 1,000 rpd) and an eval
+run of four tasks at two arms and two repetitions fits inside them.
+
+**What this does not fix, and the owner should know it before applying.**
+ADR-38 clause 6 makes `status: active` depend on a delta measured on the
+model the product is actually used with, and there is no route to that
+model at all: `pipeline/budget.py` has two providers and neither serves
+it, and `grep -in anthropic pipeline/` returns nothing. That is pipeline
+work on the engineer's surface, not a secret, and it is filed in
+docs/ideas.md. Applying this item lets the seat run the cheap arm and
+report a provisional number. It does not let the seat mark a skill active
+under ADR-38 as written.
 
 ---
+
+### 13. The skill seat's dispatch prompt names the trigger test and no measurement
+
+**Queued 2026-09-30 by the ExO agent.** This is the §2 charter-versus-prompt
+check, run because this PR edits that charter's run section. It is incident
+25's shape exactly: a duty the charter has that the inline prompt omits.
+
+**Why.** Every seat's charter is two files. There is
+`prompts/skill-agent.md`, which the seat can edit, and there is the inline
+`prompt:` block in `.github/workflows/agent-skill.yml`, which it cannot. The
+inline prompt arrives last and closest, so when the two disagree the run most
+likely obeys the workflow. The live block says:
+
+> draft one evidence-backed skill under skills/ with provenance frontmatter
+> and claim-id citations, include the trigger test in the PR
+
+**The trigger test is the only evidence the dispatch asks for.** After this
+PR the charter requires a differential eval suite, a bare-first pass, a
+measured delta and a status decision, and the prompt still names the one
+measurement that cannot say whether a skill helps. It also predates ADR-37,
+so it says nothing about maintenance coming before creation, and it predates
+ADR-35's reading requirement in everything but spirit.
+
+A seat reading both files has to guess which one governs. That guess is what
+incident 25 cost when the writer's prompt forbade the duty its charter
+assigned, and that item (4a) has been on this page since 2026-09-21.
+
+**How.** Replace the prompt body between `prompt: |` and the
+`Owner instructions` line in `.github/workflows/agent-skill.yml`. This is an
+edit to an existing workflow, so it stays a diff on this page rather than a
+full file in the pending lane.
+
+```diff
+-            skills/ with provenance frontmatter and claim-id citations,
+-            include the trigger test in the PR, and open exactly one pull
+-            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
+-            create`. Write only under skills/, prompts/skill-extract.md,
++            skills/ with provenance frontmatter and claim-id citations.
++            Maintenance comes before creation (ADR-37): read every new
++            consumer report under skills/*/reviews/ and the reading queue
++            first. Meet the bar in the charter's "the bar a skill has to
++            clear" section (ADR-38): deltas the bare model does not already
++            give, procedures with their thresholds, the checklist first,
++            under 120 lines. Ship the skill's differential eval suite with
++            it and put the measured delta in the PR, or write the word
++            unmeasured and say which credential is missing. A trigger test
++            says the skill is found and never that it helps, so report both
++            and never one as the other. Open exactly one pull
++            request on a branch named skill/YYYY-MM-DD-slug with `gh pr
++            create`. Write only under skills/, prompts/skill-extract.md,
+```
+
+**Ordering.** Independent of items 12 and 14, which touch the `env:` block
+and the `claude_args` line of the same file. All three can be applied in
+one hand. **Corrected 2026-10-04:** this paragraph named item 11, which
+was deleted and replaced by item 14 in that run, and the skill cap it
+proposed changed from 200 to 350. An ordering paragraph that names a
+deleted item is the same rot as one that misses a live item, and the
+sweep that finds both is the `grep -oE '\.github/workflows/[a-z-]+\.yml'`
+count in `prompts/exo-agent.md` §5.
+
+**Cost.** $0, and it will raise the seat's turn demand, which is why the
+skill seat's cap is re-measured in item 14 rather than left at 180.
+
+---
+
+### 12. Skill registration, checked on the pull request that adds a skill
+
+**Queued 2026-09-30 by the engineer seat. ADR-36 part 1.**
+
+Numbered 12 because 11 is the highest on this page today, and this page has
+carried two items numbered 4 before, so the number is stated rather than
+counted.
+
+ADR-36 asks for "a check that fails when a skill on main has no row". That check
+has to be in two halves, and the split is not a weakening.
+
+The database half cannot run in GitHub Actions. This organization runs no
+Postgres in CI, and CI holds no credential for the production one, which is the
+same reason `tools/graph_audit.py`'s ten SELECTs are parsed rather than executed
+in `checks.yml`. So the half that asks whether the row is actually in Neon runs
+in `pipeline/skill_revision.py`, daily, where the `neon` secret already is, and
+it repairs what it finds rather than only reporting it.
+
+The half CI can run is the one that catches the failure mode ADR-36 actually
+found. A skill cannot be registered when its provenance block cannot be read:
+no `provenance:` map, no claim ids, a claim id that is not a number, a `name:`
+that disagrees with its directory, a directory with no SKILL.md. Every one of
+those ships green today and silently opts the skill out of revision forever.
+`python3 tools/skill_registrar.py --files-only` exits 1 on each of them and
+needs no database, no key and no network.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` and `db/schema.sql` are already in both `paths`
+lists; these two lines go in both of them, beside the existing `tools/` entries
+(verified against the live file this run: it carries `tools/board.py`,
+`tools/run_report.py` and `tools/graph_audit.py` in that order, in both lists).
+
+```yaml
+      - "tools/skill_registrar.py"
+      - "tests/test_skill_registrar.py"
+```
+
+Second, the step. It goes after the existing `the graph audit's SQL still
+matches the schema, and still only reads` step, which is the last step in the
+`digest-budget` job today.
+
+```yaml
+      # 2026-09-30, ADR-36 part 1. `skills_needing_revision` has been in
+      # db/schema.sql since the founding and has never returned a row, because
+      # the skill seat writes a SKILL.md and nothing writes the promotions row
+      # the view joins. Seven claims are deprecated and no skill knows.
+      #
+      # Two things are held here. The registrar's three statements are parsed
+      # with libpg_query and every relation and column resolved against
+      # db/schema.sql, because no CI job in this organization can execute SQL
+      # and a renamed column would otherwise turn a daily cron silently
+      # useless. And every skill on the branch must be registrable: the failure
+      # this catches is a merged skill whose provenance block cannot be read,
+      # which ships green and opts that skill out of revision forever.
+      - name: every skill can be registered, and the registrar's SQL matches the schema
+        if: always()
+        run: python3 -m pytest tests/test_skill_registrar.py -q
+
+      - name: no skill on this branch is missing its provenance
+        if: always()
+        run: python3 tools/skill_registrar.py --files-only
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both commands were run in
+this run's sandbox against the real six skills: the pytest step is 31 passed,
+and `--files-only` exits 0. Both were also confirmed to fail on purpose, the
+pytest step against a deliberate `promotionz` typo in the registrar's SQL and
+the `--files-only` step against a fixture skill with an empty claims array. The
+step cannot be smoke-tested on a branch as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database.
+
+### 13. The file that installs the suite's Modal stub triggers no check at all
+
+**Queued 2026-09-30 by the engineer seat.**
+
+Numbered 13 because 12 is the highest on this page today. Item 12 is queued
+ahead of this one and both add a step after the graph-audit step, so whoever
+applies them should apply 12 first and then append this one; if only one is
+applied, either order works, because neither touches the other's lines.
+
+**The hole.** `checks.yml` names fourteen test files in its two `paths` lists.
+`tests/conftest.py` is in neither, and no job in any workflow runs the whole
+suite. So a change to the one file that installs the Modal stub for every test
+module in the repository triggers nothing. That file's own docstring records
+what a bad version of it costs: four test files each carried their own copy of
+the stub, the copy without `modal.Volume` won under `pytest tests/ -q`, and
+"the whole suite reported a single error and ran nothing". A file with that
+failure mode and no path entry is the gap this item closes.
+
+`requirements-dev.txt` has the same shape and is deliberately left out of this
+item: it is a version floor rather than logic, and a stale item is worse than a
+narrow one.
+
+**What the new test file is.** `tests/test_check_helper_is_enforced.py`, added
+in the same pull request as this item. `tests/test_press_resilience.py` and
+`tests/test_press_rehearsal.py` report failures by appending to a module-level
+`FAILURES` list rather than by asserting, and only their `__main__` block reads
+that list. Under `python3 -m pytest tests/ -q`, the command
+`requirements-dev.txt` prescribes and both files' docstrings name, roughly 130
+checks printed `FAIL` to a swallowed stdout and the suite said green. A hook in
+`tests/conftest.py` now enforces the list under pytest as well.
+
+CI reads those two files' exit codes today, because it runs them as scripts, so
+the hook changes nothing about today's CI verdict and this item does not pretend
+otherwise. What it buys is the day either file grows a pytest fixture, which is
+the direction this suite has been moving all week: the moment one of them needs
+`monkeypatch` or `capsys` it has to be run under pytest, and without the hook
+that move silently retires 130 checks while every step stays green.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These two lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry, which is the last entry in each list. Verified
+against the live file this run: `      - "tools/graph_audit.py"` matches exactly
+twice, once per list, and `tests/conftest.py` appears zero times in the file.
+
+```yaml
+      - "tests/conftest.py"
+      - "tests/test_check_helper_is_enforced.py"
+```
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30. Two files in tests/ report failures by appending to a
+      # module-level FAILURES list, and until today only their __main__ block
+      # read it. Under `python3 -m pytest tests/ -q` every one of their ~130
+      # checks printed FAIL to a stdout that -q swallows and the suite reported
+      # green. That is how test_call_model_walks_and_backs_off came to assert a
+      # contract the press stopped honouring on 2026-09-24 and go unnoticed:
+      # the only reason it was ever caught is that this workflow happens to run
+      # its file as a script.
+      #
+      # The hook lives in tests/conftest.py, which is the other half of this
+      # item. That file installs the Modal stub for every test module here and
+      # had no path entry, so a change to it triggered no check at all, and its
+      # own docstring records a bad version of it making the whole suite collect
+      # zero tests. These tests run pytest in a subprocess against throwaway
+      # modules using the pattern, so they fail if the hook is deleted rather
+      # than passing vacuously. Confirmed both ways from the seat.
+      - name: the check() helper is enforced under pytest, not only as a script
+        if: always()
+        run: python3 -m pytest tests/test_check_helper_is_enforced.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** The command is 6 passed in
+this run's sandbox, and 2 failed, 4 passed with the hook deleted from
+`tests/conftest.py`, which is the only result that proves the tests are load
+bearing. The step cannot be smoke-tested as a workflow, because the seat cannot
+push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about three seconds,
+which is what a subprocess pytest costs six times over.
+
+### 14. The deploy-drift guard runs in CI, so its own logic is under test
+
+**Queued 2026-09-30 by the engineer seat, sprint 2026-09-28 item 2.**
+
+Numbered 14 because 13 is the highest on this page today. Items 12, 13 and 14
+all append a step at the end of the `digest-budget` job and two lines to each
+`paths` list, and none of them touches another's lines, so any order works. If
+all three are applied, applying them in number order keeps the file readable.
+
+**What this protects.** `tools/delivery_health.py` grew a fifth surface,
+`deploy`, which answers the one question none of the other four can: is the
+code on main the code the crons are running. `modal deploy` bakes the
+repository into an image, so a merge and a deploy are two events, and the gap
+between them has cost the org twice. Incident 24 is the first. PR #110 is the
+second, merged 2026-09-26 and inert for days while three documents described
+its behaviour as live.
+
+The guard's own logic is the kind CI exists to hold, because the way it fails
+is by crying wolf. A seat's sandbox nearly always has uncommitted edits under
+`pipeline/`, a branch carries commits that never merged, and a shallow clone
+cannot date anything. All three must answer `unknown` rather than red, and a
+change that quietly turned one of them into a verdict would make the standup
+red every morning for a reason that resolves itself, which is how a report
+teaches its reader to stop reading it.
+
+**What the new test file is.** `tests/test_deploy_drift.py`, added in the same
+pull request as this item. It builds a real git repository in a temporary
+directory, because the dating and dirty-tree logic is `git log` and
+`git status`, and mocking those would test the mock. No network, no database,
+no Modal. `tests/test_delivery_health.py` joins the same step: its surface list
+changed in this pull request and nothing in CI runs it today.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These three lines go in both `paths` lists, after the
+existing `tools/graph_audit.py` entry, which is the last entry in each list.
+Verified against the live file this run: `      - "tools/graph_audit.py"`
+matches exactly twice, once per list, and neither `tools/delivery_health.py`
+nor `tests/test_deploy_drift.py` appears anywhere in the file.
+
+```yaml
+      - "tools/delivery_health.py"
+      - "tests/test_deploy_drift.py"
+      - "tests/test_delivery_health.py"
+```
+
+`pipeline/runtime_sha.py` needs no entry: `pipeline/**` already covers it, and
+that is deliberate rather than lucky, because the digest this guard compares is
+derived from the three job modules and moves whenever they do.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live
+file's last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-09-30, sprint 2026-09-28 item 2. The deploy-drift guard. Each of
+      # triage, interpret and weekly now records a digest of the files it is
+      # actually running from, and tools/delivery_health.py computes the same
+      # digest from the checkout and compares. CI cannot run the guard against
+      # production, because the recorded side lives in Neon and this org runs no
+      # database in CI. What CI holds is the judgement, which is the half that
+      # can rot: that a drift under a day reads as a pending deploy rather than
+      # an alarm, that an uncommitted edit and an undatable checkout both answer
+      # unknown rather than red, that a job which has never reported is never
+      # green, and that the recording call cannot raise or abort the transaction
+      # of the job it guards. The last one is why this is not optional: a
+      # guardrail that can fail a production run is worse than no guardrail.
+      - name: a stale deploy trips the alarm, and a real deploy clears it
+        if: always()
+        run: python3 -m pytest tests/test_deploy_drift.py tests/test_delivery_health.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (638 passed, 9 skipped). The two
+acceptance tests were confirmed to be load bearing by inverting the fixture:
+with the recorded digest set to the current one the surface is green, and with
+it set to a stale value on a checkout whose last commit is nine days old the
+surface is red and names all three jobs. The step cannot be smoke-tested as a
+workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about two seconds.
+
+### 15. The delivery receipt runs in CI, so the endpoint cannot leak the product
+
+**Queued 2026-10-01 by the engineer seat**, with the credential-free reader for
+guardrail 4.
+
+Numbered 15 because 14 is the highest on this page today. **It composes with
+item 14 and does not depend on it.** Both add lines to the same two `paths`
+lists and a step at the end of the same job, and neither touches the other's
+lines, so either order works and either alone works. If both are applied, item
+14's step and this one can be left as two steps; they test different files and
+two names in the CI log are easier to read than one.
+
+**What this protects.** `site/app/api/delivery/route.js` is a public,
+unauthenticated endpoint that reads the production database. That sentence is
+the whole reason this item exists. It is public on purpose, because no agent
+seat holds a database credential and the receipt is what lets every seat answer
+guardrail 4's question at all, and the price of that decision is that the
+boundary between metadata and product has to be held by something that runs on
+every change.
+
+Two of the tests are the boundary itself. One asserts that the queries never
+select `digests.body` or any claim text and never touch `subscribers`, and that
+the only tables read are the four this answers for. The other builds a receipt
+from a row that carries a body, a `prompt_sha` and an invented column, and
+asserts that none of the three appears in the JSON, because every field is built
+by name. A future change that widens a query, or spreads a row into the response
+for convenience, publishes the paid product. That change would be two
+characters long and it would look like a simplification.
+
+The rest hold the states. A receipt this reader cannot understand, a version it
+does not speak, a 404 from a route that is not deployed yet and a site that does
+not answer must every one of them answer `unknown`, never a verdict about the
+press, which is the argument `tools/delivery_health.py` already makes for its
+own third state. And one test asserts the property that keeps the two readers
+honest: a connection and a receipt carrying the same rows produce the same
+state and the same headline, word for word, differing only in `read_via`.
+
+**What the new files are.** `tests/test_delivery_receipt.py` (20 tests) and
+`tests/delivery.test.mjs` (10 executed cases), both added in the same pull
+request as this item. The Python file runs the `.mjs` file in a subprocess, the
+way `tests/test_accounts.py` runs `tests/accounts.test.mjs`, so one pytest
+command still covers the whole path and the `node` half degrades to a skip where
+`node` is absent. No network, no database, no site: the only thing stubbed is
+`dh.fetch`.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These five lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry. Verified against the live file this run:
+`      - "tools/graph_audit.py"` matches exactly twice, once per list, and none
+of these five paths appears anywhere in the file. (Corrected 2026-10-01, second
+window, same seat: this sentence said `tools/graph_audit.py` was the last entry
+in each list and it is not. Three entries follow it, `db/schema.sql`,
+`site/emails/digest.html` and `.github/workflows/checks.yml`. The instruction is
+unchanged, because inserting after a line that matches exactly twice does not
+depend on that line being last, but a hand reading "last entry" and finding
+three more would have had to stop and work out which text to trust.)
+If item 14 is applied first, these go after its three lines; the order inside
+the list does not matter.
+
+```yaml
+      - "tests/test_delivery_receipt.py"
+      - "tests/delivery.test.mjs"
+      - "site/lib/delivery-core.js"
+      - "site/lib/delivery.js"
+      - "site/app/api/delivery/route.js"
+```
+
+The three `site/` entries are the point of the paths half. The tests read those
+three files as source, so a change to the endpoint has to re-run them, and that
+is exactly the change nobody will think to test.
+
+Second, the step. It goes at the end of the `digest-budget` job. The live file's
+last three lines are the graph-audit step, verified this run:
+`run: python3 -m pytest tests/test_graph_audit.py -q` matches exactly once.
+
+```yaml
+      # 2026-10-01. The delivery receipt. `tools/delivery_health.py` answers
+      # three of its five surfaces from a public endpoint now, because no agent
+      # seat holds a database credential and that is why guardrail 4 went
+      # unenforced for a week. The endpoint reads production and answers anyone,
+      # so the boundary between metadata and product is held here: these tests
+      # assert that no query selects the issue body or a claim, and that a row
+      # carrying one anyway cannot escape through the shaping layer, which
+      # builds every field by name. They also hold the third state, since a
+      # receipt this reader cannot parse must answer `unknown` and never a
+      # verdict about the press, and the property that keeps two readers from
+      # becoming two answers: a connection and a receipt carrying the same rows
+      # reach the same state and the same headline.
+      - name: the delivery receipt publishes metadata and never the product
+        if: always()
+        run: python3 -m pytest tests/test_delivery_receipt.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox, as does the whole suite (668 passed, nothing skipped, with
+`requirements-dev.txt` and `tiktoken==0.8.0` installed as this workflow installs
+them). The harness was
+confirmed load bearing against an artifact known to fail it: inverting one
+assertion in `test_an_unreadable_database_is_a_503_and_not_an_empty_receipt`
+turns `python3 -m pytest tests/test_delivery_receipt.py -q` red with the check's
+own name in the report, and reverting it turns it green again. The step cannot
+be smoke-tested as a workflow, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database. The step adds about a second,
+plus `node --test`, which needs no `npm install` because the module under test
+has no imports.
+
+**The fourth item on this page that is one more filename in two lists.** Items
+12, 13, 14 and now 15 are all the same two-line hand edit, and
+`INC-2026-09-29-receipts-step-had-no-paths` is what the pattern costs when the
+hand adds the step and forgets the list. The ledger entry from 2026-09-30,
+"checks.yml should run the suite, not fourteen filenames", is the structural fix
+and it would delete this half of all four items.
+
+### 16. The archive publishes the record, and that is checked on the pull request
+
+**Queued 2026-10-01 by the engineer seat (second window)**, with the change
+that makes a Monday send public on Monday.
+
+Numbered 16 because 15 is the highest on this page today. **It composes with
+items 14 and 15 and depends on neither.** All three add lines to the same two
+`paths` lists and a step at the end of the same job, none of them touches
+another's lines, so any order works and any one alone works.
+
+**What this protects.** `site/lib/issues-live.js` decides which weeks the public
+archive publishes, from the `digests` table rather than from files committed by
+hand. The archive is the product's shop window and the issue is the free half of
+what the company sells, so three properties now stand between a change to that
+file and a public page, and every one of them is a way this could go wrong
+quietly rather than loudly.
+
+A database that cannot be read must publish exactly what the committed files
+publish. That is the difference between a Neon outage being invisible and a Neon
+outage emptying the archive, and the test drives it twice, once with no
+connection and once with a query that throws.
+
+`HIDDEN_WEEKS` must still retire a week that exists only as a row. That set is
+the owner's veto over the archive (2026-W37, retired on her order 2026-09-19)
+and the record is a second way in, so a row must not be able to walk past it.
+
+The committed file must win over the row for a week that has both. Every
+correction already made to a published issue lives in those files: the 2026-09-19
+corrections to 2026-W37, the 2026-09-24 reprint of 2026-W39 under canon law 14.
+A change that reversed this precedence would silently revert all of them, and it
+would look like a simplification.
+
+Two more are worth naming because they are about the query rather than the
+rules. The week comes out of the URL, so one test asserts it is interpolated and
+never concatenated, and that a week which does not match `^\d{4}-W\d{2}$` never
+reaches the database at all. And the listing query reads only the first 4,000
+characters of each body, so the shaping layer drops `body` from the listing
+shape entirely: a page that rendered it would be showing a truncated issue as a
+whole one.
+
+**What the new files are.** `tests/test_issue_route.py` (7 tests, 23 checks) and
+`tests/issues.test.mjs` (19 executed cases), both added in the same pull request
+as this item. The Python file runs the `.mjs` file in a subprocess, the way
+`tests/test_delivery_receipt.py` runs `tests/delivery.test.mjs`, so one pytest
+command covers the whole path and the `node` half degrades to a skip where
+`node` is absent. No network, no database, no `npm install`: the module under
+test has no imports, which is why the queries live in it.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. These six lines go in both `paths` lists, after the existing
+`tools/graph_audit.py` entry. Verified against the live file this run:
+`      - "tools/graph_audit.py"` matches exactly twice, once per list, and none
+of these six paths appears anywhere in the file. If items 14 or 15 are applied
+first, these go after their lines. The order inside the list does not matter.
+
+```yaml
+      - "tests/test_issue_route.py"
+      - "tests/issues.test.mjs"
+      - "site/lib/issues-core.js"
+      - "site/lib/issues-live.js"
+      - "site/lib/content.js"
+      - "site/app/library/**"
+```
+
+The four `site/` entries are the point of the paths half, and `site/lib/content.js`
+is there for a reason worth stating: the record's bodies are parsed by that
+file's `parseIssue`, which is now exported so there is one derivation rule
+rather than two, and a change to it moves every title and excerpt in the
+archive.
+
+Second, the step. It goes at the end of the `digest-budget` job, after the
+graph-audit step, which is the last step in the live file: `run: python3 -m
+pytest tests/test_graph_audit.py -q` matches exactly once and is the file's last
+line.
+
+```yaml
+      # 2026-10-01. The archive reads `digests` now, so an issue is public the
+      # moment the press mails it instead of whenever somebody remembers to
+      # commit a markdown file. Three properties stand between a change to
+      # site/lib/issues-live.js and a public page: a database that cannot be
+      # read publishes exactly what the committed files publish, HIDDEN_WEEKS
+      # still retires a week that exists only as a row, and the committed file
+      # still wins the text of any week that has one, which is what keeps every
+      # correction already made to a published issue standing. The week comes
+      # out of the URL, so the query half is held too.
+      - name: the archive publishes the record, and fails closed to the files
+        if: always()
+        run: python3 -m pytest tests/test_issue_route.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** Both files pass in this
+run's sandbox. The harness was confirmed load bearing against an artifact known
+to fail it: changing one asserted string in `test_both_routes_read_the_record`
+to one the route does not contain turns `python3 -m pytest
+tests/test_issue_route.py -q` red with the check's own sentence in the report,
+and reverting it turns it green again, which also exercises the `FAILURES` hook
+in `tests/conftest.py` that makes a `check()` file legible to pytest at all. The
+step cannot be smoke-tested as a workflow, because the seat cannot push the
+file.
+
+Separately and beyond what CI can hold, the route behaviour was measured against
+a real production build of the site in this sandbox, because the change retires
+a guard that existed to prevent a 500. `npm install && npx next build && npx
+next start`, then six requests: `/` 200, `/library` 200, `/library/2026-W39` 200,
+`/library/2026-W37` 404, `/library/2026-W01` 404, `/library/nonsense` 404. A
+clean 404 on an unpublished week is the sentence the old guard was protecting,
+and it holds without the guard because the route is dynamic from the start.
+
+**One thing this item does not need to queue, verified rather than assumed.**
+The same pull request adds a sixth surface to `tools/delivery_health.py`, the
+`archive` comparison, with six tests in `tests/test_delivery_health.py`. Both of
+those files are already queued into both `paths` lists and into a step by **item
+14** above (`run: python3 -m pytest tests/test_deploy_drift.py
+tests/test_delivery_health.py -q`), so applying item 14 covers them and this
+item does not name them twice. If item 14 is never applied, those six tests run
+under `python3 -m pytest tests/ -q` and nowhere in CI, which is the same hole
+item 14 exists to close and not a new one.
+
+**Cost.** $0. No key, no network, no database. The step adds under a second,
+plus `node --test`, which needs no `npm install`.
+
+**The fifth item on this page that is one more filename in two lists.** Items
+12, 13, 14, 15 and now 16 are the same two-line hand edit five times over, and
+`INC-2026-09-29-receipts-step-had-no-paths` is what the pattern costs when the
+hand adds the step and forgets the list. The ledger entry from 2026-09-30,
+"checks.yml should run the suite, not fourteen filenames", is the structural fix
+and it would delete half of all five items. Five occurrences of one shape is no
+longer a pattern worth noting, it is a backlog, so this run raises it from a
+ledger line to a named recommendation to the owner in its pull request.
+
+### 17. The site's XSS defence and the account layer run in CI, or checks.yml stops naming filenames
+
+**Queued 2026-10-02 by the engineer seat**, from
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`.
+
+**Numbered 17 only relative to this branch, and the number is already wrong.**
+`main` stops at item 11. Three open pull requests allocate numbers from 12
+upward on this page right now and none of them can see the others: this seat's
+chain takes 12 through 16, PR #174 takes 12 through 16 for five different
+changes (action pinning, `PROJECTS_TOKEN`, the budget step, the no-ship
+tripwire, the register checker), and PR #160 takes 12 and 13 for two more. After
+all three merge, thirteen items will claim six numbers. That is incident 29's
+sequential allocator, in the one register whose numbering was never converted to
+slugs, and it is recorded this run as
+`INC-2026-10-02-pending-queue-number-collision`. Read this item by its title,
+not by its number, and expect to renumber at merge. It composes with every other
+queued item and depends on none of them.
+
+**What is wrong.** `tests/test_markdown.py` holds the 2026-09-19 finding, the
+one where a crafted passage in an arXiv paper reached the public archive as live
+HTML. Its docstring says of `tests/markdown.test.mjs`, "It needs no
+node_modules, which is why it is the half that runs in CI." No workflow in this
+repository runs either file. `site/lib/markdown-core.js`, which decides what
+markdown is allowed to become on the public site, is in neither `paths` list, so
+a pull request changing nothing but that file runs no check at all.
+
+`tests/test_accounts.py` and `tests/accounts.test.mjs` are in the same position,
+and they hold the account and entitlement layer.
+
+Measured this run: `node --test tests/*.test.mjs` returns 122 pass, 0 fail, so
+nothing is broken behind this. What is missing is the gate.
+
+**The recommendation, which is the structural form.** Replace the fourteen named
+pytest steps with one that runs the suite, and replace both `paths` lists with
+the directories the suite covers. One step, one list, and items 12 through 16 on
+this page lose their paths halves entirely:
+
+```yaml
+      - name: the test suite
+        if: always()
+        run: python3 -m pytest tests/ -q
+```
+
+This is the ledger entry of 2026-09-30, "checks.yml should run the suite, not
+fourteen filenames", and this item is the sixth occurrence of the two-line hand
+edit that entry exists to delete. Two things make it safe to do now that were
+not true a week ago. `tests/conftest.py` enforces the `FAILURES` harness under
+pytest since 2026-09-30, so the two script-mode files no longer go green by
+default under a suite run (`INC-2026-09-30-check-harness-green-under-pytest`).
+And the suite passes in full in this run's sandbox: 694 passed, 1 skipped, in 26
+seconds. Keep the three script-mode invocations as they are if you want belt and
+braces, because they cost under a second each.
+
+**The minimal form, if the structural one is too large a change to make by
+hand.** Four lines in both `paths` lists, after the existing
+`      - "tools/graph_audit.py"` entry, which matches exactly twice in the live
+file, once per list. None of these four appears anywhere in the file today,
+verified this run:
+
+```yaml
+      - "tests/test_markdown.py"
+      - "tests/markdown.test.mjs"
+      - "site/lib/markdown-core.js"
+      - "tests/test_accounts.py"
+```
+
+And one step at the end of the `digest-budget` job, after `run: python3 -m
+pytest tests/test_graph_audit.py -q`, which matches exactly once and is the live
+file's last line:
+
+```yaml
+      # 2026-10-02, INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had.
+      # site/lib/markdown-core.js is the whole of the defence between a crafted
+      # passage in an arXiv paper and live HTML on the public archive, and until
+      # this step existed a pull request touching only that file ran no check.
+      # The account layer is here for the same reason. Both files run their .mjs
+      # half in a subprocess, so one pytest command covers each layer, and the
+      # node half degrades to a skip where node is absent.
+      - name: the archive refuses HTML, and the account layer holds
+        if: always()
+        run: python3 -m pytest tests/test_markdown.py tests/test_accounts.py -q
+```
+
+**Smoke-tested from the seat, as far as a seat can.** `python3 -m pytest
+tests/test_markdown.py tests/test_accounts.py -q` passes in this sandbox, and
+`node --test tests/*.test.mjs` passes at 122 of 122. The step cannot be
+smoke-tested as a workflow, because the seat cannot push the file.
+
+**Cost.** $0 either way. The minimal form adds under two seconds. The structural
+form adds about 26 seconds and removes five pending items from this page.
+
+**One thing this item deliberately does not do.** It does not add
+`site/lib/account-core.js`, `site/lib/entitlement.js` or
+`site/lib/markdown.js` to the minimal form's list, because the minimal form is
+already the sixth instance of a pattern that this page says should be deleted
+rather than extended, and a seventh filename argues the wrong way. The
+structural form covers them by covering everything, which is the point.
+
+---
+
+---
+
+---
+
+### 18. ADR-13's panel runs in CI, or three documents stop saying it does
+### (amended 2026-10-03 second window: three reviewers, not two)
+
+**Queued 2026-10-03 by the engineer seat.
+INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had.**
+
+Numbered 18 because 17 is the highest on this page today, and this page has
+carried two items numbered 4 and two numbered 5 before, so the number is stated
+rather than counted (incident 29).
+
+The panel's first reviewer shipped on 2026-10-02 with a build note saying its
+file half "runs on every pull request that touches `skills/**` or
+`db/schema.sql`, inside the skill-receipts step of `checks.yml`". It does not.
+That step runs `tests/test_skill_receipts.py` and nothing else, and neither
+reviewer's file is in either `paths` list. So 46 tests have never run in CI, and
+the thing only CI can hold about a reviewer in this organization, that its SQL
+still resolves against `db/schema.sql`, has never been held.
+
+**Why these tests belong in CI when the reviewers mostly do not.** No Postgres
+exists in CI here, so the SELECTs are parsed with libpg_query and every relation
+and column is resolved against the schema, exactly as `tools/graph_audit.py`'s
+ten SELECTs already are in the `the graph audit's SQL still matches the schema`
+step. A migration that renames `claim_links.to_claim` or
+`claims.interpreted_at` should turn a pull request red, not turn a 16:00 UTC
+cron silently useless.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` and `db/schema.sql` are already in both lists;
+these five lines go in both, beside the existing `tools/` and `tests/` entries.
+
+```yaml
+      - "tools/panel.py"
+      - "tools/panel_provenance.py"
+      - "tools/panel_adversary.py"
+      - "tools/panel_validator.py"
+      - "tests/test_panel_provenance.py"
+      - "tests/test_panel_adversary.py"
+      - "tests/test_panel_validator.py"
+```
+
+Second, two steps. They go after `every skill can be registered, and the
+registrar's SQL matches the schema` from item 12, because the panel reads what
+the registrar writes and a reader wants them in that order. Item 12 is not a
+prerequisite: these two steps stand alone if item 12 is still unapplied, and in
+that case they go after the graph audit step instead, which is the last step in
+the `digest-budget` job today.
+
+```yaml
+      # 2026-10-03, ADR-13. The panel's two built reviewers send five SELECTs
+      # and two INSERTs between them, and no CI job in this organization can
+      # execute any of them. So they are parsed with libpg_query and every
+      # relation and column is resolved against db/schema.sql, the same
+      # instrument the graph audit step above uses, for the same reason: a
+      # renamed column would otherwise be discovered by a daily cron going
+      # quietly useless rather than by the pull request that renamed it.
+      #
+      # Two reviewers, two steps, on purpose. A single step would go red for
+      # either and the log line is where a reader learns which.
+      - name: the provenance reviewer's SQL matches the schema, and its duties still decide
+        if: always()
+        run: python3 -m pytest tests/test_panel_provenance.py -q
+
+      - name: the adversary reads the graph in the direction ADR-10 fixed
+        if: always()
+        run: python3 -m pytest tests/test_panel_adversary.py -q
+
+      - name: the validator judges the trial receipt against the text under review
+        if: always()
+        run: python3 -m pytest tests/test_panel_validator.py -q
+```
+
+**Why there is no third step running the reviewer itself, which this entry
+nearly got wrong.** The obvious companion to item 12's `python3
+tools/skill_registrar.py --files-only` is `python3 tools/panel_provenance.py
+--files-only`, and the first draft of this entry queued it and claimed it exits
+0. It exits 2, over the real library, and always will. The reviewer's three
+states are `0 nothing wrong`, `1 a finding`, `2 something could not be
+measured`, and duty 2 is structurally unmeasurable for every skill until the
+per-section claim id format lands, so that step would be red on every pull
+request forever and would teach every seat to ignore it. The useful half of it
+is a test instead:
+`tests/test_panel_provenance.py::test_no_skill_on_this_branch_fails_a_file_level_check`
+asserts that no skill carries a `fail` finding, which is the thing that should
+block a merge, and lets an honest `unknown` through. It was added in the same
+pull request as this entry.
+
+**What must NOT be added, and this is the other half a reader will be tempted
+by.**
+There is no step that runs `tools/panel_adversary.py`. Nothing that reviewer
+decides is in a SKILL.md: its whole input is the claim graph, so with no
+credential it can only report that nobody asked the graph, and a green step
+named for it would read as the graph agreeing.
+`tests/test_panel_adversary.py` asserts that `checks.yml` never names that
+command, so adding it turns the second step above red.
+
+**Smoke-tested from the seat, as far as a seat can.** Both commands were run in
+this run's sandbox against the real six skills: `tests/test_panel_provenance.py`
+is 47 passed and `tests/test_panel_adversary.py` is 43 passed. Each was also
+confirmed to fail on purpose, against a deliberately renamed column in its own
+reviewer's SQL, and the adversary's suite was confirmed to fail against four
+more deliberate defects: the threshold moved off the schema's 0.7, the edge read
+in the wrong direction, the file dropped from the Modal image, and an
+un-interpreted claim downgraded from `unknown` to a note. The steps cannot be
+smoke-tested as a workflow on a branch, because the seat cannot push the file.
+
+**Cost.** $0. No key, no network, no database.
+
+**Amended 2026-10-03, same day, second window: the third reviewer.**
+`tools/panel_validator.py` completes ADR-13's panel, so this entry now asks for
+three steps rather than two and seven path lines rather than five. Amended in
+place rather than queued as item 19, because an unapplied entry about exactly
+this subsystem is one hand for the chair instead of two, and because a reader
+who applied item 18 and then met a separate item 19 about the same two lists
+would reasonably wonder which was current. `tests/test_panel_validator.py` is 66
+passed in this run's sandbox and the whole suite is 848 passed, 9 skipped.
+
+**And the reviewer command, which this entry can now offer for one of the
+three.** The paragraph above explains at length why there is no step running
+`tools/panel_provenance.py --files-only` (it exits 2 forever, because duty 2 is
+structurally unmeasurable) and none running the adversary at all (it holds no
+database credential, so a green step would read as the graph agreeing). The
+validator is different in kind: **every finding it makes is a fact about a file
+in the repository**, so its `--files-only` verdict is its whole verdict, and
+`tests/test_panel_validator.py::test_the_files_only_half_and_the_live_half_return_the_same_verdict`
+asserts that rather than claiming it.
+
+It is still **not** queued as a step, and the reason is the same arithmetic that
+killed the first one: it exits 1 today, on every pull request, because all six
+skills on main say `status: active` with no eval behind them (ADR-36 part 2). A
+step that is red on every pull request teaches every seat to ignore it, which is
+worse than no step. The useful half is in the suite instead, as
+`test_no_skill_on_this_branch_fails_a_check_this_reviewer_invented`, which
+asserts that every `fail` over the real library traces to a sentence in ADR-36
+and nothing else. **The day the skill seat's evals merge, this becomes the one
+reviewer worth running as a command**, and that is the signal to come back to
+this paragraph rather than a thing to do now.
+
+### 19. The eval harness's own `--check` gate runs in CI, or its docstring stops calling itself one
+
+**Queued 2026-10-04 by the engineer seat.
+INC-2026-10-04-eval-check-gate-claims-a-ci-step-it-never-had.**
+
+Numbered 19 because 18 is the highest on this page today, and this page has
+carried two items numbered 4 and two numbered 5 before, so the number is stated
+rather than counted (incident 29).
+
+`tools/skill_eval.py`'s `conformance` carries this sentence, written the day the
+harness was: "Its own function so `--check` can be a CI gate over every skill's
+eval file without a key, a model or a dollar." Nothing runs it. Neither
+`tools/skill_eval.py` nor `tests/test_skill_eval.py` is in either `paths` list
+in `checks.yml`, and no step invokes either one. Fourth sighting of the shape
+INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had named first.
+
+**Why it belongs in CI, specifically.** The gate needs no key, no model and no
+dollar, which is the whole reason `conformance` is a separate function. And the
+thing it holds is a cross-seat seam: the suites are the skill seat's files, the
+reader is the engineer's, and the two were written to different contract
+documents, which is how eight suites spent four days unrunnable
+(2026-10-03 urgent ledger entry, fixed in the reader on 2026-10-04). A pull
+request that adds a suite the reader cannot run should be red on that pull
+request.
+
+**Two edits to `.github/workflows/checks.yml`.**
+
+First, the paths. `skills/**` is already in both lists; these two lines go in
+both, beside the existing `tools/` and `tests/` entries.
+
+```yaml
+      - "tools/skill_eval.py"
+      - "tests/test_skill_eval.py"
+```
+
+Second, two steps, after the skill-receipts step. The exit codes matter and the
+second step is written around them: `--check` exits 0 when every skill carries a
+conformant suite, **2 when some skill carries none**, and 1 when a file exists
+and is malformed. Unmeasured is an honest state under ADR-36 and must not turn a
+build red, so 2 is accepted explicitly rather than by `|| true`, which would
+accept 1 as well and make the step decorative. Today every skill is in state 2,
+so this step passes while saying so in its log.
+
+```yaml
+      # 2026-10-04. `conformance` in tools/skill_eval.py was written to be this
+      # step and never was one. It parses every skills/*/evals/evals.json,
+      # resolves each registered model id against pipeline/budget.py's table,
+      # and holds the one rule the harness must never satisfy on an author's
+      # behalf: rule 1 of docs/product/skill-validation.md section V5, the
+      # pre-registered policy. No key, no model, no network, no dollar.
+      - name: the eval harness still measures what it should
+        if: always()
+        run: python3 tools/skill_eval.py --smoke
+
+      # Exit 2 is "some skill has no suite yet", which is ADR-36's draft state
+      # and not a failure. Exit 1 is a suite that exists and cannot be run.
+      # Written out rather than `|| true`, which would swallow both.
+      - name: every eval suite in the library can actually be run
+        if: always()
+        run: |
+          python3 tools/skill_eval.py --check || status=$?
+          if [ "${status:-0}" = "2" ]; then
+            echo "some skills carry no suite yet, which ADR-36 calls draft"
+            exit 0
+          fi
+          exit "${status:-0}"
+```
+
+The `--smoke` step is the cheaper half and the one worth having first: it runs
+the whole measurement path against a scripted model, 24 calls and $0.00, and
+it already asserts the arithmetic of the verdict rule. It has been a command
+nobody runs since 2026-09-30.
+
+### 19, amended 2026-10-04 (second window): two more files, and the module whose test file did not exist
+
+Amended in place rather than queued as item 20, for the reason item 18 was
+amended in place: the same two `paths` lists, in the same workflow, about the
+same subsystem. A reader applying item 19 and then meeting a separate item 20
+about those lists would have to work out which is current.
+
+`INC-2026-10-04-the-property-was-checked-at-the-wrong-unit` and
+`INC-2026-10-04-supersession-dropped-the-branch-it-superseded`.
+`tools/skill_triggers.py` names `tests/test_skill_triggers.py` in its own
+docstring as the thing that holds its one dangerous property, which is that no
+maintenance line it writes may read as a request to fetch a paper. That file
+was on PR #153's branch, unmerged since 2026-09-30, and this run wrote a second
+copy before finding it. Both are merged here: 62 tests, no database, no model,
+no network. Neither copy ran anywhere, and writing the second one found the
+property false at the channel every line passes through.
+
+`tools/skill_gate.py` and `tests/test_skill_gate.py` arrive in the same merge,
+which is the subject of item 20 below.
+
+So four paths rather than two, in **both** lists:
+
+```yaml
+      - "tools/skill_eval.py"
+      - "tools/skill_triggers.py"
+      - "tests/test_skill_eval.py"
+      - "tests/test_skill_triggers.py"
+```
+
+And one more step, beside the two above. It takes no key and no model, and it
+is the only thing in CI that would notice if a queue line started asking
+`pipeline/reading_queue.py` to re-fetch a paper the corpus already holds:
+
+```yaml
+      - name: the staleness triggers, and the fetch request they must never write
+        if: always()
+        run: python3 -m pytest tests/test_skill_triggers.py tests/test_skill_eval.py -q
+```
+
+Both files are pytest, so one step covers them and `requirements-dev.txt` is
+already installed by the step above. Verified in this run's sandbox: 62 passed
+for the triggers, 95 passed for the harness, and the whole suite 976 passed, 1
+skipped.
+
+### 19, amended 2026-10-05: the step's log grew a third kind of line, and the suites need two edits before it can go green
+
+Amended in place for the same reason as the 2026-10-04 amendment: same two
+`paths` lists, same workflow, same subsystem. No new paths and no new steps.
+What changed is what the second step prints and what makes it red.
+
+`INC-2026-10-05-the-rewrite-staled-every-coverage-claim`. `--check` now also
+resolves every task's `sections` list against its skill's `## ` headings. Three
+kinds of line come out of it, and only one of them is a failure:
+
+- `failing:` a suite that cannot be run. Now includes a `sections` entry naming
+  a string that is no heading of that SKILL.md, which is a false coverage claim.
+- `unmeasured:` a skill with no suite. ADR-36's draft state, exit 2, not red.
+- `finding:` a heading no task exercises. Printed, never red, because the suite
+  contract itself calls it a finding rather than an error.
+
+It also prints one summary line, `N of M sections are exercised by at least one
+task`, which is the number ADR-38's per-section `Validation:` tag needs.
+
+**The sequencing an applier has to know.** Measured this run against all three
+open skill-seat branches, each with the eight real suites:
+
+```
+#151 skill/2026-09-30-section-validation   exit 1   8 policy,  0 sections,  0 findings
+#159 alexandria-skill/2026-09-30-window    exit 1   8 policy, 17 sections,  7 findings
+#152 skill/2026-09-30-delta-rewrite        exit 1   8 policy, 60 sections, 22 findings
+```
+
+So the step is red on every one of them today, and it was already red on all
+three before this check existed, for the `policy` block none of the eight
+suites carries. Applying item 19 before the skill seat fixes both is how `main`
+goes red for the fifth time this quarter. The order that works: the skill seat
+adds the `policy` block to its eight suites and re-points the `sections` lists
+at the headings its delta rewrite actually wrote, `--check` goes to exit 2, and
+then this item is applied. Both edits are filed in `docs/ideas.md` for that
+seat, and neither needs the engineer.
+
+### 20. The skill gate's workflow, which has been written and queued since 2026-09-30
+
+**Queued 2026-10-04 by the engineer seat, second window.** Numbered 20 because
+19 is the highest on this page today, and the number is stated rather than
+counted (incident 29).
+
+`.github/workflows-pending/skill-gate.yml` arrives on main with this pull
+request, through the merge of PR #153. It is a complete workflow file in the
+lane this repository keeps for workflows no agent may push, and
+`.github/workflows-pending/README.md` describes what it does. Nobody has
+applied it, and until somebody does, `tools/skill_gate.py` is 642 lines of
+ADR-37 gate that runs nowhere.
+
+**The edit is a move, not a diff:** copy
+`.github/workflows-pending/skill-gate.yml` to `.github/workflows/`. Read the
+pending lane's README first, because it states the two preconditions the file
+itself cannot: the gate exits non-zero on a skill whose eval has not been run,
+and no skill in the library has one yet, so applying this before the skill
+seat's suites and results merge makes every skill pull request red. The same
+arithmetic that keeps the validator out of `checks.yml` today (item 18's last
+paragraph) applies here, and the day it stops applying is the same day for
+both.
+
+Verified in this run's sandbox: `python3 tools/skill_gate.py --smoke` passes
+every clause, and `tests/test_skill_gate.py` is in the 976.
 
 ## Not queued here, because it needs a key rather than a hand
 
@@ -922,6 +1882,24 @@ because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
 applying an edit. `APP_ID` is already set.
 
 ## Applied and deleted
+
+- **Item 2, the PM's daily cadence and ceremony cap** (queued 2026-09-19,
+  cadence half applied 2026-09-23, cap half cancelled on measurement
+  2026-09-30, **deleted 2026-10-04** as the 2026-09-30 run instructed).
+  The Monday ceremony run of 2026-09-28 came in at 125 turns against a cap
+  of 300, so there was never a shortfall. The item rotted three times
+  before it was cancelled and it is the whole evidence behind the
+  re-verification rule in `prompts/exo-agent.md` §5.
+- **Item 4, the writer's cap goes to 200** (queued 2026-09-21, never
+  applied, **deleted 2026-10-04 as overtaken**). The writer's measured
+  peak is now 136, so the rule asks for 300 and 200 would have been a fix
+  that left the seat short. Replaced by item 14. Its ordering paragraph
+  still said "no other item on this page touches `agent-writer.yml`",
+  which stopped being true when item 4a was queued on 2026-09-21, and it
+  passed every anchor check for thirteen days.
+- **Item 11, the skill seat's cap goes to 200** (queued 2026-09-27, never
+  applied, **deleted 2026-10-04 as overtaken**). Measured peak is now 156,
+  so the rule asks for 350. Replaced by item 14.
 
 - **The open-routed step falls back instead of failing the run** (queued
   2026-09-20 as item 1b, incident 23, applied by the chair in commit

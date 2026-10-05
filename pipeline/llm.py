@@ -6,7 +6,8 @@ day against a 487-claim interpret backlog. Every one of those numbers is the
 shape of Groq's free tier, where 8,000 tokens per minute means a run makes two
 calls and then takes a 429 for the rest of the day. ADR-32 already moved the
 press to Moonshot's Kimi on a funded account. This module moves triage and
-interpret to the same place, and it is the only file they call a model from.
+interpret to the same place, and distill joined them on 2026-09-30, so it is
+the only file any corpus job calls a model from.
 
 Three things live here and nowhere else.
 
@@ -373,11 +374,21 @@ def pace(model: str) -> float:
 #                manual rehearsal. Reserved, wider than the press needs, because
 #                a rehearsal is run by hand and cannot be scheduled.
 #   11:00-11:30  ingest. Calls no model.
-#   11:30-12:00  distill. Still on Groq (its own key, its own ceiling), so it
-#                does not contend for Kimi at all.
 #   12:00-13:00  triage.
 #   13:00-14:00  unclaimed. The gap is the margin.
 #   14:00-15:00  interpret.
+#   15:00-16:30  distill (moved here from 11:30 on 2026-09-30, when it joined
+#                Kimi). Ninety minutes because it sends the largest request in
+#                the pipeline by an order of magnitude and then embeds. Placed
+#                last rather than in the 13:00 gap so the margin stays a margin:
+#                the cost is that a claim written today is linked by interpret
+#                tomorrow rather than this afternoon, which is a day of latency
+#                against a window nobody can overrun into.
+#   16:00-16:15  skill revision (skill_revision.py). Calls no model, and is
+#                deliberately absent from the table below: KIMI_WINDOWS is the
+#                Kimi concurrency ledger, and a job in it that never calls Kimi
+#                would make check_kimi_windows() report on a collision that
+#                cannot happen.
 #
 # `budget.check_kimi_windows()` reads this table and the crons themselves and
 # fails CI if two windows overlap. That is the gate in the command rather than
@@ -386,6 +397,7 @@ KIMI_WINDOWS = {
     "press (pipeline/weekly.py)": (9 * 60, 11 * 60),
     "triage (pipeline/triage.py)": (12 * 60, 13 * 60),
     "interpret (pipeline/interpret.py)": (14 * 60, 15 * 60),
+    "distill (pipeline/distill.py)": (15 * 60, 16 * 60 + 30),
 }
 
 

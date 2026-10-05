@@ -77,6 +77,25 @@ import time
 
 import modal
 
+
+def _priority():
+    """pipeline/priority.py, wherever this is running from.
+
+    Defined above the constants rather than beside `llm()` because the
+    re-exports below run at import time. The same two-path trick: Modal drops
+    the file at /root/priority.py, a local import finds it beside this one.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import priority as module
+
+    return module
+
+
 # Kimi first, Groq's free tier behind it. The order is the whole point of the
 # change: rank 1 is a funded account that can actually finish a run, and ranks 2
 # to 4 are the free tier that could not, kept because one provider is one point
@@ -95,51 +114,14 @@ BATCH = 10
 BACKFILL_DAYS = 60
 DECISIONS = {"discard", "index", "distill", "deep_read"}
 
-# Reasoning-model research is a standing priority of this pipeline (the owner's
-# order of 2026-09-23, and her directive of 2026-09-25 that put it at the front
-# of this queue). prompts/triage.md now carries the rubric that says how to judge
-# it; this list says which papers meet that rubric first.
-#
-# The count that produced it, from Neon: 209 papers with "reasoning" in the
-# title, 147 of them never triaged at all. Matching is on the TITLE only, and
-# that is a deliberate limit rather than an oversight. Half the corpus mentions
-# reasoning somewhere in an abstract, so an abstract match would promote
-# thousands of papers and a priority that covers everything is not a priority.
-# The terms beyond "reasoning" are the named methods the rubric routes to
-# `distill`, so a paper whose title says GRPO and never says reasoning is still
-# reasoning work and still goes first.
-PRIORITY_TERMS = (
-    "reasoning",
-    "chain-of-thought",
-    "chain of thought",
-    "rlvr",
-    "grpo",
-    "verifiable reward",
-    "test-time compute",
-    "test time compute",
-    "inference-time compute",
-    "process reward",
-    "long cot",
-    # Owner's order of 2026-09-29: four more threads go first, because the
-    # corpus held hundreds of their papers and had read almost none.
-    "model context protocol", "mcp", "agent protocol", "agent-to-agent", "a2a",
-    "agent interoperab", "agent identity",
-    "sandbox", "container", "isolation", "microvm", "firecracker", "gvisor",
-    "prompt injection", "jailbreak", "tool poisoning", "agent security",
-    "containment", "exfiltrat", "guardrail",
-    "self-improv", "self-evolv", "recursive self", "harness evolution",
-    "self-refin",
-)
-# The same predicate twice, in the two languages that need it. Both derive from
-# the tuple above, so they cannot drift: `%term%` for Postgres `ilike any`, and a
-# substring test for the planner's own report and for the tests.
-PRIORITY_PATTERNS = [f"%{term}%" for term in PRIORITY_TERMS]
-
-
-def is_priority(title: str) -> bool:
-    """Is this paper reasoning-model research by its title? Mirrors the SQL."""
-    low = (title or "").lower()
-    return any(term in low for term in PRIORITY_TERMS)
+# The standing threads live in pipeline/priority.py as of 2026-09-30, because
+# distill needs the same list and two copies of it drift in silence: the threads
+# triage promotes would stop being the threads distill reads first, and nothing
+# would print the disagreement. Re-exported here under their old names so every
+# reader and every test that knew them in this file still finds them.
+PRIORITY_TERMS = _priority().PRIORITY_TERMS
+PRIORITY_PATTERNS = _priority().PRIORITY_PATTERNS
+is_priority = _priority().is_priority
 
 # Output reservation for one batch. Ten results of {i, decision, score,
 # reasoning} measured at ~55 tokens each, doubled, so a verbose run is not
@@ -206,6 +188,12 @@ image = (
     # numbers CI checks are the numbers this run uses.
     .add_local_file("pipeline/budget.py", "/root/budget.py")
     .add_local_file("pipeline/llm.py", "/root/llm.py")
+    # The standing threads, shared with distill since 2026-09-30. One list, so
+    # the threads this job promotes are the threads that job reads first.
+    .add_local_file("pipeline/priority.py", "/root/priority.py")
+    # The drift guard travels with the job, so the job can say what it is
+    # actually running. db/schema.sql deploy_runtime carries the argument.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
 )
 
 app = modal.App("alexandria-triage", image=image)
@@ -232,6 +220,23 @@ def llm():
         if path not in sys.path:
             sys.path.insert(0, path)
     import llm as module
+
+    return module
+
+
+def runtime_guard():
+    """pipeline/runtime_sha.py, wherever this is running from.
+
+    Same shape as the accessor above, and for the same reason: `/root` inside
+    the image, this directory in a checkout.
+    """
+    import sys
+
+    here = str(pathlib.Path(__file__).resolve().parent)
+    for path in ("/root", here):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import runtime_sha as module
 
     return module
 
@@ -365,6 +370,10 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
         print(f"availability: {note}")
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Guardrail, sprint 2026-09-28 item 2: say what this container is
+        # actually running before anything else happens. It cannot raise and
+        # cannot abort this transaction; pipeline/runtime_sha.py says how.
+        print(runtime_guard().record_runtime(conn, "triage", __file__)[1])
         backfilled = conn.execute(
             """
             insert into triage_log (paper_id, decision, reasoning, model, prompt_sha, method)

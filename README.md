@@ -47,7 +47,7 @@ flowchart TB
         ING["Ingest<br/>daily 11:00 UTC"]
         BR[("Bronze<br/>raw papers")]
         TRI["Triage<br/>12:00 UTC<br/>routes four ways"]
-        DIS["Distill<br/>11:30 UTC<br/>claims, not summaries"]
+        DIS["Distill<br/>15:00 UTC<br/>whole papers, claims not summaries"]
         SIL[("Silver<br/>claims + embeddings")]
         INT["Interpret<br/>14:00 UTC"]
         GR[("Claim graph<br/>supports · refines<br/>contradicts")]
@@ -144,7 +144,10 @@ nothing, [model routing](docs/agents/model-routing.md) for which seat gets which
 model, [turn caps](docs/agents/turn-caps.md) for how much room each seat is
 given to work, measured from run logs rather than guessed, and the
 [register map](docs/agents/registers.md), which says for every rule the org
-keeps where that rule is actually checked before something ships.
+keeps where that rule is actually checked before something ships, and
+[quality claims](docs/agents/quality-claims.md), which lists every claim the
+public site makes about what we ship beside the machine that would have to
+run for it to be true.
 
 ## Deployment view
 
@@ -154,13 +157,13 @@ The logical diagram above survives any vendor swap. This one names the vendors.
 flowchart TB
     FEEDS["arXiv · HF daily papers · lab blog feeds"]
     NEON[("Neon: serverless Postgres + pgvector<br/>bronze · silver + claim graph · gold<br/>triage log · digests · subscribers")]
-    GROQ["Groq free tier, gpt-oss-120b<br/>distill and rag_answer<br/>plus the fallback list behind every Kimi job"]
-    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press's writing call, triage, interpret<br/>256K context, one call at a time"]
+    GROQ["Groq free tier, gpt-oss-120b<br/>rag_answer<br/>plus the fallback list behind every Kimi job"]
+    KIMI["Moonshot, Kimi K2 (kimi-k2.6)<br/>the press, triage, interpret, distill<br/>256K context, one call at a time"]
 
     subgraph MODAL["Modal: scheduled jobs, scale to zero"]
         direction TB
         INGEST["Ingest, 11:00 UTC"]
-        DISTILL["Distill, 11:30 UTC"]
+        DISTILL["Distill, 15:00 UTC<br/>250,000 chars of paper a call"]
         DAILY["Triage 12:00 · Interpret 14:00<br/>separate slots: one Kimi call at a time"]
         WK2["Weekly job, Mondays 09:00<br/>digest · citations · newsletter send"]
         MCP2["MCP server, OAuth 2.1"]
@@ -176,7 +179,8 @@ flowchart TB
     DAILY <--> NEON
     WK2 <--> NEON
     MCP2 <--> NEON
-    DISTILL --> GROQ
+    DISTILL --> KIMI
+    DISTILL -.->|"fallback, abstract only"| GROQ
     DAILY --> KIMI
     DAILY -.->|"fallback, and it fits"| GROQ
     WK2 --> KIMI
@@ -198,8 +202,8 @@ flowchart TB
 |---|---|---|
 | Compute | [Modal](https://modal.com), scheduled functions, scale to zero | Per-second billing matches a system that works minutes per day, and free credits cover it entirely |
 | Database | [Neon](https://neon.tech), serverless Postgres + pgvector | Scale to zero, and one DB holds vectors *and* structured data, so hybrid queries are single statements |
-| Judgment models | `openai/gpt-oss-120b` via Groq free tier, for triage, distill, interpret, and RAG | Won the blind distill bake-off 4-1-3, open, $0, with 10x headroom over our volume |
-| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), for the weekly issue and nothing else (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
+| Judgment models | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai) for triage, distill and interpret, with `openai/gpt-oss-120b` on Groq's free tier behind them and for RAG | The free tier is 8,000 tokens a minute, which is two calls and then a 429 for the rest of the day, and which is less than one paper. That ceiling is the whole explanation for 4,973 untriaged papers and 164 read in full. Kimi is 262,144 tokens of context on a prepaid account, so triage finishes and distill reads the paper (ADR-2026-09-26, ADR-39). The Groq entries stay because one provider is one point of failure |
+| The press's model | `kimi-k2.6` via [Moonshot](https://platform.kimi.ai), the first job to move there (ADR-32) | The corpus crons have small prompts and fit a free tier. The issue does not: it needs 36,000 tokens in one request and Groq's free tier caps one at 8,000. Kimi gives it 256K of context on a prepaid account for about $0.05 an issue, and the weights are open, so the destination is serving it ourselves |
 | Embeddings | Qwen3-Embedding-0.6B, in-process on Modal | Top open family on MTEB, and batch jobs need no serving endpoint |
 | Interactive search | MCP tools over Postgres: `semantic_search`, `rag_answer`, `sql_query`, `get_digest`, `discovery_report`, `propose_skill`, `propose_change` | Agentic retrieval for humans and agents, hardwired retrieval for batch |
 | Agent org | GitHub Actions cron + `anthropics/claude-code-action`, on the owner's existing subscription token | Actions minutes are free on a public repo, so the org's heartbeat costs nothing and does not depend on a laptop being open (ADR-18) |
@@ -249,7 +253,8 @@ docs/sprints/             the weekly sprint, one file per sprint
 docs/backlog.md           the consolidated board, every seat's proposals in one order
 docs/board.md             the company board: the two doors onto it, and the API as it really answers
 tools/board.py            the board client every seat run uses on a GitHub runner
-tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the site, the MCP server
+tools/delivery_health.py  did the product reach a reader: the press, the pipeline, the deploy, the site, the MCP server
+site/app/api/delivery/    the delivery receipt the command above reads, public and needing no credential
 tools/graph_audit.py      the claim graph's quality, eleven metrics and a worksheet for the twelfth
 docs/ideas.md             the ideas ledger: agents append, only the owner writes verdicts
 docs/allhands/            minutes of the owner's all-hands, and the directives they set
@@ -269,7 +274,7 @@ The pipeline, built bottom-up.
 - [x] Tiered sources (sources.yaml), daily ingest cron live
 - [x] Triage job live: batched, rate-limit-aware, tiers drained by interleaved quota
 - [x] Claim graph schema + interpret worker (edges: supports/refines/contradicts/duplicates)
-- [x] Distill job live: bake-off winner gpt-oss-120b + Qwen3 embeddings, daily 11:30 UTC
+- [x] Distill job live: Qwen3 embeddings, daily 15:00 UTC
 - [x] First claims in silver, first edges in the claim graph
 - [x] Weekly digest live: three sections (trailblazing / gaining traction / left behind),
       first edition 2026-W37, written to the `digests` table as the record
@@ -284,13 +289,30 @@ The pipeline, built bottom-up.
       over the claim corpus. A hosted, paid surface is still a ledger proposal
 - [x] Newsletter live (phase 1): subscribers table, Monday cron emails each issue
       itself, first send 2026-09-11. Email only, and digests never enter the repo
-- [ ] **The press is currently silent.** The last issue written is 2026-W37
-      (2026-09-14). No model on the provider's free tier can print the weekly
-      issue at the current prompt size, so the fix is a shorter generator prompt
-      or an issue split across several requests. Availability checks, an ordered
-      fallback list and an alarm to the owner are in flight. Incident 24 has the
-      diagnosis and [delivery health](docs/agents/delivery-health.md) has the
-      standing guardrails
+- [ ] **The archive publishes the record, written and not yet running.** Every
+      issue a reader can read reached the public because a person committed a
+      markdown file under `site/content/issues/`: four commits, four times
+      somebody noticed, while the Monday cron wrote its row to `digests` and
+      stopped there. `site/lib/issues-live.js` makes `/library` and every issue
+      route read that table, so a send is public the moment it is mailed. The
+      record decides which weeks exist and a committed file still decides the
+      text of any week that has one, which is why turning it on changes nothing
+      that is live today. A database the site cannot read publishes exactly what
+      it publishes now. This box closes on the same evidence as the box below:
+      `/api/delivery` answering 200 proves the site's environment can reach
+      Neon, and that is the one condition this needs
+- [ ] **The press prints, and nobody outside Modal could see whether it had.**
+      `2026-W39` is live on `/library` and is the newest issue a reader can read,
+      checked by `python3 tools/delivery_health.py` rather than asserted. The
+      long silence after `2026-W37` was a provider whose free tier could not
+      print the issue at the current prompt size, and incident 24 has that
+      diagnosis. What stayed broken afterwards was the watch on it: the evidence
+      guardrail 4 names is the newest row in `digests` and no agent seat holds a
+      credential for that table, so the question went unanswered for a week. The
+      site publishes that fact at `/api/delivery` as of 2026-10-01 and the
+      command reads it with no credential. Still open: this box closes when a
+      run of that command reports the press green from a seat sandbox, which
+      needs the receipt deployed
 - [x] Gold layer open: first skills merged, `harness-engineering` (2026-09-12) and
       `self-improving-post-training-loops` (2026-09-18), each carrying claim-id
       provenance and paper citations
@@ -300,8 +322,53 @@ The pipeline, built bottom-up.
       exact text on the page. The provenance had been in the files since
       2026-09-12 and reached no reader until today, because the frontmatter
       reader could not see an indented field
-- [ ] ADR-13 reviewer panel (provenance, adversary, validator) as the gate on gold.
-      Until it exists, the owner's merge is that gate
+- [ ] **Skills prove themselves and revise themselves, written and not yet
+      running** (ADR-36, ADR-37). `skills_needing_revision` has been in the
+      schema since the founding and had never returned a row, because a skill
+      reached `main` with no `promotions` row for the view to join, so seven
+      deprecated claims sat there and no skill knew.
+      `tools/skill_registrar.py` derives that row from each skill's own
+      provenance block, `pipeline/skill_revision.py` reads the view daily and
+      queues the reading and dispatches the skill seat, and
+      `tools/skill_eval.py` runs each skill's tasks with and without it loaded
+      on one model and prints the delta with an exact interval. Live when the
+      chair applies the CI step
+      ([pending-workflow-changes](docs/agents/pending-workflow-changes.md) item
+      12) and deploys the daily job with a `github` secret
+- [ ] **ADR-13 reviewer panel, all three reviewers built (2026-10-03).** The
+      provenance reviewer is built (`tools/panel_provenance.py`) and files a
+      `panel_verdicts` row per skill: the claim ids a skill cites have to exist
+      in the corpus, the paper behind each one has to be in the skill's own
+      citation list, and judgment the papers do not support has to say so. The
+      adversary is built too (`tools/panel_adversary.py`) and asks the opposite
+      question, which ADR-10's edge direction makes a query rather than a
+      judgment: for every claim a skill cites, has the corpus since contradicted
+      or refined it, and does the skill cite what did. A contradiction the draft
+      ignored fails the skill, and a claim the interpret job never judged is
+      reported by id as unmeasured, because the dangerous output here is a clean
+      pass that means nobody asked the graph. Both run daily inside
+      `pipeline/skill_revision.py`, so both are live when the chair deploys that
+      job. Two duties are not decidable against today's format and the panel
+      reports them rather than guessing: a skill cites its claim ids once for
+      the whole document, so nothing says which claim supports which section,
+      and nothing says whether a skill citing both sides of a contradiction
+      discusses it. The validator is built as well
+      (`tools/panel_validator.py`), and it needs no model key either: ADR-13
+      asks whether behaviour moved in the direction the evidence supports, and
+      the A/B trial is a dated receipt `tools/skill_eval.py` writes under a
+      policy registered in advance, so the reviewer judges the receipt rather
+      than running a trial whose threshold it would be choosing at review time.
+      It asks four things of that receipt, all of them file facts: that it
+      exists, that it measured the text under review rather than an earlier
+      revision, that the harness's own gate passes it, and that nobody edited
+      the threshold after seeing the numbers. It also holds ADR-36's own
+      sentence, that a skill with no eval is `status: draft` and never
+      `active`, which **fails all six skills on main today**. So the panel is
+      complete and `panel_consensus`'s three passes on one text are reachable
+      for the first time. **The merge is the only slice left** (a
+      PR-merge-scoped token only the owner can mint), in
+      docs/product/reviewer-panel.md. Until the panel passes a skill, the
+      owner's merge is still the gate
 - [ ] Meta-review recursive loop running on its own cadence. The `propose_change`
       tool is live and the research seat owns the loop (ADR-25), with its first
       scheduled run on 2026-09-21
@@ -312,8 +379,21 @@ The pipeline, built bottom-up.
       list with Moonshot at the head, a per-run spend cap measured from the
       provider's usage block, and preflight and rehearsal functions. Nothing is
       live until the chair runs the three gates and deploys; the commands are in
-      each module's docstring and in the ADR. Distill stays on Groq
-      (docs/ideas.md, 2026-09-26, proposes moving it next)
+      each module's docstring and in the ADR
+- [ ] **Distill reads the whole paper, written and not yet deployed**
+      (ADR-39, owner-directed 2026-09-29). It was the last corpus job on Groq's
+      free tier, where 8,000 tokens a minute is less than one paper, so it read
+      12,000 characters of each one and "read in full" was true of 164 papers
+      out of 8,956. It now calls Kimi through the same client triage and
+      interpret use, at a 250,000-character window that takes thirteen of
+      fourteen measured papers whole, ordered reading queue first, then the
+      owner's four standing threads, then intake. Three ceilings stop a run and
+      each names itself: money, this job's share of Moonshot's daily token
+      allowance, and the clock. $0.042 a paper, ~$25 a month expected.
+      Nothing is live until the chair runs the three gates and deploys; triage
+      is redeployed in the same chain, because the thread list moved into
+      `pipeline/priority.py` and both jobs read it
+
 - [ ] **Reasoning-model research reaches the corpus, written and not yet
       deployed** (ADR-2026-09-26b). 209 papers in the corpus have "reasoning" in
       the title, 147 were never triaged, and of the 62 that were, 47 went to
@@ -353,6 +433,12 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
+- [ ] The org's output reaches main without the owner present. This is the open one that
+      bounds all the others: between 2026-09-30 and 2026-10-04 the seats ran 24 times, all
+      green, opened 49 pull requests and merged one, because every channel out of the org
+      ends at one person. ADR/HQ decision 041 hands Tier B merges to the PM seat and is
+      itself waiting in the queue. See `docs/agents/incidents.md`,
+      `INC-2026-10-04-four-days-of-output-and-no-delivery`
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 
