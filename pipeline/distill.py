@@ -1026,9 +1026,20 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         if text is None:
             text = queue.read_file("/root/reading-queue.md") or queue.read_file(queue.QUEUE_PATH)
         if text:
-            waiting = queue.pending(text, limit=None)
+            # A blocked skill's request goes before a sourced skill's. The
+            # reason is in reading_queue.pending's docstring: FIFO is right for
+            # a queue of equals and these are not equals, because one line
+            # unblocks a draft that cannot cite a claim and the next one
+            # footnotes a skill that already cites twenty.
+            sourced = queue.skills_with_claims(conn)
+            waiting = queue.pending(text, limit=None, sourced=sourced)
             requested = waiting[:queue.MAX_PER_RUN]
+            blocked_first = [i.asked_by for i in requested
+                             if i.asked_by and i.asked_by.rstrip("/") not in sourced]
             print(f"reading queue: {len(waiting)} pending, {len(requested)} taken this run")
+            print(f"reading-queue: {len(sourced)} skills cite claims; "
+                  f"{len(set(blocked_first))} skill(s) in this batch cite none "
+                  f"and were served first: {sorted(set(blocked_first))}")
         else:
             requested = []
             print("reading queue: unreadable from here, so the day's intake only. "

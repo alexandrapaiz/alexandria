@@ -232,7 +232,7 @@ FRONTMATTER = """---
 name: {slug}
 description: A fixture skill, long enough to look like one.
 version: 1
-status: active
+status: {status}
 provenance:
   extracted: 2026-09-12
   validated: {validated}
@@ -256,13 +256,14 @@ A practical ordering (ours, not the paper's) that no paper states.
 
 
 def write_skill(root, slug="fixture-skill", claims="1, 2", validated='""',
-                papers=("A paper - arxiv.org/abs/2609.09134",), body=BODY):
+                papers=("A paper - arxiv.org/abs/2609.09134",), body=BODY,
+                status="active"):
     directory = root / slug
     directory.mkdir(parents=True, exist_ok=True)
     listed = "\n".join(f'    - "{p}"' for p in papers)
     (directory / "SKILL.md").write_text(
         FRONTMATTER.format(slug=slug, claims=claims, validated=validated,
-                           papers=listed) + body)
+                           papers=listed, status=status) + body)
     return root
 
 
@@ -711,3 +712,86 @@ def test_no_skill_on_this_branch_fails_a_file_level_check():
              if f["severity"] == "fail"]
     assert not fails, fails
     assert verdicts, "the library has no skills to review"
+
+
+# ------------------------------- duty 3's second grammar, and the draft excuse
+
+def test_the_predicative_marker_is_vocabulary_and_not_drift():
+    """"The ordering advice is ours" says exactly what "(ours, not the paper's)" says.
+
+    ADR-38's *Validation:* tags put the subject first, so the signal lands
+    before the word rather than after it. Reading only forwards reported seven
+    correct markers in four live skills as drift and held `main` red; the
+    phrasings below are those seven, verbatim.
+    """
+    for sentence in (
+            "The variance-monitoring prescription is ours and untested anywhere.",
+            "Three of the four portable parts are marked ours in the text.",
+            "The source does not set it, so ours: five repeat runs.",
+            "The file-in-the-repository prescription is ours. Eval task rhsi-t1.",
+            "The adversarial diff-reviewer instructions are ours. Eval task rhsi-t6.",
+            "The ordering advice is ours, read off the papers' own ablations.",
+            "A practical ordering (ours, not the paper's) that no paper states.",
+    ):
+        found, drifted = panel.ours_markers(sentence)
+        assert (found, drifted) == (1, []), sentence
+
+
+def test_a_bare_ours_with_neither_grammar_is_still_drift():
+    """The list is still closed. Widening the grammar is not opening the gate.
+
+    Both of these use the word and neither says whose judgment is whose, which
+    is the only thing the marker is for.
+    """
+    for sentence in ("The paper agrees with ours on the ordering.",
+                     "An approach like ours that nobody has tested."):
+        found, drifted = panel.ours_markers(sentence)
+        assert found == 0, sentence
+        assert len(drifted) == 1, sentence
+
+
+def test_a_draft_waiting_on_a_queued_read_is_unknown_and_not_a_failure(tmp_path, monkeypatch):
+    """`skills/agent-containment`'s state, as a test.
+
+    A draft that names its papers and has an unchecked line in the reading
+    queue for one of them has not opted out of revision. It is waiting for
+    distill, which is the thing that can give it a claim id to cite.
+    """
+    root = write_skill(tmp_path, claims="", status="draft")
+    queue = tmp_path / "reading-queue.md"
+    queue.write_text(
+        "- [ ] arxiv:2609.09134 - the paper this draft rests on "
+        "- asked by skills/fixture-skill - 2026-09-30\n")
+    monkeypatch.setattr(panel, "QUEUE_PATH", str(queue))
+    verdicts = panel.review(skills_dir=root)
+    assert only(verdicts, check="registrable", severity="fail") == []
+    waiting = only(verdicts, check="registrable", severity="unknown")
+    assert len(waiting) == 1
+    assert "arxiv:2609.09134" in waiting[0]["detail"]
+    # The gate is unchanged: this slice still never returns pass.
+    assert {v["verdict"] for v in verdicts} == {"unknown"}
+
+
+def test_a_draft_that_asked_for_nothing_still_fails(tmp_path, monkeypatch):
+    root = write_skill(tmp_path, claims="", status="draft")
+    queue = tmp_path / "reading-queue.md"
+    queue.write_text("- [ ] arxiv:2609.09134 - asked by skills/somebody-else - 2026-09-30\n")
+    monkeypatch.setattr(panel, "QUEUE_PATH", str(queue))
+    assert len(only(panel.review(skills_dir=root), check="registrable", severity="fail")) == 1
+
+
+def test_a_published_skill_citing_nothing_still_fails(tmp_path, monkeypatch):
+    """The excuse is for drafts. `status: active` is published advice."""
+    root = write_skill(tmp_path, claims="", status="active")
+    queue = tmp_path / "reading-queue.md"
+    queue.write_text(
+        "- [ ] arxiv:2609.09134 - asked by skills/fixture-skill - 2026-09-30\n")
+    monkeypatch.setattr(panel, "QUEUE_PATH", str(queue))
+    assert len(only(panel.review(skills_dir=root), check="registrable", severity="fail")) == 1
+
+
+def test_a_missing_queue_file_keeps_the_failure(tmp_path, monkeypatch):
+    """The conservative direction. No evidence of a request is not a request."""
+    root = write_skill(tmp_path, claims="", status="draft")
+    monkeypatch.setattr(panel, "QUEUE_PATH", str(tmp_path / "nowhere.md"))
+    assert len(only(panel.review(skills_dir=root), check="registrable", severity="fail")) == 1

@@ -60,6 +60,18 @@ TOPICS = (
     "serving",
     "systems",
     "tooling",
+    # Layer 4's four threads, added by the owner's directive of 2026-10-05 with
+    # the definitions the research seat drafted in section 5 of
+    # docs/research/notes/2026-09-30-protocols-containment-security-census.md.
+    # The measured need: across 846 claims that census found `containment` 0
+    # times and `protocols` 0 times, while 21 claims had already reached for
+    # `safety`, `security` or a hyphen-variant the prompt does not sanction, so
+    # a 0.0%-ASR result was filed under {evals, safety} and found by luck. The
+    # precedent is `reasoning`, added the same way for Layer 3a.
+    "protocols",
+    "containment",
+    "security",
+    "self-improvement",
     "other",
 )
 

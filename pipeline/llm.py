@@ -384,11 +384,14 @@ def pace(model: str) -> float:
 #                the cost is that a claim written today is linked by interpret
 #                tomorrow rather than this afternoon, which is a day of latency
 #                against a window nobody can overrun into.
-#   16:00-16:15  skill revision (skill_revision.py). Calls no model, and is
-#                deliberately absent from the table below: KIMI_WINDOWS is the
-#                Kimi concurrency ledger, and a job in it that never calls Kimi
-#                would make check_kimi_windows() report on a collision that
-#                cannot happen.
+#   (no slot)    skill revision (skill_revision.py). It had 16:00-16:15 until
+#                2026-10-05, which was a sixth cron on a plan that runs five and
+#                sat inside distill's window besides. It is now spawned as the
+#                first step of interpret's scheduled run and holds no slot of
+#                its own: it calls no model, so it contends with nothing here,
+#                and it runs in its own container, so it does not spend
+#                interpret's hour either. pipeline/interpret.py's
+#                `maintenance_step` is the whole mechanism.
 #
 # `budget.check_kimi_windows()` reads this table and the crons themselves and
 # fails CI if two windows overlap. That is the gate in the command rather than
