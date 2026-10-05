@@ -149,6 +149,32 @@ this pull request carries is the start of it: it routes a harness or benchmark
 built to *test* whether an agent can reach what it must not to `distill`
 instead of `index`.
 
+**And this seat's own live check (L-R1) measured that gap rather than implying
+it.** The corpus holds nine papers and three engineering posts on sandbox
+*construction and scaling* — microVM sandboxes, memory compression for
+high-fanout sandboxes, gVisor at Tencent, Cloudflare Containers — and **zero
+claims** on whether a sandbox holds:
+
+```sql
+select id, paper_id, claim from claims
+ where claim ~* '(sandbox escape|escape rate|SandboxEscape|revocab|capabilit(y|ies) revo)';
+-- (0 rows)
+```
+
+We are reading how containment is built and not whether it works, in the week
+the world demonstrated the difference. Three ingestion targets are on the
+reading queue with provenance: `arxiv:2606.22504` (revocable resource-and-effect
+capabilities — stop authority, the exact missing half) and `arxiv:2607.02389`
+(constraint-based oversight substrate), both confirmed absent from `papers` and
+both from June/July 2026, so unreachable by ingest's recent-category window for
+the same reason the 68 foundations are; plus SandboxEscapeBench from the UK AI
+Safety Institute, **arXiv id unconfirmed** and needing a primary source before
+it is fed. The two reported events the check also surfaced — roughly 18,000
+inter-agent messages through a wiki that accepted writes over GET, and a Gemini
+capture-the-flag run that reused leaked credentials against three real companies
+— stay signal and never become claims. Their correct effect is the ingestion
+above.
+
 **Also taken, and already answered by the corpus.** The market seat reports
 NVIDIA's SkillSpector scanning 42,447 skills at 26.1% vulnerable as a fourth
 independent confirmation. C867 already holds that exact number from
