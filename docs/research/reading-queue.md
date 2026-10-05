@@ -224,3 +224,111 @@ is what HiSkill and SkillDAG measure and what no standard will answer. That line
 stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
+
+## Containment batch, 2026-10-05 (research seat, PR #210)
+
+Owner directive 2026-10-05, containment only. Appended so distill reads these
+first. Two groups: the papers the containment skill rests on, and the papers
+the 30-day census found in the field and not in our corpus.
+
+### Group 1 — the papers `skills/agent-containment` rests on
+
+The directive names four. The draft's front matter names **six**, and the two
+it does not name carry load in the skill's body (the five-week deny-list
+revision count, and the statepoint mechanism). All six are listed. Their state
+was measured tonight, and it corrects the directive on two points: five of the
+six **are** in `papers`, and one of them has already yielded claims.
+
+- `arxiv:2609.08371` **Authority Is Not a String: A Capability-Scoped Harness for
+  Prompt-Injection-Resistant Coding Agents** — arxiv.org/abs/2609.08371 —
+  **ABSENT from `papers` entirely.** Ingest first. This is the load-bearing
+  paper of the skill: every factorial number in skill sections 1 and 2 (46/75,
+  47/75, 33/75, 3/75) comes from it, and the corpus cannot check one of them.
+- `arxiv:2609.06500v1` **CAPMAS: Capability-Based Delegation of Privileges in
+  Multi-Agent Systems** — arxiv.org/abs/2609.06500 — held, **never triaged**.
+  Needs a triage decision before it can reach distill.
+- `arxiv:2609.22978v1` **DeepSeek Elastic Compute (DSec): A Sandbox
+  Infrastructure for Effective Agentic Training at Scale** —
+  arxiv.org/abs/2609.22978 — held, routed to `distill`, **no fulltext, 0
+  claims**. In the distill backlog.
+- `arxiv:2609.35557v1` **The Compiler May Read It, the Agent May Not** —
+  arxiv.org/abs/2609.35557 — held, routed to `distill`, 0 claims. In the backlog.
+- `arxiv:2609.35366v1` **Planarian: Managing Agent State with Statepoints** —
+  arxiv.org/abs/2609.35366 — held, routed to `distill`, 0 claims. In the backlog.
+- `arxiv:2609.29808v1` **Hard Stop: Kernel-Level Preemption and Containment for
+  Rogue Agentic Execution** — arxiv.org/abs/2609.29808 — held, `deep_read`,
+  12,000 fulltext chars, **5 claims already filed (882-886)**. Not a reading
+  gap. It is a *provenance* gap: the skill says `claims: []` while five claims
+  from its own paper sit in the corpus. Claim 883 also carries the wrong
+  evidence grade (see the brief's graph-error section). Routed to the skill seat
+  rather than queued for reading.
+
+### Group 2 — missed by the census (40 papers, external ground truth)
+
+Method and full tables in
+`docs/research/notes/2026-10-05-containment-census.md`. OpenAlex, arXiv-scoped,
+2026-09-05 to 2026-10-05, the owner's five named containment areas; 301 arXiv
+papers in the field, 125 held, 176 not held, of which these 40 are on-thread by
+this seat's judgment and 136 are relevance-search noise. Every id below was
+returned by the external query and checked against `papers`; none is inferred.
+
+**Tier A - the boundary itself (read first)**
+
+- `arxiv:2609.08062` (2026-09-08) ResidualAuth: What Authorization State Must Language Agents Preserve under Revocable Delegation? — arxiv.org/abs/2609.08062
+- `arxiv:2609.11596` (2026-09-10) From Intent to Execution Grant: An Execution-Boundary Conformance Profile for High-Risk AI Actions — arxiv.org/abs/2609.11596
+- `arxiv:2609.12001` (2026-09-10) Scan the Skill, Govern the Action: Composing Registry Verdicts with Runtime Consequence Control — arxiv.org/abs/2609.12001
+- `arxiv:2609.14003` (2026-09-12) Confuse the Model, Control the Flow: Understanding and Mitigating Privacy Leakage from LLM Agents with Information Flow Control — arxiv.org/abs/2609.14003
+- `arxiv:2609.13672` (2026-09-12) Recoverability as a System Primitive for Long-Horizon AI Agents — arxiv.org/abs/2609.13672
+- `arxiv:2609.14780` (2026-09-13) The Stochastic Deputy: Structural Tenant Isolation for Tool-Using LLM Agents — arxiv.org/abs/2609.14780
+- `arxiv:2609.14631` (2026-09-13) LLM Agent Capabilities Should Follow Task Intent and Context Source — arxiv.org/abs/2609.14631
+- `arxiv:2609.15906` (2026-09-14) Authorization Architectures for Tool-Using AI Agents — arxiv.org/abs/2609.15906
+- `arxiv:2609.14987` (2026-09-14) ActGuard: Pre-execution Action Auditing against Indirect Prompt Injection in LLM Agents — arxiv.org/abs/2609.14987
+- `arxiv:2609.17648` (2026-09-15) Trust propagation and structural containment in Multi-agent LLM pipelines — arxiv.org/abs/2609.17648
+- `arxiv:2609.21088` (2026-09-17) Origin Is All You Need: Provenance-Aware Transformers for Structural Trust-Boundary Separation — arxiv.org/abs/2609.21088
+- `arxiv:2609.22573` (2026-09-18) Zero-Trust Authorization and Discovery for Enterprise MCP — arxiv.org/abs/2609.22573
+- `arxiv:2609.22882` (2026-09-19) The Law of Stop: Interruptibility, Injunctions, and the Governance of Agentic AI — arxiv.org/abs/2609.22882
+- `arxiv:2609.23498` (2026-09-20) Runtime Authorization Consistency Checking for MCP-based Agentic Workflows — arxiv.org/abs/2609.23498
+- `arxiv:2609.24077` (2026-09-21) LeaseGuard: Incumbent-Preserving Admission Control for Privileged LLM Agents — arxiv.org/abs/2609.24077
+- `arxiv:2609.32378` (2026-09-26) AuthorityLens: Rethinking LLM-Based Agent Systems Through the Lens of Authority — arxiv.org/abs/2609.32378
+- `arxiv:2609.32750` (2026-09-26) CUA-Sandbox: Efficient Environments for Computer-Use Agent Reinforcement Learning — arxiv.org/abs/2609.32750
+- `arxiv:2609.32390` (2026-09-26) Reward Hacking and Agent Containment Failure: A Monte Carlo Study Based on the 2026 Hugging Face Incident — arxiv.org/abs/2609.32390
+- `arxiv:2609.33658` (2026-09-27) AgentBoundary: Counterfactual Evaluation of Safety in Tool-Using LLM Agents — arxiv.org/abs/2609.33658
+- `arxiv:2609.40082` (2026-09-30) Tide: Reclaiming Phased Memory in Agent MicroVMs — arxiv.org/abs/2609.40082
+
+**Tier B - attack side and harness exposure**
+
+- `arxiv:2609.06835` (2026-09-06) Skynet: Workflow-Level Anomaly Detection for Agentic AI via Semantic and Structural Modeling — arxiv.org/abs/2609.06835
+- `arxiv:2609.07529` (2026-09-07) CoER: Defending against Adaptive Indirect Prompt Injection via Adversarial Co-Evolution and Refinement — arxiv.org/abs/2609.07529
+- `arxiv:2609.06972` (2026-09-07) AgentDrift: A Step-Labeled Benchmark of Injection-Hijacked LLM Agent Trajectories — arxiv.org/abs/2609.06972
+- `arxiv:2609.07360` (2026-09-07) Scanning the Harness: Configuration Exposures in AI Coding-Agent Supply Chains — arxiv.org/abs/2609.07360
+- `arxiv:2609.10892` (2026-09-09) DriftNet: A Dual-Head Trajectory Transformer for Detecting and Localizing Prompt Injection in LLM Agents — arxiv.org/abs/2609.10892
+- `arxiv:2609.10854` (2026-09-09) No-Box Vulnerability Analysis: Description-only Detection of Indirect Prompt Injection Vulnerabilities in MCP Servers — arxiv.org/abs/2609.10854
+- `arxiv:2609.10871` (2026-09-09) A2ABreak: Systematic Security Analysis of the A2A Protocol — arxiv.org/abs/2609.10871
+- `arxiv:2609.12216` (2026-09-10) Guardrailed Meta-Agent Loops: Stress-Testing Policy Pinning, Budget Bounds, and Crash Recovery — arxiv.org/abs/2609.12216
+- `arxiv:2609.13889` (2026-09-12) When Malicious Instructions Persist: Persistent Memory Poisoning Attack on Harness-Based Agents — arxiv.org/abs/2609.13889
+- `arxiv:2609.16098` (2026-09-14) Universal Defenses for Tool-Integrated LLM Agents Against Adversarial Attacks — arxiv.org/abs/2609.16098
+- `arxiv:2609.15516` (2026-09-14) Misleading the Planner through Deceptive Resumes: Registration-Time Injection in Centralized Multi-Agent Systems — arxiv.org/abs/2609.15516
+- `arxiv:2609.18217` (2026-09-16) Measuring and Exploiting Implicit Trust in LLM Tool-Calling Pipelines — arxiv.org/abs/2609.18217
+- `arxiv:2609.18411` (2026-09-16) The Verifiable Action Card: Trustworthy Human-in-the-Loop Control for Secure Autonomous Agents — arxiv.org/abs/2609.18411
+- `arxiv:2609.22510` (2026-09-18) Defusing Explosive Prompts: Understanding and Preventing Trigger-Based Prompt Injections in LLM Agents — arxiv.org/abs/2609.22510
+- `arxiv:2609.30383` (2026-09-24) Stealth Apart, Harm Together: Skill Cascading Attacks on Skill-Based Agent Systems — arxiv.org/abs/2609.30383
+- `arxiv:2609.32021` (2026-09-25) SilentCall: Hidden Tool-Call Backdoors in Open-Weight Agents, and How to Catch Them — arxiv.org/abs/2609.32021
+- `arxiv:2609.36576` (2026-09-29) Divide and Inject: Can Agents Reconstruct an Indirect Prompt Injection from Fragments? — arxiv.org/abs/2609.36576
+- `arxiv:2610.00430` (2026-09-30) Memetic Trojans: Social Contagions as Carriers of Adversarial Payloads in Agent Networks — arxiv.org/abs/2610.00430
+
+**Tier C - surveys, orientation only**
+
+- `arxiv:2609.13731` (2026-09-12) Trustworthy Agentic AI: A Comprehensive Cybersecurity and Systems Survey on Threat Landscapes, Defense Architectures, and Open Challenges — arxiv.org/abs/2609.13731
+- `arxiv:2609.22712` (2026-09-19) Trustworthy Agentic AI: Failure Modes, Mitigation Strategies, and a Lifecycle Framework for Autonomous LLM Systems — arxiv.org/abs/2609.22712
+**Not struck, and why.** Nothing in this batch is struck. This seat read
+titles and abstracts, not full texts, and the directive's four deliverables
+were not compatible with 40 full readings. The charter's standing rule holds:
+striking a line without reading it is worse than leaving it standing.
+
+**One standing question for whoever reads Tier A.** Three of these papers put
+the enforcement point in three different places — the dispatch interceptor
+(ActGuard), the authorization-state machine across a delegation chain
+(ResidualAuth), and the kernel (held: Agent-Warden, ContractWarden). The skill
+currently orders these by "how much privilege the deployment has". Nothing in
+the corpus measures them against each other on one workload. If one of these
+papers does, that comparison is the skill's missing section.
