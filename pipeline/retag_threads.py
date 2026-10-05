@@ -339,6 +339,11 @@ def count() -> str:
             else pathlib.Path("prompts/distill.md").read_text())
     defs = definitions(text)
     missing = [t for t in THREADS if f"`{t}` covers" not in defs]
+    # The same agreement `tests/test_reasoning_rubric.py` asserts, re-checked
+    # here against the copies that actually rode into this image. A tag this
+    # job is told to write that the insert would reject writes nothing, and the
+    # dry run is where that should surface.
+    off_list = [t for t in THREADS if t not in taxonomy.TOPICS]
 
     lines: list[str] = []
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
@@ -363,6 +368,9 @@ def count() -> str:
         if missing:
             lines.append(f"REFUSING: no definition in prompts/distill.md for {missing}. "
                          "The model would be asked to apply a tag nobody defined.")
+        if off_list:
+            lines.append(f"REFUSING: {off_list} is not on topics.TOPICS, so the "
+                         "insert would drop it and this job would write nothing.")
         sample = conn.execute(CANDIDATES,
                               {"patterns": patterns, "limit": 5}).fetchall()
     for claim_id, claim, _evidence, tags, title in sample:
