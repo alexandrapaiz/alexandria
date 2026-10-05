@@ -43,7 +43,12 @@ export function getIssue(week) {
   return parseIssue(week, fs.readFileSync(file, "utf8"));
 }
 
-function parseIssue(week, body) {
+// Exported so site/lib/issues-live.js parses a body out of the `digests`
+// record with this function and not a second copy of it. The issue's title,
+// dates and excerpt are derived from the markdown by rules that have already
+// been corrected once (the first editions carried no dates in their H1), and
+// two copies of a derivation rule can only agree by luck.
+export function parseIssue(week, body) {
   // The issue's editorial title lives in its own H1. Newer issues carry their
   // dates with it ("Title [Month D–D, YYYY]"); the first editions did not, so
   // the week's own Monday-to-Sunday range stands in.
