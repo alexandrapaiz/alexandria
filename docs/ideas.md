@@ -7303,3 +7303,645 @@ graphs.
   (`harness-engineering` v2) shows the target form. One skill per run.
 - Whose call: skill agent, next runs.
 - Status: proposed
+
+### 2026-09-30 — The masthead filing needs a tripwire, not a fourth description (writer seat, for engineer)
+
+- Confirms, and does not restate: "2026-09-27 — The masthead is fixed and
+  every published issue keeps the false line (writer seat, for engineer)",
+  still at `Status: proposed`. That entry states the defect, both repair
+  options and a recommendation better than a rewrite would, so nothing about
+  the problem is re-argued here. This entry adds the one thing it does not
+  carry.
+- Trigger: on 2026-09-30, day four, `site/content/issues/2026-W39.md` line 3
+  still reads "*The latest in AI research, read in full and distilled
+  weekly...*". The two editorial grades in between, 2026-09-28 and
+  2026-09-29, graded the stored `digests` body and say nothing about the
+  page. The page had been edited on 2026-09-30 to apply the owner's close
+  ruling of that day, four lines from the bottom of the same file, which is
+  measurable: run 18 counted 1,106 words on the stored row, this run counts
+  1,105 on the page, and the old close is nine words against the new one's
+  eight.
+- What is missing, and it is the whole ask: the filing has no failing state.
+  A ledger entry at `proposed` and a broken artifact look the same from
+  outside, every day, forever. Options A and B in the 2026-09-27 entry both
+  end the defect. Neither of them makes it visible while it waits, and it
+  waited three days in silence.
+- What, the command: one grep, scoped to the published surfaces, in a chain
+  that already runs. Wherever the pre-send gate of #60 or a CI step is
+  cheapest:
+
+  ```
+  ! grep -rq "read in full and distilled weekly" site/content/issues/
+  ```
+
+  and the same string checked against the stored bodies where the gate has
+  a database handle. It exits non-zero the moment the archive is correct and
+  it stays red until then.
+- Why the scoping is the design and not a detail: the same grep over the
+  repository hits thirteen files today, eleven of which are
+  docs/voice/canon.md, docs/voice/ban-list.md, docs/agents/incidents.md,
+  docs/ideas.md and seven prior reviews, all of them quoting the defect
+  because quoting it is their job. A tripwire that fires on its own
+  registers is a tripwire somebody deletes in a week. Scoped to
+  `site/content/issues/` it has no false positives.
+- Generalize it once rather than per string: the check that belongs in the
+  chain is not "this sentence", it is "any sentence this register has
+  withdrawn, on any published surface". The withdrawn strings are few and
+  they are already written down. A file of them, greppable, scoped to
+  `site/content/issues/` and the stored bodies, is the durable form and the
+  masthead is its first line.
+- Whose call: engineer for the chain, and the owner still decides whether an
+  issue already sent to subscribers is altered at all, exactly as the
+  2026-09-27 entry says.
+- Related: ban list 61, 64 and 75, canon law 15, canon grading pass 6 added
+  today, `INC-2026-09-27-law-15-live-in-the-archive` and
+  `INC-2026-09-30-standing-defect-unverified-for-three-grades`. L-A22 is the
+  standard: the three enforcements this seat landed today are all a model
+  reading a file, and this is the one link in an `&&` chain that is not.
+- Cost: one grep. The file of withdrawn strings is a few lines and this seat
+  maintains it.
+- Status: proposed
+
+### 2026-09-30 — The shape of the page has failed five grades in the prompt, so it needs a count (writer seat, for engineer)
+
+- Trigger: the charter's structure watch. "When the same structural fix fails
+  twice through prompt changes alone, propose the pipeline change in the
+  ledger for the engineer instead of prompt-tinkering a third time." This is
+  the fifth failure, so this run deliberately shipped no sixth wording of the
+  gate.
+- The record, one row per grade, all three counts measured on the artifact:
+  2026-09-26, 2026-09-27, 2026-09-28, 2026-09-29 and 2026-09-30 each found
+  zero bulleted lists, zero third-level headings and zero numbers standing on
+  a line. The shape gate in `prompts/digest.md` names all three, gives the fix
+  for each, and says in its own text that one kind of shape is a failing
+  issue. Canon law 14 predicted the exact failure mode, that "the cheapest way
+  to obey this law is also the way that leaves the reader's experience
+  untouched", and the newest print measures it: the longest paragraph fell
+  from 141 words to 78 while every page-level count stayed at zero.
+- What, the check: three counts on the generated body before it is stored,
+  failing when all three are zero. Wherever the pre-send gate of #60 or a CI
+  step is cheapest.
+
+  ```
+  grep -cE '^[-*] '   <body>   # bulleted list lines
+  grep -cE '^### '    <body>   # written turns inside sections
+  ```
+
+  and one for a short line carrying a bolded number and no other sentence. The
+  question is not whether a list is good, which no regex can judge. It is
+  whether a list exists, which is the part that has been zero for five issues.
+- Why this one is safe to automate when most prose rules are not: a markdown
+  body either contains `^[-*] ` or it does not. There is no taste in the
+  count. The gate's own text already says the fix is never decoration, so the
+  count belongs beside the model's judgment and not instead of it, which is
+  why it fails only when all three are zero rather than requiring each one.
+- Related: canon law 14, ban list 49, and the shape rows in the reviews of
+  2026-09-26 through 2026-09-30.
+- Whose call: engineer. Cost: three greps in a chain that already runs.
+- Status: proposed
+
+### 2026-09-30 — A grade cannot tell which generator wrote what it is reading (writer seat, for engineer)
+
+- Trigger: `digests` id 18, the newest issue, was written on 2026-09-28 with
+  `prompt_sha ea2d678d86e9`. That sha is `prompts/digest.md` at commit
+  `ff61b26`, dated 2026-09-25 19:46. The masthead in the same body is the
+  constant as it read before commit `cb99c37` of 2026-09-26 01:09. One cause
+  explains both strings: the scheduled run of 2026-09-28 executed a bundle
+  from 2026-09-25.
+- The consequence, and it is this seat's own loop: five generator commits have
+  shipped since that bundle, and the three grades that ran on 2026-09-28,
+  2026-09-29 and 2026-09-30 each graded a print from a generator that no
+  longer exists. Law 13 is the clean demonstration. The published page carries
+  the exact sentence shape law 13 was tightened to catch, and the newest
+  rehearsal, written by the current prompt, does not. A grade reading only the
+  published page reports a defect that was fixed days ago and cannot see any
+  patch that worked.
+- What, the check: compare the stored `prompt_sha` against
+  `sha256(prompts/digest.md)[:12]` at deploy time and at grade time, and say
+  the answer out loud in the run's output. One integer against one integer.
+  `rehearsal_report` already prints a `prompt_sha` line, so the value is in
+  hand and nothing compares it to the repository.
+- This overlaps the deploy-drift guard already open as #166 and is not a
+  second copy of it. That guard stops a stale bundle from shipping. This asks
+  for the sha to be legible after the fact, in the row and in the grade, so a
+  reader of an artifact can tell what wrote it. Both are wanted and the second
+  is a print statement.
+- Whose call: engineer, and worth folding into #166 rather than landing
+  separately. Cost: one comparison and one line of output.
+- Related: `INC-2026-09-30-graded-a-generator-five-commits-stale`, the canon's
+  grading procedure as corrected today.
+- Status: proposed
+
+### 2026-09-30 — Two withdrawn strings live in the stored rows, and the read count is sampled before the reading (writer seat, for engineer)
+
+- Three findings, one owner, because they are all repairs to the same two rows
+  and one query.
+- **The masthead's scope is wider than the 2026-09-27 filing says.** That
+  entry stands and is not restated. It is scoped to the published page, and
+  the grep recommended for the chain is scoped to `site/content/issues/`.
+  Queried today through `NEON_RO_URL`, the withdrawn line is also in both
+  stored digest bodies, at offset 98 in id 1 and offset 84 in id 18. A grep
+  over `site/content/issues/` alone goes green while two stored rows still
+  carry it, and the email is rendered from a stored body. The tripwire needs
+  the rows in scope, which the same entry already anticipates where it has a
+  database handle.
+- **The close ruling of 2026-09-30 reached the prompt and the page and not the
+  stored row.** `digests` id 18 still ends on the close the owner replaced
+  that day. The page and the row now differ in exactly that one line, which is
+  the whole diff between them. This is ban list 64 on a second string, created
+  by the hand-edit that applied the ruling correctly to one copy. Both
+  replacements already exist in the code and need no draft.
+- **The full-read count is measured before the reading it counts.** The
+  payload's `papers_read_in_full` is
+  `count(*) from papers where distilled_at > now() - interval '7 days' and
+  fulltext_chars is not null`, gathered at the start of the run. The reading
+  list's papers are read in full during the run: the newest print's three
+  picks carry `distilled_at` of 03:18, 03:19 and 03:20 against a payload
+  gathered at 03:13, and the count it was handed was zero. So the number
+  understates by the reading list's size on every issue, always, and it
+  reported zero on an issue whose three recommended papers had twelve thousand
+  characters of full text each. The generator side is patched today, so no
+  issue prints a zero and no issue claims the count covers its own items.
+  The number itself stays wrong until the count is taken after the reading, or
+  taken separately for the cited papers.
+- Whose call: engineer for the rows and the query. The owner still decides
+  whether an issue already sent to subscribers is altered at all, exactly as
+  the 2026-09-27 entry says.
+- Related: ban list 61, 64, 75 and 78, canon law 15, canon grading pass 6,
+  `INC-2026-09-27-law-15-live-in-the-archive`.
+- Status: proposed
+
+### 2026-10-01 — The daily issue is written down everywhere and runs nowhere (writer seat, for the owner, then the engineer)
+
+- Trigger: the company standard L-A16, "configured is not in effect", applied
+  to the product's own cadence. A capability counts as live only when a run
+  log proves it served a real turn.
+- What the record says. The owner adopted the daily cadence on 2026-09-19 and
+  it is in `docs/voice/taste.md` in her words, "so the product can be seen and
+  improved easily". `prompts/digest.md` carries about thirty-eight lines
+  specifying the daily and nothing else: its length band, its four slots and
+  the rule that a day rarely fills all four, its traction signal, and how to
+  write the day with nothing in it. `docs/voice/canon.md` calls its own
+  grading procedure the daily review. The writer charter sends this seat to
+  read the newest issue every run.
+- What the code says. The only cron in the repository that writes an issue is
+  `modal.Cron("0 9 * * 1")` in `pipeline/weekly.py`, which fires on Mondays.
+  `ingest`, `distill`, `triage` and `interpret` all carry `* * *` and run
+  daily, so the corpus grows every day and the issue appears once a week.
+- What the evidence says. `digests` holds two rows in the product's life, id 1
+  of 2026-09-14 and id 18 of 2026-09-28, and the insert is
+  `on conflict (week) do update`, so a second issue inside one ISO week
+  overwrites the first rather than joining it. No daily has ever been
+  generated, so the thirty-eight lines that specify one have never been read
+  by a run that needed them.
+- The owner's own approved site copy of 2026-09-29 reads "Each week the
+  library becomes an issue", so the public promise matches the cron and
+  nothing misleads a reader. This is not a false claim. It is a decision
+  recorded as live in four registers and dormant in the one place that
+  executes.
+- The cost, and it is this seat's cost. One prompt writes both cadences, the
+  prompt conditions its only weekly-only rule on which cadence is being
+  written, and the payload does not say. That is ban list 79 and it is the
+  cause of the law 9 failure in the grade of 2026-10-01. A prompt carrying a
+  cadence that never runs is not inert, because the writer reads the whole
+  file and the nearer, more concrete shape wins.
+- What is being asked, in order:
+  1. The owner rules on whether the daily is still wanted. Everything else
+     depends on the answer and no seat should guess it.
+  2. If yes, the engineer installs a cron that writes one and the digests key
+     stops being the ISO week alone, because two issues in a week currently
+     cannot both exist.
+  3. If no, the daily specification comes out of `prompts/digest.md`, this
+     seat does that in one pull request, and the cadence is recorded as
+     dormant in `docs/decisions.md` with what would turn it on, which is what
+     L-A16 requires and what nobody has done.
+- Whose call: owner first, then engineer. Cost of the recording step alone:
+  one line in the decisions file.
+- Related: canon law 9 and law 11, ban list 79 and 80, the grade of
+  2026-10-01, `docs/standards/lessons.md` L-A16.
+- Status: proposed
+
+### 2026-10-01 — The payload cannot tell the writer which cadence it is writing (writer seat, for engineer)
+
+- Trigger: ban list 79. `prompts/digest.md` says "A daily may list. Monday may
+  not", and the JSON payload hands over `week`, `dates`, `stats`,
+  `new_claims`, `superseded`, `traction`, `deprecated` and `deep_reads`. None
+  of those names the cadence.
+- The prompt side is patched today, and the patch is a workaround rather than
+  the fix. It tells the writer to read the cadence off `dates`, which spans a
+  range of days for the weekly and would name a single day for a daily. That
+  works because the formatting of one field happens to encode the answer, and
+  a field whose format carries meaning nobody declared is a defect waiting for
+  its own incident.
+- What, the change: one key in the payload, `cadence`, set to the string the
+  calling function already knows, beside the `week` label it already sets.
+  `rehearse` and `weekly` both call `week_just_ended`, so both know.
+- Why it is worth a key rather than an inference: the rule it feeds is the
+  single structural difference between the two products this prompt writes.
+  Everything else in the file is house law.
+- Whose call: engineer. Cost: one dictionary entry.
+- Related: ban list 79, canon law 9, the grade of 2026-10-01.
+- Status: proposed
+
+### 2026-10-01 — A law with two clauses needs two verdicts, and that is a change to the canon's procedure (writer seat, for the owner)
+
+- Trigger: `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`, the
+  third grade in six days to clear a law the artifact visibly breaks. Canon
+  law 9 has two subjects under one number, the owner's fine-tuning and the
+  weekly's duty to argue. A verdict quoted real evidence for the first and
+  was silent about the second, and nothing in the procedure made that
+  visible.
+- The two fixes already in the procedure cannot reach it. "Every verdict
+  carries a quoted line" steers a grade toward the clause that can produce a
+  quotation. "A law that asserts coverage is graded by a count" does not fire,
+  because law 9 asserts no coverage. What law 9 has is a conjunction.
+- What is proposed, and it is one sentence: a law with more than one clause is
+  graded clause by clause, the verdict names which clauses it covered, and a
+  law with two subjects gets two verdicts under one number.
+- Why this is filed rather than written. The canon says its laws section
+  changes only by the owner's ruling and its procedure has been corrected
+  twice this week by the runs that executed it. This seat can write the
+  procedure, and a third self-authored correction to the instrument that grades
+  this seat's own work is worth her word rather than this seat's judgment.
+- Whose call: owner. Cost: one sentence, and a longer grade every run.
+- Related: canon's grading procedure, `INC-2026-09-26-grade-cleared-a-printed-violation`,
+  `INC-2026-09-29-grade-cleared-link-coverage`.
+- Status: proposed
+
+### 2026-10-01 — The first-use pass needs a command, because the standard's threshold is one failure and it has had two (writer seat, for engineer)
+
+- Trigger: `docs/standards/lessons.md` L-A22, "the gate goes in the command,
+  not in the charter", whose own words are that when a law has failed to fire
+  once, writing it more clearly is not the fix. The first-use pass has now
+  failed twice, on the prints of 2026-09-28 and 2026-09-30.
+- This run shipped a prompt change anyway and said so in the incident entry
+  rather than quietly. The reason is that the two changes are conversions
+  rather than rewordings, from an unbounded list to a closed one and from a
+  lexical check to a grammatical one, and the one half of this gate that was
+  already converted to a count is the half that has held in every print since.
+  That is a reason, not a defence, and the filing below is the other half of
+  it.
+- What, the check, and the honest part first: whether a word carries a
+  plain-words clause is not mechanizable and no regex should try. Two
+  narrower things are.
+  1. **The title's words against the body.** Extract the title's content
+     words, and for each one report whether it appears again in the opening's
+     first two paragraphs. A title term that the opening never touches has not
+     been introduced there, which is where the rule now requires it.
+     `tools/check_issue_citations.py` is the precedent: a prose rule the org
+     already reduced to a script over a generated body.
+  2. **The role nouns on their article.** A grep for a definite article in
+     front of the field's training-pair nicknames is exact, cheap and has a
+     known failing artifact to test against, which is the print of
+     2026-09-30. Every gate is tested against an artifact known to fail it
+     before it is trusted, per L-A21.
+- Neither check decides whether the prose is good. Both answer a question that
+  has been answered wrong twice, which is whether the pass ran at all.
+- Whose call: engineer, and it belongs in the same pre-store chain as the shape
+  counts filed on 2026-09-30 rather than as a separate step.
+- Related: ban list 81 and 82, `INC-2026-10-01-first-use-pass-printed-a-word-it-lists-by-name`,
+  `docs/standards/lessons.md` L-A21 and L-A22.
+- Status: proposed
+
+### 2026-10-02 — A label gate can be a command, because position is mechanical where taste is not (writer seat, for engineer)
+
+- Trigger: the shape the owner has flagged twice got through the generator's
+  heading gate for the seventh time, by ending in a full stop instead of a
+  colon (`INC-2026-10-02-label-shape-arrived-in-a-seventh-disguise`). Seven
+  disguises, seven checks written for the one before, every check matching a
+  shape. `docs/standards/lessons.md` L-A22 says that when a law has failed to
+  fire once, writing it more clearly is not the fix, and this one has failed
+  seven times.
+- This run converted the gate's collection step from punctuation to position,
+  which is a conversion rather than a reworded prohibition, and it is still a
+  model reading a file.
+- The honest split, because half of this is not mechanizable. Whether a line
+  is a label is the owner's taste question and no script decides it. Whether a
+  line is a CANDIDATE is pure syntax, and that is the half that failed every
+  time. So the command does the collecting and the model does the judging.
+- The check, over a generated body before it is stored, beside the shape counts
+  filed on 2026-09-30: emit every run of bold or italic that begins a line,
+  every line beginning with `#`, and every fragment in front of a colon, each
+  with its line number. Then the press refuses to store a body whose collected
+  set is empty of nothing and unexamined, which is the part this seat cannot
+  specify, so the minimum useful version is that the list is printed in the
+  run report and in the rehearsal output where a grade cannot miss it.
+- The test artifact exists and is known to fail, per L-A21: `press_rehearsals`
+  id 3 carries four bolded labels ending in full stops and the current
+  published page carries two bold leads that are findings. A correct
+  implementation collects six and judges four of them labels.
+- Whose call: engineer. Cost: a few lines beside an existing pre-store chain.
+- Related: ban list 84, canon law 12, incident 20,
+  `INC-2026-10-02-label-shape-arrived-in-a-seventh-disguise`.
+- Status: proposed
+
+### 2026-10-02 — Three runs have patched the generator with nothing to measure, and only a merge can end that (writer seat, for owner)
+
+- The fact, stated once. The newest artifact of any kind is the rehearsal print
+  of 2026-09-30 03:13. `digests` holds two rows in the product's life and the
+  newest is 2026-09-28. Runs 20, 21 and 22 have each read that same text, and
+  the prompt changes all three of them shipped sit unmerged on one branch. The
+  print's `prompt_sha` matches `main`, so every patch from all three runs has
+  produced nothing, and the only evidence any of us can get about whether they
+  work is one merge and one send.
+- Why this is filed rather than worked around. This seat's charter sends it to
+  read a new issue every run and it has had none for five days. Grading the
+  same text a fourth time has a measurable cost that this run can show: of the
+  defects a third reader found in that print, two were genuinely new and the
+  rest were already on the record, and the two new ones were found by changing
+  the unit of measurement rather than by reading harder. A fifth reading will
+  not have a fourth unit.
+- What this run did about it: kept its own diff to two slots, because three
+  stacked layers of unexercised prompt text interacting is a risk nobody can
+  see, and said so at the top of its review.
+- The decision is yours and there are two. Merge the writer branch and let
+  Monday's send be the measurement, which is what the merge gate is for. Or
+  tell this seat to stop patching until an artifact written by the current
+  prompt exists, in which case the runs in between grade the published page
+  and the registers and ship no generator diff, which the charter already
+  allows in its own words: a quiet day with a passing grade and no diff is a
+  fine outcome.
+- Related: `INC-2026-09-30-graded-a-generator-five-commits-stale`, and the
+  dormant-daily filing of 2026-10-01, which asks the other half of this
+  question.
+- Status: proposed
+
+### 2026-10-02 — The bold lead is the ornament of a list that was never set (writer seat, evidence for an open filing)
+
+- Not a new filing. One row of evidence for the formatting escalation run 20
+  sent the engineer after the fifth consecutive grade with zero lists, zero
+  third-level headings and zero numbers standing on a line.
+- The new evidence: the print of 2026-09-30 carries four bolded leads at the
+  tops of paragraphs, and canon law 14 licenses that device in exactly one
+  place, inside a bulleted list, one per bullet. With no list anywhere in the
+  issue, the device migrated to paragraph openings, where all four of them read
+  as labels and none as a finding. The published page of 2026-09-28, written by
+  the earlier prompt, carries two bold leads and both are findings.
+- So the unanswered escalation is not merely leaving the page one shape. It is
+  producing a second defect out of a rule that was correct, which is worth
+  knowing before the sixth wording of that gate is considered and rejected
+  again.
+- Related: ban list 84, canon law 14, the formatting filing of 2026-09-30.
+- Status: evidence appended, no new request
+
+### 2026-10-03 — The masthead recites the framework, it was filed on 2026-09-20 with that law named, and it has printed above the fold every day since (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-03, structure watch, reading the
+  newest issue cold. The third filing on `MASTHEAD` in `pipeline/weekly.py`,
+  after the one of 2026-09-20 ("the masthead is about to be hardened into two
+  constants") and the one of 2026-09-27 (the false reading claim live in the
+  archive). Filed again rather than edited, per the ledger's own rule, because
+  the facts changed in a way that matters: the clause that made the line
+  famous has been fixed, the clause nobody graded has not, and the first
+  filing already named the law it breaks.
+- What the line is now, in full, at `pipeline/weekly.py:792`:
+  "*What's new in AI research, what's gaining acceptance, and what newer
+  evidence has overturned.*"
+- The defect, and it is canon law 12. Three of the four internal slot names,
+  in this file's own order, in plain-English synonyms. What's new is the
+  new-work slot. What's gaining acceptance is the traction slot, and the
+  payload glossary in `prompts/digest.md` describes that stream in nearly the
+  same words, "older work gaining acceptance". What newer evidence has
+  overturned is the fell-behind slot. The reader is told which internal bins
+  the material was sorted into, in the second line of the issue, on every
+  issue. The heading gate's closing step forbids exactly this of a sentence,
+  "no sentence in the issue says which of the four slots the material under it
+  came from", and that step cannot reach this sentence.
+- Why the prompt cannot fix it, which is unchanged since 2026-09-20 and is why
+  this is an engineer's filing and not a patch. `add_masthead` splices the
+  constant into the body after the model has finished, so the heading gate
+  reads output that does not yet contain the line. The gate's first collection
+  step takes "every run of bold or italic text sitting alone on its own line",
+  which would collect this line on sight, and the splice happens after the
+  gate has run. The one line in the issue that the oldest step in the gate was
+  built to catch is the one line the gate is structurally unable to see.
+- Why it survived thirteen days of grading, which is the part worth the
+  engineer's attention more than the words are. The law 12 verdict is a grep
+  for the four exact strings. Five consecutive grades ran it, got a clean exit
+  code, and recorded a pass on the strings. Two of those grades went on to
+  fail the law "on the idea" and located the idea in headings and bold labels.
+  The synonym in the standing line matched no string and was read past every
+  time, including by three runs of this seat on this branch. Fixed in this
+  pull request on the grading side: canon law 12's verdict now has three
+  parts and the third asks the idea of every standing line with its source
+  file named. That makes the next grade catch it. It does not take it off the
+  page.
+- What to do, and the recommendation has not changed since 2026-09-20: delete
+  `MASTHEAD` and `add_masthead()` and let the title meet the opening. The
+  title states the finding, the opening greets the reader, and nothing between
+  them is doing a job the issue needs. This also closes the 2026-09-27 filing's
+  problem at the root, because a line that is never spliced cannot be baked
+  into a stored body that later needs correcting.
+- If the owner wants a standing line under the title, the constraint is that
+  it describe the product's value and not its three streams, and the house
+  already has its best sentence: the close she approved on 2026-09-30,
+  "Accelerate every builder and agent to frontier speed." Promote that and let
+  it carry both ends. Any replacement is reader-facing copy and so reaches her
+  in chat first, drafted in `docs/voice/`, per the copy pipeline.
+- Smallest intermediate step if neither happens: the line loses its third
+  clause and its order, so it stops being a recitation of the framework even
+  while it stays a description of the product. This is worse than deletion and
+  better than another week of law 12 printing.
+- Related: ban list 61, 64, 87, canon law 12, the filings of 2026-09-20 and
+  2026-09-27 (both still `proposed`), and
+  `INC-2026-10-03-law-12-graded-by-grep` in this pull request.
+- Status: proposed, third filing, the first still unexecuted on day 13
+
+### 2026-10-03 — Canon law 12's own wording, proposed for the owner's ruling (writer seat)
+
+- Trigger: `INC-2026-10-03-law-12-graded-by-grep`. The law reads "Framework
+  names never print", and five grades read "names" as the four exact strings
+  the generator uses internally. The artifact recites three of the four slots
+  in plain-English synonyms in its second line and every one of those grades
+  passed the law.
+- The procedure fix is already made, because pass 3 of the grading procedure
+  is this seat's to correct. This entry is only about the sentence in the laws
+  section, which the canon's maintenance rule reserves to her: "The laws
+  section changes only by the owner's ruling, recorded in docs/voice/taste.md
+  first."
+- Proposed wording, for her ruling and not applied: law 12 forbids the
+  framework from printing, in any words. The four internal names are the
+  closed set of strings and a synonym is the same violation. A standing line,
+  a masthead, a subtitle or a contents sentence that tells the reader which
+  internal bins the material was sorted into breaks the law exactly as a
+  heading does, wherever in the repo that line is written.
+- Why it is worth her sentence rather than this seat's: she gave this ruling
+  twice (incident 20), and both times the artifact in front of her was a
+  heading. The law was written from those two artifacts and is narrower than
+  what she was objecting to. Widening it is a reading of her intent, so it
+  goes to her.
+- Related: ban list 87, `INC-2026-10-03-law-12-graded-by-grep`, the masthead
+  filing of 2026-10-03 in this same pull request.
+- Status: proposed, awaiting owner's ruling
+
+### 2026-10-03 — Two reader-facing constants carry characters the issue's own law forbids (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-03, executing the pass-6 step added in
+  this same pull request, which grades every reader-facing constant the
+  pipeline splices into an issue against the ten laws rather than against the
+  filings that name it. These two are what it found on its first execution.
+- One, the date range the model is handed. `week_just_ended()` in
+  `pipeline/weekly.py:1038` and `:1040` builds the `dates` field with an EN
+  DASH, U+2013, and that value goes into the payload at `:1209` and `:1329`.
+  `prompts/digest.md` tells the model to write the payload's `dates` "with a
+  plain ASCII hyphen", which reads as a description of the value rather than
+  as an instruction to change it. A model that copies the field it was told to
+  print emits a non-ASCII character and has obeyed the sentence it was given.
+  Canon law 1 and the plain-ASCII rule in the generator both forbid the result.
+  Patched on the prompt side in this pull request, which names the conversion
+  explicitly, so this filing is about the source rather than about the issue.
+- Two, the email's edition label. `edition_label()` in
+  `pipeline/email_render.py:325` and `:330` returns "Weekly synthesis", then a
+  MIDDLE DOT, U+00B7, then the dates, and "Daily dispatch" the same way, and
+  `week_dates()` at `:306` and `:307` builds its range with the same en dash.
+  No prompt change can reach either, because the model does not write the
+  label. It is reader-facing text in the email, so it is this seat's custody by
+  the owner's order of 2026-09-25 and the engineer's edit to make.
+- What to do, and it is one change at the source rather than two at the edges:
+  build both date ranges with an ASCII hyphen, and replace the middle dot with
+  a comma or an ASCII hyphen. Fixing `week_just_ended` and `week_dates` fixes
+  the payload, the issue body and the email label together, and then the prompt
+  sentence patched here becomes a belt over a fixed brace rather than the only
+  guard.
+- Why this is worth an engineer's minute rather than a shrug: the newest print
+  carries zero non-ASCII characters only because it prints no date range. The
+  defect is latent in every issue that prints one, and the owner's standing law
+  on plain punctuation is the oldest in the register.
+- Related: canon law 1, the pass-6 step added 2026-10-03, ban list 61 (the
+  reader-facing string in code that no pass grades).
+- Status: proposed
+
+### 2026-10-03 — The registers map has been a live merge conflict on main for six days, and the checker for it runs nowhere (writer seat, for ExO and engineer)
+
+- Trigger: the editorial run of 2026-10-03, executing its charter's "Check the
+  register before you ship" step, which names `docs/agents/registers.md` as
+  the map of which register has which gate. Filed as
+  `INC-2026-10-03-registers-map-is-a-live-conflict`.
+- What is there now: nine conflict markers on `main`, in three unresolved
+  conflicts, at lines 59, 61, 66, 86, 88, 90, 387, 507 and 563. The third runs
+  from 387 to the end of the file, so the last 177 lines of 563 are an
+  unresolved three-way merge. Both sides survive in all three, so no content
+  needs recovering from history and the repair is a choice per hunk rather than
+  an archaeology job. Last commit to touch the file is `70d5cde`.
+- Who repairs it: the ExO seat, because deciding which side of each hunk is
+  current is a judgment about its own register. This seat is filing rather than
+  fixing because the file is outside the writer's writable surface and a guess
+  there would be worse than the conflict.
+- The second half, which is the one that recurs: `tools/check_registers.py`
+  exists, it was built by the incident that this repeats, it finds all nine in
+  one command, and `tests/test_check_registers.py` asserts the live repository
+  is clean and FAILS today. So a command and a failing test both exist and
+  `.github/workflows/checks.yml` names neither. That file calls pytest nine
+  times and every call names specific test files by hand, so any test file
+  added later is invisible to CI until someone adds a line, which is worth
+  fixing once for every future test rather than once for this one. That incident's own closing line says
+  wiring it into `checks.yml` needs a `workflows` permission the filing seat
+  did not have. Six days later the failure it was written for is live in nine
+  places. Whoever holds that permission should add the one step, and until then
+  any seat's shipping checklist that says "read the registers" is reading a
+  damaged file and cannot tell.
+- Smallest useful step if the CI wiring stays blocked: have the PM standup run
+  the command, since that run already reads the board and the queue daily and
+  its output is the one place a blocking register finding would be seen by
+  every seat the next morning.
+- Related: the conflict-marker incident above
+  `INC-2026-10-03-registers-map-is-a-live-conflict` in
+  docs/agents/incidents.md, and the five status-keyword warnings the same
+  command reports, which are a separate and older finding.
+- Status: urgent
+
+### 2026-10-04 — Two more reader-facing characters the issue's own law forbids, one of them in the way of the formatting law that has failed seven grades (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-04, executing pass 6 of the canon's
+  grading procedure. The step that lists reader-facing standing lines was run
+  for the first time on 2026-10-03 and read as "module-level constants", so it
+  listed seven assignments in `pipeline/weekly.py` and
+  `pipeline/email_render.py`. Walking the whole delivery path instead found
+  three more strings in one of those files. This filing carries the two that
+  are defects; the third is the email template's second masthead region, noted
+  under the standing masthead filing of 2026-10-03.
+- **The one that blocks something.** `pipeline/email_render.py:115` picks the
+  bullet marker for an unnumbered list point, and the character it picks is
+  `U+00B7` MIDDLE DOT. It goes into `{{point_marker}}` at
+  `site/emails/digest.html:127` and renders beside every bullet. No issue has
+  ever shipped a bulleted list, which is the only reason this has never
+  printed: canon law 14 requires lists where results are parallel, and the
+  grade has recorded zero lists for seven consecutive runs. So the first issue
+  that obeys law 14 prints a character law 1 forbids, once per bullet, and the
+  repair for the oldest open editorial finding is sitting behind an unrelated
+  one-character defect. An ASCII bullet (`-`) or a styled list marker in the
+  template is the fix, and the choice between them is a design call the
+  frontend seat owns.
+- **The one that contradicts its own docstring.** `normalise()` at
+  `email_render.py:70` exists to clean up the narrow no-break space the model
+  emits, and its docstring says "A normal space restores the word gap". The
+  code is `.replace(ch, " ")`, which substitutes `U+00A0` NO-BREAK SPACE,
+  another non-ASCII character. Before a percent sign the character is dropped
+  entirely and that half is correct. Elsewhere one typesetter character
+  becomes a different typesetter character, after the last gate in the
+  pipeline, so no grade of the issue can see it. Visually it is invisible and
+  in HTML it renders as a space, so the reader is not harmed on the page. It
+  does defeat a search box, which is the reason the generator's own rule gives
+  for the ban, and the generator's rule names spacing explicitly: "Punctuation,
+  spacing, separators and mathematical symbols get no exception at all." If
+  `U+0020` is what was meant, this is a one-character fix. If `U+00A0` was
+  deliberate, the docstring is what needs changing, and the editorial register
+  should know it is there.
+- Scope note, and it is the honest part: this file declares its own boundary in
+  that docstring, "Fill-time typography, not editing", and a bullet glyph and a
+  space character both sit on the typography side of it. This seat is reporting
+  them rather than ruling on them. The date-range and edition-label characters
+  filed on 2026-10-03 are different, because those render inside a sentence a
+  reader reads. The owner's call is whether the plain-ASCII rule binds the
+  glyphs the code picks as well as the words the model writes. Either answer is
+  cheap to implement; what costs is leaving it undecided while law 14's repair
+  waits behind it.
+- Related: the 2026-10-03 filing on the date range and the edition label, which
+  is the same class at the same source and should be fixed in one pass with
+  this one. The masthead filing of 2026-09-20, now on its third restatement.
+- Status: proposed
+
+### 2026-10-04 — Three editorial checks now exist as a command and nothing calls it, which is the same wiring gap the registers checker has sat in for a week (writer seat, for engineer)
+
+- Trigger: the editorial run of 2026-10-04, applying `L-A22` from
+  docs/standards/lessons.md to its own output. That standard says a rule
+  enforced by a sentence in a register is enforced at the reliability of a
+  model reading a file, that writing a failed rule more clearly is not the fix,
+  and that the fix is a check in a command that already runs. This seat had
+  written thirty-four such sentences into the ban list before noticing the
+  standard applied to it.
+- What now exists: `docs/voice/check_voice.py`, with three checks, each
+  replacing a prose rule that run would otherwise have written.
+  `enforcements` verifies every ban-list entry's `LANDED <path>: "text"` line
+  against the named file, matching on normalised whitespace because every file
+  in that register wraps its prose. `stale` runs ban list 89's own tell over
+  `prompts/digest.md`, which is the command that found three live defects the
+  entry's author had missed. `measure` prints the character and paragraph
+  census per path, so a grade cannot share one figure between two artifacts,
+  which is `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`.
+  Exit code is 1 on any finding. Tested against a known failure per `L-A21`
+  before being trusted, and the test is recorded in ban list 92.
+- What is needed, and it is one line: `.github/workflows/checks.yml` does not
+  call it. The same file does not call `tools/check_registers.py`, which has
+  been finding nine live conflict markers for seven days, and it invokes pytest
+  nine times naming every test file by hand, so any file added later is
+  invisible to CI until somebody adds a line. Three separate findings now wait
+  on the same edit to the same file. Wiring the two checkers in, and replacing
+  the hand-listed pytest invocations with one that discovers test files, fixes
+  this class rather than these instances.
+- Where it should live: `tools/`, beside `check_registers.py`. It is in
+  `docs/voice/` because that is this seat's writable surface and `tools/` is
+  not, and a checker nobody can run because its author could not reach the
+  right directory is the failure this whole entry is about. Moving it is a
+  rename and the module has no imports outside the standard library.
+- Honest limit: `stale` cannot decide its own hits. The tell catches both a
+  claim about the generator's past OUTPUT, which is legitimate evidence for a
+  rule and stays, and a claim about its INPUT, which is false by the next
+  morning. It prints the hits and the distinction and a person reads them. That
+  is a narrower gate than it looks and the entry says so rather than claiming
+  otherwise.
+- Related: the 2026-10-03 filing on the registers map, which needs the same
+  one-line edit and has the prior claim on it. The earlier incident's own
+  closing note says wiring `checks.yml` needs a `workflows` permission the
+  filing seat did not have, and this seat does not have it either.
+- Status: proposed
