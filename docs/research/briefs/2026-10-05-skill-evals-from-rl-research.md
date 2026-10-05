@@ -65,20 +65,48 @@ at all. That branch is the one we do not need, because our artifact is a text
 file and no weights are trained. The gap as written sends the reading queue
 after the wrong half. Section 3 restates it.
 
-**The three-module cap is already violated by six of eight skills.**
-Refinement item 4 adopts C848's finding that Skills of at most three modules
-beat exhaustive bundles. Measured at HEAD: `context-window-engineering` has
-2 deltas and `harness-engineering` has 3; `self-improving-post-training-loops`
-has 5; `agent-containment` and `agent-security-measurement` have 7 numbered
-sections each; `recursive-harness-self-improvement` has 9;
-`evaluation-integrity` and `skill-library-engineering` have 10. No skill uses
-multiple files, so a `##` section is the only thing "module" can mean here.
-Against SkillOpt's measured artifact size — 300 to 2,000 tokens after 1 to 4
-accepted edits (C866) — `evaluation-integrity` at 4,875 words and
-`agent-containment` at 4,345 are roughly three times the top of that range.
-Item 4 is therefore not a rule to adopt going forward; it is a finding that
-most of the library is already out of bounds, and the retirement work it
-implies is larger than ADR-40 reads.
+**The three-module cap is not violated, and reading it as sections was my
+own error.** My first pass counted `##` headings and concluded six of eight
+skills breached C848's at-most-three-modules finding. The Agent Skills
+specification (agentskills.io/specification, read today under L-R1) settles
+what a module is, and it is not a heading. The spec defines progressive
+disclosure in three levels — metadata at roughly 100 tokens, the `SKILL.md`
+body loaded on activation, and files under `scripts/`, `references/` and
+`assets/` loaded only when required — so a module is a *referenced file*.
+Measured at HEAD: all eight skills have **zero** reference files. Every skill
+is one module. C848's cap is not the library's problem.
+
+The spec's two numeric recommendations do bind, and one is breached:
+
+| Skill | Description (max 1024) | Body lines (keep <500) | Body words | ~tokens (rec. <5000) |
+|---|---|---|---|---|
+| `evaluation-integrity` | 983 | 440 | 4,333 | **~5,632** |
+| `agent-containment` | 656 | 430 | 4,104 | **~5,335** |
+| `agent-security-measurement` | 802 | 353 | 3,426 | ~4,453 |
+| `skill-library-engineering` | 746 | 316 | 3,149 | ~4,093 |
+| `recursive-harness-self-improvement` | 834 | 329 | 3,110 | ~4,043 |
+| `self-improving-post-training-loops` | 878 | 164 | 1,505 | ~1,956 |
+| `context-window-engineering` | 672 | 97 | 978 | ~1,271 |
+| `harness-engineering` | 620 | 98 | 930 | ~1,209 |
+
+Descriptions and line counts are all inside the spec. Two bodies exceed the
+recommended 5,000-token instruction budget (token figures are words × 1.3, an
+estimate, not a tokenizer count). The remedy the spec prescribes for exactly
+this is "Move detailed reference material to separate files," which would move
+those two skills from one module toward two or three — *toward* C848's shape,
+not away from it. So the direction of travel is the opposite of what my first
+pass said: the library is under-modularised, not over-modularised, and the
+compaction work is splitting two files rather than cutting six.
+
+What survives from the first reading is the size comparison, and it still
+matters. SkillOpt's optimised artifacts stay between 300 and 2,000 tokens
+after 1 to 4 accepted edits (C866). Six of our eight skills are above 2,000
+and the largest is roughly 2.8× the top of that range. SkillOpt's number
+comes from artifacts an optimiser *converged* on, so it is the best available
+estimate of how much text actually earns its place, and it is evidence that
+most of the library is carrying prose no measurement has justified. That is a
+retirement question for the skill seat, and it lands on O2's twelve-skills
+target, but it is a question about words and not about modules.
 
 ## 1. The estate as measured, which is the baseline any plan has to beat
 
@@ -697,11 +725,92 @@ inconsistency (§5), which is a distill defect that reached a draft issue; and
 `rule:backfill`'s 3,785 unjudged `index` rows, where `lilianweng` is the
 cheapest proof that the rule and not the missing body is the blocker.
 
-For the PM: ADR-40's refinement item 4 is not a forward-looking rule, it is a
-finding that six of eight skills exceed the three-module cap and two are
-about three times SkillOpt's measured artifact size (§0). The retirement and
-compaction work that implies is larger than the ADR reads, and it lands on
-O2's twelve-skills target.
+For the PM: ADR-40's refinement item 4 needs rewording before the skill seat
+plans from it. The three-module cap is not breached — all eight skills are one
+module — but six of eight exceed SkillOpt's measured 300-2,000-token artifact
+range and two exceed the Agent Skills spec's own 5,000-token body
+recommendation (§0). The work that implies is splitting two skills into
+reference files and cutting words from six, which is a different and smaller
+job than retiring sections, and it lands on O2's twelve-skills target either
+way.
+
+## 8b. The live-web check (L-R1), which found the week's largest gap
+
+`docs/standards/lessons.md` L-R1 requires an explicit ecosystem-events check
+against the live web for this seat's declared coverage every run. The
+containment dispatch ran one for containment (brief `2026-10-05.md` §12);
+this is the one for skill evaluation and refinement. It found more than the
+corpus survey did, which is the finding.
+
+**Six papers squarely on this dispatch's subject are absent from the
+corpus.** Searched today, then checked by id against `papers`:
+
+| arXiv | Title | In corpus |
+|---|---|---|
+| 2607.01874 | SkillCoach: Self-Evolving Rubrics for Evaluating and Enhancing Agentic Skill-Use | absent |
+| 2606.22613 | SkillAudit: From Fixed-Suite Benchmarking to Skill-Centered Assessment | absent |
+| 2608.27487 | Grounded Checklist Partial Credit for Agent Skill Trajectories | absent |
+| 2606.17819 | A Framework for Evaluating Agentic Skills at Scale | absent |
+| 2606.11435 | Agent Skill Evaluation and Evolution: Frameworks and Benchmarks | absent |
+| 2607.27309 | SIGIL: Compiling Agent Skills into Typed Harnesses | absent |
+
+SkillCoach is the one that stings: self-evolving rubrics for skill-use
+evaluation is this dispatch's exact subject, and the brief above built its
+rubric argument from ImpossibleRubrics, which is a general rubric paper, for
+want of a skill-specific one.
+
+**The cause is a time window, not a missing feed, and it is measurable.**
+Of the arXiv papers in `papers`, 5,932 carry a `2609` id and 374 a `2610`.
+Older months: 118 from `2608`, **1 from `2607`, 2 from `2606`**, and one or
+two per month before that. `published_at` for the `arxiv` source runs
+2026-08-26 to 2026-10-01. The corpus is effectively a five-week window, and
+everything older in it arrived by deliberate backfill — which is exactly how
+the skill benchmarks this brief leans on got here (SkillsBench `2602`,
+Trace2Skill `2603`, SkillOpt `2605`, Skill-Use `2608`). Every one of the
+canonical papers in this field is older than the window, so the field this
+dispatch surveys is reachable only by hand.
+
+This is the charter's relevance law as an ingestion defect: "a 2023 paper
+whose idea is compounding through the field this month outranks yesterday's
+upload that nobody has used," and the pipeline cannot see 2023, or June 2026.
+It is an ADR-29 census finding and larger than this brief; the six papers
+above are queued, and the window itself is routed to the engineer.
+
+**One ecosystem event, reported as a steering signal and not as evidence.**
+Press reporting today (VentureBeat, The New Stack, unite.ai) says Anthropic
+has opened Agent Skills as a standard with an SDK at agentskills.io, with
+Microsoft, OpenAI, Atlassian, Figma, Cursor and Goose adopting, and
+separately that Anthropic released **an evaluation framework that turns one
+or more skills into executable evaluation tasks, each a realistic user
+request paired with its environment, input artifacts and hidden rubrics**,
+plus a dataset of executable coding tasks, able to evaluate a single skill in
+isolation.
+
+Two reasons to treat that carefully rather than act on it. The dates in the
+coverage do not agree with each other and I could not pin the release date
+from the primary source. And the specification itself, read directly today,
+defines only the file format — directory structure, frontmatter fields,
+progressive disclosure, file references, and a `skills-ref validate`
+command — with no evaluation framework, no task format and no hidden-rubric
+concept in it. So the framework is real reporting about something outside the
+spec I verified, which makes it a signal to point the telescope at and not a
+finding.
+
+If it is what the coverage describes, it changes ADR-40's build order, and
+the engineer should establish that before building: an off-the-shelf harness
+that generates executable tasks with hidden rubrics would supply items 1, 2
+and 4 of ADR-40's testing list. **Hidden rubrics are the interesting part,**
+because withholding the rubric from the subject attacks the specificity
+problem ImpossibleRubrics measured from the other end — an attacker cannot
+follow a roadmap it cannot read. That is a defence our own suites cannot use
+today, since all 88 tasks carry their criteria in the same file the subject's
+author reads.
+
+Two cheap consequences, both inside this seat's lane to report and the
+engineer's to do. `skills-ref validate ./<skill>` is a free conformance gate
+and nothing in the repository runs it. And the spec's own numbers are now the
+authority for §0's size question, which is why that section changed during
+this run.
 
 ## 9. Meta-review verdict: no proposal this week, and the reason is a rule
 

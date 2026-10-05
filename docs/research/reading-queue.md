@@ -472,3 +472,23 @@ the same shape as the chair's gap batch.
 - [ ] Is the 227-claim null-embedding window (every one created 2026-10-04 or 10-05) the normal lag of a nightly embed job, or incident 30's first occurrence returning? Not decidable from the corpus; needs the job's schedule from the engineer — research seat 2026-10-05
 - [ ] C887 is internally inconsistent: "from 72.7% to 99.3%, a +11.99-point improvement" (72.7 to 99.3 is +26.6). Designer-RSI's full text should say which quantity the +11.99 is, and the claim needs splitting or correcting. The W40 draft reproduced the inconsistency faithfully — research seat 2026-10-05
 - [ ] Does SkillsBench's "module" mean a `##` section or a separate file? Our skills are single-file, so the brief read it as a section, which puts six of eight skills over the cap. A file-level reading would put all eight at one module and void the finding. The full text's skill format decides it — research seat 2026-10-05
+
+### Group 4 — the L-R1 reach gap, six papers on this dispatch's own subject
+
+Found by the live-web check (L-R1) and confirmed absent by id against
+`papers`. The cause is the corpus's five-week window: 5,932 arXiv papers
+carry a `2609` id, 1 carries `2607` and 2 carry `2606`, so this field's
+canonical work is reachable only by hand. SkillCoach is the priority: it is
+this dispatch's exact subject, and the brief built its rubric argument from a
+general rubric paper for want of it.
+
+- [ ] arxiv:2607.01874 — SkillCoach: Self-Evolving Rubrics for Evaluating and Enhancing Agentic Skill-Use. PRIORITY: self-evolving rubrics for skill-use evaluation is the dispatch's subject exactly, and it may already answer the fixed-versus-dynamic rubric tension the graph flags as `393 contradicts 39` — research seat 2026-10-05
+- [ ] arxiv:2606.22613 — SkillAudit: From Fixed-Suite Benchmarking to Skill-Centered Assessment. Generates a per-skill report over utility, cost and safety, which is the shape of the evidence page ADR-40 specifies — research seat 2026-10-05
+- [ ] arxiv:2608.27487 — Grounded Checklist Partial Credit for Agent Skill Trajectories. Partial credit over a trajectory is the gap between our 68 rubric tasks and a hard check — research seat 2026-10-05
+- [ ] arxiv:2606.17819 — A Framework for Evaluating Agentic Skills at Scale. Reported as 1,000 tasks from 500 real skills with instruction-following and goal-completion rubrics over 19 agent-model configurations — research seat 2026-10-05
+- [ ] arxiv:2606.11435 — Agent Skill Evaluation and Evolution: Frameworks and Benchmarks. A survey, so read for the map and for what it says our eight-skill estate is missing — research seat 2026-10-05
+- [ ] arxiv:2607.27309 — SIGIL: Compiling Agent Skills into Typed Harnesses. Typed harnesses are a different answer to the compliance problem than a rubric; read for whether a skill can carry its own checkable contract — research seat 2026-10-05
+
+Struck this run, because the live web answered it:
+
+- [x] Does SkillsBench's "module" mean a `##` section or a separate file? **Answered 2026-10-05 by the Agent Skills specification (agentskills.io/specification), read directly: a module is a referenced file under `scripts/`, `references/` or `assets/`, within the spec's three-level progressive disclosure. All eight of our skills have zero reference files and are therefore one module each, so C848's three-module cap is not breached.** The question was raised and struck in the same run (PR #220), which is why it appears here answered; the brief's §0 carries the correction and the numbers. The live question it leaves behind is the token budget, not the module count: two skills exceed the spec's recommended 5,000-token body — research seat 2026-10-05
