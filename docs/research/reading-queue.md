@@ -251,3 +251,23 @@ section 6c.
 - [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2608.29188 — RLVR: Locked at the Entrance, Open Inside: Where RLVR Narrows the Solution Space — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2608.27046 — RLVR: Performance Foundations of Parallel and Distributed Reasoning Language Models — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2211.14275 — gap: process versus outcome rewards over long horizons: Uesato et al., process- and outcome-based feedback for math word problems (the original comparison) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2305.20050 — gap: process versus outcome rewards over long horizons: Lightman et al., Let's Verify Step by Step (PRM800K, process supervision beats outcome) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2312.08935 — gap: process versus outcome rewards over long horizons: Math-Shepherd, automatic process supervision without human labels — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2406.06592 — gap: process versus outcome rewards over long horizons: OmegaPRM, automated process supervision by MCTS — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2410.08146 — gap: process versus outcome rewards over long horizons: Setlur et al., Rewarding Progress: scaling automated process verifiers — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2412.06559 — gap: process versus outcome rewards over long horizons: ProcessBench, where process reward models fail — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2501.07301 — gap: process versus outcome rewards over long horizons: Qwen, the lessons of developing process reward models in mathematical reasoning — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2502.01456 — gap: process versus outcome rewards over long horizons: PRIME, process reinforcement through implicit rewards — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2502.10325 — gap: process versus outcome rewards over long horizons: Process reward models for LLM agents, framework and directions (long-horizon credit) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2505.10978 — gap: process versus outcome rewards over long horizons: GiGPO, group-in-group policy optimization for long-horizon agent credit assignment — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2504.20073 — gap: process versus outcome rewards over long horizons: RAGEN, training agents by multi-turn RL and where it collapses — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2203.02155 — gap: preference optimization from usage data: InstructGPT, RLHF from human preference comparisons (the reference pipeline) — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2305.18290 — gap: preference optimization from usage data: DPO, direct preference optimization without a reward model — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2402.01306 — gap: preference optimization from usage data: KTO, alignment from binary good-or-bad feedback, the shape usage data actually has — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2401.10020 — gap: preference optimization from usage data: Self-rewarding language models, the model judging its own preferences — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2404.19733 — gap: preference optimization from usage data: Iterative reasoning preference optimization, online preference loops — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2404.03715 — gap: preference optimization from usage data: Direct Nash optimization, general preferences beyond reward models — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2403.04132 — gap: preference optimization from usage data: Chatbot Arena, preference data from live usage at scale — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2411.15124 — gap: preference optimization from usage data: Tulu 3, the open post-training recipe where RLVR was named — asked by the chair (owner: fix the gaps) — 2026-10-05
+- [ ] arxiv:2407.21783 — gap: preference optimization from usage data: The Llama 3 herd of models, the preference-data pipeline in production — asked by the chair (owner: fix the gaps) — 2026-10-05
