@@ -160,7 +160,13 @@ def test_gh_failure_degrades_to_no_pull_request(monkeypatch, capsys):
     monkeypatch.setattr(run_report.subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(
         a[0], 1, stdout="", stderr="gh: not authenticated"))
     assert run_report.fetch_pr("branch") is None
-    assert "::warning::" in capsys.readouterr().out
+    # stderr, not stdout: Actions reads annotations from either stream, and
+    # `--dry-run` promises stdout is the payload. A warning on stdout broke that
+    # promise in CI, where `gh` has no token, and the step that exists to never
+    # fail the run failed it.
+    captured = capsys.readouterr()
+    assert "::warning::" in captured.err
+    assert "::warning::" not in captured.out
 
 
 def test_the_script_runs_under_the_container_shell():

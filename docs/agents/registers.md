@@ -79,9 +79,10 @@ file spent a day describing a policy the org had abandoned.
 | `docs/standards/pm.md` | HQ, vendored here | HQ ADRs, synced as a copy | PM charter | changes by HQ ADR, gated daily | enforced |
 | `docs/agents/cross-repo-law.md` | ExO | ExO writes the rule | ExO §3f, plus every charter's ship check clause 3 | HQ decided twice in a week, gated weekly here and per run in the seats | new 2026-09-24, incident 23 |
 | `docs/agents/hq-relay.md` | ExO | ExO writes entries, chair marks delivered | ExO §3f | as incidents implicate HQ, gated weekly | new 2026-09-24. The delivery column is the part that can rot, since no seat controls the chair |
-| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Two of its four surfaces are still `unknown` in every seat sandbox for want of a read-only `DATABASE_URL` |
+| `docs/agents/delivery-health.md` | ExO | ExO writes the guardrails | `python3 tools/delivery_health.py`, from PM §1f delivery half, daily | the product ships weekly and daily, gated daily | new 2026-09-24, incident 24. The artifact-side gate was prose until 2026-09-28 and the seat holding the duty could not perform it, INC-2026-09-28-guardrail-4-had-no-reader. Three of its five surfaces answered `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, INC-2026-09-28-guardrail-4-had-no-reader, and that is closed as of 2026-10-01: the site publishes the rows at `GET /api/delivery` and the command reads them with no credential, so all five surfaces answer from any sandbox. One thing a credential-free reader cannot do is write, so the deploy-drift alarm's once-a-day cooldown needs the direct reader and a drift seen through the receipt is reported rather than mailed. `NEON_RO_URL` is no longer this register's blocker; it is still `graph-quality.md`'s |
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
-| `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which is the same missing credential that leaves two of delivery-health.md's four surfaces unreadable |
+| `panel_verdicts` (the ADR-13 audit trail, `docs/product/reviewer-panel.md`) | engineer builds, ADR-13 owns | `pipeline/skill_revision.py` step 2 files one verdict per skill daily, derived rather than typed | **queued, not firing**: item 18 of `docs/agents/pending-workflow-changes.md`, amended 2026-10-03, adds all three reviewers' suites to `checks.yml` and no reviewer command (the entry argues each of the three exclusions separately). This cell said the first of those already ran, from the day it was written, and no workflow has ever named it (INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had) | a skill changes weekly, the reviewer fires daily once the job is deployed | new 2026-10-02, filed by the engineer seat; corrected 2026-10-03 by the same seat. The register is a table rather than a file because ADR-13 says every verdict is a structured row. All three reviewers exist as of 2026-10-03 (provenance, adversary, validator), so `panel_consensus`'s three passes on one text are reachable for the first time; no skill earns them today, and the validator fails all six on ADR-36 part 2. The write gate fires. The pre-ship gate is queued and needs the chair's hand, and this row is the reason that distinction is now stated rather than assumed |
+| `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which was the same missing credential that left three of delivery-health.md's five surfaces unreadable until 2026-10-01. That one was closed by publishing the four facts it needed as a public receipt, and this one cannot be: the audit runs ten SELECTs across the whole corpus and a public endpoint for those would be the paid product. So `NEON_RO_URL` is now this row's blocker alone |
 
 ## What this run changed
 
@@ -458,24 +459,13 @@ gate is real, the table's state moves from GAP to closed, and the specific
 failure that produced it, a provider migration with no rehearsal behind
 it, now has a command standing in front of it.
 
-**The half that was not running is running (security seat, 2026-10-01).**
-This paragraph said the CI step that checks the gate's teeth lived in
-`.github/workflows-pending/checks.yml`, that nothing in that directory
-executes, and that the guard was therefore unguarded. All three sentences
-are now wrong. `checks.yml` has been in `.github/workflows/` since
-d9cc999, and the step named "the rehearsal writes to a scratch row and
-sends to nobody" runs `tests/test_press_rehearsal.py` on every pull
-request that touches `pipeline/`, which is the set of changes that can
-break it. There is no `checks.yml` under `workflows-pending/` and there
-never was: it was committed straight into the live directory.
-
-This correction is worth more than the fact it carries. The row above it
-already records a reader following this table and nearly rebuilding a gate
-that existed, and this page is the file a seat opens to find out what is
-missing. A register that understates the org's own coverage sends work at
-a problem that is already solved, which is the same waste as a register
-that overstates it, pointed the other way. Both halves of this gate are
-live and neither needs building.
+**The half that is not running.** The CI step that checks the gate still
+has teeth, meaning that a rehearsal cannot write to `digests`, cannot
+mount a mail credential and cannot pass on a receipt naming a different
+model, lives in `.github/workflows-pending/checks.yml`. Nothing in that
+directory executes. So the deploy chain is guarded and the guard is
+unguarded, which is a smaller thing than it sounds and worth one sentence
+in the state column rather than a GAP.
 
 **The habit this nearly cost.** This run's first draft of the row above
 said "closed in code and unmerged", written after reading the engineer's
@@ -535,6 +525,9 @@ for the four under `docs/voice/` and the frontend for the four under
 (`site-copy-2026-09-19.md`, `prose-benchmark-2026-09-19.md`) being
 evidence rather than registers, which is worth saying in the file so the
 next sweep stops counting them.
+
+---
+
 ## The board, added to the map (engineer seat, 2026-09-28)
 
 One row is new and it is the largest open gap on this page, so it is worth
