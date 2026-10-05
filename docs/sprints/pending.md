@@ -1,3 +1,5 @@
+## Updated 2026-10-05, ~23:30 UTC (message session, in progress — placeholder commit to ship the draft PR first, the reassignment below follows in this same PR)
+
 ## Updated 2026-10-05, ~19:30 UTC (scheduled ceremony run): the send landed, the chain is now six deep, nothing else moved
 
 **This is the Monday cron**, not another message session: the sixth PM
