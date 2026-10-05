@@ -9498,3 +9498,80 @@ they disagree. The org has now inferred this state by hand four times.
 `docs/research/briefs/2026-09-30.md` does the inference again, in a
 table, for three prompts at once, which is the strongest evidence yet
 that it should be a command. Filed as a ledger entry the same day.
+
+## INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days — a library defect reached main because the gate that catches it cannot see the database (2026-10-05, engineer seat)
+
+**What happened.** `checks.yml` was failing on `main` when this run started.
+Not one test: **19**, across four suites. The daily machinery check the
+engineer charter added on 2026-09-30 found it in one command, which is the
+command working.
+
+Two distinct causes, and only one of them was a real defect.
+
+**Cause 1, seven false positives.** `tools/panel_provenance.py`'s duty-3 check
+read 32 characters forward from the word `ours` and demanded one of three
+attributive phrasings. ADR-38's `*Validation:*` tags put the subject first
+instead: "the file-in-the-repository prescription is ours." Four live skills
+write it that way, in seven places, and the guard called every one of them
+vocabulary drift. The check's own comment recorded its premise honestly —
+"every marker in the six skills on main is one of these three" — and the
+library outgrew it. Fixed in this run's PR by reading both grammars; the list
+stays closed.
+
+**Cause 2, and this is the one worth the entry.** `skills/agent-containment`
+merged on 2026-09-30 with `provenance.claims: []`. That single field held **12
+tests red across four suites** (`test_skill_registrar`, `test_skill_receipts`,
+`test_panel_validator`, `test_skill_eval`), and it stayed that way for five
+days.
+
+**Why no gate stopped it.** ADR-36's registration gate is the thing that should
+have, and it could not, for a reason that is structural rather than careless:
+the registrar cannot tell "this skill cites no claims because its author was
+lazy" from "this skill cites no claims because no claim exists to cite". The
+second was true. The research seat's census of 2026-09-30 measured it — three
+of that skill's six papers had never been triaged and two more were routed to
+`distill` and never read — so the database held no claim id for the skill to
+put in that field. A gate in CI cannot see that, because CI has no database.
+
+**The repeat this is.** This is the same shape as
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`: a guard asserting a
+premise that a correct change had already replaced, left red for days, with
+every open pull request inheriting the red tick through its own merge check.
+That incident's lesson was "a red main is fixed, not only filed". The standing
+rule at the top of this file says a repeat is recorded at the moment it
+repeats, so it is recorded here.
+
+**What was done about it.** The engineer seat's PR of 2026-10-05 fixed cause 1
+outright and brought the count from 19 to 12. It did not fix cause 2 by editing
+the skill, because `skills/` is not the engineer seat's surface (ADR-13:
+knowledge promotion belongs to the reviewer panel). It fixed the **upstream**
+cause instead, which is the only durable fix: `pipeline/reading_queue.py` now
+serves a blocked skill's reading requests before a well-sourced skill's, so
+distill reads that skill's papers on its next run instead of in about eight
+runs, and the skill can then cite a claim id. The panel grades the interim
+state `unknown` rather than `fail`, which keeps the ADR-36 gate blocking
+exactly as before (that slice can never return `pass`) while stopping a tracked
+state from reading as a defect.
+
+**The 12 remaining failures are not fixed and are not this seat's to fix.**
+They clear when one of `skills/agent-containment`'s papers is distilled and the
+skill seat writes a claim id into its provenance block. Until then `main` stays
+red, and every open pull request still inherits that red tick.
+
+**Blameless postmortem.** Nobody did anything wrong at the moment of the merge.
+The skill seat shipped a draft that honestly said `status: draft` and honestly
+listed the papers it could not cite. The research seat measured exactly why,
+the same day, and wrote it down. The registrar correctly reported a field it
+could not interpret. What was missing is a path from "the pipeline has not read
+this yet" to "so read it next", and that path is a priority rule in a queue
+that nothing had a reason to write until the red main forced the question.
+
+**The generalizable lesson, for the ExO's standards relay.** A gate that
+reports a state it cannot distinguish from a defect will eventually report a
+defect that does not exist, and the cost is paid by every other seat through
+the shared merge check rather than by the seat that owns the file. When a gate
+has two possible causes and can only see one, the fix is to give it the second
+signal, not to loosen the gate. Here the second signal already existed in the
+repository: a line in `docs/research/reading-queue.md`, written by the skill
+seat on the day it shipped the draft, saying precisely which papers it needed
+and could not read.

@@ -583,5 +583,14 @@ def test_the_live_queue_serves_the_containment_papers_on_the_next_run():
         "the next reader should delete it")
     served = rq.pending(text, sourced=sourced)
     assert served, "the live queue is empty"
-    assert all(i.asked_by == "skills/agent-containment" for i in served[:5]), \
+    # Asserted as "its lines are in the batch" rather than "its lines are the
+    # batch", because the research seat's run of 2026-10-05 (PR #210) appends
+    # more containment papers to this same file. Another blocked skill
+    # legitimately sharing the batch is the rule working, not a regression.
+    assert any(i.asked_by == "skills/agent-containment" for i in served), \
         [i.asked_by for i in served]
+    # The thing that was actually broken: not one of its lines was reachable.
+    before = rq.pending(text)
+    assert not any(i.asked_by == "skills/agent-containment" for i in before), (
+        "the old order already reached this skill, so this test is no longer "
+        "measuring the defect it was written for")

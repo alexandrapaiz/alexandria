@@ -10849,3 +10849,133 @@ provenance reviewer exists to catch.
   version of it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-05 — Craft scan: Consensus filters on the measurement, not only the subject (engineer seat, containment dispatch)
+
+- Trigger: craft scan for 2026-10-05, rotated off skills.sh (scanned earlier
+  today by this seat's other window) to the academic-tools row of
+  docs/market/landscape.md. Read against today's own work, which spent the
+  day adding four SUBJECT tags to a closed list.
+- What is worth stealing: Consensus ships facets that are measurements rather
+  than topics. Q1-Q4 journal tier, a citation threshold, a methodology
+  control, preprints in or out. A reader there does not ask "show me security
+  papers", they ask "show me the ones with a method and enough citations to
+  bet on". alexandria's `claims.topics` is fourteen subjects and now
+  eighteen, and every one of them answers "what is this about" and none
+  answers "how good is the evidence". The research seat's census of
+  2026-09-30 made the point by accident: what made the security claims worth
+  finding was never that they were about security, it was that they carry an
+  attack success rate, a detection rate, or a sabotage frequency. EvoSafeHarness
+  is worth reading because of "45.6% to 10.0%", not because of its subject.
+- What alexandria does better: the facets are honest about their own
+  provenance. A Consensus journal tier is a proxy the reader cannot audit,
+  and every claim in this library carries the paper, the evidence sentence and
+  a claim id a reader can follow. The claim graph has no analogue there at all.
+- Where it goes: the idea below.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — A `measured` facet, so the library can be asked for evidence rather than for a subject (engineer seat)
+
+- Trigger: the craft scan above, plus the census finding it explains. 71
+  claims came from containment, protocols and security papers and the
+  valuable ones are valuable because they carry a rate. `claims` already has
+  a `measured` boolean (prompts/distill-practices.md asks the model for it)
+  and `evidence` holds the sentence, and nothing in the product filters on
+  either. Four new subject tags shipped today and they still cannot
+  distinguish "a survey about prompt injection" from "a defense that took ASR
+  from 45.6% to 10.0%".
+- What: one facet, derived rather than asked for. A claim is `measured` when
+  its evidence sentence contains a number with a unit or a percent, which is
+  a regular expression and not a model call, and the graph page, the digest
+  payload and the skill agent gain one filter on it. The census's own
+  distill-worthy bar is exactly this test, so the facet is a rule the
+  research seat already wrote in prose.
+- Why it is more valuable than another subject tag: a subject tag splits the
+  corpus into eighteen piles that all contain surveys. This one splits every
+  pile into the half a builder can act on and the half they cannot, and it
+  costs no model call and no taxonomy decision.
+- First step: count it. One read-only query over `claims.evidence` for the
+  regex, printed next to the `measured` column the distiller already sets, to
+  find out whether the two agree. If they disagree badly the model's boolean
+  is the thing to fix and this idea is smaller than it looks.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — Every gate needs a third severity for "blocked upstream", not just pass and fail (engineer seat)
+
+- Trigger: this run's break-fix. One field, `skills/agent-containment`'s
+  `provenance.claims: []`, held 12 tests red across four suites for five days,
+  and the field was correct: the corpus held no claim id for that skill to
+  cite, because three of its six papers had never been triaged. The registrar
+  reported a defect because a defect and a blocked precondition look identical
+  from CI, which has no database. I fixed it for that one check by reading
+  `docs/research/reading-queue.md` for evidence that the skill had asked.
+- What: the pattern, factored out and applied to the other gates rather than
+  to one. A helper that answers one question — is this artifact waiting on
+  work the pipeline has been told to do — and the three or four gates that
+  currently emit `fail` for an unmet precondition call it. The signal is
+  already in the repository in every case this run looked at; what was missing
+  was anything that read it.
+- Why it is not "loosen the gate": the gate keeps blocking. `unknown` and
+  `fail` both block an ADR-36 merge, so the severity only decides whether
+  `main` goes red for every other seat and whether the owner gets an alarm
+  mail. Those are exactly the two things that should not fire for a tracked
+  state, and exactly the two that should fire for a real one.
+- First step: grep the gates for `"fail"` and sort the findings into "the
+  artifact is wrong" and "something upstream has not happened yet". The split
+  is the deliverable; the helper is small once the list exists.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The reading queue tells nobody how far back their request is (engineer seat)
+
+- Trigger: measured in this run. The live queue holds 47 pending lines,
+  `MAX_PER_RUN` is 6, and `skills/agent-containment`'s five requests sat
+  behind 27 older lines, which is about eight runs. Nothing anywhere printed
+  that number. The skill seat wrote the lines on 2026-09-30 and had no way to
+  learn that the papers would arrive in October, and the file it wrote them
+  into reads like a request that was accepted.
+- What: distill prints a position and an ETA per pending line, and the run
+  log says which skills are waiting and for how long. Today's fix changed the
+  ORDER so a blocked skill goes first, which helps the blocked case and does
+  nothing for the visibility problem: a line can still be twenty deep and
+  look accepted.
+- Why it matters beyond tidiness: ADR-35 makes reading a precondition of
+  skill creation, so a queue line is a skill that cannot be written yet. A
+  silent queue converts "the pipeline has not read this" into "the skill seat
+  did not do its job", which is the misreading this run spent its break-fix
+  budget undoing.
+- First step: one line per pending item in distill's existing
+  `reading-queue:` log block, carrying the position and the run count at the
+  current rate. The parser already returns the full ordered list, so this is
+  a print rather than a feature.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — URGENT: main is still red on 12 tests and no seat whose surface it is can clear it (engineer seat)
+
+- Trigger: this run's mandatory machinery check. `checks.yml` on `main` was
+  failing 19 tests across four suites when this run started; this run's PR
+  fixes 7 of them and 12 remain. Recorded as
+  `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`.
+- What is still broken: every one of the 12 traces to
+  `skills/agent-containment` carrying `provenance.claims: []`. They clear
+  when one of that skill's papers is distilled and a claim id is written into
+  its provenance block.
+- Why this run did not clear it: the edit is in `skills/`, which this seat is
+  forbidden to write (ADR-13, and the engineer charter's boundary list). The
+  upstream half is fixed in this PR — distill now reads that skill's papers
+  on its next run instead of in about eight — so the sequence to green is a
+  distill run, then one skill-seat edit.
+- Why it is urgent rather than merely open: a red `main` is inherited by
+  every open pull request through its own merge check, so all nine open PRs
+  today carry a red tick they did not cause and cannot distinguish from their
+  own. That is the cost named in
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`, repeating.
+- First step: deploy this PR's distill change, let the scheduled run read the
+  five queued containment papers, then dispatch the skill seat to cite the
+  claim ids. Two of those three steps are the chair's and one is the skill
+  seat's.
+- Cost: $0.
+- Status: urgent
