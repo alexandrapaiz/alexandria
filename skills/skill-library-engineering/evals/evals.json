@@ -1,0 +1,647 @@
+{
+  "skill": "skill-library-engineering",
+  "suite_version": 2,
+  "written": "2026-09-30",
+  "author": "skill agent (ADR-22)",
+  "adr": "ADR-36",
+  "subject_model": "kimi (ADR-32 funded account) by default; a Claude run is the monthly OKR benchmark",
+  "judge": "a model other than the subject; rubric tasks only",
+  "note": "Nine treatment tasks and two controls from the five cited papers (ADR-35). This skill's own strongest finding is that a hand-written skill can go net negative, so its eval is the one with the most at stake: if any suite in the library should be believed over its author, it is this one. Revised 2026-09-30 (ADR-38 retrofit): every task gained a `sections` list naming the SKILL.md headings it exercises, so the per-section Validation tags are checkable by string comparison rather than by trusting `source.claims`. Contract in skills/_validation/evals/README.md.",
+  "tasks": [
+    {
+      "id": "sle-t1",
+      "kind": "treatment",
+      "sections": [
+        "Write the skill from recorded runs, not from the task description"
+      ],
+      "form": "prompt",
+      "situation": "GraphSkillEvo's baseline table: under the Codex harness with GPT-5.4, an expert-written skill averaged 67.23 and an LLM-written-from-description skill 67.21, both below the 67.97 no-skill baseline, while trajectory-grounded skills averaged 8 to 10 points above it.",
+      "source": {
+        "paper": "GraphSkillEvo; COBRA-Skills",
+        "arxiv": "arxiv.org/abs/2609.21749",
+        "claims": [
+          625,
+          626,
+          396,
+          397
+        ]
+      },
+      "prompt": "Our agent handles supplier-invoice reconciliation and gets it wrong often enough that finance checks every result. Priya has done this job by hand for six years and knows every edge case. The plan is to sit with her for two days, write a SKILL.md capturing everything she knows about the task, and load it into the agent. She is available Thursday. Anything I should know before we start?",
+      "without_skill": "Endorses the plan enthusiastically, because capturing expert knowledge into a document is what everyone believes skills are for, and offers a template and interview questions.",
+      "with_skill": "Warns that an expert-written skill is measurably capable of making the agent worse, and reorders the work: run the task unaided first, keep the trajectories, and spend Priya's two days on what the runs actually got wrong.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "warns",
+            "criterion": "States that a skill written from expertise or from the task description can leave the agent worse off than no skill at all.",
+            "anchors": {
+              "0": "Endorses the plan without qualification.",
+              "1": "Generic caution that skills need testing.",
+              "2": "States the measured result: expert-written and description-written skills both landed below the no-skill baseline, one costing 7.5 points on a benchmark."
+            }
+          },
+          {
+            "id": "reorder",
+            "criterion": "Puts unaided runs before the writing, and makes the trajectories the input.",
+            "anchors": {
+              "0": "Writing first, testing later.",
+              "1": "Suggests evaluating afterwards.",
+              "2": "Run the task with no skill loaded, keep the trajectories, then write from the recorded failures."
+            }
+          },
+          {
+            "id": "uses_expert",
+            "criterion": "Keeps the expert in the loop in the right role rather than discarding her.",
+            "anchors": {
+              "0": "Either interviews her as planned or cuts her out.",
+              "1": "Ambiguous.",
+              "2": "Puts her two days on diagnosing the recorded failures, which is where her knowledge is checkable."
+            }
+          },
+          {
+            "id": "baseline",
+            "criterion": "Insists on a no-skill baseline that the finished skill has to beat.",
+            "anchors": {
+              "0": "No baseline.",
+              "1": "Says to measure.",
+              "2": "Names the no-skill arm as the comparison and says a skill that does not beat it should not ship."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t2",
+      "kind": "treatment",
+      "sections": [
+        "Most of the value is in the grounding, not in the search on top of it",
+        "Where the full text narrows what our claim rows say"
+      ],
+      "form": "prompt",
+      "situation": "COBRA-Skills' and GraphSkillEvo's own ablations: the bandit was worth 2.2 points and the population evolution 2.4, inside total gains of 13.1 to 26.9 over no-skill, and a Best-of-30 grounded baseline came within 2.5 points of the full system.",
+      "source": {
+        "paper": "COBRA-Skills; GraphSkillEvo",
+        "arxiv": "arxiv.org/abs/2609.11682",
+        "claims": [
+          396,
+          397,
+          398,
+          627
+        ]
+      },
+      "prompt": "We have eleven skills in our internal library. I have read two papers on automated skill optimization and I want to build the machinery: a contextual bandit to decide which skill to spend evaluation budget on, a population of candidate variants per skill, mutation and crossover between generations, and a fitness function over our benchmark. Scoping it at about three weeks. Design it for me.",
+      "without_skill": "Designs the requested system competently, because the request is specific and the papers are real, and never questions whether an eleven-skill library is where that machinery pays.",
+      "with_skill": "Declines the three weeks for now, using the papers' own ablations, and prescribes the cheaper ordering: a few grounded candidates, a held-out set, keep the best.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "ordering",
+            "criterion": "Recommends exhausting grounding before building search, and says so as a ranked recommendation rather than an aside.",
+            "anchors": {
+              "0": "Builds the system as asked.",
+              "1": "Suggests starting smaller without a reason.",
+              "2": "Recommends grounded candidates plus a held-out set first, and defers the search loop."
+            }
+          },
+          {
+            "id": "own_ablations",
+            "criterion": "Supports it with the source papers' own ablation magnitudes.",
+            "anchors": {
+              "0": "No numbers.",
+              "1": "Asserts the machinery adds little without evidence.",
+              "2": "Cites that the bandit and the evolution were worth roughly 2.2 and 2.4 points inside total gains of 13 to 27, and that a Best-of-30 grounded baseline came within 2.5 points."
+            }
+          },
+          {
+            "id": "cost",
+            "criterion": "Names where the cost actually sits in such a loop.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Says it will be expensive.",
+              "2": "States that cost is dominated by the model that rewrites the skill, not the one that runs it, and that the target model can write its own skills at roughly half the cost for about one point."
+            }
+          },
+          {
+            "id": "honest_about_papers",
+            "criterion": "Notes that the papers are arguing for their own optimizers, without dismissing them.",
+            "anchors": {
+              "0": "Treats the papers as neutral, or dismisses them.",
+              "1": "One or the other.",
+              "2": "Says the ordering comes from the numbers while the papers' framing comes from their contribution, and keeps the machinery as a later option."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t3",
+      "kind": "treatment",
+      "sections": [
+        "The description is the entire routing surface, and it is read alone"
+      ],
+      "form": "project",
+      "situation": "The Router Within: under progressive disclosure every skill's name and description is preloaded and the model picks from that menu with no body text visible, and Qwen3-32B in a live bash-agent harness on 177 executable tasks loaded the correct skill on 1.1 percent of them.",
+      "source": {
+        "paper": "The Router Within",
+        "arxiv": "arxiv.org/abs/2609.15982",
+        "claims": [
+          565,
+          566,
+          567
+        ]
+      },
+      "prompt": "body.md is the body of a finished skill that has no description yet. Our harness uses progressive disclosure: it preloads only each skill's name and description, and the model picks from that menu without seeing any body text. Our library already contains a skill called database-migrations whose description covers schema changes, backfills and rollback. Write the frontmatter for this one. Output JSON only, as an object with keys \"name\" and \"description\".",
+      "files": {
+        "body.md": "# Connection pool exhaustion\n\nWhen a service under load starts returning timeouts on queries that are fast in\nisolation, the pool is usually the constraint rather than the database. The\nsymptoms overlap with a slow query and the fixes do not.\n\n## Read the wait time, not the query time\n\nA saturated pool shows as time spent waiting to acquire a connection, which\nmost ORMs do not report in the query duration. Instrument acquisition wait\nseparately before touching pool size. If acquisition wait is near zero, the\npool is not your problem and nothing else in this file applies.\n\n## Pool size is bounded by the database, not by your traffic\n\nEach application replica holds its own pool, so the number that matters is\nreplicas times pool size against the server's connection limit. Teams raise\npool size per replica during an incident and exhaust the server's limit, which\nturns a slow service into a refused one.\n\n## Long-held connections are usually a transaction bug\n\nA connection held across an external HTTP call, or a transaction opened before\nthe work it wraps, holds pool capacity for the duration. Find the longest-held\nacquisitions and look at what the code does between acquire and release.\n\n## Queue, then shed\n\nWhen demand genuinely exceeds the pool, a bounded acquisition queue with a\ntimeout degrades better than an unbounded one, and shedding at the edge\ndegrades better than either.\n"
+      },
+      "without_skill": "Writes a short, tidy summary description of the kind the format documents encourage: 'Helps diagnose and fix database connection pool problems.' It reads well and gives a router almost nothing to match on.",
+      "with_skill": "Writes the description as the routing surface: concrete activation conditions in the vocabulary a requester would use, at the library's own word budget, and bounded against the neighbouring skill.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "The output is an object with exactly the keys 'name' and 'description', both non-empty strings."
+          },
+          {
+            "id": "name_form",
+            "statement": "name matches ^[a-z0-9]+(-[a-z0-9]+)*$ and is not identical to any existing skill name in the library."
+          },
+          {
+            "id": "budget",
+            "statement": "The description's word count is between 100 and 150 inclusive, which is this library's own budget for the field."
+          },
+          {
+            "id": "conditions",
+            "statement": "The description contains at least four distinct activation conditions, counted as clauses introduced by 'when' or 'where' or a semicolon-separated 'or' alternative."
+          },
+          {
+            "id": "symptoms_not_summary",
+            "statement": "At least three of the conditions are stated as observable symptoms a requester would report (for example timeouts on fast queries, acquisition wait, replicas times pool size against a server limit) rather than as topic labels."
+          },
+          {
+            "id": "no_ban_list",
+            "statement": "The description violates no entry in docs/voice/ban-list.md, and contains none of: 'best practices', 'comprehensive', 'seamlessly', 'leverage', 'robust'."
+          },
+          {
+            "id": "bounded",
+            "statement": "The description does not claim schema changes, migrations, backfills or rollback, which belong to the existing database-migrations skill."
+          }
+        ],
+        "pass_condition": "every assertion holds; the harness reports the count so a near miss is visible"
+      }
+    },
+    {
+      "id": "sle-t4",
+      "kind": "treatment",
+      "sections": [
+        "A wrong load costs more than a missed one"
+      ],
+      "form": "prompt",
+      "situation": "Reflect, Revise, Reuse's retrieval-threshold sweep: lowering the reuse threshold from 0.6 to 0.4 dropped success from 69.5 to 55.2 percent, while raising it to 0.8 dropped it only to 66.7.",
+      "source": {
+        "paper": "Reflect, Revise, Reuse; The Router Within",
+        "arxiv": "arxiv.org/abs/2609.17653",
+        "claims": [
+          568,
+          569,
+          565
+        ]
+      },
+      "prompt": "Our skill library has 34 entries and the retrieval step only reuses a stored skill when the match score clears 0.62. Analytics say 71 percent of requests load no skill at all, which the team reads as a waste of a library we paid to build. The proposal is to drop the threshold to 0.45 so the library actually gets used, and we can revisit if quality dips. Ship it?",
+      "without_skill": "Agrees, possibly with a request for monitoring. Unused inventory reads as waste, and the cost of a wrong load is invisible in the analytics being quoted.",
+      "with_skill": "Declines, because the two errors are not symmetric: loose matching cost more than twice what strict matching cost in the measured sweep, and a wrong load is worse than an empty context.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "asymmetry",
+            "criterion": "States that a wrong load and a missed load are not equally costly, and that the wrong load is worse.",
+            "anchors": {
+              "0": "Treats the trade-off as symmetric.",
+              "1": "Says quality might dip.",
+              "2": "States that an ill-suited skill leaves a task worse off than no skill at all, so the errors are asymmetric."
+            }
+          },
+          {
+            "id": "numbers",
+            "criterion": "Quantifies the asymmetry from the measured sweep.",
+            "anchors": {
+              "0": "No numbers.",
+              "1": "Vaguely asserts loose matching is worse.",
+              "2": "Cites 0.6 to 0.4 dropping success 69.5 to 55.2 against 0.8 dropping it only to 66.7, roughly twice the cost."
+            }
+          },
+          {
+            "id": "direction",
+            "criterion": "Says to tune the threshold from the strict side.",
+            "anchors": {
+              "0": "Recommends lowering.",
+              "1": "Recommends holding.",
+              "2": "Recommends approaching from strict and, if anything, testing upward first."
+            }
+          },
+          {
+            "id": "reframes_metric",
+            "criterion": "Rejects load rate as the objective and replaces it with task success.",
+            "anchors": {
+              "0": "Accepts the 71 percent as the problem to solve.",
+              "1": "Mentions success rate.",
+              "2": "States that the 71 percent is not itself a defect and that the metric to move is task success with and without the load."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t5",
+      "kind": "treatment",
+      "sections": [
+        "When one request needs several skills, select a set",
+        "Where the full text narrows what our claim rows say"
+      ],
+      "form": "prompt",
+      "situation": "Beyond Top-k Skill Retrieval's central negative result: penalising raw similarity between candidate skills scored 0.534 recall against 0.705 for the pointwise baseline it was meant to improve, and only removing the query-aligned component of each representation first got set selection to 0.711.",
+      "source": {
+        "paper": "Beyond Top-k Skill Retrieval",
+        "arxiv": "arxiv.org/abs/2609.05824",
+        "claims": [
+          320,
+          321,
+          322
+        ]
+      },
+      "prompt": "Our router scores every skill against the request and loads the top three. On compositional requests it keeps loading three near-duplicates and misses the complementary skill the workflow also needs. I am going to add a diversity term: subtract a penalty proportional to the cosine similarity between each candidate and the ones already selected, standard maximal marginal relevance. Sanity-check the plan.",
+      "without_skill": "Approves. Maximal marginal relevance on raw embeddings is the textbook answer to redundant retrieval and looks obviously right here.",
+      "with_skill": "Flags that this exact move was measured and made things sharply worse, and supplies the correction: strip the query-aligned component before measuring redundancy.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "catches_trap",
+            "criterion": "Identifies that penalising raw similarity between candidates is the failure mode, not the fix.",
+            "anchors": {
+              "0": "Approves the plan.",
+              "1": "Raises a general worry about over-diversifying.",
+              "2": "States that skills needed by one request are similar for a good reason, so a raw-similarity penalty removes the wrong candidates."
+            }
+          },
+          {
+            "id": "numbers",
+            "criterion": "Attaches the measured magnitudes.",
+            "anchors": {
+              "0": "None.",
+              "1": "Says it was tried and failed.",
+              "2": "Cites 0.534 recall for the raw penalty against 0.705 for the pointwise baseline, and 0.711 after the correction."
+            }
+          },
+          {
+            "id": "correction",
+            "criterion": "Gives the fix: remove the query-aligned component of each skill's representation so the penalty measures redundancy rather than shared relevance.",
+            "anchors": {
+              "0": "No fix, or just 'tune the penalty weight'.",
+              "1": "Suggests a different diversity heuristic.",
+              "2": "Gives the residual-representation correction and keeps set selection as the objective."
+            }
+          },
+          {
+            "id": "scope",
+            "criterion": "Keeps the honest scope: the gains were on multi-skill queries and set selection tied plain retrieval on single-skill ones.",
+            "anchors": {
+              "0": "Oversells set selection.",
+              "1": "Silent on scope.",
+              "2": "States the gains concentrate on compositional queries and are small at the compared cutoff."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t6",
+      "kind": "treatment",
+      "sections": [
+        "Revise in rounds, keep the reader separate, stop at three"
+      ],
+      "form": "prompt",
+      "situation": "Reflect, Revise, Reuse's two largest ablations: removing in-run amendment cost 6.66 points and removing the reader's isolation cost 8.57, with three revision rounds worth 12.4 points and a fourth and fifth together worth 0.9.",
+      "source": {
+        "paper": "Reflect, Revise, Reuse",
+        "arxiv": "arxiv.org/abs/2609.17653",
+        "claims": [
+          565,
+          566,
+          567,
+          568,
+          569
+        ]
+      },
+      "prompt": "I want a loop that improves our skills automatically after they ship. Sketch: after every failed run, hand the whole thing to a strong model, the skill text, the trajectory, the runner's reasoning and the error, and ask it for a better version of the skill. Loop until the benchmark stops improving. What would you change?",
+      "without_skill": "Tidies the sketch: add a validation set, version the skills, cap the iterations, maybe a diff review. It keeps the single reviewer that sees everything, which is the part the evidence says costs the most.",
+      "with_skill": "Splits the loop in two, isolates the reader from the skill text and the runner's reasoning, and stops at three rounds.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "isolation",
+            "criterion": "Withholds the skill text and the runner's reasoning from the diagnosing reader, and gives the reason.",
+            "anchors": {
+              "0": "Keeps one reviewer that sees everything.",
+              "1": "Suggests a second reviewer without specifying what it sees.",
+              "2": "Gives the reader only the instruction and the trajectory, so its diagnosis cannot inherit the mistaken plan it is meant to find, and notes this was the largest measured ablation at 8.57 points."
+            }
+          },
+          {
+            "id": "in_run",
+            "criterion": "Adds in-run amendment: the runner corrects the skill in place when the environment contradicts it.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Mentioned vaguely.",
+              "2": "Included as a distinct half of the loop, worth 6.66 points when removed."
+            }
+          },
+          {
+            "id": "rounds",
+            "criterion": "Replaces 'loop until it stops improving' with a fixed small number of rounds.",
+            "anchors": {
+              "0": "Keeps the open loop.",
+              "1": "Caps it arbitrarily.",
+              "2": "Stops at three, citing 12.4 points for three rounds and 0.9 for the fourth and fifth together."
+            }
+          },
+          {
+            "id": "vs_retries",
+            "criterion": "Distinguishes accumulated edits from extra attempts.",
+            "anchors": {
+              "0": "Conflates them.",
+              "1": "Silent.",
+              "2": "Notes three rounds beat three independent retries, 69.5 against 62.8, on a slightly smaller token budget."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t7",
+      "kind": "treatment",
+      "sections": [
+        "Structure the file so one failure maps to one section"
+      ],
+      "form": "project",
+      "situation": "Reflect, Revise, Reuse's repair analysis: which failures the loop could fix depended on which file owned them, with plan errors repaired 16 of 23 by editing the plan file, grounding errors 6 of 12 via backup localization, and missing contingencies 1 of 4 via recovery rules.",
+      "source": {
+        "paper": "Reflect, Revise, Reuse; GraphSkillEvo",
+        "arxiv": "arxiv.org/abs/2609.17653",
+        "claims": [
+          565,
+          566,
+          628,
+          629
+        ]
+      },
+      "prompt": "monolith.md is one of our skills, a single file. Our revision loop keeps producing edits that touch the whole file and it is getting worse, not better. Split it into a multi-file package and give me the routing table the revision loop should use. Write answer.json: an object with \"files\", mapping each new file path to a one-line statement of what it owns, and \"routing\", mapping each of the failure classes \"plan_error\", \"grounding_error\" and \"missing_contingency\" to the single file path a revision for that class must edit.",
+      "files": {
+        "monolith.md": "# Refund a duplicate charge\n\nUse this when a customer was charged twice for one order.\n\nFind the customer in the admin console by email. Open the Payments tab. The\nduplicate is the second of two charges with the same amount within 10 minutes.\nClick it, then click Refund, then choose Full. Confirm.\n\nThe Payments tab is the fourth tab, or the third if the account has no\nsubscription. If the tab strip has collapsed into a kebab menu, the Payments\nentry is inside it.\n\nIf the refund button is greyed out the charge has already settled, and it has\nto go through the ledger tool instead of the console.\n\nIf two charges are 10 to 60 minutes apart they may be a legitimate repeat\npurchase; check the order ids before refunding anything.\n\nIf the console times out mid-refund, do not retry from the start, because the\nrefund may have gone through. Check the Payments tab first.\n\nAfter refunding, note the case id in the ticket.\n"
+      },
+      "without_skill": "Splits by reading order, producing something like overview, steps and troubleshooting, which is a sensible document layout and gives the revision loop no unambiguous target for any failure class.",
+      "with_skill": "Splits along the axis that owns failures, so each failure class has exactly one file to edit, and states what each file owns.",
+      "check": {
+        "type": "parses",
+        "format": "json",
+        "assertions": [
+          {
+            "id": "schema",
+            "statement": "answer.json is an object with keys 'files' and 'routing'; 'files' maps at least four distinct paths to non-empty strings; 'routing' has exactly the three keys plan_error, grounding_error, missing_contingency."
+          },
+          {
+            "id": "covers_roles",
+            "statement": "The file set covers all five roles: retrieval metadata, an executable plan, backup localization for locating things in a changed interface, recovery rules, and known failure cases. Scored as roles covered over five."
+          },
+          {
+            "id": "routing_distinct",
+            "statement": "The three routing values are three distinct paths, each present as a key in 'files'."
+          },
+          {
+            "id": "routing_correct",
+            "statement": "plan_error routes to the executable-plan file, grounding_error to the backup-localization file, and missing_contingency to the recovery-rules file."
+          },
+          {
+            "id": "content_placed",
+            "statement": "The tab-position and kebab-menu material lands in the backup-localization file, the settled-charge and timeout material in recovery rules, and the 10-to-60-minute legitimate-repeat material in failure cases rather than in the plan."
+          }
+        ],
+        "pass_condition": "schema, routing_distinct and routing_correct hold, covers_roles is 5/5, and content_placed holds"
+      }
+    },
+    {
+      "id": "sle-t8",
+      "kind": "treatment",
+      "sections": [
+        "Index on metadata, not on the body"
+      ],
+      "form": "prompt",
+      "situation": "The Router Within's comparison of a description menu against reading full skill bodies, where the menu held up on curated libraries and collapsed on procedural documents, set against Reflect, Revise, Reuse's metadata retrieval recovering 12 of 12 reuse cases against 1 of 12 for full-text matching.",
+      "source": {
+        "paper": "The Router Within; Reflect, Revise, Reuse",
+        "arxiv": "arxiv.org/abs/2609.15982",
+        "claims": [
+          565,
+          566,
+          567,
+          568
+        ]
+      },
+      "prompt": "We are deciding where to spend our writing effort on a 60-skill library. Half the team wants to invest in the descriptions, half wants to invest in the bodies and let the retriever read them. Our harness is ours: we control the retrieval step and can index whatever we like. The skills are long procedural runbooks and several of them share a lot of surface vocabulary. Settle it.",
+      "without_skill": "Splits the difference, or picks one on taste, without noticing that the right answer is determined by which of the two retrieval mechanisms is in play and that this library's documents are the case where the menu collapses.",
+      "with_skill": "Makes the answer conditional on the mechanism, notes that this library is the procedural-document case, and prescribes structured metadata for the index the team controls.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "conditional",
+            "criterion": "Makes the recommendation depend on whether the harness routes from a preloaded description menu or reads candidate bodies.",
+            "anchors": {
+              "0": "Picks one unconditionally.",
+              "1": "Notes the harness matters without resolving it.",
+              "2": "States the finding inverts between the two mechanisms and resolves it for this team, which controls its own retriever."
+            }
+          },
+          {
+            "id": "procedural_case",
+            "criterion": "Recognises that long procedural runbooks sharing surface vocabulary is the case where description-only routing collapses and where full-text matching also drags.",
+            "anchors": {
+              "0": "Missed.",
+              "1": "Mentions one of the two.",
+              "2": "Names both: descriptions cannot carry the distinguishing detail, and shared surface tokens sink full-text matching."
+            }
+          },
+          {
+            "id": "metadata",
+            "criterion": "Prescribes indexing structured metadata rather than the body text for the retriever they own.",
+            "anchors": {
+              "0": "Index the bodies.",
+              "1": "Says metadata without saying what.",
+              "2": "Names the fields: an intent line, the application, keywords and reusable argument slots, citing 12 of 12 against 1 of 12 at threshold 0.6."
+            }
+          },
+          {
+            "id": "thin_evidence",
+            "criterion": "Flags that the metadata result rests on 12 reuse cases.",
+            "anchors": {
+              "0": "Presented as settled.",
+              "1": "Hedged generically.",
+              "2": "States the sample size and recommends re-measuring on their own 60."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-t9",
+      "kind": "treatment",
+      "sections": [
+        "Skills outlive the model they were written for"
+      ],
+      "form": "prompt",
+      "situation": "COBRA-Skills' and GraphSkillEvo's transfer results: 34 of 36 cross-model transfers improved on the receiving model's no-skill baseline, skills held their lead under two external harnesses, and a skill optimised on a small model beat a large model's no-skill baseline on all three benchmarks tested.",
+      "source": {
+        "paper": "COBRA-Skills; GraphSkillEvo",
+        "arxiv": "arxiv.org/abs/2609.11682",
+        "claims": [
+          399,
+          400,
+          629
+        ]
+      },
+      "prompt": "We are moving our agent off the model we have been running for a year onto a different provider's model next month. We have 22 skills that were written and refined while the old model was in place. Finance has asked what the migration costs. My assumption is that the skills are tuned to the old model and we largely start over. Give me the estimate.",
+      "without_skill": "Accepts the premise and estimates a rewrite, by analogy with prompts and fine-tunes, which really are model-specific.",
+      "with_skill": "Rejects the premise with the transfer evidence, and replaces the rewrite with a re-measurement, keeping the honest exceptions.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "rejects_premise",
+            "criterion": "States that skills transfer across models rather than needing a rewrite.",
+            "anchors": {
+              "0": "Estimates a rewrite.",
+              "1": "Says some may transfer.",
+              "2": "States the measured result, 34 of 36 cross-model transfers improving on the receiving model's no-skill baseline, and that skills also survived a change of surrounding harness."
+            }
+          },
+          {
+            "id": "remeasure",
+            "criterion": "Replaces the rewrite with a re-measurement against the new model's own no-skill baseline.",
+            "anchors": {
+              "0": "No measurement plan.",
+              "1": "Says to test.",
+              "2": "Runs each skill's with-versus-without eval on the new model and only revises the ones that fail to beat its baseline."
+            }
+          },
+          {
+            "id": "asymmetry",
+            "criterion": "Notes that the portability is what makes the file, not the weights or the harness prompt, the thing worth maintaining.",
+            "anchors": {
+              "0": "Absent.",
+              "1": "Implied.",
+              "2": "Stated, with the consequence that grounding cost is amortised over every later model."
+            }
+          },
+          {
+            "id": "no_overclaim",
+            "criterion": "Does not promise that all 22 will transfer.",
+            "anchors": {
+              "0": "Promises a free migration.",
+              "1": "Silent on the exceptions.",
+              "2": "Notes 2 of 36 transfers did not improve, so the re-measurement is the deliverable and a small number of revisions should be budgeted."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sle-c1",
+      "kind": "control",
+      "sections": [],
+      "form": "project",
+      "situation": "Ordinary file-parsing engineering, over skill files. It sits inside this skill's exact subject matter and needs none of its content, which makes it the sharper of the two controls.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "loader.py walks a directory of SKILL.md files and returns their frontmatter. It is buggy. Fix it so the tests pass, keeping the function name and signature. Write the whole file to answer.py.",
+      "files": {
+        "loader.py": "import os\nimport re\n\n\ndef load_frontmatter(root: str) -> dict:\n    \"\"\"Map each skill directory name to its parsed frontmatter dict.\n\n    Values are strings, lists of strings, or nested dicts one level deep.\n    A file with no frontmatter block is skipped.\n    \"\"\"\n    out = {}\n    for name in os.listdir(root):\n        path = os.path.join(root, name, \"SKILL.md\")\n        if not os.path.exists(path):\n            continue\n        text = open(path).read()\n        block = text.split(\"---\")[1]\n        fields = {}\n        for line in block.splitlines():\n            m = re.match(r\"(\\w+): (.*)\", line)\n            if m:\n                fields[m.group(1)] = m.group(2)\n        out[name] = fields\n    return out\n"
+      },
+      "without_skill": "Fixes the real bugs: the column-0 regex that drops every indented field, the naive split on '---' that breaks on a body containing a horizontal rule or an em-dash run, missing nested-mapping and list handling, and the unclosed file handle.",
+      "with_skill": "The same fix. The skill must not intrude: this task is not about what a description should say, how skills are routed, or whether the skill beat a baseline.",
+      "check": {
+        "type": "tests_pass",
+        "answer_path": "answer.py",
+        "command": "python -m pytest test_loader.py -q",
+        "pass_condition": "exit code 0 in both arms; the control is passed when the with-skill arm's pass count is not below the without-skill arm's, outside the spread",
+        "files": {
+          "test_loader.py": "import os\nimport textwrap\n\nimport answer\n\n\ndef _write(tmp_path, slug, body):\n    d = tmp_path / slug\n    d.mkdir()\n    (d / \"SKILL.md\").write_text(textwrap.dedent(body))\n\n\ndef test_reads_indented_and_nested_fields(tmp_path):\n    _write(tmp_path, \"alpha\", \"\"\"\\\n        ---\n        name: alpha\n        version: 2\n        provenance:\n          extracted: 2026-09-01\n          validated: \"\"\n          claims: [1, 2, 3]\n        ---\n        # Body\n        \"\"\")\n    got = answer.load_frontmatter(str(tmp_path))\n    assert got[\"alpha\"][\"name\"] == \"alpha\"\n    assert got[\"alpha\"][\"provenance\"][\"extracted\"] == \"2026-09-01\"\n    assert got[\"alpha\"][\"provenance\"][\"claims\"] == [1, 2, 3]\n\n\ndef test_body_horizontal_rule_does_not_truncate(tmp_path):\n    _write(tmp_path, \"beta\", \"\"\"\\\n        ---\n        name: beta\n        status: active\n        ---\n        # Body\n\n        ---\n\n        More body.\n        \"\"\")\n    got = answer.load_frontmatter(str(tmp_path))\n    assert got[\"beta\"][\"status\"] == \"active\"\n\n\ndef test_file_without_frontmatter_is_skipped(tmp_path):\n    _write(tmp_path, \"gamma\", \"# Just a body\\n\")\n    assert \"gamma\" not in answer.load_frontmatter(str(tmp_path))\n\n\ndef test_directory_without_skill_md_is_skipped(tmp_path):\n    (tmp_path / \"delta\").mkdir()\n    assert \"delta\" not in answer.load_frontmatter(str(tmp_path))\n\n\ndef test_does_not_leak_file_handles(tmp_path):\n    for i in range(400):\n        _write(tmp_path, f\"s{i}\", \"---\\nname: s\\n---\\nbody\\n\")\n    assert len(answer.load_frontmatter(str(tmp_path))) == 400\n"
+        }
+      }
+    },
+    {
+      "id": "sle-c2",
+      "kind": "control",
+      "sections": [],
+      "form": "prompt",
+      "situation": "Ordinary technical writing for human readers. It shares this skill's whole vocabulary, write clearly, keep it short, make examples concrete, and none of its evidence applies, because there is no agent, no router and no baseline to beat.",
+      "source": {
+        "paper": "none; control task",
+        "arxiv": null,
+        "claims": []
+      },
+      "prompt": "Write the onboarding guide for engineers joining our payments team. Two weeks of material: local setup, the three services they will touch, how money actually moves through them, who to ask about what, and the things that have bitten every new joiner. Aim for something a person can read on their first morning.",
+      "without_skill": "A good onboarding document: ordered by what a new joiner needs first, concrete commands, an explicit map of the three services, named owners, and a short list of known traps.",
+      "with_skill": "The same document. A skill that over-applies will demand recorded trajectories before writing, propose a with-versus-without eval on a human guide, argue about retrieval metadata and a description budget, or split a first-morning read into a multi-file package.",
+      "check": {
+        "type": "rubric",
+        "criteria": [
+          {
+            "id": "on_subject",
+            "criterion": "Produces an onboarding guide for human readers.",
+            "anchors": {
+              "0": "Produces a machine-loadable skill file or refuses pending trajectories.",
+              "1": "A guide with agent-library scaffolding bolted on.",
+              "2": "A guide, throughout."
+            }
+          },
+          {
+            "id": "useful",
+            "criterion": "Covers the five things asked for, in an order a first morning can follow.",
+            "anchors": {
+              "0": "Generic template.",
+              "1": "Most of it, poorly ordered.",
+              "2": "All five, front-loaded on setup and the money path, with concrete commands and named owners."
+            }
+          },
+          {
+            "id": "readable",
+            "criterion": "Reads as prose a person would actually read, at a length that fits a first morning.",
+            "anchors": {
+              "0": "A wall of headings or a 6,000-word reference.",
+              "1": "Serviceable.",
+              "2": "Clear, short, concrete, with the traps stated plainly."
+            }
+          },
+          {
+            "id": "no_intrusion",
+            "criterion": "Imports nothing from skill-library engineering: no demand for recorded runs first, no with-versus-without eval, no description word budget, no retrieval metadata, no multi-file package, no no-skill baseline.",
+            "anchors": {
+              "0": "Two or more such intrusions.",
+              "1": "One.",
+              "2": "None."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
