@@ -382,6 +382,17 @@ def skill_dir(slug: str) -> pathlib.Path:
     return ROOT / "skills" / slug
 
 
+FRONTMATTER = re.compile(r"^---\n.*?\n---\n", re.S)
+
+
+def body_of(raw: str) -> str:
+    """A SKILL.md without its frontmatter. One function because two readers now
+    want it: the with-arm loads the body, and the heading check resolves a
+    task's `sections` against it."""
+    match = FRONTMATTER.match(raw)
+    return (raw[match.end():] if match else raw).strip()
+
+
 def read_skill(slug: str) -> tuple[str, str]:
     """(body, sha256 of the whole file). The body is what the with-arm loads.
 
@@ -391,9 +402,7 @@ def read_skill(slug: str) -> tuple[str, str]:
     """
     path = skill_dir(slug) / "SKILL.md"
     raw = path.read_text()
-    match = re.match(r"^---\n.*?\n---\n", raw, re.S)
-    body = raw[match.end():] if match else raw
-    return body.strip(), hashlib.sha256(raw.encode()).hexdigest()
+    return body_of(raw), hashlib.sha256(raw.encode()).hexdigest()
 
 
 def skill_version(slug: str) -> str:
@@ -448,6 +457,108 @@ def shown(path: pathlib.Path) -> str:
 
 def results_path(slug: str) -> pathlib.Path:
     return skill_dir(slug) / "evals" / "results.json"
+
+
+# ------------------------------------------------- the sections a task claims
+
+# `sections` entered the suite contract on 2026-09-30, after a claim-id
+# comparison passed two suites whose tasks exercised none of the section they
+# named (INC-2026-09-30-eval-task-claims-unchecked). The field is the fix for a
+# recorded incident, every task in all eight real suites carries it, and until
+# today nothing read it: `grep -rn sections tools/skill_eval.py
+# tools/panel_validator.py` returned nothing, so the coverage claims were
+# exactly as unchecked as the claim ids they were written to replace.
+#
+# The suite's own contract (`skills/_validation/evals/README.md`, "Task
+# coverage") asks for two checks and says in its own words which is which:
+# "every string in `sections` is a heading of that SKILL.md, and every heading
+# of that SKILL.md other than the Apply checklist and the caveats appears in at
+# least one task's `sections`. Both are decidable with no model. A section with
+# no task is what a per-section *Validation:* tag has to say out loud (ADR-38),
+# so it is a finding rather than an error."
+#
+# So the first is in `conformance`, where a problem blocks a run, and the second
+# is `uncovered_sections`, which no gate reads as a failure. The exemption list
+# below is the contract's two and not one more. Three of the six skills on main
+# carry a provenance section ("Where the full text narrows our claim rows") that
+# no task can exercise either, and exempting it here would be this harness
+# deciding what a skill has to prove. That is the skill seat's call and ADR-38's,
+# so it is reported as a finding and filed in the ledger rather than silenced.
+SECTION_EXEMPT_PREFIXES = ("Apply", "Caveats")
+
+
+def skill_headings(base: pathlib.Path) -> list[str] | None:
+    """The `## ` headings of the SKILL.md beside this evals directory, or None.
+
+    `None` means there is no SKILL.md to resolve against, which is a different
+    answer from "it has no headings" and the two must never collapse: a suite
+    built in a fixture directory makes no false coverage claim, and treating it
+    as one would fail every caller that writes a suite to a tmpdir. A real skill
+    whose SKILL.md is missing is already a finding of the registrar and of the
+    provenance reviewer, both of which open the file this one cannot find.
+
+    The headings come from `tools/panel_provenance.py`'s `sections`, which is
+    the one `## ` reader in this repository. A second regex here is how
+    `validated:` read as the empty string on every skill for eleven days.
+    """
+    path = base.parent / "SKILL.md"
+    if not path.exists():
+        return None
+    import panel_provenance
+
+    return panel_provenance.sections(body_of(path.read_text()))
+
+
+def claimed_sections(spec: dict) -> set[str]:
+    """Every heading any task in this suite says it exercises.
+
+    A control carries an empty list by the contract's own instruction, and so
+    does a treatment task that tests a boundary rather than a section, so an
+    empty list is a deliberate statement and not a missing one. A task with no
+    `sections` key at all is a suite written before 2026-09-30 making no
+    coverage claim, which the coverage finding reports as uncovered sections
+    rather than as a malformed task.
+    """
+    claimed = set()
+    for task in spec.get("tasks") or []:
+        names = task.get("sections")
+        if isinstance(names, list):
+            claimed.update(n for n in names if isinstance(n, str))
+    return claimed
+
+
+def uncovered_sections(spec: dict, slug: str,
+                       base: pathlib.Path) -> list[str]:
+    """Headings of this skill that no task claims. Findings, never errors.
+
+    The second of the contract's two checks, and the one that catches the
+    defect the field was added for. It returns strings rather than raising or
+    appending to `conformance`'s list because the contract calls it a finding:
+    a section with no task is a gap in what the suite proves, which ADR-38
+    wants said out loud on the page, and it is not a reason the harness cannot
+    run.
+    """
+    headings = skill_headings(base)
+    if headings is None:
+        return []
+    claimed = claimed_sections(spec)
+    return [f"{slug}: no task exercises the section {name!r}"
+            for name in headings
+            if not name.startswith(SECTION_EXEMPT_PREFIXES)
+            and name not in claimed]
+
+
+def coverage_counts(spec: dict, base: pathlib.Path) -> tuple[int, int]:
+    """(sections a task claims, sections coverage is asked of). (0, 0) when
+    there is no SKILL.md beside the suite, so a caller can tell "nothing to
+    measure" from "nothing measured"."""
+    headings = skill_headings(base)
+    if headings is None:
+        return 0, 0
+    asked = [n for n in headings
+             if not n.startswith(SECTION_EXEMPT_PREFIXES)]
+    claimed = claimed_sections(spec)
+    return sum(1 for n in asked if n in claimed), len(asked)
 
 
 CHECK_TYPES = {"contains_all", "contains_none", "number_in_range",
@@ -573,6 +684,11 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
 
     Its own function so `--check` can be a CI gate over every skill's eval file
     without a key, a model or a dollar.
+
+    Errors only. `uncovered_sections` is the other half of the suite contract's
+    coverage rule and it returns findings, because the contract calls a section
+    with no task a finding rather than an error and a gate that blocks on it
+    would stop a suite from running over a gap in what it proves.
     """
     problems = []
     if spec.get("contract") not in SUITE_CONTRACTS:
@@ -601,6 +717,10 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
 
     seen = set()
     real = 0
+    # Resolved once, because it opens a file and every task resolves against
+    # the same list. `None` is "no SKILL.md beside this suite", and the loop
+    # below makes no coverage claim at all in that case.
+    headings = skill_headings(base)
     for task in tasks:
         tid = task.get("id")
         if not tid:
@@ -678,6 +798,20 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
             problems.append(f"{slug}/{tid}: a control and an indicator at once. "
                             "A control is a task the skill must not change and "
                             "an indicator is one only the skill can pass.")
+        claims = task.get("sections")
+        if claims is not None and not isinstance(claims, list):
+            problems.append(f"{slug}/{tid}: sections is {claims!r}, and the "
+                            "contract asks for a list of this skill's `## ` "
+                            "headings")
+        elif headings is not None:
+            for name in claims or []:
+                if name not in headings:
+                    problems.append(
+                        f"{slug}/{tid}: sections names {name!r}, which is not a "
+                        f"`## ` heading of {slug}/SKILL.md. The contract asks "
+                        "for the heading copied verbatim, so this is a typo or "
+                        "a section renamed after the task was written, and "
+                        "either way the coverage claim is false.")
         # A workspace is needed by the checks that run a command, and by nothing
         # else. A `project`-form task whose check is `parses` is the model
         # writing a file from a description, and there is nothing to copy.
@@ -1397,12 +1531,22 @@ def main(argv=None) -> int:
 
         slugs = sorted(p.name for p in (ROOT / "skills").iterdir()
                        if p.is_dir() and p.name != "_validation")
-        problems, measured = [], 0
+        problems, findings, measured = [], [], 0
+        covered = asked = 0
         for slug in slugs:
             spec, found = load_tasks(slug)
             problems += found
             measured += 1 if spec and not found else 0
+            if spec:
+                base = tasks_path(slug).parent
+                findings += uncovered_sections(spec, slug, base)
+                hit, of = coverage_counts(spec, base)
+                covered += hit
+                asked += of
         print(f"{measured} of {len(slugs)} skills carry a conformant eval file")
+        if asked:
+            print(f"{covered} of {asked} sections are exercised by at least "
+                  f"one task, excluding the Apply checklist and the caveats")
         # Absent is unmeasured, not broken: the skill seat writes the tasks and
         # ADR-36 makes such a skill `draft`. A malformed file is a real failure.
         # The two are labelled differently on purpose, because a line reading
@@ -1411,6 +1555,11 @@ def main(argv=None) -> int:
         malformed = [p for p in problems if "no evals/evals.json" not in p]
         for line in problems:
             print(("failing: " if line in malformed else "unmeasured: ") + line)
+        # Findings print after the problems and never change the exit code. The
+        # suite contract says a section with no task is a finding, so this gate
+        # reports it and passes.
+        for line in findings:
+            print("finding: " + line)
         if malformed:
             return 1
         return 2 if problems else 0
