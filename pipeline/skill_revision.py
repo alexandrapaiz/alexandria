@@ -823,7 +823,7 @@ def run(dry_run: bool = False) -> str:
     schedule=modal.Cron("0 16 * * *"),
     secrets=[modal.Secret.from_name("neon"),
              modal.Secret.from_name("github"),
-             modal.Secret.from_name("gmail")],
+             modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
     timeout=900,
 )
 def skill_revision(dry_run: bool = False) -> str:
