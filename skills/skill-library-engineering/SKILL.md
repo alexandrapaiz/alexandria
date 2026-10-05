@@ -1,11 +1,16 @@
 ---
 name: skill-library-engineering
 description: Evidence-backed method for the loadable skill file itself and the library it sits in: what a SKILL.md has to contain to beat loading nothing, and how it gets picked. The subject is the artifact and its selection. Use when a written skill sits in a library and is never picked up, when deciding what belongs in a skill's description because that text is the whole surface a router reads, when a skill loads on the wrong request and leaves the run worse than an empty context, when setting the match score above which a stored skill is reused, when one request needs several complementary entries at once, when turning recorded failures into an edit to one named section of a skill, and when deciding how many revision rounds a skill file is worth.
-version: 1
+version: 2
 status: active
 provenance:
   extracted: 2026-09-26
+  revised: 2026-09-30
   validated: ""
+  reviews:
+    - "none filed yet. The lane is open at reviews/ (ADR-38); see reviews/README.md for what this skill most wants reported."
+  revisions:
+    - "2026-09-30 (ADR-38 retrofit, owner directive): per-section Validation tags, an Apply checklist, and caveats that name their floor. No claim, number or prescription changed. This skill's own subject is the skill file, so the three additions are also findings it should have carried about itself, which is worth saying plainly rather than quietly fixing."
   claims: [320, 321, 322, 328, 329, 396, 397, 398, 399, 400, 565, 566, 567, 568, 569, 625, 626, 627, 628, 629]
   papers:
     - "Beyond Top-k Skill Retrieval: Diversity-Aware Skill Routing for LLM Agents — arxiv.org/abs/2609.05824"
@@ -36,6 +41,8 @@ follows is what that discipline alone does not buy you.
 
 ## Write the skill from recorded runs, not from the task description
 
+*Validation: no trial and no consumer report. The strongest evidence in this file and the finding it leans on hardest, from one baseline table on two models. Eval task sle-t1 covers it and has not been run.*
+
 The most direct measurement in this cluster is a baseline table. Under the
 Codex harness with GPT-5.4 across four benchmarks, a skill written by a human
 expert averaged 67.23 against 67.97 for running with no skill at all, and a
@@ -59,6 +66,8 @@ a run needed, which is why the trajectories are the input and not the
 research.
 
 ## Most of the value is in the grounding, not in the search on top of it
+
+*Validation: no trial and no consumer report. The ordering advice is ours, read off the papers' own ablations against their own arguments. Eval task sle-t2 covers it and has not been run.*
 
 Two of these papers build elaborate optimizers over skill text, and both
 report how much that machinery adds beyond a grounded skill. Removing the
@@ -85,6 +94,8 @@ model itself to write and refine its own skills lost only one point, 73.5 to
 72.5, at roughly half the cost (COBRA-Skills).
 
 ## Structure the file so one failure maps to one section
+
+*Validation: no trial and no consumer report. The smallest of the three effects its source paper measured, which the section says of itself. Eval task sle-t7 covers it and has not been run.*
 
 Both structural results point the same way and neither is large on its own.
 Splitting a skill into a multi-file package, with retrieval metadata,
@@ -113,6 +124,8 @@ the direct 2.85-point gain justifies the rewrite.
 
 ## The description is the entire routing surface, and it is read alone
 
+*Validation: the one section of this skill with standing evidence outside its papers: the library's own trigger suite (skills/_validation/) has re-run every description in the library on every change since 2026-09-18, and the recorded bundles are the receipts. Eval task sle-t3 covers the section and has not been run.*
+
 Deployed agent harnesses, Claude Code and Codex among them, route by
 progressive disclosure: every installed skill's name and description is
 preloaded into the system prompt, and the model picks from that menu. The
@@ -139,6 +152,8 @@ skill applies, in the vocabulary a requester would actually use.
 
 ## A wrong load costs more than a missed one
 
+*Validation: no trial and no consumer report, though the confusion cases in every triggers.json in this library exist because of this section. Eval task sle-t4 covers it and has not been run.*
+
 An ill-suited skill leaves a task worse off than no skill at all (The Router
 Within), and the retrieval-threshold sweep puts a number on it. Lowering the
 reuse threshold from 0.6 to 0.4, so that more stored skills matched, dropped
@@ -154,6 +169,8 @@ not only claiming the ones it should win.
 
 ## Index on metadata, not on the body
 
+*Validation: no trial and no consumer report. The thinnest sample in the file, 12 reuse cases, and the finding inverts between the two router designs, so read the section for the fork rather than for the number. Eval task sle-t8 covers it and has not been run.*
+
 Retrieval that matched a query against structured metadata, an intent line, an
 application, keywords and reusable argument slots, recovered the correct skill
 in 12 of 12 reuse cases at threshold 0.6, against 1 of 12 for matching the
@@ -168,6 +185,8 @@ descriptions do not (The Router Within). Know which of the two your harness
 does before you decide where to spend your writing.
 
 ## When one request needs several skills, select a set
+
+*Validation: no trial and no consumer report. Carries a measured negative result, which is the part worth keeping. Eval task sle-t5 covers it and has not been run.*
 
 Scoring each candidate independently and taking the top k is the wrong
 objective once tasks are compositional, because several near-duplicate skills
@@ -192,6 +211,8 @@ requester varies, and to accept that two skills covering different steps of
 one workflow are supposed to look alike.
 
 ## Revise in rounds, keep the reader separate, stop at three
+
+*Validation: no trial and no consumer report. The two largest ablations its source paper ran, which makes it the best-evidenced procedure here. Eval task sle-t6 covers it and has not been run.*
 
 The revision loop that these results come from is: run the skill, let the
 runner amend it in place when the environment contradicts it, then have a
@@ -220,6 +241,8 @@ generation is what preserves the diversity that makes recombination possible
 
 ## Skills outlive the model they were written for
 
+*Validation: no trial and no consumer report. Claim and paper provenance only, from two systems that agree. Eval task sle-t9 covers it and has not been run.*
+
 Skills optimized against one model transferred to others: 34 of 36 cross-model
 transfers improved on the receiving model's no-skill baseline (COBRA-Skills),
 and a skill optimized on a small model and deployed on a large one beat that
@@ -234,6 +257,8 @@ and harness-specific prompts are not, so the cost of grounding it is amortized
 over every model you later run it under.
 
 ## Where the full text narrows what our claim rows say
+
+*Validation: this section is itself the validation of the four rows it narrows, done by reading the papers on 2026-09-26 under ADR-35. Eval tasks sle-t2 and sle-t5 check that a reader carrying this skill states the ablation-sized version rather than the flat row, and neither has been run.*
 
 Four rows in the claim graph read stronger than the papers behind them, and
 the paper wins.
@@ -255,6 +280,30 @@ the paper wins.
   no-skill is 13 to 27 points. Reading the row alone attributes the gain to
   the search.
 
+## Apply: the builder's checklist
+
+Before a skill file ships into a library:
+
+1. Grounding: is it written from recorded runs of the task rather than from the
+   task's description? A hand-written skill measured net negative against
+   loading nothing, so this is the question that decides whether the file is
+   worth shipping at all.
+2. Description: does it state the conditions under which the skill applies, in
+   the vocabulary a requester would use, short enough to survive a metadata
+   budget that shrinks per skill as the library grows?
+3. Boundary: is the match threshold tuned from the strict side, and does the
+   description protect the requests this skill should lose as deliberately as it
+   claims the ones it should win?
+4. Structure: does each class of failure have one file or one section that owns
+   it, so a revision step has somewhere specific to aim?
+5. Routing: do you know whether your harness routes on descriptions alone or
+   reads candidate bodies, and is the writing effort spent on whichever it is?
+6. Revision: does the loop amend the file in place when the environment
+   contradicts it, hand diagnosis to a reader that sees only the instruction and
+   the trajectory, and stop at three rounds?
+7. Search: have grounded candidates been exhausted before any optimizer is
+   built on top of them?
+
 ## Caveats
 
 - The strongest execution numbers here (Reflect, Revise, Reuse) come from GUI
@@ -264,6 +313,13 @@ the paper wins.
   setting even where the shape carries.
 - The metadata-retrieval result rests on 12 reuse cases, and the routing-set
   result on 75 queries. Both are directionally strong and statistically thin.
+- Two floors make this skill cheap to act on, and both are the kind a reader
+  otherwise researches. The rewriting model does not have to be stronger than
+  the target: the target model writing and refining its own skills lost one
+  point, 73.5 to 72.5, at roughly half the cost. And the grounded-candidates
+  path that this skill prefers over an optimizer needs about 30 candidates to
+  come within 2.5 points of the full search, on 50 unique optimization examples
+  per benchmark.
 - Every routing number is measured as whether the right skill was selected,
   not whether the task then succeeded. One paper says outright that an agent
   can still fail with every required skill retrieved, including from conflicts
@@ -271,6 +327,11 @@ the paper wins.
 - The baseline table showing hand-written skills going net negative covers
   four to five benchmarks on two OpenAI models. It is the finding this skill
   leans on hardest and the one most worth re-testing on your own tasks.
-- These findings are from 2026 papers and carry alexandria claim provenance;
-  if a source claim is later contradicted, this skill will be revised or
+- The description budget has a published ceiling rather than a floor, and it is
+  the number to design against: one deployed harness caps all skill metadata at
+  2 percent of the context window, so the room each description gets shrinks as
+  the library grows and a description that is merely long loses space that
+  belongs to a neighbour.
+- These findings are from 2026 papers and carry alexandria claim provenance. If
+  a source claim is later contradicted, this skill will be revised or
   deprecated.
