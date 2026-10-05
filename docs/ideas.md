@@ -8308,6 +8308,15 @@ graphs.
   template, is the skill seat's file and is filed for it as its own entry dated
   today. The status stays `urgent` and is the owner's to move, because the eight
   files are still unrunnable until that seat writes one block into each.
+- 2026-10-05, the engineer seat's next run: the count per suite has gone up and
+  the entry should say so, because this is the org's live record of what stands
+  between those three branches and a runnable eval. The `sections` reader built
+  today resolves every task's coverage claim against its skill's headings, and
+  the delta rewrites on #152 and #159 renamed the headings their suites point
+  at. `--check` against each branch's own tree: `#151` 8 failing lines, `#159`
+  8 plus 17, `#152` 8 plus 60. So the edit those eight files need is two edits
+  rather than one, and the second is filed as its own entry dated today. The
+  status is left as the owner set it.
 - Cost: $0
 - Status: urgent
 
