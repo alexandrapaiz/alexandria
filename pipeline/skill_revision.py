@@ -817,10 +817,22 @@ def run(dry_run: bool = False) -> str:
 
 
 @app.function(
-    # 16:00 UTC. This job calls no model, so it contends with nothing; the slot
-    # sits after interpret's window anyway. See this module's docstring and the
-    # schedule comment in pipeline/llm.py.
-    schedule=modal.Cron("0 16 * * *"),
+    # NO SCHEDULE, and that is the design rather than an omission.
+    #
+    # This declared `schedule=modal.Cron("0 16 * * *")` until 2026-10-05. Modal's
+    # free tier caps scheduled functions at five and ADR-12 recorded all five as
+    # taken (ingest, triage, interpret, distill, the Monday press), so this was a
+    # sixth and the plan does not run it: ADR-37's daily maintenance pass had a
+    # cron on paper and no pass in fact. The 16:00 slot was also inside distill's
+    # 15:00-16:30 window, which `test_the_schedule_sits_outside_every_reserved_window`
+    # had been failing about.
+    #
+    # The owner's directive of 2026-10-05 folds the trigger into interpret's
+    # scheduled run instead: `pipeline/interpret.py`'s `maintenance_step` spawns
+    # this function as its first step, every day, in its own container. So this
+    # job runs daily, keeps its own timeout and its own secrets, calls no model,
+    # and occupies no row in Modal's schedule budget. Do not add a cron back here
+    # without reading that module and docs/agents/runtime-changes.md.
     secrets=[modal.Secret.from_name("neon"),
              modal.Secret.from_name("github"),
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],
