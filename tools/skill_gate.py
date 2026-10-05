@@ -58,6 +58,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import pathlib
@@ -353,6 +354,329 @@ def ban_list_clause(slug: str, base: str) -> Clause:
     return Clause("ban list", FAILING if added else OK, added, notes)
 
 
+# ADR-40's refinement items 1, 2, 3 and 4, added 2026-10-05 on the owner's
+# directive. Three new clauses and one new note, and each one is a measurement
+# the gate could not make before.
+
+# Item 1: one intervention at a time, with everything else pinned (AgentGrad,
+# C244). A revision that rewrites three sections at once produces one delta and
+# no way to attribute it, so the next revision is guessing about which of the
+# three worked.
+MAX_SECTIONS_PER_REVISION = 1
+
+# Item 4: a skill stays at most three modules (SkillsBench, C848). Compact
+# skills outperform exhaustive bundles, and they let a small model match a
+# larger one with no skill at all. Every skill in the library is one module
+# today, so this clause is a ceiling rather than a complaint.
+MAX_MODULES = 3
+
+# Item 2's buffer. It lives in the skill's own `reviews/` lane, which `ALLOWED`
+# already permits a revision to write, so the loop can carry its own memory of
+# what it has already been told no about without the scope clause failing.
+REJECTED_PATH = "reviews/rejected-edits.json"
+
+SECTION_HEADING = re.compile(r"^##\s+(.*?)\s*$", re.M)
+FRONTMATTER = re.compile(r"^---\n.*?\n---\n", re.S)
+
+
+def sections_of(text: str) -> dict:
+    """A SKILL.md's `## ` sections, heading to body. Frontmatter excluded.
+
+    Frontmatter is excluded on purpose: a revision bumps `version` and may add a
+    paper, and counting that as a changed section would mean no revision can
+    ever pass the one-section clause.
+    """
+    match = FRONTMATTER.match(text)
+    body = text[match.end():] if match else text
+    out: dict[str, str] = {}
+    name = ""
+    buffer: list[str] = []
+    for line in body.split("\n"):
+        found = SECTION_HEADING.match(line)
+        if found:
+            if name:
+                out[name] = "\n".join(buffer).strip()
+            name = found.group(1)
+            buffer = []
+            continue
+        buffer.append(line)
+    if name:
+        out[name] = "\n".join(buffer).strip()
+    return out
+
+
+def changed_sections(before: str, after: str) -> dict:
+    """Which `## ` sections this revision touched, by kind."""
+    old, new = sections_of(before), sections_of(after)
+    return {
+        "edited": sorted(name for name in old
+                         if name in new and old[name] != new[name]),
+        "added": sorted(name for name in new if name not in old),
+        "removed": sorted(name for name in old if name not in new),
+    }
+
+
+def one_section_clause(slug: str, base: str) -> Clause:
+    """ADR-40 refinement item 1: one section per revision, the rest pinned."""
+    if not slug:
+        return Clause("one section", UNKNOWN,
+                      ["the scope clause found no single skill to read"])
+    path = f"skills/{slug}/SKILL.md"
+    before = file_at(base, path)
+    if not before:
+        return Clause("one section", UNKNOWN,
+                      [f"{path} does not exist on {base}, so there is no "
+                       "before to diff the sections against"])
+    moved = changed_sections(before, (ROOT / path).read_text())
+    touched = moved["edited"] + moved["added"] + moved["removed"]
+    notes = [f"edited {moved['edited'] or 'nothing'}, added "
+             f"{moved['added'] or 'nothing'}, removed "
+             f"{moved['removed'] or 'nothing'}. The frontmatter is not a "
+             "section, so a version bump and a new paper are free"]
+    if not touched:
+        return Clause("one section", OK, [], notes + [
+            "no section changed, so this revision is frontmatter, evals or "
+            "reviews only and there is nothing for item 1 to attribute"])
+    if len(touched) > MAX_SECTIONS_PER_REVISION:
+        return Clause("one section", FAILING, [
+            f"this revision touches {len(touched)} sections ("
+            + ", ".join(touched) + f"), and ADR-40 refinement item 1 allows "
+            f"{MAX_SECTIONS_PER_REVISION}. One delta over three edits cannot "
+            "say which of the three worked, so the next revision is guessing. "
+            "Split it: one section, measure, then the next"], notes)
+    return Clause("one section", OK, [], notes + [
+        f"one section, {touched[0]!r}, with everything else pinned"])
+
+
+def module_files(slug: str) -> list[str]:
+    """The markdown modules a reader of this skill loads.
+
+    `evals/` and `reviews/` are not modules: one is the instrument and the other
+    is what consumers wrote about it, and neither is ever in a builder's context
+    window. `triggers.json` is router metadata, not prose.
+    """
+    base = ROOT / "skills" / slug
+    if not base.is_dir():
+        return []
+    out = []
+    for path in sorted(base.rglob("*.md")):
+        rel = path.relative_to(base).as_posix()
+        if rel.startswith(("evals/", "reviews/")):
+            continue
+        out.append(rel)
+    return out
+
+
+def modules_clause(slug: str) -> Clause:
+    """ADR-40 refinement item 4: at most three modules (SkillsBench, C848)."""
+    if not slug:
+        return Clause("three modules", UNKNOWN,
+                      ["the scope clause found no single skill to read"])
+    files = module_files(slug)
+    note = (f"{len(files)} module(s): {', '.join(files) or 'none'}. The cap is "
+            f"{MAX_MODULES}, because compact skills outperform exhaustive "
+            "bundles and let a small model match a larger one carrying nothing")
+    if len(files) > MAX_MODULES:
+        return Clause("three modules", FAILING, [
+            f"skills/{slug} carries {len(files)} modules and the cap is "
+            f"{MAX_MODULES} (ADR-40 refinement item 4). Retire what a consumer "
+            "never acted on rather than adding a fourth file"], [note])
+    return Clause("three modules", OK, [], [note])
+
+
+def rejected_buffer(slug: str) -> dict:
+    path = ROOT / "skills" / slug / REJECTED_PATH
+    if not path.exists():
+        return {}
+    try:
+        doc = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return {}
+    return doc if isinstance(doc, dict) else {}
+
+
+def edit_fingerprint(section: str, before: str, after: str) -> str:
+    """A stable id for one proposed edit to one section.
+
+    The hash is over the section's name and the text it would become, with
+    whitespace normalized, so re-proposing the same edit after a reflow is still
+    the same edit. It is not over the whole file: a second proposal that happens
+    to bump a different version number is the same edit and must be recognised
+    as one.
+    """
+    old = sections_of(before).get(section, "")
+    new = sections_of(after).get(section, "")
+    payload = "\n".join([section, " ".join(old.split()), " ".join(new.split())])
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def proposed_edits(slug: str, base: str) -> list[dict]:
+    """Every section this revision changed, with its fingerprint."""
+    path = f"skills/{slug}/SKILL.md"
+    before = file_at(base, path)
+    if not before:
+        return []
+    after = (ROOT / path).read_text()
+    moved = changed_sections(before, after)
+    out = []
+    for kind in ("edited", "added", "removed"):
+        for name in moved[kind]:
+            out.append({"section": name, "kind": kind,
+                        "fingerprint": edit_fingerprint(name, before, after)})
+    return out
+
+
+def heldout_clause(slug: str) -> Clause:
+    """ADR-40 refinement item 2: the delta on the tasks the edit was not
+    written against.
+
+    Its own clause rather than a line inside `eval`, because the two answer
+    different questions and a reviewer reading one row has to be able to tell
+    them apart. `eval` asks whether this revision measured a gain. This asks
+    whether the gain is about the skill or about the tasks the edit was written
+    to pass, which is the only question that distinguishes a skill that got
+    better from a suite that got easier.
+
+    A result measured before contract 2 carries no held-out block at all, and
+    this reports that as `unknown` rather than failing it: the honest state is
+    that nobody has measured it, and `verdict` already treats unknown as not
+    passing, so the gate is no weaker for saying which it is.
+    """
+    if not slug:
+        return Clause("held out", UNKNOWN,
+                      ["the scope clause found no single skill to read"])
+    doc = triggers.read_results(ROOT / "skills" / slug)
+    if not doc:
+        return Clause("held out", UNKNOWN,
+                      ["there is no results.json, which the eval clause has "
+                       "already failed this revision for"])
+    held = doc.get("heldout")
+    if not isinstance(held, dict):
+        return Clause("held out", UNKNOWN, [
+            f"this result is contract {doc.get('contract')} and carries no "
+            "held-out block, so whether the edit generalizes beyond the tasks "
+            "it was written against is unmeasured. Re-run the eval with "
+            "tools/skill_eval.py as of 2026-10-05, naming the tasks the edit "
+            "was written against with --written-against"])
+    notes = [held.get("reads") or "no summary line",
+             f"written against: {', '.join(held.get('written_against') or []) or 'none named'}"]
+    if held.get("verdict") == "holds":
+        return Clause("held out", OK, [], notes)
+    return Clause("held out", FAILING, [
+        "the held-out delta does not hold: " + (held.get("reads") or
+                                                str(held.get("verdict")))
+        + ". ADR-40 refinement item 2 gates on this number rather than on the "
+        "score over the tasks the edit was written for, because the second one "
+        "rises whenever the edit is copied from the task"], notes)
+
+
+def rejected_clause(slug: str, base: str) -> Clause:
+    """ADR-40 refinement item 2's buffer: the same mistake is not proposed twice.
+
+    SkillOpt keeps rejected edits so the optimizer does not re-propose them, and
+    without that the loop's failure mode is a cycle: the same edit is proposed,
+    measured, rejected and proposed again, burning a cap each morning. This
+    clause is the memory. It is a file in the skill's own `reviews/` lane, which
+    means the loop carries its own history in the one place a reviewer reading
+    that skill will find it.
+    """
+    if not slug:
+        return Clause("rejected before", UNKNOWN,
+                      ["the scope clause found no single skill to read"])
+    buffer = rejected_buffer(slug)
+    entries = buffer.get("entries") or []
+    known = {str(e.get("fingerprint")): e for e in entries
+             if isinstance(e, dict)}
+    edits = proposed_edits(slug, base)
+    note = (f"{len(entries)} rejected edit(s) on record in "
+            f"skills/{slug}/{REJECTED_PATH}, {len(edits)} proposed here")
+    repeats = [(e, known[e["fingerprint"]]) for e in edits
+               if e["fingerprint"] in known]
+    if repeats:
+        reasons = []
+        for edit, prior in repeats:
+            when = prior.get("date") or "an unrecorded date"
+            why = prior.get("why") or "no reason recorded"
+            reasons.append(
+                f"the edit to {edit['section']!r} is byte for byte an edit this "
+                f"loop was already told no about on {when}: {why}. "
+                "Re-proposing a rejected edit burns a cap to reach the same "
+                "answer (ADR-40 refinement item 2)")
+        return Clause("rejected before", FAILING, reasons, [note])
+    return Clause("rejected before", OK, [], [note])
+
+
+def rejection_entry(slug: str, base: str, clauses: list["Clause"],
+                    today: str) -> dict:
+    """What goes in the buffer when this revision does not clear the gate."""
+    return {"date": today, "skill": slug,
+            "edits": proposed_edits(slug, base),
+            "why": "; ".join(reason for clause in clauses
+                             if clause.state == FAILING
+                             for reason in clause.reasons)[:1200]
+                   or "the gate did not pass and named no reason, which is "
+                      "itself the finding",
+            "clauses": [c.name for c in clauses if c.state == FAILING]}
+
+
+def record_rejection(slug: str, base: str, clauses: list["Clause"],
+                     today: str) -> str:
+    """Append this revision to the skill's rejected-edit buffer. Returns a line.
+
+    Append-only, and the reason travels with the fingerprint. A buffer that held
+    only hashes would stop a repeat and teach nobody why, which makes it a wall
+    rather than a memory.
+    """
+    entry = rejection_entry(slug, base, clauses, today)
+    if not entry["edits"]:
+        return ("nothing was recorded: this revision changed no section, so "
+                "there is no edit to remember saying no to")
+    path = ROOT / "skills" / slug / REJECTED_PATH
+    doc = rejected_buffer(slug) or {"contract": 1, "skill": slug, "entries": []}
+    doc.setdefault("entries", [])
+    known = {str(e.get("fingerprint")) for e in doc["entries"]
+             if isinstance(e, dict)}
+    added = 0
+    for edit in entry["edits"]:
+        if edit["fingerprint"] in known:
+            continue
+        doc["entries"].append({"fingerprint": edit["fingerprint"],
+                               "section": edit["section"], "kind": edit["kind"],
+                               "date": entry["date"], "why": entry["why"],
+                               "clauses": entry["clauses"]})
+        added += 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n")
+    return (f"{added} edit(s) recorded in skills/{slug}/{REJECTED_PATH}, so "
+            "this loop does not propose them again")
+
+
+def corrections_note(slug: str) -> list[str]:
+    """What the clustered corrections say, as notes on the comment.
+
+    ADR-40 refinement item 3 is a rule about where an edit comes from, and that
+    is not something a diff can prove: the gate cannot tell an edit that came
+    from a cluster of four consumer reports from one somebody thought up. What it
+    can do is print what the clusters actually say, next to the edit, so a
+    reviewer reading the comment sees whether the two have anything to do with
+    each other.
+    """
+    try:
+        import corrections
+    except Exception as exc:                        # pragma: no cover
+        return [f"the clustered corrections could not be read ({exc})"]
+    doc = corrections.report(slug)
+    out = [doc["reads"]]
+    for group in doc["groups"][:4]:
+        out.append("  " + group["edit"])
+    if not doc["groups"]:
+        out.append("  nothing is on record for this skill, so an edit here came "
+                   "from somewhere this gate cannot see. ADR-40's trap (C965): "
+                   "a small model refining itself consolidates on what it can "
+                   "already reach")
+    return out
+
+
 def command_clause(name: str, argv: list[str], meaning: str) -> Clause:
     proc = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True)
     if proc.returncode == 0:
@@ -446,16 +770,26 @@ def applies(files: list[str]) -> bool:
     return bool(files) and all(path.startswith("skills/") for path in files)
 
 
+# Every clause that is about one identified skill, so the list below and the
+# "not measured" list above it can never drift apart. They did not drift today;
+# they would have on the next clause somebody added to one and not the other.
+SKILL_CLAUSES = ("provenance", "eval", "one section", "held out",
+                 "rejected before", "three modules", "ban list",
+                 "trigger test", "page")
+
+
 def run(base: str, today: str) -> tuple[list[Clause], str]:
     files, error = changed_files(base)
     scope, slug = scope_clause(files, error, base)
     clauses = [scope, pause_clause()]
     if scope.state == OK:
         clauses += [provenance_clause(slug, today), eval_clause(slug, base),
+                    one_section_clause(slug, base), heldout_clause(slug),
+                    rejected_clause(slug, base), modules_clause(slug),
                     ban_list_clause(slug, base), trigger_test_clause(base),
                     page_clause()]
     else:
-        for name in ("provenance", "eval", "ban list", "trigger test", "page"):
+        for name in SKILL_CLAUSES:
             clauses.append(Clause(name, UNKNOWN, [
                 "not measured, because the scope clause did not pass and the "
                 "rest of the gate is about one identified skill"]))
@@ -499,6 +833,12 @@ def comment(clauses: list[Clause], slug: str, base: str, today: str) -> str:
             lines.append(f"- {reason}")
         for note in clause.notes:
             lines.append(f"- note: {note}")
+        lines.append("")
+    if slug:
+        lines.append("**Where an edit here should have come from**")
+        lines.append("")
+        for line in corrections_note(slug):
+            lines.append(f"- {line}")
         lines.append("")
     if result != "passed":
         lines.append("Nothing was merged and nothing was reverted. The failing "
@@ -592,6 +932,61 @@ def smoke() -> int:
     body = comment(unknown, "harness-engineering", "origin/main", today)
     checks["the comment carries the reason, not just the label"] = (
         "no credential" in body and "did not pass" in body)
+    checks["the comment says where an edit should have come from"] = (
+        "Where an edit here should have come from" in body)
+
+    # ------------------------------------------------- ADR-40's three clauses
+
+    before = ("---\nversion: 1\npapers:\n  - a\n---\n\n"
+              "## One\n\nfirst body\n\n## Two\n\nsecond body\n")
+    bumped = before.replace("version: 1", "version: 2").replace("  - a",
+                                                                "  - a\n  - b")
+    one = bumped.replace("first body", "first body, revised")
+    two = one.replace("second body", "second body, revised")
+    added = bumped + "\n## Three\n\nthird body\n"
+
+    checks["the frontmatter is not a section, so a version bump is free"] = (
+        changed_sections(before, bumped)
+        == {"edited": [], "added": [], "removed": []})
+    checks["one section edited is one section"] = (
+        changed_sections(before, one)["edited"] == ["One"])
+    checks["two sections edited is two, which item 1 does not allow"] = (
+        len(changed_sections(before, two)["edited"]) == 2)
+    checks["a new section counts toward the one-intervention rule"] = (
+        changed_sections(before, added)["added"] == ["Three"])
+    checks["a deleted section is a change and not an absence"] = (
+        changed_sections(before, before.split("## Two")[0])["removed"]
+        == ["Two"])
+
+    same = edit_fingerprint("One", before, one)
+    reflowed = edit_fingerprint("One", before,
+                               one.replace("first body, revised",
+                                           "first  body,\nrevised"))
+    checks["the same edit after a reflow is the same fingerprint"] = (
+        same == reflowed)
+    checks["an edit to a different section is a different fingerprint"] = (
+        same != edit_fingerprint("Two", before, two))
+    checks["the fingerprint ignores the version bump beside the edit"] = (
+        same == edit_fingerprint("One", before,
+                                 one.replace("version: 2", "version: 9")))
+
+    held_ok = Clause("held out", OK, [])
+    checks["a result with no held-out block is unknown and never a pass"] = (
+        verdict([held_ok, Clause("held out", UNKNOWN, ["no block"])])
+        == "failed")
+
+    checks["every clause the gate can skip is a clause the gate can run"] = (
+        set(SKILL_CLAUSES) == {"provenance", "eval", "one section", "held out",
+                               "rejected before", "three modules", "ban list",
+                               "trigger test", "page"})
+    checks["the module cap is three, and every live skill is inside it"] = (
+        MAX_MODULES == 3 and all(
+            len(module_files(d.name)) <= MAX_MODULES
+            for d in (ROOT / "skills").iterdir()
+            if d.is_dir() and d.name != "_validation"))
+    checks["evals and reviews are not modules a builder loads"] = (
+        all(not f.startswith(("evals/", "reviews/"))
+            for f in module_files("harness-engineering")))
 
     for label, ok in checks.items():
         print(("ok:   " if ok else "FAIL: ") + label)
@@ -609,6 +1004,11 @@ def main(argv=None) -> int:
                          "The workflow reads these, so the parsing lives here "
                          "rather than in shell embedded in YAML, which is where "
                          "INC-2026-09-26-run-report-dash-echo lived.")
+    ap.add_argument("--record-rejection", action="store_true",
+                    help="when the gate does not pass, append this revision's "
+                         "edits to the skill's rejected-edit buffer so the loop "
+                         "does not propose them again (ADR-40 refinement "
+                         "item 2)")
     ap.add_argument("--smoke", action="store_true")
     args = ap.parse_args(argv)
 
@@ -630,6 +1030,8 @@ def main(argv=None) -> int:
     if args.comment:
         pathlib.Path(args.comment).write_text(
             comment(clauses, slug, args.base, today) + "\n")
+    if args.record_rejection and result != "passed" and slug:
+        print(record_rejection(slug, args.base, clauses, today))
     if args.github_output:
         with open(args.github_output, "a") as handle:
             handle.write(f"applies={str(applies(files)).lower()}\n")

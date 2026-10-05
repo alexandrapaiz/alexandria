@@ -302,6 +302,37 @@ def test_the_dispatch_names_the_pairs_and_warns_about_a_wrong_edge():
         "misclassification")
 
 
+def test_the_dispatch_carries_the_clusters_and_not_the_raw_pile():
+    """ADR-40 refinement item 3 (C244). Eleven reports each asking for one
+    sentence produce eleven individually reasonable edits, and the skill grows
+    past the point where anything measurable is attributable to any of it."""
+    text = job.dispatch_instructions([ROW], "2026-09-30")
+    assert "What the corrections on record cluster into" in text
+    assert "The raw pile is never applied" in text
+    assert "correction(s) on record became" in text
+    # And the three gate rules the revision has to satisfy, so the run does not
+    # find out from a failing clause what it could have been told up front.
+    assert "Revise one section, not three" in text
+    assert "heldout" in text and "rejected-edits.json" in text
+    assert "three modules" in text
+
+
+def test_a_skill_with_nothing_on_record_is_told_so_rather_than_left_to_invent():
+    """ADR-40's trap (C965): a model refining a skill from nothing consolidates
+    on what it could already reach."""
+    block = "\n".join(job.clustered_block(["skills/agent-containment"]))
+    assert "nothing is on record for this skill" in block
+    assert "C965" in block
+
+
+def test_the_cluster_block_caps_what_one_run_is_asked_for():
+    assert job.MAX_CLUSTERS_PER_DISPATCH == 3, (
+        "one run revises one section, so a dispatch listing twelve edits is "
+        "asking for eleven things the gate will refuse")
+    block = "\n".join(job.clustered_block(["skills/harness-engineering"]))
+    assert block.count("\n    - [") <= job.MAX_CLUSTERS_PER_DISPATCH
+
+
 def test_a_long_list_names_only_what_one_run_can_do():
     rows = [{"skill_path": f"skills/s{n}", "deprecated_claim_id": n,
              "deprecated_claim": "x"} for n in range(20)]
