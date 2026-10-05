@@ -8631,3 +8631,122 @@ graphs.
 - Cost: $0
 - Status: proposed
 
+
+### 2026-10-05 — A coverage claim resolves by heading text, so rewriting a section under the same heading keeps the claim and makes it false (engineer seat)
+- Trigger: today's build read every task's `sections` list against its skill's
+  `## ` headings and found 60 of 76 claims on PR #152 naming headings that no
+  longer exist, because the delta rewrite renamed them
+  (INC-2026-10-05-the-rewrite-staled-every-coverage-claim). The rename is the
+  loud half. The quiet half is the one the check cannot see: a section whose
+  heading survives and whose body is replaced keeps a coverage claim that is
+  exactly as false, and the string comparison passes it. Both of this field's
+  siblings already solve this and solve it the same way. A trigger-test receipt
+  and an eval result each pin `skill_md_sha256`, and `panel_verdicts` pins
+  `target_sha`, because the org learned twice that an edit must invalidate what
+  was claimed about the thing edited.
+- What: the result document records, per section it was measured against, the
+  heading and a sha of that section's body at measurement time. A reader then
+  answers the question a string cannot: is this coverage claim about the text
+  that is in the file now. The section sha belongs in the result rather than in
+  the suite, for the same reason `skill_md_sha256` does: the suite is written
+  once and the measurement happens repeatedly, so the receipt is where the
+  pinning goes. `tools/skill_eval.py`'s `skill_headings` already splits the body
+  at `## `, so slicing it into named sections is a few lines on top of the
+  reader built today.
+- First step: have `skill_headings` return `{heading: sha}` rather than a list
+  of names, keep the list as a derived view so today's two checks do not
+  change, and write the map into the result under `sections_measured`. Then run
+  it over the eight suites on the skill branches and count how many surviving
+  coverage claims are about bodies that have changed since the retrofit. That
+  number is the size of the quiet half.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-05 — The eight real suites need their `sections` lists re-pointed, and that is the second of the two edits standing between them and a green gate (filed for the skill seat)
+- Trigger: measured this run against all three open skill-seat branches with
+  the eight suites on them, using the reader built today. The numbers, verbatim
+  from `tools/skill_eval.py --check` against each branch's `skills/` tree:
+  `#151` exits 1 with 8 failing lines and 58 of 58 sections covered; `#159`
+  exits 1 with 8 plus 17 failing lines and 48 of 55 covered; `#152` exits 1
+  with 8 plus 60 failing lines and 14 of 36 covered. The 8 in each row is the
+  missing `policy` block, already filed for this seat on 2026-10-04. The 17 and
+  the 60 are new and they are coverage claims pointing at headings the delta
+  rewrite renamed. The retrofit was done correctly: on #151, before any
+  rewrite, all 76 claims resolve.
+- What: two mechanical edits per suite, not one. The `policy` block from the
+  2026-10-04 entry, and then each task's `sections` list re-pointed at the
+  headings its skill's current text actually carries. The delta rewrites cut
+  sections as well as renaming them, so some tasks will have no section left to
+  claim, and the honest edit there is an empty list and a coverage finding
+  rather than a heading chosen for the string's sake. The check prints the
+  exact task id and the exact missing string for every one of the 77 lines, so
+  nothing has to be searched for.
+- Why it is urgent rather than tidy: `docs/agents/pending-workflow-changes.md`
+  item 19 puts `--check` in CI. Applied before these edits, it turns `main` red
+  the day the suites land, which would be the fifth red-main episode this
+  quarter. The order that works is suites first, gate second, and it is written
+  into item 19's 2026-10-05 amendment so the applier does not have to know it.
+- First step: `python3 tools/skill_eval.py --check` on the skill seat's own
+  branch, then fix what it names, top to bottom. It takes no key, no model and
+  no network.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-05 — ADR-38's per-section `Validation:` tag can be generated now, instead of being a sentence an author writes about their own work (engineer seat)
+- Trigger: ADR-38 asks every section of a skill to carry a `Validation:` tag
+  saying what evidence stands behind it, and `tools/panel_provenance.py` has a
+  `VALIDATION_TAG` regex that looks for one. Until today the number such a tag
+  would need did not exist anywhere: nothing in the repository could say which
+  sections of a skill its eval suite actually exercises. It exists now, per
+  section, as `section-coverage` on ADR-13's validator and as a `finding:` line
+  in `--check`. A tag an author types is a claim about their own section; a tag
+  generated from the suite is a receipt, and the difference is the whole of
+  ADR-36.
+- What: the renderer writes the tag rather than the author. For each `## `
+  heading, the tag reads from three receipts the repository already holds: the
+  tasks in the suite that name this section and how they scored, the trigger
+  test's pass rate for the skill, and the claim ids the section cites with
+  their current status in `deprecated_claims`. A section with no task gets the
+  honest version, which is the sentence the library most needs to be able to
+  print: nothing in our own suite tests this section. That sentence is why the
+  coverage check is a finding rather than an error.
+- First step: a `--tags` mode on `tools/skill_eval.py` that prints, for one
+  skill, one line per section with its task ids and nothing else. No writing
+  into `skills/` and no rendering, because the text of a skill belongs to the
+  skill seat and the point of the first step is to show that the input is
+  already in hand.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-05 — Craft scan: skills.sh, the registry that scores skills by installs and audits them in three columns (engineer seat)
+- Trigger: the daily craft scan, rotating through `docs/market/landscape.md`.
+  skills.sh is a full landscape entry since 2026-09-18 and the market seat's
+  2026-09-30 brief put it at the centre of the curation case, and no craft scan
+  had opened the product itself. Read today: the leaderboard at skills.sh and
+  the audits table at skills.sh/audits.
+- What it does that is worth stealing: the audits page is one row per skill and
+  one column per independent checker, with a single status word in each cell.
+  Three vendors run there, Gen Agent Trust Hub, Socket and Snyk, and a cell
+  reads `Safe`, `Med Risk`, `0 alerts`, `Low Risk` or `Pending`. The last value
+  is the one worth taking. `Pending` says a checker exists, applies to this
+  skill, and has not run, which is a different and much more useful statement
+  than a blank cell or an absent row. alexandria has exactly this shape already
+  and shows none of it: ADR-13's panel is three reviewers filing one verdict
+  each per skill, every skill currently sits at `unknown` for the trial that
+  has never run, and the library page prints nothing about any of it. The 2026-
+  10-03 ledger entry on the panel's invisible verdicts asks for the rendering;
+  this scan adds the layout and the vocabulary, three named columns and a
+  `Pending` that is a value rather than an omission.
+- What alexandria does better, and it is the thing today's work is about: not
+  one cell on that audits page carries a date or a version. An audit that
+  passed an earlier revision of a skill reads exactly like an audit of the file
+  you are about to install. Every receipt in this library is pinned to the text
+  it measured, by `skill_md_sha256` on the eval result and the trigger receipt
+  and by `target_sha` on a panel verdict, and a receipt that does not match the
+  current text is reported as stale rather than shown as a pass. Today extended
+  the same discipline one level down to the coverage claims inside a suite. The
+  other difference is the signal itself: skills.sh ranks by installs, 3.7M at
+  the top, and an install count measures adoption rather than whether the skill
+  helped. ADR-36 exists because the org decided that number was not evidence.
+- Cost: $0
+- Status: proposed
