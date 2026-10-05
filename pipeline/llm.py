@@ -378,6 +378,11 @@ def pace(model: str) -> float:
 #   12:00-13:00  triage.
 #   13:00-14:00  unclaimed. The gap is the margin.
 #   14:00-15:00  interpret.
+#   16:00-16:15  skill revision (skill_revision.py). Calls no model, and is
+#                deliberately absent from the table below: KIMI_WINDOWS is the
+#                Kimi concurrency ledger, and a job in it that never calls Kimi
+#                would make check_kimi_windows() report on a collision that
+#                cannot happen.
 #
 # `budget.check_kimi_windows()` reads this table and the crons themselves and
 # fails CI if two windows overlap. That is the gate in the command rather than

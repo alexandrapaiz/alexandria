@@ -24,6 +24,26 @@ arxiv:
   # papers/day and most of it is blockchain, network and crypto work, not agents.
   - {category: cs.CR, tier: a-low}
 
+  # Where the empirical protocol literature actually lives (research note
+  # 2026-09-30-protocols-containment-security-census.md section 6a). The same
+  # shape as the cs.CR finding of 2026-09-19, in a different category. Measured
+  # 2026-09-30 against the live arXiv API: of the September-2026 papers matching
+  # the protocols thread that this corpus does not hold, 76 carry no cross-list
+  # into any category above, and cs.SE is 43 of them -- including every
+  # empirical study of MCP in the field: "A Two-Dimensional Study of the Model
+  # Context Protocol: Publication and Adoption" (2609.14721), "An Empirical
+  # Study of Model Context Protocol Applications" (2607.25635), "Understanding
+  # How Enterprises Adopt the Model Context Protocol" (2606.09182), and "Can MCP
+  # Clients Decide What to Do After Failure?" (2609.00072). It carries
+  # containment work too: "Authority Is Not a String: A Capability-Scoped
+  # Harness for Prompt-Injection-Resistant..." (2609.08371) and "AgentS4D:
+  # Benchmarking Runtime Risks across the Execution Lifecycle of LLM-Based
+  # Workspace agents" (2607.27294). a-low, not a: cs.SE ran 639 papers in
+  # September, about 21 a day, so it is a firehose -- though a smaller and
+  # denser one than cs.CR, which runs 37 a day and where 42 percent of cs.SE
+  # abstracts mention an agent.
+  - {category: cs.SE, tier: a-low}
+
 hf_daily_papers:
   url: https://huggingface.co/api/daily_papers
   tier: b
@@ -97,6 +117,36 @@ feeds:
   # nothing on identity/portability; this territory lives in standards bodies
   # and protocol repos, not arXiv) ----
   - {name: gh-a2a-protocol, url: "https://github.com/a2aproject/A2A/releases.atom", tier: d}
+  # The releases feeds above and below carry the tag and nothing else. Measured
+  # 2026-09-30: gh-a2a-protocol and gh-mcp-spec have delivered 18 rows between
+  # them, every title a bare version or date string ("v1.0.1", "2026-07-28 RC"),
+  # every abstract empty, every fulltext_chars null, and all 18 indexed. That is
+  # not triage missing substance; there is no substance in the row, because
+  # releases.atom on a specification repository returns the tag while the
+  # normative change lives in the spec tree. These three are the changelogs the
+  # releases feeds are not (owner directive 2026-09-29: "spec changelogs, not
+  # only releases"). All verified 2026-09-30: HTTP 200, 20 entries each, and the
+  # path filter genuinely narrows -- the spec-path feed returns different commits
+  # than the whole-branch feed. The releases entries are kept, because a new
+  # protocol version is still a signal worth one row.
+  #
+  # seps.atom is the highest-signal of the three: MCP's normative change runs
+  # through a numbered Specification Enhancement Proposal process, and its
+  # commit messages name the substance ("Add Agent Skills backward-compatibility
+  # requirement", "Require WG/IG discussion before SEP submission"). Following
+  # it is how this project found SEP-2640, "Skills Extension", status Final,
+  # which standardizes serving Agent Skills over MCP -- a Final standard on the
+  # library that is this project's terminal asset, invisible to the corpus for
+  # five months. Most items in all three feeds are spec-text maintenance that
+  # triage should discard.
+  - {name: gh-mcp-spec-changelog, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/docs/specification.atom", tier: d}
+  - {name: gh-mcp-seps, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/commits/main/seps.atom", tier: d}
+  - {name: gh-a2a-spec-changelog, url: "https://github.com/a2aproject/A2A/commits/main/specification.atom", tier: d}
+  # The Agent Skills specification that SEP-2640 delegates the skill format to
+  # (directory shape, YAML frontmatter, progressive disclosure) lives at
+  # agentskills.io, which publishes no feed (/feed.xml and /rss.xml both 404 on
+  # 2026-09-30). This is its development repository and the working proxy. 200.
+  - {name: gh-mcp-ext-skills, url: "https://github.com/modelcontextprotocol/ext-skills/commits/main.atom", tier: d}
   - {name: gh-spiffe, url: "https://github.com/spiffe/spiffe/releases.atom", tier: d}
   - {name: hf-blog, url: "https://huggingface.co/blog/feed.xml", tier: d}
   # openai-blog and deepmind-blog were added here on 2026-09-19 and removed on
@@ -129,3 +179,42 @@ feeds:
   - {name: gh-mcp-spec, url: "https://github.com/modelcontextprotocol/modelcontextprotocol/releases.atom", tier: d}
   - {name: gh-claude-code, url: "https://github.com/anthropics/claude-code/releases.atom", tier: d}
   - {name: gh-ollama, url: "https://github.com/ollama/ollama/releases.atom", tier: d}
+  # ---- agent containment (Layer 4's named priority, owner's order 2026-09-19;
+  # research note 2026-09-30 section 6d). The corpus holds ZERO containment
+  # claims: the 24 that a keyword match credits to the thread are about terminal
+  # agents, token efficiency, GUI skills and multi-agent benchmarks, not about a
+  # boundary. The rubric this thread needs is an isolation design with a measured
+  # escape or a measured cost, and arXiv mostly does not carry that -- the people
+  # who run isolation at scale write it up themselves. All verified 2026-09-30,
+  # HTTP 200 with parseable entries.
+  #
+  # gVisor's blog is the rubric in feed form: "Scaling Agentic-RL Sandboxes to
+  # the Millions with gVisor at Tencent" (2026-04-23), "Multi-Agent gVisor
+  # Isolation (MAGI)" (2026-04-15), "Optimizing seccomp usage in gVisor", "Safe
+  # Ride into the Dangerzone: Reducing attack surface with gVisor". Ten entries
+  # spanning 2023-2026, so it costs the triage budget almost nothing, which
+  # matters while triage reads 3-15 percent of its intake.
+  - {name: gvisor, url: "https://gvisor.dev/blog/index.xml", tier: d}
+  # microVMs and the wasm runtime, the two isolation models the charter names
+  # beside sandboxes. Release feeds, so the unit is a release: triage routes
+  # capability releases to index/distill and patch releases to discard.
+  - {name: gh-firecracker, url: "https://github.com/firecracker-microvm/firecracker/releases.atom", tier: d}
+  - {name: gh-wasmtime, url: "https://github.com/bytecodealliance/wasmtime/releases.atom", tier: d}
+  # Checked and declined on 2026-09-30, recorded so the next census does not
+  # re-examine them: kata-containers releases (200, but the notes are dependency
+  # bumps); cncf.io/feed/ (200, general cloud-native news at a volume that would
+  # crowd the queue); e2b.dev/blog/rss.xml and modal.com/blog/feed.xml (both 404,
+  # so the agent-sandbox vendors have no reachable feed today -- recheck).
+  #
+  # ---- agent security: one standards body. OWASP's GenAI Security Project
+  # ships agent-security substance rather than announcements -- "2026 Top 10 for
+  # LLM Applications, New Agent Control Standard", "Memory Is a Feature. It Is
+  # Also an Attack Surface", "GenAI Exploit Round-up Report Q1 2026" -- which is
+  # the artifact-with-method the charter admits on the same terms as a paper.
+  # 200 with 10 entries, 2026-09-30.
+  - {name: owasp-genai, url: "https://genai.owasp.org/feed/", tier: d}
+  # openid.net/feed/ was checked the same night and declined: 200, but its ten
+  # most recent items are OpenID4VP/OpenID4VCI certification, age assurance and
+  # post-quantum OIDC, with nothing agent-specific. Agent identity as a principal
+  # is a real charter sub-area and this feed is not currently where it happens.
+  # Recheck at the next monthly census.

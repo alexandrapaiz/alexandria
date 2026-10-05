@@ -12,7 +12,18 @@ Three kinds of check live here, and they are different tools.
 
 The decision logic is executed for real in tests/markdown.test.mjs, which this
 file also runs so one pytest command covers the whole layer. It needs no
-node_modules, which is why it is the half that runs in CI.
+node_modules, which is what makes it the half that could run in CI.
+
+Corrected 2026-10-02, INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had:
+that sentence used to read "which is why it is the half that runs in CI", and no
+workflow in this repository has ever run this file. checks.yml names fourteen
+test files as individual steps and this is not one of them, and
+site/lib/markdown-core.js is in neither of its paths lists, so a pull request
+changing nothing but the module that decides what markdown may become on the
+public site runs no check at all. The step is queued as item 17 in
+docs/agents/pending-workflow-changes.md, because no agent seat can push a
+workflow file. Until a hand applies it, this file's coverage is whoever runs
+`python3 -m pytest tests/ -q` by choice.
 
 The wiring is read as source. Executing it needs `marked` installed, and the
 thing most likely to reintroduce the bug is not a flaw in the escaping, it is

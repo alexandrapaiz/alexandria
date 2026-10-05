@@ -14,6 +14,21 @@ start until she rules, and her verdict is recorded verbatim in the
 current file under `docs/voice/preferences/`. Until then no site copy is
 drafted, which is this page's whole job.
 
+**Noted 2026-09-30, writer seat, and not resolved here.** That status is
+now contradicted by events. On 2026-09-29 the owner approved site copy on
+home, library, skills, graph and mission, in her words "good. i like
+this.", recorded in docs/voice/taste.md. So copy converged while this
+page sat unruled, and the gate above did not hold and was not needed.
+Two readings are possible and the choice is hers rather than this seat's.
+Either this page is stale and the approved pages are the positive
+specification the eight rounds were missing, in which case the status
+line should say so and the page should be rewritten from them. Or the
+page is still the target and its approval is still owed. What is not
+defensible is leaving a sentence here saying no site copy is drafted on a
+day when five approved pages are live, so the contradiction is recorded
+rather than quietly left. Nothing in this page's substance is changed by
+this note and no approval is assumed.
+
 ## Why this page exists
 
 Eight rounds of site copy were written and all eight were rejected
