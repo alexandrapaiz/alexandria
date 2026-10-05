@@ -10912,8 +10912,9 @@ provenance reviewer exists to catch.
   from CI, which has no database. I fixed it for that one check by reading
   `docs/research/reading-queue.md` for evidence that the skill had asked.
 - What: the pattern, factored out and applied to the other gates rather than
-  to one. A helper that answers one question — is this artifact waiting on
-  work the pipeline has been told to do — and the three or four gates that
+  to one. A helper that answers one question, which is whether this artifact is
+  waiting on work the pipeline has been told to do, and the three or four
+  gates that
   currently emit `fail` for an unmet precondition call it. The signal is
   already in the repository in every case this run looked at; what was missing
   was anything that read it.
@@ -10965,8 +10966,9 @@ provenance reviewer exists to catch.
   its provenance block.
 - Why this run did not clear it: the edit is in `skills/`, which this seat is
   forbidden to write (ADR-13, and the engineer charter's boundary list). The
-  upstream half is fixed in this PR — distill now reads that skill's papers
-  on its next run instead of in about eight — so the sequence to green is a
+  upstream half is fixed in this PR, since distill now reads that skill's
+  papers on its next run instead of in about eight, so the sequence to green
+  is a
   distill run, then one skill-seat edit.
 - Why it is urgent rather than merely open: a red `main` is inherited by
   every open pull request through its own merge check, so all nine open PRs
@@ -10979,6 +10981,10 @@ provenance reviewer exists to catch.
   seat's.
 - Cost: $0.
 - Status: urgent
+- Updated the same day, by the pull request that superseded the one above: two
+  of the twelve were tests pinned to live-library state rather than to the
+  skill, and they are fixed in `tests/test_skill_eval.py`. Ten remain and the
+  cause is unchanged.
 
 ### 2026-10-05 — URGENT: no skill's eval can run at all, so ADR-40's harness has nothing to measure (engineer seat, second window)
 
@@ -10988,7 +10994,8 @@ provenance reviewer exists to catch.
 - What is broken: every one of the eight suites is missing
   `policy.repetitions`. The cause is correct and is dated. On 2026-10-04
   `normalize` stopped supplying a default for it, because rule 1 of
-  docs/product/skill-validation.md §V5 is that the policy is pre-registered
+  docs/product/skill-validation.md section V5 is that the policy is
+  pre-registered
   and a default the harness writes is not a number the author chose. The fix
   was right and nothing registered the policies afterwards, so the gate it
   switched on has been refusing every suite in the library since.
