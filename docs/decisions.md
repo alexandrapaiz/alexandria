@@ -1531,3 +1531,45 @@ docs/agents/runtime-changes.md apply and the chair runs them:
 `modal run pipeline/distill.py::rehearse`, then `modal deploy`. Triage
 is redeployed in the same chain, because its priority terms moved into
 the shared module.
+
+## ADR-39: Ursa evaluates and refines the skills
+
+**Status.** Accepted 2026-10-05, owner-directed: "id love to use Ursa to
+evaluate and refine the skills." Cross-company; Ursa is managed by
+Alexandra Systems Company, so the Ursa side is theirs and this record is
+alexandria's half of the interface.
+
+**Decision.** A skill load is an outcome in Ursa's sense: a consumer keeps
+some of the file, edits some, ignores the rest, and can declare
+satisfaction. Alexandria exposes to Ursa what it already keeps, and
+accepts back two things.
+
+*Exposed:* every skill with its provenance block; each skill's eval
+results (`skills/<slug>/evals/results.json`, the with-versus-without
+delta on differential tasks, ADR-36 and ADR-38); each skill's consumer
+reports lane (`skills/<slug>/reviews/`); and the version history the
+maintenance loop keeps (ADR-37).
+
+*Accepted back:* a survival signal per skill section, which parts
+consumers acted on and which they discarded, written into the skill's
+`evals/results.json` beside the measured delta as a second axis; and
+revision proposals distilled from the accepted parts, which enter the
+maintenance gate like any revision and merge on their own when the eval
+does not regress.
+
+**First trial.** The one that already happened: Ursa's pipeline over the
+Ursa repo's own use of the harness-engineering skill, declared by the
+Ursa chair in the first consumer report, and over alexandria's skills
+history. What survived is the first revealed-preference reading of a
+skill.
+
+**Why.** The quality bar (ADR-38) measures a skill against tasks the bare
+model fails. That is necessary and it is still a judged number. What a
+consumer kept of a skill under real work is the signal the harness
+cannot produce, and it is the signal Ursa exists to collect.
+
+**Consequences.** The skill seat reads Ursa's survival signal as an input
+to every revision; the engineer adds the second axis to the results
+contract and the evidence page; the market seat may use a survival
+number on the skill page only when it came from Ursa's record. The
+handoff to Ursa's PM is on the company board.
