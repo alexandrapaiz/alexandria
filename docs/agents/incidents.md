@@ -9667,3 +9667,95 @@ engineer to close in one sentence.
 `interpret`'s neighbour query and to `semantic_search`, so the corpus's two
 newest days are unreachable by the agent-facing surface while the window is
 open.
+
+## INC-2026-10-05-the-contradicts-fix-deployed-and-did-not-work — incident 25's error class survived its own repair, and reached a reader (2026-10-05, research seat)
+
+**Recorded under the standing rule.** Incident 25 (2026-09-21, this seat) and
+incident 26 (2026-09-24) recorded that `prompts/interpret.md` had been
+sharpened on contradictions and that the fix never deployed, so "all five
+`contradicts` edges in the graph are miscategorised." Incident 25's worked
+example was a sentence welding two systems on two benchmarks together, built
+from the pair 82.2% and 12.5%.
+
+**What is different today, and it is good news first.** The freeze is over.
+`tools/delivery_health.py --surface deploy` reports all three Modal jobs
+running this checkout, and the shas agree: `claim_links.method` is
+`kimi-k2.6@6706ec7bffee`, which is `prompts/interpret.md` at `origin/main`.
+The corrected prompt incidents 25 and 26 were waiting on is in production.
+
+**The repeat.** It did not work.
+
+1. **The old edges were never repaired.** `85 → 12` at confidence 0.78 — the
+   exact pair incident 25 quoted — is still in the graph today, three weeks
+   later. Fixing a prompt changes what the next edge looks like and nothing
+   about the rows already written, and nobody owns repairing written rows.
+2. **One of them reached a reader.** The 2026-W40 issue, published 09:01
+   today, opens its left-behind section with "Start with the number that
+   turned out to be wrong ... The null was not null." Claims 288 and 289 are
+   two arms of **one paper** (`arxiv:2609.09219`); 288 bounds recoveries under
+   challenger episodes, 289 counts recoveries under truthful feedback, and
+   289's own text says "the null calibration passed." The issue calls 289 "new
+   paired feedback studies," naming a study that does not exist, and hands
+   builders an instruction derived from the inversion. The edge behind it,
+   `289 contradicts 288`, was written 2026-09-29 by the pre-fix prompt.
+3. **The deployed prompt then produced two more of the same class.**
+   `478 → 477` (2026-10-01) and `574 → 570` (2026-10-02), both
+   `method = kimi-k2.6@6706ec7bffee`. Five intra-paper `contradicts` edges now
+   exist, all five are mislabelled, and two were written by the prompt written
+   to forbid them.
+
+**Why, mechanically, and this is the part worth carrying.** The deployed
+prompt already contains the rule. Override rule 1, "Co-reported results are
+not conflicts," describes this failure precisely and carries the 82.2%/12.5%
+pair as its worked example. The rule is well written. It fired zero times out
+of five, and its own first line says why:
+
+> You are not told which paper a candidate came from, so you must infer it.
+
+The gate is conditioned on paper provenance, and `claims.paper_id` is a column
+the pipeline is holding and does not pass. The interpreter is asked to
+reconstruct a fact from textual tells, and when the reconstruction fails the
+rule depending on it cannot fire.
+
+**This class is already named in this repository, against a different file.**
+`docs/voice/ban-list.md` entry 79, added 2026-10-01, is "the gate conditioned
+on a fact its reader was never given," and its general test is exactly the one
+above: *name the fact the gate's own sentence depends on, then find where the
+writer reads that fact. Where the answer is nowhere, the gate has never fired
+and never will.* Entry 79 was raised against `prompts/digest.md` and fixed by
+passing the fact into the payload. Nobody swept the other prompts for the same
+shape, which is that register's own entry 90, "the class named and not swept."
+So this entry is also entry 90's first confirmed cost.
+
+**What it costs, as a number.** `deprecated_claims` is any claim with an
+incoming `contradicts` edge at confidence >= 0.7, and it feeds both the
+digest's left-behind evidence (vision §1) and `skills_needing_revision`. Of 20
+deprecated claims, **5 are deprecated by their own paper** and 13 rest on at
+least one edge that fails the KIND test `prompts/digest.md` states.
+
+**What the org grows from it, stated as a rule.** A prompt fix has two halves
+and the org has been shipping one. The first half is the rule, and three
+charters already check that it merged and deployed. The second half is the
+*input the rule reads*, and nothing checks that at all — so a rule can merge,
+deploy, run daily, and never once be able to fire. Before a prompt diff is
+proposed, name the fact its new sentence depends on and find the field in the
+payload that carries it. Where there is no field, the diff is not a fix; it is
+a request for one, and it belongs in the engineer's lane rather than this
+seat's weekly proposal.
+
+**No proposal filed against `prompts/interpret.md` this run, deliberately.**
+Incident 25 declined to propose a second interpret fix because a third sha
+that never deployed would look like progress and change nothing. The freeze is
+gone and the reasoning survives it for a different reason: words added to a
+gate that cannot read its input are the same non-fix. Routed instead as three
+engineer items — pass `paper_id` on each interpret candidate, refuse
+same-paper `contradicts` edges at write time, and repair the written rows —
+in `docs/research/briefs/2026-10-05-digest-quality.md` §3.
+
+**Also found in the same sweep, recorded here because it is the second time a
+slow-loop stream has gone quiet without anything noticing:** `citation_log`
+was last written 2026-09-28 and is seven days stale, while `weekly` ran and
+published today. The W40 issue's only traction datum, "moved from 2 to 4
+citations," is a 2026-09-28 movement printed as this week's. Citation trend is
+one of the two evidence streams OKR O1 KR3 accepts and the entire basis of
+`docs/product/source-discovery.md` §3.3.
