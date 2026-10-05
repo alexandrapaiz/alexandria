@@ -1,3 +1,60 @@
+## Updated 2026-10-05 (message run): the merge-authority grant is unconfirmed, and no "bus-door decision" exists anywhere in this repo
+
+Two notes arrived tonight, both pressing on the Tier B PM-merge grant in
+`docs/standards/pm.md` §10. Checked both against the files rather than
+taking either on trust.
+
+**This seat was never going to act on it either way.** Nothing in
+`prompts/pm-agent.md` grants this seat merge authority at any tier; its
+own boundaries say merging stays the owner's, full stop. Every PM run
+today that has touched this file has checked the vendored standard's
+Tier B conditions and found no qualifying PR, so no merge has happened
+under it yet regardless of whether the grant is good.
+
+**The grant's own citation does not check out today.** §10 names ADR-041
+as its source. This repo's decisions file stops at ADR-40, an unrelated
+skills-testing decision, and names nothing in the forties for a merge
+grant. Per `docs/agents/cross-repo-law.md`, a parent decision that
+changes something in this repo is owed a record here before it governs;
+none exists yet. One of tonight's two notes, from the exo centralizer,
+says the same thing directly: the text lives on two open HQ pull
+requests, not on HQ's own main branch, and the owner has been asked to
+ratify or revoke it. A separate, already-open pull request in this repo
+(the PM-standard re-vendor) asserts the opposite, that the owner already
+merged this decision at HQ. Both cannot be true, and resolving which one
+is current is the exo centralizer's job, not this seat's guess. Flagging
+the contradiction here so it isn't merged on the strength of whichever
+claim a reader happens to see first.
+
+**No "bus-door decision" exists to check against.** Searched
+`docs/decisions.md`, `docs/allhands/`, this file, and the board for the
+term and anything resembling it. It names nothing on record here. The
+second of tonight's two notes expected one, the way two sibling
+companies' PM seats already have one. Per this charter's relay rule,
+this seat reports an existing ruling and does not invent one, so rather
+than guess at what the term means or assert a decision exists, this is
+named as a gap: either the decision was never relayed into this repo, or
+it has not been made yet. Either way it is not this seat's to manufacture.
+
+**What this changes in practice: nothing, for this seat.** It confirms
+what was already true, that no PM run should be merging anything.
+It matters for how the owner reads other seats' claims about what they
+are allowed to merge, which is why both notes get a real answer instead
+of a shrug.
+
+**Owner-only, one line.** Ratify or revoke the merge grant at HQ, the
+way the exo centralizer already asked, and say which of the two
+conflicting claims about HQ's own main branch is current. Until a
+decision lands as a record in `docs/decisions.md`, no PM-seat run
+anywhere should treat the grant as live.
+
+**Still true after this ceremony run reconciled everything else below.**
+This run (the Monday ceremony proper) checked every open PR against the
+Tier B conditions anyway, grant-or-no-grant, and found none that
+qualified on their own facts (drafts, red checks, or Tier C paths) — see
+"Tier B merge check" further down. So the unresolved grant changed
+nothing this run could have done differently either way.
+
 ## Updated 2026-10-05 (message run): the sprint regroomed against the MVP goal, and one decision waiting on you
 
 A handoff from `asc/chair:hq-console`: the owner renamed this sprint's goal
@@ -190,7 +247,6 @@ the deploy-drift guard that merged today (PR #166,
 designed to self-detect exactly this class going forward; this file
 will stop carrying it as a standing item once a standup confirms the
 guard has actually tripped or cleared once for real.
-
 ## Updated 2026-09-28 (Monday ceremony, full reconciliation)
 
 **Reconciliation against docs/decisions.md and docs/allhands/, done
