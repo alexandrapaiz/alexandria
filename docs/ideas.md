@@ -10979,3 +10979,151 @@ provenance reviewer exists to catch.
   seat's.
 - Cost: $0.
 - Status: urgent
+
+### 2026-10-05 — URGENT: no skill's eval can run at all, so ADR-40's harness has nothing to measure (engineer seat, second window)
+
+- Trigger: building ADR-40's seven harness items. `python3 tools/skill_eval.py
+  --check` exits 1 and prints `0 of 8 skills carry a conformant eval file`.
+  `--skill <any slug>` exits 1 before it sends a call, for the same reason.
+- What is broken: every one of the eight suites is missing
+  `policy.repetitions`. The cause is correct and is dated. On 2026-10-04
+  `normalize` stopped supplying a default for it, because rule 1 of
+  docs/product/skill-validation.md §V5 is that the policy is pre-registered
+  and a default the harness writes is not a number the author chose. The fix
+  was right and nothing registered the policies afterwards, so the gate it
+  switched on has been refusing every suite in the library since.
+  `harness-engineering` has a second, independent defect: nine of its tasks
+  name `sections` that are not `## ` headings of its own SKILL.md, which is
+  the coverage claim being false rather than merely absent.
+- Why this run did not fix it: the suites are `skills/`, which this seat is
+  forbidden to write (ADR-13, and the engineer charter's boundary list). The
+  edit is one four-line `policy` block per file and nine corrected heading
+  strings.
+- Why it is urgent rather than merely open: everything in this run's pull
+  request is an instrument, and today the instrument has nothing it is
+  allowed to point at. The owner directed the testing program on the
+  strength of the research, and it cannot produce a single number until a
+  skill-seat run registers eight policies.
+- First step: dispatch the skill seat to add `"policy": {"repetitions": 3,
+  "subject": "kimi-k2.6", "judge": "openai/gpt-oss-120b", "min_delta": 0.2}`
+  to each `evals/evals.json` and to correct harness-engineering's nine
+  `sections` strings against its own headings. Then one eval run proves the
+  whole ADR-40 path end to end on real money.
+- Cost: $0 to register the policies. One eval run at the $0.75 cap to prove it.
+- Status: urgent
+
+### 2026-10-05 — The skill page should lead with improved, flat and regressed, not with the mean (engineer seat, second window)
+
+- Trigger: today's competitive scan, below. `claude plugin eval`'s HTML report
+  opens with "Plugin effect: +33.3 pts vs baseline, improved 2, flat 1,
+  regressed 0 of 3 cases", and a case whose delta is negative gets a red left
+  edge so regressions stand out while scrolling. Our own `render` opens with a
+  mean and a bootstrap interval.
+- What: the result document already holds every number this needs. `per_task`
+  carries a delta per task and, as of this pull request, `section_deltas`
+  carries one per section. So the first line a reader sees becomes a count of
+  tasks that improved, stayed flat and regressed, with the mean and its
+  interval on the second line rather than the first. The same count goes on
+  the public skill page. A mean of +0.42 over ten tasks where two regressed is
+  a different product claim from +0.42 where none did, and today the page
+  cannot tell those apart. This is not a softening of the statistics: the
+  interval stays, and ADR-36's rule that a count is reported as a count with
+  its interval is what makes the count the honest lead rather than the mean.
+- First step: a `movement` block in `summarize` (improved, flat, regressed,
+  with the task ids), one line in `render`, one row on the page, and the
+  contract entry in site/app/skills/README.md.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The exploit answers will not be written by hand, so the adversary reviewer should write them (engineer seat, second window)
+
+- Trigger: this run's own measurement. `tools/skill_eval.py --check` now
+  reports `0 of 273 rubric criteria are tied to a certificate a reader can
+  check`, and one finding per rubric task for a missing exploit answer. ADR-40
+  item 5 asks every rubric to ship an answer that games it; at 273 criteria
+  across eight suites that is a volume no seat writes by hand on a Tuesday,
+  and a rule nobody can comply with is a rule that gets a `# noqa`.
+- What: `tools/panel_adversary.py` already exists to attack a skill's claims
+  and it already runs in the maintenance job. Give it a second duty: for each
+  rubric criterion, write the plausible answer that satisfies the criterion
+  while carrying none of its certificate, and write it into the suite beside
+  the criterion. The adversary is the right author for the same reason the
+  skill's own author is the wrong one, and the harness already refuses to let
+  the subject and the judge be one model. Then `--check`'s finding becomes a
+  real backlog with a producer behind it rather than a count that only grows.
+- First step: one function in the adversary that takes a criterion and its
+  certificate and returns a candidate exploit answer, plus the harness's
+  existing `run_exploits` as its acceptance test: an exploit the rubric scores
+  above zero is a finding about the rubric, and one it scores zero is a
+  certificate doing its job. Both outcomes are useful, which is what makes it
+  safe to generate.
+- Cost: $0 on the free judge tier; one adversary pass per suite.
+- Status: proposed
+
+### 2026-10-05 — Cluster the corrections with embeddings once a provider is funded (engineer seat, second window)
+
+- Trigger: `tools/corrections.py`, written this run, measured against the only
+  real consumer report in the library. Four numbered proposals in
+  `skills/harness-engineering/reviews/2026-09-29-ursa-chair.md` produced four
+  clusters of one, and the tool says so out loud: "every cluster holds exactly
+  one correction, so the clustering found nothing and this is the raw pile with
+  a label on it". That is the honest reading and it is also the whole ADR-40
+  refinement item 3 not yet working on real data.
+- What: ADR-40 says the corrections are embedded and clustered. This run
+  clustered them on Jaccard overlap of content words, because the organization
+  funds no embedding endpoint and the engineer charter forbids this seat from
+  creating a recurring cost. The upgrade is one embedding call per correction
+  on a maintenance run, cached by the correction's own hash so a report is
+  embedded once ever. At one report and a handful of failed tasks per skill
+  that is tens of calls a month, not thousands, and a small open model on the
+  free tier may be enough. The honest version of this proposal is that it may
+  also not help: four proposals asking for four genuinely different things
+  should not merge, and the real test of either instrument is a skill with a
+  dozen reports on it, which the library does not have yet.
+- First step: before buying anything, wait for the second and third consumer
+  report on one skill, then run both clusterers over them and compare. The
+  measurement is free and it is the thing that tells the owner whether the
+  endpoint is worth anything.
+- Cost: a proposal. An embedding endpoint is the owner's call, and the
+  comparison above is $0.
+- Status: proposed
+
+### 2026-10-05 — Competitive scan: `claude plugin eval` reports the ablation delta and then refuses to let it fail the build (engineer seat, second window)
+
+- Scanned: Anthropic's `claude plugin eval`, read at
+  code.claude.com/docs/en/plugin-evals on 2026-10-05. The closest thing in the
+  world to `tools/skill_eval.py`, and the rotation choice is deliberate: this
+  run built the harness, so the craft scan is of the other harness.
+- **One thing worth stealing.** The report's first line is a count, not a mean:
+  "Plugin effect: +33.3 pts vs baseline, improved 2, flat 1, regressed 0 of 3
+  cases", and a case with a negative delta carries a red left edge so a
+  regression is visible while scrolling rather than only in the arithmetic.
+  Ours opens with a mean and a bootstrap interval, which is more rigorous and
+  less readable, and the two are not in conflict. Filed as a ledger entry
+  above. Second, smaller: `--keep-temp` prints every run's sandbox directory
+  so a person can go and look at what the model actually produced. This run's
+  trajectory log is the same affordance reached from the other end, and theirs
+  is cheaper to use.
+- **One thing alexandria does better.** Their ablation delta "is reported but
+  never changes the exit code", and `--threshold` gates on the with-arm score
+  alone. So a plugin whose with-arm scores 0.9 passes CI at a threshold of 0.8
+  whether its delta is +0.4 or zero: the build can go green on a plugin that
+  demonstrably adds nothing, because the only number with teeth is the arm
+  that has the plugin in it. Our gate is the delta, it needs the bootstrap
+  lower bound above zero and the point estimate at or above a threshold
+  pre-registered before the run, and `verdict_of` will not call anything a
+  gain otherwise. That is the difference between measuring a skill and
+  measuring a model with a skill nearby. Three more, from the same page: their
+  suite is generated by `eval eval init`, which proposes the cases and the
+  graders from the plugin itself, which is exactly the author-writes-the-test
+  contamination ADR-36 refuses; nothing ties a rubric criterion to a
+  verifiable certificate, so the 8-to-26-percent exploitation C476 measured is
+  unguarded; and there is no held-out set, so an edit written against the
+  cases is scored on the cases.
+- **Two places it confirms us rather than beating us.** Three runs per case by
+  default, for the stated reason that "one run of a non-deterministic agent
+  tells you little", which is the same number and the same argument as
+  `DEFAULT_REPS`. And graders that only the plugin can pass are excluded from
+  the score in both arms and reported as indicators, which this harness already
+  took, with the citation, on 2026-09-30. Independent arrival at the same two
+  choices is the most reassuring thing on the page.
