@@ -20,13 +20,13 @@ against. The first six are the load-bearing ones.
 - [ ] arxiv:2608.04828 — Skill-Use, the 177-task executable benchmark behind the trigger-rate table; the frontier-model numbers this skill quotes are quoted from this paper rather than measured by the paper that reports them — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26~~ — read from the arXiv abstract 2026-09-30, research seat, PR #138
 - [ ] arxiv:2605.05726 — SkillRet, the skill-retrieval benchmark whose training split is what the native router's two projections were trained on — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2604.24594 — Skill retrieval augmentation for agentic AI (SRA-Bench), the out-of-domain library where metadata menus collapsed and dense retrievers fell below BM25 — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2606.03056 — SkillDAG, self-evolving typed skill graphs for skill selection at scale; tests whether the graph representation that helps execution also helps selection — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26~~ — read from the arXiv abstract 2026-09-30, research seat, PR #138
+- [x] ~~arxiv:2606.03056 — SkillDAG, self-evolving typed skill graphs for skill selection at scale; tests whether the graph representation that helps execution also helps selection — asked by skills/skill-library-engineering — 2026-09-26~~ — read from the arXiv abstract 2026-09-30, research seat, PR #138
 - [ ] arxiv:2607.25853 — HiSkill, hierarchical skill graphs; the second structured-representation line, needed before the library commits to a file shape — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.02766 — EvoSkill, automated skill discovery for multi-agent systems; the discovery half of the problem, which none of the five read papers covers — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2603.02766 — EvoSkill, automated skill discovery for multi-agent systems; the discovery half of the problem, which none of the five read papers covers — asked by skills/skill-library-engineering — 2026-09-26~~ — read from the arXiv abstract 2026-09-30, research seat, PR #138
 
 Questions the reading raised, for the research seat rather than a single paper.
 
@@ -74,3 +74,70 @@ Questions the reading raised, for the research seat.
 - [ ] question — How often do real agent traces contain a fact stated once and needed more than a budget later? Random Attention names this as the case a signal-free policy loses, says plainly that it never measured the frequency, and calls an agent reading state once and consulting it later the workload where its own method is the wrong default. That frequency decides whether this skill's central recommendation applies to agents at all — asked by skills/context-window-engineering — 2026-09-29
 - [ ] question — Does the protect-the-input finding survive on architectures without per-head independence, such as multi-head latent attention or multi-query attention? Random Attention tested four models that all use grouped-query attention and says the transfer is an inference rather than a measurement — asked by skills/context-window-engineering — 2026-09-29
 - [ ] question — Is there a text-agent equivalent of the shallow-layer index, where a cheap partial forward pass builds the retrieval structure and the full model only runs at answer time? ShallowStream shows it for video and the corpus holds no text result either way — asked by skills/context-window-engineering — 2026-09-29
+
+## Drain record, 2026-09-30 (research seat, PR #138)
+
+**The blocker first, because it governs the rest.** All 27 arXiv ids in this
+file are still absent from `papers`. Each one resolves against the live arXiv
+API, so none is a bad id. ADR-35 and the registers table both record that
+`pipeline/distill.py` has parsed the unchecked lines and ingested what the
+corpus lacks on every daily run since 2026-09-27. Measured tonight it has
+ingested none of them, which agrees with the finding that the distill image is
+not current (`docs/research/briefs/2026-09-30.md` section 4, and the deploy
+entry filed in `docs/ideas.md`). Until that deploy lands, this queue cannot be
+drained through the corpus by any seat.
+
+**Struck: four, and on an abstract rather than a full read.** The four bearing
+directly on the 2026-09-29 directive on self-improving systems were read from
+their arXiv abstracts and are written up as a cluster in the brief's section 8:
+`2604.01687` CoEvoSkills, `2606.03056` SkillDAG, `2603.02766` EvoSkill,
+`2603.25158` Trace2Skill. The strike notes say "from the arXiv abstract" and
+mean it. All four remain worth a full read when they are ingested, and the
+brief's recommendation to the skill seat is explicitly **not** to build a skill
+on this cluster yet, because a skill resting on four abstracts is the padded
+skill the charter forbids.
+
+**Not struck: 23 ids, 4 no-id works, and 6 questions.** Reading 23 papers in
+full was not compatible with this dispatch's four deliverables, and striking a
+line without reading it is worse than leaving it standing. Named here rather
+than left as a silent omission.
+
+**Two questions answered without a strike.** The skill seat asked whether
+anything in the corpus measures self-evolving skill libraries, and whether
+anything measures a library at the size a paying product ships. On the first:
+no. The four papers that do are the four above and none is in `papers`, so the
+corpus holds nothing on the product's own territory. On the second: the census
+found nothing between five and fifty skills either, which leaves the seat's
+original reading of that gap intact rather than resolved.
+
+## Drain record addendum, 2026-09-30 (research seat, PR #145)
+
+Second dispatch the same night, on protocols, containment and security. The
+blocker recorded above is unchanged and was re-measured rather than assumed:
+**all 27 arXiv ids in this file are still absent from `papers`.** No further
+strikes, because striking a line without reading it is worse than leaving it.
+
+**One open question is answered, from outside the corpus.** The
+`skills/skill-library-engineering` batch queued `arxiv:2607.25853` (HiSkill,
+hierarchical skill graphs) with the reason "the second structured-representation
+line, needed before the library commits to a file shape", and the same batch's
+third standing question asks what a skill's file shape should be when its
+content is research findings rather than a task procedure.
+
+The file-shape half of that question now has an external answer that no paper in
+this queue will give. **SEP-2640 "Skills Extension" (status Final, created
+2026-04-23)** standardizes serving Agent Skills over MCP and delegates the
+format - directory structure, YAML frontmatter, naming, progressive disclosure -
+entirely to the **Agent Skills specification** at `agentskills.io/specification`.
+Checked against this repository: `skills/*/SKILL.md` already carries YAML
+frontmatter with `name` and `description`, that specification's stated minimum,
+so the library is already shaped to be servable under SEP-2640 without a format
+change. The library does not need to choose a file shape from the research
+literature; there is a standard, it is Final, and we already broadly conform.
+
+What the research literature is still needed for is the part the standard does
+not cover: whether a hierarchical or graph representation helps *selection*, which
+is what HiSkill and SkillDAG measure and what no standard will answer. That line
+stays queued and unstruck. Full working in
+`docs/research/notes/2026-09-30-protocols-containment-security-census.md`
+section 6c.
