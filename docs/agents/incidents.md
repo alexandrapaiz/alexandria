@@ -9733,6 +9733,38 @@ digest's left-behind evidence (vision §1) and `skills_needing_revision`. Of 20
 deprecated claims, **5 are deprecated by their own paper** and 13 rest on at
 least one edge that fails the KIND test `prompts/digest.md` states.
 
+**The press was blind, not negligent, and this is where the entry earns its
+keep.** The 2026-W39 issue received an edge from this same class and **caught it
+in print**: "these numbers share a percent sign and little else ... the edge
+between them fails the kind test." So `prompts/digest.md`'s KIND test does
+fire. It could not fire on 288/289 because `pipeline/weekly.py`'s `deprecated`
+payload joins `papers` only on the OLD claim:
+
+```sql
+select old.claim, new.claim, l.confidence, p.title, p.url
+...
+join papers p on p.id = old.paper_id          -- only one of the two
+where l.relation = 'contradicts' and coalesce(l.confidence,0) >= 0.7
+```
+
+W39's pair was catchable by reading, because "software tasks" and "air-combat
+simulation" sit in the claim text. W40's was not, because the only fact that
+reveals it — that both claims are `arxiv:2609.09219` — is the one the payload
+withholds.
+
+**The guard already exists, ten lines away, on the weaker relation.** The
+`superseded` payload for `refines` edges joins both papers and carries
+`and old.paper_id != new.paper_id  -- a paper refining itself is not a
+supersession`. Someone thought of this once, for the relation that merely
+announces a supersession, and not for the relation that marks a claim
+**deprecated** and feeds both the left-behind section and
+`skills_needing_revision`. The stronger consequence has the weaker guard, and
+that asymmetry is the whole incident in one line.
+
+So the smallest sufficient fix is two lines of SQL in `pipeline/weekly.py`:
+join the new claim's paper, and copy the same-paper condition down from the
+query above it.
+
 **What the org grows from it, stated as a rule.** A prompt fix has two halves
 and the org has been shipping one. The first half is the rule, and three
 charters already check that it merged and deployed. The second half is the
