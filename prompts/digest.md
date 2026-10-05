@@ -1508,11 +1508,21 @@ the rule's question to the thing in front of you.
   issue is not finished. The print of 2026-10-05 had three and set them as three
   paragraphs, so it shipped with no list anywhere in it for the ninth issue
   running, and the count that would have caught it was never taken.
-  This is the whole lesson of that print in one line, and it is worth carrying
-  to every rule in this file: it scored zero non-ASCII characters and zero em
-  dashes, which are the two rules stated as counts, and it broke the heading
-  rule, the grade-shape rule, the semicolon rule and the list rule, which are
-  the four stated as prose. A rule you can count is a rule you will keep.
+  This is the lesson of that print and it is worth carrying to every rule in
+  this file, with the line drawn in the right place. It scored zero non-ASCII
+  characters and zero em dashes. It broke the heading rule, the grade-shape
+  rule, the semicolon rule, the list rule, the link-coverage rule and the
+  grade-coverage rule. The last two are already written as counts, so the
+  difference is not whether a rule says "count".
+  It is whether the check can be run on the finished text by itself. A character
+  census, a semicolon tally and a look at how many kinds of block are on the page
+  all read only what you just wrote, and those are the ones that hold. Counting
+  links or grades against every named piece of work means going back to the
+  payload while holding the draft, which is the one move that keeps not
+  happening. So run the checks that read only the draft, every time, and for the
+  two that need the payload, do them FIRST, before the prose is written, while
+  the payload is still what you are looking at. Collect the link and the grade
+  for every piece of work you intend to name, and then write.
   Then two questions the counts do not catch. Does every result have a line
   of plain meaning under it, with no number in that line? And is there one
   line in the issue where the number that matters stands by itself? Add what

@@ -1282,6 +1282,15 @@ gap that the same collision had left empty (incident 25).
     set no list anywhere, for the sixth grade running. The ornament arrived
     without the structure it was attached to, which is what an unanswered
     formatting escalation looks like on the page.
+    One row appended 2026-10-05, not a restatement. The issue of that day set
+    five bold leads and no list, for the ninth grade running, and it is the
+    first artifact in this sequence that was NOT the one the escalation's
+    patches were written blind against. So the escalation is now tested rather
+    than merely unanswered, and the ornament still arrives without its
+    structure. The one thing that changed is that the generator's single
+    unconditional list requirement, which is the superseded group past two
+    entries, was triggered by that issue's three entries and became a count on
+    the draft in the same pull request.
     Added 2026-10-02. Enforced the same day: the heading gate's collection
     step loses both punctuation-shaped halves in favour of one positional
     unit, any run of bold or italic that BEGINS a line, whatever punctuates
@@ -1593,3 +1602,111 @@ gap that the same collision had left empty (incident 25).
     calls this command. Until a command that already runs does, this entry and
     the two before it are enforced at the reliability of someone choosing to
     type it. Filed in docs/ideas.md for the engineer.
+
+93. The specimen that becomes the sentence, at the position where the model
+    writes. This register already holds two entries about examples leaking into
+    issues, 53 and 88, and both are about where an example is DRAWN FROM: a
+    specimen written out of the week being graded is the answer rather than an
+    illustration of it. This entry is about where an example SITS. A worked
+    sentence quoted inside the slot the generator writes into is the nearest
+    available draft, and it wins against any warning attached to it, including
+    the words "neither is ever printed".
+    The print of 2026-10-05 is the specimen and it carries four in one issue.
+    Two lead-ins quoted in the fell-behind slot opened both of its groups
+    verbatim, having been quoted there with a note that an earlier issue had
+    already printed one of them word for word. A heading of the form "Three
+    papers for anyone who ..." printed as the reading list's heading with its
+    tail swapped for the day's material, three lines above the file's own
+    sentence saying that a phrase quoted inside the slot is not a prohibition
+    but the nearest available draft. And the heading rule opened by rendering
+    the four slot jobs as plain English clauses, two of which printed as
+    section headings, one of them verbatim.
+    The tell, for a run reading the generator rather than an issue: a sentence
+    in prompts/digest.md that a reader could lift into an issue unchanged,
+    sitting inside a `{curly brace}` block or inside the rule that governs one.
+    Quoted BANNED specimens are not this tell, because a model copying a banned
+    specimen is caught by the ban. A quoted GOOD specimen has no such backstop,
+    and the file's own remedy for the "worth the hour" frame is the one that
+    works: delete it and name no replacement, because a replacement offered at
+    that position is the next template.
+    Added 2026-10-05. Enforced by deleting all four, which is the only move
+    with a record of working on this class, plus the slot-job rename that
+    removed the words two of the headings were lifted from.
+    ```
+    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    ```
+    What is NOT enforced, said plainly: the file still teaches by worked example
+    at other writing positions and this run did not inventory them, because
+    counting them is a different job from grading an issue and a guessed count
+    recorded as a sweep is worse than no sweep. Filed in docs/ideas.md.
+
+94. The evidence grade that ate the meaning line. Not a wording defect. A
+    position defect, and the register had no entry for a rule losing to a slot
+    rather than to a phrase.
+    The generator forbids the standalone grade twice, in its own words: the
+    grade is "a clause inside a sentence", and it is "never as a second
+    sentence stapled behind it". Both describe what the grade must not look
+    like. Neither says where it goes. The print of 2026-10-05 ended seven items
+    out of seven on a standalone grade, five of them a noun phrase with no verb
+    in it, so both rules were broken at a position neither of them named.
+    What it costs is a different law. Canon law 14's sixth rule reserves the
+    end of an item for a line of plain meaning with no number in it. The grade
+    was sitting in that position seven times, so the issue explained seven
+    results and told a builder what to do about none of them. Two rules asked
+    for one slot and the file never said which wins.
+    The tell: an item whose last sentence names replication, sample size or
+    whose experiments these were. Also any grade containing a semicolon, which
+    is where that habit is strongest, because the two halves of a grade feel
+    like a matched pair and are two sentences.
+    Added 2026-10-05. Enforced by fixing the position rather than the wording,
+    so the end of an item is declared unavailable.
+    ```
+    LANDED prompts/digest.md: "The last sentence of an item is not available."
+    ```
+
+95. The semicolon nobody was counting. Entry-worthy because of what it reveals
+    about the shape of a rule rather than about the mark.
+    The generator has named the semicolon for weeks, inside a bullet about four
+    punctuation marks, and calls it "banned outright by canon law 1". The print
+    of 2026-10-05 carried eight, against one in the print before it, and all
+    eight were the same construction: two finished sentences in a balanced
+    contrast, which is the shape that feels most like craft. The same issue
+    carried zero em dashes and zero non-ASCII characters.
+    The difference between the mark that went to zero and the mark that went to
+    eight is that one of them was in a count and the other was in prose. That
+    is the generalisable half and it has a limit, which entry 96 is about.
+    Added 2026-10-05. Enforced as a count at the shape gate, beside the
+    character census that holds.
+    ```
+    LANDED prompts/digest.md: "Count the semicolons. The target is zero and there is no budget, the same as the em dash."
+    ```
+
+96. The count that still fails, because it needs the payload and the draft at
+    once. The honest limit on entry 95, written in the same run, because the
+    tidy version of that lesson is false and a later run would have relied on
+    it.
+    Entry 95 says a rule stated as a count is kept. Two counts in the generator
+    were not. Link coverage says "count before you output. Every item in every
+    section carries its own link", and the print of 2026-10-05 named thirteen
+    pieces of work and linked three, all three in the reading list, with zero
+    links across the other three sections. Grade coverage says to count grades
+    against every named piece of work, and that issue graded five of thirteen,
+    with its entire fell-behind section ungraded: six named works, every one
+    printing a benchmark number, no grade anywhere in the section. That is word
+    for word the failure the count rule was written against.
+    So the line is not whether a rule says "count". It is whether the check can
+    be run on the finished draft by itself. A character census, a semicolon
+    tally and a look at how many kinds of block are on the page read only what
+    was just written. Counting links and grades against every named work means
+    re-opening the payload while holding the draft, and that is the move that
+    does not happen.
+    The tell, for a run writing a new rule: if obeying the check requires a
+    field the model has to go back and look up, the check will not be run, and
+    making it louder will not change that.
+    Added 2026-10-05. NOT enforceable in the generator, which is the point of
+    the entry, and this is its second ending. A gate holding both the payload
+    and the output can match named works against links and grades
+    mechanically, and the pipeline is the only thing that holds both. Filed in
+    docs/ideas.md for the engineer. Law 8 coverage has now failed after a
+    prompt fix twice, so the writer charter's structure watch says it stops
+    being prompt work at this point.
