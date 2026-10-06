@@ -15,12 +15,12 @@ and none of the twelve is in the `papers` table at all, so the corpus holds
 the skill-library cluster's 2026 results without the work they are measured
 against. The first six are the load-bearing ones.
 
-- [ ] arxiv:2602.12670 — SkillsBench, the source of "an ill-suited skill leaves the task worse off than no skill at all," which is the premise three of the five read papers build on and which alexandria currently asserts on their say-so — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.22455 — SkillRouter, the ~80K-skill routing benchmark and the finding that full skill bodies carry routing signal beyond names and descriptions; it is the baseline in two read papers and the reason the description-versus-body question has an answer — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2608.04828 — Skill-Use, the 177-task executable benchmark behind the trigger-rate table; the frontier-model numbers this skill quotes are quoted from this paper rather than measured by the paper that reports them — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26
-- [ ] arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26
+- [x] ~~arxiv:2602.12670 — SkillsBench, the source of "an ill-suited skill leaves the task worse off than no skill at all," which is the premise three of the five read papers build on and which alexandria currently asserts on their say-so — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2603.22455 — SkillRouter, the ~80K-skill routing benchmark and the finding that full skill bodies carry routing signal beyond names and descriptions; it is the baseline in two read papers and the reason the description-versus-body question has an answer — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2608.04828 — Skill-Use, the 177-task executable benchmark behind the trigger-rate table; the frontier-model numbers this skill quotes are quoted from this paper rather than measured by the paper that reports them — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2605.23904 — SkillOpt, the optimizing baseline both skill-evolution papers measure against, so every "+4.01 percent over SkillOpt" in the corpus is relative to a method the library has never read — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2602.12430 — Agent skills for large language models: architecture, acquisition, security, and the path forward; the survey all five read papers cite for what a skill is, and the only one of the twelve that covers skill security — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
+- [x] ~~arxiv:2603.25158 — Trace2Skill, distilling trajectory-local lessons into transferable skills; the direct prior for this skill's central claim that skills must be written from recorded runs — asked by skills/skill-library-engineering — 2026-09-26~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [ ] arxiv:2605.05726 — SkillRet, the skill-retrieval benchmark whose training split is what the native router's two projections were trained on — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2604.24594 — Skill retrieval augmentation for agentic AI (SRA-Bench), the out-of-domain library where metadata menus collapsed and dense retrievers fell below BM25 — asked by skills/skill-library-engineering — 2026-09-26
 - [ ] arxiv:2604.01687 — CoEvoSkills, self-evolving skills via co-evolutionary verification; the code-centric sibling of the GUI evolution loop, and the nearest thing in this literature to alexandria's own review-panel design — asked by skills/skill-library-engineering — 2026-09-26
@@ -147,7 +147,7 @@ and not one of them is in the `papers` table.
 - [ ] arxiv:2604.13630 — SafeHarness, lifecycle-integrated security architecture for agent deployment, the closest published relative of the harness-level enforcement both new skills recommend — asked by skills/agent-containment — 2026-09-30
 - [ ] arxiv:2601.04688 — ToolGate, contract-grounded and verified tool execution, the contract-based alternative to capability scoping that neither new skill can currently compare against — asked by skills/agent-containment — 2026-09-30
 - [ ] arxiv:2412.04984 — Frontier Models are Capable of In-context Scheming, the prior that the shutdown-sabotage study extends by removing the incentive. Needed to say whether the no-incentive result is new or a replication — asked by skills/agent-security-measurement — 2026-09-30
-- [ ] arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30
+- [x] ~~arxiv:2609.16204 — Decoy Direction Optimization, a post-hoc weight-editing defence against abliteration, already in the corpus with five claims. Deliberately left out of agent-security-measurement because it defends a model release rather than an agent deployment. It is the seed of a different skill and should not sit unused — asked by skills/agent-security-measurement — 2026-09-30~~ - held and distilled; claims in the corpus, verified 2026-10-05, research seat, PR #210
 - [ ] no arXiv id — Anatomy of a Frontier Lab Agent Intrusion, Hugging Face Security Team, 2026, and the METR independent investigation of the same incident. These are the external ground truth for the July 2026 escape that agent-containment's section 6 narrates, and the library has read only a single-author monograph's retelling of them — asked by skills/agent-containment — 2026-09-30
 - [ ] no arXiv id — Firecracker (Agache et al., NSDI 2020) and EROFS (Gao et al. 2019), the two systems the production sandbox platform's boundary and image path are built from. Not urgent for a skill, but the corpus holds no systems substrate at all for this thread — asked by skills/agent-containment — 2026-09-30
 
@@ -224,7 +224,7 @@ is what HiSkill and SkillDAG measure and what no standard will answer. That line
 stays queued and unstruck. Full working in
 `docs/research/notes/2026-09-30-protocols-containment-security-census.md`
 section 6c.
-- [ ] arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2610.02015 — RLVR: On Language Drift during RLVR Post-Training — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-10-05; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.40115 — RLVR: Unlearnable, or Unmeasured? On the Reliability of Difficulty Labels in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.40360 — RLVR: Semifactual Credit-Augmented Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.39533 — RLVR: CATCH: A Controllable Analysis Testbed for Reward Hacking in Coding RL — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
@@ -241,11 +241,11 @@ section 6c.
 - [ ] arxiv:2609.15987 — RLVR: Bellman Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.12191 — RLVR: GAUGE: When Not to Trust LLM-as-a-Judge in user-simulated evaluation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.10315 — RLVR: TRACE: Training Reasoning Agents for Causal Exploration with Synthesized Rewards — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2609.08650 — RLVR: Difficulty-Adaptive Tree-Structured Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 5 claims, distilled 2026-09-11; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.09075 — RLVR: ThinkPrior: Zero-Rollout Difficulty Priors for Cold-Start Prompt Selection in RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.06107 — RLVR: DataFlex-RL: An Evaluation Platform for RLVR Data Policies — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.05111 — RLVR: Unifying ICL, SFT, KL-Regularized RL Through a Bayesian Lens — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
-- [ ] arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [x] ~~arxiv:2609.05295 — RLVR: RISE: Recursive Improvement via Self-Extrapolating Policy Distillation — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05~~ - in the corpus with 4 claims, distilled 2026-09-08; the ask was corpus presence and it is met, research seat 2026-10-05, PR #228
 - [ ] arxiv:2609.04565 — RLVR: Extremely Sparse Supervision Incentivizes Reasoning Ability — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.04108 — RLVR: Sequential Beats Joint: On-Policy Distillation and RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
 - [ ] arxiv:2609.00444 — RLVR: Group Adaptive Clipping Policy Optimization — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
@@ -271,3 +271,301 @@ section 6c.
 - [ ] arxiv:2403.04132 — gap: preference optimization from usage data: Chatbot Arena, preference data from live usage at scale — asked by the chair (owner: fix the gaps) — 2026-10-05
 - [ ] arxiv:2411.15124 — gap: preference optimization from usage data: Tulu 3, the open post-training recipe where RLVR was named — asked by the chair (owner: fix the gaps) — 2026-10-05
 - [ ] arxiv:2407.21783 — gap: preference optimization from usage data: The Llama 3 herd of models, the preference-data pipeline in production — asked by the chair (owner: fix the gaps) — 2026-10-05
+
+## Containment batch, 2026-10-05 (research seat, PR #210)
+
+Owner directive 2026-10-05, containment only. Appended so distill reads these
+first. Two groups: the papers the containment skill rests on, and the papers
+the 30-day census found in the field and not in our corpus.
+
+### Group 1 — the papers `skills/agent-containment` rests on
+
+The directive names four. The draft's front matter names **six**, and the two
+it does not name carry load in the skill's body (the five-week deny-list
+revision count, and the statepoint mechanism). All six are listed. Their state
+was measured tonight, and it corrects the directive on two points: five of the
+six **are** in `papers`, and one of them has already yielded claims.
+
+- `arxiv:2609.08371` **Authority Is Not a String: A Capability-Scoped Harness for
+  Prompt-Injection-Resistant Coding Agents** — arxiv.org/abs/2609.08371 —
+  **ABSENT from `papers` entirely.** Ingest first. This is the load-bearing
+  paper of the skill: every factorial number in skill sections 1 and 2 (46/75,
+  47/75, 33/75, 3/75) comes from it, and the corpus cannot check one of them.
+- `arxiv:2609.06500v1` **CAPMAS: Capability-Based Delegation of Privileges in
+  Multi-Agent Systems** — arxiv.org/abs/2609.06500 — held, **never triaged**.
+  Needs a triage decision before it can reach distill.
+- `arxiv:2609.22978v1` **DeepSeek Elastic Compute (DSec): A Sandbox
+  Infrastructure for Effective Agentic Training at Scale** —
+  arxiv.org/abs/2609.22978 — held, routed to `distill`, **no fulltext, 0
+  claims**. In the distill backlog.
+- `arxiv:2609.35557v1` **The Compiler May Read It, the Agent May Not** —
+  arxiv.org/abs/2609.35557 — held, routed to `distill`, 0 claims. In the backlog.
+- `arxiv:2609.35366v1` **Planarian: Managing Agent State with Statepoints** —
+  arxiv.org/abs/2609.35366 — held, routed to `distill`, 0 claims. In the backlog.
+- `arxiv:2609.29808v1` **Hard Stop: Kernel-Level Preemption and Containment for
+  Rogue Agentic Execution** — arxiv.org/abs/2609.29808 — held, `deep_read`,
+  12,000 fulltext chars, **5 claims already filed (882-886)**. Not a reading
+  gap. It is a *provenance* gap: the skill says `claims: []` while five claims
+  from its own paper sit in the corpus. Claim 883 also carries the wrong
+  evidence grade (see the brief's graph-error section). Routed to the skill seat
+  rather than queued for reading.
+
+### Group 2 — missed by the census (40 papers, external ground truth)
+
+Method and full tables in
+`docs/research/notes/2026-10-05-containment-census.md`. OpenAlex, arXiv-scoped,
+2026-09-05 to 2026-10-05, the owner's five named containment areas; 301 arXiv
+papers in the field, 125 held, 176 not held, of which these 40 are on-thread by
+this seat's judgment and 136 are relevance-search noise. Every id below was
+returned by the external query and checked against `papers`; none is inferred.
+
+**Tier A - the boundary itself (read first)**
+
+- `arxiv:2609.08062` (2026-09-08) ResidualAuth: What Authorization State Must Language Agents Preserve under Revocable Delegation? — arxiv.org/abs/2609.08062
+- `arxiv:2609.11596` (2026-09-10) From Intent to Execution Grant: An Execution-Boundary Conformance Profile for High-Risk AI Actions — arxiv.org/abs/2609.11596
+- `arxiv:2609.12001` (2026-09-10) Scan the Skill, Govern the Action: Composing Registry Verdicts with Runtime Consequence Control — arxiv.org/abs/2609.12001
+- `arxiv:2609.14003` (2026-09-12) Confuse the Model, Control the Flow: Understanding and Mitigating Privacy Leakage from LLM Agents with Information Flow Control — arxiv.org/abs/2609.14003
+- `arxiv:2609.13672` (2026-09-12) Recoverability as a System Primitive for Long-Horizon AI Agents — arxiv.org/abs/2609.13672
+- `arxiv:2609.14780` (2026-09-13) The Stochastic Deputy: Structural Tenant Isolation for Tool-Using LLM Agents — arxiv.org/abs/2609.14780
+- `arxiv:2609.14631` (2026-09-13) LLM Agent Capabilities Should Follow Task Intent and Context Source — arxiv.org/abs/2609.14631
+- `arxiv:2609.15906` (2026-09-14) Authorization Architectures for Tool-Using AI Agents — arxiv.org/abs/2609.15906
+- `arxiv:2609.14987` (2026-09-14) ActGuard: Pre-execution Action Auditing against Indirect Prompt Injection in LLM Agents — arxiv.org/abs/2609.14987
+- `arxiv:2609.17648` (2026-09-15) Trust propagation and structural containment in Multi-agent LLM pipelines — arxiv.org/abs/2609.17648
+- `arxiv:2609.21088` (2026-09-17) Origin Is All You Need: Provenance-Aware Transformers for Structural Trust-Boundary Separation — arxiv.org/abs/2609.21088
+- `arxiv:2609.22573` (2026-09-18) Zero-Trust Authorization and Discovery for Enterprise MCP — arxiv.org/abs/2609.22573
+- `arxiv:2609.22882` (2026-09-19) The Law of Stop: Interruptibility, Injunctions, and the Governance of Agentic AI — arxiv.org/abs/2609.22882
+- `arxiv:2609.23498` (2026-09-20) Runtime Authorization Consistency Checking for MCP-based Agentic Workflows — arxiv.org/abs/2609.23498
+- `arxiv:2609.24077` (2026-09-21) LeaseGuard: Incumbent-Preserving Admission Control for Privileged LLM Agents — arxiv.org/abs/2609.24077
+- `arxiv:2609.32378` (2026-09-26) AuthorityLens: Rethinking LLM-Based Agent Systems Through the Lens of Authority — arxiv.org/abs/2609.32378
+- `arxiv:2609.32750` (2026-09-26) CUA-Sandbox: Efficient Environments for Computer-Use Agent Reinforcement Learning — arxiv.org/abs/2609.32750
+- `arxiv:2609.32390` (2026-09-26) Reward Hacking and Agent Containment Failure: A Monte Carlo Study Based on the 2026 Hugging Face Incident — arxiv.org/abs/2609.32390
+- `arxiv:2609.33658` (2026-09-27) AgentBoundary: Counterfactual Evaluation of Safety in Tool-Using LLM Agents — arxiv.org/abs/2609.33658
+- `arxiv:2609.40082` (2026-09-30) Tide: Reclaiming Phased Memory in Agent MicroVMs — arxiv.org/abs/2609.40082
+
+**Tier B - attack side and harness exposure**
+
+- `arxiv:2609.06835` (2026-09-06) Skynet: Workflow-Level Anomaly Detection for Agentic AI via Semantic and Structural Modeling — arxiv.org/abs/2609.06835
+- `arxiv:2609.07529` (2026-09-07) CoER: Defending against Adaptive Indirect Prompt Injection via Adversarial Co-Evolution and Refinement — arxiv.org/abs/2609.07529
+- `arxiv:2609.06972` (2026-09-07) AgentDrift: A Step-Labeled Benchmark of Injection-Hijacked LLM Agent Trajectories — arxiv.org/abs/2609.06972
+- `arxiv:2609.07360` (2026-09-07) Scanning the Harness: Configuration Exposures in AI Coding-Agent Supply Chains — arxiv.org/abs/2609.07360
+- `arxiv:2609.10892` (2026-09-09) DriftNet: A Dual-Head Trajectory Transformer for Detecting and Localizing Prompt Injection in LLM Agents — arxiv.org/abs/2609.10892
+- `arxiv:2609.10854` (2026-09-09) No-Box Vulnerability Analysis: Description-only Detection of Indirect Prompt Injection Vulnerabilities in MCP Servers — arxiv.org/abs/2609.10854
+- `arxiv:2609.10871` (2026-09-09) A2ABreak: Systematic Security Analysis of the A2A Protocol — arxiv.org/abs/2609.10871
+- `arxiv:2609.12216` (2026-09-10) Guardrailed Meta-Agent Loops: Stress-Testing Policy Pinning, Budget Bounds, and Crash Recovery — arxiv.org/abs/2609.12216
+- `arxiv:2609.13889` (2026-09-12) When Malicious Instructions Persist: Persistent Memory Poisoning Attack on Harness-Based Agents — arxiv.org/abs/2609.13889
+- `arxiv:2609.16098` (2026-09-14) Universal Defenses for Tool-Integrated LLM Agents Against Adversarial Attacks — arxiv.org/abs/2609.16098
+- `arxiv:2609.15516` (2026-09-14) Misleading the Planner through Deceptive Resumes: Registration-Time Injection in Centralized Multi-Agent Systems — arxiv.org/abs/2609.15516
+- `arxiv:2609.18217` (2026-09-16) Measuring and Exploiting Implicit Trust in LLM Tool-Calling Pipelines — arxiv.org/abs/2609.18217
+- `arxiv:2609.18411` (2026-09-16) The Verifiable Action Card: Trustworthy Human-in-the-Loop Control for Secure Autonomous Agents — arxiv.org/abs/2609.18411
+- `arxiv:2609.22510` (2026-09-18) Defusing Explosive Prompts: Understanding and Preventing Trigger-Based Prompt Injections in LLM Agents — arxiv.org/abs/2609.22510
+- `arxiv:2609.30383` (2026-09-24) Stealth Apart, Harm Together: Skill Cascading Attacks on Skill-Based Agent Systems — arxiv.org/abs/2609.30383
+- `arxiv:2609.32021` (2026-09-25) SilentCall: Hidden Tool-Call Backdoors in Open-Weight Agents, and How to Catch Them — arxiv.org/abs/2609.32021
+- `arxiv:2609.36576` (2026-09-29) Divide and Inject: Can Agents Reconstruct an Indirect Prompt Injection from Fragments? — arxiv.org/abs/2609.36576
+- `arxiv:2610.00430` (2026-09-30) Memetic Trojans: Social Contagions as Carriers of Adversarial Payloads in Agent Networks — arxiv.org/abs/2610.00430
+
+**Tier C - surveys, orientation only**
+
+- `arxiv:2609.13731` (2026-09-12) Trustworthy Agentic AI: A Comprehensive Cybersecurity and Systems Survey on Threat Landscapes, Defense Architectures, and Open Challenges — arxiv.org/abs/2609.13731
+- `arxiv:2609.22712` (2026-09-19) Trustworthy Agentic AI: Failure Modes, Mitigation Strategies, and a Lifecycle Framework for Autonomous LLM Systems — arxiv.org/abs/2609.22712
+**Not struck, and why.** Nothing in this batch is struck. This seat read
+titles and abstracts, not full texts, and the directive's four deliverables
+were not compatible with 40 full readings. The charter's standing rule holds:
+striking a line without reading it is worse than leaving it standing.
+
+**One standing question for whoever reads Tier A.** Three of these papers put
+the enforcement point in three different places — the dispatch interceptor
+(ActGuard), the authorization-state machine across a delegation chain
+(ResidualAuth), and the kernel (held: Agent-Warden, ContractWarden). The skill
+currently orders these by "how much privilege the deployment has". Nothing in
+the corpus measures them against each other on one workload. If one of these
+papers does, that comparison is the skill's missing section.
+
+## Correction to this file's standing blocker, 2026-10-05 (research seat, PR #210)
+
+**The blocker recorded on 2026-09-30 and re-confirmed the same night is false,
+and it should stop being planned around.** That record says every arXiv id in
+this file is absent from `papers`. Measured tonight against the 56 ids this
+file held before this run: **19 distinct papers are held, and 13 of them have
+claims in the corpus.** Recorded as
+`INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join`.
+
+Seven unchecked lines above are struck accordingly, each one a paper that is
+held and distilled. Six more are held with claims but are recorded in tables
+or question lines rather than as checkbox items, so they are named here instead
+of struck: `arxiv:2609.05903` (EvoSafeHarness, 5 claims), `arxiv:2609.06966`
+(MOLE, 5), `arxiv:2609.07103` (Revisiting Complete Reasoning Traces, 4),
+`arxiv:2609.08404` (Environments as Scaffold, 5), `arxiv:2609.28274` (Shutdown
+Sabotage Propensities, 5), `arxiv:2609.29808` (Hard Stop, 5). The table row
+above that records Hard Stop as `0` claims is wrong; it has five, 882-886.
+
+Six are held and genuinely unread, so their lines stand: `arxiv:2609.06500`
+(CAPMAS, never triaged), `arxiv:2609.22978` (DSec), `arxiv:2609.26761` (A2M),
+`arxiv:2609.29647` (AgentKernel), `arxiv:2609.35366` (Planarian),
+`arxiv:2609.35557` (The Compiler May Read It). All but CAPMAS are routed to
+`distill` and waiting in a 1,189-paper queue.
+
+**Use this join, not an equality test.** `papers` holds arXiv ids in two
+shapes because source `arxiv` writes `arxiv:2610.02206v1` and source
+`hf-daily` writes `arxiv:2610.02206`, so an equality join silently misses
+every paper that arrived through the `arxiv` feed:
+
+```sql
+from f left join papers p on p.id like 'arxiv:' || f.aid || '%'   -- correct
+from f left join papers p on p.id = 'arxiv:' || f.aid             -- wrong
+```
+
+That is also why the first query of this run reported five of the containment
+skill's six papers as missing when five are held.
+
+## Skill-evals batch, 2026-10-05 (research seat, PR #220)
+
+Owner directive 2026-10-05, the RL feedback / evaluation / refinement
+research. Appended by the brief at
+`docs/research/briefs/2026-10-05-skill-evals-from-rl-research.md`. The chair
+queued twenty gap papers above this section on the same day; these do not
+repeat them. Two of the three groups below exist because reading the papers
+in full changed what the gap is.
+
+### Group 1 — re-pointing the preference-from-usage gap
+
+The chair's nine queued papers under "preference optimization from usage
+data" are the weight-training branch (DPO, KTO, Nash, iterative PO). Our
+artifact is a text file and no weights are trained, so that branch answers a
+question we do not have. The branch we do need is preference-gated refinement
+of a *text artifact* from logged usage, and the corpus already holds its best
+instance, unread in full.
+
+- [x] ~~arxiv:2609.22086 — Designer-RSI, read IN FULL for the replay gate's mechanics: it admits an edit that beats the incumbent on >=1 replayed case with no regression on any (C891), which is the gate design closest to our constraints and the only one of the three we hold that survives one-report-at-a-time arrival. We have it only through claim rows and the W40 draft — research seat 2026-10-05~~ - ANSWERED from the corpus, not from a re-read: C891 `claims.procedure` carries the four steps — (1) select past cases where the skill was used, (2) run candidate and incumbent on them, (3) compare grader scores, (4) admit only on >=1 strict improvement with no case scoring lower — with upstream context held fixed, "inspired by safe policy improvement". Caveat forward: C891 is `evidence_grade = asserted`, so the mechanics are answered and the EFFECT is not; W40 quotes the authors own unreplicated 61.8%/67.6% win rates. Research seat 2026-10-05, PR #228
+- [ ] arxiv:2605.23904 — SkillOpt, re-read for the held-out gating THRESHOLD and the validation set's composition: the full text establishes "strictly improves a held-out validation score" but not what is held out or how much, and our gate needs both numbers — research seat 2026-10-05
+
+### Group 2 — the contradiction that blocks a cluster
+
+C322 (COBRA-Skills: performs effectively when the target model itself
+generates and refines the skills) sits directly against C850 (SkillsBench:
+self-generated skills underperform curated ones) and C965 (self-refinement
+consolidates rather than discovers). All three are `asserted`, so none
+settles it, and the answer decides whether our cheap subject may propose its
+own skill edits or only verify them. Reading COBRA-Skills' page today
+confirmed it offers no evidence for that sentence — no comparison, no
+ablation.
+
+- [ ] arxiv:2609.11682 — COBRA-Skills, read IN FULL for any evidence behind C322's self-generation sentence. If the full text has no ablation either, C322 should be downgraded or split, because it is currently load-bearing against two other claims — research seat 2026-10-05
+- [ ] arxiv:2602.12670 — SkillsBench, re-read for the self-generated-vs-curated EXPERIMENT behind C850. The full HTML read today states the three-module and model-parity findings but the abstract does not carry the self-generation comparison at all, so C850's evidence lives in a section we have not read — research seat 2026-10-05
+
+### Group 3 — RLAIF, a zero the chair did not name
+
+Layer 3 of the standing program names "RLHF and RLAIF by name... constitutional
+and AI-feedback approaches." Measured today across all 1,801 claims with
+word-bounded matching: 2 claims mention human feedback, and **0 mention
+RLAIF, AI feedback, or constitutional AI**. It is the oldest named coverage
+order in the charter and the emptiest shelf in the corpus. Foundations first,
+the same shape as the chair's gap batch.
+
+- [ ] arxiv:2212.08073 — RLAIF gap: Constitutional AI, harmlessness from AI feedback (the paper that named the method) — research seat 2026-10-05
+- [ ] arxiv:2309.00267 — RLAIF gap: RLAIF vs RLHF, scaling reinforcement learning from human feedback with AI feedback (the direct comparison, which is the claim we most lack) — research seat 2026-10-05
+- [ ] arxiv:2212.09251 — RLAIF gap: Discovering language model behaviors with model-written evaluations (AI-written eval items, directly relevant to our generated rubrics) — research seat 2026-10-05
+- [ ] arxiv:2310.01377 — RLAIF gap: UltraFeedback, scaled AI preference data — research seat 2026-10-05
+- [ ] arxiv:2401.10020 — RLAIF gap: Self-rewarding language models. ALREADY QUEUED by the chair under the preference-from-usage gap; relisted here because its AI-feedback half is the part this gap needs, so whoever reads it should file claims against both — research seat 2026-10-05
+
+### Questions this run raised and could not answer from the corpus
+
+- [ ] Is the 227-claim null-embedding window (every one created 2026-10-04 or 10-05) the normal lag of a nightly embed job, or incident 30's first occurrence returning? Not decidable from the corpus; needs the job's schedule from the engineer — research seat 2026-10-05
+- [ ] C887 is internally inconsistent: "from 72.7% to 99.3%, a +11.99-point improvement" (72.7 to 99.3 is +26.6). Designer-RSI's full text should say which quantity the +11.99 is, and the claim needs splitting or correcting. The W40 draft reproduced the inconsistency faithfully — research seat 2026-10-05
+- [ ] Does SkillsBench's "module" mean a `##` section or a separate file? Our skills are single-file, so the brief read it as a section, which puts six of eight skills over the cap. A file-level reading would put all eight at one module and void the finding. The full text's skill format decides it — research seat 2026-10-05
+
+### Group 4 — the L-R1 reach gap, six papers on this dispatch's own subject
+
+Found by the live-web check (L-R1) and confirmed absent by id against
+`papers`. The cause is the corpus's five-week window: 5,932 arXiv papers
+carry a `2609` id, 1 carries `2607` and 2 carry `2606`, so this field's
+canonical work is reachable only by hand. SkillCoach is the priority: it is
+this dispatch's exact subject, and the brief built its rubric argument from a
+general rubric paper for want of it.
+
+- [ ] arxiv:2607.01874 — SkillCoach: Self-Evolving Rubrics for Evaluating and Enhancing Agentic Skill-Use. PRIORITY: self-evolving rubrics for skill-use evaluation is the dispatch's subject exactly, and it may already answer the fixed-versus-dynamic rubric tension the graph flags as `393 contradicts 39` — research seat 2026-10-05
+- [ ] arxiv:2606.22613 — SkillAudit: From Fixed-Suite Benchmarking to Skill-Centered Assessment. Generates a per-skill report over utility, cost and safety, which is the shape of the evidence page ADR-40 specifies — research seat 2026-10-05
+- [ ] arxiv:2608.27487 — Grounded Checklist Partial Credit for Agent Skill Trajectories. Partial credit over a trajectory is the gap between our 68 rubric tasks and a hard check — research seat 2026-10-05
+- [ ] arxiv:2606.17819 — A Framework for Evaluating Agentic Skills at Scale. Reported as 1,000 tasks from 500 real skills with instruction-following and goal-completion rubrics over 19 agent-model configurations — research seat 2026-10-05
+- [ ] arxiv:2606.11435 — Agent Skill Evaluation and Evolution: Frameworks and Benchmarks. A survey, so read for the map and for what it says our eight-skill estate is missing — research seat 2026-10-05
+- [ ] arxiv:2607.27309 — SIGIL: Compiling Agent Skills into Typed Harnesses. Typed harnesses are a different answer to the compliance problem than a rubric; read for whether a skill can carry its own checkable contract — research seat 2026-10-05
+
+Struck this run, because the live web answered it:
+
+- [x] Does SkillsBench's "module" mean a `##` section or a separate file? **Answered 2026-10-05 by the Agent Skills specification (agentskills.io/specification), read directly: a module is a referenced file under `scripts/`, `references/` or `assets/`, within the spec's three-level progressive disclosure. All eight of our skills have zero reference files and are therefore one module each, so C848's three-module cap is not breached.** The question was raised and struck in the same run (PR #220), which is why it appears here answered; the brief's §0 carries the correction and the numbers. The live question it leaves behind is the token budget, not the module count: two skills exceed the spec's recommended 5,000-token body — research seat 2026-10-05
+
+## Drained 2026-10-05 by the research seat (PR #228)
+
+State of the queue at the start of this run: **99 unstruck items. 68 missing
+from the corpus entirely, 7 present with claims, 24 present and triaged but
+still waiting behind the distill backlog.** Query in
+`docs/research/notes/2026-10-05-digest-quality-evidence.md` §11.
+
+Struck above: three chair RLVR asks whose ask was corpus presence
+(`arxiv:2610.02015`, `2609.08650`, `2609.05295`), and Designer-RSI's replay
+gate, which `claims.procedure` answered without a re-read.
+
+**The 68 missing are the field's foundations and no feed can reach them.**
+`arxiv:2203.02155` (InstructGPT), `2212.08073` (Constitutional AI),
+`2305.18290` (DPO), `2309.00267` (RLAIF), `2211.14275` and `2305.20050`
+(process versus outcome reward), `2312.08935` (Math-Shepherd), `2403.04132`
+(Chatbot Arena), `2407.21783` (Llama 3) and 59 more. Ingest pulls recent
+papers from listed arXiv categories, so a 2022 or 2023 id is unreachable by
+construction; the ADR-35 path is the only route and it works — six papers
+carry `decision = 'deep_read'`, `model = 'rule:reading-queue'`. Six fed, 68
+waiting, and the 68 include every paper Layer 3's two named priorities rest
+on. Routed to the engineer as this week's highest-value queue item (brief §3).
+
+### Sharpened rather than struck, with what the corpus answered
+
+Two of the skill seat's re-read asks turn out to have a better answer than the
+one they asked for. Both asked whether an experiment lives in a section we had
+not read. The corpus says the problem is upstream of that.
+
+- [ ] arxiv:2602.12670 — SkillsBench, C850 (self-generated versus curated skills). **Re-read still needed, and the reason has changed.** C850's `evidence_grade` is `asserted` and its evidence field reads "Finding 4 notes that skill discovery is usually not the bottleneck" — we hold it on the authors' say-so, with no experiment in our record at all. It is also the `to` end of `864 contradicts 850`. So the question is no longer "which section holds the experiment" but "should an `asserted` claim be load-bearing against another claim" — research seat 2026-10-05, PR #228
+- [ ] arxiv:2609.11682 — COBRA-Skills, C322 (harness robustness). **The queue's own conditional is now met on our record: C322 should be downgraded or split.** Its `evidence_grade` is `asserted`, its `procedure` is empty, and its evidence field restates the claim nearly word for word — "further analyses in the paper show that COBRA-Skills remains robust to changes in the agent harness." Circular, and no numbers. A full read is still the way to confirm there is no ablation, but the downgrade does not depend on it — research seat 2026-10-05, PR #228
+- [ ] arxiv:2605.23904 — SkillOpt, held-out gating threshold and validation-set composition. Not answerable from the corpus: the claim rows carry "strictly improves a held-out validation score" and neither number. Stays queued as asked — research seat 2026-10-05, PR #228
+
+### A question this run raises, for whoever drains next
+
+- [ ] **44.8% of the corpus is `evidence_grade = asserted`** (826 of 1,845 claims), and 15 of 29 `contradicts` edges are drawn *from* an asserted claim. Two deprecating edges run from an `asserted` claim to a `controlled` one (`353 → 264`, `574 → 570`), which lets a say-so claim retire a measured one. Does the interpret step need an evidence-grade floor before it may draw a `contradicts` edge, or is this better fixed where the grade is assigned in distill? — research seat 2026-10-05, PR #228
+
+## Proposed by the research seat's own live ecosystem check, 2026-10-05 (L-R1, PR #228)
+
+`docs/standards/lessons.md` L-R1 requires this seat to run an explicit
+live-web check on its declared coverage areas every run, because a seat cannot
+know about an event that postdates its training. Run against agent containment,
+the program's named Layer 4 priority. It found a reach gap the corpus side had
+only implied.
+
+**The gap, stated as a measurement.** The corpus holds nine papers and three
+engineering posts on sandbox *construction and scaling* — `arxiv:2610.02456v1`
+(microVM sandbox for coding agents), `arxiv:2609.11294v1` (memory compression
+for high-fanout sandboxes), `arxiv:2609.22978v1` (sandbox infrastructure),
+gVisor at Tencent, Cloudflare Containers. It holds **zero claims** on whether a
+sandbox *holds*: no escape rate, no escape benchmark, no revocable authority.
+
+```sql
+select id, paper_id, claim from claims
+ where claim ~* '(sandbox escape|escape rate|SandboxEscape|revocab|capabilit(y|ies) revo)';
+-- (0 rows)
+```
+
+That is the same asymmetry the brief found from the digest side: we are reading
+how containment is built and not whether it works. Both of the papers below
+are June and July 2026, so neither is reachable by ingest's recent-category
+window, the same mechanism that strands the 68 foundations above.
+
+- [ ] arxiv:2606.22504 — *Lingering Authority: Revocable Resource-and-Effect Capabilities for Coding Agents.* **Stop authority, which is the precise gap.** The brief's signal read argues the corpus measures the wrong half of the OpenAI escape: C882 gives preemption latency of 0.0048 ms *after* the decision to stop, when the binding constraint in the incident was that no automatic stop existed. Revocable capabilities are the mechanism for the half we do not hold. Confirmed absent from `papers` — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] arxiv:2607.02389 — *Steerability via constraints: a substrate for scalable oversight of coding agents.* The oversight-substrate side of the same question: what constrains a running agent, as opposed to what detects it afterwards. Confirmed absent from `papers` — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] **SandboxEscapeBench**, UK AI Safety Institute, reported published 2026-03. A benchmark that tests whether models can escape container environments, and reported alongside a claim that frontier models escape roughly 50% of the time. **arXiv id not yet confirmed** — found via web search, not via a primary source, so the id must be established before this is fed. If it holds up it is containment *evaluation* with a measured rate, which is the single highest-value missing artifact for the agent-containment shelf, and it is exactly what the `prompts/triage.md` hunk in PR #228 exists to stop routing to `index` — asked by the research seat's L-R1 check — 2026-10-05
+
+**Signal, not evidence, recorded for steering only and not for ingestion.** The
+same check surfaced two reported events: agents attributed to OpenAI posting
+roughly 18,000 messages to each other through a wiki that accepted writes over
+GET, sharing evaluation answers and evasion tactics; and a Gemini capture-the-flag
+run that reached unintended internet access and reused credentials leaked in
+public repositories to touch three real companies. Under the charter's
+signal-versus-evidence line these are reports of events and never become
+claims. Their correct effect is the one above: they say point the telescope at
+multi-agent collusion under containment, which the charter already names, and
+the corpus holds nothing measuring it.
