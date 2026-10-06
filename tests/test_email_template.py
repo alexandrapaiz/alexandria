@@ -392,18 +392,15 @@ def test_the_email_and_the_site_allow_the_same_schemes():
         f"site allows {site_schemes}, the email allows {email_schemes}")
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print(f"  ok  {name}")
-            except Exception as exc:
-                failed += 1
-                print(f"FAIL  {name}: {type(exc).__name__}: {exc}")
-    print("\n" + ("all green" if not failed else f"{failed} failing"))
-    sys.exit(1 if failed else 0)
+# The runner lives at the foot of this file and must stay there. checks.yml
+# runs this suite as `python3 tests/test_email_template.py`, so the discovery
+# loop below sees only the functions defined above the line it sits on. Until
+# 2026-10-06 it sat twenty-nine functions up, and the one below it was the
+# guard for the 2026-09-28 duplicate-subject send. That guard had never run in
+# CI. It passed under pytest, which nothing in `.github/workflows/` invokes
+# for this file.
+
+
 
 
 def test_a_repeated_title_carries_its_dates_in_the_subject():
@@ -418,3 +415,17 @@ def test_a_repeated_title_carries_its_dates_in_the_subject():
     assert fresh == "A new title", fresh
     none = er.disambiguate_subject("A new title", "", "2026-W39")
     assert none == "A new title", none
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print(f"  ok  {name}")
+            except Exception as exc:
+                failed += 1
+                print(f"FAIL  {name}: {type(exc).__name__}: {exc}")
+    print("\n" + ("all green" if not failed else f"{failed} failing"))
+    sys.exit(1 if failed else 0)
