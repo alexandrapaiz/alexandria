@@ -184,7 +184,7 @@ with the instruction alongside them.
 
 ## A judge trained on judgments loses the variance that made it useful
 
-*Validation: no trial and no consumer report. The variance-monitoring prescription is ours and untested anywhere. Eval task ei-t6 covers it and has not been run.*
+*Validation: no trial and no consumer report. The variance-monitoring prescription is ours, not the paper's, and untested anywhere. Eval task ei-t6 covers it and has not been run.*
 
 Mixing model-generated reviews into the training data of the next reviewer
 compresses the rating distribution and reduces semantic diversity both across
@@ -210,7 +210,7 @@ before it shows up in anything a mean can reveal.
 
 ## Require unanimity across independent judgments when a false accept is expensive
 
-*Validation: no trial and no consumer report. Three of the four portable parts are marked ours in the text and carry no evidence beyond the one competition system. Eval task ei-t7 covers it and has not been run.*
+*Validation: no trial and no consumer report. Three of the four portable parts are marked ours, not the paper's, in the text and carry no evidence beyond the one competition system. Eval task ei-t7 covers it and has not been run.*
 
 For accepting proofs during a competition search, the accept rule was
 unanimity across a panel: 16 independent judgments, 8 from the reinforcement
@@ -453,7 +453,7 @@ Before trusting an instrument, or publishing a number it produced:
 - RRSI's three selection criteria are reported as parts of one method. The
   evidence alexandria holds does not ablate them individually, so do not
   quote a number for any one criterion alone. The noise band has a floor of its
-  own and the source does not set it, so ours: five repeat runs of the
+  own and the source does not set it, so ours, not the paper's: five repeat runs of the
   unchanged system on the same eval is the cheapest thing that shows a spread
   at all, and a band computed from two runs is a guess wearing a number.
 - The certification protocol is demonstrated on two audit cases. Its gates are

@@ -47,7 +47,7 @@ ordinary refactor does not.
 
 ## 1. Write the freeze list before the first cycle
 
-*Validation: no trial and no consumer report. The three freeze designs are the papers', the file-in-the-repository prescription is ours. Eval task rhsi-t1 covers it and has not been run.*
+*Validation: no trial and no consumer report. The three freeze designs are the papers', the file-in-the-repository prescription is ours, not the papers'. Eval task rhsi-t1 covers it and has not been run.*
 
 A self-improving loop that changes several things at once produces no signal
 about any of them. Every working design in this cluster splits the system
@@ -74,7 +74,7 @@ list as a new experiment rather than a continuation of the old one.
 
 ## 2. The whole gain can come from the scaffold
 
-*Validation: no trial and no consumer report. Claim and paper provenance only, and the do-not-perfect-the-seed advice is ours. Eval task rhsi-t2 covers it and has not been run.*
+*Validation: no trial and no consumer report. Claim and paper provenance only, and the do-not-perfect-the-seed advice is ours, not the papers'. Eval task rhsi-t2 covers it and has not been run.*
 
 The reason to run this loop at all is that the scaffold carries more headroom
 than it looks like it does.
@@ -152,7 +152,7 @@ accept or reject the pair.
 
 ## 5. Gate every edit, and roll back by default
 
-*Validation: no trial and no consumer report. Two of the prescriptions, the adversarial diff-reviewer instruction and retaining rejected edits, are ours. Eval task rhsi-t6 covers it and has not been run.*
+*Validation: no trial and no consumer report. Two of the prescriptions, the adversarial diff-reviewer instruction and retaining rejected edits, are ours, not the papers'. Eval task rhsi-t6 covers it and has not been run.*
 
 This is the section that separates a loop that improves from one that drifts.
 
