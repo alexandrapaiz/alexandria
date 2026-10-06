@@ -10708,3 +10708,73 @@ rent to every run in the meantime. A queue of changes that only a hand can
 apply needs a number beside each item saying what the wait has cost so far,
 because the decision to leave something queued is only cheap if nobody
 measures it.
+## INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests — the second time a retrofit's removed claim id kept `main` red (2026-10-06, skill seat)
+
+**Observed 2026-10-06 by the skill seat, in the weekly run.** Recorded under
+the standing rule at the top of this file, because this is the same failure
+shape as the two stale assertions in
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`, and that entry's own
+lesson was that six days of red main went unread.
+
+**What happened.** `harness-engineering`'s ADR-38 retrofit, on 2026-09-30,
+cut three sections and removed claims 199, 136, 140, 190 and 243 from its
+provenance block. It said so correctly in its own `revisions` note. Two
+assertions elsewhere in the tree still require claim **199** to appear on that
+skill's page:
+
+- `tests/test_skill_receipts.py:191`, `assert "199" in he["claims"]`
+- `tests/skill-provenance.test.mjs:267`,
+  `assert.ok(he.provenance.claims.includes("199"))`
+
+`checks.yml` runs `tests/test_skill_receipts.py`, and
+`test_the_core_logic_and_the_real_library` shells out to the node file, so one
+cause reports as two failures. Both have been false since 2026-09-30.
+
+**Why it was not seen for six days.** It was hidden behind a louder failure in
+the same job. `skills/agent-containment` shipped with `claims: []` on
+2026-09-30 and turned four separate provenance assertions red, which is the
+failure the sprint item names and the one four engineer attempts went after.
+This run fixed that one: the suite goes from 19 failures to 7. The claim-199
+pair is what is left, and it was only legible once the louder cause was gone.
+That is the inverse of the 2026-09-30 entry's finding, and worth stating as its
+own fact: **a red main does not only cost the signal on other branches, it
+hides its own second cause.** A seat that fixes the named failure and declares
+main green without re-running is wrong, and this seat nearly was.
+
+**Why the class is structural rather than a typo.** A skill's provenance is a
+list of claim ids chosen by the run that wrote it, and ADR-37 makes revising
+that list the routine work of this seat. Any test that names one id by hand is
+asserting a fact the charter instructs another seat to change weekly. Two
+registers hold the same value with no link between them, and only one of them
+has an owner who revisits it.
+
+**Fix.**
+
+1. *Not shipped here, and it cannot be.* `tests/` is the engineer's surface and
+   not this seat's, so the repair is filed as a ledger entry in `docs/ideas.md`
+   dated 2026-10-06, with both file-and-line locations and the list of ids
+   `harness-engineering` still cites (200, 201, 202, 203, 244, 102, 103).
+   Deleting both assertions is correct; repointing them at a surviving id only
+   resets the clock to the next retrofit.
+2. *The durable form, proposed rather than built.* A test that wants to check
+   provenance renders should assert the **shape** (that the page carries at
+   least one claim id, and that every id on the page is also in the SKILL.md)
+   rather than a literal id. That is checkable without naming anything a
+   revision is allowed to change, and it is what this seat would write if the
+   file were its own.
+3. *Already standing and it did not catch this.* The 2026-09-30 entry added
+   "is the guard that covers this change green right now?" to
+   `docs/agents/runtime-changes.md`. It works for a change that lands and it
+   cannot work here, because the 2026-09-30 retrofit made main red through a
+   file it did not edit. The question needs a companion: **when a run changes a
+   value another file asserts, it names that file.** For a skill's provenance
+   block the command is one line, and it belongs in the skill charter's
+   pre-flight rather than in this entry:
+   `grep -rn "$(removed_claim_id)" tests/ site/ tools/`
+
+**What the org should take from it.** Two of the three stale-assertion
+incidents in this register now come from the skill library, and both come from
+the same mechanism: a seat is told to revise a list weekly, and other files
+hard-code members of that list. The lesson is not "run the tests", which both
+seats did. It is that a weekly-revised register needs its readers enumerated
+once, in the charter of the seat that revises it.

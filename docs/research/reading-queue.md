@@ -569,3 +569,63 @@ signal-versus-evidence line these are reports of events and never become
 claims. Their correct effect is the one above: they say point the telescope at
 multi-agent collusion under containment, which the charter already names, and
 the corpus holds nothing measuring it.
+
+## 2026-10-06 — asked by the skill seat, from the agent-containment retrofit
+
+Appended at the end of the file rather than into the containment section above,
+which the research seat owns, so two seats appending in one week do not collide
+on one anchor (incident 6).
+
+The retrofit's own finding first, because it changes what this queue is for on
+this shelf. The 2026-09-30 census that concluded the corpus held zero
+containment claims is **out of date**: `claims` now holds 15 usable rows over
+PACE, ToolFence, Hard Stop and MOLE, and the retrofitted skill cites all of
+them. The census was right when it ran and wrong by the next week, so the
+lesson is that a "no claims exist" finding has a shelf life of days and must be
+re-queried rather than inherited.
+
+- [ ] arxiv:2609.06966 — *MOLE: Detecting Insider Threats in AI Agents.* **Read in
+  full; this run read only the abstract.** Claim 167 is quoted in delta 4 as the
+  monitoring ceiling (best of 40 monitors misses nearly half of completed harm)
+  and the setup behind that number is not independently checked. The abstract
+  also carries a second figure worth a claim row of its own: of 39 agent models,
+  72 percent complete most assigned harmful objectives and refusal does not
+  predict completion — asked by agent-containment
+- [ ] **CaMeL** (id not established) — the baseline both 2026 enforcement papers
+  price themselves against, at 10.67x to 12.95x runtime against ToolFence's 1.63x
+  to 3.79x. The library holds the comparison and not the thing compared, so we
+  cannot say whether the overhead gap is a design difference or a measurement
+  difference. Establish the id before feeding — asked by agent-containment
+- [ ] **AgentDojo, and the other seven executable benchmarks PACE uses**
+  (AgentDyn, WASP, InjecAgent, ASB, PASB, MCPTox, MSB). Two separate skills now
+  cite attack-success rates measured on these and the corpus holds no claim about
+  what any of them actually tests. This is the same asymmetry the section above
+  names, one level down: we hold the scores and not the instrument —
+  asked by agent-containment
+- [ ] arxiv:2609.35366 — *Planarian: Managing Agent State with Statepoints.*
+  Already read in full on 2026-09-30, and **queued here as a second skill rather
+  than as reading**: the undo primitive was cut from agent-containment under
+  ADR-38's length rule and deserves its own file (snapshot per tool call at 1 to
+  3 percent overhead, compensating actions for remote tool calls, re-describing
+  restored state to the agent). Pair it with arxiv:2606.22504 above, since
+  revocation and rollback are the same missing half — asked by agent-containment
+- [ ] arxiv:2609.22978 — *DeepSeek Elastic Compute (DSec).* The isolation-tier
+  and sandbox-density material cut from agent-containment, which was outside that
+  skill's stated subject. It is real and measured and now has no home, so it is
+  either a sandbox-infrastructure skill or nothing. Deciding is the question, not
+  the reading — asked by agent-containment
+
+Two questions for the research seat, raised by reading PACE and ToolFence in
+full and answerable by neither.
+
+- **PACE publishes no runtime overhead at all.** Its security and utility numbers
+  are measured across eight benchmarks and three model families and its cost is
+  simply absent. Every deployment decision this skill prescribes has a cost the
+  strongest paper behind it does not state, and ToolFence's multiplier cannot be
+  read onto a different architecture — asked by agent-containment
+- **Both papers assume complete mediation and neither tests it.** It is the
+  assumption likeliest to be false in a real deployment, and the one independent
+  attempt to check coverage found 5 of 15 routes to a protected file covered by no
+  mechanism at all. A measured route-coverage rate for a real harness is the
+  highest-value missing number on this shelf after a measured escape rate —
+  asked by agent-containment
