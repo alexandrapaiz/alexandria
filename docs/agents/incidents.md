@@ -10861,3 +10861,76 @@ prompt fix, so the writer charter's structure watch applies and it stops being
 prompt work. A gate holding both the payload and the output can match every
 named work against a link and a grade mechanically. Filed in `docs/ideas.md`
 for the engineer. Recorded as ban list 96, whose second ending is this filing.
+
+## INC-2026-10-06-grade-recorded-progress-on-an-unmoved-axis — an editorial grade reported improvement on the one axis the owner says can fail an issue by itself, by counting two things that are not on the canon's list (2026-10-06, writer seat)
+
+**Recorded as a repeat under the standing rule.** The class is a figure in an
+editorial grade that does not mean what the grade says it means, and the
+register already holds `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`,
+`INC-2026-10-03-law-12-graded-by-grep`, `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. The 2026-10-04 entry is the
+nearest relative and this one is its inverse: that grade recorded a FAIL against
+a clean artifact, this one recorded progress on an artifact that had not moved.
+
+**What happened.** The editorial review of 2026-10-05 graded canon law 14
+against the stored body of 2026-W40 and wrote: "Shapes on the page: paragraphs,
+five paragraphs opening with a bold lead, and the reading list's italic title
+lines. [...] Three kinds rather than one is real progress over W39's reprint."
+Its measurement table carries no shape row, so three is the only count of this
+kind in the grade and it is in the prose.
+
+**Why three is wrong.** Canon law 14 defines a shape and the definition is a
+closed list of four: "a paragraph, a bulleted list, a line standing alone, a
+subheading inside a section." Neither of the two kinds that grade added to
+"paragraphs" is on it. A paragraph opening with a bold lead is a paragraph, and
+the generator asks for a bold lead in four separate places, so an issue that
+obeys the file will always have several of them to miscount. The reading list's
+title lines are each followed by prose in the same block, so they are
+paragraphs too.
+
+Counted by the canon's own definition, on the same artifact, with the shape
+count added to `docs/voice/check_voice.py` by this run:
+
+```
+$ python3 docs/voice/check_voice.py measure /tmp/wscripts/w40.md site/content/issues/2026-W39.md
+/tmp/wscripts/w40.md
+  shapes 2     links 3     paragraph 17  standalone line 4
+site/content/issues/2026-W39.md
+  shapes 2     links 4     paragraph 14  standalone line 8
+```
+
+Two, and the issue it was called progress over scores the same two. The axis
+did not move. Worse, of 2026-W40's four non-paragraph blocks, three are the
+masthead, the horizontal rule and the close, which arrive on every issue
+whatever the model writes. The model produced one, and it is a short paragraph.
+Zero bulleted lists and zero third-level headings, which are the two devices
+canon law 14 names by name and requires rather than offers.
+
+**Why it matters more than an arithmetic slip.** The owner has ruled twice that
+enjoyability is the failing axis and once, on 2026-09-25, specifically that the
+shape count is the one measurement that cannot be satisfied by splitting
+paragraphs: "four of the five counts below can all pass while this one fails,
+and that is what happened". Every other figure in that grade's table reproduces
+exactly against the same artifact today. The single count the owner singled out
+is the one that did not, and it drifted in the optimistic direction, in the
+grade whose own charter says a flattering grade is a corrupted instrument.
+
+**What let it through.** The other counts in that table came out of
+`docs/voice/check_voice.py`, which was written on 2026-10-04 to stop exactly
+this class of error. It takes the words, the paragraph lengths, the em dashes,
+the semicolons and the character census. It did not take the shape count, so
+the one law-14 count that has its own ruling behind it was the one still being
+taken by eye in prose. An instrument that measures four of five counts does not
+leave the fifth unmeasured, it marks the fifth as the one where a number can be
+whatever the writer expected.
+
+**Fixed in this pull request, in both places.** `check_voice.py measure` now
+reports the kinds of block and prints a line when the count is below two, and it
+accepts a path argument, which it previously ignored and which it could not
+have resolved anyway: it called `relative_to(ROOT)` on every path, so the tool
+written to stop a figure drifting off its artifact raised an exception when
+pointed at the stored `digests` row the canon names as an artifact to grade.
+The generator gains the definition's negative half at the shape gate, naming
+the bold lead and the standing lines as the two things that are not shapes.
+Recorded as ban list 98.

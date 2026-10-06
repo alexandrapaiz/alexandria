@@ -1710,3 +1710,89 @@ gap that the same collision had left empty (incident 25).
     docs/ideas.md for the engineer. Law 8 coverage has now failed after a
     prompt fix twice, so the writer charter's structure watch says it stops
     being prompt work at this point.
+
+97. The count as the item's subject. A traction item whose main clause is a
+    number moving, with the research it supposedly signals demoted to a
+    subordinate clause.
+    The specimen is the whole of the third block of the traction section in the
+    print of 2026-10-05: "The citation pattern on the earlier distillation work
+    also shifted. Rethinking On-Policy Distillation II, which argued that one
+    training example suffices, moved from 2 to 4 citations as a newer paper
+    showed that 0.1% of tokens can match full-token performance. The claim
+    itself is now refined, not merely cited." Three sentences, and the subject
+    of all three is our bookkeeping. The one thing in it a builder could use,
+    that a newer paper matched full-token performance on a tenth of a percent
+    of the tokens, is inside the clause that explains why the count moved.
+    This is not a new rule. It is the rule the generator already states four
+    paragraphs above the citation-mover instruction, that the payload tells the
+    writer why a paper is in front of them and never tells the reader, applied
+    to the one stream it had not been applied to. The grade of 2026-10-05 found
+    this block, named it a partial fail on canon law 2, did not patch it, and
+    wrote it down for the next run.
+    The tell, and it reads on the finished draft alone: strike every number and
+    every word about counting out of the block and read what is left. If nothing
+    survives that a builder could act on, it is not an item.
+    Added 2026-10-06. Enforced in the traction slot, where the stream is
+    described, rather than in a general rule about numbers.
+    ```
+    LANDED prompts/digest.md: "A count moving is bookkeeping, and bookkeeping printed as news is the recipe rather than the product."
+    ```
+
+98. The shape count that counts lines nobody wrote. An entry about this seat's
+    own instrument, because the error was in a grade before it was in an issue.
+    Canon law 14's first count is how many KINDS of block are on the page, and
+    the canon's own definition names four: a paragraph, a bulleted list, a line
+    standing alone, a subheading inside a section. The grade of 2026-10-05
+    recorded three kinds for that print and called it "real progress over W39's
+    reprint". Counted by that definition it is two, and the print before it
+    scored the same two, so the one axis the owner says can fail an issue by
+    itself had not moved at all.
+    Two ways to inflate it, and that grade used the first while the issue used
+    the second. A bold lead opening a paragraph is not a shape, because the
+    paragraph is still a paragraph, and the generator asks for a bold lead in
+    four places so there are always several to count. And the standing lines are
+    not the writer's: of the four non-paragraph blocks in that print, three were
+    the masthead, the horizontal rule and the close, all of which arrive on
+    every issue whatever the model does. The model wrote one, and it was a short
+    paragraph.
+    The tell: a shape count that went up without a list or a third-level heading
+    appearing anywhere in the artifact. Those are the two devices canon law 14
+    names, and if neither is present the count did not move.
+    Added 2026-10-06. Enforced in two places, because the defect was in both.
+    In the generator, at the shape gate.
+    ```
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    ```
+    And in docs/voice/check_voice.py, which now takes the count that canon law
+    14 says comes first. It took four of law 14's five counts and not the fifth,
+    which is the one the law says can pass the other four and still fail, so the
+    instrument measured everything except the axis the ruling is about. The same
+    patch lets it be pointed at a path outside the repository, because the canon
+    names the stored digests row as an artifact to grade and that row is not a
+    file under site/content/issues/, so the one tool written to stop a figure
+    drifting off its artifact used to raise an exception rather than measure it.
+
+99. The traction stream with no clock. An entry whose subject is a query rather
+    than a sentence, because no sentence can be written that avoids it.
+    The print of 2026-10-05 reported a citation movement as that week's
+    traction. The movement was measured on 2026-09-28, seven days before the
+    issue was written, and it is the newest measurement that exists: the slow
+    loop has not written to citation_log since.
+    The staleness itself was found the same day by another seat and is in the
+    incident register. What belongs here is the half that makes it permanent.
+    The citation_movers query in pipeline/weekly.py takes the latest two checks
+    for each paper, whenever they happened, and reports any increase. It has no
+    time window. So the same twelve movers are handed to the generator every
+    Monday for as long as the slow loop stays quiet, and each Monday they print
+    as this week's. Run against the live database on 2026-10-06, the query
+    returns the identical twelve rows it returned on 2026-10-05, every one of
+    them measured in a window that closed on 2026-09-28, and eight of the twelve
+    are a movement from zero citations to one.
+    The payload then drops the dates. Each mover reaches the generator as a
+    title, a url, citations_before and citations_now, so the model cannot tell a
+    movement measured this morning from one measured a fortnight ago, and no
+    rule written into the prompt can ask it to.
+    Added 2026-10-06. NOT enforceable in the generator, and that is the entry.
+    Filed in docs/ideas.md for the engineer, in two parts: window the query to
+    the issue's own week, and carry the measurement date into the payload so a
+    gate and the writer can both see it.

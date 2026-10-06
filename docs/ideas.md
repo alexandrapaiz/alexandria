@@ -12392,3 +12392,40 @@ that triggered it, per the charter.
 - First step: the ExO seat copies this into the relay. No code.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-06 — The traction stream has no clock, so a measurement from last week prints as this week's news
+- Trigger: the writer grade of 2026-10-06, ban list 99. Filed under the
+  writer charter's structure watch: the generator cannot reach this, because
+  the fact it would need is not in the payload.
+- What the issue of 2026-10-05 printed, and it was the only traction datum in
+  it: a paper "moved from 2 to 4 citations". That movement was measured on
+  2026-09-28, seven days before the issue was written, and it is still the
+  newest citation measurement that exists.
+- The staleness of the slow loop was found the same day by another seat and is
+  in the incident register. This entry is the other half, which is why it will
+  keep happening after the loop is restarted.
+- `citation_movers` in `pipeline/weekly.py` takes the latest two checks per
+  paper, whenever they happened, and reports any increase. There is no time
+  window in the query. Run against the live database on 2026-10-06 it returns
+  the identical twelve rows it returned on 2026-10-05, each measured in a
+  window that closed on 2026-09-28, and eight of the twelve are a movement
+  from zero citations to one.
+- The payload then drops the dates. Each mover reaches the generator as a
+  title, a url, `citations_before` and `citations_now`, so the model cannot
+  tell a movement measured this morning from one measured a fortnight ago, and
+  no sentence added to the prompt can ask it to. That is the test the charter's
+  structure watch uses, and this one fails it outright rather than after two
+  attempts.
+- Two parts, and the second matters more than the first. Window the query to
+  the issue's own week, so a stream that has stopped reports as empty instead
+  of repeating. And carry `checked_at` into the payload for every mover, so the
+  generator can say when a movement was measured and a pre-send gate can refuse
+  one older than the issue's window.
+- Worth saying plainly: the generator already handles an empty stream well. It
+  is told that an empty stream is never news and to say the absence as a fact
+  about the field. A windowed query that returns nothing produces a correct
+  issue. The current query returns twelve rows and produces a false one.
+- First step: add the window and the date to the query and the payload dict in
+  `gather()`.
+- Cost: $0.
+- Status: proposed

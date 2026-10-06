@@ -148,11 +148,41 @@ def hidden_weeks():
     return set(re.findall(r'"([^"]+)"', m.group(1))) if m else set()
 
 
+def shapes(blocks):
+    """How many KINDS of block are on the page, which is canon law 14's first count.
+
+    Law 14 names five counts and says four of them can pass while this one
+    fails, because splitting long paragraphs changes every other number and
+    cannot change this one. The reprint that satisfied the other four and was
+    still rejected scored one. This function was added on 2026-10-06 because
+    the four it could already take were the four the law says are not the
+    failing axis, so the instrument measured everything except the thing the
+    owner's ruling is about.
+    """
+    kinds = collections.Counter()
+    for b in blocks:
+        lines = [x.strip() for x in b.strip().split("\n") if x.strip()]
+        if not lines:
+            continue
+        if lines[0].startswith("### "):
+            kinds["turn"] += 1                     # a subheading inside a section
+        elif lines[0].startswith("#"):
+            kinds["heading"] += 1
+        elif all(re.match(r"^([-*+]|\d+\.)\s", x) for x in lines):
+            kinds["list"] += 1
+        elif len(lines) == 1 and len(b.split()) <= 25:
+            kinds["standalone line"] += 1
+        else:
+            kinds["paragraph"] += 1
+    return kinds
+
+
 def measure(paths=None):
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
     rc = 0
     for p in paths:
+        p = pathlib.Path(p)
         if not p.exists():
             print(f"{p}: missing")
             continue
@@ -161,11 +191,26 @@ def measure(paths=None):
         paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
         lens = [len(x.split()) for x in paras]
         off = p.stem in retired
-        print(f"{p.relative_to(ROOT)}" + ("   [retired, not served]" if off else ""))
+        # Never relative_to(ROOT): the canon names the stored `digests` row as
+        # an artifact to grade and a row dumped to a file is outside the repo,
+        # so the one tool written to stop a figure drifting off its artifact
+        # used to raise rather than measure it (2026-10-06).
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        print(f"{shown}" + ("   [retired, not served]" if off else ""))
         print(f"  words {len(t.split()):<6} paragraphs {len(paras):<4} "
               f"longest {max(lens) if lens else 0:<4} over100 {len([x for x in lens if x > 100])}")
         print(f"  em dashes {t.count(chr(8212)):<4} semicolons {t.count(';'):<4} "
               f"non-ASCII {sum(na.values()):<5} distinct {len(na)}")
+        kinds = shapes(paras)
+        body = {k: v for k, v in kinds.items() if k != "heading"}
+        links = set(re.findall(r"https?://[^)\\s]+", t))
+        print(f"  shapes {len(body):<5} links {len(links):<5} "
+              + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
+        if len(body) < 2:
+            print("    one kind of block is a failing issue (canon law 14)")
         for c, k in na.most_common():
             print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}")
         if not off and (sum(na.values()) or t.count(chr(8212))):
@@ -178,12 +223,18 @@ def measure(paths=None):
 
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
+    # Paths after the subcommand go to `measure`. Without this, the arguments
+    # were accepted and silently ignored, so `measure <path>` reported on
+    # site/content/issues and a grade could read the wrong artifact's figures
+    # under the right artifact's name, which is the defect this file exists to
+    # prevent (ban list 91, fixed 2026-10-06).
+    paths = sys.argv[2:]
     rc = 0
     for name, fn in (("enforcements", enforcements), ("stale", stale),
                      ("measure", measure)):
         if which in (name, "all"):
             print(f"==== {name} ====")
-            rc |= fn()
+            rc |= fn(paths) if (name == "measure" and paths) else fn()
             print()
     return rc
 
