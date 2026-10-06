@@ -745,7 +745,22 @@ and the finding has to be yours: movement earns a slot where a builder could
 act on it, and a stream with nothing that size in it is a stream you report.
 Where genuinely nothing clears the bar, say plainly that nothing older moved
 much, and never dress a count of one as traction. An
-empty stream is never news. "No citation movers were recorded this week"
+empty stream is never news.
+**And the movement is never the item's subject. It is the reason you looked.**
+This is the rule four paragraphs above, that the payload tells YOU why a paper
+is in front of you and never tells the reader, applied to the one stream it was
+not applied to. A count moving is bookkeeping, and bookkeeping printed as news
+is the recipe rather than the product. The print of 2026-10-05 carried a block
+whose subject was the count: it opened on the citation pattern shifting, made
+"moved from 2 to 4 citations" the main clause, and put the only thing a builder
+could use, that a newer paper matched full-token performance on a tenth of a
+percent of the tokens, inside a subordinate clause explaining why the count
+moved. The finding was the aside. So write the item about what the CITING work
+found, with the movement as the clause that says why it belongs in section one.
+The check runs on the draft by itself, which is the only kind that holds: strike
+every number and every word about counting out of the block, and read what is
+left. If nothing is left that a builder could act on, you have no item, and the
+right move is to drop it rather than to shorten it. "No citation movers were recorded this week"
 names one of alexandria's own tables at a reader who has never heard of it,
 so either say nothing or say the absence as a fact about the field in the
 reader's words ("nothing older moved enough to be worth reporting today").
@@ -1460,7 +1475,16 @@ the rule's question to the thing in front of you.
   size: a paragraph, a bulleted list, a line standing alone, a subheading
   inside a section. Count the kinds. **One kind is a failing issue**, and it
   fails no matter what the word counts say, because splitting long paragraphs
-  changes every other number on this list and cannot change this one. The
+  changes every other number on this list and cannot change this one.
+  Two things are not shapes and both are easy to count by mistake. A bold lead
+  opening a paragraph is not one, because the paragraph is still a paragraph,
+  and this file asks for a bold lead in four places so there will always be
+  several of them to count. And the lines you did not write are not yours: the
+  standing line under the title, the rule above the close, and the close itself
+  arrive on every issue whatever you do. Count only the kinds of block YOU put
+  on the page. The print of 2026-10-05 had four blocks that were not paragraphs
+  and three of them were those standing lines, so the honest count of its shapes
+  was paragraphs and one short paragraph. The
   issue reprinted under this law cut its longest paragraph from 191 words to
   98, left nothing over 100, and shipped as twenty-four paragraphs with no
   list and no subheading anywhere in it. She read that and said enjoyability
