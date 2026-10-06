@@ -10874,7 +10874,7 @@ provenance reviewer exists to catch.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-06 — `checks.yml` runs 12 of 41 suites, and that ratio belongs in the open (engineer seat, second dispatch)
+### 2026-10-06 — What CI actually runs cannot be read off `checks.yml` (engineer seat, second dispatch)
 - Trigger: today's work needed a home in CI for eleven new guards about the
   unsubscribe link. There was no way to add a file, because `checks.yml`
   enumerates its suites by name and no seat's token carries `workflows`
@@ -10882,19 +10882,38 @@ provenance reviewer exists to catch.
   it. The guards went into two suites CI already runs instead. That is the
   right call and it is not a general solution: the next seat faces the same
   wall and may pick the other option, which is a new file nothing executes.
-- What: the numbers, measured on `main` this run rather than estimated.
-  `checks.yml` names **12** test files. `tests/` holds **41**. Of the five
-  files carrying `main`'s 19 current failures, **one** is in CI
-  (`tests/test_skill_receipts.py`); the other four
-  (`test_panel_provenance.py`, `test_panel_validator.py`, `test_skill_eval.py`,
-  `test_skill_registrar.py`) are invisible to every workflow in
-  `.github/workflows/`. So "checks.yml is green" and "`pytest tests/` is
-  green" are different claims, and only the second is the one a seat means
-  when it says the tests pass.
-  The fix is one step, `python3 -m pytest tests/ -q`, replacing twelve. It
-  cannot land today because it would be red on arrival, which is also the
-  argument for it. The honest order is: green `main` first (#233), then one
-  glob, then delete the enumeration.
+- What: the numbers, measured on `main` this run, and the first version of
+  this entry got them wrong in a way worth keeping as the point. `checks.yml`
+  names **12** test files, so counting the workflow says 12. But five of those
+  twelve `subprocess` out to other suites, and the real figure is a transitive
+  closure:
+
+  ```
+  direct in checks.yml:        12
+  transitive closure:          14
+  python suites in tests/:     36
+  never reached by checks.yml: 22
+  ```
+
+  `tests/test_panel_provenance.py` and `tests/test_skill_registrar.py` are
+  reached **only** because `tests/test_skill_receipts.py` runs
+  `pytest test_panel_provenance.py` as a child process at its line 259. That
+  is invisible to anybody reading the workflow, and it is how this seat
+  initially concluded that the sprint had named the wrong file for `main`'s
+  red. The sprint was right. The reader was wrong, because the question "does
+  CI run this test" has no answer in `.github/workflows/` and needs a graph
+  walk over the suites themselves.
+  Of the five files carrying `main`'s 19 failures: one direct, two transitive,
+  **two reached by nothing** (`test_panel_validator.py`,
+  `test_skill_eval.py`).
+- Why it is worth a proposal and not just a note: "checks.yml is green" and
+  "`pytest tests/` is green" are different claims, 22 suites apart, and the
+  gap is not legible from either end. The fix is one step,
+  `python3 -m pytest tests/ -q`, replacing twelve, which also deletes the
+  transitive-dependency trick and lets those five suites stop invoking each
+  other. It cannot land today because it would be red on arrival, which is
+  also the argument for it. The honest order is: green `main` first (#233),
+  then one glob, then delete the enumeration.
 - First step: not code, and not this seat's to push. It is a workflow edit,
   so it needs the owner or the chair. The day `main` goes green is the day to
   make it, and the ledger entry exists so that day is not missed.
@@ -10902,32 +10921,32 @@ provenance reviewer exists to catch.
   on this repository rather than the 12 that run now.
 - Status: proposed
 
-### 2026-10-06 — The sprint names the wrong guard for why `main` is red (engineer seat, second dispatch)
-- Trigger: reading the failing run's log rather than the sprint's account of
-  it. `docs/sprints/sprint-2026-10-05.md` item 1 says "every push to `main`
-  since 03:23 UTC today has failed `tests/test_panel_provenance.py`", and
-  `docs/ideas.md` repeats it. `checks.yml` does not run
-  `tests/test_panel_provenance.py` and never has. The one job that fails on
-  `main` is "digest request fits the model's budget", and the step inside it
-  that fails is `python3 -m pytest tests/test_skill_receipts.py -q`, which
-  shells out to the node suite `tests/skill-provenance.test.mjs`:
-
-  ```
-  $ gh run view 37260091945 --log-failed | grep "no claim ids"
-  E           error: 'agent-containment: no claim ids parsed'
-  ```
-- What: the root cause the sprint names is correct, because
-  `skills/agent-containment` does carry `claims: []`. The guard it names is
-  not the guard that is red.
-  That matters for two reasons. A seat told to fix a named file may green that
-  file and leave CI red, which is four runs of this chain. And the fix for the
-  real cause is a claims block under `skills/`, which ADR-13 reserves to the
-  reviewer panel and this seat may not write, so no amount of engineer work
-  clears it; only the widened guard on #233 does, and that is a guard change
-  rather than a library fix. The library defect is still open and still filed
-  `urgent`.
-- First step: the PM corrects item 1's named file at the Monday retrospective,
-  or sooner. This seat does not edit `docs/sprints/`.
+### 2026-10-06 — A test reached only as a child process of another test (engineer seat, second dispatch)
+- Trigger: this seat read the failing CI log on `main`, saw
+  `agent-containment: no claim ids parsed` under the step
+  `pytest tests/test_skill_receipts.py -q`, grepped `checks.yml` for
+  `test_panel_provenance.py`, found nothing, and filed a ledger entry saying
+  the sprint had named the wrong guard. **That entry was wrong and this one
+  replaces it.** `tests/test_skill_receipts.py` line 259 runs
+  `[sys.executable, "-m", "pytest", "test_panel_provenance.py", "-q"]` as a
+  subprocess, so the file is reached, the sprint's item 1 is accurate, and the
+  mistake was in the reading.
+- What: the arrangement that produced the misreading is itself the thing to
+  fix. Five of the twelve suites `checks.yml` names invoke other suites as
+  child processes (`test_corpus_drain` to `test_distill_gates` and
+  `test_rag_fallback`, `test_distill_gates` to `test_distill_fulltext_budget`,
+  `test_press_rehearsal` to `test_press_resilience`, `test_skill_receipts` to
+  `test_panel_provenance` and the node suite). Each of those pairings had a
+  local reason. Together they mean the set of tests CI runs is not stated
+  anywhere: not in the workflow, which names twelve, and not in `tests/`,
+  which holds thirty-six. A failure also reports under the wrong name, which
+  is the concrete cost here: forty-three reviewer cases failed and the job
+  that went red was called "the skill library shows its receipts."
+- First step: nothing clever. When `main` is green, one `pytest tests/ -q`
+  step, and then each of those five suites drops its `subprocess` call to a
+  sibling, because the only reason to run a test from inside a test is that
+  the runner cannot be trusted to run it. Filed together with the entry above;
+  they are one change.
 - Cost: $0.
 - Status: proposed
 
