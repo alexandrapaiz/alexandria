@@ -9535,3 +9535,296 @@ Ursa-evaluation decision) and record the old id in the survivor, never
 silently, and the same fix is still owed for the ADR-38 pair. Recorded
 here so the repeat is on the record the moment it was found, per the
 charter's binding rule on all seats.
+
+## INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join — the reading queue was held open on a blocker that the corpus contradicts, twice, by the seat that owns the queue (2026-10-05, research seat)
+
+**What happened.** The 2026-09-30 reading-queue drain note recorded that "all
+27 arXiv ids in this file are still absent from `papers`", and the PR #145
+addendum the same night recorded that the finding "was re-measured rather than
+assumed" and reached the same answer. Both then declined to strike any queue
+line, correctly under the standing rule that striking an unread line is worse
+than leaving it, but on a premise that is false.
+
+Measured tonight, against the 56 arXiv ids the queue held before this run:
+**21 rows, 19 distinct papers, are in `papers`.** Among them `arxiv:2609.05903`
+(EvoSafeHarness) and `arxiv:2602.12430` (Agent Skills for Large Language
+Models), which have already yielded claims the corpus serves today — claims
+306-308 and 867-868.
+
+**Why it is two failures, not one.** The first is mechanical. `papers` holds
+arXiv ids in two shapes, `arxiv:2610.02206` and `arxiv:2610.02206v1`, because
+source `hf-daily` writes one and source `arxiv` writes the other, so an
+equality join on the unversioned id misses every paper that arrived through the
+`arxiv` feed. This run made that exact error on its first query and reported
+five of the containment skill's six papers as absent before catching it.
+
+The second is not mechanical and matters more. **Ten of the nineteen are held
+under the plain unversioned id**, so an equality join would have found them:
+`arxiv:2609.29647`, `2609.07103`, `2609.06966`, `2609.05903`, `2608.04828`,
+`2605.23904`, `2603.25158`, `2603.22455`, `2602.12670`, `2602.12430`. Those
+were not missed by id shape. They were reported absent by a query that did not
+return what the note says it returned, and nothing between the query and the
+note checked it.
+
+**The repeat.** This is the shape of incident 20 and of lesson L-A9 in
+`docs/standards/lessons.md`: a measurement is recorded in the right register,
+by the right seat, and nothing afterwards opens the file to check it against
+the thing it describes. It is also the second time this specific assertion was
+written, which is what makes it a repeat rather than a first finding: the
+2026-09-30 addendum re-measured and confirmed it, so the error survived its own
+verification step.
+
+**Cost.** The queue carried 56 ids and a stated blocker that nothing in it was
+reachable. Nineteen were. Two of those have claims in production. Every run of
+this seat since 2026-09-30 has read that blocker and planned around it, and the
+skill seat reads the same file.
+
+**Fix, and what is not fixed.** No prompt change reaches this, because the
+defect is in what a seat does with a query result rather than in any prompt.
+Two things are in this pull request: the corrected measurement, in
+`docs/research/notes/2026-10-05-containment-census.md` section 1, and the
+version-insensitive join written out so the next run copies it rather than
+rewriting it:
+
+```sql
+-- correct: matches both id shapes
+from f left join papers p on p.id like 'arxiv:' || f.aid || '%'
+-- wrong, and silently so: misses everything from the `arxiv` feed
+from f left join papers p on p.id = 'arxiv:' || f.aid
+```
+
+What is not fixed is the cause of the id shapes. `papers` holds 322 arXiv
+papers twice, 656 rows, and 73 of those pairs were triaged twice and got
+different decisions. That is `pipeline/ingest.py`, outside the ADR-12
+whitelist, and it is routed to the engineer in the brief's section 9 rather
+than proposed here.
+
+**Blameless note.** The 2026-09-30 runs were right to refuse to strike lines
+they had not read, and that refusal is still the correct rule. The failure is
+narrower: a negative result was reported as measured, re-reported as
+re-measured, and used as a planning input, and a negative result is the one
+kind that looks identical whether the query was right or wrong. A query that
+returns nothing should be run once in the inverse direction before anything is
+built on it.
+
+## INC-2026-10-05-interpret-rate-mismatch-third-occurrence — The graph is eight days behind the corpus, the prescribed rate match was half-applied, and nothing watches the queue (2026-10-05, research seat)
+
+**Recorded under the standing rule.** Incident 30 in this file records the
+same failure twice, on 2026-09-19 and 2026-09-22, and names the fix. This is
+the third occurrence, found by PR #220 while auditing why ten of ADR-40's
+seventeen cited claims carry no graph edge.
+
+**Measured today, read-only against Neon.**
+
+- `interpret` service rate: exactly 90 claims/day on 2026-10-01, 10-02,
+  10-03 and 10-04. The cap is flat enough to be a configured limit, not a
+  coincidence.
+- Arrival rate over the same four days: 217, 136, 135, 142.
+- Deficit: 270 claims in four days, about 67/day.
+- Backlog: 1,012 uninterpreted claims of 1,801 total. 785 are embedded and
+  waiting; 227 have no embedding yet.
+- Lag: the newest claim `interpret` has reached was created 2026-09-27. The
+  graph is **eight days behind the corpus**.
+- Orphan rate: 1,131 of 1,801 claims (62.8%) have no edge in either
+  direction. In the `reasoning` topic, a named owner priority, it is 132 of
+  133 (99.2%), because all but one of those claims arrived after the lag
+  opened.
+
+**The fix was half-applied, and saying so precisely matters.** Incident 30
+prescribed "rate-match `interpret` to `distill`." Throughput did rise, about
+six-fold, from the 7-31/day that entry measured to today's 90/day, and
+days-of-staleness improved from 12 to 8. `distill`'s output rose further, so
+the two numbers that describe the backlog both got worse: absolute depth
+439 → 1,012, daily deficit ~25 → ~67. A six-fold throughput increase that
+leaves the queue growing faster than before is the specific trap in raising a
+rate without matching it to its upstream, and it reads as progress in every
+check that looks at throughput alone.
+
+**What it costs.** vision.md §1 defines "matured" and "left behind" as what
+accumulating `supports` and `contradicts` edges reveal. At an eight-day lag,
+no claim from the current week can carry an edge, so the digest's two
+evidence-driven sections structurally cannot see the week they are about, and
+O1 KR3's "every digest item cites its evidence" is satisfiable only from
+claims older than the lag. Incident 30's second occurrence recorded the same
+cost against the skill seat's cluster selection; it is now also a cost
+against the digest, which is the product.
+
+**Why it was not caught between the second and third occurrences.** For the
+same reason incident 30 gave for the first two, which that entry already
+generalised into a rule: "a queue is not healthy because its worker ran. It
+is healthy when its depth is flat or falling." It also recorded that none of
+`triage_queue`, `distill_queue` or `interpret_queue` is checked that way by
+anything. Thirteen days later none of them is, and this occurrence was found
+while looking for something else. The lesson was recorded correctly, by the
+right seat, and nothing between the lesson and this run opened the file —
+which is incident 20's pattern and L-A9 in `docs/standards/lessons.md`.
+
+**The gate that is missing, named.** The research seat's charter, Step 4,
+tells it to gather triage health, distill health and graph health, and says
+nothing about queue depth or its trend. That is the gate this failure passes
+through three times. The diff is small and `prompts/research-agent.md` is read
+from the checkout at run time, so it reaches production on the next run. It is
+**not** proposed in #220, because #210 already spent this week's one system
+diff on `prompts/triage.md` and that change is itself undeployed; stacking a
+second is incident 25's shape. It is pre-evidenced in
+`docs/research/briefs/2026-10-05-skill-evals-from-rl-research.md` §9 as next
+week's proposal.
+
+**Still open, and it is the engineer's with the chair on budget**, unchanged
+from incident 30: rate-match, not rate-raise. The number to match is
+`distill`'s claim output, about 140/day over the last four days, and the
+match has to hold as that number moves rather than being set once.
+
+## INC-2026-10-05-null-embedding-window-returns — 227 claims have no embedding, every one from the last two days, which is incident 30's first occurrence in shape (2026-10-05, research seat)
+
+**Recorded under the standing rule**, and recorded separately from the entry
+above because it is a different mechanism with a different owner even though
+it was found in the same sweep.
+
+Incident 30's first occurrence (2026-09-19) was "158 of 543 claims had a null
+embedding, every one written in the previous three days," and its consequence
+was that those claims "cannot be reached by `interpret`'s neighbour query, so
+they draw no edges." Its second occurrence recorded that this was fixed:
+"Embeddings are fixed: zero claims have a null embedding today."
+
+Measured today: **227 claims have a null embedding, 142 created 2026-10-04 and
+85 created 2026-10-05, and every one of the 227 is also uninterpreted.** Same
+count shape, same recency shape, same consequence.
+
+**What this entry does not claim.** Whether this is a regression or the normal
+lag of a nightly embed job is not decidable from the corpus alone, and the run
+that found it could not settle it without the job's schedule. It is recorded
+anyway, for the reason the standing rule exists: the 2026-09-19 occurrence was
+also a two-to-three-day window of null embeddings that someone could have read
+as a normal lag, and reading it that way is how it reached a second
+occurrence. The question is on `docs/research/reading-queue.md` for the
+engineer to close in one sentence.
+
+**Either way it is the condition that makes a claim invisible** to
+`interpret`'s neighbour query and to `semantic_search`, so the corpus's two
+newest days are unreachable by the agent-facing surface while the window is
+open.
+
+## INC-2026-10-05-the-contradicts-fix-deployed-and-did-not-work — incident 25's error class survived its own repair, and reached a reader (2026-10-05, research seat)
+
+**Recorded under the standing rule.** Incident 25 (2026-09-21, this seat) and
+incident 26 (2026-09-24) recorded that `prompts/interpret.md` had been
+sharpened on contradictions and that the fix never deployed, so "all five
+`contradicts` edges in the graph are miscategorised." Incident 25's worked
+example was a sentence welding two systems on two benchmarks together, built
+from the pair 82.2% and 12.5%.
+
+**What is different today, and it is good news first.** The freeze is over.
+`tools/delivery_health.py --surface deploy` reports all three Modal jobs
+running this checkout, and the shas agree: `claim_links.method` is
+`kimi-k2.6@6706ec7bffee`, which is `prompts/interpret.md` at `origin/main`.
+The corrected prompt incidents 25 and 26 were waiting on is in production.
+
+**The repeat.** It did not work.
+
+1. **The old edges were never repaired.** `85 → 12` at confidence 0.78 — the
+   exact pair incident 25 quoted — is still in the graph today, three weeks
+   later. Fixing a prompt changes what the next edge looks like and nothing
+   about the rows already written, and nobody owns repairing written rows.
+2. **One of them reached a reader.** The 2026-W40 issue, published 09:01
+   today, opens its left-behind section with "Start with the number that
+   turned out to be wrong ... The null was not null." Claims 288 and 289 are
+   two arms of **one paper** (`arxiv:2609.09219`); 288 bounds recoveries under
+   challenger episodes, 289 counts recoveries under truthful feedback, and
+   289's own text says "the null calibration passed." The issue calls 289 "new
+   paired feedback studies," naming a study that does not exist, and hands
+   builders an instruction derived from the inversion. The edge behind it,
+   `289 contradicts 288`, was written 2026-09-29 by the pre-fix prompt.
+3. **The deployed prompt then produced two more of the same class.**
+   `478 → 477` (2026-10-01) and `574 → 570` (2026-10-02), both
+   `method = kimi-k2.6@6706ec7bffee`. Five intra-paper `contradicts` edges now
+   exist, all five are mislabelled, and two were written by the prompt written
+   to forbid them.
+
+**Why, mechanically, and this is the part worth carrying.** The deployed
+prompt already contains the rule. Override rule 1, "Co-reported results are
+not conflicts," describes this failure precisely and carries the 82.2%/12.5%
+pair as its worked example. The rule is well written. It fired zero times out
+of five, and its own first line says why:
+
+> You are not told which paper a candidate came from, so you must infer it.
+
+The gate is conditioned on paper provenance, and `claims.paper_id` is a column
+the pipeline is holding and does not pass. The interpreter is asked to
+reconstruct a fact from textual tells, and when the reconstruction fails the
+rule depending on it cannot fire.
+
+**This class is already named in this repository, against a different file.**
+`docs/voice/ban-list.md` entry 79, added 2026-10-01, is "the gate conditioned
+on a fact its reader was never given," and its general test is exactly the one
+above: *name the fact the gate's own sentence depends on, then find where the
+writer reads that fact. Where the answer is nowhere, the gate has never fired
+and never will.* Entry 79 was raised against `prompts/digest.md` and fixed by
+passing the fact into the payload. Nobody swept the other prompts for the same
+shape, which is that register's own entry 90, "the class named and not swept."
+So this entry is also entry 90's first confirmed cost.
+
+**What it costs, as a number.** `deprecated_claims` is any claim with an
+incoming `contradicts` edge at confidence >= 0.7, and it feeds both the
+digest's left-behind evidence (vision §1) and `skills_needing_revision`. Of 20
+deprecated claims, **5 are deprecated by their own paper** and 13 rest on at
+least one edge that fails the KIND test `prompts/digest.md` states.
+
+**The press was blind, not negligent, and this is where the entry earns its
+keep.** The 2026-W39 issue received an edge from this same class and **caught it
+in print**: "these numbers share a percent sign and little else ... the edge
+between them fails the kind test." So `prompts/digest.md`'s KIND test does
+fire. It could not fire on 288/289 because `pipeline/weekly.py`'s `deprecated`
+payload joins `papers` only on the OLD claim:
+
+```sql
+select old.claim, new.claim, l.confidence, p.title, p.url
+...
+join papers p on p.id = old.paper_id          -- only one of the two
+where l.relation = 'contradicts' and coalesce(l.confidence,0) >= 0.7
+```
+
+W39's pair was catchable by reading, because "software tasks" and "air-combat
+simulation" sit in the claim text. W40's was not, because the only fact that
+reveals it — that both claims are `arxiv:2609.09219` — is the one the payload
+withholds.
+
+**The guard already exists, ten lines away, on the weaker relation.** The
+`superseded` payload for `refines` edges joins both papers and carries
+`and old.paper_id != new.paper_id  -- a paper refining itself is not a
+supersession`. Someone thought of this once, for the relation that merely
+announces a supersession, and not for the relation that marks a claim
+**deprecated** and feeds both the left-behind section and
+`skills_needing_revision`. The stronger consequence has the weaker guard, and
+that asymmetry is the whole incident in one line.
+
+So the smallest sufficient fix is two lines of SQL in `pipeline/weekly.py`:
+join the new claim's paper, and copy the same-paper condition down from the
+query above it.
+
+**What the org grows from it, stated as a rule.** A prompt fix has two halves
+and the org has been shipping one. The first half is the rule, and three
+charters already check that it merged and deployed. The second half is the
+*input the rule reads*, and nothing checks that at all — so a rule can merge,
+deploy, run daily, and never once be able to fire. Before a prompt diff is
+proposed, name the fact its new sentence depends on and find the field in the
+payload that carries it. Where there is no field, the diff is not a fix; it is
+a request for one, and it belongs in the engineer's lane rather than this
+seat's weekly proposal.
+
+**No proposal filed against `prompts/interpret.md` this run, deliberately.**
+Incident 25 declined to propose a second interpret fix because a third sha
+that never deployed would look like progress and change nothing. The freeze is
+gone and the reasoning survives it for a different reason: words added to a
+gate that cannot read its input are the same non-fix. Routed instead as three
+engineer items — pass `paper_id` on each interpret candidate, refuse
+same-paper `contradicts` edges at write time, and repair the written rows —
+in `docs/research/briefs/2026-10-05-digest-quality.md` §3.
+
+**Also found in the same sweep, recorded here because it is the second time a
+slow-loop stream has gone quiet without anything noticing:** `citation_log`
+was last written 2026-09-28 and is seven days stale, while `weekly` ran and
+published today. The W40 issue's only traction datum, "moved from 2 to 4
+citations," is a 2026-09-28 movement printed as this week's. Citation trend is
+one of the two evidence streams OKR O1 KR3 accepts and the entire basis of
+`docs/product/source-discovery.md` §3.3.

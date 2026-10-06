@@ -85,7 +85,12 @@ none. Route to `distill` when the item carries any of these:
 - **agent containerization and sandboxing**: an isolation design (sandbox,
   microVM, wasm, capability-based permission, runtime isolation) with a
   measured escape, a measured cost, or a measured preconditions-for-escape,
-  and any agent-state or agent-runtime design that is evaluated.
+  and any agent-state or agent-runtime design that is evaluated. The measured
+  cost of a boundary counts here even when the workload behind it is not an
+  agent: an isolate-versus-microVM or wasm-versus-container comparison with
+  numbers answers the question an agent deployment has to answer, and "wrong
+  domain" is not a reason to index it. What makes it `index` is the absence of
+  the number, not the absence of the word "agent".
 - **agent safety and cybersecurity**: an attack (prompt injection, tool
   poisoning, jailbreak, exfiltration, sabotage) with a measured success
   rate, or a defense (guardrail, containment, permission model) with a
@@ -96,7 +101,13 @@ none. Route to `distill` when the item carries any of these:
   gain measured against a fixed baseline.
 
 What stays `index` in these threads is the same as for reasoning: a
-benchmark or survey with no mechanism and no measured intervention.
+benchmark or survey with no mechanism and no measured intervention. One
+exception, in the containment and safety threads only: a harness, toolkit or
+benchmark built to **test** whether an agent can reach what it must not is
+itself the mechanism, because containment evaluation is part of what this
+pipeline is reading for. Route it `distill` and say in the reasoning what it
+measures. A capability benchmark that happens to include a safety split is not
+this, and stays `index`.
 
 
 Each paper carries a source tier, a prior on its worth: `b` (human-curated daily
