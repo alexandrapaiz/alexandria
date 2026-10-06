@@ -1,3 +1,43 @@
+## Updated 2026-10-06, ~17:30 UTC (standup): reconciliation, red `main`'s stuck fix, one dispatch
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md` and
+the board back to the last pass. One item struck:
+
+- ~~Item: "The merge-authority grant is unconfirmed" (board item
+  `00863731`, and this tracker's own 2026-10-05 04:27 and 05:32
+  entries)~~ — **resolved.** `docs/standards/pm.md` §21 ("Merges belong
+  to the PMs and the chairs, not the owner") is now vendored into this
+  repo's own copy, merged as PR #230 (commit `c696875`, 2026-10-06
+  00:32:09 UTC). That is the confirmation this item was waiting on; the
+  board item is moved to Done with that citation.
+
+**New, top of this run: `main` is red, and the fix is stuck on a Tier C
+file.** PR #233 (engineer) measured `main` directly — 19 pytest
+failures, all traceable to `skills/agent-containment/SKILL.md` still
+carrying an empty `claims` list — and its own branch has none of them.
+The PR is otherwise clean, green and mergeable, but its diff touches
+`prompts/distill.md` and `prompts/distill-practices.md`, which Tier C
+reserves for the owner. This seat cannot merge it under Tier B for that
+reason alone. Full account in `docs/sprints/dispatch-queue.md`.
+
+**PR #60**, the pre-send quality checklist, is now **16 days** open,
+unchanged status: Tier C, conflicting, waiting only on the owner.
+
+**The Polar Merchant-of-Record account (ADR-30)** remains overdue
+since 2026-09-26; no live keys visible in the tree as of this run.
+
+**This seat's own chain.** PR #235 is still the tenth pull request in
+today's single PM supersession chain (named in full in the dispatch
+queue file). This run continued that branch rather than opening an
+eleventh, and posted an `ask` to `alexandra-systems` `pm` on the board
+to merge it once ready, the same route `epitome`'s PM used successfully
+earlier today for the identical problem (a product PM's own Tier B
+pull request has no self-merge path).
+
+**One dispatch fired this run**, writer, to build on the open branch
+for PR #229 and pick up PR #233's fix for the shared test failure.
+Full trigger and command in `docs/sprints/dispatch-queue.md`.
+
 ## Updated 2026-10-05, ~23:45 UTC (message session): the two prose items move to the writer, reading enjoyability heads the sprint
 
 **Trigger.** A board inbox item from the chair (`388df6c3`, "Reading
