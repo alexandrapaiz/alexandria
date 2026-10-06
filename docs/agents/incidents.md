@@ -9951,3 +9951,62 @@ else before prescribing it.
 evidence as a finding you fix yourself: not only that the cause is theirs, but
 that their change clears it. Routing is a claim about the future and it is
 testable. Test it.
+
+## INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main — the append-at-one-anchor collision reached a file nobody reads twice (2026-10-06, engineer seat)
+
+**What happened.** `.github/workflows-pending/README.md` has been on `main`
+since `413b875` ("Merge main into alexandria-exo/2026-10-05-window") carrying
+literal conflict markers:
+
+```
+$ git grep -l '^<<<<<<< \|^>>>>>>> ' -- . | cat
+.github/workflows-pending/README.md
+```
+
+Two sides of that merge each appended a `## <workflow>.yml` section to the end
+of the file's index, for `adr-numbers.yml` and `skill-gate.yml`. Both are real
+and the merge wanted both. What landed instead was `<<<<<<< HEAD`, one section,
+`=======`, the other section, `>>>>>>> origin/main`, committed as the
+resolution. It is the only file in the repository in that state, which is why
+it survived: the whole-repo check is one command and nothing was running it.
+
+Fixed on this run's branch, keeping both sections, because the pending lane is
+`tests/`-adjacent machinery and the file is not a workflow, so this seat can
+push it.
+
+**Why it is a repeat.** Incident 6 is two ledger appends at one anchor and a
+conflict on the second merge. The engineer charter's ledger-collision rule and
+the org rule about a seat's own open pull request both exist because of it, and
+both name `docs/ideas.md`. This is the same failure mode in a different file,
+and this run hit it twice in one session: the merge of PR #226 into this branch
+conflicted in `docs/agents/incidents.md` at exactly the same anchor, two seats
+having each appended an entry dated 2026-10-05 to the end of the register. That
+one was resolved by keeping both, in a minute, because a conflict a seat resolves
+by hand is visible to the seat resolving it.
+
+**The generalisable part, and it is the reason this entry is worth its length.**
+The rule we have says "name the merge order you expect, because two open pull
+requests that both append to the ledger will conflict". It is a rule about
+`docs/ideas.md` and the failure is about append-only files, of which this
+repository has at least six: `docs/ideas.md`, `docs/agents/incidents.md`,
+`docs/voice/ban-list.md`, `docs/decisions.md`, `docs/sprints/pending.md`, and
+this README's index. Every one of them is written by multiple seats, every one
+of them is appended to at the same anchor, and the collision rate is a function
+of how many seats are open at once rather than of which file it is. Five seats
+had open pull requests when this run started.
+
+**What would actually close it.** A whole-repository marker check, in CI, on
+both triggers. It is one `git grep` and it would have failed the merge that
+produced this, on the push to main, the same evening. Filed as a ledger entry
+today rather than built here, because the file it belongs in is `checks.yml`
+and a seat's token has no `workflows` permission. The pending lane
+(`.github/workflows-pending/`) is where it goes if the owner would rather have
+it as its own workflow, and it is small enough to ride along in the
+`subscriber-list.yml` filed on the same branch if she would rather not have a
+fifth file waiting.
+
+**Blamelessly.** The merge in question resolved five branches against main in
+four minutes, by hand, at 21:28 on a Sunday, and the four other files in it
+came out correct. A hand merge of a register that every seat appends to is a
+mechanical task with no mechanical check behind it, which is the condition this
+register was created to report rather than a fact about whoever did it.

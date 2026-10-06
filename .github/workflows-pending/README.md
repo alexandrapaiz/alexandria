@@ -108,7 +108,6 @@ one directory up they stop it only for whoever remembers to run the command.
 One command, and it is the owner's or the chair's: a seat's token has no
 `workflows` permission, for the reason the top of this file gives.
 
-<<<<<<< HEAD
 ## adr-numbers.yml — every ADR number names one decision
 
 Filed by the ExO seat 2026-09-30. Fails a pull request, or a push to main,
@@ -141,7 +140,7 @@ rather than passing silently, because a heading-format change would
 otherwise turn this check into a guard in name.
 
     git mv .github/workflows-pending/adr-numbers.yml .github/workflows/adr-numbers.yml
-=======
+
 ## skill-gate.yml — does this revision merge on its own?
 
 Filed by the engineer seat 2026-09-30 for ADR-37, amended the day before when
@@ -178,4 +177,34 @@ snapshot, a SKILL.md edited after its eval, a delta below the previous version's
 lower bound, a version with no trigger, the kill switch set, and a revision that
 introduces a ban-list tell). No key, no network, no database: the graph clause
 reads `docs/research/claim-status.json`, which the daily Modal job writes.
->>>>>>> origin/main
+
+## subscriber-list.yml — the signup and the unsubscribe are guarded
+
+Filed by the engineer seat 2026-10-06 with sprint 2026-10-05 items 2 and 3.
+Runs `tests/test_waitlist.py` and `tests/test_unsubscribe.py` on any change to
+the signup path, the unsubscribe path or `db/schema.sql`.
+
+**Why a new file rather than two more steps in `checks.yml`.** A seat's token
+has no `workflows` permission, so `checks.yml` cannot be edited from a seat's
+run at all, and this directory is the lane that exists instead. The paths and
+both triggers are already right, per the rule at the top of this file.
+
+What it holds is the half CI can hold without a database. Every SQL statement
+in `site/lib/waitlist.js` and `site/lib/unsubscribe.js` is parsed with
+libpg_query and every relation and column it names is resolved against
+`db/schema.sql`, which is why that file is in the paths. The signup's row is
+asserted to be `status = 'active'` and comped, because `pipeline/weekly.py`
+sends to active rows only and anything else is a row waiting on a human, which
+clause 1 of the sprint's definition of done rules out. The unsubscribe route is
+asserted to export POST and no GET, because mail scanners fetch every link in a
+message before a person reads it.
+
+Four deliberate breaks were confirmed red before it was filed: a `'waitlist'`
+status, a `statuss` column, a GET handler on the unsubscribe route, and an
+update scoped by email address rather than by token.
+
+Until it moves, those 44 assertions run in exactly one place, which is whichever
+seat remembers `python3 -m pytest tests/ -q`. The signup path is the one surface
+in this repository a stranger touches directly.
+
+    git mv .github/workflows-pending/subscriber-list.yml .github/workflows/

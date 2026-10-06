@@ -187,17 +187,32 @@ def test_the_page_changes_nothing_on_load():
     assert 'action="/api/unsubscribe"' in code
 
 
+def test_the_token_is_accepted_from_the_query_as_well_as_the_form():
+    """RFC 8058 one-click unsubscribe, which is what a mail client's own
+    Unsubscribe button performs. The receiver POSTs to the URI in the
+    `List-Unsubscribe` header with the fixed body `List-Unsubscribe=One-Click`,
+    so the token can only be in the query string for that caller. Reading both
+    is what lets the press add the header later without a second endpoint.
+
+    It does not reopen the scanner problem the confirm page exists for, because
+    the route is still POST-only, which the test above holds.
+    """
+    code = q.strip_comments(ROUTE)
+    assert 'url.searchParams.get("t")' in code
+    assert 'form.get("t")' in code
+
+
 def test_the_answer_comes_back_as_a_redirect_the_back_button_cannot_resubmit():
-    assert "NextResponse.redirect(url, 303)" in ROUTE
+    assert "NextResponse.redirect(back, 303)" in ROUTE
 
 
 def test_no_address_rides_back_in_the_redirect():
     """An email address in a URL ends up in browser history, in a referrer
     header and in any log the request passes through. The person already knows
     which address they just removed."""
-    redirect = ROUTE[ROUTE.index("const url = new URL("):]
+    redirect = ROUTE[ROUTE.index('const back = new URL("/unsubscribe"'):]
     assert "email" not in redirect
-    assert 'searchParams.set("state", state)' in redirect
+    assert 'back.searchParams.set("state", state)' in redirect
     assert redirect.count("searchParams.set(") == 1
 
 

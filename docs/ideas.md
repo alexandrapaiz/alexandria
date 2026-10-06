@@ -11246,3 +11246,96 @@ provenance reviewer exists to catch.
   or failing, and the difference is machine-checkable and printed as two
   different words. A blank that the system can explain and does not is a blank
   the reader has to re-derive.
+
+### 2026-10-06 — The press carries the one-click unsubscribe headers (engineer seat)
+- Trigger: today's craft scan of TLDR AI, whose signup says in six words what
+  this product cannot yet say: "No spam. Unsubscribe at any time with one
+  click." Today's issue carries `mailto:...?subject=Unsubscribe`. This run built
+  the endpoint behind that promise and the endpoint still needs the reader to
+  open a page, which is two actions and a decision, not one click.
+- What: `pipeline/weekly.py` sets two headers per recipient,
+  `List-Unsubscribe: <https://libraryofalexandria.dev/unsubscribe?t=TOKEN>` and
+  `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. Gmail and Apple Mail then
+  render their own Unsubscribe control at the top of the message, and clicking
+  it POSTs straight to the endpoint with the fixed body `List-Unsubscribe=One-Click`
+  (RFC 8058). That is the real one click, the mail client does the asking, and
+  no scanner can trip it because the header specifies a POST. It is also what
+  Gmail has required of bulk senders since June 2024, so it is deliverability
+  work as much as courtesy work. `/api/unsubscribe` already accepts exactly that
+  request: it reads the token from the query string as well as the form body, and
+  the one-click POST was exercised against a running server on this branch.
+- First step: the token has to reach `build_messages`, which means
+  `unsubscribe_token` in `send_newsletter`'s recipient query. That is a change to
+  the press's send path, so it goes behind the deploy gate in
+  docs/agents/press-rehearsal.md and needs a rehearsal with a real key. Everything
+  on the site side of it is done.
+- Cost: $0, and it removes a deliverability risk rather than adding one.
+- Status: proposed
+
+### 2026-10-06 — One command stops a conflict marker reaching main (engineer seat)
+- Trigger: `INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`.
+  `.github/workflows-pending/README.md` sat on `main` carrying `<<<<<<< HEAD`
+  and `>>>>>>> origin/main` as its committed resolution, from a Sunday evening
+  merge that resolved five branches in four minutes. Found by one command on the
+  next day's run, which is a day later than a check would have found it.
+- What: a `git grep` for conflict markers over the whole repository, failing the
+  build, on pull requests and on pushes to main. It is three lines, it needs no
+  key, no network and no database, and it is the cheapest check this repository
+  does not have. The specific value is that it is whole-repository rather than
+  diff-scoped: the marker above arrived in a merge commit, and a diff-scoped
+  check on a merge is the one place diffs are least readable.
+- First step: either a step in `checks.yml` with `paths: ['**']`, or a fourth
+  line in the `subscriber-list.yml` filed in the pending lane on this branch.
+  The second is smaller and needs no new file. Prove it red against `413b875`
+  first, which is the commit that would have failed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Whether a stranger's address is confirmed before it joins the list (engineer seat)
+- Trigger: sprint item 2, built on this branch. The signup form now writes
+  `status = 'active'` from a single unverified submit, which is what clause 1 of
+  the sprint's definition of done asks for in its own words ("not a waitlist a
+  person has to be promoted out of by hand"). The consequence is worth naming
+  rather than discovering: anybody can type anybody's address into the form and
+  that person starts receiving a weekly email they never asked for.
+- What: the decision, written down, either way. Single opt-in is the right call
+  for a friends-and-family list of twenty comped readers, it is what the DoD
+  asks for, and the cost of being wrong is one unsubscribe click. It stops being
+  the right call at the scale where a stranger's complaint becomes a spam
+  report, and a spam report against a Gmail SMTP sender costs the whole list.
+  Double opt-in means one confirmation email per signup, a `pending` status the
+  press does not read, and a confirm endpoint, which is the same shape as the
+  unsubscribe endpoint built today and about the same size.
+- First step: not code. One paragraph in docs/vision.md or an ADR saying single
+  opt-in holds until the list reaches a named number, and naming the number.
+  A threshold chosen now is a decision; the same threshold chosen after the
+  first complaint is a reaction.
+- Cost: $0 either way. Double opt-in sends one more email per signup on a
+  sending path that is already free.
+- Status: proposed
+
+### 2026-10-06 — Craft scan: how TLDR AI makes unsubscribing a promise instead of a feature (engineer seat)
+- Trigger: the daily craft scan, rotated to the digests section of
+  docs/market/landscape.md and pointed at the product whose problem this run
+  spent the day on. TLDR AI is the category's largest daily, and today's work
+  was the subscribe and unsubscribe path.
+- What is worth stealing: the promise sits next to the button, in six words, and
+  it is about leaving rather than about joining. "No spam. Unsubscribe at any
+  time with one click." A signup form's hardest job is answering what happens
+  after the submit, and TLDR answers the reader's actual fear in the same glance
+  as the button. The mechanism behind it is RFC 8058, which this run's endpoint
+  is already built to serve and the press cannot yet send, filed above as its
+  own entry. What this run copied today is smaller and free: the form's note on
+  both pages now reads "One issue a week. You can unsubscribe from any of them",
+  which is the same move of putting the exit beside the entrance.
+- What alexandria does better: the unsubscribe is honest about its own failure
+  modes and TLDR's cannot be, because TLDR's is one click and has nowhere to
+  say anything. Four states read differently on this product's page, and the
+  two that matter are the ones a one-click flow has to collapse. Clicking a kept
+  link a second time says "You were already unsubscribed. This link still works,
+  so clicking it again changed nothing", rather than reporting a failure for the
+  most ordinary thing a person can do with an old email. And a database that
+  cannot be reached says "This is ours, not yours", rather than telling the
+  reader that their link is invalid. The page also never distinguishes an
+  unrecognised token from a retired one, because doing so would turn the
+  unsubscribe endpoint into a way to test whether an address is on the list.
