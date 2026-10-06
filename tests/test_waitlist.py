@@ -34,90 +34,28 @@ from pathlib import Path
 
 import pytest
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sql_schema as q  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = (ROOT / "db" / "schema.sql").read_text()
+SCHEMA = q.SCHEMA
 CORE = (ROOT / "site" / "lib" / "waitlist-core.js").read_text()
 HELPER = (ROOT / "site" / "lib" / "waitlist.js").read_text()
 ROUTE = (ROOT / "site" / "app" / "api" / "waitlist" / "route.js").read_text()
 FORM = (ROOT / "site" / "app" / "components" / "Waitlist.jsx").read_text()
 
-
-def code_only(text):
-    """The file with its `//` comments removed.
-
-    Several assertions below are about what the code does and would otherwise
-    be satisfied, or broken, by a comment that merely quotes the thing. This
-    file's own history is the example: the helper's comment names the JSONL
-    path it replaced, and the form's comment quotes the sentence it stopped
-    saying, and both are the right thing to write down and the wrong thing to
-    match on.
-    """
-    return "\n".join(re.sub(r"//.*$", "", line) for line in text.splitlines())
+code_only = q.strip_comments
+parse_one = q.parse_one
 
 
 # ------------------------------------------------------------------ the SQL
-
-def _walk(node, out):
-    """Every AST node under `node`, pglast's tree being tuples and nodes."""
-    ast = pytest.importorskip("pglast").ast
-    if isinstance(node, ast.Node):
-        out.append(node)
-        for slot in node.__slots__:
-            _walk(getattr(node, slot, None), out)
-    elif isinstance(node, (list, tuple)):
-        for item in node:
-            _walk(item, out)
-    return out
-
-
-def _schema_names():
-    """(relations, columns) as libpg_query reads db/schema.sql.
-
-    Columns come from CREATE TABLE and from the ALTER TABLE ADD COLUMN
-    migrations further down the file, which is where `source` lives.
-    """
-    pglast = pytest.importorskip("pglast")
-    relations, columns = set(), set()
-    for node in _walk(pglast.parse_sql(SCHEMA), []):
-        name = type(node).__name__
-        if name in ("CreateStmt", "ViewStmt"):
-            rel = getattr(node, "relation", None) or getattr(node, "view", None)
-            if rel is not None:
-                relations.add(rel.relname)
-        if name == "ColumnDef" and node.colname:
-            columns.add(node.colname)
-    return relations, columns
-
+# The parser, the schema resolver and the comment stripper are in
+# tests/sql_schema.py, shared with tests/test_unsubscribe.py. That file carries
+# the argument for the technique and for why tests/test_graph_audit.py keeps
+# its own copy.
 
 def statements():
-    """Every SQL template literal in site/lib/waitlist.js, by name.
-
-    A tagged template is the driver's parameter binding, so `${row.email}`
-    reaches the server as a placeholder and never as text. `$1` is what the
-    server actually sees, which is what the parser has to be given.
-    """
-    code = code_only(HELPER)
-    found = {}
-    for name, body in re.findall(
-            r"const (\w+) = \(sql, row\) => sql`(.*?)`;", code, re.S):
-        found[name] = re.sub(r"\$\{[^}]*\}", "$1", body)
-    # The status read is written inline rather than as a named constant,
-    # because it is the only statement here that is not an insert. Collected
-    # anyway, so that every statement reaching the server is under the parser.
-    named = "|".join(re.escape(sql) for sql in found.values()) or r"(?!)"
-    for body in re.findall(r"await sql`(.*?)`", code, re.S):
-        normalized = re.sub(r"\$\{[^}]*\}", "$1", body)
-        if not re.fullmatch(named, normalized, re.S):
-            found["STATUS_BEFORE"] = normalized
-    return found
-
-
-def parse_one(sql):
-    pglast = pytest.importorskip(
-        "pglast", reason="pip install -r requirements-dev.txt")
-    parsed = pglast.parse_sql(sql)
-    assert len(parsed) == 1, "one statement per literal, so one failure per name"
-    return parsed[0]
+    return q.literals(HELPER)
 
 
 def test_there_are_exactly_the_three_statements_this_file_knows_about():
@@ -127,8 +65,8 @@ def test_there_are_exactly_the_three_statements_this_file_knows_about():
     a database that has not) and the status read that tells a returning
     subscriber from one who never left.
     """
-    assert sorted(statements()) == ["INSERT_WITHOUT_SOURCE", "INSERT_WITH_SOURCE",
-                                    "STATUS_BEFORE"], sorted(statements())
+    assert sorted(statements()) == ["INLINE_1", "INSERT_WITHOUT_SOURCE",
+                                    "INSERT_WITH_SOURCE"], sorted(statements())
 
 
 def test_every_statement_parses_as_postgresql():
@@ -137,75 +75,16 @@ def test_every_statement_parses_as_postgresql():
         parse_one(sql)
 
 
-def test_every_relation_the_signup_names_exists():
-    schema_relations, _ = _schema_names()
-    for name, sql in statements().items():
-        for node in _walk(parse_one(sql), []):
-            if type(node).__name__ == "RangeVar":
-                assert node.relname in schema_relations, (
-                    f"{name} writes {node.relname}, which db/schema.sql does "
-                    "not create")
+def test_every_relation_and_column_the_signup_names_exists():
+    """A typo fails the pull request instead of losing a subscriber.
 
-
-def _insert_target_columns(stmt):
-    """The column list of `insert into t (a, b, c)`, and of its DO UPDATE SET.
-
-    These are `ResTarget` nodes, the same node type a SELECT uses for an output
-    alias, and the difference matters: a SELECT's `ResTarget` name is invented
-    by the query and an INSERT's names a real column. Collapsing the two is how
-    the first draft of this file passed a deliberate `statuss` typo, which was
-    the whole defect it was written to catch.
+    `source` resolves only because db/schema.sql gained it in the same change
+    as the insert. If a later edit drops the ALTER TABLE and keeps the insert,
+    this is the test that fails. `xmax` is PostgreSQL's own column and not in
+    any schema file, so it is named here rather than allowed everywhere.
     """
-    names = set()
-    for target in (stmt.cols or ()):
-        if target.name:
-            names.add(target.name)
-    conflict = getattr(stmt, "onConflictClause", None)
-    for target in (getattr(conflict, "targetList", None) or ()):
-        if target.name:
-            names.add(target.name)
-    return names
-
-
-def test_every_column_the_signup_names_exists():
-    """Schema columns, plus `xmax`, which is PostgreSQL's and not ours.
-
-    `source` is in this set only because db/schema.sql gained it in the same
-    change as the insert. If a later edit drops the ALTER TABLE and keeps the
-    insert, this is the test that fails.
-    """
-    _, schema_columns = _schema_names()
-    system = {"xmax"}
     for name, sql in statements().items():
-        stmt = parse_one(sql).stmt
-        nodes = _walk(stmt, [])
-
-        # Written columns first, and against the schema only. Nothing an
-        # INSERT writes is allowed to be excused by the statement itself.
-        written = (_insert_target_columns(stmt)
-                   if type(stmt).__name__ == "InsertStmt" else set())
-        for column in sorted(written):
-            assert column in schema_columns, (
-                f"{name} writes a column {column}, which db/schema.sql does "
-                "not create")
-
-        defined = set()
-        for node in nodes:
-            kind = type(node).__name__
-            if kind == "ResTarget" and node.name and node.name not in written:
-                defined.add(node.name)
-            if kind == "Alias":
-                defined.update(c.sval for c in (node.colnames or ()))
-        allowed = schema_columns | defined | system
-        for node in nodes:
-            if type(node).__name__ != "ColumnRef":
-                continue
-            fields = [f.sval for f in node.fields if hasattr(f, "sval")]
-            if not fields:
-                continue
-            assert fields[-1] in allowed, (
-                f"{name} names a column {fields[-1]}, which is neither in "
-                "db/schema.sql nor defined by the statement itself")
+        q.assert_resolves(name, sql, system={"xmax"})
 
 
 def test_the_insert_writes_an_active_comped_digest_row():

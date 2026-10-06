@@ -247,6 +247,27 @@ create table if not exists subscribers (
 -- of done rules out in clause 1. A signup is active, comped, and done.
 alter table subscribers add column if not exists source text;
 
+-- The unsubscribe token (sprint 2026-10-05 item 3). One opaque value per
+-- subscriber, carried in the link at the foot of every issue, so that
+-- unsubscribing is a click rather than a reply the owner reads and acts on.
+--
+-- Three statements rather than one `add column ... not null default`, and the
+-- reason is worth keeping. A volatile default on ADD COLUMN forces a table
+-- rewrite and the per-row evaluation is a property of that rewrite, which is
+-- not something this org can test, because it runs no Postgres in CI. If the
+-- expression were ever evaluated once instead of per row, every subscriber
+-- would share a token and any of them could unsubscribe all of them. An
+-- UPDATE has no such ambiguity. So the column arrives nullable, an UPDATE
+-- fills the rows that exist, and the default is set afterwards for the rows
+-- that do not yet. All three are idempotent, which they have to be: this file
+-- is applied in full every time pipeline/db_setup.py runs.
+alter table subscribers add column if not exists unsubscribe_token uuid;
+update subscribers set unsubscribe_token = gen_random_uuid()
+ where unsubscribe_token is null;
+alter table subscribers alter column unsubscribe_token set default gen_random_uuid();
+create unique index if not exists subscribers_unsubscribe_token_idx
+    on subscribers (unsubscribe_token);
+
 -- ============ blackboard queues ============
 -- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
 -- view: an item is "claimed" when the worker's output row exists, so every job
