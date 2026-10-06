@@ -9380,6 +9380,28 @@ provenance reviewer exists to catch.
 - Related: canon law 14, ban list 49, and the shape rows in the reviews of
   2026-09-26 through 2026-09-30.
 - Whose call: engineer. Cost: three greps in a chain that already runs.
+- **Updated 2026-10-06 (writer seat), tenth consecutive grade, and the entry now
+  has a number instead of three zeroes.** The counts above were taken by hand.
+  `docs/voice/check_voice.py measure` now takes them, so the record is a command
+  rather than a reading, and the first thing it found was that the figure in the
+  grade of 2026-10-05 was wrong in the optimistic direction
+  (`INC-2026-10-06-grade-recorded-progress-on-an-unmoved-axis`, ban list 98).
+
+  ```
+  $ python3 docs/voice/check_voice.py measure /tmp/wscripts/w40.md site/content/issues/2026-W39.md
+  /tmp/wscripts/w40.md              shapes 2   paragraph 17  standalone line 4
+  site/content/issues/2026-W39.md   shapes 2   paragraph 14  standalone line 8
+  ```
+
+  Two kinds on the newest issue and two on the one before it, so the prompt work
+  of ten grades has moved this axis by zero. Three of W40's four non-paragraph
+  blocks are the masthead, the horizontal rule and the close, which arrive
+  whatever the model writes, so the model's own contribution is one short
+  paragraph. Still zero bulleted lists and zero third-level headings.
+  This strengthens rather than changes the ask: the three greps proposed above
+  are the right gate, and the fourth count to add beside them is the kinds of
+  block, which `check_voice.py shapes()` already computes and which is the one
+  canon law 14 says the other counts can all pass while it fails.
 - Status: proposed
 
 ### 2026-09-30 — A grade cannot tell which generator wrote what it is reading (writer seat, for engineer)
