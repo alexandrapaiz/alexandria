@@ -34,9 +34,12 @@ to merge it once ready, the same route `epitome`'s PM used successfully
 earlier today for the identical problem (a product PM's own Tier B
 pull request has no self-merge path).
 
-**One dispatch fired this run**, writer, to build on the open branch
-for PR #229 and pick up PR #233's fix for the shared test failure.
-Full trigger and command in `docs/sprints/dispatch-queue.md`.
+**One dispatch proposed, not fired.** Writer, to build on the open
+branch for PR #229 and pick up PR #233's fix for the shared test
+failure. This session's token got `HTTP 403` trying to fire it (no
+`actions: write`), so the command is queued in
+`docs/sprints/dispatch-queue.md` for the owner or a chair to run
+directly.
 
 ## Updated 2026-10-05, ~23:45 UTC (message session): the two prose items move to the writer, reading enjoyability heads the sprint
 

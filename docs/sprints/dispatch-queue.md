@@ -215,7 +215,17 @@ itself."
 Not checked this run (no new signal since 2026-09-19's "still on, no
 verdict" note).
 
-## Dispatched by the PM
+## Proposed, not fired: this session's token cannot dispatch
+
+Attempted `gh workflow run agent-writer.yml` for the entry below and it
+failed: `HTTP 403: Resource not accessible by integration` on the
+workflow's own dispatches endpoint. This is the same class of gap a
+prior pass hit reading `PM_DISPATCH_ENABLED` directly — this run's
+token does not carry `actions: write` even though the charter and
+`docs/standards/pm.md` §11.5 say the workflow should. Not guessing past
+that: the command below is unfired and queued for the owner or a chair
+to run directly, exactly as the charter requires when the switch or the
+permission cannot be confirmed from inside the run.
 
 ### 1. writer — build on the open branch for PR #229
 
@@ -252,7 +262,6 @@ reading-enjoyability work the board already assigned you
 register, and the quality bar in the digest prompt and voice check.'
 ```
 
-Run URL and result: logged in the next pass once the workflow starts
-(this run fires it after pushing this file, per the three-minute
-spacing rule — there is only one dispatch this run, so spacing does not
-bind, but the fire happens after the commit either way).
+**Not fired, per the section above.** Copy the command and run it
+directly, or confirm this workflow's `actions: write` permission so the
+next pass can fire it itself.
