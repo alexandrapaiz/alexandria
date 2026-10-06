@@ -134,13 +134,54 @@ def test_the_partial_unique_index_the_upsert_infers_exists():
 # --------------------------------------------------------------- the parser
 
 def test_every_real_skill_yields_a_row():
+    """Every skill parses, and the only problem left standing is an excused one.
+
+    `problems == []` was the assertion here until 2026-10-05, and it was right
+    while every skill in the library cited claims. `skills/agent-containment`
+    landed on 2026-09-30 naming six papers and no claims, because none of the
+    six had a claim id in the database yet, and docs/research/reading-queue.md
+    carries the unchecked lines that fix that. The provenance panel calls that
+    waiting rather than opting out; `reg.waiting_problems` is the same judgment
+    read from the same function, so this test and the gate cannot disagree.
+    """
     rows, problems = reg.read_skills()
-    assert problems == [], problems
+    waiting = reg.waiting_problems(rows, problems)
+    assert [p for p in problems if p not in waiting] == [], problems
     assert len(rows) >= 6
     for row in rows:
         assert row.path == f"skills/{row.slug}"
-        assert row.claim_ids, f"{row.slug} cites no claims"
         assert all(isinstance(c, int) for c in row.claim_ids)
+        if not row.claim_ids:
+            assert (row.skill_status or "").strip().lower() == "draft", (
+                f"{row.slug} cites no claims and is not a draft")
+            assert waiting, f"{row.slug} cites no claims and nothing excuses it"
+
+
+def test_the_excuse_covers_one_skill_and_not_the_library():
+    """The companion that keeps the assertion above a gate.
+
+    A library where most skills cite nothing is the state the registrar's
+    sentence was written to catch, and it would pass the test above unnoticed.
+    """
+    rows, _ = reg.read_skills()
+    citing = [r.slug for r in rows if r.claim_ids]
+    assert len(citing) >= len(rows) - 1, (
+        f"{len(rows) - len(citing)} of {len(rows)} skills cite no claims: {citing}")
+
+
+def _a_row_that_cites_something(rows):
+    """The first row with claim ids, for the tests that need to perturb a list.
+
+    Not `rows[0]`: `read_skills` returns directory order and the first entry is
+    `skills/agent-containment`, whose claim list is legitimately empty, so
+    `rows[0].claim_ids[0]` raised IndexError and `claim_ids[:-1]` of an empty
+    list perturbed nothing and asserted that nothing had drifted. Both tests
+    were passing on a coincidence of alphabetical order.
+    """
+    for row in rows:
+        if row.claim_ids:
+            return row
+    raise AssertionError("no skill in the library cites a claim id")
 
 
 def test_the_claim_ids_match_the_text_of_the_file():
@@ -230,16 +271,17 @@ def test_a_row_whose_claims_drifted_is_stale():
     # Order must not count: a revision that reorders the list is not a change.
     live = {r.path: list(reversed(r.claim_ids)) for r in rows}
     assert reg.stale(rows, live) == []
-    first = rows[0]
+    first = _a_row_that_cites_something(rows)
     live[first.path] = first.claim_ids[:-1]
     assert reg.stale(rows, live) == [first]
 
 
 def test_the_offline_cross_reference_finds_the_skill_that_cites_the_claim():
     rows, _ = reg.read_skills()
-    cited = rows[0].claim_ids[0]
+    row = _a_row_that_cites_something(rows)
+    cited = row.claim_ids[0]
     hits = reg.touching(rows, [cited])
-    assert any(h["skill_path"] == rows[0].path for h in hits)
+    assert any(h["skill_path"] == row.path for h in hits)
     assert reg.touching(rows, [10 ** 9]) == []
 
 
@@ -302,6 +344,37 @@ def test_the_dispatch_names_the_pairs_and_warns_about_a_wrong_edge():
         "misclassification")
 
 
+def test_the_dispatch_carries_the_clusters_and_not_the_raw_pile():
+    """ADR-40 refinement item 3 (C244). Eleven reports each asking for one
+    sentence produce eleven individually reasonable edits, and the skill grows
+    past the point where anything measurable is attributable to any of it."""
+    text = job.dispatch_instructions([ROW], "2026-09-30")
+    assert "What the corrections on record cluster into" in text
+    assert "The raw pile is never applied" in text
+    assert "correction(s) on record became" in text
+    # And the three gate rules the revision has to satisfy, so the run does not
+    # find out from a failing clause what it could have been told up front.
+    assert "Revise one section, not three" in text
+    assert "heldout" in text and "rejected-edits.json" in text
+    assert "three modules" in text
+
+
+def test_a_skill_with_nothing_on_record_is_told_so_rather_than_left_to_invent():
+    """ADR-40's trap (C965): a model refining a skill from nothing consolidates
+    on what it could already reach."""
+    block = "\n".join(job.clustered_block(["skills/agent-containment"]))
+    assert "nothing is on record for this skill" in block
+    assert "C965" in block
+
+
+def test_the_cluster_block_caps_what_one_run_is_asked_for():
+    assert job.MAX_CLUSTERS_PER_DISPATCH == 3, (
+        "one run revises one section, so a dispatch listing twelve edits is "
+        "asking for eleven things the gate will refuse")
+    block = "\n".join(job.clustered_block(["skills/harness-engineering"]))
+    assert block.count("\n    - [") <= job.MAX_CLUSTERS_PER_DISPATCH
+
+
 def test_a_long_list_names_only_what_one_run_can_do():
     rows = [{"skill_path": f"skills/s{n}", "deprecated_claim_id": n,
              "deprecated_claim": "x"} for n in range(20)]
@@ -315,25 +388,76 @@ def test_the_job_is_not_in_the_kimi_window_table():
     import llm
 
     assert not any("skill_revision" in k for k in llm.KIMI_WINDOWS)
-    assert "16:00-16:15  skill revision" in pathlib.Path(
-        ROOT / "pipeline" / "llm.py").read_text(), (
-        "the slot is undocumented, so the next seat to schedule something at "
-        "16:00 UTC has no way to know it is taken")
     assert llm.window_overlaps() == []
 
 
-def test_the_schedule_sits_outside_every_reserved_window():
-    import re
+def test_the_job_holds_no_schedule_of_its_own():
+    """Owner directive 2026-10-05, item 4.
 
-    import llm
+    Modal's free tier runs five scheduled functions and ADR-12 recorded all
+    five as taken, so this job's own `modal.Cron("0 16 * * *")` was a sixth
+    that the plan does not run: ADR-37's daily maintenance pass had a cron on
+    paper and no pass in fact. It was also inside distill's 15:00-16:30
+    window, which the previous version of this test was failing about.
 
-    source = (ROOT / "pipeline" / "skill_revision.py").read_text()
-    cron = re.search(r'modal\.Cron\("(\d+) (\d+) ', source)
-    assert cron, "the job no longer declares a daily cron where this test looks"
-    minute_of_day = int(cron.group(2)) * 60 + int(cron.group(1))
-    for label, (start, end) in llm.KIMI_WINDOWS.items():
-        assert not (start <= minute_of_day < end), (
-            f"the revision job starts inside {label}'s window")
+    The decorator is what this reads, not the file, because the explanation
+    above the decorator quotes the old cron string and a reader of the file
+    cannot tell a quotation from a declaration. `app.function` is where it
+    would be real.
+    """
+    assert getattr(job.skill_revision, "schedule", None) is None, (
+        "the maintenance job declared a schedule again. It is the sixth on a "
+        "plan that runs five; pipeline/interpret.py spawns it instead.")
+
+
+def test_the_maintenance_pass_is_reached_from_interpret_instead():
+    """The fold. A job with no cron and no caller would simply never run.
+
+    This is the half that is easy to get wrong by deleting a schedule and
+    calling it a cleanup, so it is asserted rather than described: interpret
+    names this app and this function, and it starts it before it judges a
+    single claim.
+    """
+    import interpret
+
+    assert interpret.MAINTENANCE == ("alexandria-skill-revision", "skill_revision")
+    source = (ROOT / "pipeline" / "interpret.py").read_text()
+    body = source.split("def interpret(")[1]
+    assert body.index("maintenance_step()") < body.index("interpret_queue"), (
+        "the maintenance step has to come before the day's work, or it never "
+        "runs on a day interpret spends its whole hour")
+
+
+def test_the_maintenance_step_cannot_take_the_claim_graph_down_with_it():
+    """It swallows everything, and that is load-bearing rather than sloppy.
+
+    It runs first, so anything it let escape would cost the day's edges to
+    protect the day's skill maintenance. The spawned job mails the owner from
+    its own container when it fails, and this one has no mail secret.
+    """
+    import interpret
+
+    broken = interpret.MAINTENANCE
+    try:
+        interpret.MAINTENANCE = ("no-such-app-anywhere", "nope")
+        out = interpret.maintenance_step()
+    finally:
+        interpret.MAINTENANCE = broken
+    assert "COULD NOT START" in out
+    assert "did not happen today" in out
+
+
+def test_the_step_spawns_rather_than_blocking_interprets_window():
+    """interpret holds 14:00-15:00 and distill starts at 15:00.
+
+    `.remote()` would add the maintenance job's fifteen-minute timeout to
+    interpret's wall clock and could push it into distill's slot, where
+    Moonshot's concurrency of 1 turns the overlap into a 429.
+    """
+    source = (ROOT / "pipeline" / "interpret.py").read_text()
+    step = source.split("def maintenance_step(")[1].split("@app.function")[0]
+    assert ".spawn()" in step
+    assert ".remote()" not in step
 
 
 def test_the_kill_switch_stops_the_loop_before_anything_is_written():
@@ -365,3 +489,38 @@ def test_the_pause_path_is_where_the_amendment_put_it():
     assert "guardrail 2" in source.lower()
     # Read before the queue append and the dispatch, never after.
     assert source.index("PAUSED:") < source.index("# Step 4, the queue.")
+
+
+def test_the_step_reports_the_call_it_started_on_the_happy_path():
+    """The success half, with Modal stood in for.
+
+    conftest's modal stub has no `Function`, so without this the only path
+    under test is the failure one, and a fold whose working branch is never
+    executed is a fold nobody has run.
+    """
+    import sys
+    import types
+
+    import interpret
+
+    spawned = {}
+
+    class Handle:
+        def spawn(self):
+            spawned["yes"] = True
+            return types.SimpleNamespace(object_id="fc-12345")
+
+    stub = sys.modules["modal"]
+    before = getattr(stub, "Function", None)
+    try:
+        stub.Function = types.SimpleNamespace(
+            from_name=lambda app, fn: Handle())
+        out = interpret.maintenance_step()
+    finally:
+        if before is None:
+            del stub.Function
+        else:
+            stub.Function = before
+    assert spawned.get("yes"), "the step did not actually spawn anything"
+    assert "fc-12345" in out
+    assert "spawned alexandria-skill-revision::skill_revision" in out

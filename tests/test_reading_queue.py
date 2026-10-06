@@ -470,3 +470,127 @@ def test_there_is_one_cleaner_and_both_callers_use_it():
     assert "re.sub(r\"<[^>]+>\"" not in density
     assert "read_paper().fetch_fulltext(" in distill_source
     assert "re.sub(r\"<[^>]+>\"" not in distill_source
+
+
+# --- who goes first: a blocked skill before a sourced one -------------------
+
+ORDERED = """# Reading queue
+
+- [ ] arxiv:2602.12670 — older, from a skill that already cites claims — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2603.22455 — also older, also sourced — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2609.08371 — newer, from a draft that cites nothing — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2509.22040 — the same draft's second request — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2604.17935 — a line nobody signed — 2026-09-28
+"""
+
+SOURCED = {"skills/skill-library-engineering"}
+
+
+def test_without_the_sourced_set_the_order_is_exactly_what_it_always_was():
+    """The default is unchanged, so no caller is surprised by this."""
+    assert [i.paper_id for i in rq.pending(ORDERED, limit=None)] == [
+        "arxiv:2602.12670", "arxiv:2603.22455", "arxiv:2609.08371",
+        "arxiv:2509.22040", "arxiv:2604.17935"]
+
+
+def test_a_skill_that_cites_no_claims_is_read_before_one_that_cites_plenty():
+    """Owner directive 2026-10-05, item 3.
+
+    47 pending lines, six a run, and the 2026-09-30 containment requests sat
+    behind 27 older lines from skills that already carry claims. That put
+    `skills/agent-containment` eight runs away while it was a draft with
+    `claims: []` holding thirteen tests red. FIFO is right for a queue of
+    equals and these were not equals.
+    """
+    got = [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=SOURCED)]
+    assert got[:2] == ["arxiv:2609.08371", "arxiv:2509.22040"]
+    assert got[2:] == ["arxiv:2602.12670", "arxiv:2603.22455", "arxiv:2604.17935"]
+
+
+def test_file_order_still_decides_inside_each_group():
+    """Only the grouping is new. Within a group the oldest line still wins."""
+    got = [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=SOURCED)]
+    assert got.index("arxiv:2609.08371") < got.index("arxiv:2509.22040")
+    assert got.index("arxiv:2602.12670") < got.index("arxiv:2603.22455")
+
+
+def test_the_per_run_limit_now_spends_itself_on_the_blocked_skill():
+    assert [i.asked_by for i in rq.pending(ORDERED, limit=2, sourced=SOURCED)] \
+        == ["skills/agent-containment", "skills/agent-containment"]
+
+
+def test_an_unsigned_line_is_not_treated_as_a_blocked_skills_request():
+    """A line nobody signed is not evidence that a skill is stuck on it."""
+    got = rq.pending(ORDERED, limit=None, sourced=SOURCED)
+    assert got[-1].paper_id == "arxiv:2604.17935"
+
+
+def test_no_skill_citing_claims_collapses_to_the_old_order():
+    """The safe fallback, and the one a stale database produces.
+
+    `sourced` comes from `promotions`, so an empty or unwritten table makes
+    every line look blocked. That has to degrade to file order rather than to
+    some other order nobody chose.
+    """
+    assert [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=set())] \
+        == [i.paper_id for i in rq.pending(ORDERED, limit=None)]
+
+
+def test_the_sourced_set_is_read_from_promotions_and_not_from_the_skills_tree():
+    """`skills/` is not in distill's image and should not be.
+
+    Baking the library into the reading job would make every skill edit need a
+    distill redeploy.
+    """
+    class Rows(FakeConn):
+        def execute(self, sql, params=()):
+            self.statements.append((" ".join(sql.split()), params))
+            cursor = FakeCursor(None)
+            cursor.fetchall = lambda: [("skills/harness-engineering",)]
+            return cursor
+
+    got = rq.skills_with_claims(Rows())
+    assert got == {"skills/harness-engineering"}
+
+
+def test_a_database_that_cannot_answer_is_not_fatal():
+    """A reading job that dies because `promotions` moved has lost the queue."""
+    class Broken:
+        def execute(self, *a, **k):
+            raise RuntimeError("relation \"promotions\" does not exist")
+
+    assert rq.skills_with_claims(Broken()) == set()
+
+
+def test_the_live_queue_serves_the_containment_papers_on_the_next_run():
+    """The verification the directive asked for, against the real file.
+
+    `skills/agent-containment` is a draft with `claims: []` that cites six
+    papers, and five of its requests are unchecked lines in the live queue.
+    Before this ordering, the next run took six lines and none of them were
+    its; this asserts they now come first.
+    """
+    import re
+
+    text = rq.read_file(ROOT / rq.QUEUE_PATH)
+    sourced = set()
+    for skill in sorted((ROOT / "skills").glob("*/SKILL.md")):
+        cited = re.search(r"claims:\s*\[([^\]]*)\]", skill.read_text())
+        if cited and cited.group(1).strip():
+            sourced.add(f"skills/{skill.parent.name}")
+    assert "skills/agent-containment" not in sourced, (
+        "the draft gained claim ids, so this test has served its purpose and "
+        "the next reader should delete it")
+    served = rq.pending(text, sourced=sourced)
+    assert served, "the live queue is empty"
+    # Asserted as "its lines are in the batch" rather than "its lines are the
+    # batch", because the research seat's run of 2026-10-05 (PR #210) appends
+    # more containment papers to this same file. Another blocked skill
+    # legitimately sharing the batch is the rule working, not a regression.
+    assert any(i.asked_by == "skills/agent-containment" for i in served), \
+        [i.asked_by for i in served]
+    # The thing that was actually broken: not one of its lines was reachable.
+    before = rq.pending(text)
+    assert not any(i.asked_by == "skills/agent-containment" for i in before), (
+        "the old order already reached this skill, so this test is no longer "
+        "measuring the defect it was written for")

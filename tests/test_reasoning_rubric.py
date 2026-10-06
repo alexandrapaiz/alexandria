@@ -55,6 +55,59 @@ def test_the_prompts_list_and_the_enforced_list_are_the_same_list():
     assert offered == list(topics.TOPICS)
 
 
+LAYER_4 = ("protocols", "containment", "security", "self-improvement")
+
+
+def test_layer_fours_four_threads_are_topics_the_database_accepts():
+    """Owner directive 2026-10-05.
+
+    The research seat's census of 2026-09-30 measured the cost of their
+    absence: across 846 claims, `containment` appeared 0 times and `protocols`
+    0 times, while 21 claims had already reached for `safety`, `security` or a
+    hyphen-variant the prompt does not sanction. A claim nobody can query is a
+    claim that does not exist, which is the same argument that put `reasoning`
+    on this list.
+    """
+    for topic in LAYER_4:
+        assert topic in topics.TOPICS
+
+
+def test_each_new_topic_is_defined_in_the_prompt_and_not_only_listed():
+    """A tag the model is offered without a boundary is a tag it guesses at.
+
+    `reasoning` got a definition when it was added and the existing entries
+    each state their boundary against a neighbour, because that is where the
+    vocabulary leaks. These four arrived with the same thing.
+    """
+    prompt = (ROOT / "prompts" / "distill.md").read_text()
+    for topic in LAYER_4:
+        assert f"`{topic}` covers" in prompt, topic
+
+
+def test_the_four_new_tags_survive_the_fold_including_their_typography():
+    kept, dropped = topics.normalize(
+        ["Containment", "SECURITY", "self improvement", "Protocols"])
+    assert kept == ["containment", "security", "self-improvement", "protocols"]
+    assert dropped == []
+    # The non-breaking hyphen that cost 18 claims, on the one new tag that
+    # carries a hyphen at all.
+    assert topics.fold("self\u2011improvement") == "self-improvement"
+
+
+def test_safety_is_still_dropped_rather_than_promoted_to_security():
+    """The list is closed and the fold fixes spelling, never meaning.
+
+    `security` joining the list does not license `safety`, which 3 claims
+    carry. A fold that promoted it would write a tag the distiller never chose,
+    and the column would stop being evidence of anything. The one-time retag in
+    pipeline/retag_threads.py is where that judgment gets made, by a model
+    reading the claim, with a dry run in front of it.
+    """
+    kept, dropped = topics.normalize(["safety"])
+    assert kept == ["other"]
+    assert dropped == ["safety"]
+
+
 def test_the_non_breaking_hyphen_twin_folds_onto_the_real_topic():
     # 18 claims in the corpus carry one of these and are invisible to every query
     # the product runs. U+2011 looks identical to a hyphen in every editor.

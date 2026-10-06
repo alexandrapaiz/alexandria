@@ -528,3 +528,29 @@ create table if not exists deploy_runtime (
     first_seen_at timestamptz not null default now(),
     notified_at   timestamptz
 );
+
+-- retag_log: the one-time Layer 4 retag's record of what it has judged
+-- (pipeline/retag_threads.py, owner directive 2026-10-05).
+--
+-- This table is what makes that job resumable, and it needs saying why, because
+-- the sibling job pipeline/backfill_topics.py needs no such table. That one's
+-- fold is a pure function, so a repaired row repairs to itself and "already
+-- done" is derivable from the row. The retag asks a model instead, and a model
+-- that reads a claim and correctly decides it needs none of the four new tags
+-- leaves `claims.topics` byte-identical to a row nobody has looked at. So
+-- "judged" is not derivable from the claims table, and without this row the
+-- job would pay for the same declined call on every run forever.
+--
+-- It is also the audit trail. `model` and `added` together mean a tag written
+-- by that backfill stays distinguishable from one the distiller chose, which
+-- matters because the research seat's census of 2026-09-30 found that the
+-- keyword match these claims were selected by is not evidence of anything.
+-- `why` is the model's own sentence, kept so a wrong tag can be argued with
+-- rather than only reverted.
+create table if not exists retag_log (
+    claim_id   bigint primary key references claims(id),
+    judged_at  timestamptz not null default now(),
+    model      text not null,             -- whichever model answered, logged
+    added      text[] not null default '{}',   -- empty is the common answer
+    why        text
+);

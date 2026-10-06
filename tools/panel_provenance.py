@@ -120,15 +120,36 @@ Finding = panel.Finding
 verdict_of = panel.verdict_of
 render = panel.render
 
-# The library's vocabulary for duty 3, normalised to one space. Every marker in
-# the six skills on main is one of these three. A fourth phrasing is a finding
-# rather than a silent pass, because this phrase is the only thing separating a
-# recommendation the papers support from one the library made up, and a reader
-# (or the next reviewer) finds it by searching for these words.
+# The library's vocabulary for duty 3, normalised to one space. A phrasing
+# outside it is a finding rather than a silent pass, because this phrase is the
+# only thing separating a recommendation the papers support from one the library
+# made up, and a reader (or the next reviewer) finds it by searching for these
+# words.
+#
+# Two grammars, because the library writes in two. The attributive form is the
+# parenthetical that follows the advice, and it was the only form in the six
+# skills this check was written against. The predicative form arrived with
+# ADR-38's *Validation:* tags, where the natural sentence puts the subject
+# first: "the file-in-the-repository prescription is ours." Both say exactly
+# the same thing, both are equally searchable, and the list stays closed: a
+# fifth grammar is still a finding.
 OURS_VOCABULARY = (
     "ours, not the paper's",
     "ours, not the papers'",
     "ours rather than the paper's",
+    # "so ours: five repeat runs of the unchanged system", the colon form that
+    # introduces the library's own prescription instead of naming its source.
+    "ours:",
+)
+
+# Read backwards from the word instead of forwards. These are the whole phrase,
+# so "is ours" matches "the ordering advice is ours, read off the papers' own
+# ablations" and a bare "ours" with nothing in front of it still does not match
+# anything and is still reported.
+OURS_PREDICATIVE = (
+    "is ours",
+    "are ours",
+    "marked ours",
 )
 
 # How far past the word "ours" to read when deciding which phrasing this is.
@@ -147,6 +168,12 @@ OURS_WINDOW = 32
 # number up with every revision.
 SPEC_NAME_MAX = 64
 SPEC_DESCRIPTION_MAX = 1024
+
+# The reading queue, read here for one reason only: to tell a draft skill whose
+# papers the pipeline has not read yet from a skill that cites nothing and has
+# asked for nothing. `waiting_on_the_queue` says why at length. Absent is not an
+# error; it just means no skill gets the benefit of the doubt.
+QUEUE_PATH = "docs/research/reading-queue.md"
 
 ARXIV = re.compile(r"arxiv\.org/abs/([0-9]{4}\.[0-9]{4,5}(?:v[0-9]+)?)", re.I)
 SECTION = re.compile(r"^## +(.+?)\s*$", re.M)
@@ -171,15 +198,24 @@ def ours_markers(body: str) -> tuple[int, list[str]]:
 
     What this cannot see, said plainly: a passage of unsourced judgment that
     carries no marker at all. The word `ours` is the only handle, so drift in
-    the words after it is caught and a missing marker is not. Catching that
+    the words around it is caught and a missing marker is not. Catching that
     needs the model half, where a reviewer reads the section and asks whether
     its advice is in the papers, and it is the same half duty 2 waits on.
+
+    Both grammars are checked, forwards for the attributive phrasings and
+    backwards for the predicative ones, because a marker in the second form
+    carries its signal before the word rather than after it. Reading only
+    forwards is what this check did until 2026-10-05, and it reported seven
+    correct markers in four skills as vocabulary drift, which held `main` red
+    for as long as those skills were on it.
     """
     flat = " ".join(body.split())
     found, unknown_phrasings = 0, []
     for match in re.finditer(r"\bours\b", flat):
         window = flat[match.start():match.start() + OURS_WINDOW]
-        if any(window.startswith(v) for v in OURS_VOCABULARY):
+        before = flat[max(0, match.start() - OURS_WINDOW):match.end()]
+        if (any(window.startswith(v) for v in OURS_VOCABULARY)
+                or any(before.endswith(v) for v in OURS_PREDICATIVE)):
             found += 1
         else:
             unknown_phrasings.append(window.rstrip())
@@ -204,13 +240,80 @@ def paper_sources(papers: list[str]) -> tuple[list[str], list[str]]:
     return ids, unreadable
 
 
+def waiting_on_the_queue(row, raw: str) -> str:
+    """Why this skill cites no claims, when the reason is on the record.
+
+    Returns the sentence to append to the registrar's problem, or "" when the
+    skill has no such excuse and the problem stands as a failure.
+
+    Three conditions, all of them required, because each one on its own is the
+    state the registrar is right to fail. The skill says `status: draft`, so it
+    is not published advice. It lists the papers it was built from, so the
+    evidence exists and is named. And at least one of those papers is an
+    unchecked line in docs/research/reading-queue.md asked for by this skill,
+    so distill has been told to read it and has not got there yet.
+
+    `skills/agent-containment` is why this exists. It landed on 2026-09-30
+    citing six papers and zero claims, because three of the six had never been
+    triaged and two more were routed and never distilled: there was no claim id
+    in the database for it to cite. The queue line is the request that fixes
+    that, and `pipeline/reading_queue.py` is what drains it.
+
+    A missing or unreadable queue file returns "", which leaves the failure in
+    place. The conservative direction is the one that keeps the finding.
+    """
+    if (row.skill_status or "").strip().lower() != "draft":
+        return ""
+    if row.claim_ids:
+        return ""
+    fm, _ = registrar.split_frontmatter(raw)
+    provenance = registrar.parse_frontmatter(fm).get("provenance") or {}
+    papers, _unreadable = paper_sources(provenance.get("papers") or [])
+    if not papers:
+        return ""
+    try:
+        queue = pathlib.Path(QUEUE_PATH).read_text()
+    except OSError:
+        return ""
+    asked: list[str] = []
+    for line in queue.splitlines():
+        marker = re.match(r"^\s*-\s*\[ \]\s*(?P<body>.*)$", line)
+        if not marker or f"skills/{row.slug}" not in marker.group("body"):
+            continue
+        found = re.search(r"arxiv:\s*([0-9]{4}\.[0-9]{4,5})", marker.group("body"), re.I)
+        if found:
+            asked.append(found.group(1))
+    pending = [p for p in asked if p in papers] or asked
+    if not pending:
+        return ""
+    return (f"Waiting on the pipeline rather than opting out: it is a draft, it "
+            f"names {len(papers)} papers, and {len(pending)} of them are "
+            f"unchecked lines in {QUEUE_PATH} asked for by this skill "
+            f"({', '.join('arxiv:' + p for p in sorted(pending)[:4])}). It can "
+            f"cite a claim id on the run after distill reads them.")
+
+
 def review_file(row, raw: str, problems: list[str]) -> list[Finding]:
     """Every check that lives in the SKILL.md itself. No database, no model."""
     findings: list[Finding] = []
     slug = row.slug
 
     for problem in problems:
-        if f"skills/{slug}/" in problem:
+        if f"skills/{slug}/" not in problem:
+            continue
+        waiting = waiting_on_the_queue(row, raw) if "cites no claim ids" in problem else ""
+        if waiting:
+            # Not a defect: a draft whose evidence the pipeline has not read
+            # yet. The registrar's sentence turns on the word "silently", and
+            # a skill with a pending line in the reading queue is the loudest
+            # a skill can be about what it is missing. `unknown` keeps the
+            # ADR-36 gate blocking exactly as `fail` did, because this slice
+            # can never return `pass` for any skill (see the test of that
+            # name), so the only thing the severity decides is whether `main`
+            # goes red and the owner gets the panel's alarm mail for a state
+            # that is on the record and already being drained.
+            findings.append(Finding("registrable", "unknown", f"{problem} {waiting}"))
+        else:
             findings.append(Finding("registrable", "fail", problem))
 
     # duty 1, the half that needs no database: the ids have to be a usable list
