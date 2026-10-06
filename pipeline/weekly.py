@@ -1066,8 +1066,9 @@ def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -
     Sends through the owner's Gmail via authenticated SMTP: at this scale
     (<20 recipients) Gmail's own sender reputation is the deliverability
     strategy, and no domain or email service is needed. Past ~20 subscribers
-    this graduates to SES + a purchased domain + a real unsubscribe endpoint
-    (docs/vision.md §4). No-op until the `gmail` secret exists
+    this graduates to SES + a purchased domain (docs/vision.md §4). The
+    unsubscribe endpoint that section also lists is no longer part of that
+    graduation: it exists on the site now, and every issue links to it. No-op until the `gmail` secret exists
     (GMAIL_ADDRESS + GMAIL_APP_PASSWORD)."""
     import os
     import smtplib
