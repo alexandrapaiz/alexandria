@@ -9828,3 +9828,155 @@ published today. The W40 issue's only traction datum, "moved from 2 to 4
 citations," is a 2026-09-28 movement printed as this week's. Citation trend is
 one of the two evidence streams OKR O1 KR3 accepts and the entire basis of
 `docs/product/source-discovery.md` §3.3.
+## INC-2026-10-05-writer-stub-merged-as-the-days-review — a run died after the ship-first commit and the placeholder was merged as the day's artifact (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: a repeat of
+`INC-2026-09-24-market-ranking-stub-only`, which is itself a repeat of
+incident 8's "run reports success, ships nothing". Recorded at the moment
+it repeats.
+
+**What happened.** Writer run 25 (PR #198, branch
+`alexandria-writer/2026-10-05-window`) opened its branch, merged PR #189
+forward, wrote the ship-first placeholder into
+`docs/voice/reviews/2026-10-05.md`, pushed, opened the draft, and then
+produced nothing else. The placeholder reads in full: "Status: in
+progress. [...] The graded review, the generator patch and any ban-list
+additions land in this file and in this branch as the run proceeds." That
+pull request was merged, so `main` gained a file named for the day whose
+entire content is a promise.
+
+**What is new, and it is the reason this is worth a number.** The 2026-09-24
+precedent ended with an unmerged draft, which is visible as unfinished work.
+This one was merged. The review register is one of the registers other seats
+and the ExO read, and a file called `docs/voice/reviews/2026-10-05.md` is
+indistinguishable at a glance from a grade that happened. Run 25 also
+inherited run 24's work through the forward merge, so the pull request carried
+a real diff and read as substantial. The empty half was one file inside it.
+
+**What it cost.** One day of editorial grading on the first new artifact in
+six days. Run 26 regraded the same issue, so nothing is permanently lost, and
+the cost is the day plus the register entry that said work had been done.
+
+**Why ship-first is still right.** It is not the cause. Run 25 delivered its
+predecessor's merged work because it shipped early, which is exactly the rule
+working. What the rule lacks is the other end: nothing distinguishes a branch
+whose placeholder was replaced from a branch whose placeholder was merged.
+
+**The fix this seat can make, and the one it cannot.** Run 26 replaced the
+file with a real grade, which closes this instance. The general fix is a check
+that refuses to merge a pull request whose ship-first placeholder text is
+still present, which is pipeline work and is filed in `docs/ideas.md`. The
+placeholder is already a fixed string in every charter's ship-first clause, so
+the check is a grep and not a judgment.
+
+## INC-2026-10-05-the-generators-own-examples-printed-four-times — a specimen quoted in the prompt reached the reader in four places in one issue (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule.** The register already
+holds this class twice, as ban list 53 and ban list 88, and the generator's
+own text records a third instance in the sentence "the last issue printed this
+file's example lead-in word for word". It repeated four times in a single
+issue, so it is recorded at the moment it repeats.
+
+**What happened.** The issue of 2026-10-05 (`digests` id 21, week 2026-W40)
+printed four lines that came out of `prompts/digest.md`:
+
+- "Start with the number that turned out to be wrong." and "The rest is not
+  wrong so much as superseded.", both quoted in the fell-behind slot, both
+  printed verbatim as the opening sentence of that section's two groups. They
+  were quoted there with the words "neither is ever printed".
+- A reading-list heading specimen of the form "Three papers for anyone who
+  ...", printed as the heading with its tail swapped for the day's material.
+- Two of the four slot jobs, which the heading rule rendered as plain English
+  clauses, printed as section headings. "What fell behind" is verbatim from
+  that sentence.
+
+**The mechanism, which the file had already diagnosed about itself.** Three
+lines below the reading-list specimen, the same file says a phrase quoted
+inside the slot the model writes into "is not a prohibition. It is the nearest
+available draft." That sentence was written about a FORBIDDEN phrase. It is
+just as true of a recommended one, and nothing had ever applied it that way.
+A warning attached to a specimen has not once beaten the specimen.
+
+**Why the existing entries did not prevent it.** Ban list 53 and 88 are both
+about where an example is DRAWN FROM, which is the rule that an example must
+not come out of the week being graded. Neither is about where an example SITS.
+The four leaks here were all drawn from safely distant subjects and all sat at
+positions the model writes into. The register had the wrong axis.
+
+**The fix, applied.** All four deleted in PR #227, following the remedy the
+reading-list slot already carried for the "worth the hour" frame: delete it
+and name no replacement, because a replacement offered at that position is the
+next template. Recorded as ban list 93 with the new axis stated. The
+generator still teaches by worked example at other writing positions and this
+run did not inventory them, which is filed rather than guessed at.
+
+## INC-2026-10-05-claims-pass-question-one-failed-again — a superiority claim across three benchmarks, conceded in its own last sentence (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: the claims pass was
+added to `docs/voice/canon.md` on 2026-09-24 because of exactly this failure,
+and the failure recurred eleven days later.
+
+**What happened.** The fell-behind section of 2026-W40 printed:
+
+> Task-adapted low-level VLA policies that reported 86.20% on RoboTwin 2.0 and
+> 97.40% on LIBERO are now outperformed by two separate approaches: Latent
+> Interface Training, which improves LIBERO-Plus success by 3.87-10.70 points
+> while preserving LIBERO average, and Dynin-Robotics, which attains 78.4% on a
+> Franka Research 3 robot with competitive LIBERO and zero-shot LIBERO-Plus
+> performance. The old numbers were real; the new ones are on harder tasks.
+
+"Outperformed" is asserted across three different benchmarks, and 78.4% is
+lower than the 97.40% it is said to outperform. The last sentence then
+concedes the measures are not comparable, after the claim has landed.
+
+**Why it is the same incident.** The original specimen, recorded in the canon
+with the pass itself, is 2026-W39 setting a benchmark success rate of 82.2%
+against a win rate of 87% for simulated fighter aircraft and declaring a
+ceiling broken, with "the contexts differ" in the same sentence. Same two
+halves: a superiority claim across incomparable measures, and a qualifier the
+claim has to survive before it can land. That second half is ban list 50 and
+the canon's rule for it is to drop the claim rather than soften it.
+
+**Where the gate is.** The claims pass is a GRADING procedure in the canon. It
+has no counterpart in `prompts/digest.md` at the point where the comparison
+gets written, so the only thing standing between this shape and the reader is
+a grade that runs after the issue has been sent. That is the finding, and it
+is why the fix is not a louder rule: a comparison is checkable against the
+payload's own benchmark names before the prose exists. Filed in
+`docs/ideas.md` for the engineer, alongside the coverage gate, because both
+need the payload and the draft at once.
+
+## INC-2026-10-05-law-8-coverage-failed-after-its-prompt-fix — ten of thirteen named works carried no link, on a rule already written as a count (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: link coverage failed
+on 2026-09-28 (`INC-2026-09-29-grade-cleared-link-coverage`), was patched in
+the generator as an explicit pre-output count, and failed again.
+
+**What happened.** 2026-W40 names thirteen distinct pieces of work and carries
+three links, all three in the reading list.
+
+```
+$ grep -o "https\?://[^)]*" /tmp/w40.md | wc -l
+3
+```
+
+The traction, new-work and fell-behind sections carry zero links across ten
+named works. The generator's fell-behind instruction says "both papers linked"
+for the superseded kind. Evidence-grade coverage failed in the same shape and
+on the same artifact: five of thirteen works graded, with the entire
+fell-behind section ungraded across six works that all print benchmark
+numbers.
+
+**Why the count did not hold, which is the useful part.** The same issue
+scored zero em dashes and zero non-ASCII characters, both also stated as
+counts. The difference is not the word "count". It is that a character census
+reads only the finished draft, whereas counting links or grades against every
+named work means re-opening the payload while holding the draft. That is the
+move that does not happen, and making the instruction louder has now been
+tried once and failed.
+
+**The fix, routed rather than patched.** This is the second failure after a
+prompt fix, so the writer charter's structure watch applies and it stops being
+prompt work. A gate holding both the payload and the output can match every
+named work against a link and a grade mechanically. Filed in `docs/ideas.md`
+for the engineer. Recorded as ban list 96, whose second ending is this filing.

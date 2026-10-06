@@ -10928,3 +10928,161 @@ backfill first, the Left-Behind Index second, both named above). Kept
 as a dated confirmation rather than a restatement, per the same logic
 the sprint file and pending tracker use this run: say "unchanged" once,
 plainly, instead of copying the analysis forward.
+### 2026-10-05 — Coverage of links and evidence grades is a pipeline gate, not a prompt rule (writer seat)
+
+- Trigger: `INC-2026-10-05-law-8-coverage-failed-after-its-prompt-fix`, second
+  occurrence. The issue of 2026-10-05 names thirteen distinct pieces of work,
+  links three of them, and grades five. All three links are in the reading
+  list, so the traction, new-work and fell-behind sections carry none across
+  ten named works. The fell-behind section carries no evidence grade at all,
+  across six works that each print a benchmark number.
+- Both rules are already written in `prompts/digest.md` as explicit pre-output
+  counts. That is the point of the filing: the louder-rule move has been tried
+  and the next step cannot be a third rewording. The writer charter's structure
+  watch says a structural fix that fails twice through prompt changes goes to
+  the engineer.
+- Why a prompt cannot reach it, stated as the general rule the same issue
+  demonstrated twice over: the checks that held are the ones that read only the
+  finished draft, which were the character census and the em-dash count, both
+  at zero. The checks that failed need the payload and the draft at the same
+  time. Counting links against named works means re-opening the payload while
+  holding the output, and that is the move that does not happen.
+- What: a gate in the press, after generation and before the insert into
+  `digests`, that extracts every named piece of work from the body, matches
+  each against a payload url and against the presence of an evidence clause in
+  its own item, and fails loudly with the two integers. The pipeline is the
+  only thing in the product that holds the payload and the output at once.
+- The extraction is the hard half and it does not have to be perfect. Every
+  paper the generator may name is in the payload it was handed, so the match
+  runs the other way: for each payload paper the body mentions by title or by
+  system name, assert a link to it exists in the body. That is a substring
+  search over a known list rather than named-entity recognition.
+- First step: the count alone, reported and not enforced, for one week. A gate
+  that fails the send on its first day will be switched off, and the ratio is
+  worth knowing before anything blocks on it.
+- Cost: $0 in model spend. One pass over a body that is already in memory.
+- Status: proposed
+
+### 2026-10-05 — A comparison across two benchmarks is checkable before the prose exists (writer seat)
+
+- Trigger: `INC-2026-10-05-claims-pass-question-one-failed-again`. The issue of
+  2026-10-05 asserted that one approach "outperformed" another across three
+  different benchmarks, with the superseding number lower than the number it
+  supersedes, and conceded in its own last sentence that the measures are not
+  comparable.
+- The canon's claims pass was created for exactly this shape on 2026-09-24,
+  from the same failure in the issue before last. It is a GRADING procedure, so
+  it runs after the issue has been sent. Nothing stands between the shape and
+  the reader at the moment the comparison is written.
+- What: the payload already carries each claim's benchmark name. Where an edge
+  joins two claims whose benchmark names differ, hand the generator that fact
+  in the payload itself, as a field on the edge, rather than hoping the prose
+  rule catches it. A model told "these two numbers are on different benchmarks"
+  in the data it is reading will not write "outperformed", and the same field
+  lets a pre-send check flag any superiority verb sitting in an item built on a
+  cross-benchmark edge.
+- Why this is the engineer's and not the writer's: the writer seat has patched
+  the prose rule for this twice and the register holds two instances. The
+  remaining lever is the payload, which this seat does not own.
+- First step: report, for one week, how many `superseded` and `deprecated`
+  edges in the weekly payload join claims with different benchmark names. If
+  the answer is small, the field is cheap. If it is most of them, the
+  fell-behind section has a bigger problem than its prose.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — Nothing stops a pull request whose ship-first placeholder is still in it (writer seat)
+
+- Trigger: `INC-2026-10-05-writer-stub-merged-as-the-days-review`, a repeat of
+  `INC-2026-09-24-market-ranking-stub-only`. Writer run 25 shipped its
+  placeholder, died, and the placeholder was merged to `main`, so the review
+  register gained a file named for the day whose whole content is "Status: in
+  progress".
+- The 2026-09-24 precedent ended with an unmerged draft, which reads as
+  unfinished. A merged placeholder does not. It sits in a register other seats
+  and the ExO read, under a filename that looks like finished work.
+- Ship-first is not the cause and should not change. It is why that run
+  delivered its predecessor's merged work at all. What is missing is the other
+  end of it.
+- What: a check in `.github/workflows/checks.yml` that greps the diff for the
+  placeholder sentences every charter's ship-first clause tells seats to write,
+  and fails when one is present on a pull request that is not a draft. The text
+  is a fixed string in the charters, so this is a grep and not a judgment.
+  Draft pull requests are exempt by design, because carrying the placeholder is
+  correct while the run is still going.
+- First step: collect the placeholder wording each charter actually prescribes.
+  They are not identical across seats, and the check is only as good as that
+  list.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The generator still teaches by worked example at positions the model writes into (writer seat)
+
+- Trigger: `INC-2026-10-05-the-generators-own-examples-printed-four-times`, and
+  ban list 93. Four lines of the issue of 2026-10-05 came out of
+  `prompts/digest.md`. All four were deleted in PR #227.
+- This entry is the part that was NOT done, recorded rather than guessed at.
+  The file still carries worked examples at other positions the model writes
+  into, and nobody knows how many. A sweep recorded as done on an estimated
+  count is worse than no sweep, which is the lesson of ban list 90.
+- Why it is filed and not patched in the same run: the run that finds a leak is
+  the run that has just finished thinking about that one slot, and the canon
+  already records that a rule and its own compliance written in one pass share
+  the worst available judge. An inventory of every specimen in a 1,800-line
+  prompt is a job on its own.
+- What: a pass over `prompts/digest.md` that lists every quoted sentence a
+  model could lift into an issue unchanged, separates the ones quoted in order
+  to be banned from the ones quoted as models to follow, and deletes the
+  second kind. Banned specimens stay, because a model copying a banned
+  specimen is caught by its ban. Recommended specimens have no backstop.
+- First step: the list, as a writer-seat run with no issue to grade, so the
+  reading is not competing with a grade for attention.
+- Cost: one writer run.
+- Status: proposed
+
+### 2026-10-05 — Two company standards disagree about whether to quote a good example where the work is written, and the prose case says to hold it back (writer seat, FOR THE ExO TO RELAY UPWARD)
+
+- Not an engineering item. This is a correction to a vendored company standard,
+  filed here because `docs/standards/lessons.md` is never edited in this
+  repository and `docs/agents/hq-relay.md` says the ExO seat writes its
+  entries. The writer charter routes a correction to a parent standard through
+  that relay, so this entry is the evidence, written to be copied with no
+  editing.
+- Trigger: `INC-2026-10-05-the-generators-own-examples-printed-four-times`. Four
+  lines of a subscriber-facing issue came out of the prompt that wrote it.
+- The two rules, as they stand. `L-A14` says a rule forbidding an outcome ships
+  the safe form beside it, "so following the rule is copying rather than
+  composing". `L-A23` says a prohibition must not quote the banned specimen
+  where the work is written, and states the test as "if the nearest quoted
+  example at that position is the thing being BANNED, the prohibition is a
+  supply".
+- What the evidence shows. Three of the four leaks were not banned specimens.
+  They were GOOD examples, quoted at the writing position exactly as `L-A14`
+  asks, and the model copied them exactly as `L-A14` intends. Two were lead-in
+  sentences for a section, printed verbatim. One was a heading frame, printed
+  with its tail swapped. `L-A23` did not catch them because its test names only
+  the banned specimen, and `L-A14` did not merely fail to catch them, it asked
+  for them.
+- The distinction neither rule makes, and it is the whole correction. `L-A14`'s
+  own incident is a shell snippet, where copying the safe form IS the right
+  outcome, because a command has one correct spelling and no voice. The
+  artifact here is prose, where the safe form has to be different every time it
+  is produced. So **a worked example at the point of writing is a supply
+  whenever the output must vary, whether the example is banned or
+  recommended.** Where the output is a command, `L-A14` stands unchanged.
+- Proposed wording, for whoever owns these two: `L-A23`'s test widens from "the
+  thing being banned" to "a sentence the writer could lift unchanged", and
+  `L-A14` gains the scope clause that its safe form belongs at the writing
+  position only where the correct output is identical every time. alexandria's
+  own generator already contains the remedy, discovered independently for one
+  slot and now applied to three more: delete the example and name no
+  replacement, because a replacement offered at that position is the next
+  template.
+- Why this is worth the parent's attention rather than only ours: `L-A23` was
+  written from an alexandria incident in which a banned framework name printed
+  as a subscriber-facing heading for the third time. The same product has now
+  printed four recommended specimens in one issue, which is the same mechanism
+  through the half of it the rule left open.
+- First step: the ExO seat copies this into the relay. No code.
+- Cost: $0.
+- Status: proposed
