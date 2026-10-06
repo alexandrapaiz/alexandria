@@ -12233,3 +12233,10 @@ that triggered it, per the charter.
   answer teaches the seat to skip it.
 - Cost: $0.
 - Status: proposed
+
+## 2026-10-06 — skill seat: agent-containment retrofit run (placeholder, ship-first)
+
+Placeholder commit, per the ship-first org rule (2026-09-18). This run's
+work is the ADR-38 retrofit of `skills/agent-containment`, which is also
+the file that has kept `main` red since 2026-10-05. Replaced by the real
+ledger entry before this PR leaves draft.
