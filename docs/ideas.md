@@ -804,6 +804,18 @@ build.
   2's item 1, per the product-first re-triage (incident 12, all-hands
   decision 11). Run it for real this sprint, filed in docs/evals/, not
   deferred again.
+- Grooming note (PM, 2026-10-05): reassigned from engineer to writer.
+  The owner read the week forty issue this morning and called reading
+  enjoyability urgent, and the chair's board item (`388df6c3`) hands the
+  writer the market-register half of this item directly: benchmark
+  against TLDR AI, Import AI, The Batch and the Morning Brew register,
+  not only TLDR AI, and rewrite this week's first section side by side
+  with the original so the owner can judge in one read. The
+  engineer-run half (docs/evals/2026-09-21-prose-benchmark.md, the
+  comped-friends scoring) stays filed as evidence but is no longer the
+  active path to "done" here. Status stays `proposed` because the
+  verdict is the owner's, per the ledger contract; see
+  docs/sprints/pending.md for the live tracking.
 
 ### 2026-09-18 — NEON_RO_URL has no usable value this run (skill agent)
 - Trigger: this run's step 1, picking a claim cluster. The PM's board
@@ -10849,3 +10861,70 @@ provenance reviewer exists to catch.
   version of it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-05 — Grooming pass: leverage order on the 9 accepted-not-built entries, 8 days from launch (PM, Monday ceremony)
+
+Not a new proposal. The accepted backlog ordered by leverage against
+docs/vision.md, for the owner's read rather than a status change (the
+building seat moves accepted to built, never this one):
+
+1. **Institution backfill, then regenerate and resend digest** (line
+   ~this file, 2026-09-17) — still unresolved as of today (99.2% of
+   papers show empty `institutions` per the writer seat's 2026-09-19
+   finding, unchanged through 2026-09-30). Every issue between now and
+   launch ships this gap live; highest leverage of the nine because it
+   is reader-visible every single week, not once.
+2. **The Left-Behind Index as a public page**, same accepted idea as
+   "Make 'left behind' the public flagship" (both 2026-09-18, already
+   cross-noted as one item) — carried unbuilt through sprint-2026-09-21
+   and sprint-2026-09-28, now the pick for sprint-2026-10-05. Gates two
+   already-drafted sales outreach notes and is the most direct lever on
+   the OKR benchmark's weakest axis (product surface, 1.3 at baseline,
+   2.0 at the 2026-09-24 check-in).
+3. **Reviewer panel harness (ADR-13)** — correctly split by the
+   2026-09-28 pass into three day-sized pieces; the third (merge
+   automation) stays blocked on the owner minting a PR-merge-scope
+   token (docs/sprints/pending.md). Not this week's engineering slot;
+   the token is the dependency, not a build.
+4. **Skill-extract prompt** and **harness-engineering's trigger fix**
+   — both read as already built by direct code check this run
+   (`prompts/skill-extract.md` exists and is in use; the current
+   `skills/harness-engineering/SKILL.md` description already carries
+   the fixed trigger language). Flagging for the skill seat to confirm
+   and flip to `built` on its next run, since this seat does not move
+   that status itself.
+5. **Member site auth and deploy** — Clerk and `vercel.json` are
+   present on main; likely already functionally done. Same ask: the
+   engineer or skill seat confirms on its next touch of this area and
+   flips the status.
+6. **Knowledge graph upgrade to industry standard** and **Corpus
+   expansion scoping spike (Q4)** — both correctly oversized for one
+   ledger line (a multi-week program and a three-piece bundle,
+   respectively). Each entry's own "first step" is already the right
+   day-sized slice to schedule; the rest should split into separate
+   items once that first step lands evidence to split against, not
+   before. Lower leverage than 1-2 this week per the 2026-09-28 note
+   (the corpus-stall finding already has its own fix in flight), so
+   neither is in this week's sprint.
+
+**Awaiting your verdict**, proposed entries dated 2026-09-21 or
+earlier (92 total as of today, most from the 2026-09-17/18 founding
+sessions): the full list is in this PR's description rather than
+duplicated here, grouped by theme so it reads as a set of decisions
+rather than a wall of lines. The single most actionable cluster is the
+masthead/recipe problem, re-filed four times (2026-09-19, 09-20, 09-26,
+09-30) with escalating urgency and no action, which needs one ruling
+rather than a fifth filing.
+
+### 2026-10-05 — Grooming re-check, scheduled ceremony pass: unchanged
+
+Not a new proposal. The scheduled Monday cron run (sixth PM pull
+request today) re-read this ledger end to end rather than skipping the
+step because an earlier pass today already groomed it. Nothing has
+changed since the grooming pass above: no new `proposed` entries, no
+owner verdicts landed on the 92 entries awaiting one, and the leverage
+order on the 9 accepted-not-built entries still holds (institution
+backfill first, the Left-Behind Index second, both named above). Kept
+as a dated confirmation rather than a restatement, per the same logic
+the sprint file and pending tracker use this run: say "unchanged" once,
+plainly, instead of copying the analysis forward.

@@ -9499,6 +9499,43 @@ they disagree. The org has now inferred this state by hand four times.
 table, for three prompts at once, which is the strongest evidence yet
 that it should be a command. Filed as a ledger entry the same day.
 
+## INC-2026-10-05-adr-39-duplicate — a second ADR number collision, same allocator, four days after the first one was recorded and still unfixed (2026-10-05, PM seat)
+
+**Recorded under the standing rule as a repeat of incident 29's class**
+(identifier collisions from two authors allocating the same next number
+off different snapshots of a file), the same class `INC-2026-10-01-adr-38-duplicate`
+already named, and governed by the same `docs/standards/lessons.md`
+L-A18 third clause.
+
+**What happened.** `docs/decisions.md` now contains two separate,
+unrelated decisions both headed "ADR-39": "ADR-39: Distill reads the
+whole paper, on Kimi, under three ceilings" (accepted 2026-09-30, the
+reading-bottleneck fix) and "ADR-39: Ursa evaluates and refines the
+skills" (accepted 2026-10-05, the Ursa consumer-signal interface). Both
+are live, cited decisions, found while this run read the file for its
+own reconciliation step. Neither has been renumbered.
+
+**Why it matters, beyond the ambiguity itself.** This is not a first
+occurrence read in isolation. `INC-2026-10-01-adr-38-duplicate` named
+the identical mechanism four days ago, for ADR-38, and this run found
+that entry's "ADR-38" collision is *still unfixed on `main` right now*:
+both "ADR-38: Skills close the loop with their consumers" and "ADR-38:
+The skill quality bar" still carry the same number. The allocator has
+now collided twice at consecutive numbers (38, then 39) with the first
+collision open for four days without a fix. A standing finding that
+repeats before its first instance is even resolved is itself the
+finding: recording the pattern has not yet produced a fix, which is a
+question for whoever owns `docs/standards/lessons.md` L-A18, not a new
+fact about this one pair of decisions.
+
+**Status.** Not fixed in this pull request. `docs/decisions.md` is the
+chair's register, not this seat's writable surface, same as the
+2026-10-01 entry. Per L-A18, the fix is to renumber the newer entry (the
+Ursa-evaluation decision) and record the old id in the survivor, never
+silently, and the same fix is still owed for the ADR-38 pair. Recorded
+here so the repeat is on the record the moment it was found, per the
+charter's binding rule on all seats.
+
 ## INC-2026-10-05-absence-asserted-from-an-unnormalised-id-join — the reading queue was held open on a blocker that the corpus contradicts, twice, by the seat that owns the queue (2026-10-05, research seat)
 
 **What happened.** The 2026-09-30 reading-queue drain note recorded that "all
