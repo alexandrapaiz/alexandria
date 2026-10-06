@@ -9868,6 +9868,23 @@ repository make the class recur, and neither has a guard:
    every suite CI invokes as a script. That is the ledger entry filed against
    this incident.
 
+**How long it was dead, exactly.** The orphaned test arrived in `70192df`
+("press: a repeated title carries the week's dates in the subject"), merged
+as **#199** on 2026-10-04 21:15 -0600. It appended fourteen lines to the end
+of `tests/test_email_template.py`, which is to say below the runner. So the
+guard was in the tree and out of effect from 2026-10-04 until this run on
+2026-10-06, and **the 2026-10-06 09:00 UTC W40 send happened inside that
+window** — the first Monday send after the guard for duplicate subjects was
+written was also a send that guard did not cover. The issue went out with a
+fresh title, so nothing was lost. The protection was absent rather than
+failed, which is the harder kind to notice.
+
+#199 was reviewed and merged by the owner. The placement is not visible in a
+diff: appending at the end of a test file is the correct thing to do in every
+other suite in this repository, and the fourteen added lines look right
+because they are right. Only the file's own structure makes them unreachable,
+and a reviewer reading a diff does not see the structure.
+
 **Blameless postmortem.** Nobody moved the runner. The file grew a section at
 a time, and the one time a test was appended below it, the author ran it under
 pytest and saw it pass. Both facts were true and the conclusion drawn from
