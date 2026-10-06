@@ -1024,6 +1024,42 @@ def build_messages(key: str, body: str, rows, addr: str,
         return [(row[0], subject, body, fallback) for row in rows]
 
 
+UNDEFINED_COLUMN = "42703"
+
+
+def active_recipients(conn):
+    """(email, name, unsubscribe_token) for everybody the press sends to.
+
+    One query, and a second one behind it that drops the token column. The
+    `subscribers.unsubscribe_token` column lands in its own migration
+    (db/schema.sql), and `pipeline/db_setup.py` applies that file on a deploy
+    the press does not wait for, so there is a window where this code is live
+    and the column is not. In that window the choice is between an issue that
+    goes out with the old mailto in its footer and no issue at all. It goes
+    out.
+
+    The rollback is the part that is not optional. This connection is not in
+    autocommit, so a failed statement leaves the transaction aborted, and
+    every query after it — including the one that reads the previous issue's
+    title — would fail with `InFailedSqlTransaction`. Probing for a column by
+    selecting it and then not rolling back would turn a missing footer link
+    into a missed send.
+    """
+    sql = "select email, name, unsubscribe_token from subscribers where status = 'active'"
+    try:
+        return conn.execute(sql).fetchall()
+    except Exception as exc:
+        if getattr(exc, "sqlstate", None) != UNDEFINED_COLUMN:
+            raise
+        conn.rollback()
+        print("subscribers.unsubscribe_token does not exist yet, so this "
+              "issue's footer carries the reply-to-unsubscribe mailto. Run "
+              "`modal run pipeline/db_setup.py` to apply db/schema.sql.")
+        return conn.execute(
+            "select email, name from subscribers where status = 'active'"
+        ).fetchall()
+
+
 def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -> str:
     """Email the digest to active subscribers (friends-and-family phase).
 
@@ -1042,9 +1078,7 @@ def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -
     pw = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
     if not addr or not pw:
         return "no gmail secret; email send skipped (digest is in the database)"
-    rows = conn.execute(
-        "select email, name from subscribers where status = 'active'"
-    ).fetchall()
+    rows = active_recipients(conn)
     if only:
         # a resend to named subscribers only (a new signup, a bounced address);
         # they must still be active rows, so the roll stays the one gate
