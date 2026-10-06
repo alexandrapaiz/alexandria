@@ -107,6 +107,7 @@ import pathlib
 import re
 import time
 from datetime import date, timedelta
+from urllib.parse import quote
 
 import modal
 
@@ -967,6 +968,29 @@ def legacy_html(body: str) -> str:
     )
 
 
+def unsubscribe_link(token, addr: str) -> str:
+    """The foot of the email: a one-click link when we have a token, the old
+    mailto when we do not.
+
+    Two reasons this degrades rather than raises. The `subscribers`
+    .unsubscribe_token column arrives in its own migration, so there is a
+    window where the press runs against a table that has no such column and
+    every row arrives with `token = None`. And a subscriber row written before
+    that migration backfills to a token, but a row written by an older code
+    path might not, and one missing token must cost that reader the old reply
+    rather than cost every reader the issue.
+
+    The token is opaque and per subscriber. It is never the address: an
+    unsubscribe link lives in a mail client forever, and a link with an
+    address in it lets anybody who knows an address remove that person.
+    """
+    if not token:
+        # The slot contract (site/emails/README.md) accepts a mailto, which is
+        # what every issue carried until this column existed.
+        return f"mailto:{addr}?subject=Unsubscribe"
+    return f"{email_render().site_base()}/unsubscribe?t={quote(str(token), safe='')}"
+
+
 def build_messages(key: str, body: str, rows, addr: str,
                    prior_subject: str = "") -> list[tuple[str, str, str, str]]:
     """(email, subject, plain_text, html) per recipient, and nothing sent.
@@ -976,25 +1000,28 @@ def build_messages(key: str, body: str, rows, addr: str,
     reason this function exists: docs/agents/press-rehearsal.md's rule is that
     a rehearsal renders the real thing, and a renderer only a live send can
     reach is a renderer nobody checks before it goes out.
+
+    `rows` is (email, name) or (email, name, unsubscribe_token). The short
+    shape is still accepted because `only=` resends and the rehearsal both
+    build rows of their own, and because the column is newer than this
+    function.
     """
     render = email_render()
     subject = render.disambiguate_subject(render.subject_for(body), prior_subject, key)
-    # No unsubscribe endpoint exists yet, and the slot contract
-    # (site/emails/README.md) accepts a mailto until one does.
-    unsubscribe = f"mailto:{addr}?subject=Unsubscribe"
 
     try:
         issue = render.parse_issue(body)
         messages = []
-        for email, _name in rows:
-            meta = render.build_meta(key, issue, email, unsubscribe)
+        for row in rows:
+            email, token = row[0], (row[2] if len(row) > 2 else None)
+            meta = render.build_meta(key, issue, email, unsubscribe_link(token, addr))
             messages.append((email, subject, body, render.render(issue, meta)))
         return messages
     except Exception as exc:
         print(f"designed template failed to render ({exc}); falling back to "
               "the plain email. The issue still goes out.")
         fallback = legacy_html(body)
-        return [(email, subject, body, fallback) for email, _name in rows]
+        return [(row[0], subject, body, fallback) for row in rows]
 
 
 def send_newsletter(conn, week: str, body: str, only: list[str] | None = None) -> str:
