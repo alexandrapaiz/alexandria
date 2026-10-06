@@ -234,6 +234,19 @@ create table if not exists subscribers (
     unsubscribed_at timestamptz
 );
 
+-- Where a subscriber came from: the page whose form they used, or null for
+-- the rows the owner added by hand before the site had a form. Added
+-- 2026-10-06 with the signup insert in site/lib/waitlist.js, which is the
+-- first thing that ever had an answer to put here.
+--
+-- The status check above still names exactly two states, and that is on
+-- purpose. site/lib/waitlist.js's own comment used to ask for a third,
+-- 'waitlist', so that a signup could land somewhere the press does not read.
+-- pipeline/weekly.py sends to `status = 'active'`, so such a row needs a human
+-- to come back and change it, which is the step sprint 2026-10-05's definition
+-- of done rules out in clause 1. A signup is active, comped, and done.
+alter table subscribers add column if not exists source text;
+
 -- ============ blackboard queues ============
 -- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
 -- view: an item is "claimed" when the worker's output row exists, so every job
