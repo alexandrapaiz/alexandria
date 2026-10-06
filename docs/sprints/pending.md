@@ -52,6 +52,62 @@ nobody has by then.
 a dated grooming note recording this reassignment; it has no sibling
 entry for the quality tier, which was never a ledger item.
 
+## Updated 2026-10-05 (message run): the distill job's timeout and the reading queue's cap, triaged for the engineer
+
+A handoff from `asc/chair:alexandria`. A manual `distill` run tonight was
+cancelled after five papers and about nineteen minutes, with the app
+reported stopped, so the chair asked whether the twenty-paper run the
+job advertises fits inside its own timeout, and handed both that
+question and the reading queue's drain rate to this seat to triage and
+pass to the engineer, since both are runtime machinery the chair does
+not edit.
+
+**Checked against the code directly, so the engineer starts from facts
+rather than the chair's estimate.**
+
+1. **The scheduled function already has a 90-minute timeout, and it is
+   sized for twenty papers on purpose.** `distill()` in
+   `pipeline/distill.py` runs on `schedule=modal.Cron("0 15 * * *")`
+   (line 993) with `timeout=5400` (line 998), and its own comment at
+   lines 984-987 does the arithmetic: "20 papers at 3 requests a minute
+   is about 20 minutes of calls, and the rest is the embedding sweep."
+   `MAX_PAPERS_PER_RUN = 20` (line 234) is the batch the schedule caps
+   itself at. The three other timeouts the chair saw in the same file
+   (300s/`preflight`, 900s/`rehearse`, 3600s/`bake_off`) all sit on
+   CLI-triggered gates, not on anything that runs on a schedule.
+2. **That leaves the manual run's failure unexplained, not explained
+   away.** Five papers in nineteen minutes is about 3.8 minutes a
+   paper, in line with the chair's own three-to-four-minute estimate,
+   and twenty papers at that rate is 60-80 minutes, inside the 90-minute
+   window on paper. So something stopped the run well short of its own
+   timeout. That is the engineer's question to answer from the actual
+   Modal run history (a stop command, an error, a rate limit, or a
+   second, shorter timeout this seat did not find), not something this
+   seat can diagnose from the repository alone.
+3. **The reading queue reader's cap checks out exactly against the
+   chair's count.** `MAX_PER_RUN = 6` in `pipeline/reading_queue.py`
+   (line 52), and `docs/research/reading-queue.md` holds 94 unchecked
+   items right now. 94 at 6 a run is 16 runs, matching the chair's
+   figure. Whether that cap should move, given the owner's request to
+   clear the queue tonight, is the engineer's call under its own
+   charter, not a build this seat can schedule.
+4. **One small, separate bug found while reading the same file.**
+   `pipeline/reading_queue.py`'s own module docstring (lines 15-17)
+   says "distill's `max_papers` is 30." The real constant
+   (`pipeline/distill.py:234`) is 20. Worth fixing in the same pass so
+   the comment stops contradicting the code next to it.
+
+**What this seat is handing the engineer, not deciding itself:** confirm
+why the manual run stopped at five papers against a 90-minute budget
+that should have covered twenty, size the schedule's timeout and batch
+if that investigation says it should change, decide whether the reading
+queue's six-a-run cap should move tonight, and fix the stale "30" in
+the docstring. None of this needs the owner's word first; it is sizing
+and debugging inside the engineer's own lane. Replied in first person on
+the board, item to follow.
+
+## Updated 2026-10-05 (Monday ceremony, in progress — placeholder commit to ship the draft PR first, full reconciliation follows in this same PR)
+
 ## Updated 2026-10-05, ~19:30 UTC (scheduled ceremony run): the send landed, the chain is now six deep, nothing else moved
 
 **This is the Monday cron**, not another message session: the sixth PM
