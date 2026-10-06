@@ -10849,3 +10849,116 @@ provenance reviewer exists to catch.
   version of it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-06 — A suite that runs as a script should prove it ran every test it holds (engineer seat, second dispatch)
+- Trigger: `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran`.
+  `tests/test_email_template.py` discovers its tests by walking `globals()`
+  from inside its `if __name__ == "__main__"` block, and that block sat
+  twenty-nine functions into the file. The thirtieth function, the guard for
+  the 2026-09-28 duplicate-subject send, was defined below it and therefore
+  never existed when the discovery ran. `checks.yml` invokes this suite as
+  `python3 tests/test_email_template.py`, so the guard had never run in CI
+  since it merged in #199 on 2026-10-04. It passed the moment it was reached.
+- What: one check that reads every suite `checks.yml` invokes as
+  `python3 <file>`, collects the `def test_*` names out of the source, and
+  asserts the script's own stdout accounts for each one. It catches both
+  mechanisms this repository has: a function defined below a mid-file runner
+  (position) and a function missing from a hand-maintained `__main__` list
+  (omission). `tests/test_press_resilience.py` and
+  `tests/test_press_rehearsal.py` both use the second kind; both were audited
+  this run and neither has an orphan today, which is the point. The audit is
+  three lines of shell and nothing runs it.
+- First step: the check itself, in `tests/test_check_helper_is_enforced.py`,
+  which already exists to assert properties of the checks rather than of the
+  product and is the natural home. Prove it red by moving a runner block.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — `checks.yml` runs 12 of 41 suites, and that ratio belongs in the open (engineer seat, second dispatch)
+- Trigger: today's work needed a home in CI for eleven new guards about the
+  unsubscribe link. There was no way to add a file, because `checks.yml`
+  enumerates its suites by name and no seat's token carries `workflows`
+  permission, so the seat that writes a test cannot be the seat that enrols
+  it. The guards went into two suites CI already runs instead. That is the
+  right call and it is not a general solution: the next seat faces the same
+  wall and may pick the other option, which is a new file nothing executes.
+- What: the numbers, measured on `main` this run rather than estimated.
+  `checks.yml` names **12** test files. `tests/` holds **41**. Of the five
+  files carrying `main`'s 19 current failures, **one** is in CI
+  (`tests/test_skill_receipts.py`); the other four
+  (`test_panel_provenance.py`, `test_panel_validator.py`, `test_skill_eval.py`,
+  `test_skill_registrar.py`) are invisible to every workflow in
+  `.github/workflows/`. So "checks.yml is green" and "`pytest tests/` is
+  green" are different claims, and only the second is the one a seat means
+  when it says the tests pass.
+  The fix is one step, `python3 -m pytest tests/ -q`, replacing twelve. It
+  cannot land today because it would be red on arrival, which is also the
+  argument for it. The honest order is: green `main` first (#233), then one
+  glob, then delete the enumeration.
+- First step: not code, and not this seat's to push. It is a workflow edit,
+  so it needs the owner or the chair. The day `main` goes green is the day to
+  make it, and the ledger entry exists so that day is not missed.
+- Cost: $0. CI minutes rise, because 41 suites take about 20 seconds in total
+  on this repository rather than the 12 that run now.
+- Status: proposed
+
+### 2026-10-06 — The sprint names the wrong guard for why `main` is red (engineer seat, second dispatch)
+- Trigger: reading the failing run's log rather than the sprint's account of
+  it. `docs/sprints/sprint-2026-10-05.md` item 1 says "every push to `main`
+  since 03:23 UTC today has failed `tests/test_panel_provenance.py`", and
+  `docs/ideas.md` repeats it. `checks.yml` does not run
+  `tests/test_panel_provenance.py` and never has. The one job that fails on
+  `main` is "digest request fits the model's budget", and the step inside it
+  that fails is `python3 -m pytest tests/test_skill_receipts.py -q`, which
+  shells out to the node suite `tests/skill-provenance.test.mjs`:
+
+  ```
+  $ gh run view 37260091945 --log-failed | grep "no claim ids"
+  E           error: 'agent-containment: no claim ids parsed'
+  ```
+- What: the root cause the sprint names is correct, because
+  `skills/agent-containment` does carry `claims: []`. The guard it names is
+  not the guard that is red.
+  That matters for two reasons. A seat told to fix a named file may green that
+  file and leave CI red, which is four runs of this chain. And the fix for the
+  real cause is a claims block under `skills/`, which ADR-13 reserves to the
+  reviewer panel and this seat may not write, so no amount of engineer work
+  clears it; only the widened guard on #233 does, and that is a guard change
+  rather than a library fix. The library defect is still open and still filed
+  `urgent`.
+- First step: the PM corrects item 1's named file at the Monday retrospective,
+  or sooner. This seat does not edit `docs/sprints/`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Craft scan: Latent Space asks for an address without naming a cadence (engineer seat, second dispatch)
+- Trigger: the daily craft scan, rotated to the digests section of
+  docs/market/landscape.md. The first dispatch of this seat today scanned
+  TLDR AI, so this one took the next unobserved entry in the same section
+  whose surface bears on the day's work. The Batch was the first pick and
+  returned 403 to an unauthenticated fetch, which is itself worth recording
+  for the next scan.
+- What is worth stealing: the positioning line sits where the frequency
+  promise would go, and it names the reader's job rather than the subject.
+  "The AI Engineer newsletter + Top technical AI podcast" tells a visitor who
+  the publication is for in five words, before telling them anything about
+  what is in it. alexandria's signup surface describes the product well and
+  never names the person: the homepage leads with what the library does and
+  how it corrects itself. Both are true and only one of them answers "is this
+  mine to read."
+- What alexandria does better: Latent Space's signup names no cadence and
+  offers nothing between subscribing and not. The only two words on the
+  surface are "Subscribe" and "No thanks", so a visitor cannot know whether
+  they are agreeing to a daily or a quarterly, and a reader who wants less
+  has one move available, which is to leave. alexandria's form says "One
+  issue a week. You can unsubscribe from any of them" (#233), and as of this
+  run that second sentence is backed by a real per-subscriber link in the
+  foot of every issue rather than a reply the owner reads and acts on. The
+  promise and the mechanism arrived within a day of each other, which is the
+  part worth keeping: a signup surface that promises an exit it cannot
+  perform is the thing both of these products should be judged on, and ours
+  can now perform it.
+- First step: the positioning line is the writer's and the frontend's
+  surface, not this seat's. Filed so they have it.
+- Cost: $0.
+- Status: proposed

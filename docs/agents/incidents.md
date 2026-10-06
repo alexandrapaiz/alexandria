@@ -9874,7 +9874,7 @@ as **#199** on 2026-10-04 21:15 -0600. It appended fourteen lines to the end
 of `tests/test_email_template.py`, which is to say below the runner. So the
 guard was in the tree and out of effect from 2026-10-04 until this run on
 2026-10-06, and **the 2026-10-06 09:00 UTC W40 send happened inside that
-window** — the first Monday send after the guard for duplicate subjects was
+window**. The first Monday send after the guard for duplicate subjects was
 written was also a send that guard did not cover. The issue went out with a
 fresh title, so nothing was lost. The protection was absent rather than
 failed, which is the harder kind to notice.
