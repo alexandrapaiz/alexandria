@@ -1,0 +1,135 @@
+# Does the press still fit, and does the suite still pass?
+#
+# This file REPLACES the live `.github/workflows/checks.yml`. It is not a new
+# workflow, so the apply is a force move rather than a plain one:
+#
+#     git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+#
+# Queued 2026-10-07 by the engineer seat, for item 17 of
+# docs/agents/pending-workflow-changes.md and
+# INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had. Read that item
+# for the full reasoning. The short version is two numbers measured by
+# `python3 tools/ci_coverage.py` against the live file: the suite holds 47 test
+# files and CI runs 14 of them. The 33 it does not run include
+# `tests/test_markdown.py`, which holds the finding where a crafted passage in
+# an arXiv paper reached the public archive as live HTML, and
+# `tests/test_accounts.py`, which holds the account and entitlement layer.
+#
+# What changed from the live file, and nothing else did.
+#
+# 1. The fourteen named pytest steps become one step that runs the suite.
+#    Every test file is then executed by construction, so the list cannot
+#    drift away from the directory again. This is the ledger entry of
+#    2026-09-30, "checks.yml should run the suite, not fourteen filenames".
+#
+# 2. Both `paths` lists are gone rather than extended. Item 17 asked for "the
+#    directories the suite covers" and that turned out to be all of them:
+#    instrumented with an audit hook on 2026-10-07, one full run of
+#    `pytest tests/` opened files under `.github/`, `db/`, `docs/`, `mcp/`,
+#    `pipeline/`, `prompts/`, `site/`, `skills/`, `tests/` and `tools/`, which
+#    is every directory in the repository. A filter listing all of them is a
+#    filter, and the five remaining entries are root files. So the honest form
+#    is no filter, and it deletes the `paths` halves of items 12 through 16 on
+#    that page at the same time. The cost is about half a minute of CI on pull
+#    requests that would previously have skipped the job, which is the price of
+#    a merge check whose colour means something on every pull request.
+#
+# 3. Node is installed, because seven of the test files are `*.test.mjs` and
+#    they reach pytest through a Python wrapper that skips when node is
+#    missing. A skip is not a pass, and without this the account, markdown,
+#    unsubscribe and waitlist halves would be named by the suite and still
+#    never run.
+#
+# `tests/test_ci_coverage.py` checks this file rather than trusting it: it
+# runs the same measurement against this directory and asserts that applying
+# it leaves no test file unexecuted. If a later edit here breaks that, the
+# pull request that makes the edit goes red.
+#
+# The original header, still true of the budget step below. Incident 22: an
+# editorial merge grew the digest generator's prompt past the model's
+# per-request token ceiling. Nothing in the repository noticed, and the next
+# scheduled run answered 413 with no issue written. This workflow is the thing
+# that notices, before a merge rather than after one. The writer seat's
+# editorial merges are inside that set on purpose: the laws are hers, the
+# budget is the engineer's, and this is where the two meet.
+name: checks
+
+# Both triggers, deliberately. A guard scoped to pull requests is not a guard
+# on a repository whose owner commits directly: two runtime changes went
+# straight to main while this file sat in workflows-pending with no push
+# trigger, and left two guards red for six days
+# (INC-2026-09-30-the-guard-went-red-and-nobody-read-it).
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  digest-budget:
+    name: the press fits, and the suite passes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The seven `*.test.mjs` files run under `node --test`, launched by their
+      # Python wrappers. No `npm install`: every one of them imports a single
+      # `site/lib/*-core.js` module by reading its source, precisely so that
+      # the suite needs no node_modules.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # tiktoken makes the count exact. budget.py falls back to a pessimistic
+      # chars-per-token ratio without it, so a failure to install would make
+      # the guard stricter, never laxer. It is also what turns ten skipped
+      # measurements in the suite into assertions.
+      - name: install the tokenizer
+        run: pip install "tiktoken==0.8.0"
+
+      - name: install the test dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: prompt + worst-case payload + output reservation vs the limit
+        run: python3 pipeline/budget.py
+
+      # `always()` on purpose, and it is the oldest comment in this file worth
+      # keeping: the budget step above has failed for a real reason before
+      # (incident 24, the 8,000 TPM ceiling), and a red build there must not
+      # hide whether everything else still works.
+      - name: the whole test suite
+        if: always()
+        run: python3 -m pytest tests/ -q
+
+      # Belt and braces, and item 17 explicitly allows it. These three files
+      # are the press's own guards and they are written to run as scripts as
+      # well as under pytest. `tests/conftest.py` has enforced the script-mode
+      # harness under pytest since 2026-09-30
+      # (INC-2026-09-30-check-harness-green-under-pytest), so the step above
+      # already holds them. Running them the other way costs under a second
+      # each and keeps them passing in the mode a person uses by hand.
+      - name: the press survives a provider that changed under it
+        if: always()
+        run: python3 tests/test_press_resilience.py
+
+      - name: the press sends the designed email
+        if: always()
+        run: python3 tests/test_email_template.py
+
+      - name: the rehearsal writes to a scratch row and sends to nobody
+        if: always()
+        run: python3 tests/test_press_rehearsal.py
+
+      # The measurement that justifies the shape of this file, printed on every
+      # run so the next reader does not have to take the header on trust.
+      - name: every test file in tests/ is executed by some workflow
+        if: always()
+        run: python3 tools/ci_coverage.py
