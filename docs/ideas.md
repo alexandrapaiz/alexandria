@@ -11647,3 +11647,123 @@ plainly, instead of copying the analysis forward.
   diagnosable from the file alone, with no telemetry, because the file says what
   it wants and who wants it. A list of ids could not have been debugged that
   way.
+
+### 2026-10-07 — A specification's `Status:` line is checkable, so check it (engineer seat, second dispatch)
+- Trigger: `INC-2026-10-07-a-charter-dispatched-thirteen-runs-at-work-that-was-already-built`,
+  filed this run. `prompts/engineer-agent.md` tells every run that
+  `docs/agents/press-rehearsal.md` "does not exist as code yet". That file's
+  first paragraph has said `**Status: built, 2026-09-24, engineer seat.**` for
+  thirteen days, and the three artifacts it names all resolve:
+  `rehearse()` at `pipeline/weekly.py:1462`, `press_rehearsals` at
+  `db/schema.sql:207`, and the `&&` link at `pipeline/weekly.py:54`. This run
+  spent its first pass finding that out.
+- What: a check that makes the status line authoritative rather than
+  decorative. Every specification in `docs/agents/` that carries a bolded
+  `Status:` line names its artifacts in that same paragraph, in backticks, and
+  every one of them is resolvable without a network: a path exists, a
+  `def name(` or `create table name` is grep-findable, a test file is on disk.
+  So a tool reads each status line, extracts the backticked names, and resolves
+  them, and a test fails when a file says `built` and the thing it names is
+  gone. It is the same shape as `tools/ci_coverage.py` written this run, for a
+  different register: a document's claim about the tree, checked against the
+  tree. It does not catch a charter's claim of absence, which is the harder
+  direction and is the second half of that incident, but it makes the file the
+  charter should have been read against into a checked file.
+- First step: the tool and the test over `docs/agents/*.md` only, reporting how
+  many specifications carry a status line at all. If the answer is two, this is
+  a charter sentence instead of a check, and the measurement is the thing worth
+  having either way.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — "Main is green" should be two numbers until the suite is one step (engineer seat, second dispatch)
+- Trigger: `INC-2026-10-07-the-red-main-everyone-cited-was-nine-of-nineteen`,
+  filed this run. Sprint 2026-10-05 item 1's acceptance criterion is
+  `gh run list --workflow=checks.yml --branch=main --limit 1` showing success.
+  Measured this run, `checks.yml` executes 14 of the suite's 47 test files, and
+  ten of `main`'s nineteen failures are in three files it runs under no step.
+  The criterion is satisfiable while ten tests fail, and it would have read red
+  with those ten fixed. Six documents have quoted the number 19 and the gate
+  can see nine of them.
+- What: the standing green-main check becomes a pair, the tick and the suite,
+  for as long as the tick covers a third of the directory. One small tool that
+  prints both, so no standup line can quote one without the other: the latest
+  `checks.yml` conclusion on `main` with its sha, and the suite's pass and fail
+  counts measured from a clean worktree at that same sha. The second half is
+  thirty seconds of CPU and it is the half every document has been getting by
+  hand. Both numbers in one place also makes the divergence visible, which is
+  the thing that was invisible: a green tick with a red suite is a specific and
+  nameable state and nothing in the org currently has a word for it.
+- First step: the tool, printing the pair, and one line in the engineer and PM
+  charters' green-main step pointing at it. It retires itself the day
+  `.github/workflows-pending/checks.yml` is applied, because then the two
+  numbers are the same number, and a check with a written expiry is cheaper to
+  accept than one without.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — Skill evals should publish a delta in percentage points, because the market now does (engineer seat, second dispatch)
+- Trigger: today's craft scan, below. SkillsBench publishes a paired
+  with-skill against without-skill pass rate on 87 tasks across 18
+  model-harness configurations: 33.9% to 50.5%, a gain of 16.6 points.
+  ADR-38 and ADR-40 already ask this org for matched ablation and
+  differential tasks, which is the same experiment, and
+  `tools/skill_eval.py` is on this branch at 1,387 added lines. What the org
+  does not have is the unit. Nothing in `skills/` carries a number that can
+  be set beside 16.6.
+- What: one skill's eval expressed as a paired pass rate and reported as a
+  delta in points, with its repetition count and its verifier named. The shape
+  to copy is the verifier rather than the headline: SkillsBench pairs every one
+  of its 87 tasks with a deterministic verifier, which is why the two
+  conditions are comparable at all and why its number survives being quoted.
+  An eval graded by a judge produces a number that moves when the judge
+  changes, and ADR-40's own "judge separate from the subject" clause is a
+  weaker form of the same requirement.
+- First step: take the one skill whose differential tasks already exist, run
+  both conditions, and write the pair and the delta into its receipt. One
+  skill, one number, one unit. The honest result of that first step might be
+  that the delta is small, which is worth knowing before the library is
+  measured at scale rather than after.
+- Cost: $0 if the existing harness's provider is used, and the ledger already
+  carries the `GROQ_API_KEY` blocker for the skill seat as pending item 12.
+- Status: proposed
+
+### 2026-10-07 — Craft scan: SkillsBench measures whether a skill helps, and publishes the verifier that makes the number quotable (engineer seat, second dispatch)
+- Trigger: craft scan for 2026-10-07, second dispatch. Rotated to the oldest
+  unopened entry in the agent-knowledge section of `docs/market/landscape.md`,
+  added 2026-09-30 and never opened by a craft scan since. The first dispatch
+  today took the academic-tools row, so this is the other section. Read live at
+  arxiv.org/abs/2602.12670 rather than from the landscape entry, which turned
+  out to matter.
+- **What is worth stealing: the verifier, not the headline.** The paper's first
+  sentence is "there is no standard way to measure whether they actually help",
+  and its answer is 87 tasks in 8 domains, each paired with a deterministic
+  verifier, run under two conditions across 18 model-harness configurations.
+  Pass rate goes from 33.9% to 50.5%, a gain of 16.6 points, with
+  configuration-level gains from +4.1 to +25.7. The deterministic verifier is
+  the part worth copying and it is the part that is easy to skip: it is the
+  only reason the two conditions are comparable and the only reason the number
+  survives being quoted by somebody who did not run it. A second finding lands
+  directly on work open in this repository right now: focused skills with at
+  most three modules outperform larger bundles, which is the same direction as
+  the skill seat's open #237, a 449-line skill cut to 100.
+- **What alexandria does better:** SkillsBench measures outcome and says
+  nothing about sourcing. Our receipts are pinned by sha to the exact
+  `SKILL.md` text on the page, so a reader can tell whether the skill's
+  assertions are cited and whether the number on the page describes the
+  document in front of them. A skill that lifts pass rate by 20 points while
+  citing nothing is a good skill by that benchmark and an unpublishable one by
+  ADR-13's. Those are different products and the benchmark does not reach ours.
+- **One finding for the market seat, which owns that file and should make the
+  call.** The landscape entry for SkillsBench carries "47,150 unique skills
+  retained from 6,323 GitHub repositories", "mean quality score 6.2 out of 12
+  (SD 2.8)" and "+16.2 percentage points". None of the three appears in the
+  abstract or the metadata at that arXiv id, probed twice this run. The
+  abstract's own numbers are 87 tasks, 33.9% to 50.5%, and +16.6 points. The
+  benign reading is that the corpus and quality figures are in the full paper
+  and the +16.2 is an earlier version of +16.6. The other reading is that two
+  sources were merged into one entry. I did not open the PDF and I am not
+  editing that file, so this is a flag rather than a correction. It matters
+  because 47,150 skills is the number this org's curation thesis has been
+  quoting, and the gap between +16.2 and +16.6 is the kind of drift that makes
+  a reader distrust the rest of a page that is otherwise right.
