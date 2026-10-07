@@ -519,6 +519,66 @@ def test_the_per_run_limit_now_spends_itself_on_the_blocked_skill():
         == ["skills/agent-containment", "skills/agent-containment"]
 
 
+PROSE_ASKERS = """# Reading queue
+
+- [ ] arxiv:2602.12670 — older, from a skill that already cites claims — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2609.40115 — RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2606.22504 — stop authority — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] arxiv:2609.08371 — from a draft that cites nothing — asked by skills/agent-containment — 2026-09-30
+"""
+
+
+def test_a_line_the_chair_signed_is_not_a_blocked_skills_request():
+    """The defect this fixture is named for, and it had 46 lines on the real file.
+
+    `ASKED_BY` takes one whitespace token, which is right for display and wrong
+    for a decision. The chair signs lines "asked by the chair (owner: ...)" and
+    the research seat signs them "asked by the research seat's L-R1 check", and
+    both read as the token `the`. `the` is outside every `sourced` set, so the
+    grouping read all of them as skills that cannot cite a claim and lifted them
+    over the one skill that actually could not.
+
+    The queue is the draft's only route out of citing nothing, so a phantom
+    blocked group in front of it is the starvation the ordering was built to end,
+    reintroduced by the parser three lines above the ordering.
+    """
+    got = rq.pending(PROSE_ASKERS, limit=None, sourced=SOURCED)
+    assert [i.paper_id for i in got] == [
+        "arxiv:2609.08371",     # the only line a blocked skill signed
+        "arxiv:2602.12670", "arxiv:2609.40115", "arxiv:2606.22504",
+    ], [(i.paper_id, i.asked_by, i.asking_skill) for i in got]
+
+
+def test_the_asker_shown_is_the_text_and_the_asker_obeyed_is_the_slug():
+    """Two fields because they answer two questions, and only one may order.
+
+    `asked_by` is what the line says, so `resolve`'s log can name the chair. Any
+    decision reads `asking_skill`, which is empty unless the line names a skill
+    in the format the file's own header documents.
+    """
+    by_id = {i.paper_id: i for i in rq.parse(PROSE_ASKERS)}
+    chair = by_id["arxiv:2609.40115"]
+    assert chair.asked_by == "the"
+    assert chair.asking_skill == ""
+    skill = by_id["arxiv:2609.08371"]
+    assert skill.asked_by == "skills/agent-containment"
+    assert skill.asking_skill == "skills/agent-containment"
+
+
+def test_no_line_on_the_live_file_names_a_skill_the_parser_cannot_read():
+    """Against the real queue, because the fixture above cannot go stale and it can.
+
+    This is the assertion that would have failed on 2026-10-05, the day the
+    ordering shipped. It fails again if a seat invents a third way to sign a line
+    that happens to start with `skills/` and does not parse.
+    """
+    text = rq.read_file(ROOT / rq.QUEUE_PATH)
+    assert text, "the live queue is unreadable"
+    bad = [i.raw[:90] for i in rq.parse(text)
+           if i.asked_by.startswith("skills/") and not i.asking_skill]
+    assert not bad, bad
+
+
 def test_an_unsigned_line_is_not_treated_as_a_blocked_skills_request():
     """A line nobody signed is not evidence that a skill is stuck on it."""
     got = rq.pending(ORDERED, limit=None, sourced=SOURCED)
@@ -562,35 +622,48 @@ def test_a_database_that_cannot_answer_is_not_fatal():
     assert rq.skills_with_claims(Broken()) == set()
 
 
-def test_the_live_queue_serves_the_containment_papers_on_the_next_run():
+def test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run():
     """The verification the directive asked for, against the real file.
 
-    `skills/agent-containment` is a draft with `claims: []` that cites six
-    papers, and five of its requests are unchecked lines in the live queue.
-    Before this ordering, the next run took six lines and none of them were
-    its; this asserts they now come first.
+    This used to name `skills/agent-containment` and assert it was still a draft
+    with `claims: []`. That made the test fail the moment the draft was fixed,
+    which is the queue's own purpose being served: on 2026-10-06 the skill seat
+    filled those claim ids in and this assertion went red on a library that had
+    just got better. A test that forbids the outcome it was written to produce is
+    a tripwire aimed at its own side.
+
+    So the slug is gone and the rule is what is asserted. Whichever skill in the
+    library cites no claims, its queue lines come first; and when every skill
+    cites claims, the live file has nothing for the rule to promote and must
+    degrade to file order rather than to some other order nobody chose. Both
+    states are real, both are asserted, and neither is skipped.
     """
     import re
 
     text = rq.read_file(ROOT / rq.QUEUE_PATH)
-    sourced = set()
+    sourced, unsourced = set(), set()
     for skill in sorted((ROOT / "skills").glob("*/SKILL.md")):
         cited = re.search(r"claims:\s*\[([^\]]*)\]", skill.read_text())
-        if cited and cited.group(1).strip():
-            sourced.add(f"skills/{skill.parent.name}")
-    assert "skills/agent-containment" not in sourced, (
-        "the draft gained claim ids, so this test has served its purpose and "
-        "the next reader should delete it")
+        slug = f"skills/{skill.parent.name}"
+        (sourced if cited and cited.group(1).strip() else unsourced).add(slug)
+    assert sourced, "no skill in the library cites a claim id, so `sourced` is empty"
+
     served = rq.pending(text, sourced=sourced)
     assert served, "the live queue is empty"
-    # Asserted as "its lines are in the batch" rather than "its lines are the
-    # batch", because the research seat's run of 2026-10-05 (PR #210) appends
-    # more containment papers to this same file. Another blocked skill
-    # legitimately sharing the batch is the rule working, not a regression.
-    assert any(i.asked_by == "skills/agent-containment" for i in served), \
-        [i.asked_by for i in served]
-    # The thing that was actually broken: not one of its lines was reachable.
     before = rq.pending(text)
-    assert not any(i.asked_by == "skills/agent-containment" for i in before), (
-        "the old order already reached this skill, so this test is no longer "
-        "measuring the defect it was written for")
+
+    asking = {i.asked_by.rstrip("/") for i in rq.parse(text)
+              if not i.checked and i.asked_by} & unsourced
+    if not asking:
+        # Every skill with a line in the queue cites claims. The grouping has
+        # nothing to lift, so it must change nothing at all.
+        assert [i.paper_id for i in served] == [i.paper_id for i in before], (
+            "no skill in the queue is blocked, so the order must be file order")
+        return
+
+    assert any(i.asked_by.rstrip("/") in asking for i in served), \
+        [i.asked_by for i in served]
+    # The thing that was actually broken: not one of their lines was reachable.
+    assert not any(i.asked_by.rstrip("/") in asking for i in before), (
+        "the old order already reached every blocked skill, so this test is no "
+        "longer measuring the defect it was written for")

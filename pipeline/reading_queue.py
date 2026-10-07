@@ -45,6 +45,17 @@ ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7
                    re.IGNORECASE)
 ASKED_BY = re.compile(r"asked by\s+(?P<who>\S+)")
 
+# The asker, when the asker is a skill. `ASKED_BY` above takes one whitespace
+# token for display, which is right for display and wrong for any decision: the
+# chair signs lines "asked by the chair (owner: ...)" and the research seat signs
+# them "asked by the research seat's L-R1 check", and both of those read as the
+# single token `the`. On 2026-10-05 that token became load-bearing, because
+# `pending` started treating an asker outside `sourced` as a blocked skill, and
+# `the` is outside every set. The documented format is the only thing that may
+# answer "which skill is stuck on this line", so this pattern matches that format
+# and nothing else.
+SKILL_ASKER = re.compile(r"asked by\s+(?P<slug>skills/[A-Za-z0-9_-]+)")
+
 # How many queue lines one run will take. The queue is drained by two seats and
 # refilled by one, so a backlog is possible: twelve lines landed on 2026-09-26
 # from a single skill run. Six per day drains that in two days without ever
@@ -62,9 +73,13 @@ class Item(NamedTuple):
     arxiv_id: str          # 2602.12670
     paper_id: str          # arxiv:2602.12670, the key in `papers`
     checked: bool
-    asked_by: str          # skills/<slug>, or "" when the line does not say
+    asked_by: str          # the asker as written, for display: "skills/x", "the"
     line_no: int
     raw: str
+    # The skill this line is blocked on, or "" when the asker is not a skill.
+    # A seat, a person or an unsigned line all give "", because none of them is
+    # a skill waiting on a read. Only this field may decide the order.
+    asking_skill: str = ""
 
 
 def parse(text: str) -> list[Item]:
@@ -79,6 +94,7 @@ def parse(text: str) -> list[Item]:
             continue  # a question for the research seat, not a paper to fetch
         arxiv_id = found.group("id")
         who = ASKED_BY.search(m.group("body"))
+        slug = SKILL_ASKER.search(m.group("body"))
         items.append(Item(
             arxiv_id=arxiv_id,
             paper_id=f"arxiv:{arxiv_id}",
@@ -86,6 +102,7 @@ def parse(text: str) -> list[Item]:
             asked_by=who.group("who").rstrip(",.") if who else "",
             line_no=n,
             raw=line.strip(),
+            asking_skill=slug.group("slug").rstrip("/") if slug else "",
         ))
     return items
 
@@ -152,9 +169,11 @@ def pending(text: str, limit: int | None = MAX_PER_RUN,
         if item.checked or item.paper_id in seen:
             continue
         seen.add(item.paper_id)
-        # No `asked by` is not a blocked skill's request; it is a line nobody
-        # signed, and it waits its turn.
-        if sourced is not None and item.asked_by and item.asked_by.rstrip("/") not in sourced:
+        # Three kinds of line wait their turn here, and they are one kind to this
+        # branch: a line nobody signed, a line a seat or the chair signed, and a
+        # line a skill that already cites claims signed. None of them is a skill
+        # that cannot cite a claim, which is the only thing the group is for.
+        if sourced is not None and item.asking_skill and item.asking_skill not in sourced:
             blocked.append(item)
         else:
             rest.append(item)
