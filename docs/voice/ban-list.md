@@ -1832,3 +1832,13 @@ gap that the same collision had left empty (incident 25).
     generator. docs/voice/canon.md's worked example under law 14 carries a bare
     id as well, and it is reported rather than struck, because that section
     changes only by the owner's ruling and the canon is never sent to the model.
+    Gated the same day, because L-A22 says a rule enforced by a sentence is
+    enforced at the reliability of a reading. `docs/voice/check_voice.py links`
+    prints each link's path segment and identifier apart and fails when one
+    artifact disagrees with itself about the version suffix. It fails the print
+    of 2026-10-05 and passes a consistent fixture.
+    LANDED docs/voice/check_voice.py: "one artifact disagrees with itself about the version"
+    The gate's blind spot is in its own docstring rather than in a later grade:
+    an artifact that drops the suffix from EVERY link passes, 2026-W39 is that
+    case, and the stronger comparison against `papers.url` is undecidable while
+    394 groups of rows hold one paper under several ids.
