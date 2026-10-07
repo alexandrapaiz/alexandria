@@ -10053,3 +10053,107 @@ pointed at the stored `digests` row the canon names as an artifact to grade.
 The generator gains the definition's negative half at the shape gate, naming
 the bold lead and the standing lines as the two things that are not shapes.
 Recorded as ban list 98.
+
+## INC-2026-10-07-law-8-form-graded-by-prefix — two grades cleared a link's form by checking the part of the url the rule names, not the part that reaches the paper (2026-10-07, writer seat)
+
+**This is a repeat of `INC-2026-10-03-law-12-graded-by-grep`, itself the fourth
+occurrence of a chain running back through
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Fifth occurrence of the
+class, same seat, same register, recorded at the moment it repeated per the
+standing rule at the top of this file.**
+
+**What happened.** Canon law 8 says links go to the full text. The grades of
+2026-10-05 and 2026-10-06 split that law correctly into coverage and form, did
+the hard half right, and got the easy half wrong. On coverage they counted
+thirteen named pieces of work against three links and failed the law, which is
+the two-integer verdict the canon asks for and it was done properly. On form
+both recorded a pass, in these words: "Form is clean: three of three are
+`arxiv.org/html/`."
+
+Three of three do begin with `arxiv.org/html/`. The three links are
+`html/2609.29808v1`, `html/2610.01787v1` and `html/2609.22086`. Two carry the
+version suffix the payload handed over and the third does not, and the paper
+behind the third is held in `papers` as both `arxiv:2609.22086` and
+`arxiv:2609.22086v1`. The generator's one string transformation had been taught
+from an example whose input carried no version, against a corpus where 6,994 of
+7,820 arXiv urls do, so the model split the difference across one issue. That is
+ban list 100 and it is fixed in the generator on this branch.
+
+**Why the verdict came out wrong, which is the reusable part and is new to this
+chain.** The four prior occurrences were a violation that could not be quoted, a
+law asserting coverage that needed a count, a law with two clauses under one
+number, and a law whose instrument was narrower than the law and said so. This
+one is different and plainer: the rule and the reader care about two different
+substrings of the same string. Law 8's own text names a prefix, `arxiv.org/html/`,
+because that is the part of the url the rule is about. What decides whether a
+reader reaches the paper is the identifier, which the rule never mentions because
+it is supposed to be copied rather than chosen. So a grade reading the law
+literally checks the half the law talks about, and the half it does not talk
+about is the half that can be wrong. A prefix is also the part a glance can
+verify, and "three of three" is a satisfying sentence to write.
+
+**The procedure change, and it is one line in the canon's pass 3.** Where a rule
+transforms a value the payload supplied, the verdict compares the output to that
+input character by character, and never to the pattern the rule describes. The
+pattern is what the rule had to say in order to be written down. The input is
+what the reader is owed. Added to `docs/voice/canon.md` is not available to this
+seat for the laws section, so it goes in ban list 100's general form and in this
+entry, and the canon change is proposed rather than made.
+
+**Not caught by the instrument either, and that is worth recording.**
+`docs/voice/check_voice.py measure` prints a link count and the links are
+deduplicated into a set, so it reports "links 3" and has no opinion about what
+any of them point at. The one tool this seat has for taking figures off an
+artifact measures link quantity and no link property. Filed as the second half
+of the ledger entry of 2026-10-07.
+
+## INC-2026-10-07-the-editors-own-prose-broke-canon-law-one-again — third occurrence, in three files at once, and the first one outside the review (2026-10-07, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`'s sibling,
+`INC-2026-10-01-the-editors-own-review-broke-canon-law-one`, which was itself
+the second occurrence. Third occurrence, same law, same seat. Recorded per the
+standing rule at the top of this file, which carries no exceptions.**
+
+**What happened.** The run of 2026-10-07 graded canon law 1 on the newest issue
+and printed all eight of its semicolon joins as evidence, with the note that
+five of them were holding an evidence grade together. The same run then wrote
+three semicolon joins of its own:
+
+```
+docs/voice/ban-list.md   "...the part a glance can verify; the identifier is..."
+docs/agents/incidents.md "...in order to be written down; the input is what..."
+docs/ideas.md            "...already fixed on the same branch; this entry is..."
+```
+
+All three were struck before `gh pr ready`, by the end-of-run sweep the
+2026-10-01 entry made law. That entry says two runs of evidence mean the sweep
+finds something every time. It is three runs now, and the prediction held.
+
+**What is new, and it is the reason this is worth an entry rather than a line in
+the review.** The two prior occurrences were both in the review's body prose,
+and the 2026-10-01 fix is written in those terms: it sweeps "every file this
+seat wrote in the run", but its diagnosis is about the compressed aphorism a
+review reaches for when summing a verdict up. None of today's three is in the
+review. They are in a ban-list entry, an incident entry and a ledger entry, and
+all three are the same sentence shape the prior entry identified: a balanced
+pair contrasting what a rule says with what it misses. So the construction, not
+the file, is what carries the defect, and this seat writes that construction
+most often in the registers rather than in the grade.
+
+The sharper version, because it is the same failure the run's own lead finding
+is about. Today's grade found that the generator's one string transformation was
+taught from its minority case, and the lesson written into ban list 100 is to
+check an example against the distribution of its real input. The 2026-10-01 fix
+was written from two specimens in one file and generalised to that file's kind.
+Three of three of today's specimens fall outside it. An incident entry is a
+worked example too, and it was drawn from its own minority case.
+
+**The fix, and it is one word in an existing step rather than a new step.** The
+sweep already covers every file the run wrote, so nothing was missed and no
+defect reached the owner. What is corrected here is the diagnosis attached to
+it: the sentence to distrust is the balanced contrast wherever it appears, and
+the register files are where this seat writes most of them. Proposed for the
+charter's shipping section through the ExO relay, because this seat does not
+edit charters.

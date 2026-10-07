@@ -1817,7 +1817,7 @@ gap that the same collision had left empty (incident 25).
     reviews graded this law's form and both wrote that the form was clean:
     "three of three are `arxiv.org/html/`". That is a check on the prefix, and
     law 8's subject is the identifier. A link's prefix is the part the rule
-    talks about and the part a glance can verify; the identifier is the part
+    talks about and the part a glance can verify. The identifier is the part
     that decides whether the reader reaches the paper. So the general form, and
     it applies to any register holding an example of a transformation: grade
     the example against the DISTRIBUTION of its real input, not against its own
