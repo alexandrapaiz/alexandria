@@ -1296,8 +1296,18 @@ a {
   word-break: break-word;
 }
 
+/* Three fixed tracks rather than a flex row, so version, status and source
+   count each hold one column down the whole list. As a flex row the cluster
+   was right-anchored and every field floated against the width of its own
+   text: measured across 53 rows the version alone started at 14 different x
+   positions spanning 105px, which at this length reads as a ragged edge
+   rather than as a table. The widths are the longest string each field can
+   hold, measured on the page (18, 94 and 89px for V1, DEPRECATED and
+   10 SOURCES), rounded up onto the spacing scale with room for a two-digit
+   version and a three-digit count. */
 .skill-line-meta {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px 96px 96px;
   gap: 12px;
   font-size: 12px;
   text-transform: uppercase;
@@ -1511,6 +1521,29 @@ a {
 @media (max-width: 560px) {
   .skill-receipts > div {
     grid-template-columns: 1fr;
+  }
+
+  /* On a phone the row's two halves compete for 342px and the metadata wins,
+     because it is `nowrap` and the name is not. Measured at 390px across the
+     library at volume: the meta cluster took 109 to 205px, leaving the name
+     89 to 136px, so a kebab-case name broke to three, four and in one case
+     seven lines with the hyphen leading the line, and rows ran 101 to 177px
+     tall against 50 for a row that fits. The identifier is the one thing the
+     row exists to carry, so it gets the width and the metadata goes beneath
+     it. The marker stays anchored to the first line, which is already how
+     .skill-line::before is written. */
+  .skill-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Natural widths once it has a line of its own: the three fields together
+     need about 225px of the 310 available, so the tracks are not needed and
+     fixing them here would only strand whitespace. */
+  .skill-line-meta {
+    display: flex;
+    gap: 12px;
   }
 }
 

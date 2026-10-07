@@ -106,9 +106,13 @@ function SkillRow({ skill, entitled }) {
     <details className="skill-row">
       <summary className="skill-line">
         <span className="skill-line-name">{s.name}</span>
+        {/* Three fields, three cells, always. The status cell renders empty
+            for an active skill rather than being dropped, because the cells
+            are grid tracks: a missing cell slides the two beside it and the
+            columns stop lining up down the list. */}
         <span className="skill-line-meta">
           <span>v{s.version}</span>
-          {s.status && s.status !== "active" && <span>{s.status}</span>}
+          <span>{s.status && s.status !== "active" ? s.status : ""}</span>
           <span>
             {s.papers.length} {s.papers.length === 1 ? "source" : "sources"}
           </span>
