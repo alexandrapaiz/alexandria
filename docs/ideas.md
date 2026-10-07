@@ -11548,3 +11548,102 @@ plainly, instead of copying the analysis forward.
   surface, not this seat's. Filed so they have it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-07 — The reading queue has no way to say "not this" (engineer seat)
+- Trigger: today's craft scan, below. Semantic Scholar's recommendations
+  endpoint takes two lists, `positivePaperIds` and `negativePaperIds`, and the
+  second one measurably changes the answer: adding one paper to the negative
+  list dropped one of four results and reordered the rest, probed live this run.
+  `docs/research/reading-queue.md` has one list. Every signal on it is positive.
+- What: a line on the queue can be struck as read, and that is the only way it
+  can leave. There is no way for a seat to say a request was wrong, so a bad ask
+  costs a distill run, the claims land in the corpus, and nothing records that
+  the ask should not have been made. Three facts make this worse than it sounds.
+  The queue now jumps a blocked skill's lines to the front, so a wrong ask from
+  a blocked skill is read first. `MAX_PER_RUN` is 6 against 99 pending lines, so
+  a wrong ask displaces a right one rather than merely adding noise. And the
+  chair signs lines directly, so the queue carries requests nobody on the seat
+  rota can judge. A struck-with-a-reason mark, `- [-]` with the reason in the
+  same slot the strike-through comment already uses, gives `pending` a third
+  state and gives the research seat somewhere to put a judgment.
+- First step: a `declined` state in `pipeline/reading_queue.py::parse`, excluded
+  from `pending` exactly as `checked` is, plus the count in the `--order`
+  output. One commit, no schema, no model call. The harder half is what a
+  decline should teach the triage prompt, and that stays out of the first step
+  deliberately.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — An assertion about a defect says what it asserts once the defect is gone (engineer seat)
+- Trigger: `INC-2026-10-07-a-test-pinned-the-defect-it-was-written-to-end`,
+  filed this run. Two assertions in two days went red because the library
+  improved: a pinned claim id that an ADR-38 revision correctly retired, and a
+  pinned claim-less draft that the skill seat correctly fixed. The second was
+  written fifteen hours before the same seat diagnosed the first and wrote the
+  general lesson into a docstring, so the diagnosis and an unfixed instance of
+  it shipped in one branch.
+- What: this is already company law. L-E11's second clause in
+  `docs/standards/lessons.md` says a tripwire that fires hardest on the best
+  runs is worse than no tripwire. It was harvested from a workflow tripwire, so
+  every example under it is machinery, and nothing carried it to an assertion in
+  a test. The gap is not the rule, it is the reach. A linter over `tests/` cannot
+  close it, because nothing can tell a deliberate pin from an accidental one and
+  the false positives would be the whole file. What can close it is one sentence
+  in the engineer charter's register step, next to the machinery diff: an
+  assertion whose subject is a specific defect states, in its own docstring,
+  what it asserts once that defect is gone, and "delete me" is not an answer
+  because nobody is reading.
+- First step: the owner decides whether the clause goes in the charter, since
+  charters are edited only by her merge. If it does, the same run sweeps the
+  suites named in `checks.yml` for assertions pinned to a current defect, which
+  is a grep for the known-bad slugs and claim ids in `docs/agents/incidents.md`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — A field that becomes load-bearing needs its parser read again (engineer seat)
+- Trigger: this run's break-fix. `asked_by` in `pipeline/reading_queue.py` was a
+  display string for a month, parsed as one whitespace token after "asked by",
+  which is correct for printing a log line. On 2026-10-05 `pending` started
+  deciding the order from it, and nothing revisited the parser. The chair signs
+  lines "asked by the chair (owner: ...)" and the research seat signs them
+  "asked by the research seat's L-R1 check", so 46 of 99 lines read as a skill
+  named `the` and became a phantom blocked group ahead of the real one.
+- What: distinct from "The consumer list for a law that changes" (2026-10-05,
+  above), which asks who else asserts a predicate when the predicate moves. This
+  one is the opposite direction: a value that nothing decided from acquires a
+  decision, and the question is whether the thing that produced it was ever
+  built to be trusted that way. The shape is recognisable in a diff. A field
+  read only by a `print` or a log acquires a comparison, a dict key, a sort key
+  or a set membership test. That is a one-line grep over a diff and it is a real
+  class, because a lenient parser is correct for display and wrong for a
+  decision, every time, and the leniency is invisible until the first value that
+  exercises it.
+- First step: run the grep over the last thirty merged pull requests touching
+  `pipeline/` and count how many introduce a comparison on a field that had none
+  before. If the number is small the answer is a charter sentence; if it is
+  large the answer is a check. Measure before building either.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — Craft scan: Semantic Scholar's recommender takes a negative list, and ours cannot be told no (engineer seat)
+- Trigger: craft scan for 2026-10-07, rotated to the academic-tools row of
+  `docs/market/landscape.md` whose last observation was 2026-09-18, the oldest
+  on that row. Picked over the newsletter rows because this run spent its day on
+  queue ordering, and the question "what gets read next" is the one this product
+  answers for itself every morning. Probed live rather than read about.
+- What is worth stealing: the recommendations API takes two lists and the
+  negative one works. `POST /recommendations/v1/papers` with the same two
+  positives and one added negative returned a different four papers in a
+  different order, measured this run. So the instrument a reader tunes is not
+  only "more like this", it is "more like this and less like that", and the
+  second half is where a corpus gets its shape. alexandria's reading queue is
+  all positives and its only exit is "read". Filed above as its own entry.
+- What alexandria does better: every line in our queue carries who asked and
+  why, in prose, on the line. Semantic Scholar's two lists are anonymous paper
+  ids with no reason attached, so nothing downstream can audit whether a
+  recommendation served the person who wanted it. Today's bug is the evidence
+  for that strength rather than against it: the line read "asked by the chair
+  (owner: make sure the corpus includes RLVR)", and a parse defect was
+  diagnosable from the file alone, with no telemetry, because the file says what
+  it wants and who wants it. A list of ids could not have been debugged that
+  way.
