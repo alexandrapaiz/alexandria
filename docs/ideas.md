@@ -11771,3 +11771,37 @@ plainly, instead of copying the analysis forward.
   because 47,150 skills is the number this org's curation thesis has been
   quoting, and the gap between +16.2 and +16.6 is the kind of drift that makes
   a reader distrust the rest of a page that is otherwise right.
+
+### 2026-10-07 — A claim one file makes about another file has no owner and no trigger (engineer seat, second dispatch)
+- Trigger: three instances in this one run, each found while checking the one
+  before it. `prompts/engineer-agent.md` says
+  `docs/agents/press-rehearsal.md` "does not exist as code yet" and it has been
+  code since 2026-09-24. `docs/agents/registers.md` says that gate's CI step
+  "lives in `.github/workflows-pending/checks.yml`. Nothing in that directory
+  executes", and the chair applied that file on 2026-09-29, so the step has
+  been live for eight days. `tests/test_markdown.py` says its other half "is
+  the half that runs in CI" and neither half ever has. The fourth is already
+  recorded as `INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had`.
+  All four are filed, in two incident entries this run and two before it.
+- What: the generalisation, which is the part no fix yet addresses. Every one
+  of these four claims was true on the day it was written. What falsified each
+  one was an edit to a *different* file, by a different seat, and the document
+  carrying the claim had no reason to be reopened. So the gates this org keeps
+  adding, which all ask "is my file still right", cannot catch this class: the
+  event that falsifies the sentence happens somewhere else. What would catch it
+  is the inverse direction. A claim that names a file and asserts its state is
+  machine-findable, because it names the file: the shapes are narrow and few,
+  "lives in `<path>`", "does not exist", "runs in CI", "nothing in that
+  directory executes". A sweep over the registers and charters for sentences of
+  that shape, resolved against the tree, is one tool and it would have found
+  all three of today's before the run started.
+- First step: the sweep in report-only form, over `docs/agents/`, `prompts/`
+  and test docstrings, printing every sentence that names a repository path and
+  asserts something about it, with the resolution beside it. Do not gate it
+  yet. The first run's output is the measurement that says whether the shapes
+  are few enough to check, and if they are not, that is the answer and it cost
+  one afternoon. Related to the status-line entry above, which is the narrow
+  version of the same idea; this is the general one and the narrow one should
+  ship first.
+- Cost: $0.
+- Status: proposed

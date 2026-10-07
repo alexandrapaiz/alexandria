@@ -10377,3 +10377,43 @@ right way to close a specification out. Nothing was done wrong at any step.
 What is missing is the step nobody owns: when a specification closes, the
 documents that dispatch work at it do not learn, because the closing is written
 where the builder looks and the dispatch is written where the next run looks.
+
+**A third instance, found while checking the second, and this one is in the
+registers map.** `docs/agents/registers.md` is the file whose whole job is to
+record which register has which gate. Its table row for `press-rehearsal.md`
+is right and says "closed". The narrative note below the table, under "The last
+GAP on this table closed, and half of its gate is still parked", is not:
+
+> **The half that is not running.** The CI step that checks the gate still has
+> teeth [...] lives in `.github/workflows-pending/checks.yml`. Nothing in that
+> directory executes. So the deploy chain is guarded and the guard is
+> unguarded.
+
+`checks.yml` was applied by the chair in `4ef55df` on 2026-09-29 and the step
+is live:
+
+```
+$ grep -n "test_press_rehearsal" .github/workflows/checks.yml
+23:      - "tests/test_press_rehearsal.py"
+49:      - "tests/test_press_rehearsal.py"
+136:        run: python3 tests/test_press_rehearsal.py
+```
+
+So the guard has been guarded for eight days and the map says it is not. The
+same passage closes with the rule it was written to teach, "grep main, then
+grep your own branch, and say which one you are quoting", which is the right
+rule and would not have caught this: the passage was true when written and the
+thing that changed is a different file. A claim about another file's state
+needs re-greping when that file changes, not when yours does, and nothing
+tells you when another file changed.
+
+`registers.md` is the ExO seat's file by its own table, so this is filed here
+and left for that seat rather than corrected in this pull request. Three
+instances in one run, in three documents, all of the same shape: the engineer
+charter says a thing is unbuilt and it is built, the registers map says a guard
+is parked and it is live, and a test docstring says it runs in CI and it never
+has. The fourth is already on the books as
+`INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had`. This is not four
+documents being careless. It is one missing mechanism: a claim one file makes
+about another file's state has no owner and no trigger, because the event that
+falsifies it happens somewhere else.
