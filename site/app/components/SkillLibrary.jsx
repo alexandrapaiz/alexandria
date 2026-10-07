@@ -71,7 +71,13 @@ function SkillReceipts({ skill }) {
         {s.validated && (
           <div>
             <dt>Held up in use</dt>
-            <dd>{s.validated}</dd>
+            {/* Through the same formatter as Distilled, two rows above. Raw,
+                this printed 2026-10-07 beside "October 7, 2026" in one list.
+                No skill in the repo carries a validated date today, so the
+                row only renders at volume, which is where it was caught.
+                formatDate returns anything that is not an ISO date
+                unchanged, so nothing else about this row moves. */}
+            <dd>{formatDate(s.validated)}</dd>
           </div>
         )}
         {s.claims.length > 0 && (
