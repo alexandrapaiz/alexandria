@@ -1,3 +1,82 @@
+## Updated 2026-10-07, ~06:20 UTC (six-hour pass): the engineer's two main-fix branches merged into one clean, green pull request, and it is still the owner's to merge
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md`, the
+board, and `docs/agents/incidents.md` back to the last pass (~00:30
+UTC). Nothing new to strike: no ADR past ADR-40, no all-hands past
+2026-09-18, no incident dated after 2026-10-05.
+
+**Inbox, checked first.** Nothing addressed to `alexandria`'s `pm` is
+newer than yesterday evening's reading-enjoyability handoff, already
+acted on. One broadcast note (Kimi's prepaid balance, $1.36 available,
+from the finance seat at HQ) is informational and addressed to
+everyone, not this seat specifically; no reply owed.
+
+**Failed runs, last six hours.** Zero. `gh run list --status failure
+--created ">=2026-10-07T00:33:00Z"` (since the last pass's commit)
+returns nothing. Nothing to triage, rerun, or file.
+
+**What changed since the last pass.** The engineer closed both of its
+own open pull requests (the main-fix branch and the second, separate
+branch carrying the real unsubscribe link) and replaced them with one
+new pull request, #240, that supersedes both. Checks are green and the
+merge state is clean against `main` — an improvement over the last
+pass, where the main-fix branch had gone conflicting. It still carries
+two files under `prompts/` (`distill.md`, `distill-practices.md`),
+which Tier C reserves for the owner, so it waits on exactly the same
+ground its predecessor did, just in better shape to merge the moment
+she does.
+
+**Tier B merge check, this run, all seven other open pull requests
+(the queue's own is excluded by Tier B condition 1):**
+
+- **#240** (engineer, supersedes #233 and #236) — checks green, merge
+  state clean, no conflicts. **Disqualified on condition 4 only**: the
+  diff still carries `prompts/distill.md` and `prompts/distill-practices.md`.
+  This is now the single best candidate in the queue — one merge closes
+  `main`'s red suite, a real subscriber row, and a real unsubscribe
+  endpoint at once, with no conflict to untangle first.
+- **#237** (skill, the independent fix for the same `main` defect) —
+  **disqualified on conditions 3 and 4**: checks still red (it branched
+  before its own fix reached `main`), and the diff carries
+  `prompts/skill-extract.md`. Unchanged from last pass; worth the same
+  word on whether the owner wants this landed alongside #240 or treats
+  #240 as the one that supersedes the need for it.
+- **#238** (writer, third in its own chain) — **disqualified on
+  conditions 3 and 4**: checks still red (inherits the same `main`
+  defect, cut before either candidate fix existed), and the diff
+  carries `prompts/digest.md`. Unchanged from last pass.
+- **#60** (engineer, pre-send quality checklist) — **disqualified on
+  conditions 4 and 5**: carries `prompts/daily.md` and is conflicting.
+  Now **16 days** open, still the oldest open pull request in the
+  repository.
+- **#205, #203, #202** (finance, OKR, frontend) — drafts, excluded by
+  Tier B's own second condition, not reported as blocked.
+
+**Zero of the seven qualify for a Tier B merge this run**, same finding
+as last pass, but the shape of what waits improved: one fewer
+conflicting pull request, one clean green candidate in its place.
+
+**The Polar Merchant-of-Record account (ADR-30)** remains overdue,
+still **11 days**, since 2026-09-26.
+
+**What waits on the owner, one line each.**
+
+1. **Merge #240** — green, clean, no conflicts, closes `main`'s red
+   suite, a real subscriber row, and a real unsubscribe endpoint in one
+   merge. The highest-leverage single action available right now.
+2. **Decide #237** — a second, independent fix for the same defect
+   #240 already closes. Land both, or treat #240 as superseding it.
+3. **#60**, the pre-send quality checklist, 16 days open, conflicting.
+4. **The Polar Merchant-of-Record account (ADR-30)**, 11 days overdue.
+
+**No dispatch fired or queued this run.** Every blocker is an owner-only
+merge; engineer, skill, and writer each already hold an open pull
+request of their own, which is the hard stop on dispatching any of
+them, and none of their own further work clears the blocker anyway.
+
+**Posted to the board**, a first-person note summarizing this pass,
+with the same "what waits on you" list above.
+
 ## Updated 2026-10-07, ~00:30 UTC (six-hour pass): two more Tier C PRs joined the queue, zero still clear Tier B, nothing new to answer
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` and
