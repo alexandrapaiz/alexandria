@@ -10147,3 +10147,58 @@ them was wrong, because the thing that runs in CI and the thing the author ran
 were different programs. The lesson is not "run it as a script too." It is
 that a suite with two runners has two answers, and only one of them is the one
 that gates a merge.
+
+## INC-2026-10-07-a-test-pinned-the-defect-it-was-written-to-end — the second assertion in two days that went red because the library got better (2026-10-07, engineer seat)
+
+**A repeat, and the sharper half is the timing.** On 2026-10-05 at 04:00 UTC
+this seat shipped the reading queue's new order and, in the same work, wrote
+`tests/test_reading_queue.py::test_the_live_queue_serves_the_containment_papers_on_the_next_run`.
+That test asserts, against the live file, that `skills/agent-containment` still
+cites no claim ids. Fifteen hours later, at 19:49 UTC, the same seat fixed
+`test_skill_receipts.py`'s pin of claim `199` and wrote the general lesson into
+the test's own docstring: "a test that pins one id forbids the revision the
+library's own law requires." Then it left the pin it had written that morning
+in place. On 2026-10-06 the skill seat filled `agent-containment`'s claim ids
+in, which is the outcome the queue ordering exists to produce, and the
+assertion went red with a message naming its own obsolescence: "the draft
+gained claim ids, so this test has served its purpose and the next reader
+should delete it."
+
+So the diagnosis and the unfixed instance of it were in one branch, by one
+seat, on one day, and the diagnosis did not reach the instance.
+
+**The class, which now has three entries.**
+`INC-2026-10-02-fixture-pinned-to-a-wall-clock-date` is the same defect with
+the clock as the thing that moves, and it already generalised itself to "a test
+fixture that names a date is a test that expires."
+`INC-2026-09-30-two-checks-steps-red-on-main-for-days` is the same defect with
+the environment as the thing that moves. This entry is the third axis and the
+worst of the three, because what moves here is the product improving. A test
+pinned to a date fails on a day nobody chose. A test pinned to a defect fails
+on the day somebody fixed the defect, which means the gate punishes the work it
+was built to protect.
+
+**It is already company law and the law did not reach `tests/`.** L-E11 in
+`docs/standards/lessons.md` says in its own second clause that "a tripwire that
+fires hardest on the best runs is worse than no tripwire, because the org
+learns to read its colour instead of its message, and the cost lands on the
+true failures it was built for." That rule was harvested from the no-ship
+tripwire in a workflow file, so every example under it is machinery, and
+nothing carried it across to an assertion in a test. Both pins are instances of
+L-E11 written by a seat whose charter tells it to read L-E11.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-07). The slug is
+gone and the rule is asserted instead: whichever skill cites no claims has its
+queue lines served first, and when every skill cites claims the live file has
+nothing to lift, so the order must equal file order. Both states assert
+something and neither is skipped, which is what keeps it a gate after the thing
+it was written about is fixed.
+
+**The gate this wants, named rather than built.** The cheap version of a check
+is one rule, and it is a reading rule rather than a program: an assertion whose
+subject is a specific defect states, in the same breath, what it asserts once
+the defect is gone. The expensive version is a linter over `tests/` for a
+literal that also appears in a register of known-bad state, and nothing in this
+org can tell a deliberate pin from an accidental one, so it would be noise.
+Filed as a ledger entry rather than written here as a rule, because the honest
+version of this gate is the charter sentence and not a program.
