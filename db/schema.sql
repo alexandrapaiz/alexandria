@@ -234,6 +234,40 @@ create table if not exists subscribers (
     unsubscribed_at timestamptz
 );
 
+-- Where a subscriber came from: the page whose form they used, or null for
+-- the rows the owner added by hand before the site had a form. Added
+-- 2026-10-06 with the signup insert in site/lib/waitlist.js, which is the
+-- first thing that ever had an answer to put here.
+--
+-- The status check above still names exactly two states, and that is on
+-- purpose. site/lib/waitlist.js's own comment used to ask for a third,
+-- 'waitlist', so that a signup could land somewhere the press does not read.
+-- pipeline/weekly.py sends to `status = 'active'`, so such a row needs a human
+-- to come back and change it, which is the step sprint 2026-10-05's definition
+-- of done rules out in clause 1. A signup is active, comped, and done.
+alter table subscribers add column if not exists source text;
+
+-- The unsubscribe token (sprint 2026-10-05 item 3). One opaque value per
+-- subscriber, carried in the link at the foot of every issue, so that
+-- unsubscribing is a click rather than a reply the owner reads and acts on.
+--
+-- Three statements rather than one `add column ... not null default`, and the
+-- reason is worth keeping. A volatile default on ADD COLUMN forces a table
+-- rewrite and the per-row evaluation is a property of that rewrite, which is
+-- not something this org can test, because it runs no Postgres in CI. If the
+-- expression were ever evaluated once instead of per row, every subscriber
+-- would share a token and any of them could unsubscribe all of them. An
+-- UPDATE has no such ambiguity. So the column arrives nullable, an UPDATE
+-- fills the rows that exist, and the default is set afterwards for the rows
+-- that do not yet. All three are idempotent, which they have to be: this file
+-- is applied in full every time pipeline/db_setup.py runs.
+alter table subscribers add column if not exists unsubscribe_token uuid;
+update subscribers set unsubscribe_token = gen_random_uuid()
+ where unsubscribe_token is null;
+alter table subscribers alter column unsubscribe_token set default gen_random_uuid();
+create unique index if not exists subscribers_unsubscribe_token_idx
+    on subscribers (unsubscribe_token);
+
 -- ============ blackboard queues ============
 -- Coordination is the schema, not messages (ADR-9). Each worker's inbox is a
 -- view: an item is "claimed" when the worker's output row exists, so every job
@@ -527,4 +561,30 @@ create table if not exists deploy_runtime (
     recorded_at   timestamptz not null default now(),
     first_seen_at timestamptz not null default now(),
     notified_at   timestamptz
+);
+
+-- retag_log: the one-time Layer 4 retag's record of what it has judged
+-- (pipeline/retag_threads.py, owner directive 2026-10-05).
+--
+-- This table is what makes that job resumable, and it needs saying why, because
+-- the sibling job pipeline/backfill_topics.py needs no such table. That one's
+-- fold is a pure function, so a repaired row repairs to itself and "already
+-- done" is derivable from the row. The retag asks a model instead, and a model
+-- that reads a claim and correctly decides it needs none of the four new tags
+-- leaves `claims.topics` byte-identical to a row nobody has looked at. So
+-- "judged" is not derivable from the claims table, and without this row the
+-- job would pay for the same declined call on every run forever.
+--
+-- It is also the audit trail. `model` and `added` together mean a tag written
+-- by that backfill stays distinguishable from one the distiller chose, which
+-- matters because the research seat's census of 2026-09-30 found that the
+-- keyword match these claims were selected by is not evidence of anything.
+-- `why` is the model's own sentence, kept so a wrong tag can be argued with
+-- rather than only reverted.
+create table if not exists retag_log (
+    claim_id   bigint primary key references claims(id),
+    judged_at  timestamptz not null default now(),
+    model      text not null,             -- whichever model answered, logged
+    added      text[] not null default '{}',   -- empty is the common answer
+    why        text
 );

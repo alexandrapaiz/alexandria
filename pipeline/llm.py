@@ -186,7 +186,7 @@ class Cap:
 
 
 def _post(model: str, provider: str, key: str, system: str, user: str,
-          max_completion: int, temperature: float):
+          max_completion: int, temperature: float, seed: int | None = None):
     """One HTTP request. Separated so the retry loop reads as a retry loop."""
     import httpx
 
@@ -200,6 +200,15 @@ def _post(model: str, provider: str, key: str, system: str, user: str,
             {"role": "user", "content": user},
         ],
     }
+    if seed is not None:
+        # Added 2026-10-05 for ADR-40 item 1, which asks a skill eval's two arms
+        # to share a seed "where the provider allows". Only a caller that passes
+        # one gets the key, so every scheduled job in this repository sends the
+        # same bytes it sent before: the default is None and nothing else in
+        # pipeline/ passes it. The caller decides which providers honour it,
+        # because that is a fact about a provider's documentation and this
+        # function is the one place that must not guess.
+        body["seed"] = int(seed)
     if provider == "moonshot":
         # kimi-k2.6 is a thinking model, and on 2026-09-24 the hidden reasoning
         # ate the whole output reservation twice: finish_reason 'length', no
@@ -217,7 +226,8 @@ def _post(model: str, provider: str, key: str, system: str, user: str,
 
 
 def call_one(model: str, system: str, user: str, env, cap: Cap,
-             max_completion: int = 2048, temperature: float = 0.2) -> dict:
+             max_completion: int = 2048, temperature: float = 0.2,
+             seed: int | None = None) -> dict:
     """Ask one model for JSON, with backoff on 429. Raises so the walk moves on.
 
     Returns the parsed JSON object. A response that is not JSON is `ModelGone`
@@ -230,7 +240,7 @@ def call_one(model: str, system: str, user: str, env, cap: Cap,
 
     for attempt in range(RETRIES_PER_MODEL):
         resp = _post(model, provider, key, system, user, max_completion,
-                     temperature)
+                     temperature, seed)
 
         if resp.status_code == 404:
             raise ModelGone(f"404 Not Found: {resp.text[:400]}")
@@ -277,7 +287,8 @@ def call_one(model: str, system: str, user: str, env, cap: Cap,
 
 def ask_json(models: list[str], system: str, user: str, env, cap: Cap,
              max_completion: int = 2048, temperature: float = 0.2,
-             available: set[str] | None = None) -> tuple[dict, str]:
+             available: set[str] | None = None,
+             seed: int | None = None) -> tuple[dict, str]:
     """Walk `models` until one answers with JSON. Returns (answer, model used).
 
     `cap.require()` runs first, so a job at its ceiling raises `CapReached`
@@ -299,7 +310,7 @@ def ask_json(models: list[str], system: str, user: str, env, cap: Cap,
             continue
         try:
             return call_one(model, system, user, env, cap, max_completion,
-                            temperature), model
+                            temperature, seed), model
         except (ModelGone, RateLimited, MissingKey, KeyError) as exc:
             tried.append(f"{model}: {exc}")
             print(f"  {model} failed ({exc}); trying the next model")
@@ -384,11 +395,14 @@ def pace(model: str) -> float:
 #                the cost is that a claim written today is linked by interpret
 #                tomorrow rather than this afternoon, which is a day of latency
 #                against a window nobody can overrun into.
-#   16:00-16:15  skill revision (skill_revision.py). Calls no model, and is
-#                deliberately absent from the table below: KIMI_WINDOWS is the
-#                Kimi concurrency ledger, and a job in it that never calls Kimi
-#                would make check_kimi_windows() report on a collision that
-#                cannot happen.
+#   (no slot)    skill revision (skill_revision.py). It had 16:00-16:15 until
+#                2026-10-05, which was a sixth cron on a plan that runs five and
+#                sat inside distill's window besides. It is now spawned as the
+#                first step of interpret's scheduled run and holds no slot of
+#                its own: it calls no model, so it contends with nothing here,
+#                and it runs in its own container, so it does not spend
+#                interpret's hour either. pipeline/interpret.py's
+#                `maintenance_step` is the whole mechanism.
 #
 # `budget.check_kimi_windows()` reads this table and the crons themselves and
 # fails CI if two windows overlap. That is the gate in the command rather than

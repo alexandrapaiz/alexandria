@@ -65,6 +65,14 @@ jobs:
       # Never `set -e` off and never `echo` a body: the run report incident
       # (INC-2026-09-26-run-report-dash-echo) was dash's builtin echo expanding
       # escapes inside a JSON body. Everything here goes through a file.
+      # `--record-rejection` added 2026-10-05 for ADR-40's refinement item 2.
+      # When the gate does not pass it appends this revision's edits, with the
+      # reason, to `skills/<slug>/reviews/rejected-edits.json`, so the loop does
+      # not spend a cap next morning measuring an edit it has already been told
+      # no about. It writes into the working tree and commits nothing: the file
+      # is inside the skill's own folder, which the scope clause already allows,
+      # and whether it is committed is the skill seat's call in its own pull
+      # request rather than this workflow's.
       - name: run the gate
         id: gate
         run: |
@@ -73,8 +81,10 @@ jobs:
             --base "origin/${GITHUB_BASE_REF}" \
             --comment /tmp/skill-gate-comment.md \
             --github-output "$GITHUB_OUTPUT" \
+            --record-rejection \
             --json > /tmp/skill-gate.json
           cat /tmp/skill-gate.json
+          git --no-pager diff --stat -- "skills/*/reviews/rejected-edits.json"
         env:
           GITHUB_BASE_REF: ${{ github.base_ref }}
 

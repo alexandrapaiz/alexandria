@@ -30,7 +30,7 @@ export default async function Home() {
         <div className="hero-act">
           <Waitlist
             source="home"
-            note="We write once, on the day subscriptions open."
+            note="One issue a week. You can unsubscribe from any of them."
           />
           <Link href="/library" className="pill ghost">
             Read an issue

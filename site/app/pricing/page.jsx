@@ -39,14 +39,14 @@ export default function Pricing() {
         </div>
       </div>
       <section className="waitlist-block" id="waitlist">
-        <h3>Hear when it opens</h3>
+        <h3>Start reading</h3>
         <p>
-          We write once, on the day subscriptions open. Nothing else arrives
-          before then.
+          The weekly issue is free while subscriptions are comped, so there is
+          nothing to pay and nothing to cancel. Nothing else arrives.
         </p>
         <Waitlist
           source="pricing"
-          note="We send one email, and it carries an unsubscribe link."
+          note="One issue a week. You can unsubscribe from any of them."
         />
       </section>
       <div className="billing-note">

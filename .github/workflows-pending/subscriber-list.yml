@@ -1,0 +1,107 @@
+name: subscriber-list
+# Nothing between a stranger and the subscriber table is checked by CI today.
+#
+# Sprint 2026-10-05 items 2 and 3 made the signup form write a real
+# `subscribers` row and gave the issue a real unsubscribe endpoint. Both run on
+# the site, both hold SQL that is otherwise executed for the first time by a
+# person using the page, and neither of the two suites that guard them is
+# reachable from any workflow in `.github/workflows/`. `checks.yml` names
+# `db/schema.sql` and `site/lib/skill-provenance.js` in its paths and runs
+# fifteen named test files, and `tests/test_waitlist.py` and
+# `tests/test_unsubscribe.py` are not among them.
+#
+# That is the shape the pending lane's README calls the one this directory
+# exists to catch: a check written correctly, reviewed, merged, and never
+# fired. The engineer seat's token has no `workflows` permission, so adding a
+# step to `checks.yml` is not something a seat can do, and this file is the
+# lane that exists instead. Apply with:
+#
+#   git mv .github/workflows-pending/subscriber-list.yml .github/workflows/
+#
+# Both triggers on purpose. The README says in its own words that a guard
+# scoped to pull requests is not a guard on a repository whose owner commits
+# directly, and `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is what
+# that cost: two runtime changes pushed straight to main left two guards red
+# for six days.
+#
+# No key, no network, no database. The SQL is parsed with libpg_query and
+# resolved against `db/schema.sql`, which is the same technique
+# `tests/test_graph_audit.py` uses and the reason `db/schema.sql` is in the
+# paths below: a migration that renames a column turns the pull request red
+# rather than turning the signup red the first time somebody submits the form.
+
+on:
+  pull_request:
+    paths:
+      - "db/schema.sql"
+      - "site/lib/waitlist.js"
+      - "site/lib/waitlist-core.js"
+      - "site/lib/unsubscribe.js"
+      - "site/lib/unsubscribe-core.js"
+      - "site/app/api/waitlist/**"
+      - "site/app/api/unsubscribe/**"
+      - "site/app/unsubscribe/**"
+      - "site/app/components/Waitlist.jsx"
+      - "site/app/page.jsx"
+      - "site/app/pricing/page.jsx"
+      - "tests/test_waitlist.py"
+      - "tests/test_unsubscribe.py"
+      - "tests/waitlist.test.mjs"
+      - "tests/unsubscribe.test.mjs"
+      - "tests/sql_schema.py"
+      - ".github/workflows/subscriber-list.yml"
+  push:
+    branches: [main]
+    paths:
+      - "db/schema.sql"
+      - "site/lib/waitlist.js"
+      - "site/lib/waitlist-core.js"
+      - "site/lib/unsubscribe.js"
+      - "site/lib/unsubscribe-core.js"
+      - "site/app/api/waitlist/**"
+      - "site/app/api/unsubscribe/**"
+      - "site/app/unsubscribe/**"
+      - "site/app/components/Waitlist.jsx"
+      - "site/app/page.jsx"
+      - "site/app/pricing/page.jsx"
+      - "tests/test_waitlist.py"
+      - "tests/test_unsubscribe.py"
+      - "tests/waitlist.test.mjs"
+      - "tests/unsubscribe.test.mjs"
+      - "tests/sql_schema.py"
+      - ".github/workflows/subscriber-list.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  subscriber-list:
+    name: the signup writes a real row and the unsubscribe link works
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # pglast is libpg_query, the server's own parser. Without it the schema
+      # resolution tests skip rather than fail, which would make this guard
+      # quietly weaker than it reads, so it is installed rather than optional.
+      - name: install the test dependencies
+        run: pip install -r requirements-dev.txt
+
+      # The signup path. Every statement parsed and resolved against the
+      # schema, the row asserted to be active and comped (anything else is a
+      # row waiting on a human, which clause 1 of the sprint's definition of
+      # done rules out), and the pure core executed under node.
+      - name: a signup becomes a subscriber the press will send to
+        run: python3 -m pytest tests/test_waitlist.py -q
+
+      # The unsubscribe path. `always()` so a red signup step cannot hide
+      # whether a subscriber can still leave, which is the half with a legal
+      # shape to it.
+      - name: a subscriber can leave, and only on a POST
+        if: always()
+        run: python3 -m pytest tests/test_unsubscribe.py -q

@@ -90,22 +90,76 @@ def parse(text: str) -> list[Item]:
     return items
 
 
-def pending(text: str, limit: int | None = MAX_PER_RUN) -> list[Item]:
-    """Unchecked items, oldest line first, deduplicated, at most `limit`.
+def skills_with_claims(conn) -> set[str]:
+    """Skill paths that cite at least one claim id, from `promotions`.
+
+    Everything NOT in this set is a skill that cannot cite a single claim, and
+    `pending` puts its requests first. Read from `promotions` rather than from
+    `skills/` because `skills/` is not in distill's Modal image and should not
+    be: baking the library into the reading job would mean every skill edit
+    needs a distill redeploy.
+
+    A skill with no `promotions` row at all is correctly absent here, which is
+    the case that matters. `skills/agent-containment` has no row because
+    `tools/skill_registrar.py` refuses to write one for a skill citing nothing.
+    """
+    try:
+        rows = conn.execute(
+            "select path from promotions where kind = 'skill' "
+            "and path is not null and array_length(claim_ids, 1) > 0"
+        ).fetchall()
+    except Exception:                               # noqa: BLE001
+        # No table, no permission, no connection. Returning nothing makes every
+        # line look blocked, which collapses the order below back to file order:
+        # the behaviour this module had before the ordering existed.
+        return set()
+    return {str(row[0]).rstrip("/") for row in rows}
+
+
+def pending(text: str, limit: int | None = MAX_PER_RUN,
+            sourced: set[str] | None = None) -> list[Item]:
+    """Unchecked items, deduplicated, at most `limit`.
 
     Deduplication is by id and not by line: the same paper asked for twice by
     two skills is one fetch, and striking either line is the research seat's
     business rather than this module's.
+
+    Order is oldest line first WITHIN two groups, and the groups are the point.
+    A line asked for by a skill that cannot cite a single claim comes before a
+    line asked for by a skill that already cites plenty, because the first one
+    is blocked and the second one is being improved.
+
+    ## Why the order had to change on 2026-10-05
+
+    Strict file order is fair and it starved the thing it was built for. The
+    queue held 47 pending lines, `MAX_PER_RUN` is 6, and the 2026-09-30
+    containment requests sat behind 27 older lines from two skills that already
+    carry claims. So `skills/agent-containment` was eight runs from being read,
+    and it is a draft with `claims: []` that cannot be revised, cannot appear in
+    `skills_needing_revision`, and holds thirteen tests red across four suites
+    until one of its papers is distilled. Meanwhile the lines ahead of it were
+    asked for by skills that are already published and already sourced.
+
+    FIFO is the right default for a queue of equals. These are not equals: one
+    line unblocks a skill and the next one footnotes one.
+
+    `sourced` absent means no grouping, which is the old behaviour exactly.
     """
-    seen, out = set(), []
+    seen: set[str] = set()
+    blocked: list[Item] = []
+    rest: list[Item] = []
     for item in parse(text):
         if item.checked or item.paper_id in seen:
             continue
         seen.add(item.paper_id)
-        out.append(item)
-        if limit and len(out) >= limit:
-            break
-    return out
+        # No `asked by` is not a blocked skill's request; it is a line nobody
+        # signed, and it waits its turn.
+        if sourced is not None and item.asked_by and item.asked_by.rstrip("/") not in sourced:
+            blocked.append(item)
+        else:
+            rest.append(item)
+    out = blocked + rest
+    return out[:limit] if limit else out
 
 
 def read_file(path: str | pathlib.Path = QUEUE_PATH) -> str:

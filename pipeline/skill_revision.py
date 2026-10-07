@@ -172,6 +172,11 @@ image = (
     # ADR-37's four triggers, which step 3 runs. It imports `skill_registrar`
     # and `skill_eval`, both already above, and nothing third-party.
     .add_local_file("tools/skill_triggers.py", "/root/skill_triggers.py")
+    # ADR-40's refinement item 3: the dispatch carries the clustered
+    # corrections rather than the raw pile. It reads the skill's `reviews/`
+    # lane and its `results.json`, both of which `add_local_dir("skills")`
+    # below already puts in the image, and it imports nothing third-party.
+    .add_local_file("tools/corrections.py", "/root/corrections.py")
     .add_local_dir("skills", "/root/skills")
 )
 
@@ -198,6 +203,19 @@ def tools():
     import skill_triggers
 
     return skill_registrar, skill_triggers
+
+
+def corrections():
+    """tools/corrections.py, by the same path walk as `tools()`.
+
+    Its own accessor rather than a third element of that tuple, because every
+    caller of `tools()` unpacks two and ADR-40's clustering is wanted by exactly
+    one of them.
+    """
+    tools()
+    import corrections as module
+
+    return module
 
 
 def registrar():
@@ -330,6 +348,69 @@ def queue_block(pairs: list[dict], today: str) -> str:
     return triggers.block(as_records(pairs), today)
 
 
+# How many clusters a dispatch names. The cap exists for the same reason
+# MAX_PAIRS_PER_DISPATCH does: one run revises one skill and one section of it
+# (ADR-40 refinement item 1), so a dispatch that listed twelve edits would be
+# asking for eleven things the gate will refuse.
+MAX_CLUSTERS_PER_DISPATCH = 3
+
+
+def clustered_block(skill_paths: list[str], root=None) -> list[str]:
+    """ADR-40 refinement item 3, as the lines the skill seat's run receives.
+
+    The raw pile is never handed over. Each cluster is one generalized edit with
+    the count of independent corrections behind it, and the dispatch says which
+    cluster has the most evidence, because that is the one worth the revision.
+
+    `C965` is the other half and it is a caution rather than a rule the code can
+    enforce: self-refinement by a small model consolidates on what it can
+    already reach. So the dispatch states where each edit came from, and a
+    skill with nothing on record is told it has nothing on record rather than
+    being left to invent something.
+    """
+    try:
+        module = corrections()
+    except Exception as exc:                        # pragma: no cover
+        return ["", f"The clustered corrections could not be read ({exc}), so "
+                    "this dispatch names triggers only. ADR-40 refinement item "
+                    "3 wants the clusters, and a run that cannot read them says "
+                    "so rather than proceeding as though the pile were empty."]
+    out = ["", "**What the corrections on record cluster into** (ADR-40 "
+           "refinement item 3). One cluster is one edit. The raw pile is never "
+           "applied, and the count behind a cluster is how you judge whether "
+           "it is worth making."]
+    for path in skill_paths:
+        slug = path.split("/")[-1]
+        try:
+            doc = module.report(slug, root=root)
+        except Exception as exc:                    # pragma: no cover
+            out.append(f"- {path}: the clusters could not be computed ({exc})")
+            continue
+        out.append(f"- {path}: {doc['reads']}")
+        for group in doc["groups"][:MAX_CLUSTERS_PER_DISPATCH]:
+            out.append(f"    - {group['edit']}")
+            out.append(f"      evidence: {'; '.join(group['evidence'])}")
+        if not doc["groups"]:
+            out.append("    - nothing is on record for this skill. No consumer "
+                       "has filed a report and no task failed, so there is no "
+                       "correction to generalize. ADR-40's trap (C965) is that "
+                       "a model refining a skill from nothing consolidates on "
+                       "what it could already reach, so say that rather than "
+                       "inventing an edit.")
+    out.append("")
+    out.append("Revise one section, not three (ADR-40 refinement item 1): the "
+               "gate now refuses a diff that touches more than one `## ` "
+               "heading, because one delta over three edits cannot say which of "
+               "the three worked. The skill stays at or under three modules "
+               "(item 4). And your revision has to raise the delta on tasks the "
+               "edit was not written against, which is the number "
+               "`skills/<slug>/evals/results.json` now carries as `heldout` "
+               "(item 2). An edit the gate refuses is written into "
+               "`skills/<slug>/reviews/rejected-edits.json`, so proposing it "
+               "again is refused without spending a cap on measuring it twice.")
+    return out
+
+
 def dispatch_instructions(pairs: list[dict], today: str) -> str:
     """The owner instructions the skill seat's run receives.
 
@@ -361,6 +442,7 @@ def dispatch_instructions(pairs: list[dict], today: str) -> str:
         body += ["", f"{len(records) - len(named)} further findings are in the "
                  "queue file and are not named here, because one run revises "
                  "one skill."]
+    body += clustered_block(sorted({rec["skill_path"] for rec in named}))
     body += [
         "",
         "Before you accept a trigger, check it. The research seat's brief of "
@@ -817,10 +899,22 @@ def run(dry_run: bool = False) -> str:
 
 
 @app.function(
-    # 16:00 UTC. This job calls no model, so it contends with nothing; the slot
-    # sits after interpret's window anyway. See this module's docstring and the
-    # schedule comment in pipeline/llm.py.
-    schedule=modal.Cron("0 16 * * *"),
+    # NO SCHEDULE, and that is the design rather than an omission.
+    #
+    # This declared `schedule=modal.Cron("0 16 * * *")` until 2026-10-05. Modal's
+    # free tier caps scheduled functions at five and ADR-12 recorded all five as
+    # taken (ingest, triage, interpret, distill, the Monday press), so this was a
+    # sixth and the plan does not run it: ADR-37's daily maintenance pass had a
+    # cron on paper and no pass in fact. The 16:00 slot was also inside distill's
+    # 15:00-16:30 window, which `test_the_schedule_sits_outside_every_reserved_window`
+    # had been failing about.
+    #
+    # The owner's directive of 2026-10-05 folds the trigger into interpret's
+    # scheduled run instead: `pipeline/interpret.py`'s `maintenance_step` spawns
+    # this function as its first step, every day, in its own container. So this
+    # job runs daily, keeps its own timeout and its own secrets, calls no model,
+    # and occupies no row in Modal's schedule budget. Do not add a cron back here
+    # without reading that module and docs/agents/runtime-changes.md.
     secrets=[modal.Secret.from_name("neon"),
              modal.Secret.from_name("github"),
              modal.Secret.from_name("Gmail"), modal.Secret.from_name("gmail_pass")],

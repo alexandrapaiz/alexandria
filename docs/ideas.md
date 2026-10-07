@@ -10928,3 +10928,492 @@ backfill first, the Left-Behind Index second, both named above). Kept
 as a dated confirmation rather than a restatement, per the same logic
 the sprint file and pending tracker use this run: say "unchanged" once,
 plainly, instead of copying the analysis forward.
+### 2026-10-05 — Craft scan: Consensus filters on the measurement, not only the subject (engineer seat, containment dispatch)
+
+- Trigger: craft scan for 2026-10-05, rotated off skills.sh (scanned earlier
+  today by this seat's other window) to the academic-tools row of
+  docs/market/landscape.md. Read against today's own work, which spent the
+  day adding four SUBJECT tags to a closed list.
+- What is worth stealing: Consensus ships facets that are measurements rather
+  than topics. Q1-Q4 journal tier, a citation threshold, a methodology
+  control, preprints in or out. A reader there does not ask "show me security
+  papers", they ask "show me the ones with a method and enough citations to
+  bet on". alexandria's `claims.topics` is fourteen subjects and now
+  eighteen, and every one of them answers "what is this about" and none
+  answers "how good is the evidence". The research seat's census of
+  2026-09-30 made the point by accident: what made the security claims worth
+  finding was never that they were about security, it was that they carry an
+  attack success rate, a detection rate, or a sabotage frequency. EvoSafeHarness
+  is worth reading because of "45.6% to 10.0%", not because of its subject.
+- What alexandria does better: the facets are honest about their own
+  provenance. A Consensus journal tier is a proxy the reader cannot audit,
+  and every claim in this library carries the paper, the evidence sentence and
+  a claim id a reader can follow. The claim graph has no analogue there at all.
+- Where it goes: the idea below.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — A `measured` facet, so the library can be asked for evidence rather than for a subject (engineer seat)
+
+- Trigger: the craft scan above, plus the census finding it explains. 71
+  claims came from containment, protocols and security papers and the
+  valuable ones are valuable because they carry a rate. `claims` already has
+  a `measured` boolean (prompts/distill-practices.md asks the model for it)
+  and `evidence` holds the sentence, and nothing in the product filters on
+  either. Four new subject tags shipped today and they still cannot
+  distinguish "a survey about prompt injection" from "a defense that took ASR
+  from 45.6% to 10.0%".
+- What: one facet, derived rather than asked for. A claim is `measured` when
+  its evidence sentence contains a number with a unit or a percent, which is
+  a regular expression and not a model call, and the graph page, the digest
+  payload and the skill agent gain one filter on it. The census's own
+  distill-worthy bar is exactly this test, so the facet is a rule the
+  research seat already wrote in prose.
+- Why it is more valuable than another subject tag: a subject tag splits the
+  corpus into eighteen piles that all contain surveys. This one splits every
+  pile into the half a builder can act on and the half they cannot, and it
+  costs no model call and no taxonomy decision.
+- First step: count it. One read-only query over `claims.evidence` for the
+  regex, printed next to the `measured` column the distiller already sets, to
+  find out whether the two agree. If they disagree badly the model's boolean
+  is the thing to fix and this idea is smaller than it looks.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — Every gate needs a third severity for "blocked upstream", not just pass and fail (engineer seat)
+
+- Trigger: this run's break-fix. One field, `skills/agent-containment`'s
+  `provenance.claims: []`, held 12 tests red across four suites for five days,
+  and the field was correct: the corpus held no claim id for that skill to
+  cite, because three of its six papers had never been triaged. The registrar
+  reported a defect because a defect and a blocked precondition look identical
+  from CI, which has no database. I fixed it for that one check by reading
+  `docs/research/reading-queue.md` for evidence that the skill had asked.
+- What: the pattern, factored out and applied to the other gates rather than
+  to one. A helper that answers one question, which is whether this artifact is
+  waiting on work the pipeline has been told to do, and the three or four
+  gates that
+  currently emit `fail` for an unmet precondition call it. The signal is
+  already in the repository in every case this run looked at; what was missing
+  was anything that read it.
+- Why it is not "loosen the gate": the gate keeps blocking. `unknown` and
+  `fail` both block an ADR-36 merge, so the severity only decides whether
+  `main` goes red for every other seat and whether the owner gets an alarm
+  mail. Those are exactly the two things that should not fire for a tracked
+  state, and exactly the two that should fire for a real one.
+- First step: grep the gates for `"fail"` and sort the findings into "the
+  artifact is wrong" and "something upstream has not happened yet". The split
+  is the deliverable; the helper is small once the list exists.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The reading queue tells nobody how far back their request is (engineer seat)
+
+- Trigger: measured in this run. The live queue holds 47 pending lines,
+  `MAX_PER_RUN` is 6, and `skills/agent-containment`'s five requests sat
+  behind 27 older lines, which is about eight runs. Nothing anywhere printed
+  that number. The skill seat wrote the lines on 2026-09-30 and had no way to
+  learn that the papers would arrive in October, and the file it wrote them
+  into reads like a request that was accepted.
+- What: distill prints a position and an ETA per pending line, and the run
+  log says which skills are waiting and for how long. Today's fix changed the
+  ORDER so a blocked skill goes first, which helps the blocked case and does
+  nothing for the visibility problem: a line can still be twenty deep and
+  look accepted.
+- Why it matters beyond tidiness: ADR-35 makes reading a precondition of
+  skill creation, so a queue line is a skill that cannot be written yet. A
+  silent queue converts "the pipeline has not read this" into "the skill seat
+  did not do its job", which is the misreading this run spent its break-fix
+  budget undoing.
+- First step: one line per pending item in distill's existing
+  `reading-queue:` log block, carrying the position and the run count at the
+  current rate. The parser already returns the full ordered list, so this is
+  a print rather than a feature.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — URGENT: main is still red on 12 tests and no seat whose surface it is can clear it (engineer seat)
+
+- Trigger: this run's mandatory machinery check. `checks.yml` on `main` was
+  failing 19 tests across four suites when this run started; this run's PR
+  fixes 7 of them and 12 remain. Recorded as
+  `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`.
+- What is still broken: every one of the 12 traces to
+  `skills/agent-containment` carrying `provenance.claims: []`. They clear
+  when one of that skill's papers is distilled and a claim id is written into
+  its provenance block.
+- Why this run did not clear it: the edit is in `skills/`, which this seat is
+  forbidden to write (ADR-13, and the engineer charter's boundary list). The
+  upstream half is fixed in this PR, since distill now reads that skill's
+  papers on its next run instead of in about eight, so the sequence to green
+  is a
+  distill run, then one skill-seat edit.
+- Why it is urgent rather than merely open: a red `main` is inherited by
+  every open pull request through its own merge check, so all nine open PRs
+  today carry a red tick they did not cause and cannot distinguish from their
+  own. That is the cost named in
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it`, repeating.
+- First step: deploy this PR's distill change, let the scheduled run read the
+  five queued containment papers, then dispatch the skill seat to cite the
+  claim ids. Two of those three steps are the chair's and one is the skill
+  seat's.
+- Cost: $0.
+- Status: urgent
+- Updated the same day, by the pull request that superseded the one above: two
+  of the twelve were tests pinned to live-library state rather than to the
+  skill, and they are fixed in `tests/test_skill_eval.py`. Ten remain and the
+  cause is unchanged.
+
+### 2026-10-05 — URGENT: no skill's eval can run at all, so ADR-40's harness has nothing to measure (engineer seat, second window)
+
+- Trigger: building ADR-40's seven harness items. `python3 tools/skill_eval.py
+  --check` exits 1 and prints `0 of 8 skills carry a conformant eval file`.
+  `--skill <any slug>` exits 1 before it sends a call, for the same reason.
+- What is broken: every one of the eight suites is missing
+  `policy.repetitions`. The cause is correct and is dated. On 2026-10-04
+  `normalize` stopped supplying a default for it, because rule 1 of
+  docs/product/skill-validation.md section V5 is that the policy is
+  pre-registered
+  and a default the harness writes is not a number the author chose. The fix
+  was right and nothing registered the policies afterwards, so the gate it
+  switched on has been refusing every suite in the library since.
+  `harness-engineering` has a second, independent defect: nine of its tasks
+  name `sections` that are not `## ` headings of its own SKILL.md, which is
+  the coverage claim being false rather than merely absent.
+- Why this run did not fix it: the suites are `skills/`, which this seat is
+  forbidden to write (ADR-13, and the engineer charter's boundary list). The
+  edit is one four-line `policy` block per file and nine corrected heading
+  strings.
+- Why it is urgent rather than merely open: everything in this run's pull
+  request is an instrument, and today the instrument has nothing it is
+  allowed to point at. The owner directed the testing program on the
+  strength of the research, and it cannot produce a single number until a
+  skill-seat run registers eight policies.
+- First step: dispatch the skill seat to add `"policy": {"repetitions": 3,
+  "subject": "kimi-k2.6", "judge": "openai/gpt-oss-120b", "min_delta": 0.2}`
+  to each `evals/evals.json` and to correct harness-engineering's nine
+  `sections` strings against its own headings. Then one eval run proves the
+  whole ADR-40 path end to end on real money.
+- Cost: $0 to register the policies. One eval run at the $0.75 cap to prove it.
+- Status: urgent
+
+### 2026-10-05 — The skill page should lead with improved, flat and regressed, not with the mean (engineer seat, second window)
+
+- Trigger: today's competitive scan, below. `claude plugin eval`'s HTML report
+  opens with "Plugin effect: +33.3 pts vs baseline, improved 2, flat 1,
+  regressed 0 of 3 cases", and a case whose delta is negative gets a red left
+  edge so regressions stand out while scrolling. Our own `render` opens with a
+  mean and a bootstrap interval.
+- What: the result document already holds every number this needs. `per_task`
+  carries a delta per task and, as of this pull request, `section_deltas`
+  carries one per section. So the first line a reader sees becomes a count of
+  tasks that improved, stayed flat and regressed, with the mean and its
+  interval on the second line rather than the first. The same count goes on
+  the public skill page. A mean of +0.42 over ten tasks where two regressed is
+  a different product claim from +0.42 where none did, and today the page
+  cannot tell those apart. This is not a softening of the statistics: the
+  interval stays, and ADR-36's rule that a count is reported as a count with
+  its interval is what makes the count the honest lead rather than the mean.
+- First step: a `movement` block in `summarize` (improved, flat, regressed,
+  with the task ids), one line in `render`, one row on the page, and the
+  contract entry in site/app/skills/README.md.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The exploit answers will not be written by hand, so the adversary reviewer should write them (engineer seat, second window)
+
+- Trigger: this run's own measurement. `tools/skill_eval.py --check` now
+  reports `0 of 273 rubric criteria are tied to a certificate a reader can
+  check`, and one finding per rubric task for a missing exploit answer. ADR-40
+  item 5 asks every rubric to ship an answer that games it; at 273 criteria
+  across eight suites that is a volume no seat writes by hand on a Tuesday,
+  and a rule nobody can comply with is a rule that gets a `# noqa`.
+- What: `tools/panel_adversary.py` already exists to attack a skill's claims
+  and it already runs in the maintenance job. Give it a second duty: for each
+  rubric criterion, write the plausible answer that satisfies the criterion
+  while carrying none of its certificate, and write it into the suite beside
+  the criterion. The adversary is the right author for the same reason the
+  skill's own author is the wrong one, and the harness already refuses to let
+  the subject and the judge be one model. Then `--check`'s finding becomes a
+  real backlog with a producer behind it rather than a count that only grows.
+- First step: one function in the adversary that takes a criterion and its
+  certificate and returns a candidate exploit answer, plus the harness's
+  existing `run_exploits` as its acceptance test: an exploit the rubric scores
+  above zero is a finding about the rubric, and one it scores zero is a
+  certificate doing its job. Both outcomes are useful, which is what makes it
+  safe to generate.
+- Cost: $0 on the free judge tier; one adversary pass per suite.
+- Status: proposed
+
+### 2026-10-05 — Cluster the corrections with embeddings once a provider is funded (engineer seat, second window)
+
+- Trigger: `tools/corrections.py`, written this run, measured against the only
+  real consumer report in the library. Four numbered proposals in
+  `skills/harness-engineering/reviews/2026-09-29-ursa-chair.md` produced four
+  clusters of one, and the tool says so out loud: "every cluster holds exactly
+  one correction, so the clustering found nothing and this is the raw pile with
+  a label on it". That is the honest reading and it is also the whole ADR-40
+  refinement item 3 not yet working on real data.
+- What: ADR-40 says the corrections are embedded and clustered. This run
+  clustered them on Jaccard overlap of content words, because the organization
+  funds no embedding endpoint and the engineer charter forbids this seat from
+  creating a recurring cost. The upgrade is one embedding call per correction
+  on a maintenance run, cached by the correction's own hash so a report is
+  embedded once ever. At one report and a handful of failed tasks per skill
+  that is tens of calls a month, not thousands, and a small open model on the
+  free tier may be enough. The honest version of this proposal is that it may
+  also not help: four proposals asking for four genuinely different things
+  should not merge, and the real test of either instrument is a skill with a
+  dozen reports on it, which the library does not have yet.
+- First step: before buying anything, wait for the second and third consumer
+  report on one skill, then run both clusterers over them and compare. The
+  measurement is free and it is the thing that tells the owner whether the
+  endpoint is worth anything.
+- Cost: a proposal. An embedding endpoint is the owner's call, and the
+  comparison above is $0.
+- Status: proposed
+
+### 2026-10-05 — Competitive scan: `claude plugin eval` reports the ablation delta and then refuses to let it fail the build (engineer seat, second window)
+
+- Scanned: Anthropic's `claude plugin eval`, read at
+  code.claude.com/docs/en/plugin-evals on 2026-10-05. The closest thing in the
+  world to `tools/skill_eval.py`, and the rotation choice is deliberate: this
+  run built the harness, so the craft scan is of the other harness.
+- **One thing worth stealing.** The report's first line is a count, not a mean:
+  "Plugin effect: +33.3 pts vs baseline, improved 2, flat 1, regressed 0 of 3
+  cases", and a case with a negative delta carries a red left edge so a
+  regression is visible while scrolling rather than only in the arithmetic.
+  Ours opens with a mean and a bootstrap interval, which is more rigorous and
+  less readable, and the two are not in conflict. Filed as a ledger entry
+  above. Second, smaller: `--keep-temp` prints every run's sandbox directory
+  so a person can go and look at what the model actually produced. This run's
+  trajectory log is the same affordance reached from the other end, and theirs
+  is cheaper to use.
+- **One thing alexandria does better.** Their ablation delta "is reported but
+  never changes the exit code", and `--threshold` gates on the with-arm score
+  alone. So a plugin whose with-arm scores 0.9 passes CI at a threshold of 0.8
+  whether its delta is +0.4 or zero: the build can go green on a plugin that
+  demonstrably adds nothing, because the only number with teeth is the arm
+  that has the plugin in it. Our gate is the delta, it needs the bootstrap
+  lower bound above zero and the point estimate at or above a threshold
+  pre-registered before the run, and `verdict_of` will not call anything a
+  gain otherwise. That is the difference between measuring a skill and
+  measuring a model with a skill nearby. Three more, from the same page: their
+  suite is generated by `eval eval init`, which proposes the cases and the
+  graders from the plugin itself, which is exactly the author-writes-the-test
+  contamination ADR-36 refuses; nothing ties a rubric criterion to a
+  verifiable certificate, so the 8-to-26-percent exploitation C476 measured is
+  unguarded; and there is no held-out set, so an edit written against the
+  cases is scored on the cases.
+- **Two places it confirms us rather than beating us.** Three runs per case by
+  default, for the stated reason that "one run of a non-deterministic agent
+  tells you little", which is the same number and the same argument as
+  `DEFAULT_REPS`. And graders that only the plugin can pass are excluded from
+  the score in both arms and reported as indicators, which this harness already
+  took, with the citation, on 2026-09-30. Independent arrival at the same two
+  choices is the most reassuring thing on the page.
+
+### 2026-10-05 — The consumer list for a law that changes (engineer seat, red-main dispatch)
+- Trigger: this run's break-fix. PR #219 taught the draft excuse to
+  `tools/panel_provenance.py` and four other consumers of the same law kept
+  asserting the behaviour it had replaced, which held `main` red. That is the
+  third incident of one shape, after
+  `INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+  `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`.
+  Three repeats of one shape is a tooling gap rather than three lapses.
+- What: a small tool that answers "who else asserts this" before a run changes
+  a predicate. Every live-library assertion in this repository enters through a
+  handful of doors: `skill_registrar.read_skills()`, `listSkills()` in the
+  site's content module, and `review(rows=...)` in each panel. A grep for those
+  call sites, grouped by file, is the checklist a run changing a gate has to
+  work through. The value is not the grep, which anyone can type. It is that
+  the checklist is printed at the moment of the change and has to be ticked,
+  the same way the machinery diff is one command the daily charter names.
+- First step: `tools/law_consumers.py`, one function, printing the file and
+  line of every live-library assertion plus the predicate each one rests on.
+  Wire it into nothing on the first day and run it by hand against this run's
+  own diff to see whether it would have found all four.
+- Cost: $0, no network, no database.
+- Status: proposed
+
+### 2026-10-05 — The skill page says what it is waiting for (engineer seat, red-main dispatch)
+- Trigger: `skills/agent-containment` renders on the public skill page with an
+  empty claim list and no explanation, while the repository knows exactly which
+  six papers it is waiting on and has known since 2026-09-30. The reading queue
+  holds a dated line per paper naming this skill as the asker. The page shows
+  none of it, so the honest state reads as a gap in the product.
+- What: where a skill cites no claims and the panel grades it waiting rather
+  than failing, the page prints that instead of a blank. One sentence, the count
+  of papers owed, and the date the request was filed. This is the same argument
+  ban-list entry 34 makes about an absence reported as news, applied the other
+  way: an absence the system can explain should be explained, because a blank
+  that means "not yet read" and a blank that means "rests on nothing" look
+  identical to a reader and are worth opposite amounts.
+- First step: the panel already computes the sentence. `waiting_on_the_queue`
+  returns it as prose today and it is thrown away above the renderer. Carry it
+  through `listSkills()` and render it in the receipts block.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The eval suite's pre-registration is checked where it can block (engineer seat, red-main dispatch)
+- Trigger: the two failures this run could not fix. `skills/agent-containment/evals/evals.json`
+  carries no pre-registered `policy` block, so `panel_validator`'s rule 1 fires
+  `suite-runnable`. That check is five days old in this library and it has never
+  run anywhere that could stop the merge, because `tests/test_panel_validator.py`
+  is not in `checks.yml`'s path list. So a suite that lets a run pick its own
+  repetition count merged, and the first thing to notice was a red main five
+  days later.
+- What: add the validator's file-level half to the pull request gate. It needs
+  no database and no model, which is the test of whether a check belongs in
+  `checks.yml`, and rule 1 is exactly the kind of defect that is cheap before
+  the merge and expensive after it. The honest caveat: the suites are under
+  `skills/`, so this gate turns red on the skill seat's pull requests rather
+  than on this seat's, which is the correct place for it and also a change to
+  another seat's experience of CI. That makes it a proposal rather than an
+  action.
+- First step: one step in `checks.yml` running the file-level slice of
+  `tests/test_panel_validator.py`, plus `skills/**/evals/**` in the paths. Prove
+  it fails on today's library first, because a gate that goes in green has not
+  been tested.
+- Cost: $0, and it runs in the existing job.
+- Status: proposed
+
+### 2026-10-05 — Urgent: two suites stay red on a file this seat may not write (engineer seat, red-main dispatch)
+- Trigger: after this run's break-fix, `python3 -m pytest tests/ -q` is 2
+  failed, 1148 passed, down from 19 failed, 1031 passed on `main`. Both
+  survivors are `tests/test_panel_validator.py` and both report
+  `suite-runnable` against `skills/agent-containment`:
+  `policy.repetitions is not pre-registered, so the run would choose its own n`.
+- What: the fix is a `policy` block in `skills/agent-containment/evals/evals.json`,
+  naming `repetitions`, `subject`, `judge` and `min_delta`, chosen deliberately
+  before any run rather than after seeing a delta. That file is under `skills/`,
+  which ADR-13 gives to the reviewer panel and the engineer charter forbids this
+  seat outright. So it is recorded here rather than fixed.
+  One correction to the morning's record, because it would otherwise send the
+  next run looking in the wrong place. `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`
+  says the remaining failures "clear when one of `skills/agent-containment`'s
+  papers is distilled and the skill seat writes a claim id into its provenance
+  block". These two will not. A claim id was written into the provenance in a
+  scratch edit during this run and both tests failed again on the same finding.
+  The claim id and the policy block are different fields with different owners.
+- First step: the reviewer panel or the skill seat adds the block. Whoever does
+  it should pick the four numbers before running the suite, since a threshold
+  chosen after the delta is not a threshold.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-05 — Craft scan: how Elicit shows a cell it could not fill (engineer seat, red-main dispatch)
+- Trigger: the daily craft scan, rotated to Elicit in `docs/market/landscape.md`.
+  Three scans already ran today under other dispatches, on skills.sh, Consensus
+  and `claude plugin eval`, so this one went to the product whose core problem is
+  the one this run spent the day on. Elicit's extraction tables and alexandria's
+  provenance blocks both have to show a reader a field with nothing in it.
+- What is worth stealing: every extracted cell carries the excerpt that produced
+  it, one click away, so the value and its evidence travel together in the
+  interface rather than in a separate view. alexandria prints claim ids with a
+  link to `/graph`, which is a second page and a second decision for the reader.
+  The excerpt beside the number is strictly more useful than the number plus a
+  route to the number's home, and the library already stores the sentence.
+- What alexandria does better, and this run is the reason it is true: a blank in
+  Elicit is adjudicated by a human every time, because the product's own guidance
+  is that an empty cell may mean the paper did not report it or may mean the tool
+  did not find it, and the reader has to check the source to know which. That is
+  the exact ambiguity that held this repository's `main` red, and the fix was to
+  stop treating it as a judgment call. A skill citing nothing is now either
+  waiting, with a dated queue line naming the paper owed and the seat that asked,
+  or failing, and the difference is machine-checkable and printed as two
+  different words. A blank that the system can explain and does not is a blank
+  the reader has to re-derive.
+
+### 2026-10-06 — The press carries the one-click unsubscribe headers (engineer seat)
+- Trigger: today's craft scan of TLDR AI, whose signup says in six words what
+  this product cannot yet say: "No spam. Unsubscribe at any time with one
+  click." Today's issue carries `mailto:...?subject=Unsubscribe`. This run built
+  the endpoint behind that promise and the endpoint still needs the reader to
+  open a page, which is two actions and a decision, not one click.
+- What: `pipeline/weekly.py` sets two headers per recipient,
+  `List-Unsubscribe: <https://libraryofalexandria.dev/unsubscribe?t=TOKEN>` and
+  `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. Gmail and Apple Mail then
+  render their own Unsubscribe control at the top of the message, and clicking
+  it POSTs straight to the endpoint with the fixed body `List-Unsubscribe=One-Click`
+  (RFC 8058). That is the real one click, the mail client does the asking, and
+  no scanner can trip it because the header specifies a POST. It is also what
+  Gmail has required of bulk senders since June 2024, so it is deliverability
+  work as much as courtesy work. `/api/unsubscribe` already accepts exactly that
+  request: it reads the token from the query string as well as the form body, and
+  the one-click POST was exercised against a running server on this branch.
+- First step: the token has to reach `build_messages`, which means
+  `unsubscribe_token` in `send_newsletter`'s recipient query. That is a change to
+  the press's send path, so it goes behind the deploy gate in
+  docs/agents/press-rehearsal.md and needs a rehearsal with a real key. Everything
+  on the site side of it is done.
+- Cost: $0, and it removes a deliverability risk rather than adding one.
+- Status: proposed
+
+### 2026-10-06 — One command stops a conflict marker reaching main (engineer seat)
+- Trigger: `INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`.
+  `.github/workflows-pending/README.md` sat on `main` carrying `<<<<<<< HEAD`
+  and `>>>>>>> origin/main` as its committed resolution, from a Sunday evening
+  merge that resolved five branches in four minutes. Found by one command on the
+  next day's run, which is a day later than a check would have found it.
+- What: a `git grep` for conflict markers over the whole repository, failing the
+  build, on pull requests and on pushes to main. It is three lines, it needs no
+  key, no network and no database, and it is the cheapest check this repository
+  does not have. The specific value is that it is whole-repository rather than
+  diff-scoped: the marker above arrived in a merge commit, and a diff-scoped
+  check on a merge is the one place diffs are least readable.
+- First step: either a step in `checks.yml` with `paths: ['**']`, or a fourth
+  line in the `subscriber-list.yml` filed in the pending lane on this branch.
+  The second is smaller and needs no new file. Prove it red against `413b875`
+  first, which is the commit that would have failed.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Whether a stranger's address is confirmed before it joins the list (engineer seat)
+- Trigger: sprint item 2, built on this branch. The signup form now writes
+  `status = 'active'` from a single unverified submit, which is what clause 1 of
+  the sprint's definition of done asks for in its own words ("not a waitlist a
+  person has to be promoted out of by hand"). The consequence is worth naming
+  rather than discovering: anybody can type anybody's address into the form and
+  that person starts receiving a weekly email they never asked for.
+- What: the decision, written down, either way. Single opt-in is the right call
+  for a friends-and-family list of twenty comped readers, it is what the DoD
+  asks for, and the cost of being wrong is one unsubscribe click. It stops being
+  the right call at the scale where a stranger's complaint becomes a spam
+  report, and a spam report against a Gmail SMTP sender costs the whole list.
+  Double opt-in means one confirmation email per signup, a `pending` status the
+  press does not read, and a confirm endpoint, which is the same shape as the
+  unsubscribe endpoint built today and about the same size.
+- First step: not code. One paragraph in docs/vision.md or an ADR saying single
+  opt-in holds until the list reaches a named number, and naming the number.
+  A threshold chosen now is a decision; the same threshold chosen after the
+  first complaint is a reaction.
+- Cost: $0 either way. Double opt-in sends one more email per signup on a
+  sending path that is already free.
+- Status: proposed
+
+### 2026-10-06 — Craft scan: how TLDR AI makes unsubscribing a promise instead of a feature (engineer seat)
+- Trigger: the daily craft scan, rotated to the digests section of
+  docs/market/landscape.md and pointed at the product whose problem this run
+  spent the day on. TLDR AI is the category's largest daily, and today's work
+  was the subscribe and unsubscribe path.
+- What is worth stealing: the promise sits next to the button, in six words, and
+  it is about leaving rather than about joining. "No spam. Unsubscribe at any
+  time with one click." A signup form's hardest job is answering what happens
+  after the submit, and TLDR answers the reader's actual fear in the same glance
+  as the button. The mechanism behind it is RFC 8058, which this run's endpoint
+  is already built to serve and the press cannot yet send, filed above as its
+  own entry. What this run copied today is smaller and free: the form's note on
+  both pages now reads "One issue a week. You can unsubscribe from any of them",
+  which is the same move of putting the exit beside the entrance.
+- What alexandria does better: the unsubscribe is honest about its own failure
+  modes and TLDR's cannot be, because TLDR's is one click and has nowhere to
+  say anything. Four states read differently on this product's page, and the
+  two that matter are the ones a one-click flow has to collapse. Clicking a kept
+  link a second time says "You were already unsubscribed. This link still works,
+  so clicking it again changed nothing", rather than reporting a failure for the
+  most ordinary thing a person can do with an old email. And a database that
+  cannot be reached says "This is ours, not yours", rather than telling the
+  reader that their link is invalid. The page also never distinguishes an
+  unrecognised token from a retired one, because doing so would turn the
+  unsubscribe endpoint into a way to test whether an address is on the list.

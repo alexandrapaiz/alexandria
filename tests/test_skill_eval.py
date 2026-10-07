@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import pathlib
+import re
 import sys
 
 import pytest
@@ -176,7 +177,7 @@ def test_a_project_check_runs_the_command_in_a_fresh_copy(tmp_path):
                    "timeout": 30}}
     good = ev.hard_check(t, "```python\nvalue = 42\n```", tmp_path)
     bad = ev.hard_check(t, "```python\nvalue = 7\n```", tmp_path)
-    assert good[0] == 1.0 and good[1] == "exit 0"
+    assert good[0] == 1.0 and good[1] == "exit 0 (host)"
     assert bad[0] == 0.0
     # The copy is fresh every time, so the first run cannot have left the second
     # one a passing answer file.
@@ -376,13 +377,54 @@ def test_two_tasks_with_one_id_is_caught(tmp_path):
     assert any("share the id" in p for p in ev.conformance(spec, "s", tmp_path))
 
 
-def test_a_missing_eval_file_is_unmeasured_and_never_a_failure(capsys):
-    """Exit 2, not 1. The skill seat writes the tasks, not this harness."""
+def test_a_missing_eval_file_is_unmeasured_and_never_a_failure(tmp_path):
+    """Exit 2, not 1. The skill seat writes the tasks, not this harness.
+
+    Measured against a library this test builds, not against `skills/`. It used
+    to call `ev.main(["--check"])` over the live library, which made it a test of
+    whether eight files written by another seat happened to be clean that day.
+    It went red on 2026-10-04 when `normalize` stopped supplying a default for
+    `policy.repetitions`, which is a real finding about four suites and has
+    nothing to do with what this test is named after. The classification is the
+    claim, so the classification is what it asserts.
+    """
+    library = tmp_path / "skills"
+    (library / "has-nothing" / "evals").mkdir(parents=True)
+    conformant = library / "is-fine" / "evals"
+    conformant.mkdir(parents=True)
+    (conformant / "evals.json").write_text(json.dumps(base_spec(skill="is-fine")))
+
+    report = ev.check_library(root=tmp_path)
+    assert report["exit"] == 2
+    assert report["malformed"] == []
+    assert any("no evals/evals.json" in p for p in report["problems"])
+
+    broken = library / "is-broken" / "evals"
+    broken.mkdir(parents=True)
+    (broken / "evals.json").write_text("{not json")
+    assert ev.check_library(root=tmp_path)["exit"] == 1
+
+
+def test_the_live_library_is_scanned_and_the_reason_is_named(capsys):
+    """The live scan still runs, and this asserts the reason rather than a count.
+
+    On 2026-10-05 every one of the eight suites is missing `policy.repetitions`,
+    so `--check` exits 1. That is the gate working: the suites are the skill
+    seat's surface and this is how the engineer seat reports a defect in them.
+    If a future branch registers the policies, this assertion changes shape, and
+    that is the point of asserting the reason.
+    """
     code = ev.main(["--check"])
     out = capsys.readouterr().out
-    assert code == 2
-    assert "unmeasured:" in out
-    assert "failing:" not in out
+    assert code in (0, 1, 2)
+    if code == 1:
+        assert "failing:" in out
+        reasons = [line for line in out.split("\n")
+                   if line.startswith("failing:")]
+        assert all("policy.repetitions" in line or "sections names" in line
+                   for line in reasons), (
+            "the live library fails --check for a reason this test does not "
+            f"know about: {reasons}")
 
 
 # ------------------------------------------------------------ end to end
@@ -637,7 +679,7 @@ def test_the_real_pytest_file_in_a_control_decides_the_score():
     task = [t for t in fixture_suite()["tasks"] if t["id"] == "fx-c1"][0]
     good = "```python\ndef double(n):\n    return 2 * n\n```"
     bad = "```python\ndef double(n):\n    return n\n```"
-    assert ev.score_answer(task, good, None, FIXTURE) == (1.0, "exit 0")
+    assert ev.score_answer(task, good, None, FIXTURE) == (1.0, "exit 0 (host)")
     score, why = ev.score_answer(task, bad, None, FIXTURE)
     assert score == 0.0 and "exit 1" in why
 
@@ -875,8 +917,18 @@ def test_the_entry_is_the_shape_the_reader_parses(tmp_path, monkeypatch):
 
 
 def test_the_version_in_the_entry_is_the_one_in_the_frontmatter():
-    """`skill_version` reads the real library, through the registrar's parser."""
-    assert ev.skill_version("harness-engineering") == "2"
+    """`skill_version` reads the real library, through the registrar's parser.
+
+    Read from the file rather than pinned to a literal. This asserted `== "2"`
+    until 2026-10-05 and went red the moment the skill was revised to 4, which
+    made a correct revision of a skill look like a broken harness. What the
+    function promises is that it returns the frontmatter's `version`, so that is
+    what is checked.
+    """
+    raw = (ROOT / "skills" / "harness-engineering" / "SKILL.md").read_text()
+    expected = re.search(r"^version:\s*(\S+)\s*$", raw, re.M).group(1).strip("'\"")
+    assert ev.skill_version("harness-engineering") == expected
+    assert expected, "the skill's frontmatter carries no version at all"
     assert ev.skill_version("no-such-skill") == ""
 
 
@@ -1206,3 +1258,369 @@ def test_a_suite_written_before_the_field_existed_is_uncovered_not_malformed(
     assert ev.conformance(spec, "x", evals) == []
     assert len(ev.uncovered_sections(spec, "x", evals)) == 2
     assert ev.coverage_counts(spec, evals) == (0, 2)
+
+
+# -------------------------------------------------------------------- ADR-40
+#
+# The seven items the owner directed on 2026-10-05, each asserted against the
+# claim behind it rather than against the shape of the code.
+
+def test_pass_at_k_is_the_unbiased_estimator_and_not_did_any_of_them_pass():
+    """C248's warning, in the one place this harness could repeat it.
+
+    "Did any of the k pass" over the same n is biased upward. With 1 success in
+    3 repetitions, pass@2 is the chance that 2 draws from those 3 contain the
+    success, which is 2/3, not 1.
+    """
+    assert ev.pass_at_k(1, 3, 1) == round(1 / 3, 4)
+    assert ev.pass_at_k(1, 3, 2) == round(2 / 3, 4)
+    assert ev.pass_at_k(1, 3, 3) == 1.0
+    assert ev.pass_at_k(0, 3, 3) == 0.0
+    assert ev.pass_at_k(3, 3, 1) == 1.0
+    # k above n is clamped, because pass@5 over 3 repetitions is a claim about
+    # two runs that never happened.
+    assert ev.pass_at_k(1, 3, 9) == ev.pass_at_k(1, 3, 3)
+    assert ev.pass_at_k(1, 0, 1) == 0.0
+
+
+def test_pass_rates_are_reported_only_for_the_tasks_that_can_have_them():
+    hard = {"id": "h", "with_scores": [1.0, 0.0, 1.0]}
+    soft = {"id": "s", "with_scores": [0.67, 0.5, 0.67]}
+    assert ev.pass_rates([soft], "with_scores", 3) is None, (
+        "a rubric score of 0.67 is not a pass-or-fail trial and pass@k is a "
+        "statement about one")
+    rates = ev.pass_rates([hard, soft], "with_scores", 3)
+    assert rates["tasks"] == 1 and rates["k"] == 3
+    assert rates["pass_at_1"] == round(2 / 3, 4)
+
+
+def test_the_spread_is_how_much_the_tasks_disagreed():
+    assert ev.stdev([1.0]) == 0.0
+    assert ev.stdev([1.0, 1.0, 1.0]) == 0.0
+    assert round(ev.stdev([0.0, 1.0]), 4) == round(2 ** 0.5 / 2, 4)
+    s = ev.spread_of([0.2, 0.9])
+    assert s["n"] == 2 and s["min"] == 0.2 and s["max"] == 0.9 and s["sd"] > 0
+
+
+def test_a_task_the_bare_subject_already_passes_becomes_a_control():
+    """ADR-40 item 2. It is a denominator, not a neutral observation."""
+    tasks = [{"id": "fails-bare", "ask": "?"},
+             {"id": "partial", "ask": "?"},
+             {"id": "passes-bare", "ask": "?"},
+             {"id": "declared", "ask": "?", "control": True},
+             {"id": "only-with", "ask": "?", "scored_in": ev.INDICATOR}]
+    bare = {"fails-bare": {"without_scores": [0.0, 0.0, 0.0]},
+            "partial": {"without_scores": [1.0, 0.0, 1.0]},
+            "passes-bare": {"without_scores": [1.0, 1.0, 1.0]},
+            "declared": {"without_scores": [1.0, 1.0, 1.0]},
+            "only-with": {"without_scores": [0.0, 0.0, 0.0]}}
+    out = ev.differential_selection(tasks, bare)
+    assert out["graded"] == ["fails-bare", "partial"], (
+        "a task the bare subject passes two times in three is partial and "
+        "stays graded; the spread is what reports the noise")
+    assert [r["id"] for r in out["demoted_to_control"]] == ["passes-bare"]
+    assert out["declared_controls"] == ["declared"]
+    demoted = [t for t in tasks if t["id"] == "passes-bare"][0]
+    assert demoted["control"] is True and demoted["demoted"] is True
+    assert [t for t in tasks if t["id"] == "only-with"][0].get("control") is None
+
+
+def test_the_bare_arm_is_asked_once_and_its_scores_are_reused(tmp_path):
+    """The bare-first pass is free, or it doubles the cost of every run."""
+    task = {"id": "t", "ask": "?",
+            "check": {"type": "contains_all", "patterns": ["harness"]}}
+    subject = ev.ScriptedSubject(with_answer="the harness", without_answer="no")
+    bare = ev.bare_pass(subject, subject, [task], 3, tmp_path)
+    after_bare = subject.calls
+    assert after_bare == 3 and bare["t"]["without_scores"] == [0.0, 0.0, 0.0]
+    row = ev.run_task(subject, subject, task, "body", 3, tmp_path,
+                      bare=bare["t"])
+    assert subject.calls == after_bare + 3, (
+        "the without-arm was asked a second time, which pays twice for the "
+        "same measurement")
+    assert row["without_scores"] == [0.0, 0.0, 0.0]
+    assert row["with_scores"] == [1.0, 1.0, 1.0]
+    assert row["spread"]["with"]["n"] == 3
+
+
+def test_a_rubric_criterion_with_nothing_verifiable_behind_it_is_a_finding():
+    """ADR-40 item 5, C476 and C479: 8 to 26 percent exploited, 36 under stress."""
+    spec = {"tasks": [{"id": "t", "rubric": [
+        {"id": "vibes", "asks": "Is the answer good?"},
+        {"id": "cited", "asks": "Does it cite the regression?",
+         "certificate": {"kind": "number", "names": "the 4 to 30 point drop"}},
+        {"id": "mislabelled", "asks": "?",
+         "certificate": {"kind": "feeling", "names": "x"}},
+        {"id": "empty", "asks": "?", "certificate": {"kind": "test", "names": ""}},
+    ]}]}
+    found = ev.certificate_problems(spec, "s")
+    assert any("'vibes'" in f and "names no certificate" in f for f in found)
+    assert any("'mislabelled'" in f and "certificate kind" in f for f in found)
+    assert any("'empty'" in f and "names nothing" in f for f in found)
+    assert not any("'cited'" in f for f in found)
+    assert ev.certificate_counts(spec) == (1, 4)
+
+
+def test_a_suite_that_registered_require_certificates_fails_rather_than_notes(tmp_path):
+    spec = base_spec(policy={"repetitions": 3, "require_certificates": True},
+                     tasks=[{"id": "t", "ask": "?", "rubric": [
+                         {"id": "vibes", "asks": "Is it good?"}]}])
+    problems = ev.conformance(spec, "s", tmp_path)
+    assert any("names no certificate" in p for p in problems)
+    assert any("no `exploit`" in p for p in problems)
+    # Without the opt-in the same file runs, because the eight suites in the
+    # library predate the rule and a gate that fails everything gets turned off.
+    spec["policy"].pop("require_certificates")
+    assert ev.conformance(spec, "s", tmp_path) == []
+
+
+def test_an_answer_written_to_game_the_rubric_must_score_zero(tmp_path):
+    graded_on = "harness"
+    judge = ev.ScriptedSubject("", "", judges_on=graded_on)
+    clean = {"id": "clean", "ask": "?", "exploit": "best practice, iterate",
+             "rubric": [{"id": "c", "asks": "Does it name the move?"}]}
+    gamed = {"id": "gamed", "ask": "?",
+             "exploit": {"answer": "the harness, obviously"},
+             "rubric": [{"id": "c", "asks": "Does it name the move?"}]}
+    assert ev.run_exploits(judge, [clean], tmp_path)["verdict"] == "clean"
+    out = ev.run_exploits(judge, [gamed], tmp_path)
+    assert out["verdict"] == "exploited" and out["exploited"] == ["gamed"]
+    assert out["max_score"] == 1.0
+    assert ev.run_exploits(judge, [{"id": "none", "ask": "?"}],
+                           tmp_path)["verdict"] == "not run"
+
+
+def test_an_exploited_rubric_fails_the_gate_ahead_of_the_delta():
+    result = {"contract": 2, "verdict": "gain", "subject_model": "m",
+              "delta": {"mean": 0.5, "ci95": [0.2, 0.8]},
+              "heldout": {"verdict": "holds", "held_out": ["a"],
+                          "delta": {"mean": 0.4}},
+              "exploit_test": {"verdict": "exploited", "max_score": 0.8,
+                               "exploited": ["t"], "ceiling": 0.0}}
+    problems = ev.gate_problems(result, None)
+    assert any("game the rubric" in p for p in problems)
+
+
+def test_a_task_nobody_audited_is_a_finding_and_an_audit_that_found_something_says_so(tmp_path):
+    """ADR-40 item 6, PACT (C561): the cheapest moment is before it counts."""
+    spec = {"tasks": [{"id": "never"}, {"id": "clean"}, {"id": "ambiguous"}]}
+    assert any("never audited" in f
+               for f in ev.audit_problems(spec, tmp_path, "s"))
+    (tmp_path / ev.AUDIT_FILENAME).write_text(json.dumps({"tasks": {
+        "clean": {"ambiguity": "ok", "gameability": "ok", "realism": "ok"},
+        "ambiguous": {"ambiguity": "two readings score differently",
+                      "gameability": "ok", "realism": "ok",
+                      "notes": "the word 'budget' is money or tokens"},
+    }}))
+    found = ev.audit_problems(spec, tmp_path, "s")
+    assert any("never audited" in f and "never" in f for f in found)
+    assert any("found ambiguity" in f and "budget" in f for f in found)
+    assert not any("/clean:" in f for f in found)
+
+
+def test_the_length_check_catches_a_judge_that_scores_length(tmp_path):
+    """C934: the same content at two lengths, and the number should not move."""
+    task = {"id": "t", "ask": "?",
+            "rubric": [{"id": "c", "asks": "Is it complete?"}]}
+
+    class LengthJudge:
+        """Says yes only to the longer copy of identical content."""
+
+        def ask(self, system, user, max_tokens):
+            answer = user.split("The answer:", 1)[-1]
+            return {"verdicts": {"c": "yes" if len(answer) > 200 else "no"}}
+
+    answers = {("t", "with"): "a" * 120}
+    out = ev.length_bias(LengthJudge(), [task], answers, tmp_path)
+    assert out["pairs"] == 1 and out["verdict"] == "length-sensitive"
+    assert out["max_abs_shift"] == 1.0
+    assert ev.padded("x").count("x") == 2, "the padding restates, it does not add"
+    assert ev.length_bias(LengthJudge(), [task], {}, tmp_path)["verdict"] \
+        == "not run"
+
+
+def test_a_delta_is_attributed_to_a_section_and_not_to_the_file():
+    """ADR-40 item 7, DRACO's per-step credit (C40)."""
+    tasks = [
+        {"id": "rub", "sections": ["Section A"], "rubric": [
+            {"id": "one", "asks": "?"},
+            {"id": "two", "asks": "?", "section": "Section B"}]},
+        {"id": "hard", "sections": ["Section B"]},
+        {"id": "ctl", "sections": ["Section A"], "control": True},
+    ]
+    per_task = [
+        {"id": "rub", "credit": {"with": {"one": [1.0, 1.0], "two": [0.0, 0.0]},
+                                 "without": {"one": [0.0, 0.0],
+                                             "two": [0.0, 0.0]}}},
+        {"id": "hard", "credit": {"with": {ev.WHOLE_TASK: [1.0, 1.0]},
+                                  "without": {ev.WHOLE_TASK: [0.0, 1.0]}}},
+        {"id": "ctl", "control": True,
+         "credit": {"with": {ev.WHOLE_TASK: [1.0]},
+                    "without": {ev.WHOLE_TASK: [1.0]}}},
+    ]
+    out = ev.section_credit(per_task, tasks)
+    assert out["Section A"]["delta"] == 1.0
+    assert out["Section A"]["criteria"] == ["rub/one"]
+    assert "ctl" not in out["Section A"]["tasks"], (
+        "a control is designed to produce a zero delta, so averaging it into a "
+        "section dilutes that section's own evidence")
+    assert out["Section B"]["delta"] == 0.25
+    assert sorted(out["Section B"]["criteria"]) == ["hard", "rub/two"]
+    assert all(row["survival"] is None for row in out.values())
+
+
+def test_a_criterion_that_credits_a_section_the_skill_does_not_have_is_caught(tmp_path):
+    (tmp_path / "SKILL.md").write_text("---\nx: 1\n---\n\n## Real section\n\nt\n")
+    base = tmp_path / "evals"
+    base.mkdir()
+    spec = base_spec(tasks=[{"id": "t", "ask": "?", "rubric": [
+        {"id": "c", "asks": "?", "section": "Invented section"}]}])
+    problems = ev.conformance(spec, "s", base)
+    assert any("Invented section" in p and "does not exist" in p
+               for p in problems)
+
+
+def test_the_held_out_delta_is_the_one_an_edit_is_gated_on():
+    """ADR-40 refinement item 2, SkillOpt (C865)."""
+    tasks = [{"id": "written", "written_for": "3"},
+             {"id": "older", "written_for": "2"},
+             {"id": "fresh"}]
+    rows = [{"id": "written", "with_scores": [1.0], "without_scores": [0.0],
+             "delta": 1.0},
+            {"id": "older", "with_scores": [1.0], "without_scores": [0.0],
+             "delta": 1.0},
+            {"id": "fresh", "with_scores": [1.0], "without_scores": [0.0],
+             "delta": 1.0}]
+    out = ev.heldout_block(rows, tasks, set(), "3", 1)
+    assert out["written_against"] == ["written"]
+    assert sorted(out["held_out"]) == ["fresh", "older"]
+    assert out["verdict"] == "holds"
+    # Named on the command line rather than in the file.
+    named = ev.heldout_block(rows, tasks, {"fresh", "older"}, "3", 1)
+    assert named["held_out"] == [] and named["verdict"] == "no held-out set"
+
+
+def test_two_blanks_are_not_a_match_so_the_held_out_set_is_not_emptied():
+    """A task with no `written_for` and a run with no version are not the same.
+
+    Read as a match, every task counts as written-against, the held-out set is
+    empty, and ADR-40's generalization check becomes a refusal to measure.
+    """
+    assert ev.written_against({"id": "a"}, set(), "") is False
+    assert ev.written_against({"id": "a", "written_for": ""}, set(), "") is False
+    assert ev.written_against({"id": "a", "written_for": "3"}, set(), "3") is True
+
+
+def test_an_empty_held_out_set_fails_the_gate_on_contract_two_only():
+    base = {"verdict": "gain", "subject_model": "m",
+            "delta": {"mean": 0.5, "ci95": [0.2, 0.8]},
+            "heldout": {"verdict": "no held-out set"}}
+    assert any("held-out" in p
+               for p in ev.gate_problems(dict(base, contract=2), None))
+    # A contract-1 document predates the block, and failing it here would block
+    # every revision on the absence of a field nothing had written yet.
+    assert not any("held-out" in p
+                   for p in ev.gate_problems(dict(base, contract=1), None))
+    failing = dict(base, contract=2,
+                   heldout={"verdict": "does not hold", "held_out": ["a", "b"],
+                            "delta": {"mean": -0.3}})
+    assert any("the tasks and not the skill" in p
+               for p in ev.gate_problems(failing, None))
+
+
+def test_asking_for_the_sandbox_and_not_getting_one_is_a_refusal(monkeypatch):
+    """ADR-40 item 4. A suite that pre-registered a container and got the host
+    measured something else, and this file's whole contract is that the result
+    says what ran."""
+    monkeypatch.setattr(ev, "docker_available",
+                        lambda: (False, "docker is not on PATH"))
+    assert ev.sandbox_decision("docker")[0] == "refuse"
+    where, why = ev.sandbox_decision("auto")
+    assert where == "host" and "did not get one" in why
+    assert ev.sandbox_decision("host")[0] == "host"
+    monkeypatch.setattr(ev, "docker_available", lambda: (True, "docker server 1"))
+    where, why = ev.sandbox_decision("auto")
+    assert where == "docker" and "--network none" in why
+    assert ev.sandbox_decision("docker")[0] == "docker"
+
+
+def test_the_container_denies_the_network_and_carries_the_argv_form():
+    argv = ev.docker_argv("pytest -q", pathlib.Path("/tmp/w"))
+    assert "--network" in argv and argv[argv.index("--network") + 1] == "none"
+    assert argv[-3:] == ["/bin/sh", "-lc", "pytest -q"]
+    # A suite that wrote its command as a list keeps the list, because wrapping
+    # one in `sh -lc` re-introduces the quoting the list form exists to avoid.
+    assert ev.docker_argv(["python3", "check.py"],
+                          pathlib.Path("/tmp/w"))[-2:] == ["python3", "check.py"]
+
+
+def test_an_executable_repetition_is_logged_with_where_it_ran(tmp_path):
+    task = {"id": "exec", "files": {},
+            "check": {"type": "tests_pass", "answer_path": "a.txt",
+                      "command": "grep -q harness a.txt"}}
+    trajectory = []
+    score, why = ev.score_answer(task, "the harness", None, tmp_path,
+                                 sandbox="host", trajectory=trajectory,
+                                 arm="with", rep=0)
+    assert score == 1.0 and "host" in why
+    assert len(trajectory) == 1
+    entry = trajectory[0]
+    assert entry["task"] == "exec" and entry["arm"] == "with" and entry["rep"] == 1
+    assert entry["exit_code"] == 0 and entry["sandbox"] == "host"
+    assert entry["answer_chars"] == len("the harness")
+    assert len(entry["answer_sha256"]) == 16, (
+        "the answer is logged by hash, because a log carrying a thousand model "
+        "answers is a log nobody opens")
+
+
+def test_the_result_says_which_knobs_the_provider_would_not_let_it_pin():
+    """ADR-40 item 1. Claiming a replayability you do not have is the failure
+    this whole file exists to catch."""
+    assert ev.seedable("openai/gpt-oss-120b") is True
+    assert ev.seedable("kimi-k2.6") is False
+    assert ev.seedable("not-a-model") is False
+    manifest = ev.ablation_manifest("kimi-k2.6", "openai/gpt-oss-120b", 3,
+                                    "docker")
+    assert "subject_seed" not in manifest["pinned"]
+    assert len(manifest["unpinned"]) == 1
+    assert "not replayable" in manifest["unpinned"][0]
+    assert manifest["pinned"]["temperature"] == ev.EVAL_TEMPERATURE
+    assert manifest["pinned"]["sandbox"] == "docker"
+    both = ev.ablation_manifest("openai/gpt-oss-120b", "openai/gpt-oss-20b", 3,
+                                "host")
+    assert both["pinned"]["subject_seed"] == ev.SUBJECT_SEED
+
+
+def test_the_seed_reaches_the_client_only_where_the_provider_honours_one():
+    """`pipeline/llm.py` gained one optional kwarg and no scheduled job passes
+    it, which is what keeps this out of the runtime-change blast radius."""
+    import llm
+
+    sent = {}
+
+    class FakeCap:
+        spent = 0.0
+
+        def require(self):
+            pass
+
+    class Recorder:
+        def ask_json(self, models, system, user, env, cap, **kw):
+            sent.update(kw)
+            return ({"answer": "x"}, models[0])
+
+    subject = ev.Subject("kimi-k2.6", {}, FakeCap())
+    subject.llm = Recorder()
+    subject.ask("s", "u", 100)
+    assert sent["seed"] is None, (
+        "Moonshot documents no seed, so sending one would be a knob that does "
+        "nothing and a claim on the page that is false")
+    assert sent["temperature"] == ev.EVAL_TEMPERATURE
+    groq = ev.Subject("openai/gpt-oss-120b", {}, FakeCap())
+    groq.llm = Recorder()
+    groq.ask("s", "u", 100)
+    assert sent["seed"] == ev.SUBJECT_SEED
+    # And the default is None, so every cron sends the bytes it sent before.
+    import inspect
+    for fn in (llm.ask_json, llm.call_one, llm._post):
+        assert inspect.signature(fn).parameters["seed"].default is None

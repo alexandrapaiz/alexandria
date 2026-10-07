@@ -331,3 +331,169 @@ def test_the_ban_list_smoke_passes():
 
 def test_the_gate_smoke_passes():
     assert gate.smoke() == 0
+
+
+# -------------------------------------------- ADR-40's refinement clauses
+
+BEFORE = ("---\nversion: 1\npapers:\n  - a\n---\n\n"
+          "## One\n\nfirst body\n\n## Two\n\nsecond body\n")
+
+
+def test_a_revision_that_rewrites_three_sections_cannot_attribute_its_delta():
+    """ADR-40 refinement item 1, AgentGrad (C244): one intervention at a time."""
+    three = (BEFORE.replace("first body", "a")
+             .replace("second body", "b") + "\n## Three\n\nc\n")
+    moved = gate.changed_sections(BEFORE, three)
+    assert sorted(moved["edited"]) == ["One", "Two"]
+    assert moved["added"] == ["Three"]
+    assert len(moved["edited"] + moved["added"] + moved["removed"]) == 3
+
+
+def test_the_frontmatter_is_not_a_section_or_no_revision_could_ever_pass():
+    bumped = BEFORE.replace("version: 1", "version: 2")
+    assert gate.changed_sections(BEFORE, bumped) == {
+        "edited": [], "added": [], "removed": []}
+
+
+def test_a_section_body_is_read_without_its_heading():
+    out = gate.sections_of(BEFORE)
+    assert out == {"One": "first body", "Two": "second body"}
+    assert gate.sections_of("no headings at all") == {}
+
+
+def test_a_rejected_edit_is_recognised_after_a_reflow_and_not_after_a_rewrite():
+    """SkillOpt's buffer: the loop does not burn a cap reaching the same no."""
+    edited = BEFORE.replace("first body", "first body, revised")
+    reflowed = BEFORE.replace("first body", "first  body,\n  revised")
+    other = BEFORE.replace("first body", "a completely different sentence")
+    assert gate.edit_fingerprint("One", BEFORE, edited) \
+        == gate.edit_fingerprint("One", BEFORE, reflowed)
+    assert gate.edit_fingerprint("One", BEFORE, edited) \
+        != gate.edit_fingerprint("One", BEFORE, other)
+    assert len(gate.edit_fingerprint("One", BEFORE, edited)) == 16
+
+
+def test_the_rejection_entry_carries_the_reason_and_not_only_the_hash(monkeypatch, tmp_path):
+    """A buffer of hashes is a wall. A buffer with reasons is a memory."""
+    skill = tmp_path / "skills" / "fixture"
+    (skill / "reviews").mkdir(parents=True)
+    (skill / "SKILL.md").write_text(BEFORE.replace("first body", "revised"))
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    monkeypatch.setattr(gate, "file_at", lambda ref, path: BEFORE)
+
+    failing = [gate.Clause("eval", gate.FAILING, ["the delta fell"]),
+               gate.Clause("page", gate.OK, [])]
+    line = gate.record_rejection("fixture", "origin/main", failing, TODAY)
+    assert "1 edit(s) recorded" in line
+
+    doc = json.loads((skill / "reviews" / "rejected-edits.json").read_text())
+    entry = doc["entries"][0]
+    assert entry["section"] == "One" and entry["date"] == TODAY
+    assert "the delta fell" in entry["why"]
+    assert entry["clauses"] == ["eval"]
+
+    # Appending the same rejection twice adds nothing, so a loop that retries
+    # every morning does not grow the file without bound.
+    gate.record_rejection("fixture", "origin/main", failing, TODAY)
+    doc = json.loads((skill / "reviews" / "rejected-edits.json").read_text())
+    assert len(doc["entries"]) == 1
+
+    clause = gate.rejected_clause("fixture", "origin/main")
+    assert clause.state == gate.FAILING
+    assert any("already told no about" in r and "the delta fell" in r
+               for r in clause.reasons)
+
+
+def test_a_revision_that_changed_no_section_records_nothing(monkeypatch, tmp_path):
+    skill = tmp_path / "skills" / "fixture"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(BEFORE)
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    monkeypatch.setattr(gate, "file_at", lambda ref, path: BEFORE)
+    line = gate.record_rejection("fixture", "origin/main",
+                                 [gate.Clause("eval", gate.FAILING, ["x"])],
+                                 TODAY)
+    assert "nothing was recorded" in line
+    assert not (skill / "reviews").exists()
+
+
+def test_a_first_proposal_is_not_in_the_buffer(monkeypatch, tmp_path):
+    skill = tmp_path / "skills" / "fixture"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text(BEFORE.replace("first body", "revised"))
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    monkeypatch.setattr(gate, "file_at", lambda ref, path: BEFORE)
+    clause = gate.rejected_clause("fixture", "origin/main")
+    assert clause.state == gate.OK
+    assert "0 rejected edit(s) on record" in clause.notes[0]
+
+
+def test_the_module_cap_is_three_and_evals_are_not_modules():
+    """ADR-40 refinement item 4, SkillsBench (C848)."""
+    assert gate.MAX_MODULES == 3
+    files = gate.module_files("harness-engineering")
+    assert "SKILL.md" in files
+    assert not any(f.startswith(("evals/", "reviews/")) for f in files)
+    assert gate.modules_clause("harness-engineering").state == gate.OK
+    assert gate.modules_clause("").state == gate.UNKNOWN
+    assert gate.module_files("no-such-skill") == []
+
+
+def test_a_fourth_module_fails_the_cap(monkeypatch, tmp_path):
+    skill = tmp_path / "skills" / "fixture"
+    skill.mkdir(parents=True)
+    for name in ("SKILL.md", "a.md", "b.md", "c.md"):
+        (skill / name).write_text("x")
+    monkeypatch.setattr(gate, "ROOT", tmp_path)
+    clause = gate.modules_clause("fixture")
+    assert clause.state == gate.FAILING
+    assert any("carries 4 modules" in r for r in clause.reasons)
+    assert any("never acted on" in r for r in clause.reasons)
+
+
+def test_the_held_out_clause_is_separate_from_the_eval_clause(monkeypatch):
+    """Two different questions: did it gain, and is the gain about the skill."""
+    def result(block):
+        return lambda path: ({"contract": 2, "heldout": block} if block
+                             else {"contract": 2})
+
+    monkeypatch.setattr(gate.triggers, "read_results",
+                        result({"verdict": "holds", "reads": "+0.30 over 4",
+                                "written_against": ["a"]}))
+    ok = gate.heldout_clause("fixture")
+    assert ok.state == gate.OK and "+0.30 over 4" in ok.notes[0]
+
+    monkeypatch.setattr(gate.triggers, "read_results",
+                        result({"verdict": "does not hold",
+                                "reads": "-0.10 over 4"}))
+    bad = gate.heldout_clause("fixture")
+    assert bad.state == gate.FAILING
+    assert any("copied from the task" in r for r in bad.reasons)
+
+    # A contract-1 result has no block, and unmeasured is reported as unknown
+    # rather than failed. `verdict` already treats unknown as not passing.
+    monkeypatch.setattr(gate.triggers, "read_results", result(None))
+    old = gate.heldout_clause("fixture")
+    assert old.state == gate.UNKNOWN
+    assert any("--written-against" in r for r in old.reasons)
+    assert gate.verdict([old]) == "failed"
+
+    monkeypatch.setattr(gate.triggers, "read_results", lambda path: {})
+    assert gate.heldout_clause("fixture").state == gate.UNKNOWN
+
+
+def test_every_new_clause_is_unknown_when_the_scope_clause_failed():
+    for name in gate.SKILL_CLAUSES:
+        assert gate.one_section_clause("", "origin/main").state == gate.UNKNOWN
+    assert gate.rejected_clause("", "origin/main").state == gate.UNKNOWN
+    assert gate.heldout_clause("").state == gate.UNKNOWN
+    assert gate.modules_clause("").state == gate.UNKNOWN
+
+
+def test_the_comment_prints_the_clusters_an_edit_should_have_come_from():
+    """The gate cannot prove where an edit came from, so it prints the
+    alternative beside it and lets a reviewer compare."""
+    body = gate.comment([gate.Clause("scope", gate.OK, [])],
+                        "harness-engineering", "origin/main", TODAY)
+    assert "Where an edit here should have come from" in body
+    assert "correction(s) on record became" in body
