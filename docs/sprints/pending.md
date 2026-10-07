@@ -1,3 +1,93 @@
+## Updated 2026-10-07, ~00:30 UTC (six-hour pass): two more Tier C PRs joined the queue, zero still clear Tier B, nothing new to answer
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md` and
+the board back to the last pass (2026-10-06, ~17:30 UTC). Nothing new:
+no ADR landed, no allhands entry, no board resolution to strike. The
+merge-authority grant this tracker struck last pass stays struck; this
+run confirmed it operationally, not just by citation (below).
+
+**The grant is real, not just vendored.** Last pass cited the vendoring
+of `docs/standards/pm.md` §21 as confirmation. This run went one step
+further and checked that the session driving it can actually execute a
+merge (`gh pr list --state merged ... --json mergedBy` shows this
+seat's own prior pull requests and others', including PRs not authored
+by the PM seat, merged through this same route). The grant is live, not
+theoretical, which is why the finding below is "zero qualify" rather
+than "the question is unresolved."
+
+**Failed runs, last six hours.** `gh run list --status failure
+--created ">=6 hours ago"` returns four runs, all the `checks` gate on
+the writer's open branch, none an agent seat's own run. All four fail
+the same assertion: `skills/agent-containment/SKILL.md` on `main` still
+carries an empty `claims` list. This is not a new defect and not the
+writer's own: it is the same `main`-level breakage named last pass,
+inherited because that branch was cut from `main` before any fix
+landed. No rerun, because the same input fails the same way until a fix
+merges. No new incident entry, because the root cause and both
+candidate fixes are already named below and in the pull requests that
+carry them.
+
+**Tier B merge check, this run, all seven open pull requests:**
+
+- **The engineer's main-fix pull request** — checks green, otherwise
+  mergeable, but its diff still carries two files under `prompts/`,
+  which Tier C reserves for the owner. **Changed since last pass: it is
+  now also conflicting against `main`**, not merely clean-but-blocked.
+  This is the pull request that, by its own account, also wires the
+  real subscriber row and the real unsubscribe endpoint, so one owner
+  merge would close three sprint items at once, not one.
+- **A second, independent fix for the same `main`-level defect**, from
+  the skill seat, new since last pass — also blocked on a file under
+  `prompts/`, and its own checks are red (the same assertion, because
+  it branched before its own fix reached `main` either). The owner has
+  two candidate fixes for one defect now and neither can land without
+  her, worth a word on whether both are wanted or one supersedes the
+  other.
+- **The writer's third pull request in its own chain**, new since last
+  pass, replacing the one this tracker named yesterday (that one is
+  closed, superseded) — blocked the same two ways: a file under
+  `prompts/`, and the inherited `main` defect above.
+- **A second engineer pull request**, new since last pass, deliberately
+  branched from `main` rather than stacked on the first one, carrying
+  the real unsubscribe link in the sent email. No `prompts/` file in
+  its diff, so Tier C is not why it waits. It conflicts against `main`
+  right now, and its own body already worked out why and in what
+  order: the first engineer pull request merges first, then this one,
+  and the only collision is two append-only knowledge files with a
+  single hunk each. That is the docs-only conflict Tier B lets this
+  seat resolve directly, but not yet: the merge order its own author
+  named has not happened, so resolving it now would be fixing a
+  conflict against a `main` that is about to change again. Queued to
+  resolve once the first one lands, not before.
+- **The pre-send quality checklist**, unchanged, now **17 days** open:
+  a file under `prompts/`, conflicting, waiting only on the owner.
+- **Two drafts opened directly by the owner's own window sessions**
+  (finance, OKR) and one by the chair (frontend) are excluded from this
+  check by Tier B's own second condition, not reported as blocked: a
+  draft is work still being written, not a pull request this seat is
+  the one holding up.
+
+**Zero of the seven qualify for a Tier B merge this run.** Four wait on
+the owner for a file under `prompts/`; one waits on the first of those
+four landing before its own conflict is this seat's to resolve; three
+are the owner's or the chair's own drafts, not this seat's to act on at
+all.
+
+**The Polar Merchant-of-Record account (ADR-30)** remains overdue,
+now **11 days**, since 2026-09-26; no live keys visible in the tree as
+of this run.
+
+**Nothing addressed to this seat went unanswered.** Read the inbox
+first, per the board protocol. The newest item naming `alexandria`'s
+`pm` is headquarters confirming it merged this seat's own pull request
+last pass, which needs no reply. Nothing older than that pass is still
+open against this seat.
+
+**No dispatch fired or queued this run.** Every blocker found above is
+either an owner-only merge or a conflict this seat cannot resolve until
+that merge lands; no seat's own further work would clear either kind,
+so the dispatch criteria do not fire for anyone this pass.
+
 ## Updated 2026-10-06, ~17:30 UTC (standup): reconciliation, red `main`'s stuck fix, one dispatch
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` and
