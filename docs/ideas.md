@@ -12528,10 +12528,18 @@ that triggered it, per the charter.
   the artifact's value to the payload's value character by character, and
   never to the pattern the law describes. The pattern is what the law had to
   say in order to be written down. The value is what the reader is owed.
-- Worth noting about cost: this is cheap to run and it is the kind of check a
-  tool should hold rather than a sentence. `docs/voice/check_voice.py measure`
-  prints a link count today and has no opinion about what a link points at.
-  The same pass could take each link in the artifact and assert its identifier
-  appears in `papers.url`, which is a query and a set comparison.
-- First step: the owner's ruling on the paragraph. The tool half can follow
-  without it, and is filed with the corpus-duplication entry above.
+- The local half is built rather than filed, because L-A22 says a rule
+  enforced by a sentence is enforced at the reliability of a reading.
+  `docs/voice/check_voice.py links` now prints each link's path segment and its
+  identifier apart and fails when one artifact disagrees with itself about the
+  version suffix. It fails the print of 2026-10-05 and passes a consistent
+  fixture. What remains for the owner is the canon paragraph, which generalises
+  the rule past links to any value the pipeline hands over.
+- The half that is genuinely not buildable by this seat: comparing each
+  identifier against `papers.url` catches the artifact that drops the suffix
+  from every link, which the local check passes by design. It needs the corpus,
+  and it is not decidable until the 394 duplicate groups in the entry above are
+  resolved, because today three of 2026-W39's four ids match a bare row and a
+  versioned row both.
+- First step: the owner's ruling on the paragraph. The two tool halves are
+  ordered behind the dedup rather than beside it.
