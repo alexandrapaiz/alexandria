@@ -246,6 +246,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--json", action="store_true", help="machine-readable")
     parser.add_argument(
+        "--report-only",
+        action="store_true",
+        help="print the report and exit 0 even when test files are uncovered",
+    )
+    parser.add_argument(
         "--only",
         action="append",
         metavar="FILE",
@@ -270,7 +275,17 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\n{len(uncovered)} test files run in no workflow:")
     for name in uncovered:
         print(f"  {name}")
-    return 0
+    if args.report_only:
+        return 0
+    # Exit non-zero, and the reason is the defect this file was written for.
+    # A step whose name claims every test file runs, and which exits 0 while
+    # 33 of them do not, is another assertion nobody checks. So the report is
+    # a gate by default and informational only when asked.
+    print(
+        "\nFAIL: a test file no workflow runs reports nothing on any pull "
+        "request.\n      Pass --report-only for the report without the verdict."
+    )
+    return 1
 
 
 if __name__ == "__main__":

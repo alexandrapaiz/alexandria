@@ -180,6 +180,7 @@ def test_children_of_ignores_a_filename_in_prose():
 # sentence when it fails so the next seat does not have to infer it.
 UNCOVERED = {
     # This file, and the entry is worth more than the thirty-three below it.
+    # (Thirty-four files in the set with this one, of the suite's forty-eight.)
     # The gate against test files that no workflow runs is itself a test file
     # that no workflow runs, because adding the step needs a `workflows`
     # permission no seat holds. It caught itself on the first run, which is
@@ -309,6 +310,37 @@ def test_the_staged_checks_file_keeps_both_triggers():
     text = (ROOT / STAGED).read_text()
     assert "pull_request:" in text
     assert "push:" in text and "branches: [main]" in text
+
+
+def test_the_report_is_a_gate_by_default():
+    """Exit non-zero when a test file runs in no workflow.
+
+    The first draft of the staged workflow's last step was named "every test
+    file in tests/ is executed by some workflow" and exited 0 while naming
+    thirty-three that were not. A step whose name claims a property it does
+    not check is this file's own subject matter, so the tool carries the
+    verdict rather than the workflow.
+    """
+    assert cc.main([]) == 1, "the live tree has uncovered test files today"
+    assert cc.main(["--report-only"]) == 0
+    assert cc.main(["--only", STAGED]) == 0, (
+        "the staged replacement covers every test file, so it must exit 0"
+    )
+
+
+def test_the_staged_checks_file_runs_the_gate_without_report_only():
+    """The step is only a gate if it is not asked to be quiet."""
+    text = (ROOT / STAGED).read_text()
+    gate = [
+        line.strip()
+        for line in text.splitlines()
+        if "tools/ci_coverage.py" in line and line.strip().startswith("run:")
+    ]
+    assert gate, "the staged file does not run the coverage gate at all"
+    assert all("--report-only" not in line for line in gate), (
+        "the staged file runs the coverage gate with --report-only, which "
+        "makes the step print the defect instead of failing on it"
+    )
 
 
 def test_the_staged_checks_file_installs_node():

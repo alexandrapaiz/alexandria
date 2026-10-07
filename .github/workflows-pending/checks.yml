@@ -129,7 +129,12 @@ jobs:
         run: python3 tests/test_press_rehearsal.py
 
       # The measurement that justifies the shape of this file, printed on every
-      # run so the next reader does not have to take the header on trust.
+      # run so the next reader does not have to take the header on trust, and
+      # a gate rather than a print. `ci_coverage.py` exits non-zero when any
+      # test file runs in no workflow, so this step's name is a claim the step
+      # enforces. A step named for a property it does not check is the defect
+      # this whole file exists to close, and the first draft of this step had
+      # it: it printed thirty-three uncovered files and exited 0.
       - name: every test file in tests/ is executed by some workflow
         if: always()
         run: python3 tools/ci_coverage.py

@@ -11706,11 +11706,15 @@ plainly, instead of copying the analysis forward.
 - Trigger: today's craft scan, below. SkillsBench publishes a paired
   with-skill against without-skill pass rate on 87 tasks across 18
   model-harness configurations: 33.9% to 50.5%, a gain of 16.6 points.
-  ADR-38 and ADR-40 already ask this org for matched ablation and
-  differential tasks, which is the same experiment, and
-  `tools/skill_eval.py` is on this branch at 1,387 added lines. What the org
-  does not have is the unit. Nothing in `skills/` carries a number that can
-  be set beside 16.6.
+  ADR-36 already decided this experiment in those words, "with-versus-without
+  evals", and ADR-38 and ADR-40 set the bar it is measured against, so the
+  design is not the gap. `tools/skill_eval.py` is on this branch at 1,387 added
+  lines. What the org does not have is the unit. ADR-38's own first measurement
+  reports a mean of 5.4 without the skill against 5.3 with it, on a scale the
+  ADR does not name in that sentence, over 4 tasks at 2 repetitions. That is a
+  real result and it cannot be set beside 16.6 points on 87 tasks, which means
+  the strongest external evidence for this org's own thesis is in a unit this
+  org cannot answer in.
 - What: one skill's eval expressed as a paired pass rate and reported as a
   delta in points, with its repetition count and its verifier named. The shape
   to copy is the verifier rather than the headline: SkillsBench pairs every one

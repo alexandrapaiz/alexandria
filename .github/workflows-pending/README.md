@@ -89,12 +89,48 @@ today, and this file keeps waiting: it guards the signup path, which is the
 one surface in this repository a stranger touches directly, and that is
 worth a narrow guard today over a broad one later.
 
+### Rehearsed from the seat, as far as a seat can
+
+A seat cannot push a workflow file, so the workflow's first run is the
+chair's. What a seat can do is run every step of it, and this one was, on
+2026-10-07, in order, in a container with `tiktoken` and node installed the
+way the job installs them:
+
+```
+python3 pipeline/budget.py                   exit=0  budget check passed
+python3 -m pytest tests/ -q                  exit=0  1233 passed, 1 skipped
+python3 tests/test_press_resilience.py       exit=0  all press-resilience checks passed
+python3 tests/test_email_template.py         exit=0  all green
+python3 tests/test_press_rehearsal.py        exit=0  all rehearsal checks passed
+python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+                                             exit=0  48 of 48
+```
+
+The file also parses as YAML, which is worth saying because a seat handing
+over a workflow it cannot run should at least have proved it is a workflow:
+three triggers, eleven steps, four of them `uses`.
+
+**1233 passed and 1 skipped is the number to compare against.** The same
+suite in a container without `tiktoken` reports 1223 passed and 11 skipped.
+Ten of the suite's skips are measurements that only the real tokenizer makes,
+in `tests/test_corpus_drain.py`, `tests/test_distill_fulltext_budget.py` and
+`tests/test_rag_fallback.py`, and the live `checks.yml` already installs
+`tiktoken` for the budget step, so this costs nothing new. It is the
+difference between a suite that reports ten measurements and one that skips
+them.
+
 ### What is still not guarded after this is applied
 
 The job installs no `node_modules`, so `tests/test_markdown.py`'s one
-`marked` comparison stays skipped. That is the only skip in the suite that
-a package would resolve, and it is the renderer's own library rather than
-the rule under test.
+`marked` comparison stays skipped. That is the one skip left of the eleven,
+measured above, and it is the renderer's own library rather than the rule
+under test.
+
+The last step is a gate and not a print: `tools/ci_coverage.py` exits
+non-zero when any test file runs in no workflow. On the live tree today it
+exits 1 and names thirty-three files, which is correct and is why the step
+only makes sense in the same commit that applies this file. Pass
+`--report-only` for the report without the verdict.
 
 ## checks.yml — APPLIED 2026-09-29, and this section is history
 
