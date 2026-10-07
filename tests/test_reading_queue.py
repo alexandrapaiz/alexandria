@@ -17,6 +17,7 @@ everything, because what these tests care about is which statements were sent
 and in what order, not that anyone reimplemented Postgres.
 """
 
+import os
 import pathlib
 import sys
 
@@ -563,6 +564,43 @@ def test_the_asker_shown_is_the_text_and_the_asker_obeyed_is_the_slug():
     skill = by_id["arxiv:2609.08371"]
     assert skill.asked_by == "skills/agent-containment"
     assert skill.asking_skill == "skills/agent-containment"
+
+
+def test_the_cli_can_print_the_order_a_run_will_actually_use(tmp_path, capsys):
+    """The observability half of the same defect, and the reason it lasted.
+
+    `main` called `pending` with no `sourced`, so the only tool that reads this
+    module's state printed file order while the cron used the grouped order. A
+    reader could not see which group a line landed in, which is the one fact that
+    went wrong. Default output is unchanged, because a flag that moves nobody's
+    existing output is the cheap version of this.
+    """
+    queue = tmp_path / "q.md"
+    queue.write_text(PROSE_ASKERS)
+    (tmp_path / "skills" / "skill-library-engineering").mkdir(parents=True)
+    (tmp_path / "skills" / "skill-library-engineering" / "SKILL.md").write_text(
+        "---\nprovenance:\n  claims: [200]\n---\n")
+    (tmp_path / "skills" / "agent-containment").mkdir(parents=True)
+    (tmp_path / "skills" / "agent-containment" / "SKILL.md").write_text(
+        "---\nprovenance:\n  claims: []\n---\n")
+
+    assert rq.sourced_from_tree(tmp_path) == {"skills/skill-library-engineering"}
+
+    cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert rq.main([str(queue), "--order"]) == 0
+    finally:
+        os.chdir(cwd)
+    out, err = capsys.readouterr()
+    lines = [l for l in out.splitlines() if l.strip()]
+    assert lines[0].startswith("arxiv:2609.08371"), lines
+    assert "\tblocked\tskills/agent-containment\tNEXT" in lines[0], lines[0]
+    # The chair's line is in the batch because the fixture is short, and it must
+    # say `waits` with no skill, which is the assertion that would have failed.
+    chair = next(l for l in lines if l.startswith("arxiv:2609.40115"))
+    assert "\twaits\t-\t" in chair, chair
+    assert "stands in for `promotions`" in err
 
 
 def test_no_line_on_the_live_file_names_a_skill_the_parser_cannot_read():

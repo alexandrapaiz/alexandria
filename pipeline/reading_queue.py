@@ -277,20 +277,57 @@ def merge(first: list[tuple], intake: list[tuple], max_papers: int) -> list[tupl
     return first + [row for row in intake if row[0] not in already][:room]
 
 
+def sourced_from_tree(root: str | pathlib.Path = ".") -> set[str]:
+    """`skills_with_claims`'s answer, read from the working tree instead of a table.
+
+    For `--order` only, and never for a run. The table is the truth, because a
+    skill's claim ids are written to `promotions` by the registrar and a working
+    tree can be any branch. This is the offline stand-in a reader has when there
+    is no `DATABASE_URL` in the sandbox, which is every seat's sandbox, and it is
+    labelled as a stand-in everywhere it is printed.
+    """
+    sourced = set()
+    for skill in sorted(pathlib.Path(root).glob("skills/*/SKILL.md")):
+        try:
+            cited = re.search(r"claims:\s*\[([^\]]*)\]", skill.read_text())
+        except OSError:
+            continue
+        if cited and cited.group(1).strip():
+            sourced.add(f"skills/{skill.parent.name}")
+    return sourced
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     long = "--long" in argv
+    # The order a distill run will actually use. Without this the CLI printed
+    # file order and the run used the grouped order, so the one tool that exists
+    # to read this module's state could not show the thing that decides what
+    # gets read. That is how `asked by the chair` spent two days parsing as a
+    # blocked skill: nothing printed the group a line landed in.
+    order = "--order" in argv
     args = [a for a in argv if not a.startswith("-")]
     text = read_file(args[0] if args else QUEUE_PATH)
     if not text:
         print(f"no reading queue at {args[0] if args else QUEUE_PATH}", file=sys.stderr)
         return 1
-    items = pending(text, limit=None)
-    for item in items:
-        print(f"{item.paper_id}\t{item.asked_by}\tline {item.line_no}" if long
-              else item.paper_id)
+    sourced = sourced_from_tree() if order else None
+    items = pending(text, limit=None, sourced=sourced)
+    for n, item in enumerate(items):
+        mark = ""
+        if order:
+            blocked = bool(item.asking_skill) and item.asking_skill not in sourced
+            mark = f"\t{'blocked' if blocked else 'waits'}" \
+                   f"\t{item.asking_skill or '-'}" \
+                   f"\t{'NEXT' if n < MAX_PER_RUN else ''}"
+        print(f"{item.paper_id}\t{item.asked_by}\tline {item.line_no}{mark}"
+              if long or order else item.paper_id)
     print(f"{len(items)} pending, {MAX_PER_RUN} of them per distill run",
           file=sys.stderr)
+    if order:
+        print(f"order: grouped, blocked skills first. `sourced` is "
+              f"{len(sourced)} skills read from the working tree, which stands "
+              f"in for `promotions` and may differ from it.", file=sys.stderr)
     return 0
 
 
