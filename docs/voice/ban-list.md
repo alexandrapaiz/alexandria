@@ -1796,3 +1796,39 @@ gap that the same collision had left empty (incident 25).
     Filed in docs/ideas.md for the engineer, in two parts: window the query to
     the issue's own week, and carry the measurement date into the payload so a
     gate and the writer can both see it.
+100. The worked example drawn from its own minority case. Six entries in this
+    file are about a specimen the model copies as prose (53, 56, 65, 76, 88,
+    93). This is the seventh member of that family and the first one where
+    nothing was copied as prose at all. What got copied was a MAPPING, and the
+    mapping was correct for one input in ten.
+    prompts/digest.md carried exactly one string transformation, at the link
+    rule: `arxiv.org/abs/2609.11042` becomes `https://arxiv.org/html/2609.11042`.
+    The example's input has no version suffix. Of the 7,820 arXiv urls in the
+    corpus the generator is handed, 6,994 carry one, so the single example for
+    the single transformation this file asks for was taught from the 11% case.
+    The print of 2026-10-05 shows what that produces, and the tell is the
+    inconsistency rather than any one link. Three links, same issue, same
+    model, same rule: `html/2609.29808v1` and `html/2610.01787v1` kept the
+    version they were handed and `html/2609.22086` did not. No editor chose
+    that. A model following an example whose shape does not fit its input
+    splits the difference, and splitting the difference on an identifier is how
+    a link stops pointing at a paper.
+    Why the grades missed it, which is the half worth keeping. Two consecutive
+    reviews graded this law's form and both wrote that the form was clean:
+    "three of three are `arxiv.org/html/`". That is a check on the prefix, and
+    law 8's subject is the identifier. A link's prefix is the part the rule
+    talks about and the part a glance can verify; the identifier is the part
+    that decides whether the reader reaches the paper. So the general form, and
+    it applies to any register holding an example of a transformation: grade
+    the example against the DISTRIBUTION of its real input, not against its own
+    internal consistency, and when a rule transforms a string, the verdict
+    compares the output to the payload's input character by character rather
+    than to the pattern the rule describes.
+    Added 2026-10-07. Enforced the same day in prompts/digest.md, which now
+    carries a versioned id in the example and the sentence "Only the path
+    segment changes. The identifier is copied, character for character, version
+    suffix and all." Swept per entry 90: the file holds two arXiv ids and both
+    are the one example, so the count is one and this entry is closed in the
+    generator. docs/voice/canon.md's worked example under law 14 carries a bare
+    id as well, and it is reported rather than struck, because that section
+    changes only by the owner's ruling and the canon is never sent to the model.
