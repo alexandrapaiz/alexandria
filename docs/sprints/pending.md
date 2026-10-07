@@ -1,3 +1,103 @@
+## Updated 2026-10-07, ~12:22 UTC (six-hour pass): the authority to merge this landed eleven days ago, nothing in the queue is still eligible, and the one that matters most is six hours older
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md` and the
+board back to the last pass (~06:27 UTC). Nothing new to strike: no ADR
+past ADR-40, no all-hands past 2026-09-18, no incident dated after
+2026-10-05.
+
+**Inbox, checked first.** Nothing addressed to `alexandria`'s `pm` is
+newer than the reading-enjoyability handoff of 2026-10-05, already acted
+on. `GET /api/messages?to_seat=pm&to_company=alexandria` returns the
+cross-company feed rather than a filtered one, so this run read every
+entry and kept only the ones naming `alexandria`; none of them is new or
+unanswered.
+
+**Failed runs, last six hours.** Zero, on both surfaces. `gh run list
+--status failure --created ">=2026-10-07T06:27:00Z"` returns nothing, and
+in fact no GitHub Actions workflow ran at all in this window (`gh run
+list --created ">=2026-10-07T05:00:00Z"` is empty). The board's own run
+feed for this company shows the same: no entry with `exit != 0` since
+this seat's own last pass. Nothing to triage, rerun, or file.
+
+**The merge authority itself, checked rather than assumed.** HQ decision
+041 (Tier B merges to the PM seat) reached this repo as PR #147 and
+merged into `main` on **2026-10-05 at 03:31 UTC**, carrying the amended
+`docs/standards/pm.md` (section 21: "merges belong to the PMs and the
+chairs, not the owner") and the workflow permissions this seat's merges
+use. That is confirmed on `main` right now, not inferred from the
+vendoring date. The authority has landed and has held for two full days;
+the finding below is "zero of the open pull requests clear the bar this
+pass," not "the bar does not exist yet."
+
+**Tier B merge check, this run, all seven other open pull requests (this
+seat's own #239, now closed and superseded by #241, and #241 itself are
+excluded by Tier B condition 1):**
+
+- **#240** (engineer, supersedes #233 and #236) — checks green, merge
+  state clean, no conflicts. **Disqualified on condition 4 only**: the
+  diff still carries `prompts/distill.md` and
+  `prompts/distill-practices.md`. Unchanged from the last two passes and
+  now **ten hours older**: still the single best candidate in the
+  queue, one merge from closing `main`'s red suite, a real subscriber
+  row, and a real unsubscribe endpoint.
+- **#237** (skill, the independent fix for the same `main` defect) —
+  **disqualified on conditions 3 and 4**: checks still red, diff carries
+  `prompts/skill-extract.md`. Unchanged from the last two passes; the
+  question of whether the owner wants this landed alongside #240 or
+  treats #240 as superseding it is also unchanged.
+- **#238** (writer, third in its own chain) — **disqualified on
+  conditions 3 and 4**: checks still red (inherits the same `main`
+  defect), diff carries `prompts/digest.md`. Unchanged from last pass.
+- **#60** (engineer, pre-send quality checklist) — **disqualified on
+  conditions 4 and 5**: carries `prompts/daily.md` and is conflicting.
+  Now **17 days** open, still the oldest open pull request in the
+  repository.
+- **#205, #203, #202** (finance, OKR, frontend) — drafts, excluded by
+  Tier B's own second condition, not reported as blocked.
+
+**Zero of the seven qualify for a Tier B merge this run**, the third
+pass running at that finding. The shape has not improved since the last
+pass: the same single file type (`prompts/`) is the only thing standing
+between four of the five live candidates and a merge.
+
+**The Polar Merchant-of-Record account (ADR-30)** remains overdue, now
+**12 days**, since 2026-09-26.
+
+**What waits on the owner, one line each.**
+
+1. **Merge #240** — green, clean, no conflicts, closes `main`'s red
+   suite, a real subscriber row, and a real unsubscribe endpoint in one
+   merge. The highest-leverage single action available right now, and
+   it has been available, unchanged, for two passes.
+2. **Decide #237** — a second, independent fix for the same defect #240
+   already closes. Land both, or treat #240 as superseding it.
+3. **#238** — carries `prompts/digest.md`, checks red on the same
+   inherited defect #240 closes; waits on the owner once #240 lands and
+   it rebases clean.
+4. **#60**, the pre-send quality checklist, 17 days open, conflicting,
+   carries `prompts/daily.md`.
+5. **The Polar Merchant-of-Record account (ADR-30)**, 12 days overdue.
+6. **#205, #203, #202** are drafts from the owner's and the chair's own
+   window sessions, not this seat's to merge or chase; they wait on
+   whoever opened them to mark them ready.
+
+**No dispatch fired or queued this run.** Every blocker is an owner-only
+merge. Engineer, skill, and writer each already hold an open pull
+request of their own, which is the hard stop on dispatching any of
+them, and none of their own further work clears the blocker anyway.
+
+**This seat's own open pull request.** #239 was open from an earlier
+pass today (00:27 UTC) when this run started: not a draft, no owner
+comment, no hold label, same task, same day, same files. Built on it
+(`alexandria-pm/2026-10-07-message-second-pass`, branched from
+`origin/alexandria-pm/2026-10-07-message`) rather than opening a fresh
+one from `main`. Containment verified before closing: `git log
+origin/alexandria-pm/2026-10-07-message ^HEAD` printed nothing. Closed
+#239 with a pointer to #241.
+
+**Posted to the board**, a first-person note summarizing this pass, with
+the same "what waits on you" list above.
+
 ## Updated 2026-10-07, ~06:20 UTC (six-hour pass): the engineer's two main-fix branches merged into one clean, green pull request, and it is still the owner's to merge
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md`, the
