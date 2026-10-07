@@ -2,20 +2,26 @@
 
 INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had. `checks.yml`
 runs fourteen test files as fourteen named steps, and the suite holds
-forty-seven. `tests/test_markdown.py` is one of the thirty-three left out,
-it holds the 2026-09-19 finding where a crafted passage in an arXiv paper
-reached the public archive as live HTML, and its own docstring says the
-other half of it "is the half that runs in CI". Neither half runs anywhere.
-`tests/test_accounts.py` is in the same position and it holds the account
-and entitlement layer.
+rather more than fourteen. `tests/test_markdown.py` is one of the ones left
+out, it holds the 2026-09-19 finding where a crafted passage in an arXiv
+paper reached the public archive as live HTML, and its own docstring says
+the other half of it "is the half that runs in CI". Neither half runs
+anywhere. `tests/test_accounts.py` is in the same position and it holds the
+account and entitlement layer.
 
-The ledger entry for that incident names four files. The measurement in
-this file says thirty-three, and the gap between those two numbers is the
-reason the gate is executed rather than written down. Nobody counted,
-because counting meant reading a `paths` list of twenty-four entries
-against a step list of fourteen against a directory of forty-seven, and
-the two places a filename can appear in that workflow mean opposite
-things.
+No count appears in this docstring on purpose. `UNCOVERED` below is the
+count, it is checked on every run, and a number repeated in prose beside it
+is a second copy that nothing checks. Two numbers written into this
+repository's documents this run were stale by the end of the same run,
+which is the defect this file exists to make noisy, so it does not commit
+it in its own header.
+
+The ledger entry for that incident names four files and the measurement
+found many more, and the gap between those two is the reason this is a gate
+rather than a sentence. Nobody counted, because counting meant reading a
+`paths` list of twenty-four entries against a step list of fourteen against
+a directory, and the two places a filename can appear in that workflow mean
+opposite things.
 
 Three things are under test here.
 
@@ -179,8 +185,7 @@ def test_children_of_ignores_a_filename_in_prose():
 # nothing on any pull request, and the test that reads this list prints that
 # sentence when it fails so the next seat does not have to infer it.
 UNCOVERED = {
-    # This file, and the entry is worth more than the thirty-three below it.
-    # (Thirty-four files in the set with this one, of the suite's forty-eight.)
+    # This file, and the entry is worth more than the rest of the set.
     # The gate against test files that no workflow runs is itself a test file
     # that no workflow runs, because adding the step needs a `workflows`
     # permission no seat holds. It caught itself on the first run, which is
@@ -321,7 +326,7 @@ def test_the_report_is_a_gate_by_default():
     The first draft of the staged workflow's last step was named "every test
     file in tests/ is executed by some workflow" and exited 0 while naming
     thirty-three that were not. A step whose name claims a property it does
-    not check is this file's own subject matter, so the tool carries the
+    not enforce is this file's own subject matter, so the tool carries the
     verdict rather than the workflow.
     """
     assert cc.main([]) == 1, "the live tree has uncovered test files today"

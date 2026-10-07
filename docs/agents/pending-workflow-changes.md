@@ -1559,8 +1559,9 @@ it replaces a live file rather than adding one:
     git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
 
 This item named four test files. Measured by `python3 tools/ci_coverage.py`,
-written the same run, the real number is **33 of the suite's 47**. The four
-this item names are in it and so are twenty-nine others, among them
+written the same run, the real number is **35 of the suite's 49**, counting the
+two test files that run added. The four this item names are in it and so are
+thirty-one others, among them
 `tests/test_skill_eval.py`, `tests/test_reading_queue.py`,
 `tests/test_oauth_redirect_uri.py` and `tests/test_delivery_health.py`. The
 miss was not carelessness. The live file lists 24 `paths` entries against 14

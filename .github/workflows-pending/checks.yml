@@ -9,8 +9,8 @@
 # docs/agents/pending-workflow-changes.md and
 # INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had. Read that item
 # for the full reasoning. The short version is two numbers measured by
-# `python3 tools/ci_coverage.py` against the live file: the suite holds 47 test
-# files and CI runs 14 of them. The 33 it does not run include
+# `python3 tools/ci_coverage.py` against the live file: the suite holds 49 test
+# files and CI runs 14 of them. The 35 it does not run include
 # `tests/test_markdown.py`, which holds the finding where a crafted passage in
 # an arXiv paper reached the public archive as live HTML, and
 # `tests/test_accounts.py`, which holds the account and entitlement layer.
@@ -134,7 +134,7 @@ jobs:
       # test file runs in no workflow, so this step's name is a claim the step
       # enforces. A step named for a property it does not check is the defect
       # this whole file exists to close, and the first draft of this step had
-      # it: it printed thirty-three uncovered files and exited 0.
+      # it: it printed the uncovered files and exited 0.
       - name: every test file in tests/ is executed by some workflow
         if: always()
         run: python3 tools/ci_coverage.py

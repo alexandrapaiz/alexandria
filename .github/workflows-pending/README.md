@@ -17,13 +17,13 @@ file replaces `.github/workflows/checks.yml`, so the apply needs `-f`:
 
     git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
 
-**Two numbers, and they are the whole argument.** The suite holds 47 test
+**Two numbers, and they are the whole argument.** The suite holds 49 test
 files. The live `checks.yml` runs 14 of them. Measure it yourself, which is
 the point of the tool rather than the claim:
 
     python3 tools/ci_coverage.py
 
-The 33 it does not run include `tests/test_markdown.py`, which holds the
+The 35 it does not run include `tests/test_markdown.py`, which holds the
 2026-09-19 finding where a crafted passage in an arXiv paper reached the
 public archive as live HTML, and `tests/test_accounts.py`, which holds the
 account and entitlement layer. Both pass. Neither has ever reported
@@ -72,7 +72,7 @@ Measured with `--only`, so the number is about this file and not about the
 directory it is parked in:
 
     $ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
-    47 of 47 test files run in CI
+    49 of 49 test files run in CI
       every test file in tests/ is executed by some workflow
 
 ### Do not apply this and subscriber-list.yml both
@@ -98,21 +98,25 @@ way the job installs them:
 
 ```
 python3 pipeline/budget.py                   exit=0  budget check passed
-python3 -m pytest tests/ -q                  exit=0  1233 passed, 1 skipped
+python3 -m pytest tests/ -q                  exit=0  1239 passed, 1 skipped
 python3 tests/test_press_resilience.py       exit=0  all press-resilience checks passed
 python3 tests/test_email_template.py         exit=0  all green
 python3 tests/test_press_rehearsal.py        exit=0  all rehearsal checks passed
 python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
-                                             exit=0  48 of 48
+                                             exit=0  49 of 49
 ```
 
 The file also parses as YAML, which is worth saying because a seat handing
 over a workflow it cannot run should at least have proved it is a workflow:
 three triggers, eleven steps, four of them `uses`.
 
-**1233 passed and 1 skipped is the number to compare against.** The same
-suite in a container without `tiktoken` reports 1223 passed and 11 skipped.
-Ten of the suite's skips are measurements that only the real tokenizer makes,
+**The delta is the durable part of this, so read it before the totals.** The
+same suite is 1239 passed and 1 skipped in a container with `tiktoken` and
+1229 passed and 11 skipped without it, both measured on 2026-10-07. The totals
+move every time a test is added, and two of the numbers in this section were
+already stale by the end of the run that wrote them, which is the defect this
+whole file is about. **Ten is the number that does not move.** Ten of the
+suite's skips are measurements that only the real tokenizer makes,
 in `tests/test_corpus_drain.py`, `tests/test_distill_fulltext_budget.py` and
 `tests/test_rag_fallback.py`, and the live `checks.yml` already installs
 `tiktoken` for the budget step, so this costs nothing new. It is the
@@ -128,7 +132,7 @@ under test.
 
 The last step is a gate and not a print: `tools/ci_coverage.py` exits
 non-zero when any test file runs in no workflow. On the live tree today it
-exits 1 and names thirty-three files, which is correct and is why the step
+exits 1 and names thirty-five files, which is correct and is why the step
 only makes sense in the same commit that applies this file. Pass
 `--report-only` for the report without the verdict.
 
