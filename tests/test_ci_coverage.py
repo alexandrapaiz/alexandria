@@ -187,6 +187,9 @@ UNCOVERED = {
     # the only evidence anyone should accept that it works. It leaves the set
     # when the staged replacement is applied, like every other line here.
     "tests/test_ci_coverage.py",
+    # And the second file this run added, caught by this gate the same way
+    # and pinned for the same reason: no seat can add it to a workflow.
+    "tests/test_voice_enforcements.py",
     "tests/accounts.test.mjs",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
