@@ -14,22 +14,33 @@ This file is the smaller half of that, taken by the engineer seat on
 this is not. The command that already runs is `python3 -m pytest tests/ -q`,
 so the check runs there.
 
-Only `enforcements` is wired. That is deliberate and the other two are not
-oversights. `stale` and `measure` both return 0 by construction: the first
-prints hits that "each is read by hand, because the tell cannot tell the two
-apart", and the second prints a character census so a grade cannot carry a
-figure between two artifacts. Neither has a verdict, so a test calling either
-would assert that a report printed, which is the kind of green that teaches a
-reader to trust a suite less. `enforcements` returns `1 if missing else 0` and
-is a real assertion.
+Two of the three checks are wired here and the third is not, and which is
+which was worth reading the code for rather than assuming. `enforcements`
+returns `1 if missing else 0`. `measure` returns 1 when a served issue carries
+a non-ASCII character or an em dash. Both are real verdicts. `stale` returns 0
+unconditionally, by its own design and for a stated reason: its hits "each
+[are] read by hand, because the tell cannot tell the two apart", a claim about
+past output being evidence for a rule while a claim about the input is false by
+morning. A test calling `stale` would assert that a report printed, which is
+the kind of green that teaches a reader to trust a suite less.
 
-What it asserts: ban list 92 says an entry's second ending quotes the
-generator text that now enforces it, on its own line, as
+What `enforcements` asserts: ban list 92 says an entry's second ending quotes
+the generator text that now enforces it, on its own line, as
 `LANDED prompts/digest.md: "..."`. Nine entries carry one. This checks that
 all nine quotes are still present in `prompts/digest.md`, matched on
 normalised whitespace because both files wrap their prose. An editorial merge
 that rewrites the generator and leaves the register pointing at text that is
 gone now turns red on the pull request that does it.
+
+What `measure` asserts: no issue the site actually serves carries a non-ASCII
+character or an em dash. It reads `HIDDEN_WEEKS` out of `site/lib/content.js`
+and exempts retired weeks, which is why 2026-W37 and its 152 non-ASCII
+characters do not fail it. One honest tension, named here rather than
+discovered later: a future issue could carry a diacritic in an author's name
+and that would be a legitimate non-ASCII character failing this gate. The
+threshold belongs to the writer seat, whose register and whose checker this
+is, so the failure message below points there rather than telling an author to
+delete a character.
 
 No network, no database. Both files are in the checkout.
 
@@ -99,4 +110,32 @@ def test_the_check_is_measuring_something(capsys):
         f"only {len(verified)} quoted enforcements were verified, against 9 on "
         "2026-10-04. The ratio in ban list 92 is meant to climb, so a fall is "
         "either entries losing their quotes or the parser losing the entries."
+    )
+
+
+def test_no_served_issue_carries_a_non_ascii_character_or_an_em_dash(capsys):
+    """Ban list 91 and the owner's house-voice law, as a verdict.
+
+    `measure` exempts the weeks `site/lib/content.js` retires, so this is a
+    gate on what a reader can actually open. It passed on 2026-10-07 with one
+    served issue, 2026-W39, at zero non-ASCII and zero em dashes.
+    """
+    check_voice = _load()
+    rc = check_voice.measure()
+    out = capsys.readouterr().out
+    # Match on the stripped line, because `measure` indents its census under
+    # each path. An earlier draft of this list tested indented prefixes
+    # against stripped lines and silently matched nothing, so the failure
+    # named the files and not the numbers.
+    offending = [
+        line for line in out.splitlines()
+        if line.strip().startswith(("site/content", "words ", "em dashes ", "U+"))
+    ]
+    assert rc == 0, (
+        "a served issue carries a non-ASCII character or an em dash, against "
+        "ban list 91 and the house voice. The census below names the path it "
+        "was measured on. If the character is legitimate, an author's "
+        "diacritic for instance, the threshold is the writer seat's to move "
+        "in docs/voice/check_voice.py, not this test's to relax:\n"
+        + "\n".join(offending)
     )
