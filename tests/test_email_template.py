@@ -392,18 +392,15 @@ def test_the_email_and_the_site_allow_the_same_schemes():
         f"site allows {site_schemes}, the email allows {email_schemes}")
 
 
-if __name__ == "__main__":
-    failed = 0
-    for name, fn in sorted(globals().items()):
-        if name.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print(f"  ok  {name}")
-            except Exception as exc:
-                failed += 1
-                print(f"FAIL  {name}: {type(exc).__name__}: {exc}")
-    print("\n" + ("all green" if not failed else f"{failed} failing"))
-    sys.exit(1 if failed else 0)
+# The runner lives at the foot of this file and must stay there. checks.yml
+# runs this suite as `python3 tests/test_email_template.py`, so the discovery
+# loop below sees only the functions defined above the line it sits on. Until
+# 2026-10-06 it sat twenty-nine functions up, and the one below it was the
+# guard for the 2026-09-28 duplicate-subject send. That guard had never run in
+# CI. It passed under pytest, which nothing in `.github/workflows/` invokes
+# for this file.
+
+
 
 
 def test_a_repeated_title_carries_its_dates_in_the_subject():
@@ -418,3 +415,142 @@ def test_a_repeated_title_carries_its_dates_in_the_subject():
     assert fresh == "A new title", fresh
     none = er.disambiguate_subject("A new title", "", "2026-W39")
     assert none == "A new title", none
+
+
+# ---------------- 5. the unsubscribe slot: a link, not a reply --------------
+#
+# Sprint 2026-10-05 item 3, the press half. The footer used to carry
+# `mailto:<owner>?subject=Unsubscribe`, which made the owner the unsubscribe
+# mechanism by hand. It now carries a per-subscriber token that the site's own
+# `/unsubscribe` page reads.
+#
+# These live in this file rather than in one of their own because checks.yml
+# enumerates the suites it runs and a seat's token cannot push a workflow. A
+# guard in a file CI already runs is in effect; a guard in a new file is a
+# guard the repository is configured for and does not have.
+
+TOKEN_A = "7f3b1c90-0000-4000-8000-000000000001"
+TOKEN_B = "7f3b1c90-0000-4000-8000-000000000002"
+SENDER = "owner@gmail.com"
+
+
+def test_a_token_becomes_a_site_link():
+    link = weekly.unsubscribe_link(TOKEN_A, SENDER)
+    assert link == f"{er.site_base()}/unsubscribe?t={TOKEN_A}", link
+    assert link.startswith("https://"), "a bare path is not a clickable href"
+
+
+def test_the_unsubscribe_link_never_carries_an_address():
+    """An unsubscribe link is published to every recipient and then lives in
+    their mail client forever. With an address in it, anybody who ever sees
+    one can unsubscribe the person whose address they already know."""
+    link = weekly.unsubscribe_link(TOKEN_A, SENDER)
+    assert SENDER not in link, link
+    assert "@" not in link, link
+
+
+def test_the_token_is_escaped_into_the_query_string():
+    """Today's tokens are uuids, so nothing needs escaping yet. The column is
+    typed `uuid` and a later migration could widen it to `text`, and a token
+    holding an `&` would truncate the parameter and hand that reader a link
+    that cannot be read."""
+    link = weekly.unsubscribe_link("a&b=c#d /e", SENDER)
+    assert link.endswith("/unsubscribe?t=a%26b%3Dc%23d%20%2Fe"), link
+    assert "&" not in link.split("?t=", 1)[1]
+
+
+def test_a_uuid_object_is_accepted():
+    """psycopg returns a `uuid` column as uuid.UUID, never as str."""
+    import uuid
+
+    link = weekly.unsubscribe_link(uuid.UUID(TOKEN_A), SENDER)
+    assert link.endswith(f"/unsubscribe?t={TOKEN_A}"), link
+
+
+def test_the_unsubscribe_link_moves_with_site_url():
+    """A rehearsal points the email's links at a preview deploy by setting
+    SITE_URL, and this link has to move with the other two."""
+    import os
+
+    saved = os.environ.get("SITE_URL")
+    os.environ["SITE_URL"] = "https://preview.example.dev/"
+    try:
+        assert weekly.unsubscribe_link(TOKEN_A, SENDER).startswith(
+            "https://preview.example.dev/unsubscribe?t=")
+    finally:
+        if saved is None:
+            del os.environ["SITE_URL"]
+        else:
+            os.environ["SITE_URL"] = saved
+
+
+def test_no_token_falls_back_to_the_mailto():
+    """The column arrives in a migration the press does not wait for, so there
+    is a window where every row reads None. One missing token costs that
+    reader the old reply; it must not cost every reader the issue."""
+    for empty in (None, "", 0):
+        assert weekly.unsubscribe_link(empty, SENDER) == (
+            f"mailto:{SENDER}?subject=Unsubscribe")
+
+
+def test_each_recipient_gets_their_own_unsubscribe_link():
+    rows = [("a@example.com", "A", TOKEN_A), ("b@example.com", "B", TOKEN_B)]
+    msgs = weekly.build_messages("2026-W39", ISSUE, rows, SENDER)
+    assert len(msgs) == 2
+    first, second = msgs[0][3], msgs[1][3]
+    assert TOKEN_A in first and TOKEN_B not in first
+    assert TOKEN_B in second and TOKEN_A not in second
+
+
+def test_a_real_link_replaces_the_mailto_in_the_rendered_email():
+    html = weekly.build_messages(
+        "2026-W39", ISSUE, [("a@example.com", "A", TOKEN_A)], SENDER)[0][3]
+    assert "/unsubscribe?t=" in html
+    assert "subject=Unsubscribe" not in html, (
+        "a reader who has a token must not also be offered the reply path")
+
+
+def test_the_two_column_row_shape_still_renders():
+    """tools/rehearse_email.py builds its rows as (address, None) and the
+    `only=` resend path predates the column. Both must keep working."""
+    msgs = weekly.build_messages("2026-W39", ISSUE, [("a@example.com", None)], SENDER)
+    assert len(msgs) == 1
+    assert "subject=Unsubscribe" in msgs[0][3]
+
+
+def test_a_render_failure_still_delivers_to_three_column_rows():
+    """The fallback render iterates `rows` too, and it used to unpack pairs."""
+    saved = er.template_text
+    er.template_text = lambda: (_ for _ in ()).throw(RuntimeError("template moved"))
+    try:
+        msgs = weekly.build_messages(
+            "2026-W39", ISSUE,
+            [("a@x.com", "A", TOKEN_A), ("b@x.com", "B", TOKEN_B)], SENDER)
+    finally:
+        er.template_text = saved
+    assert [m[0] for m in msgs] == ["a@x.com", "b@x.com"]
+    assert all(m[3] for m in msgs), "a failed render must still produce an email"
+
+
+def test_the_reply_to_unsubscribe_address_exists_in_exactly_one_place():
+    source = (ROOT / "pipeline" / "weekly.py").read_text()
+    hits = re.findall(r"""mailto:[^"'\s]*Unsubscribe""", source)
+    assert len(hits) == 1, (
+        f"the reply path belongs once, in unsubscribe_link's no-token branch; "
+        f"found {len(hits)}")
+    fn = source.split("def unsubscribe_link")[1].split("\ndef ")[0]
+    assert "mailto:" in fn
+
+
+if __name__ == "__main__":
+    failed = 0
+    for name, fn in sorted(globals().items()):
+        if name.startswith("test_") and callable(fn):
+            try:
+                fn()
+                print(f"  ok  {name}")
+            except Exception as exc:
+                failed += 1
+                print(f"FAIL  {name}: {type(exc).__name__}: {exc}")
+    print("\n" + ("all green" if not failed else f"{failed} failing"))
+    sys.exit(1 if failed else 0)

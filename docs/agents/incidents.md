@@ -10047,3 +10047,103 @@ four minutes, by hand, at 21:28 on a Sunday, and the four other files in it
 came out correct. A hand merge of a register that every seat appends to is a
 mechanical task with no mechanical check behind it, which is the condition this
 register was created to report rather than a fact about whoever did it.
+## INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-06, while
+looking for a home in CI for the unsubscribe-link guards.
+
+**What happened.** `tests/test_email_template.py` discovers its own tests by
+walking `globals()` inside an `if __name__ == "__main__"` block. That block
+sat in the middle of the file, twenty-nine test functions in, and one test
+function was defined below it. A module executes top to bottom, so running the
+file as a script reached the block, discovered the twenty-nine functions
+defined so far, ran them, and called `sys.exit()` before the thirtieth was
+ever defined.
+
+`.github/workflows/checks.yml` runs this suite as
+`python3 tests/test_email_template.py`. Nothing in `.github/workflows/`
+invokes pytest for it. So the orphaned test had never run in CI.
+
+**What it was guarding.** `test_a_repeated_title_carries_its_dates_in_the_subject`,
+which is the guard for the 2026-09-28 send that went out under the same
+subject line as the two issues before it and read to its readers as a repeat.
+The guard was written in response to a real delivery failure, it was correct,
+and it passed the moment it was reached. It was simply never reached.
+
+```
+$ python3 tests/test_email_template.py | grep -c '^  ok'     # before
+31
+$ python3 tests/test_email_template.py | grep -c '^  ok'     # after the move
+32
+```
+
+**Why it is a repeat, which is why it is recorded here.** This is incident
+20's shape and L-A16's shape: a rule written into the right place, by the
+right seat, and never read by anything between the writing and the artifact.
+It is also the second instance *today*. The first dispatch of this seat found
+`tests/test_waitlist.py` and `tests/test_unsubscribe.py` absent from
+`checks.yml`'s enumerated list, which is forty-four assertions about the one
+surface a stranger touches running only where somebody remembers the command
+(#233). Same failure, two different mechanisms: one suite CI was never told
+about, one suite CI was told about and could not see all of.
+
+**The fix, and its narrowness.** The runner block moved to the foot of the
+file, with a comment at the old site saying why it has to stay there. That
+fixes this file and nothing else.
+
+**The generalisable part, which is not fixed.** Two properties of this
+repository make the class recur, and neither has a guard:
+
+1. `checks.yml` enumerates test files by name. A new test file is invisible
+   until somebody edits a workflow, and no seat's token carries `workflows`
+   permission, so the seat that writes the test cannot be the seat that
+   enrols it. A `python3 -m pytest tests/ -q` step would close this, except
+   that `main` currently has 19 failing tests, so such a step would be red on
+   arrival. The honest order is: green `main` first (#233), then one glob.
+2. Suites in `tests/` run as scripts with hand-maintained or
+   position-dependent discovery. `test_press_resilience.py` and
+   `test_press_rehearsal.py` each keep an explicit list of function objects in
+   their `__main__`, which fails the same way by omission rather than by
+   position: a test appended to the file and not to the list is defined,
+   collected by pytest, and never run by CI.
+
+   Both were audited this run and **neither has an orphan today**, so this is
+   a latent mechanism rather than a second live hole:
+
+   ```
+   $ for f in tests/test_press_rehearsal.py tests/test_press_resilience.py; do
+   >   # every `def test_*` in the file, checked against its __main__ block
+   > done
+   (no output: 13 and 20 functions, all reachable)
+   ```
+
+   What makes it worth a guard anyway is that the audit is three lines of
+   shell nothing runs, which is the same sentence this entry opens with.
+   Compare what pytest collects against what the script actually executes, in
+   every suite CI invokes as a script. That is the ledger entry filed against
+   this incident.
+
+**How long it was dead, exactly.** The orphaned test arrived in `70192df`
+("press: a repeated title carries the week's dates in the subject"), merged
+as **#199** on 2026-10-04 21:15 -0600. It appended fourteen lines to the end
+of `tests/test_email_template.py`, which is to say below the runner. So the
+guard was in the tree and out of effect from 2026-10-04 until this run on
+2026-10-06, and **the 2026-10-06 09:00 UTC W40 send happened inside that
+window**. The first Monday send after the guard for duplicate subjects was
+written was also a send that guard did not cover. The issue went out with a
+fresh title, so nothing was lost. The protection was absent rather than
+failed, which is the harder kind to notice.
+
+#199 was reviewed and merged by the owner. The placement is not visible in a
+diff: appending at the end of a test file is the correct thing to do in every
+other suite in this repository, and the fourteen added lines look right
+because they are right. Only the file's own structure makes them unreachable,
+and a reviewer reading a diff does not see the structure.
+
+**Blameless postmortem.** Nobody moved the runner. The file grew a section at
+a time, and the one time a test was appended below it, the author ran it under
+pytest and saw it pass. Both facts were true and the conclusion drawn from
+them was wrong, because the thing that runs in CI and the thing the author ran
+were different programs. The lesson is not "run it as a script too." It is
+that a suite with two runners has two answers, and only one of them is the one
+that gates a merge.

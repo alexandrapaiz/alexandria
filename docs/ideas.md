@@ -11417,3 +11417,134 @@ plainly, instead of copying the analysis forward.
   reader that their link is invalid. The page also never distinguishes an
   unrecognised token from a retired one, because doing so would turn the
   unsubscribe endpoint into a way to test whether an address is on the list.
+### 2026-10-06 — A suite that runs as a script should prove it ran every test it holds (engineer seat, second dispatch)
+- Trigger: `INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran`.
+  `tests/test_email_template.py` discovers its tests by walking `globals()`
+  from inside its `if __name__ == "__main__"` block, and that block sat
+  twenty-nine functions into the file. The thirtieth function, the guard for
+  the 2026-09-28 duplicate-subject send, was defined below it and therefore
+  never existed when the discovery ran. `checks.yml` invokes this suite as
+  `python3 tests/test_email_template.py`, so the guard had never run in CI
+  since it merged in #199 on 2026-10-04. It passed the moment it was reached.
+- What: one check that reads every suite `checks.yml` invokes as
+  `python3 <file>`, collects the `def test_*` names out of the source, and
+  asserts the script's own stdout accounts for each one. It catches both
+  mechanisms this repository has: a function defined below a mid-file runner
+  (position) and a function missing from a hand-maintained `__main__` list
+  (omission). `tests/test_press_resilience.py` and
+  `tests/test_press_rehearsal.py` both use the second kind; both were audited
+  this run and neither has an orphan today, which is the point. The audit is
+  three lines of shell and nothing runs it.
+- First step: the check itself, in `tests/test_check_helper_is_enforced.py`,
+  which already exists to assert properties of the checks rather than of the
+  product and is the natural home. Prove it red by moving a runner block.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — What CI actually runs cannot be read off `checks.yml` (engineer seat, second dispatch)
+- Trigger: today's work needed a home in CI for eleven new guards about the
+  unsubscribe link. There was no way to add a file, because `checks.yml`
+  enumerates its suites by name and no seat's token carries `workflows`
+  permission, so the seat that writes a test cannot be the seat that enrols
+  it. The guards went into two suites CI already runs instead. That is the
+  right call and it is not a general solution: the next seat faces the same
+  wall and may pick the other option, which is a new file nothing executes.
+- What: the numbers, measured on `main` this run, and the first version of
+  this entry got them wrong in a way worth keeping as the point. `checks.yml`
+  names **12** test files, so counting the workflow says 12. But five of those
+  twelve `subprocess` out to other suites, and the real figure is a transitive
+  closure:
+
+  ```
+  direct in checks.yml:        12
+  transitive closure:          14
+  python suites in tests/:     36
+  never reached by checks.yml: 22
+  ```
+
+  `tests/test_panel_provenance.py` and `tests/test_skill_registrar.py` are
+  reached **only** because `tests/test_skill_receipts.py` runs
+  `pytest test_panel_provenance.py` as a child process at its line 259. That
+  is invisible to anybody reading the workflow, and it is how this seat
+  initially concluded that the sprint had named the wrong file for `main`'s
+  red. The sprint was right. The reader was wrong, because the question "does
+  CI run this test" has no answer in `.github/workflows/` and needs a graph
+  walk over the suites themselves.
+  Of the five files carrying `main`'s 19 failures: one direct, two transitive,
+  **two reached by nothing** (`test_panel_validator.py`,
+  `test_skill_eval.py`).
+- Why it is worth a proposal and not just a note: "checks.yml is green" and
+  "`pytest tests/` is green" are different claims, 22 suites apart, and the
+  gap is not legible from either end. The fix is one step,
+  `python3 -m pytest tests/ -q`, replacing twelve, which also deletes the
+  transitive-dependency trick and lets those five suites stop invoking each
+  other. It cannot land today because it would be red on arrival, which is
+  also the argument for it. The honest order is: green `main` first (#233),
+  then one glob, then delete the enumeration.
+- First step: not code, and not this seat's to push. It is a workflow edit,
+  so it needs the owner or the chair. The day `main` goes green is the day to
+  make it, and the ledger entry exists so that day is not missed.
+- Cost: $0. CI minutes rise, because 41 suites take about 20 seconds in total
+  on this repository rather than the 12 that run now.
+- Status: proposed
+
+### 2026-10-06 — A test reached only as a child process of another test (engineer seat, second dispatch)
+- Trigger: this seat read the failing CI log on `main`, saw
+  `agent-containment: no claim ids parsed` under the step
+  `pytest tests/test_skill_receipts.py -q`, grepped `checks.yml` for
+  `test_panel_provenance.py`, found nothing, and filed a ledger entry saying
+  the sprint had named the wrong guard. **That entry was wrong and this one
+  replaces it.** `tests/test_skill_receipts.py` line 259 runs
+  `[sys.executable, "-m", "pytest", "test_panel_provenance.py", "-q"]` as a
+  subprocess, so the file is reached, the sprint's item 1 is accurate, and the
+  mistake was in the reading.
+- What: the arrangement that produced the misreading is itself the thing to
+  fix. Five of the twelve suites `checks.yml` names invoke other suites as
+  child processes (`test_corpus_drain` to `test_distill_gates` and
+  `test_rag_fallback`, `test_distill_gates` to `test_distill_fulltext_budget`,
+  `test_press_rehearsal` to `test_press_resilience`, `test_skill_receipts` to
+  `test_panel_provenance` and the node suite). Each of those pairings had a
+  local reason. Together they mean the set of tests CI runs is not stated
+  anywhere: not in the workflow, which names twelve, and not in `tests/`,
+  which holds thirty-six. A failure also reports under the wrong name, which
+  is the concrete cost here: forty-three reviewer cases failed and the job
+  that went red was called "the skill library shows its receipts."
+- First step: nothing clever. When `main` is green, one `pytest tests/ -q`
+  step, and then each of those five suites drops its `subprocess` call to a
+  sibling, because the only reason to run a test from inside a test is that
+  the runner cannot be trusted to run it. Filed together with the entry above;
+  they are one change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Craft scan: Latent Space asks for an address without naming a cadence (engineer seat, second dispatch)
+- Trigger: the daily craft scan, rotated to the digests section of
+  docs/market/landscape.md. The first dispatch of this seat today scanned
+  TLDR AI, so this one took the next unobserved entry in the same section
+  whose surface bears on the day's work. The Batch was the first pick and
+  returned 403 to an unauthenticated fetch, which is itself worth recording
+  for the next scan.
+- What is worth stealing: the positioning line sits where the frequency
+  promise would go, and it names the reader's job rather than the subject.
+  "The AI Engineer newsletter + Top technical AI podcast" tells a visitor who
+  the publication is for in five words, before telling them anything about
+  what is in it. alexandria's signup surface describes the product well and
+  never names the person: the homepage leads with what the library does and
+  how it corrects itself. Both are true and only one of them answers "is this
+  mine to read."
+- What alexandria does better: Latent Space's signup names no cadence and
+  offers nothing between subscribing and not. The only two words on the
+  surface are "Subscribe" and "No thanks", so a visitor cannot know whether
+  they are agreeing to a daily or a quarterly, and a reader who wants less
+  has one move available, which is to leave. alexandria's form says "One
+  issue a week. You can unsubscribe from any of them" (#233), and as of this
+  run that second sentence is backed by a real per-subscriber link in the
+  foot of every issue rather than a reply the owner reads and acts on. The
+  promise and the mechanism arrived within a day of each other, which is the
+  part worth keeping: a signup surface that promises an exit it cannot
+  perform is the thing both of these products should be judged on, and ours
+  can now perform it.
+- First step: the positioning line is the writer's and the frontend's
+  surface, not this seat's. Filed so they have it.
+- Cost: $0.
+- Status: proposed
