@@ -1,3 +1,45 @@
+## Updated 2026-10-07, ~17:50 UTC (standup): a new owner-only item, the deploy-drift guard's first real catch
+
+**Reconciliation, per charter §1d.** No new entries in `docs/decisions.md`
+or `docs/allhands/` since the last pass five and a half hours ago;
+nothing to strike. `main` has not merged anything since #235
+(2026-10-06 17:28 UTC), so every item below the new one is unchanged in
+substance from the last pass, re-verified rather than carried on trust
+(full checks in `docs/sprints/dispatch-queue.md`).
+
+**New: `modal deploy pipeline/triage.py` is owed, and it is yours or the
+chair's alone.** `tools/delivery_health.py --surface deploy` reads
+FAILING for `triage`: the deployed code is 61.3 hours behind a merge
+from 2026-10-05 04:33 UTC, past the guard's 24-hour grace. The pipeline
+still runs daily; it is judging papers with logic from before that
+merge. This is the deploy-drift guard's first real trip since it
+shipped, confirming it works, and it is the same recurring gap this
+file has named before for triage specifically: no agent seat holds
+Modal CLI access. Filed as `INC-2026-10-07-triage-deploy-drift`, asked
+on the board (non-urgent — nothing reader-facing is broken today), and
+named here so it has a card rather than living only in today's PR.
+
+**This seat's own open pull request, closed and rebuilt.** #241 was
+open when this run started (this seat's own second pass today,
+12:23 UTC). Built on rather than reopened fresh, since this run touches
+the same files; #241 closed with a pointer to this run's PR. **Third
+pull request in today's chain (#239 → #241 → this one) — this seat has
+been blocked on merges all day**, per the charter's depth-three rule.
+
+**Everything else, re-verified, unchanged:**
+
+1. **PR #60**, the pre-send quality checklist — now **17 days** open,
+   Tier C, conflicting, waiting only on the owner.
+2. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **11 days**, no live keys visible in the tree.
+3. **Decide on #237 vs. the engineer's own fix for the same `main`
+   defect** (now #242, superseding #240 mid-run) — still open, still
+   not this seat's judgment to make.
+4. **The merge-authority grant** — stays confirmed real and live on
+   `main` (PR #147, HQ decision 041, merged 2026-10-05 03:31 UTC); it
+   still clears nothing today because every open PR fails an ordinary
+   Tier B condition on its own facts, grant aside.
+
 ## Updated 2026-10-07, ~12:22 UTC (six-hour pass): the authority to merge this landed eleven days ago, nothing in the queue is still eligible, and the one that matters most is six hours older
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` and the

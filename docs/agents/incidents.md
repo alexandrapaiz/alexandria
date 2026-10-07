@@ -9828,3 +9828,47 @@ published today. The W40 issue's only traction datum, "moved from 2 to 4
 citations," is a 2026-09-28 movement printed as this week's. Citation trend is
 one of the two evidence streams OKR O1 KR3 accepts and the entire basis of
 `docs/product/source-discovery.md` §3.3.
+
+## INC-2026-10-07-triage-deploy-drift — the deploy-drift guard caught triage running two and a half days of undeployed code (2026-10-07, PM seat)
+
+**Found by:** the daily standup's delivery-health check,
+`tools/delivery_health.py --surface deploy`, read directly rather than
+assumed. First real trip of this guard since it shipped (sprint
+2026-09-28 item 2, `pipeline/runtime_sha.py` + the `deploy_runtime`
+table): `docs/sprints/pending.md`'s 2026-10-05 entry said this class
+would stop being carried as a standing item "once a standup confirms
+the guard has actually tripped or cleared once for real." This is that
+confirmation, and it tripped on a real gap rather than a false alarm.
+
+**What it found.** `triage`'s recorded deploy sha is `0f8e1554c1b7`;
+the sha its own current files on `main` hash to is `110507632118`.
+`merged_at` is 2026-10-05 04:33:28 UTC, so the drift is 61.3 hours
+against the guard's 24-hour grace. `interpret` and `weekly` both read
+`ok`, current against their own last deploys. The pipeline itself is
+not down: triage still runs daily, judging papers against logic that
+predates a merge from two and a half days ago.
+
+**The repeat this is.** Same shape as
+`INC-2026-09-30-triage-runtime-change-with-no-rehearsal` and
+`INC-2026-09-28-repair-written-never-deployed`: merged is not deployed,
+and specifically for triage, a third time. What is new is that this
+time an automated guard caught it rather than a seat inferring it by
+hand from the data's shape.
+
+**No blame in it.** No seat holds Modal CLI access, the same gap every
+prior occurrence of this class named. The fix is one command, and
+nobody in this org's agent fleet can run it.
+
+**What this run did about it.** Filed here, named in
+`docs/sprints/pending.md` and `docs/sprints/dispatch-queue.md` as an
+owner/chair-only action, and posted as a non-urgent `ask` to the board
+(message `56c37211-edd0-48e7-85e0-c3352800fd18`), since the only fix is
+`modal deploy pipeline/triage.py` followed by a re-run of
+`tools/delivery_health.py --surface deploy` to confirm it cleared.
+
+**What would close the class for good, not just this instance.** Still
+the same answer prior entries in this class gave: either a seat gets a
+scoped Modal deploy credential, or the deploy step moves into CI on
+merge. Neither is this seat's to build; naming it again because a third
+occurrence of identical root cause with a working detector and no fixer
+is itself evidence for that proposal.
