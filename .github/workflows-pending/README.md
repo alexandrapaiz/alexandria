@@ -10,6 +10,92 @@ owner or the chair moves it one directory up.
 Nothing in this directory runs. Anything still sitting here is a guard that is
 not guarding yet.
 
+## checks.yml — a REPLACEMENT for the live file, filed 2026-10-07
+
+This is the only entry in this directory that is not a new workflow. The
+file replaces `.github/workflows/checks.yml`, so the apply needs `-f`:
+
+    git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+
+**Two numbers, and they are the whole argument.** The suite holds 47 test
+files. The live `checks.yml` runs 14 of them. Measure it yourself, which is
+the point of the tool rather than the claim:
+
+    python3 tools/ci_coverage.py
+
+The 33 it does not run include `tests/test_markdown.py`, which holds the
+2026-09-19 finding where a crafted passage in an arXiv paper reached the
+public archive as live HTML, and `tests/test_accounts.py`, which holds the
+account and entitlement layer. Both pass. Neither has ever reported
+anything on a pull request.
+
+Filed for item 17 of `docs/agents/pending-workflow-changes.md` and
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. The item was
+written with four filenames in it, because four was what a reader noticed.
+Thirty-three is what the measurement says, and the gap between those two
+numbers is the reason this is a tool and a test rather than another hand
+edit. The live file lists 24 `paths` entries against 14 steps against a
+directory of 47, and a filename in the `paths` list looks exactly like a
+filename in a step while meaning the opposite thing.
+
+### What changed, and nothing else did
+
+The fourteen named pytest steps become one step that runs the suite. Both
+`paths` lists are deleted rather than extended, because item 17 asked for
+"the directories the suite covers" and that turned out to be all of them:
+instrumented with a Python audit hook on 2026-10-07, one full run of
+`pytest tests/` opened files under `.github/`, `db/`, `docs/`, `mcp/`,
+`pipeline/`, `prompts/`, `site/`, `skills/`, `tests/` and `tools/`. That is
+every directory in the repository, and the five entries it leaves out are
+root files. A filter naming every directory is not a filter.
+
+Node is installed, which the live file does not do and needs to. Seven of
+the 47 are `*.test.mjs`, they reach pytest through a Python wrapper, and
+every one of those wrappers calls `pytest.skip` when node is missing. A
+skip is not a pass, so without this step the account, markdown, unsubscribe
+and waitlist halves would be named by the suite and still never run.
+
+The three script-mode press invocations stay, which item 17 explicitly
+allows. They cost under a second each and they keep those files passing in
+the mode a person uses by hand.
+
+### It is checked rather than trusted
+
+`tests/test_ci_coverage.py` reads this file. It asserts that applying it
+leaves zero test files unexecuted, that it keeps both triggers, and that it
+installs node. So an edit here that quietly breaks the thing the file is
+for turns the pull request that makes the edit red. Both halves were
+confirmed red on a deliberate break before this was filed: narrowing the
+suite step to one filename, and adding an unexecuted test file to `tests/`.
+
+Measured with `--only`, so the number is about this file and not about the
+directory it is parked in:
+
+    $ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+    47 of 47 test files run in CI
+      every test file in tests/ is executed by some workflow
+
+### Do not apply this and subscriber-list.yml both
+
+`subscriber-list.yml`, below, runs `tests/test_waitlist.py` and
+`tests/test_unsubscribe.py` and nothing else. This file runs both of them
+inside the suite, so applying this one makes that one two duplicate steps
+on every pull request. Both were filed by this seat, four days apart, and
+the second one makes the first unnecessary rather than wrong.
+
+Apply this file and `subscriber-list.yml` can be dropped. Apply
+`subscriber-list.yml` alone if the one-step change is too large to take
+today, and this file keeps waiting: it guards the signup path, which is the
+one surface in this repository a stranger touches directly, and that is
+worth a narrow guard today over a broad one later.
+
+### What is still not guarded after this is applied
+
+The job installs no `node_modules`, so `tests/test_markdown.py`'s one
+`marked` comparison stays skipped. That is the only skip in the suite that
+a package would resolve, and it is the renderer's own library rather than
+the rule under test.
+
 ## checks.yml — APPLIED 2026-09-29, and this section is history
 
 **Moved to `.github/workflows/checks.yml` by the chair in `4ef55df` on
