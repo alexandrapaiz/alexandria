@@ -10202,3 +10202,178 @@ literal that also appears in a register of known-bad state, and nothing in this
 org can tell a deliberate pin from an accidental one, so it would be noise.
 Filed as a ledger entry rather than written here as a rule, because the honest
 version of this gate is the charter sentence and not a program.
+
+## INC-2026-10-07-the-red-main-everyone-cited-was-nine-of-nineteen — six documents quote main's failure count, the guard that gates merges can only see half of it, and two of the three blind files are the ones nobody could clear (2026-10-07, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-07, while
+building the coverage gate for
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`.
+
+**What happened.** Sprint 2026-10-05 item 1 is "get `main`'s checks green
+again", and its acceptance criterion is `gh run list --workflow=checks.yml
+--branch=main --limit 1` showing success. Every document that has reported on
+that item since 2026-10-05 quotes a failure count taken from a seat running
+`python3 -m pytest tests/ -q` in its own sandbox. Measured again this run
+against `origin/main` at `6cbcf2d`, that number is still 19 failed, 1021
+passed.
+
+`checks.yml` cannot see ten of the nineteen.
+
+```
+$ python3 -m pytest tests/ -q          # in a worktree at origin/main
+19 failed, 1021 passed, 11 skipped
+
+$ python3 -m pytest tests/ -q | grep '^FAILED' | sed 's/::.*//' | sort | uniq -c
+      6 tests/test_skill_registrar.py
+      5 tests/test_panel_provenance.py
+      4 tests/test_skill_receipts.py
+      2 tests/test_skill_eval.py
+      2 tests/test_panel_validator.py
+
+$ python3 tools/ci_coverage.py         # measured against main's own tree
+14 of 41 test files run in CI
+  tests/test_skill_receipts.py   -> .github/workflows/checks.yml
+  tests/test_panel_provenance.py -> .github/workflows/checks.yml (via tests/test_skill_receipts.py)
+  tests/test_skill_registrar.py  -> RUN BY NOTHING
+  tests/test_skill_eval.py       -> RUN BY NOTHING
+  tests/test_panel_validator.py  -> RUN BY NOTHING
+```
+
+Nine failures reach the gate. Ten do not. The red tick on `main` is real and
+it is a red tick for the wrong reason, in the sense that it would still be red
+if those ten were fixed and it would go green while they were still failing.
+
+**Why this one matters more than the arithmetic.** The two blind files with
+the most failures are the two the sprint has been unable to clear. Item 1 has
+been open since 2026-10-05 through six attempts, and the PM's pass of
+2026-10-07 12:22 UTC was still asking which of two pull requests would close
+it. Both pull requests are about the skill library. `tests/test_skill_eval.py`
+and `tests/test_skill_registrar.py` are the library's own suites, they hold
+eight of the nineteen failures, and a seat checking the one command the sprint
+names would have seen neither. So the item's own acceptance criterion is
+narrower than the item, and every seat that read the criterion correctly got a
+narrower answer than the one the sprint wanted.
+
+**Why it is a repeat, which is why it is recorded here.** This is the shape of
+`INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran`, filed by this
+seat yesterday, and that entry named this exact fix in its own
+"generalisable part, which is not fixed": a `python3 -m pytest tests/ -q` step,
+held back because `main` was red and the step would have been red on arrival.
+It is also `INC-2026-10-01-register-checker-wired-to-nothing` and incident 20's
+shape, which is a rule written in the right place and read by nothing between
+the writing and the artifact.
+
+What is new is the magnitude, and the magnitude is the argument. The class was
+previously evidenced by one orphaned test and two unenrolled suites. Measured
+across the directory it is 27 of 41 files on `main`, and 33 of 47 on this
+branch. A guard that runs 34% of the suite is not a guard with gaps. It is a
+sample.
+
+**The fix, and the part of it a seat can reach.** `tools/ci_coverage.py`
+measures it, `tests/test_ci_coverage.py` pins it so the uncovered set can
+shrink and cannot grow, and `.github/workflows-pending/checks.yml` is the
+replacement that takes it to 47 of 47. The first two are in this pull request
+and in effect on merge. The third needs a `workflows` permission no seat holds,
+which is the standing condition recorded as the 2026-09-18 urgent ledger entry
+about that permission, and it is why the gate pins its own file as uncovered:
+the guard against test files that no workflow runs is itself a test file that
+no workflow runs.
+
+The honest order the yesterday's entry named still holds and is now satisfiable
+in one merge rather than two: this branch takes `main` to 0 failed, 1223 passed,
+and the staged workflow is the glob. Merging the branch without applying the
+workflow leaves the suite green and the sample at 14 of 47.
+
+**Blameless postmortem.** Nobody chose to run a third of the suite.
+`checks.yml` was correct on the day it was written, when it ran one step for
+one incident, and it grew one named step per incident for eleven days because
+that is the smallest correct change each time and the only change a reviewer
+can check at a glance. The denominator moved underneath it. Thirty-three
+filenames were never omitted from a list; they were simply added to a
+directory, by seats whose token cannot edit the list, and the list has no
+relationship to the directory that anything checks. The lesson is not that the
+list was wrong. It is that an enumeration and a directory drift apart silently
+by default, and the only enumeration that does not need a guard is the one that
+names the directory.
+
+## INC-2026-10-07-a-charter-dispatched-thirteen-runs-at-work-that-was-already-built — the engineer charter's register list says a specification "does not exist as code yet" and the specification has said "Status: built" for thirteen days (2026-10-07, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-07, on reading
+its own charter's register list at the start of the run.
+
+**What happened.** `prompts/engineer-agent.md`, under "Check the register
+before you ship", names `docs/agents/press-rehearsal.md` and says of it:
+
+> It is the third gate in that law's ladder for a provider change, it does
+> not exist as code yet, and until it does the ladder has two working links
+> and a paragraph. Building it is a break-fix sized piece of work: one Modal
+> function, one scratch table, one more `&&` in the deploy command. Take it
+> when the sprint has room, and if you decline it, say why in your PR so the
+> next run does not rediscover the decision.
+
+The first line of that specification, since 2026-09-24, reads
+`**Status: built, 2026-09-24, engineer seat.**`
+
+```
+$ grep -n "def rehearse" pipeline/weekly.py
+1462:def rehearse() -> str:
+$ grep -n "press_rehearsals" db/schema.sql | head -1
+201:-- ============ press_rehearsals: the scratch print ============
+$ grep -n "rehearse" pipeline/weekly.py | sed -n 3p
+54:      && modal run pipeline/weekly.py::rehearse \
+$ git log --format='%h %ci %s' -1 -S"def rehearse" -- pipeline/weekly.py
+ad86a26 2026-09-24 15:52:34 +0000 rehearse(): one real print, to a scratch row, to nobody
+```
+
+One Modal function, one scratch table, one more `&&`. All three, thirteen days
+ago, plus a suite in `checks.yml` that holds the gate's teeth. The charter's
+own three-item description of the work is a correct description of the code
+that exists.
+
+**What it cost.** This seat runs daily and reads this list every run, so the
+sentence has dispatched thirteen runs at work that was finished before the
+sentence was read. This run spent its first pass on it and found the status
+line in the first paragraph of the file, which is the cheap version of the
+outcome. The expensive version is a run that reads the charter, believes it,
+and rebuilds `rehearse()` beside the one already there, and nothing in the
+charter or the file would have stopped that: the specification's "What to
+build" section is written entirely in the imperative future, so a reader who
+skips the status line finds a complete set of build instructions for a thing
+that is built.
+
+**Why it is a repeat, which is why it is recorded here.** Same class as
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`, which is the
+other finding in this pull request: a document asserting the state of a gate,
+wrongly, with nothing between the assertion and the reader that checks. That
+one was a docstring claiming a CI step it never had. This one is a charter
+claiming an absence that was filled. The two failure modes are the same
+failure mode and they are opposite in sign, which is worth saying because a
+reader looking for stale claims looks for things claimed present and absent is
+the harder direction to audit.
+
+**The fix, which is not in this pull request and cannot be.** The sentence is
+in a charter, and charters are edited only by the owner's merge
+(`prompts/engineer-agent.md`, "Charters can be edited only by the owner's
+merge. Propose changes in the ledger; never include charter edits in your daily
+PR."). So this is filed here and proposed in the ledger, and the charter's own
+instruction is followed literally: **this run declines the work because the
+work is done**, and that sentence exists in this pull request so the next run
+does not rediscover it.
+
+The narrow correction is to delete "it does not exist as code yet" and the two
+sentences after it. The wider one is that `docs/agents/registers.md` maps which
+register has which gate, and neither of the two gates it describes asks whether
+a register's claim about another file is still true. A specification that
+carries a `Status:` line is checkable: the thing it names either resolves in
+the tree or it does not. `tools/ci_coverage.py`, written this run for the other
+incident, is the same shape of check for a different register, and it is one
+file of precedent rather than a general answer.
+
+**Blameless postmortem.** The ExO seat wrote the specification on 2026-09-24
+and the engineer built it the same day, which is the system working fast. The
+charter clause naming it was written in that window, correct at the hour it was
+written, and a status line added to the top of the specification is exactly the
+right way to close a specification out. Nothing was done wrong at any step.
+What is missing is the step nobody owns: when a specification closes, the
+documents that dispatch work at it do not learn, because the closing is written
+where the builder looks and the dispatch is written where the next run looks.
