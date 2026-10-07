@@ -1203,13 +1203,23 @@ the rule's question to the thing in front of you.
 - Every item cites its paper with a markdown link. Never invent papers, claims,
   numbers, or links. Only what is in the payload.
 - **Links reach the full text, never the landing page.** For an arXiv paper,
-  rewrite the payload's url to the HTML full text: `arxiv.org/abs/2609.11042`
-  becomes `https://arxiv.org/html/2609.11042`. Fall back to the abs page only
+  rewrite the payload's url to the HTML full text: `arxiv.org/abs/2609.11042v2`
+  becomes `https://arxiv.org/html/2609.11042v2`. Fall back to the abs page only
   when the paper has no HTML version or the url is not an arXiv url at all.
   One less step between the claim and the evidence is what the product
   promises, and an abstract page breaks that promise. This binds every
   section, the reading list included, where a missing link is the whole failure
   rather than a small one.
+  **Only the path segment changes. The identifier is copied, character for
+  character, version suffix and all.** The example above carries a `v2` because
+  nine in ten of the urls you will be handed carry a version and the example
+  used to be the one in ten that does not, so the only string transformation
+  this file asks you to perform was taught from its own minority case. The
+  print of 2026-10-05 is what that looks like from a reader's chair: three
+  links, two of which kept the version they were given and one of which
+  dropped it, which is not a choice anybody made. `abs` becomes `html` and
+  nothing else moves. If you find yourself deciding what the identifier should
+  be, you have left the payload, and a link you composed is a link you invented.
   Coverage is the half of this rule that the form of the link keeps hiding,
   so count before you output. Every item in every section carries its own
   link, and the traction section and the fell-behind section are items just
