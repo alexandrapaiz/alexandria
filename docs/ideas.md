@@ -12451,3 +12451,87 @@ that triggered it, per the charter.
   `gather()`.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-07 — The corpus holds one paper under several version ids, and the issue's links inherit the duplicate (writer seat)
+- Trigger: the writer grade of 2026-10-07, ban list 100. Filed under the
+  writer charter's structure watch. The prompt half of this is already fixed on
+  the same branch. This entry is the half no prompt can reach.
+- The prompt fix: the generator's link rule taught its `abs` to `html` rewrite
+  from an unversioned arXiv id, 6,994 of the corpus's 7,820 arXiv urls carry a
+  version, and the print of 2026-10-05 kept the version on two of its three
+  links and dropped it on the third. The example now carries a `v2` and the
+  rule says the identifier is copied character for character.
+- The part that survives that fix, because it is upstream of the model. 394
+  groups of rows in `papers` are the same arXiv paper held under more than one
+  id:
+
+  ```
+  select count(*) from (
+    select regexp_replace(id,'v[0-9]+$','') base
+    from papers where id like 'arxiv:%' group by 1 having count(*) > 1) d
+   -> 394
+
+  select regexp_replace(id,'v[0-9]+$','') base, string_agg(id, ', ' order by id)
+  from papers where id like 'arxiv:%' group by 1 having count(*) > 1 limit 3
+   arxiv:2609.03753 | arxiv:2609.03753v1, arxiv:2609.03753v2, arxiv:2609.03753v3
+   arxiv:2609.04061 | arxiv:2609.04061, arxiv:2609.04061v1
+   arxiv:2609.22086 | arxiv:2609.22086, arxiv:2609.22086v1
+  ```
+
+- The last group is the one that reached a reader. Designer-RSI is held twice,
+  as `arxiv:2609.22086` and `arxiv:2609.22086v1`, and the reading list's third
+  entry links the bare one while the other two entries link versioned ids. So
+  the inconsistency the prompt fix addresses was not only the model's: for that
+  paper the payload could hand over either string depending on which row the
+  query reaches, and no rule written into the prompt can make one paper's two
+  rows agree.
+- It is also a correctness problem the newsletter is downstream of rather than
+  the cause of. A paper counted twice is counted twice everywhere: in the
+  ingestion figure the close prints, in triage, in the citation checks, and in
+  any claim graph edge drawn to one id and not the other. The issue of
+  2026-10-05 told readers 2,557 papers came in that week, and that figure is a
+  row count over a table that holds 394 known duplicate groups.
+- Two parts. Normalise the id on ingestion, so a paper is one row and a new
+  version updates it rather than inserting beside it. And decide what the
+  canonical url is, because the writer's rule now says copy the identifier
+  exactly, which is only unambiguous once each paper has one.
+- Worth saying plainly about scope: deduplicating a live corpus is a migration
+  and not a day's work, so the first step below is the cheap half that stops it
+  growing. The 394 existing groups can wait behind it.
+- First step: normalise `id` and `url` at the insert in the ingestion path, and
+  report the duplicate-group count in the run's own output so the number is
+  visible rather than discovered by a grade.
+
+### 2026-10-07 — Canon proposal: a rule that transforms a payload value is graded against the input, not against the rule's pattern (writer seat, FOR THE OWNER)
+- Trigger: the writer grade of 2026-10-07. The canon's laws section changes
+  only by the owner's ruling recorded in the taste register, and its
+  maintenance note says this seat proposes canon changes here. So this is a
+  proposal and nothing in `docs/voice/canon.md` was touched.
+- The problem, in one case. Canon law 8 says links go to the full text and
+  names the prefix `arxiv.org/html/`, because the prefix is the part the rule
+  is about. Two consecutive grades read the newest issue's three links, saw
+  that three of three carried that prefix, and recorded the form as clean. Two
+  of the three also carried the version suffix the payload supplied and the
+  third did not, so one of the three links does not name the paper the payload
+  named.
+- Why no amount of care fixes it. The identifier is the part of the url that
+  decides whether a reader reaches the paper, and the law cannot mention it,
+  because the identifier is supposed to be copied rather than chosen. A grade
+  that reads the law closely therefore inspects exactly the half that was
+  never at risk. This is the fifth occurrence of the class the grading
+  procedure already carries three corrections for, and all three of those are
+  about laws that assert an absence or a coverage. This one is about a law that
+  asserts a transformation, which the procedure does not yet name.
+- The proposed amendment, one paragraph in the grading procedure's third pass,
+  beside the existing rule about coverage laws carrying two integers: where a
+  law governs a value the pipeline handed the generator, the verdict compares
+  the artifact's value to the payload's value character by character, and
+  never to the pattern the law describes. The pattern is what the law had to
+  say in order to be written down. The value is what the reader is owed.
+- Worth noting about cost: this is cheap to run and it is the kind of check a
+  tool should hold rather than a sentence. `docs/voice/check_voice.py measure`
+  prints a link count today and has no opinion about what a link points at.
+  The same pass could take each link in the artifact and assert its identifier
+  appears in `papers.url`, which is a query and a set comparison.
+- First step: the owner's ruling on the paragraph. The tool half can follow
+  without it, and is filed with the corpus-duplication entry above.
