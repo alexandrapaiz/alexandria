@@ -8,6 +8,7 @@ reason the file exists, so it gets the most cases.
 Run with `python3 tests/test_delivery_health.py` or under pytest.
 """
 
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -278,6 +279,128 @@ def test_asking_for_the_archive_alone_fetches_what_it_needs():
           str(dh.ORDER))
 
 
+# --- the press's deadline, not just its week (2026-10-08) ---------------------
+#
+# 2026-10-05 is a Monday and the week that ended the day before is 2026-W40, so
+# every case below stands on the cron's own day, which is the only day the two
+# rules disagree.
+
+def _digests(week):
+    return FakeConn({"from digests": (week, datetime(2026, 10, 5, 9, 1,
+                                                     tzinfo=timezone.utc),
+                                      "kimi-k2")})
+
+
+def test_the_monday_morning_window_is_the_schedule_and_not_a_fault():
+    """Nine hours a week, this surface called a working press a missing issue.
+
+    The cron is `0 9 * * 1`. At 03:00 on a Monday the week that ended on Sunday
+    has no row yet, correctly, and the old rule compared the newest row against
+    that week and reported an issue missing. Sprint 2026-10-05's item 4 named
+    it: the press surface "reads FAILING on any Monday before the cron fires".
+    """
+    before = datetime(2026, 10, 5, 3, 0, tzinfo=timezone.utc)
+    s = dh.check_press(_digests("2026-W39"), before)
+    check("W39 at 03:00 on the cron's own Monday is ok", s.state == dh.OK,
+          s.headline)
+    check("and the headline names the issue it is waiting for and by when",
+          "2026-W40" in s.headline and "not due" in s.headline, s.headline)
+    check("and the evidence keeps the week that ended apart from the week owed",
+          (s.evidence["expected"], s.evidence["due"], s.evidence["pending"])
+          == ("2026-W40", "2026-W39", "2026-W40"), str(s.evidence))
+
+
+def test_the_grace_covers_a_run_in_progress_and_then_expires():
+    """The press takes minutes, not an instant, so 09:00 sharp is too early to
+    call it late. Two hours later is not."""
+    s = dh.check_press(_digests("2026-W39"),
+                       datetime(2026, 10, 5, 9, 30, tzinfo=timezone.utc))
+    check("a run still going at 09:30 is not a missing issue",
+          s.state == dh.OK, s.headline)
+
+    s = dh.check_press(_digests("2026-W39"),
+                       datetime(2026, 10, 5, 11, 30, tzinfo=timezone.utc))
+    check("the same row at 11:30 is failing", s.state == dh.FAILING, s.headline)
+    check("and it counts exactly one issue missing",
+          "1 issue(s) missing" in s.headline, s.headline)
+
+
+def test_the_window_does_not_blind_the_check_to_a_real_backlog():
+    """The one way this fix could be wrong is a window that forgives
+    everything. Two weeks behind is still two weeks behind at 03:00."""
+    before = datetime(2026, 10, 5, 3, 0, tzinfo=timezone.utc)
+
+    s = dh.check_press(_digests("2026-W38"), before)
+    check("W38 inside the window is still failing", s.state == dh.FAILING,
+          s.headline)
+    check("against the week that is actually due, W39",
+          "2026-W39" in s.headline, s.headline)
+
+    s = dh.check_press(FakeConn({"from digests": None}), before)
+    check("and an empty digests table is failing inside the window too",
+          s.state == dh.FAILING, s.headline)
+
+
+def test_the_deadline_is_the_monday_after_the_week_it_judges():
+    d = dh.press_deadline(dh.date(2026, 10, 4))  # a Sunday
+    check("the week ending Sunday 10-04 is due on Monday 10-05",
+          (d.year, d.month, d.day) == (2026, 10, 5), str(d))
+    check("at the cron's own hour plus the grace",
+          d.hour == int(dh.PRESS_CRON.split()[1]) + dh.PRESS_GRACE.seconds // 3600,
+          str(d))
+
+
+def test_the_cron_this_check_assumes_is_the_cron_the_press_runs():
+    """`PRESS_GRACE` is a judgement. `PRESS_CRON` is a copy, so it is pinned.
+
+    `week_label` goes to the press for the week rule rather than keeping its
+    own, which is this file's standing argument. The schedule cannot be read
+    the same way: it lives in a decorator argument that the Modal stub throws
+    away. So it is pinned here instead, and this test is what sends a reader
+    back to `tools/delivery_health.py` when the press's schedule moves.
+    """
+    source = (Path(__file__).resolve().parents[1] / "pipeline" / "weekly.py").read_text()
+    crons = re.findall(r'modal\.Cron\(\s*"([^"]+)"\s*\)', source)
+    check("pipeline/weekly.py declares exactly one cron", len(crons) == 1,
+          str(crons))
+    check(f"and it is the one this check assumes ({dh.PRESS_CRON})",
+          crons == [dh.PRESS_CRON], str(crons))
+
+
+def test_a_bare_date_still_asks_about_a_day_that_is_over():
+    """Every caller written before the deadline rule passes a date, and they
+    all mean a day that has finished. Midnight would change their question."""
+    check("a bare date is the end of that day",
+          dh._instant(dh.date(2026, 10, 5)).hour == 23,
+          str(dh._instant(dh.date(2026, 10, 5))))
+    check("a naive datetime is read as UTC",
+          dh._instant(datetime(2026, 10, 5, 3, 0)).tzinfo == timezone.utc)
+    check("an aware one is left exactly as it came",
+          dh._instant(datetime(2026, 10, 5, 3, 0, tzinfo=timezone.utc)).hour == 3)
+    check("--today still takes a day",
+          dh.parse_moment("2026-10-05") == dh.date(2026, 10, 5))
+    check("and now an instant inside one",
+          dh.parse_moment("2026-10-05T03:00:00Z")
+          == datetime(2026, 10, 5, 3, 0, tzinfo=timezone.utc))
+    check("and nothing stays nothing", dh.parse_moment(None) is None)
+
+
+def test_the_site_surface_reads_the_same_deadline():
+    """It judged the archive against the week that ended too, so it cried wolf
+    on exactly the Mondays the press surface did."""
+    real_fetch = dh.fetch
+    dh.fetch = lambda url, timeout=25: (200, "2026-W39 2026-W38", {})
+    try:
+        s = dh.check_site(datetime(2026, 10, 5, 3, 0, tzinfo=timezone.utc))
+        check("W39 newest at 03:00 on the cron's Monday is ok",
+              s.state == dh.OK, s.headline)
+        check("and failing once the deadline has passed",
+              dh.check_site(datetime(2026, 10, 5, 11, 30,
+                                     tzinfo=timezone.utc)).state == dh.FAILING)
+    finally:
+        dh.fetch = real_fetch
+
+
 def main() -> int:
     for fn in [
         test_unknown_is_never_green_and_never_red,
@@ -294,6 +417,13 @@ def main() -> int:
         test_an_unreadable_surface_is_unknown_and_never_a_verdict,
         test_hidden_weeks_is_read_from_the_site_and_not_copied,
         test_asking_for_the_archive_alone_fetches_what_it_needs,
+        test_the_monday_morning_window_is_the_schedule_and_not_a_fault,
+        test_the_grace_covers_a_run_in_progress_and_then_expires,
+        test_the_window_does_not_blind_the_check_to_a_real_backlog,
+        test_the_deadline_is_the_monday_after_the_week_it_judges,
+        test_the_cron_this_check_assumes_is_the_cron_the_press_runs,
+        test_a_bare_date_still_asks_about_a_day_that_is_over,
+        test_the_site_surface_reads_the_same_deadline,
     ]:
         print(f"\n{fn.__name__}")
         fn()
