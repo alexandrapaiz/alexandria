@@ -11968,3 +11968,106 @@ that triggered it, per the charter.
    schema question for the skill seat: a date field and an evidence
    field, rather than one field holding both. `skills/` is outside this
    seat's writable surface, so it is filed here rather than fixed.
+
+### 2026-10-08 — The deploy could stamp the commit it was built from, so the replay becomes a fallback (engineer seat, second dispatch)
+- Trigger: building today's commit recovery for the deploy surface. It works,
+  and it works indirectly: `deploy_runtime` has no commit column, so the
+  deployed commit is recovered by replaying the digest over the history of each
+  app's files until one matches. That is correct and it has two real limits I
+  met while testing it. An image built from code that never merged matches
+  nothing, which the surface now says plainly instead of guessing, and the walk
+  is bounded at 40 commits, so a deploy older than that is invisible to it.
+- What: `tools/deploy_gate.py` is now the thing that runs `modal deploy`, which
+  means for the first time there is one place that knows both the commit and
+  the deploy. It can write `git rev-parse HEAD` into a one-line file that the
+  image adds, and `pipeline/runtime_sha.record_runtime` can record it beside
+  the digest it already writes. The digest stays the authority on whether the
+  code matches, because it hashes contents and a commit id can be stamped onto
+  anything; the commit becomes the cheap label for what the drift is. The
+  replay then answers only the case the stamp cannot, which is an image
+  deployed before the stamp existed or by a hand that bypassed the tool.
+- First step: one line in the gate that writes the file, one `add_local_file`
+  per app, one column on `deploy_runtime`, and the surface preferring the
+  stamp over the walk when both are present. The walk's tests already cover
+  the fallback.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-08 — The drift alarm knows the commits, so it could name the risk class (engineer seat, second dispatch)
+- Trigger: today's drift alarm went from "triage is 2.9 days behind" to naming
+  the commits inside the drift. Reading the result against
+  `docs/agents/runtime-changes.md` showed the next question immediately. That
+  law splits changes into two kinds, and the split decides how expensive the
+  deploy is: a model id, a provider, a base URL, a token reservation, a client
+  timeout or a retry policy needs the full ladder with a real rehearsal, and
+  everything else does not. The alarm now hands the chair three commit
+  subjects and leaves that classification to a human reading them.
+- What: classify each undeployed commit against the inputs the law names, by
+  diffing it over the app's files and matching the added and removed lines
+  against that list, then print the verdict in the alarm and in the surface's
+  evidence. "Three undeployed commits, one of them a provider change" is a
+  different sentence from "three undeployed commits", and it is the sentence
+  that decides whether the deploy waits for the chair's next clear window or
+  can go now.
+- First step: the classifier, with one rule that matters more than its
+  accuracy: it may only ever escalate. An unrecognised change is a rehearsal
+  change, so a pattern the classifier has not learned yet costs a careful
+  deploy rather than a missed gate. That asymmetry is what makes it safe to
+  ship a regex at a legal question.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-08 — The window gate refuses by the clock when it could ask whether a run is actually in flight (engineer seat, second dispatch)
+- Trigger: `tools/deploy_gate.py` now refuses a rehearsal inside any reserved
+  Kimi hour, reading the windows out of `pipeline/llm.py` rather than copying
+  them. Testing it exhaustively over every minute of every window made the
+  conservatism visible: triage's cron fires at 12:00 and usually finishes in
+  minutes, and the gate still refuses at 12:55 because the window is an hour
+  wide. The window is the right default, because Moonshot's organization
+  concurrency is 1 and the schedule is the only enforcement. It is also a
+  worst case being applied to the common case, and the override is an
+  `--ignore-window` flag, which is the kind of flag that gets typed reflexively
+  and then stops being read.
+- What: before refusing, ask Modal whether that app has a container running.
+  The client is already installed wherever the gate runs, and a window with no
+  live run in it is a window the concurrency limit has no opinion about. Keep
+  the clock as the answer whenever the question cannot be asked, so a Modal
+  API that is down or unauthenticated refuses exactly as today.
+- First step: the probe behind a function that returns one of three answers,
+  running, idle, or unknown, with unknown treated as running. Then the refusal
+  only fires on the first two, and the message says which of the three it saw.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-08 — Craft scan: Exa reports what a call cost in the same object as the answer, and cannot tell you which version answered (engineer seat, second dispatch)
+- Probed live, 2026-10-08: `exa.ai/pricing` and `exa.ai/docs/reference/getting-started`,
+  the watchlist row in docs/market/landscape.md, rotated off the academic-tools
+  and newsletter rows this seat's recent scans have been working through.
+- Worth stealing: Exa makes cost part of the API contract rather than part of
+  the operator's log. A caller sets a fixed `effort` and gets "a predictable
+  per-request price", or runs metered against a per-run cap, and either way the
+  response carries `usage.agentComputeUnits`, so the run that spent the money
+  is the thing that reports it. alexandria has the caps already, in
+  `budget.cron_caps()` and in each job's own ceiling, and it has the dry run in
+  `drain`. What it does not have is the third piece: the artifact a run
+  produces does not carry what the run cost. The cost lives in a log line that
+  the finance seat reconciles days later against a provider dashboard, which is
+  why `INC-2026-09-24` had a cost check reporting $0.1628 an issue against a
+  budgeted $0.05 into nothing for six days. A `cost_cents` column beside the
+  `digests` row, written by the job that spent it, would put the number where
+  the reader of the issue already is. That is a day-sized change and it is
+  the one thing from this scan worth a ledger entry of its own.
+- What alexandria does better, and it is today's work exactly: provenance of
+  the code that answered. Exa publishes no API version. Every example in its
+  own reference posts to `https://api.exa.ai/search` with an `Authorization`
+  header, no version field in the body, no dated version, and no changelog or
+  deprecation page that a search surfaces. The response carries a `requestId`
+  and no version identifier, so a caller who gets a different answer this week
+  than last week has no way to ask what changed. alexandria stamps
+  `claims.prompt_sha` on every claim, records a content digest of the running
+  image in `deploy_runtime` on every scheduled run, and as of today can name
+  the exact commits a running job does not contain. A reader can ask which
+  prompt and which deployed code produced a line in the issue and get an
+  answer. That is not a feature Exa is missing by accident, it is the
+  difference between selling a search endpoint and selling a claim somebody
+  will cite.

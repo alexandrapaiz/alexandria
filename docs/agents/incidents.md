@@ -10545,3 +10545,74 @@ discharged its duty by naming the command. A check that exists only as prose in
 a register is a check that every future run must rediscover, and the run that
 most needs it is the one that has not read the entry yet. The fix for a missing
 check is committed code, and the entry's job is to say where it was committed.
+
+## INC-2026-10-08-the-pin-list-grows-once-per-run-while-its-fix-waits-for-a-hand - two consecutive runs each added a test file that no workflow runs, and the replacement that would empty the list has been staged since 2026-10-07 (2026-10-08, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-08, when the
+coverage ratchet in `tests/test_ci_coverage.py` went red on a test file this
+run had just written.
+
+**What happened.** The ratchet worked exactly as designed. It refused the new
+file, printed the sentence that explains why a pinned file is not an
+exemption, and offered the two ways out. Both ways out are closed to a seat:
+one is a step in `.github/workflows/checks.yml`, which no seat's token may
+write, and the other is applying the staged replacement, which is a `git mv`
+only the owner or the chair can perform. So the third option fired, the one
+the list's own comment calls the last resort, and the pin list grew.
+
+It grew yesterday too, for the same reason and in the same file.
+
+```
+$ for r in $(git log --format=%h -8 --follow -- tests/test_ci_coverage.py); do
+    echo "$(git log -1 --format='%ci' $r)  UNCOVERED=$(git show $r:tests/test_ci_coverage.py \
+      | sed -n '/^UNCOVERED = {/,/^}/p' | grep -c '^    "tests/')"
+  done
+2026-10-08 18:12:06 +0000  UNCOVERED=36
+2026-10-07 18:22:20 +0000  UNCOVERED=35
+2026-10-07 18:09:27 +0000  UNCOVERED=34
+```
+
+34, then 35, then 36. The comment above the two newest lines already says it
+in the file: "And the second file this run added, caught by this gate the same
+way and pinned for the same reason: no seat can add it to a workflow." Today
+is the third, and the rate is now one line per run that writes a test.
+
+**What it cost.** Thirty-six test files report nothing on any pull request.
+Two of them are the day-old guards for the two halves of this run's own work,
+and one of the thirty-six is the ratchet itself. Every one passes locally,
+passes for the seat that wrote it, and is silent on the merge that breaks what
+it guards, which is the sentence the gate prints about itself.
+
+The cost is not the ratchet's. It is the shape of a queued item that nobody
+has applied: a staged change's price is paid once when it is filed and again
+by every run after it, and nothing in the org measures the second half. This
+entry is that measurement, as a number that goes up by one a day.
+
+**The fix is one command and it is not a seat's to run.**
+
+```bash
+git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+```
+
+Verified against this branch before filing, so the number is about the file
+and not about hope:
+
+```
+$ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+50 of 50 test files run in CI
+  every test file in tests/ is executed by some workflow
+```
+
+`UNCOVERED` becomes empty on that merge and the ratchet starts guarding
+instead of recording. Until then every run of every seat that writes a test
+adds a line, and the list is an accurate account of what CI does not see
+rather than a list of exceptions anybody chose.
+
+**The general shape, and it is not the ratchet's shape.**
+`INC-2026-09-30-queue-item-2-rotted-a-third-time` is about a queued item going
+stale while it waits. This is the other half of the same cost and it is the
+half with no owner: an item that stays correct while it waits, and charges
+rent to every run in the meantime. A queue of changes that only a hand can
+apply needs a number beside each item saying what the wait has cost so far,
+because the decision to leave something queued is only cheap if nobody
+measures it.
