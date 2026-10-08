@@ -174,20 +174,21 @@ class Surface:
                 "headline": self.headline, "evidence": self.evidence}
 
 
-def week_label(today: date | None = None) -> str:
-    """The week the press should most recently have printed.
+def _press_module():
+    """`pipeline.weekly`, importable in a sandbox with no Modal SDK.
 
-    Imported from the press itself rather than recomputed here. A health check
-    that carries its own copy of the rule can only ever agree with the press by
-    luck, and disagreeing silently is worse than not checking. That matters
-    more than usual for this particular rule, which was wrong until today: a
-    second copy written this morning would have been a second copy of the bug.
+    Every date rule this file needs is read out of the press rather than
+    recomputed here. A health check that carries its own copy of a rule can
+    only ever agree with the press by luck, and disagreeing silently is worse
+    than not checking. That matters more than usual for the week rule, which
+    was wrong until 2026-09-23: a second copy written that morning would have
+    been a second copy of the bug.
 
     `pipeline/weekly.py` imports `modal` at module scope, for decorators, and a
     seat's sandbox has no reason to have the Modal SDK installed. So when it is
-    absent this stands a namespace in for it long enough to read one pure date
-    function out of the module. `tests/conftest.py` does the same thing for the
-    same reason, and the alternative is the duplicated rule.
+    absent this stands a namespace in for it long enough to read the pure date
+    functions out of the module. `tests/conftest.py` does the same thing for
+    the same reason, and the alternative is the duplicated rule.
     """
     if "modal" not in sys.modules:
         try:
@@ -209,9 +210,102 @@ def week_label(today: date | None = None) -> str:
             )
             sys.modules["modal"] = stub
 
-    from pipeline.weekly import week_just_ended
+    from pipeline import weekly
 
-    return week_just_ended(today)[0]
+    return weekly
+
+
+def week_label(today: date | None = None) -> str:
+    """The week the press should most recently have printed."""
+    return _press_module().week_just_ended(today)[0]
+
+
+# `pipeline/weekly.py`'s `weekly()` carries `schedule=modal.Cron("0 9 * * 1")`:
+# Monday at 09:00 UTC. This is the one fact about the press's clock that this
+# file needs and cannot read out of `week_just_ended`, which answers which week
+# the press should print and never when it gets its turn. So it is a copy, and
+# this file's standing argument is that a copy agrees with the original only by
+# luck. `test_the_cron_this_check_assumes_is_the_cron_the_press_runs` reads the
+# decorator out of `pipeline/weekly.py` and pins it to this constant: change
+# the schedule and that test is what sends you back here.
+PRESS_CRON = "0 9 * * 1"
+
+# How long after its cron fires the press may still be working before lateness
+# is real. The scheduled run opens a connection, calls a provider under a
+# 1800-second timeout and then mails every subscriber, so a run still going at
+# 09:40 is a working press rather than a missing issue. Erring long is the
+# cheap direction. A check that is early by an hour cries wolf every single
+# week, which is how a seat learns to stop reading it, where a check that is
+# late by an hour reports a genuinely missing issue at 11:00 instead of 09:00.
+PRESS_GRACE = timedelta(hours=2)
+
+
+def _instant(when: date | datetime | None = None) -> datetime:
+    """A `today` argument, as the instant the question is being asked at.
+
+    This file's public functions have always taken `today: date`, which is
+    enough to know which week should have been printed and not enough to know
+    whether that week's deadline has passed. Both are needed now, so a
+    `datetime` is accepted everywhere a `date` was.
+
+    A bare `date` means the end of that day. Every existing caller that passes
+    one is asking about a day that is over, so reading it as midnight would
+    quietly change the question they are asking. `datetime` is a subclass of
+    `date`, which is why it is tested for first, and a naive one is read as UTC
+    because every other clock in this file is UTC.
+    """
+    if when is None:
+        return datetime.now(timezone.utc)
+    if isinstance(when, datetime):
+        return when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+    return datetime(when.year, when.month, when.day, 23, 59, 59,
+                    tzinfo=timezone.utc)
+
+
+def press_deadline(week_end: date) -> datetime:
+    """When the issue for the week ending on `week_end`, a Sunday, is due.
+
+    The cron fires the morning after the week ends, so the deadline is that
+    Monday at the cron's own hour plus the grace the run itself needs.
+    """
+    minute, hour = PRESS_CRON.split()[:2]
+    monday = week_end + timedelta(days=1)
+    fires = datetime(monday.year, monday.month, monday.day,
+                     int(hour), int(minute), tzinfo=timezone.utc)
+    return fires + PRESS_GRACE
+
+
+def press_due_week(when: date | datetime | None = None) -> tuple[str, str | None]:
+    """The newest issue the press is obliged to have printed, and the one it owes.
+
+    `week_label` answers which week has ended. That is the right question for
+    the press, which prints the week that ended, and the wrong question for a
+    health check, which also has to know whether the press has had its turn
+    yet. Between Monday 00:00 UTC and the cron at 09:00 the week that has just
+    ended has no issue and nothing at all is wrong, and for those nine hours
+    this check reported FAILING every single week. Sprint 2026-10-05's item 4
+    names exactly this: the press surface "reads FAILING on any Monday before
+    the cron fires, with nothing standing that re-checks after the window
+    closes". A guardrail that is wrong on a schedule teaches the seats reading
+    it to discount it, which costs more than the check is worth.
+
+    Returns the due week and, when the week that most recently ended is not due
+    yet, that week as `pending`, so the surface can name the issue it is
+    waiting for instead of quietly expecting the one before it.
+    """
+    press = _press_module()
+    now = _instant(when)
+    ended = press.last_sunday(now.date())
+
+    def label(sunday: date) -> str:
+        # The press labels the week that ended on `sunday` when it runs the
+        # morning after, so ask it that way rather than formatting a second
+        # ISO week here.
+        return press.week_just_ended(sunday + timedelta(days=1))[0]
+
+    if now < press_deadline(ended):
+        return label(ended - timedelta(days=7)), label(ended)
+    return label(ended), None
 
 
 def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
@@ -244,7 +338,7 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
 
 # ---------------------------------------------------------------- surfaces
 
-def check_site(today: date | None = None) -> Surface:
+def check_site(today: date | datetime | None = None) -> Surface:
     """Which issues can a reader actually read, and is the newest one current.
 
     The evidence is the rendered `/library` listing rather than a file on disk
@@ -268,15 +362,21 @@ def check_site(today: date | None = None) -> Surface:
         return Surface("site", FAILING, f"/library returned HTTP {status}")
 
     weeks = sorted(set(re.findall(r"\b(\d{4}-W\d{2})\b", body)), reverse=True)
-    expected = week_label(today)
-    evidence = {"url": f"{SITE_URL}/library", "published": weeks, "expected": expected}
+    expected = week_label(_instant(today).date())
+    # Same rule as the press surface, and for the same reason: the site cannot
+    # publish an issue the press is not due to have written yet, so judging it
+    # against `expected` made the archive cry wolf on exactly the Mondays the
+    # press surface did.
+    due, pending = press_due_week(today)
+    evidence = {"url": f"{SITE_URL}/library", "published": weeks,
+                "expected": expected, "due": due, "pending": pending}
     if not weeks:
         return Surface("site", FAILING, "/library renders but publishes no issue at all",
                        evidence)
-    if weeks[0] < expected:
+    if weeks[0] < due:
         return Surface(
             "site", FAILING,
-            f"the newest issue a reader can read is {weeks[0]}, and {expected} "
+            f"the newest issue a reader can read is {weeks[0]}, and {due} "
             "has ended. The archive reads the `digests` table now "
             "(site/lib/issues-live.js), so this no longer means a commit was "
             "forgotten: it means the press wrote no row for that week, or the "
@@ -412,32 +512,50 @@ def press_facts(conn) -> dict | None:
     return {"week": row[0], "created_at": row[1], "model": row[2]}
 
 
-def judge_press(facts: dict | None, today: date | None = None,
+def judge_press(facts: dict | None, today: date | datetime | None = None,
                 source: str = DIRECT) -> Surface:
-    """The newest issue, against the week that has ended.
+    """The newest issue, against the newest issue the press owes by now.
 
     Takes rows rather than a connection, so the credential-free reader and the
     credentialled one are judged by this function and not by two copies of it.
     The file already makes this argument about `week_just_ended`: a second copy
     of a rule can only ever agree with the first by luck.
+
+    `due` and not `expected` is what the verdict turns on. They differ for the
+    nine hours of every Monday between midnight and the cron, and this check
+    called those hours a missing issue until 2026-10-08. `expected` stays in
+    the evidence because it is still the honest answer to a different question,
+    which week has ended, and because that is the field incident 24 is read by.
     """
-    expected = week_label(today)
+    expected = week_label(_instant(today).date())
+    due, pending = press_due_week(today)
+    waiting = {"expected": expected, "due": due, "pending": pending,
+               "read_via": source}
     if facts is None:
-        return Surface("press", FAILING, "the digests table is empty",
-                       {"expected": expected, "read_via": source})
+        # An empty table is broken whatever the clock says. There is no week
+        # the press has ever printed, so there is nothing for the grace window
+        # to excuse.
+        return Surface("press", FAILING, "the digests table is empty", waiting)
     week, created_at, model = facts["week"], facts["created_at"], facts["model"]
-    evidence = {"newest_week": week, "expected": expected,
-                "created_at": str(created_at), "model": model,
-                "read_via": source}
-    if week < expected:
-        missing = _weeks_between(week, expected)
+    evidence = {"newest_week": week, **waiting,
+                "created_at": str(created_at), "model": model}
+    if week < due:
+        missing = _weeks_between(week, due)
         return Surface("press", FAILING,
-                       f"the newest issue is {week} and {expected} has ended; "
+                       f"the newest issue is {week} and {due} has ended; "
                        f"{missing} issue(s) missing", evidence)
+    if pending and week < pending:
+        deadline = press_deadline(_press_module().last_sunday(_instant(today).date()))
+        return Surface("press", OK,
+                       f"{week} is written, by {model}. {pending} is not due "
+                       f"yet: the press has until "
+                       f"{deadline:%Y-%m-%d %H:%M} UTC to print it, so a "
+                       f"missing {pending} before then is the schedule and "
+                       f"not a fault", evidence)
     return Surface("press", OK, f"{week} is written, by {model}", evidence)
 
 
-def check_press(conn, today: date | None = None) -> Surface:
+def check_press(conn, today: date | datetime | None = None) -> Surface:
     return judge_press(press_facts(conn), today)
 
 
@@ -887,6 +1005,24 @@ def run(surfaces: list[str], today: date | None = None,
     return sorted(out, key=lambda s: ORDER.index(s.name))
 
 
+def parse_moment(value: str | None) -> date | datetime | None:
+    """`--today`, as either a day or an instant inside one.
+
+    A date was enough while the press surface judged by the week that had
+    ended. It stopped being enough when the surface learned the press's
+    deadline, because "did Monday see a missing issue" has two answers on a
+    Monday and the time of day picks between them. Both spellings are accepted
+    so no existing invocation of this command changes meaning.
+    """
+    if not value:
+        return None
+    text = value.strip().replace("Z", "+00:00")
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return datetime.fromisoformat(text)
+
+
 def exit_code(results: list[Surface]) -> int:
     if any(s.state == FAILING for s in results):
         return 1
@@ -923,10 +1059,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true",
                         help="print the result as JSON instead of prose")
     parser.add_argument("--today", default=None,
-                        help="YYYY-MM-DD, to ask what a given day should have seen")
+                        help="YYYY-MM-DD, or an ISO timestamp, to ask what a "
+                             "given moment should have seen. A bare date means "
+                             "the end of that day; the time matters only on a "
+                             "Monday, when the press's own deadline falls "
+                             "inside it")
     args = parser.parse_args(argv)
 
-    today = date.fromisoformat(args.today) if args.today else None
+    today = parse_moment(args.today)
     results = run(args.surfaces or ORDER, today, notify=not args.no_notify)
 
     if args.json:
