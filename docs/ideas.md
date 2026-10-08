@@ -12543,3 +12543,105 @@ that triggered it, per the charter.
   versioned row both.
 - First step: the owner's ruling on the paragraph. The two tool halves are
   ordered behind the dedup rather than beside it.
+
+### 2026-10-08 — The email renderer drops and demotes the sign-off, and flattens every list law 14 asks for
+- Trigger: the editorial run of 2026-10-08 ran `pipeline/email_render.py` over
+  the newest `digests` row instead of reading it, which is the first time canon
+  pass 6's "walk the path the words take" has been executed by executing it.
+  Two earlier runs performed that pass by listing assignments in `pipeline/`
+  and neither could have found any of this, because nothing below is visible in
+  a constant.
+- The first half, and it loses reader-facing content. `parse_issue` assigns
+  `tail[0]`, the first non-empty line after the closing rule, to the
+  `{{stats}}` slot and discards every line after it. `prompts/digest.md` asks
+  the model to sign off in two moves, so the issue that sets them as two
+  paragraphs sends one. Measured both ways on a fixture:
+
+  ```
+  $ python3 docs/voice/check_voice.py delivery /tmp/wrun/fix/split-signoff.md
+    sign-off lines 3    dropped 1
+      DROPPED  The week ending October 4 brought 2,557 papers in and 127 read in full.
+  ```
+
+  The sentence that goes missing is the scale sentence, which is the one canon
+  law 15 exists to govern and the only sentence in an issue a reader cannot
+  check against a linked paper. 2026-W40 ran both moves in one paragraph and
+  arrived whole, which was luck. The generator half is patched in this pull
+  request to require one paragraph, so the drop is prevented from today. The
+  engineer half is still worth doing, because a renderer that silently discards
+  editorial copy will discard something else later: `issue["stats"]` should take
+  every line after the rule that is not the standing close, or refuse the issue.
+- The second half is typographic and no prompt reaches it. The slot that does
+  survive is `{{stats}}` at `site/emails/digest.html:153`, set at 12px in grey
+  `#86868b` monospace below the 19px close. So the issue's closing judgment,
+  the line that hands the day back to the reader, is delivered in the register
+  of a system footnote. The slot is named for statistics and the generator is
+  told to put a sentence there, which is the actual mismatch. Either the
+  template gains a slot for the sign-off line at body weight, or the generator
+  stops writing one. The first is better and it is the frontend seat's file.
+- The third half blocks canon law 14 end to end. `parse_section` reads a
+  top-level markdown bullet as the start of a new ITEM, so `points` stays empty
+  and a bulleted list arrives in the inbox as consecutive body paragraphs.
+
+  ```
+  $ python3 docs/voice/check_voice.py delivery /tmp/wrun/fix/list.md
+    top-level bullets 2   rendered as list points 0
+  ```
+
+  Already true of a published issue rather than a prediction:
+  `site/content/issues/2026-W37.md` has twenty-four top-level bullets across
+  three sections and the renderer makes zero points from them. Only indented
+  sub-bullets reach the point path, eighteen of them under the four items of
+  one section. The site renders the same markdown as a real list, so the shape
+  exists on one surface and is undone on the other. Law 14 is the owner's
+  ruling that an issue set as one column of grey paragraphs is a failure, the
+  generator on this branch is being patched toward the list, and the patch
+  cannot reach a subscriber until this is fixed. Not patched in the prompt on
+  purpose: the markdown is already correct and writing to the parser's shape
+  would be the generator obeying a bug.
+- Whose call: the engineer owns `pipeline/email_render.py` and the frontend
+  seat owns `site/emails/digest.html`. The writer seat found it, patched the
+  one half a prompt can reach, and gated all three for visibility in
+  `docs/voice/check_voice.py delivery`, which runs the real renderer, passes a
+  clean fixture at exit 0, and fails each of the three cases.
+- First step: the list branch in `parse_section`, because it is the one that
+  blocks a law. The sign-off slot is second and the typography is the owner's
+  ruling to give the frontend seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-08 — A ledger entry addressed to a seat has no failing state either
+- Trigger: ban list 103. The ledger entry of 2026-09-24 that built
+  `preheader_for()` says the derived inbox preview "happens to be good. It is
+  good by luck", names the writer seat as whose call the real fix is, and asks
+  for one plain sentence in the generator's output contract. It has been open
+  fourteen days. Four editorial runs have happened since and none of them
+  opened it, so the luck ran out unobserved: 2026-10-05's preview is 128
+  characters, it is the setup half of an either-or, and a mail client cut it at
+  "and until this ".
+- Why nobody looked, which is the part worth building on. Canon pass 6 exists
+  because "a filing has no failing state of its own", and it re-checks every
+  entry in `docs/voice/ban-list.md` whose ending is a filing. A filing in THIS
+  file addressed to the writer seat is the same object with the same problem
+  and no pass re-reads it. The register that was given a failing state got one.
+  The register that hands work between seats did not.
+- The proposed amendment is one line in canon pass 6, which is the owner's
+  file: the pass also re-checks every open ledger entry whose "whose call" line
+  names this seat, and prints the day count the same way.
+- The count is the real finding and it is nine. Nine entries in this file are
+  still `proposed` and name the writer seat in their "whose call" line, six of
+  them unconditionally, the oldest nineteen days old. One of them, from
+  2026-09-27, says "writer seat, next run, no dependency on anyone", and
+  eleven runs have gone past it. The full list with day counts is in
+  `INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state`.
+  So the amendment is not about one straggler. This seat has an unopened inbox
+  and the preheader is the item from it that happened to print.
+- The writer half of the 2026-09-24 entry is done in this pull request without
+  waiting for the amendment. The generator now states that the opening's first
+  sentence is the inbox preview and has to stand alone inside ninety
+  characters, and `check_voice.py delivery` fails over ninety. That is the
+  cheap half. The engineer half the entry asked for, a declared preheader line
+  the parser lifts, is still better, because deriving the sell from the opening
+  makes one sentence do two jobs and the two jobs disagree.
+- Cost: $0
+- Status: proposed

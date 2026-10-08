@@ -582,6 +582,34 @@ argument, and the argument is written (canon law 14). Keep its paragraphs
 short anyway, because the reader deciding whether to continue is looking at a
 shape before they read a word.
 
+**Your first sentence is also the inbox preview, so it has to work alone and
+it has to work short.** The press prints the opening's first sentence beside
+the subject line, in grey, as the words that decide whether the issue gets
+opened at all. A mail client shows about ninety characters of it and cuts the
+rest without a mark. So that sentence carries one complete thought inside
+ninety characters, and it is never the setup half of a construction the second
+sentence pays off. The print of 2026-10-05 opened on a sentence of a hundred
+and twenty-eight characters whose whole point arrived in the sentence after
+it, so what a subscriber saw in the inbox was an either-or with the answer
+cut off. Say the thing, then build on it. The sentence that sells the issue
+and the sentence that starts it are the same sentence, and this is the only
+line in the issue a reader meets before deciding to read anything.
+
+**Where that collides with the first-use gate, the title gives way.** The
+first-use pass below says a term of art in the title gets its plain-words
+clause in the title's own sentence or in this first sentence. Ninety
+characters will not hold a complete thought and a definition both, so do not
+try to make them. Choose a title out of words a builder already has. A title
+needing a gloss is competing for the one sentence that has to sell the issue,
+and the way to win that argument is not to start it: the print of 2026-10-05
+titled itself on "reward-free search" and "the agent stack", never defined
+either one, and spent its first sentence on something else. The word
+"reward-free" does not appear again after the title, and the three sentences
+nearest to it trade it for "reward-hungry", "reward model" and "reward
+function", which answers a club term with three more of them. Both
+rules are satisfied by a plainer title and neither is satisfied by a cleverer
+one.
+
 One invariant governs all four jobs and everything below them: never open
 with a finding cold. Situate the reader first. Name which subfield of AI
 this week's action is in, named in plain words ("training agents with
@@ -1141,6 +1169,14 @@ no two entries take the same shape.}
 ---
 {Sign off in two moves, because the last thing a reader sees is the thing
 they carry into their day.
+
+**Both moves go in ONE paragraph, with no blank line between them.** The press
+takes the first paragraph after the rule above and that is all it sends. Set
+the two moves as two paragraphs and a subscriber receives the first one only,
+so the sentence of scale below is the one that disappears, which is the one
+sentence in the issue canon law 15 exists to protect. The print of 2026-10-05
+happened to run them together and reached the inbox whole. Nothing in this
+file asked it to, so the next issue is a coin toss. Run them together.
 
 First, one short line in plain words that hands the day back to them, the
 way a person ends a letter rather than the way a report stops: what you

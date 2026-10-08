@@ -11038,3 +11038,129 @@ it: the sentence to distrust is the balanced contrast wherever it appears, and
 the register files are where this seat writes most of them. Proposed for the
 charter's shipping section through the ExO relay, because this seat does not
 edit charters.
+
+## INC-2026-10-08-canon-pass-six-executed-by-inventory-not-by-rendering — the delivery-path pass was run twice by listing constants, and all three defects on the path were in the renderer (2026-10-08, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`, itself the
+fifth occurrence of a chain running back through
+`INC-2026-10-03-law-12-graded-by-grep`,
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Sixth occurrence of the
+class, same seat, recorded at the moment it repeated per the standing rule at
+the top of this file.**
+
+**What happened.** Canon pass 6 was extended on 2026-10-04 with an instruction
+in its own words: "walk the path the words take, from the model's output to the
+reader's eye, and grade every string that joins or changes them on the way."
+The grade of 2026-10-04 wrote that step and the grade of 2026-10-07 inherited
+it. Both executed it by listing reader-facing assignments in `pipeline/` and
+`site/emails/digest.html`, which is what "every string that joins or changes
+them" reads as. Ten names across three files, correctly found, correctly
+graded as sentences.
+
+Today's run executed the same pass by importing `pipeline.email_render` and
+rendering the artifact. Three defects came out of the first command, and not
+one of them is a string:
+
+- `parse_issue` keeps only the first line after the closing rule and discards
+  the rest, so the two-move sign-off the generator is told to write loses a
+  move, and the move it loses is the law 15 scale sentence.
+- `parse_section` reads a top-level bullet as a new item, so every list canon
+  law 14 requires is flattened to paragraphs. Twenty-four bullets in
+  `site/content/issues/2026-W37.md` produce zero list points.
+- `preheader_for` derives the inbox preview from the opening's first sentence,
+  which for the newest issue is 128 characters of an unfinished either-or.
+
+**Why the class keeps recurring, which is the only part worth adding.** The
+four earlier entries are each a grade checking the half of a rule the rule
+names: the prefix law 8 mentions, the four strings law 12 lists, the links that
+exist rather than the ones missing. This one is a step shaped the same way at
+one remove. The step says "every string", so a seat executing it faithfully
+goes looking for strings, and a `tail[0]` is not a string. The instruction
+named the nouns on the path instead of the path, and a reader obeying it
+inventories the nouns.
+
+So the generalisation, and it is narrower and more useful than "grade the whole
+thing": **a pass over a transformation is executed by running the
+transformation.** Where a register asks a seat to grade what a reader receives,
+the only faithful execution is to produce what the reader receives. Reading the
+code that produces it grades the author's intent, which is the one thing that
+was never in doubt. Three seats have now written correct instructions whose
+verb was weaker than their subject.
+
+**Blameless postmortem.** Nobody did the pass badly. The 2026-10-04 amendment
+is the best version of that step anyone had written, it was executed as
+written, and it found real defects both times. The failure is that "list every
+reader-facing constant" is cheap and "render the artifact" is not obviously the
+same instruction, so the cheap reading won twice. The fix is in the owner's
+file and is filed rather than edited: canon pass 6 should ask for the render
+and name the command. The local half is built, because a rule enforced by a
+sentence is enforced at the reliability of a reading:
+`docs/voice/check_voice.py delivery` runs the real renderer over an artifact,
+fails each of the three cases above, and passes a clean fixture at exit 0.
+
+## INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state — the preheader was filed for the writer seat on 2026-09-24 and sat through four editorial runs (2026-10-08, writer seat)
+
+**This is a repeat of incident 20, the class the owner named when she had to
+give one ruling twice, and of the reasoning that produced canon pass 6. Both
+say recording is not enforcing. Pass 6 gave a failing state to the filings in
+`docs/voice/ban-list.md` and nothing gave one to the filings in
+`docs/ideas.md`, so the same class survived in the second register. Recorded at
+the moment it repeated per the standing rule at the top of this file.**
+
+**What happened.** The ledger entry of 2026-09-24 that built `preheader_for()`
+says the inbox preview is derived from the opening's first sentence, that for
+2026-W39 this "happens to be good", that it is "good by luck", and that the
+real fix is a declared preheader in the generator's output contract. Its
+"whose call" line reads: "the writer seat owns `prompts/digest.md` and the
+voice. This is filed for that seat rather than edited."
+
+That was fourteen days and four editorial runs ago. The entry is still
+`proposed`. The luck ran out in the meantime and no run noticed, because
+nothing a run does opens that file looking for its own name. 2026-10-05's
+preview is 128 characters, the setup half of an either-or, and a mail client
+shows "You ship agents that improve themselves or you ship agents that stay
+safe, and until this " and stops.
+
+**Why it was invisible, stated as the structural fact rather than as a miss.**
+Canon pass 6 exists because, in its own words, "a filing has no failing state
+of its own, and this pass is the failing state". It enumerates the entries in
+one register: every ban-list entry whose ending is a filing. A ledger entry
+addressed to this seat is the identical object with the identical problem, and
+no pass in any charter enumerates those. The register that was given a gate got
+one. The register that hands work BETWEEN seats is the one with no gate, which
+is the worse of the two to leave open, because a filing addressed to nobody at
+least fails loudly when the defect prints.
+
+**Blameless postmortem.** The 2026-09-24 entry did everything right. It named
+the defect, named the seat, named the cheap fix and the better fix, and said
+plainly that the current behaviour was luck. Filing it was correct and the
+engineer was right not to edit the prompt himself. The gap is that the handoff
+had no receiver. Two fixes, both in this pull request: the writer half of the
+2026-09-24 entry is done, and an amendment to canon pass 6 is filed asking the
+pass to re-check every open ledger entry whose "whose call" line names this
+seat, with the day count printed the way the ban-list filings already are.
+
+**And the count is the finding.** The amendment was drafted assuming the
+preheader was a lone straggler. It is not. Nine entries in `docs/ideas.md` are
+still `proposed` and name this seat in their "whose call" line, six of them
+unconditionally:
+
+```
+19 days  2026-09-19  the writing model's narrow no-break spaces
+19 days  2026-09-19  the `Enforced at:` line belongs on the voice registers
+19 days  2026-09-19  two fabrications in the published digest
+14 days  2026-09-24  the writer should choose the preheader
+11 days  2026-09-27  ban list entries 1 to 50 have never been swept
+ 9 days  2026-09-29  the em dash in skill frontmatter versus ban-list 13
+ 8 days  2026-09-30  the provenance field is ASCII, the papers list is not
+```
+
+The 2026-09-27 entry's whose-call line reads "writer seat, next run, no
+dependency on anyone." Eleven days and roughly eleven runs have gone past it.
+So this seat has an inbox of nine, the oldest is nineteen days old, and no run
+of it has ever opened the inbox, which is a larger fact than the one preview
+sentence that led to finding it. It is reported rather than cleared, because
+clearing nine filings is not one editorial run and pretending otherwise is how
+the tenth gets written.

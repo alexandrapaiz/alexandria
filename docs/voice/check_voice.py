@@ -34,10 +34,12 @@ someone choosing to type it. Filed in docs/ideas.md for the engineer, to move
 to tools/ and add to .github/workflows/checks.yml beside check_registers.py.
 The stronger form of check 4 needs the corpus and is filed with it.
 
-Usage:  python3 docs/voice/check_voice.py [enforcements|stale|measure|links|all]
+Usage:  python3 docs/voice/check_voice.py
+          [enforcements|stale|measure|links|delivery|all] [path...]
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
+import html
 import pathlib
 import re
 import sys
@@ -90,9 +92,16 @@ def enforcements():
     prose, ok, missing = [], [], []
     for num, body in sorted(entries(ban).items()):
         nb = norm(body)
-        if not re.search(r"Enforced\b", nb):
-            continue
         claims = LANDED.findall(body)
+        # The "Enforced" word is what the register's own rule keys on, and it
+        # was this check's precondition until 2026-10-08, when entry 102 landed
+        # a gate without one. That entry's ending is a filing for the engineer
+        # PLUS a gate here, which is a third shape the rule did not anticipate,
+        # and the old precondition skipped the entry whole rather than checking
+        # the line it did carry. A LANDED line is a checkable claim wherever it
+        # sits, so the claim decides now and the word only decides the ratio.
+        if not re.search(r"Enforced\b", nb) and not claims:
+            continue
         if not claims:
             prose.append(num)
             continue
@@ -298,6 +307,113 @@ def measure(paths=None):
     return rc
 
 
+# The press renders an issue twice. The site gets the markdown, and a
+# subscriber gets `pipeline/email_render.py` over `site/emails/digest.html`.
+# Only the second one edits the words on the way out, and it is the one half of
+# the product no grade had ever executed (ban list 101, 102, 103).
+EMAIL_KEY = "2026-W40"
+
+
+def delivery(paths=None):
+    """What a subscriber receives, which is not what the grade reads.
+
+    Canon pass 6 asks a grade to walk the path the words take, from the
+    model's output to the reader's eye, and grade every string that joins or
+    changes them. Written as a sentence, that pass was executed twice by
+    listing assignments in `pipeline/`. Listing a constant is not running the
+    renderer, and the three findings below were all invisible to a reading.
+
+    So this imports the real renderer and puts the real artifact through it.
+    Three questions, each one a defect already confirmed on 2026-W40:
+
+    1. Does every editorial line reach the inbox? `parse_issue` assigns only
+       the first line after the closing rule to the `{{stats}}` slot and drops
+       the rest. The sign-off is written in two moves, so the issue that sets
+       them as two paragraphs loses one, and the one it loses is the scale
+       sentence canon law 15 exists to protect.
+
+    2. Does a list survive as a list? Law 14 requires parallel results set as
+       bullets. `parse_section` reads a top-level bullet as a new ITEM, so the
+       points list stays empty and three parallel bullets render as three
+       paragraphs in the body register. The site renders the same markdown as
+       a real `<ul>`, so the shape law 14 asks for exists on one surface and
+       is flattened on the other, after the last gate, by code.
+
+    3. Does the inbox preview stand alone? The preview is the first sentence of
+       the opening, which is written to continue into the second. 2026-W40's is
+       128 characters and truncates inside "until this week those two pipel".
+
+    What it cannot see. It does not read the typography, so it cannot tell that
+    the stats slot is 12px grey monospace below the sign-off or that every
+    section heading is set uppercase. Those are the template's, they are filed,
+    and a character census would not find them either.
+    """
+    try:
+        sys.path.insert(0, str(ROOT))
+        from pipeline import email_render as er
+    except Exception as exc:                        # noqa: BLE001
+        print(f"  renderer unavailable, so the delivery path is ungraded: {exc}")
+        return 1
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for raw in paths:
+        p = pathlib.Path(raw)
+        if not p.exists():
+            print(f"{p}: missing")
+            rc = 1
+            continue
+        md = p.read_text(encoding="utf-8")
+        print(f"{p}")
+        issue = er.parse_issue(md)
+        rendered = er.render_issue(md, EMAIL_KEY, "reader@example.com",
+                                   "https://example.com/u")
+        # Entities have to come back before anything is compared. The first
+        # version of this compared escaped html against raw markdown and
+        # reported 2026-W39's sign-off as dropped over one apostrophe.
+        seen = norm(html.unescape(re.sub(r"<[^>]+>", " ", rendered)))
+
+        # 1. the sign-off, which is every line after the closing rule.
+        tail = [l.strip() for l in re.split(r"^\s*---+\s*$", md, flags=re.M)[-1]
+                .split("\n") if l.strip()]
+        standing = norm(er.CLOSE).rstrip(".")
+        dropped = [l for l in tail if standing not in norm(l)
+                   and norm(er.normalise(plain_md(l)))[:40] not in seen]
+        print(f"  sign-off lines {len(tail)}    dropped {len(dropped)}")
+        for l in dropped:
+            print(f"    DROPPED  {l[:72]}")
+            rc = 1
+
+        # 2. the lists, which law 14 requires and the renderer flattens.
+        bullets = len([l for l in md.split("\n")
+                       if re.match(r"^[-*] +\S", l)])
+        points = sum(len(i["points"]) for s in issue["sections"]
+                     for i in s["items"])
+        print(f"  top-level bullets {bullets}   rendered as list points {points}")
+        if bullets and not points:
+            print("    every bullet was read as a separate item, so the list law 14")
+            print("    asks for reaches a subscriber as paragraphs (ban list 102)")
+            rc = 1
+
+        # 3. the inbox preview.
+        pre = er.preheader_for(issue)
+        print(f"  inbox preview {len(pre)} chars")
+        if len(pre) > 90:
+            print(f"    truncates at  {pre[:90]!r}")
+            print("    the preview is one sentence of the opening, so an opening")
+            print("    written to continue sells a fragment (ban list 103)")
+            rc = 1
+    print()
+    print("The renderer ran. A constant inventory is not this check, and")
+    print("two executions of canon pass 6 found none of the three.")
+    return rc
+
+
+def plain_md(line):
+    """Markdown stripped the way the renderer strips it, for comparison only."""
+    line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line)
+    return re.sub(r"[*_`]", "", line)
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
     # Paths after the subcommand go to `measure`. Without this, the arguments
@@ -307,9 +423,10 @@ def main():
     # prevent (ban list 91, fixed 2026-10-06).
     paths = sys.argv[2:]
     rc = 0
-    takes_paths = {"measure", "links"}
+    takes_paths = {"measure", "links", "delivery"}
     for name, fn in (("enforcements", enforcements), ("stale", stale),
-                     ("measure", measure), ("links", links)):
+                     ("measure", measure), ("links", links),
+                     ("delivery", delivery)):
         if which in (name, "all"):
             print(f"==== {name} ====")
             rc |= fn(paths) if (name in takes_paths and paths) else fn()

@@ -1842,3 +1842,89 @@ gap that the same collision had left empty (incident 25).
     an artifact that drops the suffix from EVERY link passes, 2026-W39 is that
     case, and the stronger comparison against `papers.url` is undecidable while
     394 groups of rows hold one paper under several ids.
+101. The sign-off written in two moves for a press that sends one. Not a word
+    tell and not a page tell. It is a tell of the register this list has never
+    had an entry for, which is prose graded in the file it was written in and
+    never in the form it is received in. `prompts/digest.md` asks for two
+    closing moves after the rule, a line that hands the day back to the reader
+    and a line of scale. `parse_issue` in `pipeline/email_render.py` assigns
+    the FIRST non-empty line after that rule to the `{{stats}}` slot and drops
+    every line after it. So an issue that sets the two moves as two paragraphs
+    reaches a subscriber missing one of them, and the one missing is the scale
+    sentence, which is the single sentence canon law 15 was written to govern
+    and the only sentence in an issue a reader cannot check against a linked
+    paper. The print of 2026-10-05 ran both moves in one paragraph and arrived
+    whole. Nothing in the generator asked for that, so it was the coin landing
+    the right way up.
+    The general form, because the tell is wider than the sign-off. A rule in a
+    register is about the markdown. A reader is holding the render. Where those
+    two disagree the register wins every grade and loses every send, and the
+    disagreement is invisible to a reading of either file on its own, because
+    each one is correct about its own half.
+    Added 2026-10-08. Enforced the same day in prompts/digest.md, which now
+    requires one paragraph.
+    LANDED prompts/digest.md: "Both moves go in ONE paragraph, with no blank line between them."
+    Gated the same day: `docs/voice/check_voice.py delivery` runs the real
+    renderer over an artifact and prints every sign-off line the inbox does not
+    receive. It passes a clean fixture at exit 0 and names the dropped scale
+    sentence verbatim on a fixture that splits the two moves.
+    LANDED docs/voice/check_voice.py: "sign-off lines"
+    The typography is the filing half and no prompt reaches it. The slot that
+    survives is set at 12px in grey monospace below the sign-off, which is the
+    register of a system footnote, so the issue's closing judgment is demoted
+    even when it is delivered. Filed in docs/ideas.md for the engineer.
+102. The list that law 14 requires and the press flattens. Canon law 14 says
+    parallel results go in a bulleted list with a short bold lead on each,
+    because one shape for a whole issue is what the owner called a hassle to
+    read. `parse_section` reads a top-level markdown bullet as the start of a
+    new ITEM rather than as a point inside one, so `points` stays empty, no
+    marker is set, and the bullets arrive in the inbox as consecutive body
+    paragraphs in the same register as the prose around them. The site renders
+    the same markdown as a real list, so the shape exists on one surface and is
+    undone on the other, after every gate, by code.
+    This is not a prediction. `site/content/issues/2026-W37.md` carries
+    twenty-four top-level bullets across three sections and the renderer
+    produces zero list points from them: eleven parallel claims, four
+    overturned ones and nine reading-list entries, every one of them set as a
+    list by the writer and received as a paragraph. Only the fourth section's
+    indented sub-bullets become points, eighteen of them under four items.
+    The entry is written now rather than when it bites, because the generator
+    on this branch is being patched toward law 14's list and the patch cannot
+    reach a subscriber. Correcting one prediction in the register on the way
+    past: docs/voice/canon.md's pass 6 says the middle-dot marker at
+    `email_render.py` prints "on every bullet" of the first issue that obeys law
+    14. It does not. The marker is only reached by an INDENTED bullet, and the
+    top-level list law 14 actually asks for never gets that far. The character
+    the canon worried about is the lesser half of a defect that deletes the
+    shape instead of mis-setting it.
+    Added 2026-10-08. No prompt change, because the markdown is already right
+    and writing to the parser's shape would be the generator obeying a bug. The
+    fix is one branch in `pipeline/email_render.py`, which is not this seat's
+    file, so this is the second ending: filed in docs/ideas.md for the engineer
+    and reported to the owner as blocking canon law 14 end to end.
+    Gated the same day for visibility, which is all a gate can do from here:
+    `docs/voice/check_voice.py delivery` prints the top-level bullet count
+    beside the rendered point count and fails when an artifact has bullets and
+    no points.
+    LANDED docs/voice/check_voice.py: "rendered as list points"
+103. The opening sentence that sells nothing because it is half a sentence. The
+    press prints the opening's first sentence beside the subject line as the
+    inbox preview, trimmed at one sentence by `preheader_for`, and a mail
+    client shows roughly ninety characters of it. The opening is written to
+    begin an issue a reader has already decided to open. The preview has the
+    opposite job, which is to make them open it. 2026-10-05's first sentence is
+    a hundred and twenty-eight characters, it is the setup half of an either-or
+    whose answer is in the sentence after it, and what reached the inbox was
+    "You ship agents that improve themselves or you ship agents that stay safe,
+    and until this " with the rest cut off and no mark saying so.
+    The ledger said this would happen on 2026-09-24, in the entry that built
+    `preheader_for`: the derived preview "happens to be good. It is good by
+    luck." That entry names this seat as whose call it is, and it has been open
+    fourteen days through four editorial runs, because canon pass 6 re-checks
+    the filings in this file and nothing re-checks a filing in the ledger
+    addressed to this seat.
+    Added 2026-10-08. Enforced the same day in prompts/digest.md.
+    LANDED prompts/digest.md: "Your first sentence is also the inbox preview, so it has to work alone and"
+    Gated the same day: `docs/voice/check_voice.py delivery` prints the preview
+    length and the ninety-character truncation, and fails over ninety.
+    LANDED docs/voice/check_voice.py: "inbox preview"
