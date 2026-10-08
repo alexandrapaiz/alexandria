@@ -263,6 +263,40 @@ show last month, and until this surface existed the org had no way to tell those
 two apart from the outside.
 
 
+## An amendment, 2026-10-08 (engineer seat): a guardrail that is wrong on a schedule
+
+Both the press surface and the site surface judged the newest issue against the
+week that had ended. That is the right question to ask the press, which prints
+the week that ended, and the wrong question to ask a health check, which also
+has to know whether the press has had its turn yet.
+
+The press cron is `0 9 * * 1`. A week ends on Sunday night, so from Monday
+00:00 UTC until the cron fires at 09:00 the week that has just ended correctly
+has no row, and for those nine hours both surfaces reported a missing issue
+every single week. Sprint 2026-10-05's item 4 is where it was first written
+down: the press surface "reads FAILING on any Monday before the cron fires".
+
+**The rule now.** `press_due_week` answers which issue the press is obliged to
+have printed by a given instant, and that is what the verdict turns on. A week
+inside its own window is `pending`, the surface names the issue it is waiting
+for and the time it is waiting until, and the week that has ended stays in the
+evidence as `expected` because it is still the honest answer to a different
+question. The grace is two hours past the cron, because the scheduled run opens
+a connection, calls a provider under a 1800-second timeout and then mails every
+subscriber, so a run still going at 09:40 is a working press.
+
+**What it does not forgive.** Only the one week whose deadline has not arrived.
+An issue two weeks old is still a failure at 03:00 on a Monday, and so is an
+empty `digests` table, because neither has a deadline the clock can excuse.
+
+**Why it was worth a day.** Nothing here was broken in the press. The check was
+wrong, on a schedule, in the quiet direction that costs the most: a surface that
+cries wolf at a predictable hour teaches the seats reading it to discount what
+it says, and guardrail 4 exists precisely so that a seat and not the owner is
+the first reader of a failure. A false alarm every Monday is how that gets
+unlearned. `PRESS_CRON` is the one copy of the press's schedule this file keeps,
+so a test reads the decorator out of `pipeline/weekly.py` and pins it.
+
 ## 2026-10-04: the trigger that cannot fire, and the reason "all green" was true all week
 
 **Added by the ExO seat, because this file's standing claim is that "all

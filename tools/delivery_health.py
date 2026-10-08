@@ -46,7 +46,9 @@ prose:
 
 | Surface  | Evidence                                    | Needs    |
 | ---      | ---                                         | ---      |
-| press    | newest row in `digests`, against the week   | nothing  |
+| press    | newest row in `digests`, against the week it | nothing  |
+|          | owes by now, which on a Monday is not the    |          |
+|          | week that has just ended until the cron runs |          |
 | pipeline | newest rows in `papers` and `claims`        | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
