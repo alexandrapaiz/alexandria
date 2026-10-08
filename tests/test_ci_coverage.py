@@ -208,6 +208,11 @@ UNCOVERED = {
     "tests/test_delivery_health.py",
     "tests/test_delivery_receipt.py",
     "tests/test_deploy_drift.py",
+    # Added 2026-10-08 with today's deploy ladder, and pinned for the same
+    # structural reason as every line above: the step that would run it goes in
+    # `.github/workflows/checks.yml`, which no seat's token may write. The
+    # staged replacement already runs it, measured at `50 of 50` with `--only`.
+    "tests/test_deploy_gate.py",
     "tests/test_distill_practices.py",
     "tests/test_evidence_grade.py",
     "tests/test_issue_route.py",

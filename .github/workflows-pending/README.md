@@ -334,3 +334,87 @@ seat remembers `python3 -m pytest tests/ -q`. The signup path is the one surface
 in this repository a stranger touches directly.
 
     git mv .github/workflows-pending/subscriber-list.yml .github/workflows/
+
+## modal-deploy.yml — the deploy, behind a button instead of behind a memory
+
+Filed 2026-10-08 by the engineer seat, for the `urgent` ledger entry of the
+same morning. One command is the whole argument:
+
+    $ grep -rln "modal deploy" .github/workflows/
+    (no output)
+
+Nothing in this repository has ever deployed a line of `pipeline/`. The site
+has `deploy-main.yml`; the pipeline has a hand. So every merged fix to the
+press, triage, interpret, distill or ingest reaches production only when
+somebody remembers to run `modal deploy` with the right gates in front of it,
+and on the morning this was filed `triage` was 2.9 days behind `main` for
+exactly that reason.
+
+### It is dispatched by hand, and that is the design
+
+`docs/agents/runtime-changes.md` puts the rehearsal in the chair's hands in so
+many words: "the chair, by hand, before the deploy that installs the schedule.
+Not cron, not CI, and not the seat that wrote the change." A deploy that fires
+on merge is a cron by any honest reading of that sentence, and the four
+production failures of `INC-2026-09-24-press-provider-migration` are what the
+human in that loop is there to catch.
+
+The ledger entry asked for a push trigger and this file does not have one. The
+gap is narrower than "no deploy workflow": the chain was written out four
+times in `docs/decisions.md` and enforced once, so the hand that runs it has
+to carry the ladder in its head. This changes who holds the ladder, not who
+decides. `tests/test_deploy_gate.py` asserts the absence of a `push:` trigger,
+so an edit that quietly adds one turns the pull request that makes it red.
+
+### The ladder lives in a tool, so it works before this file moves
+
+Every rung is in `tools/deploy_gate.py`, which runs today with no Actions
+involved:
+
+    python3 tools/deploy_gate.py --plan            # print every app's chain
+    python3 tools/deploy_gate.py --app weekly      # run the press's chain
+
+Which gates an app has is read off its own module, not kept in a list beside
+it: a module that defines `preflight` and `rehearse` is a model-calling app
+and gets `pipeline/budget.py`, then both gates, then the deploy. `ingest`
+defines neither, calls no model, and gets a bare deploy, which is what ADR-12's
+own chain says. The derivation is cross-checked against the register rather
+than trusted: every `modal run <module>::<gate>` the tool produces is a string
+`docs/decisions.md` already contains.
+
+It also refuses to rehearse inside a reserved Kimi hour. Moonshot's
+organization concurrency is 1 at the account level, `pipeline/llm.py`'s
+`KIMI_WINDOWS` is that schedule in machine-readable form, and a rehearsal at
+12:30 UTC takes triage's slot away from triage. That refusal is
+`INC-2026-09-24-kimi-org-concurrency` as a gate instead of as a sentence, and
+the override is `--ignore-window`, which says so in the log.
+
+### Two secrets, and you have to create them
+
+| Secret | What it is |
+|---|---|
+| `MODAL_TOKEN_ID` | the Modal workspace token id, from `modal token new` |
+| `MODAL_TOKEN_SECRET` | its secret half |
+
+Names only here, per the engineer charter. **This is the one thing on this page
+that needs a key rather than only a hand**, which is why the item also appears
+in `docs/agents/pending-workflow-changes.md` under that heading.
+
+The provider keys the rehearsal spends are not in this table and must not be.
+They live in Modal's own secret store, which is where the rehearsal reads them
+from, so a real model call can be made from CI with no model key present in
+GitHub at all. The runner holds a token that can deploy and nothing that can
+spend.
+
+### It is checked rather than trusted
+
+`tests/test_deploy_gate.py` reads this workflow. It asserts the file is
+dispatch-only, that it calls the tool rather than carrying its own copy of the
+chain, that it reads both secrets by name, that it installs the tokenizer the
+budget rung needs, that its `options:` list is exactly the apps the tool knows,
+and that this README has a section naming the secrets. Deliberate breaks
+confirmed red before filing: adding a `push:` trigger, pasting a
+`modal deploy` line into the run block, and dropping an app from the choice
+list.
+
+    git mv .github/workflows-pending/modal-deploy.yml .github/workflows/
