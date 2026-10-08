@@ -27,10 +27,24 @@
 
      The owner's approved bounce, cubic-bezier(0.34, 1.56, 0.64, 1) at 190ms
      on .pill and .issue, is NOT part of this and is not touched. Neither is
-     the 90ms press or .lib-art's 500ms page-level fade. */
+     the 90ms press. The page-level fade that used to be carved out here now
+     has tokens of its own, below. */
   --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --fast: 0.1s;
   --slow: 0.16s;
+
+  /* The page-level pair, for the choreographed moment a page is allowed at
+     most one of. Both numbers are canon.md's own, written down here because
+     the stylesheet never had them: animation rule 3 says page-level moments
+     run 300 to 500ms on cubic-bezier(0.4, 0, 0.6, 1), Apple's curve. Until
+     this run the two page-level moments on the site (@rise and .lib-art)
+     ran on the browser's `ease`, which is a default rather than a decision,
+     and @rise's 0.7s sat outside the canon's window entirely. Measured
+     across all ten pages at two viewports, `ease` was the only curve we
+     shipped that no register names. Ban list entry 26 is the general case
+     and entry 25 is why one more curve is not free. */
+  --page: 0.5s;
+  --ease-page: cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 * {
@@ -328,6 +342,31 @@ a {
   border: 1px solid var(--ink);
 }
 
+/* The canon's touch law is 44 by 44 and the pill is the site's primary
+   control, but 10px of padding on a 14px label draws a 39px button, and the
+   ghost pill's border takes it to 41. Measured on the phone: the nav's
+   Pricing at 75x39, See pricing at 114x41, All issues at 105x43. None of
+   them reaches the minimum, on the one pointer that cannot aim.
+   The glyph is what the bar wants optically, so the hit area is extended
+   past it rather than the pill being grown, which is already how
+   .mobile-nav-toggle and .skill-line solve this and means no page moves.
+   Pointer-only, so a mouse is unaffected and nothing overlaps on desktop. */
+@media (hover: none) {
+  .pill {
+    position: relative;
+  }
+
+  .pill::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+}
+
 /* ---------- focus, house-wide ---------- */
 /* Keyboard focus was the one state nobody had systematised. Three elements
    carried a designed ring (the pill's double ring, the waitlist field, a
@@ -421,7 +460,7 @@ a {
 }
 
 .hero-follow > * {
-  animation: rise 0.7s ease both;
+  animation: rise var(--page) var(--ease-page) both;
   animation-timeline: view();
   animation-range: entry 65% entry 98%;
 }
@@ -756,7 +795,7 @@ button.pill {
 /* the shelf fades away as the landing approaches, so nothing smears
    behind the nav at scene two */
 .lib-art {
-  transition: opacity 0.5s ease;
+  transition: opacity var(--page) var(--ease-page);
 }
 
 .lib-art.passed {
@@ -1304,8 +1343,18 @@ button.pill {
   word-break: break-word;
 }
 
+/* Three fixed tracks rather than a flex row, so version, status and source
+   count each hold one column down the whole list. As a flex row the cluster
+   was right-anchored and every field floated against the width of its own
+   text: measured across 53 rows the version alone started at 14 different x
+   positions spanning 105px, which at this length reads as a ragged edge
+   rather than as a table. The widths are the longest string each field can
+   hold, measured on the page (18, 94 and 89px for V1, DEPRECATED and
+   10 SOURCES), rounded up onto the spacing scale with room for a two-digit
+   version and a three-digit count. */
 .skill-line-meta {
-  display: flex;
+  display: grid;
+  grid-template-columns: 24px 96px 96px;
   gap: 12px;
   font-size: 12px;
   text-transform: uppercase;
@@ -1519,6 +1568,29 @@ button.pill {
 @media (max-width: 560px) {
   .skill-receipts > div {
     grid-template-columns: 1fr;
+  }
+
+  /* On a phone the row's two halves compete for 342px and the metadata wins,
+     because it is `nowrap` and the name is not. Measured at 390px across the
+     library at volume: the meta cluster took 109 to 205px, leaving the name
+     89 to 136px, so a kebab-case name broke to three, four and in one case
+     seven lines with the hyphen leading the line, and rows ran 101 to 177px
+     tall against 50 for a row that fits. The identifier is the one thing the
+     row exists to carry, so it gets the width and the metadata goes beneath
+     it. The marker stays anchored to the first line, which is already how
+     .skill-line::before is written. */
+  .skill-line {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  /* Natural widths once it has a line of its own: the three fields together
+     need about 225px of the 310 available, so the tracks are not needed and
+     fixing them here would only strand whitespace. */
+  .skill-line-meta {
+    display: flex;
+    gap: 12px;
   }
 }
 

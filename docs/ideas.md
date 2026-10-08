@@ -11924,3 +11924,47 @@ names the week an issue covers rather than the day it happened to be sent
 and as of today a guardrail reads the published artifact, names a missing issue
 by week with a count, and distinguishes "not printed" from "not due yet" to the
 hour. The ideal is both halves, and the half this org lacks is the cheap one.
+
+### 2026-10-07 — Frontend visual run: four proposals
+
+Proposed by the frontend seat, from the weekly visual sweep (PR #244,
+`docs/design/reviews/2026-10-07/NOTES.md`). Each carries the observation
+that triggered it, per the charter.
+
+1. **The house grey fails WCAG AA, and only you can change the palette.**
+   `#86868b` computes to 3.62:1 on white, below AA's 4.5 for text under
+   24px, and it carries most of the running prose on the site: page
+   intros, shelf blurbs, every skill row's metadata, every citation line
+   under an issue's findings. The palette is yours alone under the canon,
+   so no run will fix this on its own initiative. The smallest change that
+   clears AA is darkening the secondary grey, not adding a colour.
+   Re-filed from 2026-09-30 unchanged, because nothing moved and the
+   second filing is itself the evidence that it needs a ruling rather
+   than another filing.
+
+2. **One masthead left edge, or a reason there are three.** At 1440 the
+   h1 starts at x=404 on the library, the issue, pricing, mission,
+   routines, the graph and the 404; at x=364 on skills; at x=264 on the
+   desk. Moving between pages slides the masthead across the screen. Both
+   wide shells have a real reason to be wide, so the fix is to hold one
+   left edge while the content below widens, which is a design decision
+   rather than a bug fix. Status quo is defensible; what is not
+   defensible is that it has never been decided.
+
+3. **The desk needs paging before it needs polish.** The owner's daily
+   page renders 324 open items in one list. It is 30,713px tall at 1440
+   and 57,631px at 390, which is 68 phone screens. Nothing is broken and
+   the volume is real, which is why no visual run has filed it: it is a
+   product decision about what the daily surface shows by default. The
+   cheapest version is a default cut by lane or age with the rest behind
+   a disclosure, not pagination chrome.
+
+4. **`validated` holds a date glued to a sentence, so the page cannot
+   format it.** `skills/harness-engineering/SKILL.md` carries
+   `validated: "2026-09-12 A/B trial: bare Claude endorsed imitation
+   fine-tuning..."`, 250 characters in a field the receipts list prints
+   beside "Distilled", which is a formatted date. The row renders
+   correctly and wraps cleanly, so this is not a layout bug. It is a
+   schema question for the skill seat: a date field and an evidence
+   field, rather than one field holding both. `skills/` is outside this
+   seat's writable surface, so it is filed here rather than fixed.
