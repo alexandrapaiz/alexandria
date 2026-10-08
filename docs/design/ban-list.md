@@ -164,3 +164,25 @@ a page looks clean but says nothing true, it is not done.
     only an entitled visitor receives. Every other visitor got a 480px offer
     card in an 800px void, with the h1 at x=104 against x=404 on pricing,
     mission, routines, the issue and the 404.)
+
+30. A table whose columns were never declared, so each field floats against
+    the width of its own text. It is the default shape of a row built as a
+    flex line with the identifier at one end and the metadata at the other,
+    which is the obvious way to write one row and the wrong way to write
+    fifty. Nothing in the CSS reads as wrong and every individual row is
+    correctly laid out; what fails is the relationship between rows, which is
+    the one thing a row-at-a-time review never looks at. It has two faces and
+    one cause. Wide, the fields wander: measured across 53 skill rows the
+    version alone started at 14 different x positions spanning 105px, so the
+    list read as a ragged edge rather than as a table. Narrow, the secondary
+    field wins, because metadata is usually `nowrap` and an identifier is not:
+    at 390px the metadata took up to 205px of a 342px row and left the name
+    89px, which broke kebab-case names to seven lines with the hyphen leading
+    the line and ran rows to 177px tall against 50 for a row that fits. The
+    tell is that the thing the row exists to identify is the thing that gets
+    compressed, because it is the only part that can be.
+    The test is to measure one field's left edge down the whole list and read
+    the numbers, the same way entry 29 measures one constant across pages. A
+    single screenshot of a few rows cannot show it and neither can a mockup.
+    (Spotted 2026-10-07 on this seat's own skills library, at both ends at
+    once, judged at 53 entries and invisible at the nine the repo holds.)
