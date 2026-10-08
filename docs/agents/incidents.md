@@ -10417,3 +10417,82 @@ has. The fourth is already on the books as
 documents being careless. It is one missing mechanism: a claim one file makes
 about another file's state has no owner and no trigger, because the event that
 falsifies it happens somewhere else.
+
+## INC-2026-10-08-a-delivery-guardrail-was-wrong-on-a-schedule — the press surface called a working press a missing issue for nine hours of every Monday, and the gap was named in a planning document three days before any run opened the file (2026-10-08, engineer seat)
+
+**Observed by:** the engineer seat, 2026-10-08, while answering sprint
+2026-10-05 item 4, which asks a run to record whether this gap is still open.
+
+**What happened.** `tools/delivery_health.py` judged the press by comparing the
+newest row in `digests` against the week that had ended. The press cron is
+`0 9 * * 1`. A week ends on Sunday night, so from Monday 00:00 UTC until the
+cron fires at 09:00 the week that has just ended correctly has no row, and for
+those nine hours guardrail 4's own reader reported a missing issue. The site
+surface carried the same comparison and cried wolf on the same Mondays. Both
+verdicts were produced by a press that was working perfectly.
+
+Measured against the pre-fix module, same row, same day:
+
+```
+PRE-FIX,  Monday 2026-10-05, newest row W39 : FAILING | the newest issue is
+          2026-W39 and 2026-W40 has ended; 1 issue(s) missing
+POST-FIX, Monday 2026-10-05 03:00Z          : OK | ... 2026-W40 is not due yet
+POST-FIX, Monday 2026-10-05 11:30Z          : FAILING | ... 1 issue(s) missing
+```
+
+**The class, and why this is a repeat rather than a bug report.** Two entries
+already name a guard whose colour says nothing about the system it watches.
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is the version where the
+system moves and the guard keeps asserting what it replaced: both commits were
+correct and both guards stayed red for six days.
+`INC-2026-10-07-a-test-pinned-the-defect-it-was-written-to-end` is the version
+where the product improves and the assertion punishes the improvement, and it
+enumerates its own three axes: the clock moves, the environment moves, the
+product improves.
+
+This is a fourth axis and the only one where **nothing moves at all**. The
+check was wrong from the day it was written, and it was wrong cyclically:
+correct six days a week, wrong on the seventh, on a schedule anyone could have
+printed in advance. That is the worst version for the reason L-E11 in
+`docs/standards/lessons.md` already gives, that a tripwire the org learns to
+read the colour of instead of the message of lands its cost on the true
+failures it was built for. A guard that is wrong at a predictable hour is the
+most efficient possible way to teach a seat to discount it, and guardrail 4
+exists specifically so that a seat and not the owner is a failure's first
+reader. Every Monday it trained the seats out of the job it was built for.
+
+**The second half, which is the older class.** This gap was not discovered by
+this run. `docs/sprints/sprint-2026-10-05.md` item 4 names it in its own words,
+on 2026-10-05: the press surface "reads FAILING on any Monday before the cron
+fires, with nothing standing that re-checks after the window closes." The same
+item then asks a run to "record whether this run was that check, or whether the
+gap is still open after today." Three runs of this seat happened between that
+sentence and this entry, on 2026-10-06 and twice on 2026-10-07, and none of them
+opened the file. That is incident 20's class and L-A9's one sentence, recording
+a rule is not enforcing it, with the planning document in the register's seat:
+a correctly written, correctly located, correctly addressed description of a
+defect changed nothing for three days because nothing between the description
+and the file ever fired.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-08, PR #246).
+`press_due_week` answers which issue the press is obliged to have printed by a
+given instant, and that is what both surfaces now judge by. A week inside its
+own window is `pending` and the headline names the issue it is waiting for and
+the time it is waiting until. The grace is two hours past the cron, because the
+scheduled run calls a provider under a 1800-second timeout and then mails every
+subscriber, so a run still going at 09:40 is a working press.
+
+**What the fix deliberately does not forgive,** because a grace window that
+excused everything would be worse than the bug it replaced: an issue two weeks
+old is still a failure at 03:00 on a Monday, and so is an empty `digests`
+table. Both cases are asserted in `tests/test_delivery_health.py` beside the
+window itself.
+
+**One thing this entry cannot close.** The new tests live in
+`tests/test_delivery_health.py`, which is one of the 35 files of 49 that no
+workflow executes, measured by `tools/ci_coverage.py` on this same branch. The
+`pytest tests/ -q` step that would run them is in
+`.github/workflows-pending/checks.yml` and no agent seat can install it
+(incident 12). So this fix is covered by tests that will not run on a pull
+request until the owner copies that file across. Recorded here rather than
+claimed as done.
