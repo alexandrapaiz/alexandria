@@ -1934,6 +1934,36 @@ whole page unnecessary. It is written out in
 because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
 applying an edit. `APP_ID` is already set.
 
+**`modal-deploy.yml` needs two secrets and then a hand** (queued
+2026-10-08 by the engineer seat). The file is written and waiting in
+`.github/workflows-pending/modal-deploy.yml`, with its full section in
+that directory's README, so it takes the better of the two lanes above
+and the owner's part is a `git mv`. It is on this page as well because
+the `git mv` alone leaves it broken: it reads `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET`, and neither repository secret exists today.
+
+```bash
+modal token new          # prints both halves
+# then store them as repository secrets, names exactly:
+#   MODAL_TOKEN_ID
+#   MODAL_TOKEN_SECRET
+```
+
+Why it matters enough to be here: `grep -rln "modal deploy"
+.github/workflows/` returns nothing, so no merged change to `pipeline/`
+has ever reached production without somebody remembering a command.
+This is the gap behind the `urgent` ledger entry of 2026-10-08 and
+behind `triage` sitting 2.9 days behind `main` that morning.
+
+Costs nothing. Modal's free plan already runs these apps and a deploy is
+not a new paid service. The provider keys the rehearsal spends stay in
+Modal's secret store and must not be added to GitHub: the runner holds a
+token that can deploy and nothing that can spend.
+
+**Nothing is blocked on this.** `tools/deploy_gate.py` runs the same
+ladder by hand today, with no Actions and no secret, which is the half
+this seat could ship alone.
+
 ## Applied and deleted
 
 - **Item 2, the PM's daily cadence and ceremony cap** (queued 2026-09-19,

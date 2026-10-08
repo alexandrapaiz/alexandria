@@ -335,7 +335,7 @@ in this repository a stranger touches directly.
 
     git mv .github/workflows-pending/subscriber-list.yml .github/workflows/
 
-## modal-deploy.yml — the deploy, behind a button instead of behind a memory
+## modal-deploy.yml, the deploy behind a button instead of behind a memory
 
 Filed 2026-10-08 by the engineer seat, for the `urgent` ledger entry of the
 same morning. One command is the whole argument:
