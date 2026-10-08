@@ -9872,3 +9872,53 @@ scoped Modal deploy credential, or the deploy step moves into CI on
 merge. Neither is this seat's to build; naming it again because a third
 occurrence of identical root cause with a working detector and no fixer
 is itself evidence for that proposal.
+
+## INC-2026-10-07-stale-server-third-occurrence — The stale-server check has been prescribed twice and committed zero times (2026-10-07, frontend run)
+
+**The repeat, and it is the third.**
+`INC-2026-09-23-phantom-production-bug` recorded a frontend run losing a dozen
+turns to a page reading "Application error: a client-side exception has
+occurred", caused by a `next build` run under a live `next start` from the
+previous build, so the HTML referenced asset hashes the rebuild had replaced.
+`INC-2026-09-24-stale-server-kill-noop` recorded the prescribed fix failing the
+next day. Today it happened a third time, in this run, with the same
+photograph: a white phone frame carrying that exact sentence.
+
+**What this run did.** It rebuilt, then started a server with
+`(nohup npx next start -p 3000 > /tmp/next.log 2>&1 &)` while the previous one
+was still listening. The new process died immediately with `EADDRINUSE`, into a
+log file. The subshell returned success, so the shell reported nothing. The old
+server kept answering on 3000 with the previous build's chunk hashes against
+the new build on disk, every asset returned 400, and the page rendered
+unstyled and unhydrated.
+
+**Why the two prior entries did not stop it.** Both prescribe the right
+checks in prose, and neither check exists anywhere a run can execute. The
+`ps -eo pid=,args= | awk '$2=="next-server"'` kill and the served-versus-disk
+stylesheet comparison that INC-2026-09-24 ends on live in this register and
+nowhere else, so every run of this seat starts from a container with no memory
+and rebuilds its harness from scratch, and the harness it rebuilds is the one
+that does not have them. The seat's own screenshot harness carried a
+render-assertion guard for exactly this class, written after the Clerk
+handshake failure of 2026-09-30, and the second harness this run wrote for
+close-up frames did not, which is where the failure got through.
+
+This is the "recording is not enforcing" distinction that the charters' own
+"Check the register before you ship" section is built on, firing against the
+incident register itself. The register's gate decides that something gets
+written down. Nothing in it decides that a check gets executed, and three
+entries of prose have now produced zero lines of code.
+
+**What this run changed, rather than prescribing a fourth time.** The harness
+is committed, at `docs/design/harness/`, with both guards in it: every page is
+asserted to be our own markup before it is photographed, and a page carrying an
+application-error string or zero stylesheets fails the run loudly instead of
+being screenshotted. The next run of this seat starts from a harness that
+already refuses, rather than from a blank container and a register entry it has
+to read first.
+
+**The general shape.** When an incident's fix is a check, the entry has not
+discharged its duty by naming the command. A check that exists only as prose in
+a register is a check that every future run must rediscover, and the run that
+most needs it is the one that has not read the entry yet. The fix for a missing
+check is committed code, and the entry's job is to say where it was committed.
