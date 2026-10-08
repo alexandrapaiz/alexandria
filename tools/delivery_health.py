@@ -162,6 +162,17 @@ DEPLOY_GRACE_HOURS = 24
 # jobs clear it themselves whenever the running sha changes.
 DEPLOY_NOTIFY_COOLDOWN_HOURS = 24
 
+# How far back the surface will replay the digest looking for the commit the
+# running image was built from. Forty is generous for three apps whose file sets
+# change a few times a week, and it is a ceiling rather than a cost: the walk
+# stops at the first commit that matches, which on a normal day is the first or
+# second one it tries. Only a drifted app is ever walked at all.
+DEPLOY_HISTORY_LIMIT = 40
+
+# How many commits a headline names before it starts counting instead. Three
+# fits on a line, and the rest are in the evidence block either way.
+DEPLOY_NAMED_COMMITS = 3
+
 
 class Surface:
     """One delivery surface's answer: a state, a headline, and its evidence."""
@@ -652,6 +663,186 @@ def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
         return None
 
 
+def _git_bytes(repo_root: Path, *args: str) -> tuple[int, bytes]:
+    """`_git`, but the output arrives as bytes and nothing is stripped.
+
+    `_git` strips its stdout, which is right for a sha or a date and wrong for
+    a file's contents: a hash over a stripped copy of a file is a hash of a
+    different file, and `site/emails/digest.html` would mismatch itself.
+    """
+    import subprocess
+
+    try:
+        done = subprocess.run(["git", "-C", str(repo_root), *args],
+                              capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return 1, b""
+    return done.returncode, done.stdout
+
+
+def _tree_blobs(repo_root: Path, commit: str,
+                paths: list[str]) -> dict[str, str] | None:
+    """(repository path -> git object id) for every blob under these paths.
+
+    One call per commit for the whole file set, because the alternative is one
+    process per file and this runs inside a daily standup. None means git could
+    not answer, which the caller turns into `unknown` rather than a guess.
+    """
+    if not paths:
+        return {}
+    status, out = _git(repo_root, "ls-tree", "-r", commit, "--", *paths)
+    if status != 0:
+        return None
+    blobs = {}
+    for line in out.splitlines():
+        meta, _, path = line.partition("\t")
+        bits = meta.split()
+        if path and len(bits) == 3 and bits[1] == "blob":
+            blobs[path] = bits[2]
+    return blobs
+
+
+def _digest_at(repo_root: Path, app: str, commit: str,
+               cache: dict[str, str]) -> str | None:
+    """The deploy digest this repository would have produced at one commit.
+
+    The manifest is re-read from the module's source *as it was at that
+    commit*, not as it is today, because a commit that added a file to an image
+    changed the file list as well as the files. Reading today's list against an
+    older tree would report a missing entry for every file added since, and
+    every digest in history would mismatch.
+
+    `cache` maps a git object id to its content hash. Most of these blobs are
+    unchanged from one commit to the next, so the cache is what keeps the walk
+    to roughly one hash per distinct version of a file rather than one per
+    commit per file.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+
+    def content(oid: str) -> str:
+        if oid not in cache:
+            status, body = _git_bytes(repo_root, "cat-file", "blob", oid)
+            if status != 0:
+                return runtime_sha.MISSING
+            cache[oid] = runtime_sha.inner_hash_bytes(body)
+        return cache[oid]
+
+    head = _tree_blobs(repo_root, commit, [module])
+    if head is None or module not in head:
+        return None
+    status, body = _git_bytes(repo_root, "cat-file", "blob", head[module])
+    if status != 0:
+        return None
+    cache[head[module]] = runtime_sha.inner_hash_bytes(body)
+
+    pairs = runtime_sha.manifest(body.decode("utf-8", "replace"))
+    wanted = [repo for repo, _, _ in pairs]
+    blobs = _tree_blobs(repo_root, commit, wanted)
+    if blobs is None:
+        return None
+
+    inner = [(module, content(head[module]))]
+    for repo, _, is_dir in pairs:
+        if not is_dir:
+            oid = blobs.get(repo)
+            inner.append((repo, content(oid) if oid else runtime_sha.MISSING))
+            continue
+        # `_expand` walks the directory and keys each file by its path relative
+        # to the directory, skipping caches. The same two rules, against a tree
+        # instead of a disk.
+        under = {path: oid for path, oid in blobs.items()
+                 if path.startswith(repo + "/")
+                 and "__pycache__" not in path.split("/")}
+        if not under:
+            inner.append((repo + "/", runtime_sha.MISSING))
+            continue
+        for path, oid in under.items():
+            inner.append((f"{repo}/{path[len(repo) + 1:]}", content(oid)))
+    return runtime_sha.digest_of(inner)
+
+
+def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
+                       limit: int = DEPLOY_HISTORY_LIMIT) -> dict:
+    """Which merged commits the running image does not contain.
+
+    "`triage` is 2.9 days behind" does not tell the reader whether the drift is
+    a docstring or a provider change, and that was the whole complaint in the
+    ledger entry this answers. The age of a drift is a number about the clock.
+    The commits inside it are the thing somebody has to decide about.
+
+    There is no commit sha in `deploy_runtime`, and there should not be: the
+    row is written by a container that was built from an image and has no way
+    to know which commit produced it. So the commit is recovered rather than
+    recorded. The digest is replayed over the history of the app's own files
+    until a commit produces the digest the container reported, and that commit
+    is the one the image was built from. Everything newer that touched those
+    files is undeployed.
+
+    Returns a dict for the evidence block. `why` is present and the rest is
+    absent whenever the answer is not trustworthy, which is a shallow clone, a
+    job that has never reported, or a digest that matches nothing in range.
+    """
+    from pipeline import runtime_sha
+
+    if not recorded_sha:
+        return {"why": "this job has never reported a running digest, so there "
+                       "is no deployed state to diff against"}
+
+    module = runtime_sha.APPS[app]
+    try:
+        source = (Path(repo_root) / module).read_text(encoding="utf-8")
+    except OSError as exc:
+        return {"why": f"{module} cannot be read here ({exc})"}
+    paths = [module] + [repo for repo, _, _ in runtime_sha.manifest(source)]
+
+    status, out = _git(repo_root, "log", f"-{limit}",
+                       "--format=%H%x1f%h%x1f%s%x1f%cI", "--", *paths)
+    if status != 0 or not out:
+        return {"why": "this checkout has no history for the app's files, so "
+                       "the deployed commit cannot be recovered"}
+
+    commits = []
+    for line in out.splitlines():
+        parts = line.split("\x1f")
+        if len(parts) == 4:
+            commits.append(parts)
+
+    cache: dict[str, str] = {}
+    ahead = []
+    for full, short, subject, when in commits:
+        if _digest_at(repo_root, app, full, cache) == recorded_sha:
+            return {"deployed_commit": short, "deployed_at": when,
+                    "commits": ahead, "searched": len(commits)}
+        ahead.append({"sha": short, "subject": subject, "at": when})
+    return {"why": f"the running digest {recorded_sha} matches none of the "
+                   f"last {len(commits)} commits to touch this app's files, so "
+                   f"the deploy was built from code that is not in this "
+                   f"history",
+            "searched": len(commits)}
+
+
+def name_undeployed(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
+    """The commits, as one clause for a headline or an alarm.
+
+    Empty string when there is nothing trustworthy to say, so a caller can
+    append it unconditionally and a degraded answer costs the headline nothing.
+    """
+    if "commits" not in found:
+        return ""
+    commits = found["commits"]
+    if not commits:
+        return (f"no commit to its files is undeployed; the image is "
+                f"{found['deployed_commit']} and so is this checkout")
+    named = ", ".join(f"{c['sha']} {c['subject']}" for c in commits[:limit])
+    rest = len(commits) - limit
+    plural = "commit" if len(commits) == 1 else "commits"
+    return (f"{len(commits)} undeployed {plural} since "
+            f"{found['deployed_commit']}: {named}"
+            + (f", and {rest} more" if rest > 0 else ""))
+
+
 def deploy_facts(conn) -> dict | str:
     """What each job last reported it was running, from `deploy_runtime`.
 
@@ -734,16 +925,25 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             continue
 
         age_hours = (now - changed_at).total_seconds() / 3600
+        # Only here, and never on the green path: the walk costs git processes
+        # and an app that matches has nothing to name.
+        found = undeployed_commits(root, app,
+                                   row["runtime_sha"] if row else None)
+        named = name_undeployed(found)
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
-                    merged_at=str(changed_at), drift_hours=round(age_hours, 1))
+                    merged_at=str(changed_at), drift_hours=round(age_hours, 1),
+                    undeployed=found)
         evidence[app] = here
         if age_hours > DEPLOY_GRACE_HOURS:
-            alarms.append((app, round(age_hours / 24, 1), row, local))
+            alarms.append((app, round(age_hours / 24, 1), row, local, named))
         else:
-            drifted.append(f"{app} ({round(age_hours, 1)}h)")
+            inside = f"{round(age_hours, 1)}h" + (f", {named}" if named else "")
+            drifted.append(f"{app} ({inside})")
 
     if alarms:
-        names = ", ".join(f"{app} is {days} days behind" for app, days, _, _ in alarms)
+        names = "; ".join(
+            f"{app} is {days} days behind" + (f" ({named})" if named else "")
+            for app, days, _, _, named in alarms)
         if notify_conn is not None:
             note = _notify_drift(notify_conn, alarms, root, now)
         elif source == DIRECT:
@@ -784,14 +984,14 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     reader of this mail has one action available and it is that command.
     """
     due = []
-    for app, days, row, local in alarms:
+    for app, days, row, local, named in alarms:
         last = row["notified_at"] if row else None
         if last is not None:
             if last.tzinfo is None:
                 last = last.replace(tzinfo=timezone.utc)
             if (now - last) < timedelta(hours=DEPLOY_NOTIFY_COOLDOWN_HOURS):
                 continue
-        due.append((app, days, row, local))
+        due.append((app, days, row, local, named))
     if not due:
         return "the owner was mailed about this within the last day already"
 
@@ -803,13 +1003,18 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     from pipeline import runtime_sha
 
     lines = []
-    for app, days, row, local in due:
+    for app, days, row, local, named in due:
         running = row["runtime_sha"] if row else "nothing recorded at all"
         lines.append(f"{app}: this repository is at {local}, the last run "
                      f"reported {running}, and the change merged {days} days ago.")
+        # The commits, where they could be recovered. The reader of this mail
+        # decides whether to deploy now or at the next window, and a docstring
+        # and a provider change are different answers to that question.
+        if named:
+            lines.append(f"    {named}")
     detail = "\n\n".join(
         ["A merged change has not reached the jobs that run it.", "\n".join(lines)])
-    steps = [f"modal deploy {runtime_sha.APPS[app]}" for app, _, _, _ in due]
+    steps = [f"modal deploy {runtime_sha.APPS[app]}" for app, *_ in due]
     steps.append("then run tools/delivery_health.py --surface deploy again; "
                  "the next run of each job clears its own row")
     sent = notify_owner("alexandria: a merged change is not deployed",
@@ -820,7 +1025,7 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
             with conn.transaction():
                 conn.execute(
                     "update deploy_runtime set notified_at = now() where app = any(%s)",
-                    ([app for app, _, _, _ in due],))
+                    ([app for app, *_ in due],))
         except Exception as exc:
             return f"{sent}; the cooldown was not written ({exc})"
     return sent
