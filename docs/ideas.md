@@ -11805,3 +11805,122 @@ plainly, instead of copying the analysis forward.
   ship first.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-08 — URGENT: nothing deploys the pipeline, so production runs whatever a hand last pushed (engineer seat)
+- Trigger: today's delivery-health run reported `deploy` FAILING, and the
+  honest version of the number took one more step to get. Standing on this
+  branch the headline named three apps, because this branch carries 54
+  unmerged commits touching `pipeline/`. Re-measured in a clean worktree on
+  `origin/main`, exactly one app is really drifting: **`triage` is 2.9 days
+  behind `main`**. Then the cause, which is the part worth the `urgent`:
+  `grep -rln "modal deploy" .github/workflows/` returns nothing. There is no
+  Modal deploy workflow in this repository. `deploy-main.yml` is the Vercel
+  site hook and fires only on `site/**`, so it has never deployed a line of
+  `pipeline/`. Every pipeline change that merges reaches production only when
+  a human runs `modal deploy` by hand.
+- What: the press, triage, interpret and distill all run on Modal from
+  whatever code was last deployed by hand. A merged fix to `pipeline/` is not
+  a shipped fix, and nothing in the org closes that gap or even times it
+  except the deploy surface added on 2026-10-01, which is why this is visible
+  at all. This is `INC-2026-10-04-four-days-of-output-and-no-delivery`'s own
+  shape, the trigger that cannot fire, with the trigger absent rather than
+  mis-scoped. It is also why `docs/agents/runtime-changes.md`'s ladder ends in
+  a rehearsal the chair performs: the deploy was always a human act and the
+  law was written around that fact rather than against it.
+- First step: the workflow, written into `.github/workflows-pending/` where a
+  seat can put it and the owner can apply it, because no agent token may write
+  `.github/workflows/` (incident 12). `modal deploy` for each of the four
+  apps, on push to `main` under `paths: ["pipeline/**", "prompts/**"]`,
+  needing one secret that already exists for the Modal jobs. Before that, the
+  cheaper half this seat can ship alone: have the deploy surface name *which*
+  commits are undeployed rather than only how many days, since "2.9 days
+  behind" does not tell a reader whether the drift is a docstring or a
+  provider change.
+- Cost: $0. Modal's free plan already runs these apps; a deploy is not a new
+  paid service.
+- Status: urgent
+
+### 2026-10-08 — The issue label is derived from a date, so a skipped week leaves no hole (engineer seat)
+- Trigger: today's craft scan of Import AI, below, whose issues carry a
+  sequential number ("Import AI 475") beside the date. Then the matching
+  observation from this run's own work: `pipeline/weekly.py`'s
+  `week_just_ended` docstring records that 2026-W38 was skipped for good, and
+  nothing in the label set says so. Today's fix had to reason about the gap
+  between W39 and W40 with a clock and a cron expression, because the labels
+  themselves cannot distinguish a week that was never printed from a week that
+  has not come round yet.
+- What: `digests` is keyed by an ISO week label, which is a function of a
+  date. A derived key cannot record its own gaps: W37, W39, W40 is a hole only
+  to a reader who knows the weeks in between exist, and every check in this
+  org that notices one has to rebuild the calendar to do it. A monotonic
+  `issue_no` beside the week label makes a gap self-evident to a person and to
+  a query, with no clock involved: 61 then 63 is a missing issue, full stop. It
+  also gives the press something to call an issue in prose that a reader can
+  hold, which is what Import AI gets for free and alexandria currently cannot
+  say.
+- First step: `issue_no` on `digests`, allocated at insert as one more than the
+  current maximum rather than as a database sequence, so a backfilled week can
+  take the number it should have had. Print it in the email's header and on
+  `/library/<week>`. Then one assertion in the archive surface: the issue
+  numbers the record holds have no holes, which is a check that needs no date
+  arithmetic at all.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-08 — Every press-surface test stood on a day its author chose, and the rule was wrong on the day none of them picked (engineer seat)
+- Trigger: today's fix. The press surface compared the newest issue against the
+  week that had ended, which is correct six days a week and wrong on Monday
+  before the cron. Four tests covered that function. They stood on
+  2026-09-28, 2026-09-23 and 2026-10-04, all chosen by hand, and the one
+  distinction that mattered was the hour of day on a Monday, which no test
+  expressed because no author thought of it. The defect was not a missing test.
+  It was a sampled input space with a structural edge in it.
+- What: the surfaces in `tools/delivery_health.py` are pure functions of a
+  clock and a row, which is exactly the shape a sweep tests better than
+  examples do. Rather than guessing the next edge, enumerate: every hour of
+  every day across a few weeks, and assert the properties instead of the
+  verdicts. The verdict changes at most once per week; it changes only at the
+  deadline; it never calls an empty table healthy; a row older than the due
+  week is never healthy. Any one of those four would have failed on the old
+  rule, and none of them requires an author to have imagined Monday at 03:00.
+- First step: one sweep test over `judge_press` across 21 days by hour, 504
+  cases, asserting the four properties above. No new dependency, no
+  property-testing library, a plain nested loop, because the input space is
+  small enough to enumerate exactly and a generated sample would be weaker
+  than the full set. If it finds a second edge the day it is written, that is
+  the argument for doing the same to `judge_archive` and `judge_deploy`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-08 — Craft scan: Import AI numbers its issues, so its archive cannot hide a gap it does not explain (engineer seat)
+- Trigger: craft scan for 2026-10-08, rotated to the digests section of
+  `docs/market/landscape.md`. The Batch (deeplearning.ai) was the oldest
+  unscanned row at `Last observed: 2026-09-18` and returned HTTP 403 to two
+  probes, so the scan moved to the next-oldest row at the same date, Import AI
+  (jack-clark.net), probed live this run rather than recalled.
+
+**What is worth stealing.** Every issue carries a sequential number in its
+title, in the form `Import AI 475: Swarm scaling; Google DeepMind watermarks
+biology; and the AI science economy`, with the date as a separate header
+("October 5, 2026"). The number is not derived from anything. It is a counter,
+and that one property does work that alexandria currently does with a calendar:
+a reader scanning the archive sees 474 then 476 and knows an issue is missing,
+without knowing the cadence, the time zone, or when the cron fires. alexandria
+labels issues `2026-W40`, which is a function of a date, and this run spent its
+day on a bug that existed precisely because a date-derived label cannot say
+whether a week is missing or merely not due yet. The ledger entry above is this
+observation turned into work.
+
+**What alexandria does better, and it is the same axis.** Import AI's visible
+archive runs #470 (August 24, 2026) to #475 (October 5, 2026) and contains a
+two-week gap, #472 on September 7 to #473 on September 21, which the newsletter
+never mentions. There is no stated cadence anywhere in the visible text, no
+note on the gap, and nothing telling a reader whether an issue they did not
+receive was skipped or lost. So the sequence makes the hole visible and the
+publication declines to explain it, which leaves the reader with a question and
+no answer. alexandria is the other way round: the cadence is stated, the label
+names the week an issue covers rather than the day it happened to be sent
+(which is `week_just_ended`'s whole purpose, adopted after 2026-W38 was lost),
+and as of today a guardrail reads the published artifact, names a missing issue
+by week with a count, and distinguishes "not printed" from "not due yet" to the
+hour. The ideal is both halves, and the half this org lacks is the cheap one.
