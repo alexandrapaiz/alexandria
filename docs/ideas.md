@@ -12589,10 +12589,10 @@ that triggered it, per the charter.
   ```
 
   Already true of a published issue rather than a prediction:
-  `site/content/issues/2026-W37.md` has twenty-four top-level bullets across
-  three sections and the renderer makes zero points from them. Only indented
-  sub-bullets reach the point path, eighteen of them under the four items of
-  one section. The site renders the same markdown as a real list, so the shape
+  `site/content/issues/2026-W37.md` has twenty-three top-level bullets across
+  three sections and the renderer makes zero points from them. All eighteen of
+  the file's rendered points come from nested bullets in the one remaining
+  section, so the whole-file counts of 27 and 18 hide it. The site renders the same markdown as a real list, so the shape
   exists on one surface and is undone on the other. Law 14 is the owner's
   ruling that an issue set as one column of grey paragraphs is a failure, the
   generator on this branch is being patched toward the list, and the patch

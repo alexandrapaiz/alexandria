@@ -601,14 +601,16 @@ clause in the title's own sentence or in this first sentence. Ninety
 characters will not hold a complete thought and a definition both, so do not
 try to make them. Choose a title out of words a builder already has. A title
 needing a gloss is competing for the one sentence that has to sell the issue,
-and the way to win that argument is not to start it: the print of 2026-10-05
-titled itself on "reward-free search" and "the agent stack", never defined
-either one, and spent its first sentence on something else. The word
-"reward-free" does not appear again after the title, and the three sentences
-nearest to it trade it for "reward-hungry", "reward model" and "reward
-function", which answers a club term with three more of them. Both
-rules are satisfied by a plainer title and neither is satisfied by a cleverer
-one.
+and the way to win that argument is not to start it. The print of 2026-10-05
+is the case and its two title terms are not quoted here, because the nearest
+example at the position where you write a title is a supply rather than a
+warning. Both were adjectives of the field, neither was defined anywhere in
+the issue, the first of them never appeared again after the title, and the
+three sentences nearest to it reached for three more terms of the same family
+instead of one plain one. The first-use gate at the end of this file carries
+that case as the second of its two.
+Both rules are satisfied by a plainer title and neither is satisfied by a
+cleverer one.
 
 One invariant governs all four jobs and everything below them: never open
 with a finding cold. Situate the reader first. Name which subfield of AI
@@ -1441,6 +1443,17 @@ the rule's question to the thing in front of you.
   bold lead and the closing line. The duty was in this file the whole time,
   sitting inside the rule about two names for one idea, and the bare word had
   no second name, so nothing in that rule ever reached it.
+  **The second case failed the same gate with both terms rather than one, and
+  it is why the opening slot now refuses to share its first sentence.** The
+  print of 2026-10-05 titled itself on two adjectives of the field and defined
+  neither, anywhere. One of them never appeared after the title at all, and
+  the three sentences nearest it reached for three more terms of the same
+  family rather than one plain word, which is a club term answered with
+  interest. Neither term is quoted here or in the slot where you write the
+  title, because at that position an example is a supply. What you check is
+  the shape: a title noun that the title's own sentence does not define, and
+  that the opening's first sentence does not define either, is undefined, and
+  the repair is a plainer title rather than a longer opening.
   Then go back
   through the issue from the top and list every term of art it uses: method
   names, training vocabulary, metric and benchmark names, coined names,

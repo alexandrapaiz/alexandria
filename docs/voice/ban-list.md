@@ -1883,11 +1883,12 @@ gap that the same collision had left empty (incident 25).
     the same markdown as a real list, so the shape exists on one surface and is
     undone on the other, after every gate, by code.
     This is not a prediction. `site/content/issues/2026-W37.md` carries
-    twenty-four top-level bullets across three sections and the renderer
-    produces zero list points from them: eleven parallel claims, four
-    overturned ones and nine reading-list entries, every one of them set as a
-    list by the writer and received as a paragraph. Only the fourth section's
-    indented sub-bullets become points, eighteen of them under four items.
+    twenty-three top-level bullets across three sections and the renderer
+    produces zero list points from them: ten parallel claims, four overturned
+    ones and nine reading-list entries, every one of them set as a list by the
+    writer and received as a paragraph. The file's eighteen rendered points all
+    come from nested bullets in the one remaining section, so the whole-file
+    counts of 27 and 18 hide the defect by adding the two paths together.
     The entry is written now rather than when it bites, because the generator
     on this branch is being patched toward law 14's list and the patch cannot
     reach a subscriber. Correcting one prediction in the register on the way

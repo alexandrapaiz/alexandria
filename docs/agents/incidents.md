@@ -11067,8 +11067,9 @@ one of them is a string:
   the rest, so the two-move sign-off the generator is told to write loses a
   move, and the move it loses is the law 15 scale sentence.
 - `parse_section` reads a top-level bullet as a new item, so every list canon
-  law 14 requires is flattened to paragraphs. Twenty-four bullets in
-  `site/content/issues/2026-W37.md` produce zero list points.
+  law 14 requires is flattened to paragraphs. Twenty-three bullets across
+  three sections of `site/content/issues/2026-W37.md` produce zero list
+  points.
 - `preheader_for` derives the inbox preview from the opening's first sentence,
   which for the newest issue is 128 characters of an unfinished either-or.
 
