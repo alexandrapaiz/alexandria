@@ -46,11 +46,14 @@ prose:
 
 | Surface  | Evidence                                    | Needs    |
 | ---      | ---                                         | ---      |
-| press    | newest row in `digests`, against the week   | nothing  |
+| press    | newest row in `digests`, against the week it | nothing  |
+|          | owes by now, which on a Monday is not the    |          |
+|          | week that has just ended until the cron runs |          |
 | pipeline | newest rows in `papers` and `claims`        | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
-| deploy   | `deploy_runtime` against this checkout      | git      |
+| deploy   | `deploy_runtime` against the trunk, never   | git      |
+|          | against the branch this is run from         |          |
 
 That column read `DATABASE_URL` for three of the six rows until 2026-10-01, and
 the gap was not academic. No agent seat holds that credential, so every seat ever
@@ -99,12 +102,21 @@ teaches its reader to stop reading it. So a drift younger than
 and past that it is `failing` and the owner is mailed through
 `pipeline/notify.py`.
 
-Three ways this surface refuses to guess, all of them `unknown` rather than a
-verdict. A checkout with uncommitted changes under a job's file list is
-comparing the deploy against something nobody merged, which is the normal state
-of a seat's own sandbox. A checkout too shallow to date the last commit that
-touched those files cannot tell a drift of an hour from a drift of a month.
-And no `DATABASE_URL` means the recorded side cannot be read at all.
+The deploy surface judges the trunk, never the branch it is run from. Both
+halves of its comparison are read out of `origin/main` (see `_deployable_ref`),
+because a hand deploys from the trunk and a commit that has not merged has
+never been inside an image. Until 2026-10-09 it read the working tree instead,
+so a seat's own fresh commit dated the drift at an hour and the surface read
+green on every branch in the org while the live `triage` image was four days
+behind. A guard whose answer depends on where you stand is a guard that reads
+green in the only places anyone actually runs it.
+
+Two ways this surface refuses to guess, both of them `unknown` rather than a
+verdict. A checkout too shallow to date the last commit on the trunk that
+touched a job's files cannot tell a drift of an hour from a drift of a month.
+And no `DATABASE_URL` means the recorded side cannot be read at all. A dirty
+working tree used to be a third; it is reported in the evidence now and changes
+nothing, because an uncommitted edit cannot alter what the trunk says.
 """
 
 from __future__ import annotations
@@ -160,6 +172,26 @@ DEPLOY_GRACE_HOURS = 24
 # jobs clear it themselves whenever the running sha changes.
 DEPLOY_NOTIFY_COOLDOWN_HOURS = 24
 
+# How far back the surface will replay the digest looking for the commit the
+# running image was built from. Forty is generous for three apps whose file sets
+# change a few times a week, and it is a ceiling rather than a cost: the walk
+# stops at the first commit that matches, which on a normal day is the first or
+# second one it tries. Only a drifted app is ever walked at all.
+DEPLOY_HISTORY_LIMIT = 40
+
+# How many commits a headline names before it starts counting instead. Three
+# fits on a line, and the rest are in the evidence block either way.
+DEPLOY_NAMED_COMMITS = 3
+
+# The only code that was ever deployable. `modal deploy` is run by a hand
+# standing on the trunk, so a commit that has not merged has never been in an
+# image, and judging the running deploy against a branch asks a question nobody
+# needs the answer to. Tried in this order because a seat's sandbox has
+# `origin/main`, a bare clone of the trunk may carry only `main`, and a
+# repository with neither is judged against its own `HEAD` (see
+# `_deployable_ref`).
+DEPLOYABLE_REFS = ("origin/main", "main")
+
 
 class Surface:
     """One delivery surface's answer: a state, a headline, and its evidence."""
@@ -174,20 +206,21 @@ class Surface:
                 "headline": self.headline, "evidence": self.evidence}
 
 
-def week_label(today: date | None = None) -> str:
-    """The week the press should most recently have printed.
+def _press_module():
+    """`pipeline.weekly`, importable in a sandbox with no Modal SDK.
 
-    Imported from the press itself rather than recomputed here. A health check
-    that carries its own copy of the rule can only ever agree with the press by
-    luck, and disagreeing silently is worse than not checking. That matters
-    more than usual for this particular rule, which was wrong until today: a
-    second copy written this morning would have been a second copy of the bug.
+    Every date rule this file needs is read out of the press rather than
+    recomputed here. A health check that carries its own copy of a rule can
+    only ever agree with the press by luck, and disagreeing silently is worse
+    than not checking. That matters more than usual for the week rule, which
+    was wrong until 2026-09-23: a second copy written that morning would have
+    been a second copy of the bug.
 
     `pipeline/weekly.py` imports `modal` at module scope, for decorators, and a
     seat's sandbox has no reason to have the Modal SDK installed. So when it is
-    absent this stands a namespace in for it long enough to read one pure date
-    function out of the module. `tests/conftest.py` does the same thing for the
-    same reason, and the alternative is the duplicated rule.
+    absent this stands a namespace in for it long enough to read the pure date
+    functions out of the module. `tests/conftest.py` does the same thing for
+    the same reason, and the alternative is the duplicated rule.
     """
     if "modal" not in sys.modules:
         try:
@@ -209,9 +242,102 @@ def week_label(today: date | None = None) -> str:
             )
             sys.modules["modal"] = stub
 
-    from pipeline.weekly import week_just_ended
+    from pipeline import weekly
 
-    return week_just_ended(today)[0]
+    return weekly
+
+
+def week_label(today: date | None = None) -> str:
+    """The week the press should most recently have printed."""
+    return _press_module().week_just_ended(today)[0]
+
+
+# `pipeline/weekly.py`'s `weekly()` carries `schedule=modal.Cron("0 9 * * 1")`:
+# Monday at 09:00 UTC. This is the one fact about the press's clock that this
+# file needs and cannot read out of `week_just_ended`, which answers which week
+# the press should print and never when it gets its turn. So it is a copy, and
+# this file's standing argument is that a copy agrees with the original only by
+# luck. `test_the_cron_this_check_assumes_is_the_cron_the_press_runs` reads the
+# decorator out of `pipeline/weekly.py` and pins it to this constant: change
+# the schedule and that test is what sends you back here.
+PRESS_CRON = "0 9 * * 1"
+
+# How long after its cron fires the press may still be working before lateness
+# is real. The scheduled run opens a connection, calls a provider under a
+# 1800-second timeout and then mails every subscriber, so a run still going at
+# 09:40 is a working press rather than a missing issue. Erring long is the
+# cheap direction. A check that is early by an hour cries wolf every single
+# week, which is how a seat learns to stop reading it, where a check that is
+# late by an hour reports a genuinely missing issue at 11:00 instead of 09:00.
+PRESS_GRACE = timedelta(hours=2)
+
+
+def _instant(when: date | datetime | None = None) -> datetime:
+    """A `today` argument, as the instant the question is being asked at.
+
+    This file's public functions have always taken `today: date`, which is
+    enough to know which week should have been printed and not enough to know
+    whether that week's deadline has passed. Both are needed now, so a
+    `datetime` is accepted everywhere a `date` was.
+
+    A bare `date` means the end of that day. Every existing caller that passes
+    one is asking about a day that is over, so reading it as midnight would
+    quietly change the question they are asking. `datetime` is a subclass of
+    `date`, which is why it is tested for first, and a naive one is read as UTC
+    because every other clock in this file is UTC.
+    """
+    if when is None:
+        return datetime.now(timezone.utc)
+    if isinstance(when, datetime):
+        return when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+    return datetime(when.year, when.month, when.day, 23, 59, 59,
+                    tzinfo=timezone.utc)
+
+
+def press_deadline(week_end: date) -> datetime:
+    """When the issue for the week ending on `week_end`, a Sunday, is due.
+
+    The cron fires the morning after the week ends, so the deadline is that
+    Monday at the cron's own hour plus the grace the run itself needs.
+    """
+    minute, hour = PRESS_CRON.split()[:2]
+    monday = week_end + timedelta(days=1)
+    fires = datetime(monday.year, monday.month, monday.day,
+                     int(hour), int(minute), tzinfo=timezone.utc)
+    return fires + PRESS_GRACE
+
+
+def press_due_week(when: date | datetime | None = None) -> tuple[str, str | None]:
+    """The newest issue the press is obliged to have printed, and the one it owes.
+
+    `week_label` answers which week has ended. That is the right question for
+    the press, which prints the week that ended, and the wrong question for a
+    health check, which also has to know whether the press has had its turn
+    yet. Between Monday 00:00 UTC and the cron at 09:00 the week that has just
+    ended has no issue and nothing at all is wrong, and for those nine hours
+    this check reported FAILING every single week. Sprint 2026-10-05's item 4
+    names exactly this: the press surface "reads FAILING on any Monday before
+    the cron fires, with nothing standing that re-checks after the window
+    closes". A guardrail that is wrong on a schedule teaches the seats reading
+    it to discount it, which costs more than the check is worth.
+
+    Returns the due week and, when the week that most recently ended is not due
+    yet, that week as `pending`, so the surface can name the issue it is
+    waiting for instead of quietly expecting the one before it.
+    """
+    press = _press_module()
+    now = _instant(when)
+    ended = press.last_sunday(now.date())
+
+    def label(sunday: date) -> str:
+        # The press labels the week that ended on `sunday` when it runs the
+        # morning after, so ask it that way rather than formatting a second
+        # ISO week here.
+        return press.week_just_ended(sunday + timedelta(days=1))[0]
+
+    if now < press_deadline(ended):
+        return label(ended - timedelta(days=7)), label(ended)
+    return label(ended), None
 
 
 def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
@@ -244,7 +370,7 @@ def fetch(url: str, timeout: int = 25) -> tuple[int, str, dict]:
 
 # ---------------------------------------------------------------- surfaces
 
-def check_site(today: date | None = None) -> Surface:
+def check_site(today: date | datetime | None = None) -> Surface:
     """Which issues can a reader actually read, and is the newest one current.
 
     The evidence is the rendered `/library` listing rather than a file on disk
@@ -268,15 +394,21 @@ def check_site(today: date | None = None) -> Surface:
         return Surface("site", FAILING, f"/library returned HTTP {status}")
 
     weeks = sorted(set(re.findall(r"\b(\d{4}-W\d{2})\b", body)), reverse=True)
-    expected = week_label(today)
-    evidence = {"url": f"{SITE_URL}/library", "published": weeks, "expected": expected}
+    expected = week_label(_instant(today).date())
+    # Same rule as the press surface, and for the same reason: the site cannot
+    # publish an issue the press is not due to have written yet, so judging it
+    # against `expected` made the archive cry wolf on exactly the Mondays the
+    # press surface did.
+    due, pending = press_due_week(today)
+    evidence = {"url": f"{SITE_URL}/library", "published": weeks,
+                "expected": expected, "due": due, "pending": pending}
     if not weeks:
         return Surface("site", FAILING, "/library renders but publishes no issue at all",
                        evidence)
-    if weeks[0] < expected:
+    if weeks[0] < due:
         return Surface(
             "site", FAILING,
-            f"the newest issue a reader can read is {weeks[0]}, and {expected} "
+            f"the newest issue a reader can read is {weeks[0]}, and {due} "
             "has ended. The archive reads the `digests` table now "
             "(site/lib/issues-live.js), so this no longer means a commit was "
             "forgotten: it means the press wrote no row for that week, or the "
@@ -412,32 +544,50 @@ def press_facts(conn) -> dict | None:
     return {"week": row[0], "created_at": row[1], "model": row[2]}
 
 
-def judge_press(facts: dict | None, today: date | None = None,
+def judge_press(facts: dict | None, today: date | datetime | None = None,
                 source: str = DIRECT) -> Surface:
-    """The newest issue, against the week that has ended.
+    """The newest issue, against the newest issue the press owes by now.
 
     Takes rows rather than a connection, so the credential-free reader and the
     credentialled one are judged by this function and not by two copies of it.
     The file already makes this argument about `week_just_ended`: a second copy
     of a rule can only ever agree with the first by luck.
+
+    `due` and not `expected` is what the verdict turns on. They differ for the
+    nine hours of every Monday between midnight and the cron, and this check
+    called those hours a missing issue until 2026-10-08. `expected` stays in
+    the evidence because it is still the honest answer to a different question,
+    which week has ended, and because that is the field incident 24 is read by.
     """
-    expected = week_label(today)
+    expected = week_label(_instant(today).date())
+    due, pending = press_due_week(today)
+    waiting = {"expected": expected, "due": due, "pending": pending,
+               "read_via": source}
     if facts is None:
-        return Surface("press", FAILING, "the digests table is empty",
-                       {"expected": expected, "read_via": source})
+        # An empty table is broken whatever the clock says. There is no week
+        # the press has ever printed, so there is nothing for the grace window
+        # to excuse.
+        return Surface("press", FAILING, "the digests table is empty", waiting)
     week, created_at, model = facts["week"], facts["created_at"], facts["model"]
-    evidence = {"newest_week": week, "expected": expected,
-                "created_at": str(created_at), "model": model,
-                "read_via": source}
-    if week < expected:
-        missing = _weeks_between(week, expected)
+    evidence = {"newest_week": week, **waiting,
+                "created_at": str(created_at), "model": model}
+    if week < due:
+        missing = _weeks_between(week, due)
         return Surface("press", FAILING,
-                       f"the newest issue is {week} and {expected} has ended; "
+                       f"the newest issue is {week} and {due} has ended; "
                        f"{missing} issue(s) missing", evidence)
+    if pending and week < pending:
+        deadline = press_deadline(_press_module().last_sunday(_instant(today).date()))
+        return Surface("press", OK,
+                       f"{week} is written, by {model}. {pending} is not due "
+                       f"yet: the press has until "
+                       f"{deadline:%Y-%m-%d %H:%M} UTC to print it, so a "
+                       f"missing {pending} before then is the schedule and "
+                       f"not a fault", evidence)
     return Surface("press", OK, f"{week} is written, by {model}", evidence)
 
 
-def check_press(conn, today: date | None = None) -> Surface:
+def check_press(conn, today: date | datetime | None = None) -> Surface:
     return judge_press(press_facts(conn), today)
 
 
@@ -500,7 +650,12 @@ def _git(repo_root: Path, *args: str) -> tuple[int, str]:
 
 
 def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
-    """Which of these files the working tree has changed and not committed."""
+    """Which of these files the working tree has changed and not committed.
+
+    Context for the reader, not a verdict, since 2026-10-09. It used to make
+    the deploy surface answer `unknown`, which was right while the surface
+    hashed the disk and is wrong now that it hashes a commit.
+    """
     status, out = _git(repo_root, "status", "--porcelain", "--", *paths)
     if status != 0 or not out:
         return []
@@ -514,8 +669,38 @@ def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
                    for line in out.splitlines() if line.split(maxsplit=1)[1:]})
 
 
-def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
-    """When the newest commit touching any of these files landed.
+def _deployable_ref(repo_root: Path) -> str:
+    """Which commit the running image is judged against.
+
+    "Is the code on *this checkout* the code the crons are running" was the
+    wrong question, and on 2026-10-09 it answered green on a lie. Every agent
+    seat runs on its own branch, and a branch commit made an hour ago dates the
+    drift at an hour however far behind the trunk the live image really is.
+    The same guard, in the same minute, off the same `deploy_runtime` row, read
+    `ok` ("a deploy is pending and still inside the 24h window") on an engineer
+    branch and `FAILING` ("triage is 3.9 days behind") in a clean `main`
+    worktree. The run that first met this re-measured by hand in a scratch
+    worktree and wrote the workaround down, which leaves a guard whose answer
+    depends on a step the reader has to know to take.
+
+    So the question becomes "is the trunk the code the crons are running",
+    which is the one with an actionable answer: a hand deploys from the trunk,
+    so the trunk is the only code that has ever been in an image.
+
+    `HEAD` when neither ref resolves. That is a repository with no trunk to
+    compare against, where the old question is the only one available and is
+    also the right one, because there is no branch to be standing on.
+    """
+    for ref in DEPLOYABLE_REFS:
+        status, _ = _git(repo_root, "rev-parse", "--verify", "--quiet", ref)
+        if status == 0:
+            return ref
+    return "HEAD"
+
+
+def _last_commit_at(repo_root: Path, paths: list[str],
+                    ref: str = "HEAD") -> datetime | None:
+    """When the newest commit on `ref` touching any of these files landed.
 
     None when the answer cannot be trusted, which is a shallow clone that
     predates the change, git not being present, or a path set nothing in the
@@ -523,13 +708,217 @@ def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
     `fetch-depth: 0`, so in the place this actually runs daily the answer is
     real; anywhere else it degrades to `unknown` instead of to a guess.
     """
-    status, out = _git(repo_root, "log", "-1", "--format=%cI", "--", *paths)
+    status, out = _git(repo_root, "log", "-1", "--format=%cI", ref,
+                       "--", *paths)
     if status != 0 or not out:
         return None
     try:
         return datetime.fromisoformat(out).astimezone(timezone.utc)
     except ValueError:
         return None
+
+
+def _git_bytes(repo_root: Path, *args: str) -> tuple[int, bytes]:
+    """`_git`, but the output arrives as bytes and nothing is stripped.
+
+    `_git` strips its stdout, which is right for a sha or a date and wrong for
+    a file's contents: a hash over a stripped copy of a file is a hash of a
+    different file, and `site/emails/digest.html` would mismatch itself.
+    """
+    import subprocess
+
+    try:
+        done = subprocess.run(["git", "-C", str(repo_root), *args],
+                              capture_output=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return 1, b""
+    return done.returncode, done.stdout
+
+
+def _tree_blobs(repo_root: Path, commit: str,
+                paths: list[str]) -> dict[str, str] | None:
+    """(repository path -> git object id) for every blob under these paths.
+
+    One call per commit for the whole file set, because the alternative is one
+    process per file and this runs inside a daily standup. None means git could
+    not answer, which the caller turns into `unknown` rather than a guess.
+    """
+    if not paths:
+        return {}
+    status, out = _git(repo_root, "ls-tree", "-r", commit, "--", *paths)
+    if status != 0:
+        return None
+    blobs = {}
+    for line in out.splitlines():
+        meta, _, path = line.partition("\t")
+        bits = meta.split()
+        if path and len(bits) == 3 and bits[1] == "blob":
+            blobs[path] = bits[2]
+    return blobs
+
+
+def _digest_at(repo_root: Path, app: str, commit: str,
+               cache: dict[str, str]) -> str | None:
+    """The deploy digest this repository would have produced at one commit.
+
+    The manifest is re-read from the module's source *as it was at that
+    commit*, not as it is today, because a commit that added a file to an image
+    changed the file list as well as the files. Reading today's list against an
+    older tree would report a missing entry for every file added since, and
+    every digest in history would mismatch.
+
+    `cache` maps a git object id to its content hash. Most of these blobs are
+    unchanged from one commit to the next, so the cache is what keeps the walk
+    to roughly one hash per distinct version of a file rather than one per
+    commit per file.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+
+    def content(oid: str) -> str:
+        if oid not in cache:
+            status, body = _git_bytes(repo_root, "cat-file", "blob", oid)
+            if status != 0:
+                return runtime_sha.MISSING
+            cache[oid] = runtime_sha.inner_hash_bytes(body)
+        return cache[oid]
+
+    head = _tree_blobs(repo_root, commit, [module])
+    if head is None or module not in head:
+        return None
+    status, body = _git_bytes(repo_root, "cat-file", "blob", head[module])
+    if status != 0:
+        return None
+    cache[head[module]] = runtime_sha.inner_hash_bytes(body)
+
+    pairs = runtime_sha.manifest(body.decode("utf-8", "replace"))
+    wanted = [repo for repo, _, _ in pairs]
+    blobs = _tree_blobs(repo_root, commit, wanted)
+    if blobs is None:
+        return None
+
+    inner = [(module, content(head[module]))]
+    for repo, _, is_dir in pairs:
+        if not is_dir:
+            oid = blobs.get(repo)
+            inner.append((repo, content(oid) if oid else runtime_sha.MISSING))
+            continue
+        # `_expand` walks the directory and keys each file by its path relative
+        # to the directory, skipping caches. The same two rules, against a tree
+        # instead of a disk.
+        under = {path: oid for path, oid in blobs.items()
+                 if path.startswith(repo + "/")
+                 and "__pycache__" not in path.split("/")}
+        if not under:
+            inner.append((repo + "/", runtime_sha.MISSING))
+            continue
+        for path, oid in under.items():
+            inner.append((f"{repo}/{path[len(repo) + 1:]}", content(oid)))
+    return runtime_sha.digest_of(inner)
+
+
+def _paths_at(repo_root: Path, app: str, ref: str) -> list[str] | None:
+    """The repository paths in this app's image, as the manifest read at `ref`.
+
+    The same reasoning `_digest_at` gives for re-reading the manifest at a
+    commit rather than at the working tree, and for the same reason the caller
+    needs it: a branch that adds a file to an image must not change the file
+    list the trunk is judged by, or a seat's own uncommitted work would move
+    the question.
+
+    None when git cannot answer, which the callers turn into `unknown`.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+    blobs = _tree_blobs(repo_root, ref, [module])
+    if blobs is None or module not in blobs:
+        return None
+    status, body = _git_bytes(repo_root, "cat-file", "blob", blobs[module])
+    if status != 0:
+        return None
+    pairs = runtime_sha.manifest(body.decode("utf-8", "replace"))
+    return [module] + [repo for repo, _, _ in pairs]
+
+
+def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
+                       limit: int = DEPLOY_HISTORY_LIMIT,
+                       ref: str = "HEAD") -> dict:
+    """Which merged commits the running image does not contain.
+
+    "`triage` is 2.9 days behind" does not tell the reader whether the drift is
+    a docstring or a provider change, and that was the whole complaint in the
+    ledger entry this answers. The age of a drift is a number about the clock.
+    The commits inside it are the thing somebody has to decide about.
+
+    There is no commit sha in `deploy_runtime`, and there should not be: the
+    row is written by a container that was built from an image and has no way
+    to know which commit produced it. So the commit is recovered rather than
+    recorded. The digest is replayed over the history of the app's own files
+    until a commit produces the digest the container reported, and that commit
+    is the one the image was built from. Everything newer that touched those
+    files is undeployed.
+
+    Returns a dict for the evidence block. `why` is present and the rest is
+    absent whenever the answer is not trustworthy, which is a shallow clone, a
+    job that has never reported, or a digest that matches nothing in range.
+    """
+    from pipeline import runtime_sha
+
+    if not recorded_sha:
+        return {"why": "this job has never reported a running digest, so there "
+                       "is no deployed state to diff against"}
+
+    module = runtime_sha.APPS[app]
+    paths = _paths_at(repo_root, app, ref)
+    if paths is None:
+        return {"why": f"{module} cannot be read at {ref} here"}
+
+    status, out = _git(repo_root, "log", f"-{limit}",
+                       "--format=%H%x1f%h%x1f%s%x1f%cI", ref, "--", *paths)
+    if status != 0 or not out:
+        return {"why": "this checkout has no history for the app's files, so "
+                       "the deployed commit cannot be recovered"}
+
+    commits = []
+    for line in out.splitlines():
+        parts = line.split("\x1f")
+        if len(parts) == 4:
+            commits.append(parts)
+
+    cache: dict[str, str] = {}
+    ahead = []
+    for full, short, subject, when in commits:
+        if _digest_at(repo_root, app, full, cache) == recorded_sha:
+            return {"deployed_commit": short, "deployed_at": when,
+                    "commits": ahead, "searched": len(commits)}
+        ahead.append({"sha": short, "subject": subject, "at": when})
+    return {"why": f"the running digest {recorded_sha} matches none of the "
+                   f"last {len(commits)} commits to touch this app's files, so "
+                   f"the deploy was built from code that is not in this "
+                   f"history",
+            "searched": len(commits)}
+
+
+def name_undeployed(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
+    """The commits, as one clause for a headline or an alarm.
+
+    Empty string when there is nothing trustworthy to say, so a caller can
+    append it unconditionally and a degraded answer costs the headline nothing.
+    """
+    if "commits" not in found:
+        return ""
+    commits = found["commits"]
+    if not commits:
+        return (f"no commit to its files is undeployed; the image is "
+                f"{found['deployed_commit']} and so is this checkout")
+    named = ", ".join(f"{c['sha']} {c['subject']}" for c in commits[:limit])
+    rest = len(commits) - limit
+    plural = "commit" if len(commits) == 1 else "commits"
+    return (f"{len(commits)} undeployed {plural} since "
+            f"{found['deployed_commit']}: {named}"
+            + (f", and {rest} more" if rest > 0 else ""))
 
 
 def deploy_facts(conn) -> dict | str:
@@ -554,11 +943,18 @@ def deploy_facts(conn) -> dict | str:
 def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                  now: datetime | None = None, notify_conn=None,
                  source: str = DIRECT) -> Surface:
-    """Is the code on this checkout the code the crons are running.
+    """Is the trunk the code the crons are running.
 
     One surface for all three jobs rather than three, because the question the
     reader has is "is anything stale" and the headline can name which. The
     evidence block carries each app separately for whoever wants the detail.
+
+    Judged against `_deployable_ref`, not against this checkout. The reason is
+    the whole of that function's docstring: a seat runs on a branch, and until
+    2026-10-09 a branch commit reset the drift clock, so the one surface that
+    watches production read green for every seat and told the truth only in a
+    worktree somebody made by hand. `ref` is in the evidence so a reader can
+    see which question was answered.
 
     `notify_conn` is a connection or None. None means do not mail, and the two
     reasons for that are a caller passing `notify=False` and the facts having
@@ -566,6 +962,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     """
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     now = now or datetime.now(timezone.utc)
+    ref = _deployable_ref(root)
 
     try:
         from pipeline import runtime_sha
@@ -578,20 +975,44 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         return Surface("deploy", UNKNOWN, facts, {"read_via": source})
     rows = facts
 
-    evidence, drifted, unknowns, alarms = {"read_via": source}, [], [], []
+    evidence = {"read_via": source, "ref": ref}
+    drifted, unknowns, alarms = [], [], []
+    cache: dict[str, str] = {}
     for app in sorted(runtime_sha.APPS):
-        try:
-            entries = runtime_sha.local_entries(app, root)
-        except OSError as exc:
-            unknowns.append(f"{app} ({exc})")
-            evidence[app] = {"state": UNKNOWN, "why": str(exc)}
+        keys = _paths_at(root, app, ref)
+        local = _digest_at(root, app, ref, cache) if keys else None
+        if (keys is None or local is None) and ref == "HEAD":
+            # A directory with the files in it and no git in it, which is how
+            # this tool arrives anywhere that is not a checkout. There is no
+            # trunk to ask, so read the disk and let the dating step below be
+            # the one that refuses, exactly as it did before 2026-10-09.
+            try:
+                entries = runtime_sha.local_entries(app, root)
+            except OSError as exc:
+                unknowns.append(f"{app} ({exc})")
+                evidence[app] = {"state": UNKNOWN, "why": str(exc)}
+                continue
+            keys = [key for key, _ in entries]
+            local = runtime_sha.digest(entries)
+        if keys is None or local is None:
+            why = f"{ref} has no readable file list for this app here"
+            unknowns.append(f"{app} ({why})")
+            evidence[app] = {"state": UNKNOWN, "why": why}
             continue
-        keys = [key for key, _ in entries]
-        local = runtime_sha.digest(entries)
         row = rows.get(app)
-        here = {"expected_sha": local, "files": len(entries),
+        here = {"expected_sha": local, "files": len(keys), "ref": ref,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
+
+        # Reported, never a verdict. Both halves of the comparison now come
+        # from a commit, so an uncommitted edit cannot move the answer and
+        # refusing to answer because the sandbox is dirty would be a silence
+        # with no cause: a seat's own run leaves this tree dirty every day.
+        # It stays in the evidence because a reader looking at a sandbox that
+        # differs from the verdict deserves to be told why it differs.
+        dirty = _dirty(root, keys)
+        if dirty:
+            here["uncommitted_here"] = dirty
 
         if row and row["runtime_sha"] == local:
             here["state"] = OK
@@ -599,31 +1020,35 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             evidence[app] = here
             continue
 
-        dirty = _dirty(root, keys)
-        if dirty:
-            here.update(state=UNKNOWN, uncommitted=dirty)
-            unknowns.append(f"{app} (uncommitted: {', '.join(dirty)})")
-            evidence[app] = here
-            continue
-
-        changed_at = _last_commit_at(root, keys)
+        changed_at = _last_commit_at(root, keys, ref)
         if changed_at is None:
-            here.update(state=UNKNOWN, why="this checkout cannot date the change")
+            here.update(state=UNKNOWN,
+                        why=f"this checkout cannot date the change on {ref}")
             unknowns.append(f"{app} (no datable history for its files here)")
             evidence[app] = here
             continue
 
         age_hours = (now - changed_at).total_seconds() / 3600
+        # Only here, and never on the green path: the walk costs git processes
+        # and an app that matches has nothing to name.
+        found = undeployed_commits(root, app,
+                                   row["runtime_sha"] if row else None,
+                                   ref=ref)
+        named = name_undeployed(found)
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
-                    merged_at=str(changed_at), drift_hours=round(age_hours, 1))
+                    merged_at=str(changed_at), drift_hours=round(age_hours, 1),
+                    undeployed=found)
         evidence[app] = here
         if age_hours > DEPLOY_GRACE_HOURS:
-            alarms.append((app, round(age_hours / 24, 1), row, local))
+            alarms.append((app, round(age_hours / 24, 1), row, local, named))
         else:
-            drifted.append(f"{app} ({round(age_hours, 1)}h)")
+            inside = f"{round(age_hours, 1)}h" + (f", {named}" if named else "")
+            drifted.append(f"{app} ({inside})")
 
     if alarms:
-        names = ", ".join(f"{app} is {days} days behind" for app, days, _, _ in alarms)
+        names = "; ".join(
+            f"{app} is {days} days behind" + (f" ({named})" if named else "")
+            for app, days, _, _, named in alarms)
         if notify_conn is not None:
             note = _notify_drift(notify_conn, alarms, root, now)
         elif source == DIRECT:
@@ -634,7 +1059,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                     "cooldown is one mail every time the standup runs")
         evidence["alarm"] = note
         return Surface("deploy", FAILING,
-                       f"the deployed code is not this code: {names}. "
+                       f"the deployed code is not {ref}: {names}. "
                        f"{note}", evidence)
     if unknowns:
         return Surface("deploy", UNKNOWN,
@@ -646,7 +1071,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                        f"{DEPLOY_GRACE_HOURS}h window: {', '.join(drifted)}",
                        evidence)
     return Surface("deploy", OK,
-                   f"all {len(runtime_sha.APPS)} jobs are running this checkout",
+                   f"all {len(runtime_sha.APPS)} jobs are running {ref}",
                    evidence)
 
 
@@ -664,14 +1089,14 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     reader of this mail has one action available and it is that command.
     """
     due = []
-    for app, days, row, local in alarms:
+    for app, days, row, local, named in alarms:
         last = row["notified_at"] if row else None
         if last is not None:
             if last.tzinfo is None:
                 last = last.replace(tzinfo=timezone.utc)
             if (now - last) < timedelta(hours=DEPLOY_NOTIFY_COOLDOWN_HOURS):
                 continue
-        due.append((app, days, row, local))
+        due.append((app, days, row, local, named))
     if not due:
         return "the owner was mailed about this within the last day already"
 
@@ -683,13 +1108,18 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
     from pipeline import runtime_sha
 
     lines = []
-    for app, days, row, local in due:
+    for app, days, row, local, named in due:
         running = row["runtime_sha"] if row else "nothing recorded at all"
         lines.append(f"{app}: this repository is at {local}, the last run "
                      f"reported {running}, and the change merged {days} days ago.")
+        # The commits, where they could be recovered. The reader of this mail
+        # decides whether to deploy now or at the next window, and a docstring
+        # and a provider change are different answers to that question.
+        if named:
+            lines.append(f"    {named}")
     detail = "\n\n".join(
         ["A merged change has not reached the jobs that run it.", "\n".join(lines)])
-    steps = [f"modal deploy {runtime_sha.APPS[app]}" for app, _, _, _ in due]
+    steps = [f"modal deploy {runtime_sha.APPS[app]}" for app, *_ in due]
     steps.append("then run tools/delivery_health.py --surface deploy again; "
                  "the next run of each job clears its own row")
     sent = notify_owner("alexandria: a merged change is not deployed",
@@ -700,7 +1130,7 @@ def _notify_drift(conn, alarms: list[tuple], repo_root: Path,
             with conn.transaction():
                 conn.execute(
                     "update deploy_runtime set notified_at = now() where app = any(%s)",
-                    ([app for app, _, _, _ in due],))
+                    ([app for app, *_ in due],))
         except Exception as exc:
             return f"{sent}; the cooldown was not written ({exc})"
     return sent
@@ -887,6 +1317,24 @@ def run(surfaces: list[str], today: date | None = None,
     return sorted(out, key=lambda s: ORDER.index(s.name))
 
 
+def parse_moment(value: str | None) -> date | datetime | None:
+    """`--today`, as either a day or an instant inside one.
+
+    A date was enough while the press surface judged by the week that had
+    ended. It stopped being enough when the surface learned the press's
+    deadline, because "did Monday see a missing issue" has two answers on a
+    Monday and the time of day picks between them. Both spellings are accepted
+    so no existing invocation of this command changes meaning.
+    """
+    if not value:
+        return None
+    text = value.strip().replace("Z", "+00:00")
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        return datetime.fromisoformat(text)
+
+
 def exit_code(results: list[Surface]) -> int:
     if any(s.state == FAILING for s in results):
         return 1
@@ -923,10 +1371,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--json", action="store_true",
                         help="print the result as JSON instead of prose")
     parser.add_argument("--today", default=None,
-                        help="YYYY-MM-DD, to ask what a given day should have seen")
+                        help="YYYY-MM-DD, or an ISO timestamp, to ask what a "
+                             "given moment should have seen. A bare date means "
+                             "the end of that day; the time matters only on a "
+                             "Monday, when the press's own deadline falls "
+                             "inside it")
     args = parser.parse_args(argv)
 
-    today = date.fromisoformat(args.today) if args.today else None
+    today = parse_moment(args.today)
     results = run(args.surfaces or ORDER, today, notify=not args.no_notify)
 
     if args.json:

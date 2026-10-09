@@ -119,6 +119,11 @@ def main() -> int:
     ap.add_argument("--out", help="also write the HTML here")
     ap.add_argument("--quiet", action="store_true",
                     help="print the summary and the audit, not the HTML")
+    ap.add_argument("--token", default=None,
+                    help="an unsubscribe token, so the footer renders the "
+                         "real one-click link instead of the reply mailto. "
+                         "Any opaque string works; a real one comes from "
+                         "`select unsubscribe_token from subscribers`.")
     args = ap.parse_args()
 
     key, body = (body_from_db if args.from_db else body_from_repo)(args.key)
@@ -126,7 +131,7 @@ def main() -> int:
     # The press's own path. Note what is not here: no SMTP connection, no
     # credentials, no subscriber query. build_messages() renders and returns.
     sender = os.environ.get("GMAIL_ADDRESS", "").strip() or "hello@alexandr.ia"
-    messages = weekly.build_messages(key, body, [(args.to, None)], sender)
+    messages = weekly.build_messages(key, body, [(args.to, None, args.token)], sender)
     email, subject, text, html = messages[0]
 
     render = weekly.email_render()
@@ -139,6 +144,11 @@ def main() -> int:
     print(f"  edition:       {edition}")
     print(f"  footer reads:  You are receiving {edition_short} of alexandria "
           f"at {email}.")
+    # The footer's link is the one thing in this email that acts on the
+    # database, so a rehearsal that does not print it leaves the only
+    # destructive href in the issue unread. Without --token it reads as the
+    # mailto, which is also what a subscriber with no token would receive.
+    print(f"  unsubscribe:   {weekly.unsubscribe_link(args.token, sender)}")
     print(f"  sections:      "
           f"{', '.join(s['title'] for s in issue['sections']) or 'none'}")
     print(f"  items:         {sum(len(s['items']) for s in issue['sections'])}")

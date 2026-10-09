@@ -348,6 +348,70 @@ number this rule exists to keep out of the harness's hands.
 
 *Built.* Slice 1, in this PR, for V1 only.
 
+### V6. Instrument integrity, added 2026-10-05 (ADR-40)
+
+*Question.* Before anybody reads the delta, is the thing that produced it
+measuring the skill, or measuring itself?
+
+*Instrument.* Five checks, every one of them cheap, and four of them need no
+model at all.
+
+1. **The ablation is matched and it says what it could not pin.** The arms
+   differ in the skill body and nothing else: same model, same tools, same
+   retrieval, same temperature, and the same seed where the provider honours
+   one (C362, C1090). Groq does; Moonshot documents k2.6's temperature as fixed
+   and documents no seed, so a run on the default subject records in words that
+   it is matched and not replayable call for call. A harness that printed a seed
+   next to a provider that ignores it would be claiming a replayability it does
+   not have, which is the failure this whole page exists to catch.
+2. **Only differential tasks count.** The bare subject answers every task
+   before the skill exists in any prompt. A task it already passes becomes a
+   control (C412's contrastive pairing). This is arithmetic rather than taste:
+   a task both arms pass every time contributes a delta of exactly zero, so
+   leaving it in the graded set is a denominator and not a neutral observation.
+3. **Every rubric criterion is tied to a certificate, and ships an answer that
+   games it.** A test, a number or a named artifact. Rubrics with no such tie
+   were exploited 8 to 26 percent of the time and up to 36 percent under
+   stress; certificate-faithful ones 0 percent (C476, C479). So the exploit
+   answer must score zero, and a rubric that scores it is a finding about the
+   rubric rather than about the skill.
+4. **Each task is audited once, and the judge is checked for a length
+   preference.** Ambiguity, gameability and realism, by a model that is not the
+   subject, written to `evals/audit.json` and never re-paid for (PACT, C561).
+   The length check scores the same content at two lengths, so a judge that
+   rewards volume is visible rather than inferred (C934).
+5. **Credit lands on a section.** The per-criterion scores were always
+   computed and then averaged away. They are now recorded against the skill
+   section each criterion is evidence about (DRACO's per-step credit, C40; the
+   role-level credit read from traces, C1442), which is what makes a
+   per-section validation status a measurement instead of a label.
+
+*Pass rule.* Like V5, this gate does not pass or fail a skill. It governs
+whether the other gates' numbers mean anything. One clause of it does have
+teeth, because it has to: an exploited rubric fails ADR-37's gate ahead of the
+delta, since a delta computed by a rubric that scores an answer written to game
+it is a number about the rubric.
+
+*Receipt field.* `ablation`, `differential`, `exploit_test`, `length_bias` and
+`section_deltas` in `results.json`, contract 2. The contract is
+site/app/skills/README.md and `survival` is reserved there for ADR-39's axis,
+null until Ursa writes it, because "nobody measured this" and "nobody acted on
+this" must never render as the same thing.
+
+*Enforced at.* `tools/skill_eval.py`: the manifest, the bare-first pass, the
+exploit run, the audit, the length check and the section credit, with 13 smoke
+checks and 21 cases in `tests/test_skill_eval.py`. Items 3 and 4 are reported
+by `--check` as findings rather than errors, because the eight suites in the
+library were written before these rules existed and a gate that failed every
+one of them is a gate somebody turns off. A suite opts in with
+`policy.require_certificates` and then they are errors.
+
+*Built.* 2026-10-05, all five, on the owner's directive. What is not built is
+the instrument ADR-40 asked for in refinement item 3: the corrections are
+clustered lexically rather than by embedding, which is a funding constraint
+stated in docs/agents/skill-eval-program.md and reported by the tool itself
+whenever the clustering finds nothing.
+
 ## 4. From a validation run to the receipts and the badge
 
 A validation run writes one bundle. The bundle, not the skill's frontmatter,

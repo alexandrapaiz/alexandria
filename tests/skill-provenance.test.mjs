@@ -252,19 +252,63 @@ test("every skill in the library has a name, a version and a distilled date", ()
   }
 });
 
-test("every skill renders claim ids and papers, which is what read as empty before", () => {
+// A draft may cite no claim ids. The authority for that is
+// `waiting_on_the_queue` in tools/panel_provenance.py, which is the gate that
+// turns `main` red, and tests/test_skill_receipts.py calls it directly rather
+// than restating it. This file cannot: it is import-free by design and runs
+// without node_modules. So it checks the weaker half of the same law, the half
+// that needs no reading queue, and it checks the direction that keeps the gate
+// shut: published advice must cite its claims, and a draft is the only thing
+// that may be waiting.
+//
+// `skills/agent-containment` is the live case. It landed on 2026-09-30 naming
+// six papers and zero claims because none of the six had a claim id in the
+// database yet, and docs/research/reading-queue.md carries the unchecked lines
+// that fix that.
+test("every skill renders papers, and only a draft may still cite no claims", () => {
   for (const s of LIBRARY) {
-    assert.ok(s.provenance.claims.length > 0, `${s.dir}: no claim ids parsed`);
     assert.ok(s.provenance.papers.length > 0, `${s.dir}: no papers parsed`);
     for (const c of s.provenance.claims) assert.match(c, /^\d+$/);
+    if (s.provenance.claims.length === 0) {
+      assert.equal(
+        s.provenance.status,
+        "draft",
+        `${s.dir}: published advice citing no claim ids`
+      );
+    }
   }
 });
 
+// The companion to the test above, and the reason the carve-out is still a
+// gate. One draft waiting on a read is the state the law describes; a library
+// where most skills cite nothing is the state the law was meant to catch, and
+// it would read as green under the test above alone.
+test("the claim ids still reach almost every skill, so the carve-out is not the rule", () => {
+  const citing = LIBRARY.filter((s) => s.provenance.claims.length > 0);
+  assert.ok(
+    citing.length >= LIBRARY.length - 1,
+    `${LIBRARY.length - citing.length} of ${LIBRARY.length} skills cite no claim ids`
+  );
+});
+
+// This used to assert `claims.includes("199")` as its proof that ids parse.
+// The proxy broke for a correct reason: ADR-38's quality bar cut three sections
+// from this skill on 2026-09-30, and the skill's own `revisions:` entry records
+// that claims 199, 136, 140, 190 and 243 left the provenance with the sections
+// they supported. Pinning one id forbids the revision the library's law
+// requires, so the assertion is the law now: ids parse, and a retired id does
+// not come back without its section.
 test("harness-engineering's validated note renders, the sprint item's named case", () => {
   const he = LIBRARY.find((s) => s.dir === "harness-engineering");
   assert.ok(he, "harness-engineering is missing from the library");
   assert.match(he.provenance.validated, /A\/B trial/);
-  assert.ok(he.provenance.claims.includes("199"));
+  assert.ok(he.provenance.claims.length > 0, "no claim ids parsed");
+  for (const retired of ["199", "136", "140", "190", "243"]) {
+    assert.ok(
+      !he.provenance.claims.includes(retired),
+      `claim ${retired} was retired by the 2026-09-30 revision and is back on the page`
+    );
+  }
 });
 
 test("every skill in the library has a dated validation result", () => {

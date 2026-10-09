@@ -36,31 +36,56 @@ from __future__ import annotations
 #: changes what two scheduled jobs read first, which makes it a runtime change
 #: under docs/agents/runtime-changes.md: both jobs need a redeploy before the
 #: new term reaches a queue.
-PRIORITY_TERMS = (
+#: The same terms, grouped by the thread each one belongs to, because one
+#: consumer needs to know WHICH thread a paper matched and not merely that it
+#: matched something. `pipeline/retag_threads.py` is that consumer: the owner's
+#: directive of 2026-10-05 asks it to retag the claims of papers matching these
+#: threads, and the thread name is what it offers the model as a candidate tag.
+#:
+#: The keys are the topic names in `pipeline/topics.py`, exactly, so a thread
+#: here with no tag there is a bug a test catches rather than a silent miss.
+#: `reasoning` is in the table because it is one of these threads and leaving it
+#: out would make the flat tuple below a different list.
+THREAD_TERMS = {
     # Reasoning models. The owner's order of 2026-09-23, put at the front of
     # the queue by her directive of 2026-09-25. The count that produced it,
     # from Neon: 209 papers with "reasoning" in the title, 147 of them never
     # triaged at all.
-    "reasoning",
-    "chain-of-thought",
-    "chain of thought",
-    "rlvr",
-    "grpo",
-    "verifiable reward",
-    "test-time compute",
-    "test time compute",
-    "inference-time compute",
-    "process reward",
-    "long cot",
+    "reasoning": (
+        "reasoning",
+        "chain-of-thought",
+        "chain of thought",
+        "rlvr",
+        "grpo",
+        "verifiable reward",
+        "test-time compute",
+        "test time compute",
+        "inference-time compute",
+        "process reward",
+        "long cot",
+    ),
     # Owner's order of 2026-09-29: four more threads go first, because the
     # corpus held hundreds of their papers and had read almost none.
-    "model context protocol", "mcp", "agent protocol", "agent-to-agent", "a2a",
-    "agent interoperab", "agent identity",
-    "sandbox", "container", "isolation", "microvm", "firecracker", "gvisor",
-    "prompt injection", "jailbreak", "tool poisoning", "agent security",
-    "containment", "exfiltrat", "guardrail",
-    "self-improv", "self-evolv", "recursive self", "harness evolution",
-    "self-refin",
+    "protocols": (
+        "model context protocol", "mcp", "agent protocol", "agent-to-agent",
+        "a2a", "agent interoperab", "agent identity",
+    ),
+    "containment": (
+        "sandbox", "container", "isolation", "microvm", "firecracker",
+        "gvisor", "containment",
+    ),
+    "security": (
+        "prompt injection", "jailbreak", "tool poisoning", "agent security",
+        "exfiltrat", "guardrail",
+    ),
+    "self-improvement": (
+        "self-improv", "self-evolv", "recursive self", "harness evolution",
+        "self-refin",
+    ),
+}
+
+PRIORITY_TERMS = tuple(
+    term for terms in THREAD_TERMS.values() for term in terms
 )
 
 #: The same predicate in the other language that needs it: `%term%` for

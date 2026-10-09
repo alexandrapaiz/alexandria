@@ -19,7 +19,8 @@ import sys
 import types
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
 # Stub modal so the press's logic can be tested without the Modal SDK or any
 # credentials. Everything under test is pure or takes its transport by
@@ -673,6 +674,94 @@ def test_a_used_title_is_replaced_and_a_fresh_one_kept():
     check("the body below the title is untouched", out.split("\n", 1)[1] == body.split("\n", 1)[1], "")
 
 
+# ---------------- the recipient query, against a column that may not exist --
+#
+# Sprint 2026-10-05 item 3. `subscribers.unsubscribe_token` arrives in its own
+# migration and `pipeline/db_setup.py` applies db/schema.sql on a deploy the
+# press does not wait for, so there is a window where this code is live and
+# the column is not. In that window the choice is between an issue whose
+# footer carries the old mailto and no issue at all.
+#
+# The rollback is the half that is not cosmetic. This connection is not in
+# autocommit, so a failed statement leaves the transaction aborted and every
+# query after it fails too, including the one that reads the previous issue's
+# title for the duplicate-subject rule. Probing for a column and not rolling
+# back would turn a missing footer link into a missed send.
+
+
+class _UndefinedColumn(Exception):
+    sqlstate = "42703"
+
+
+class _QueryCanceled(Exception):
+    sqlstate = "57014"
+
+
+class _FakeConn:
+    """Records every statement and every rollback, in the order they happen."""
+
+    def __init__(self, error=None):
+        self.error = error
+        self.log = []
+
+    def execute(self, sql, params=None):
+        self.log.append(sql)
+        if self.error is not None and "unsubscribe_token" in sql:
+            raise self.error
+        rows = ([("a@x.com", "A", "tok")] if "unsubscribe_token" in sql
+                else [("a@x.com", "A")])
+        return types.SimpleNamespace(fetchall=lambda: rows)
+
+    def rollback(self):
+        self.log.append("ROLLBACK")
+
+
+def test_the_recipient_query_prefers_the_token_column():
+    print("the recipient query")
+    conn = _FakeConn()
+    rows = weekly.active_recipients(conn)
+    check("the token comes back with the address", rows == [("a@x.com", "A", "tok")], rows)
+    check("one statement, no retry", len(conn.log) == 1, conn.log)
+    check("nothing failed, so nothing was rolled back",
+          "ROLLBACK" not in conn.log, conn.log)
+
+
+def test_a_missing_token_column_rolls_back_then_retries():
+    print("the column that is not there yet")
+    conn = _FakeConn(error=_UndefinedColumn("column does not exist"))
+    rows = weekly.active_recipients(conn)
+    check("the send still has its recipients", rows == [("a@x.com", "A")], rows)
+    check("the rollback sits between the failed probe and the retry",
+          len(conn.log) == 3 and conn.log[1] == "ROLLBACK", conn.log)
+    check("the retry does not name the column",
+          "unsubscribe_token" not in conn.log[2], conn.log[2])
+
+
+def test_only_a_missing_column_is_retried():
+    print("every other database error")
+    for error, label in ((_QueryCanceled("canceled"), "a cancelled query"),
+                         (RuntimeError("socket closed"), "an error with no sqlstate")):
+        conn = _FakeConn(error=error)
+        try:
+            weekly.active_recipients(conn)
+            raised = False
+        except type(error):
+            raised = True
+        check(f"{label} reaches send_newsletter's own handler", raised)
+        check(f"{label} is not rolled back and retried",
+              "ROLLBACK" not in conn.log, conn.log)
+
+
+def test_send_newsletter_has_no_recipient_query_of_its_own():
+    print("the seam")
+    source = (ROOT / "pipeline" / "weekly.py").read_text()
+    body = source.split("def send_newsletter")[1].split("\ndef ")[0]
+    check("the send goes through active_recipients",
+          "active_recipients(conn)" in body)
+    check("and holds no subscribers query that would bypass the fallback",
+          "from subscribers" not in body)
+
+
 if __name__ == "__main__":
     for fn in [test_fallback_list, test_withdrawn_model_is_explained,
                test_choose_model_skips_absent_models,
@@ -688,7 +777,11 @@ if __name__ == "__main__":
                test_the_press_fits_its_primary_at_full_caps,
                test_availability_survives_one_provider_being_down,
                test_the_schedule_is_outside_the_cron_band,
-               test_a_used_title_is_replaced_and_a_fresh_one_kept]:
+               test_a_used_title_is_replaced_and_a_fresh_one_kept,
+               test_the_recipient_query_prefers_the_token_column,
+               test_a_missing_token_column_rolls_back_then_retries,
+               test_only_a_missing_column_is_retried,
+               test_send_newsletter_has_no_recipient_query_of_its_own]:
         fn()
     print()
     if FAILURES:

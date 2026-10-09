@@ -45,6 +45,17 @@ ARXIV = re.compile(r"arxiv:\s*(?P<id>\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7
                    re.IGNORECASE)
 ASKED_BY = re.compile(r"asked by\s+(?P<who>\S+)")
 
+# The asker, when the asker is a skill. `ASKED_BY` above takes one whitespace
+# token for display, which is right for display and wrong for any decision: the
+# chair signs lines "asked by the chair (owner: ...)" and the research seat signs
+# them "asked by the research seat's L-R1 check", and both of those read as the
+# single token `the`. On 2026-10-05 that token became load-bearing, because
+# `pending` started treating an asker outside `sourced` as a blocked skill, and
+# `the` is outside every set. The documented format is the only thing that may
+# answer "which skill is stuck on this line", so this pattern matches that format
+# and nothing else.
+SKILL_ASKER = re.compile(r"asked by\s+(?P<slug>skills/[A-Za-z0-9_-]+)")
+
 # How many queue lines one run will take. The queue is drained by two seats and
 # refilled by one, so a backlog is possible: twelve lines landed on 2026-09-26
 # from a single skill run. Six per day drains that in two days without ever
@@ -62,9 +73,13 @@ class Item(NamedTuple):
     arxiv_id: str          # 2602.12670
     paper_id: str          # arxiv:2602.12670, the key in `papers`
     checked: bool
-    asked_by: str          # skills/<slug>, or "" when the line does not say
+    asked_by: str          # the asker as written, for display: "skills/x", "the"
     line_no: int
     raw: str
+    # The skill this line is blocked on, or "" when the asker is not a skill.
+    # A seat, a person or an unsigned line all give "", because none of them is
+    # a skill waiting on a read. Only this field may decide the order.
+    asking_skill: str = ""
 
 
 def parse(text: str) -> list[Item]:
@@ -79,6 +94,7 @@ def parse(text: str) -> list[Item]:
             continue  # a question for the research seat, not a paper to fetch
         arxiv_id = found.group("id")
         who = ASKED_BY.search(m.group("body"))
+        slug = SKILL_ASKER.search(m.group("body"))
         items.append(Item(
             arxiv_id=arxiv_id,
             paper_id=f"arxiv:{arxiv_id}",
@@ -86,26 +102,83 @@ def parse(text: str) -> list[Item]:
             asked_by=who.group("who").rstrip(",.") if who else "",
             line_no=n,
             raw=line.strip(),
+            asking_skill=slug.group("slug").rstrip("/") if slug else "",
         ))
     return items
 
 
-def pending(text: str, limit: int | None = MAX_PER_RUN) -> list[Item]:
-    """Unchecked items, oldest line first, deduplicated, at most `limit`.
+def skills_with_claims(conn) -> set[str]:
+    """Skill paths that cite at least one claim id, from `promotions`.
+
+    Everything NOT in this set is a skill that cannot cite a single claim, and
+    `pending` puts its requests first. Read from `promotions` rather than from
+    `skills/` because `skills/` is not in distill's Modal image and should not
+    be: baking the library into the reading job would mean every skill edit
+    needs a distill redeploy.
+
+    A skill with no `promotions` row at all is correctly absent here, which is
+    the case that matters. `skills/agent-containment` has no row because
+    `tools/skill_registrar.py` refuses to write one for a skill citing nothing.
+    """
+    try:
+        rows = conn.execute(
+            "select path from promotions where kind = 'skill' "
+            "and path is not null and array_length(claim_ids, 1) > 0"
+        ).fetchall()
+    except Exception:                               # noqa: BLE001
+        # No table, no permission, no connection. Returning nothing makes every
+        # line look blocked, which collapses the order below back to file order:
+        # the behaviour this module had before the ordering existed.
+        return set()
+    return {str(row[0]).rstrip("/") for row in rows}
+
+
+def pending(text: str, limit: int | None = MAX_PER_RUN,
+            sourced: set[str] | None = None) -> list[Item]:
+    """Unchecked items, deduplicated, at most `limit`.
 
     Deduplication is by id and not by line: the same paper asked for twice by
     two skills is one fetch, and striking either line is the research seat's
     business rather than this module's.
+
+    Order is oldest line first WITHIN two groups, and the groups are the point.
+    A line asked for by a skill that cannot cite a single claim comes before a
+    line asked for by a skill that already cites plenty, because the first one
+    is blocked and the second one is being improved.
+
+    ## Why the order had to change on 2026-10-05
+
+    Strict file order is fair and it starved the thing it was built for. The
+    queue held 47 pending lines, `MAX_PER_RUN` is 6, and the 2026-09-30
+    containment requests sat behind 27 older lines from two skills that already
+    carry claims. So `skills/agent-containment` was eight runs from being read,
+    and it is a draft with `claims: []` that cannot be revised, cannot appear in
+    `skills_needing_revision`, and holds thirteen tests red across four suites
+    until one of its papers is distilled. Meanwhile the lines ahead of it were
+    asked for by skills that are already published and already sourced.
+
+    FIFO is the right default for a queue of equals. These are not equals: one
+    line unblocks a skill and the next one footnotes one.
+
+    `sourced` absent means no grouping, which is the old behaviour exactly.
     """
-    seen, out = set(), []
+    seen: set[str] = set()
+    blocked: list[Item] = []
+    rest: list[Item] = []
     for item in parse(text):
         if item.checked or item.paper_id in seen:
             continue
         seen.add(item.paper_id)
-        out.append(item)
-        if limit and len(out) >= limit:
-            break
-    return out
+        # Three kinds of line wait their turn here, and they are one kind to this
+        # branch: a line nobody signed, a line a seat or the chair signed, and a
+        # line a skill that already cites claims signed. None of them is a skill
+        # that cannot cite a claim, which is the only thing the group is for.
+        if sourced is not None and item.asking_skill and item.asking_skill not in sourced:
+            blocked.append(item)
+        else:
+            rest.append(item)
+    out = blocked + rest
+    return out[:limit] if limit else out
 
 
 def read_file(path: str | pathlib.Path = QUEUE_PATH) -> str:
@@ -204,20 +277,57 @@ def merge(first: list[tuple], intake: list[tuple], max_papers: int) -> list[tupl
     return first + [row for row in intake if row[0] not in already][:room]
 
 
+def sourced_from_tree(root: str | pathlib.Path = ".") -> set[str]:
+    """`skills_with_claims`'s answer, read from the working tree instead of a table.
+
+    For `--order` only, and never for a run. The table is the truth, because a
+    skill's claim ids are written to `promotions` by the registrar and a working
+    tree can be any branch. This is the offline stand-in a reader has when there
+    is no `DATABASE_URL` in the sandbox, which is every seat's sandbox, and it is
+    labelled as a stand-in everywhere it is printed.
+    """
+    sourced = set()
+    for skill in sorted(pathlib.Path(root).glob("skills/*/SKILL.md")):
+        try:
+            cited = re.search(r"claims:\s*\[([^\]]*)\]", skill.read_text())
+        except OSError:
+            continue
+        if cited and cited.group(1).strip():
+            sourced.add(f"skills/{skill.parent.name}")
+    return sourced
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     long = "--long" in argv
+    # The order a distill run will actually use. Without this the CLI printed
+    # file order and the run used the grouped order, so the one tool that exists
+    # to read this module's state could not show the thing that decides what
+    # gets read. That is how `asked by the chair` spent two days parsing as a
+    # blocked skill: nothing printed the group a line landed in.
+    order = "--order" in argv
     args = [a for a in argv if not a.startswith("-")]
     text = read_file(args[0] if args else QUEUE_PATH)
     if not text:
         print(f"no reading queue at {args[0] if args else QUEUE_PATH}", file=sys.stderr)
         return 1
-    items = pending(text, limit=None)
-    for item in items:
-        print(f"{item.paper_id}\t{item.asked_by}\tline {item.line_no}" if long
-              else item.paper_id)
+    sourced = sourced_from_tree() if order else None
+    items = pending(text, limit=None, sourced=sourced)
+    for n, item in enumerate(items):
+        mark = ""
+        if order:
+            blocked = bool(item.asking_skill) and item.asking_skill not in sourced
+            mark = f"\t{'blocked' if blocked else 'waits'}" \
+                   f"\t{item.asking_skill or '-'}" \
+                   f"\t{'NEXT' if n < MAX_PER_RUN else ''}"
+        print(f"{item.paper_id}\t{item.asked_by}\tline {item.line_no}{mark}"
+              if long or order else item.paper_id)
     print(f"{len(items)} pending, {MAX_PER_RUN} of them per distill run",
           file=sys.stderr)
+    if order:
+        print(f"order: grouped, blocked skills first. `sourced` is "
+              f"{len(sourced)} skills read from the working tree, which stands "
+              f"in for `promotions` and may differ from it.", file=sys.stderr)
     return 0
 
 

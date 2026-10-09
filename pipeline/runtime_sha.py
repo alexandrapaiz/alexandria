@@ -128,6 +128,44 @@ def runtime_entries(app: str, module_file: str,
             + _expand(pairs, lambda repo, box: pathlib.Path(box)))
 
 
+MISSING = "missing"
+
+
+def digest_of(inner: list[tuple[str, str]]) -> str:
+    """The digest, from (key, inner hash) pairs rather than from files.
+
+    Split out of `digest` on 2026-10-08 so that a second caller can supply the
+    inner hashes from somewhere other than a working tree. The deploy surface
+    now replays this digest over git history to name *which* commits are
+    undeployed, and the only way to be certain the replayed digest is
+    comparable with the one a container wrote is for both to run this exact
+    function. Two implementations of one hashing rule disagree on the day it
+    matters, which is the same argument the manifest's own docstring makes
+    about hand-kept file lists.
+    """
+    h = hashlib.sha256()
+    for key, value in sorted(inner, key=lambda e: e[0]):
+        h.update(f"{key}\0{value}\n".encode())
+    return h.hexdigest()[:DIGEST_CHARS]
+
+
+def inner_hash_bytes(body: bytes) -> str:
+    """One entry's content hash, from bytes a caller already holds.
+
+    The deploy surface reads its bytes out of git objects rather than off the
+    disk, so it needs this half without the file open.
+    """
+    return hashlib.sha256(body).hexdigest()
+
+
+def inner_hash(path) -> str:
+    """One entry's content hash, or `missing` when it cannot be read."""
+    try:
+        return inner_hash_bytes(pathlib.Path(path).read_bytes())
+    except OSError:
+        return MISSING
+
+
 def digest(entries: list[tuple[str, pathlib.Path]]) -> str:
     """A content digest over (key, bytes), order-independent and path-independent.
 
@@ -135,15 +173,7 @@ def digest(entries: list[tuple[str, pathlib.Path]]) -> str:
     being dropped, because a deploy that lost a file and a deploy that never
     had it are different facts and an omitted entry makes them the same one.
     """
-    h = hashlib.sha256()
-    for key, path in sorted(entries, key=lambda e: e[0]):
-        try:
-            body = pathlib.Path(path).read_bytes()
-            inner = hashlib.sha256(body).hexdigest()
-        except OSError:
-            inner = "missing"
-        h.update(f"{key}\0{inner}\n".encode())
-    return h.hexdigest()[:DIGEST_CHARS]
+    return digest_of([(key, inner_hash(path)) for key, path in entries])
 
 
 # The row is one per app and it carries three different times on purpose.

@@ -9829,6 +9829,673 @@ citations," is a 2026-09-28 movement printed as this week's. Citation trend is
 one of the two evidence streams OKR O1 KR3 accepts and the entire basis of
 `docs/product/source-discovery.md` §3.3.
 
+## INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days — a library defect reached main because the gate that catches it cannot see the database (2026-10-05, engineer seat)
+
+**What happened.** `checks.yml` was failing on `main` when this run started.
+Not one test: **19**, across four suites. The daily machinery check the
+engineer charter added on 2026-09-30 found it in one command, which is the
+command working.
+
+Two distinct causes, and only one of them was a real defect.
+
+**Cause 1, seven false positives.** `tools/panel_provenance.py`'s duty-3 check
+read 32 characters forward from the word `ours` and demanded one of three
+attributive phrasings. ADR-38's `*Validation:*` tags put the subject first
+instead: "the file-in-the-repository prescription is ours." Four live skills
+write it that way, in seven places, and the guard called every one of them
+vocabulary drift. The check's own comment recorded its premise honestly —
+"every marker in the six skills on main is one of these three" — and the
+library outgrew it. Fixed in this run's PR by reading both grammars; the list
+stays closed.
+
+**Cause 2, and this is the one worth the entry.** `skills/agent-containment`
+merged on 2026-09-30 with `provenance.claims: []`. That single field held **12
+tests red across four suites** (`test_skill_registrar`, `test_skill_receipts`,
+`test_panel_validator`, `test_skill_eval`), and it stayed that way for five
+days.
+
+**Why no gate stopped it.** ADR-36's registration gate is the thing that should
+have, and it could not, for a reason that is structural rather than careless:
+the registrar cannot tell "this skill cites no claims because its author was
+lazy" from "this skill cites no claims because no claim exists to cite". The
+second was true. The research seat's census of 2026-09-30 measured it — three
+of that skill's six papers had never been triaged and two more were routed to
+`distill` and never read — so the database held no claim id for the skill to
+put in that field. A gate in CI cannot see that, because CI has no database.
+
+**The repeat this is.** This is the same shape as
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`: a guard asserting a
+premise that a correct change had already replaced, left red for days, with
+every open pull request inheriting the red tick through its own merge check.
+That incident's lesson was "a red main is fixed, not only filed". The standing
+rule at the top of this file says a repeat is recorded at the moment it
+repeats, so it is recorded here.
+
+**What was done about it.** The engineer seat's PR of 2026-10-05 fixed cause 1
+outright and brought the count from 19 to 12. It did not fix cause 2 by editing
+the skill, because `skills/` is not the engineer seat's surface (ADR-13:
+knowledge promotion belongs to the reviewer panel). It fixed the **upstream**
+cause instead, which is the only durable fix: `pipeline/reading_queue.py` now
+serves a blocked skill's reading requests before a well-sourced skill's, so
+distill reads that skill's papers on its next run instead of in about eight
+runs, and the skill can then cite a claim id. The panel grades the interim
+state `unknown` rather than `fail`, which keeps the ADR-36 gate blocking
+exactly as before (that slice can never return `pass`) while stopping a tracked
+state from reading as a defect.
+
+**The 12 remaining failures are not fixed and are not this seat's to fix.**
+They clear when one of `skills/agent-containment`'s papers is distilled and the
+skill seat writes a claim id into its provenance block. Until then `main` stays
+red, and every open pull request still inherits that red tick.
+
+**Blameless postmortem.** Nobody did anything wrong at the moment of the merge.
+The skill seat shipped a draft that honestly said `status: draft` and honestly
+listed the papers it could not cite. The research seat measured exactly why,
+the same day, and wrote it down. The registrar correctly reported a field it
+could not interpret. What was missing is a path from "the pipeline has not read
+this yet" to "so read it next", and that path is a priority rule in a queue
+that nothing had a reason to write until the red main forced the question.
+
+**The generalizable lesson, for the ExO's standards relay.** A gate that
+reports a state it cannot distinguish from a defect will eventually report a
+defect that does not exist, and the cost is paid by every other seat through
+the shared merge check rather than by the seat that owns the file. When a gate
+has two possible causes and can only see one, the fix is to give it the second
+signal, not to loosen the gate. Here the second signal already existed in the
+repository: a line in `docs/research/reading-queue.md`, written by the skill
+seat on the day it shipped the draft, saying precisely which papers it needed
+and could not read.
+
+## INC-2026-10-05-a-law-reached-one-consumer-and-the-rest-were-billed-to-another-seat — ten of twelve red tests were fixable by the seat that declared them someone else's, and the other two will not clear the way it predicted (2026-10-05, engineer seat)
+
+**What happened.** `INC-2026-10-05-one-unregistrable-skill-held-four-suites-red-for-five-days`,
+written earlier the same day, closed with this: "The 12 remaining failures are
+not fixed and are not this seat's to fix. They clear when one of
+`skills/agent-containment`'s papers is distilled and the skill seat writes a
+claim id into its provenance block. Until then `main` stays red."
+
+Both halves of that are wrong, and the second is wrong in a way no later run
+would have discovered by waiting.
+
+**Ten of the twelve were this seat's.** The run that wrote the entry taught the
+draft excuse to `tools/panel_provenance.py` and to nothing else. Four other
+consumers of the same law were left asserting the behaviour the fix had just
+replaced:
+
+- `tools/skill_registrar.py`'s files-only gate, still exiting 1 on the skill the
+  panel had just graded `unknown`.
+- `tests/test_skill_receipts.py`, asserting every skill on the page cites claims.
+- `tests/skill-provenance.test.mjs`, asserting the same thing over the renderer.
+- two fixtures in `tests/test_skill_registrar.py` that read `rows[0].claim_ids[0]`.
+
+The fixtures are the sharpest of the four. `skills/agent-containment` sorts
+first alphabetically and cites nothing, so `claim_ids[0]` raised IndexError and
+`claim_ids[:-1]` of an empty list perturbed nothing and then asserted that
+nothing had drifted. Both tests had been passing on a coincidence of directory
+order, and the skill that broke them did not break them at all. It revealed
+them.
+
+All ten were fixed in this run, in `tools/` and `tests/`, which that entry
+correctly names as this seat's surface.
+
+**The other two will not clear from a claim id.** They are
+`tests/test_panel_validator.py`, and the finding is `suite-runnable`, not the
+`status-vs-eval` the test knows about. `skills/agent-containment/evals/evals.json`
+carries no pre-registered `policy` block, so rule 1 fires. That was verified
+rather than assumed: a claim id was written into the skill's provenance in a
+scratch edit and both tests still failed on the same finding. Distilling a paper
+will not fix them. They need a `policy` block in a file under `skills/`, which
+is the reviewer panel's surface under ADR-13 and not this seat's.
+
+**Measured.** `main` was 19 failed, 1031 passed on `python3 -m pytest tests/ -q`
+at the start of this run, and 2 failed, 1148 passed at the end of it. Every step
+of `checks.yml` is green.
+
+**The repeat this is.** It is the third entry of one shape, after
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and the morning's
+entry: a correct change lands, the guards asserting the premise it replaced stay
+red, and the red is read as somebody else's. The new part, and the reason this
+is its own entry rather than a line appended to the morning's, is the
+**attribution**. The previous two incidents left red guards unnoticed. This one
+noticed them, counted them, and routed all twelve to a seat that owed two. A
+misrouted finding is worse than an unnoticed one, because it closes the
+question. The next run reads "not this seat's to fix", finds a red main that
+somebody is apparently already handling, and moves on.
+
+**Why the count was wrong.** The morning's run grouped the failures by their
+trigger rather than by their fix. Every one of the twelve was triggered by the
+same empty field, which made "they clear when the field is filled" feel like one
+inference rather than twelve. Ten of them were really assertions about the field
+that the run was free to correct, and two were about a different field entirely.
+Grouping by cause is the habit that produced a correct diagnosis and a wrong
+owner.
+
+**The fix, and it is a procedure rather than code.** When a run hands a red test
+to another seat, the handoff is only sound if the run has checked that the
+other seat's change would actually turn it green. Here that check is one scratch
+edit and one `pytest` invocation, it takes under a minute, and it would have
+caught both errors. A seat that cannot run that check says so, and the finding
+goes to the ledger as `urgent` rather than to a seat as an assignment.
+
+**Blamelessly.** The morning's run did the hard half. It found the red in one
+command, separated two causes that looked like one, fixed the false positives
+outright, and built the upstream queue priority that is the durable fix. The
+diagnosis in that entry is still correct and this entry rests on it. What it did
+not do is the cheap half, which is to try the fix it was prescribing to somebody
+else before prescribing it.
+
+**For the standards relay.** A finding assigned to another team needs the same
+evidence as a finding you fix yourself: not only that the cause is theirs, but
+that their change clears it. Routing is a claim about the future and it is
+testable. Test it.
+
+## INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main — the append-at-one-anchor collision reached a file nobody reads twice (2026-10-06, engineer seat)
+
+**What happened.** `.github/workflows-pending/README.md` has been on `main`
+since `413b875` ("Merge main into alexandria-exo/2026-10-05-window") carrying
+literal conflict markers:
+
+```
+$ git grep -l '^<<<<<<< \|^>>>>>>> ' -- . | cat
+.github/workflows-pending/README.md
+```
+
+Two sides of that merge each appended a `## <workflow>.yml` section to the end
+of the file's index, for `adr-numbers.yml` and `skill-gate.yml`. Both are real
+and the merge wanted both. What landed instead was `<<<<<<< HEAD`, one section,
+`=======`, the other section, `>>>>>>> origin/main`, committed as the
+resolution. It is the only file in the repository in that state, which is why
+it survived: the whole-repo check is one command and nothing was running it.
+
+Fixed on this run's branch, keeping both sections, because the pending lane is
+`tests/`-adjacent machinery and the file is not a workflow, so this seat can
+push it.
+
+**Why it is a repeat.** Incident 6 is two ledger appends at one anchor and a
+conflict on the second merge. The engineer charter's ledger-collision rule and
+the org rule about a seat's own open pull request both exist because of it, and
+both name `docs/ideas.md`. This is the same failure mode in a different file,
+and this run hit it twice in one session: the merge of PR #226 into this branch
+conflicted in `docs/agents/incidents.md` at exactly the same anchor, two seats
+having each appended an entry dated 2026-10-05 to the end of the register. That
+one was resolved by keeping both, in a minute, because a conflict a seat resolves
+by hand is visible to the seat resolving it.
+
+**The generalisable part, and it is the reason this entry is worth its length.**
+The rule we have says "name the merge order you expect, because two open pull
+requests that both append to the ledger will conflict". It is a rule about
+`docs/ideas.md` and the failure is about append-only files, of which this
+repository has at least six: `docs/ideas.md`, `docs/agents/incidents.md`,
+`docs/voice/ban-list.md`, `docs/decisions.md`, `docs/sprints/pending.md`, and
+this README's index. Every one of them is written by multiple seats, every one
+of them is appended to at the same anchor, and the collision rate is a function
+of how many seats are open at once rather than of which file it is. Five seats
+had open pull requests when this run started.
+
+**What would actually close it.** A whole-repository marker check, in CI, on
+both triggers. It is one `git grep` and it would have failed the merge that
+produced this, on the push to main, the same evening. Filed as a ledger entry
+today rather than built here, because the file it belongs in is `checks.yml`
+and a seat's token has no `workflows` permission. The pending lane
+(`.github/workflows-pending/`) is where it goes if the owner would rather have
+it as its own workflow, and it is small enough to ride along in the
+`subscriber-list.yml` filed on the same branch if she would rather not have a
+fifth file waiting.
+
+**Blamelessly.** The merge in question resolved five branches against main in
+four minutes, by hand, at 21:28 on a Sunday, and the four other files in it
+came out correct. A hand merge of a register that every seat appends to is a
+mechanical task with no mechanical check behind it, which is the condition this
+register was created to report rather than a fact about whoever did it.
+## INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-06, while
+looking for a home in CI for the unsubscribe-link guards.
+
+**What happened.** `tests/test_email_template.py` discovers its own tests by
+walking `globals()` inside an `if __name__ == "__main__"` block. That block
+sat in the middle of the file, twenty-nine test functions in, and one test
+function was defined below it. A module executes top to bottom, so running the
+file as a script reached the block, discovered the twenty-nine functions
+defined so far, ran them, and called `sys.exit()` before the thirtieth was
+ever defined.
+
+`.github/workflows/checks.yml` runs this suite as
+`python3 tests/test_email_template.py`. Nothing in `.github/workflows/`
+invokes pytest for it. So the orphaned test had never run in CI.
+
+**What it was guarding.** `test_a_repeated_title_carries_its_dates_in_the_subject`,
+which is the guard for the 2026-09-28 send that went out under the same
+subject line as the two issues before it and read to its readers as a repeat.
+The guard was written in response to a real delivery failure, it was correct,
+and it passed the moment it was reached. It was simply never reached.
+
+```
+$ python3 tests/test_email_template.py | grep -c '^  ok'     # before
+31
+$ python3 tests/test_email_template.py | grep -c '^  ok'     # after the move
+32
+```
+
+**Why it is a repeat, which is why it is recorded here.** This is incident
+20's shape and L-A16's shape: a rule written into the right place, by the
+right seat, and never read by anything between the writing and the artifact.
+It is also the second instance *today*. The first dispatch of this seat found
+`tests/test_waitlist.py` and `tests/test_unsubscribe.py` absent from
+`checks.yml`'s enumerated list, which is forty-four assertions about the one
+surface a stranger touches running only where somebody remembers the command
+(#233). Same failure, two different mechanisms: one suite CI was never told
+about, one suite CI was told about and could not see all of.
+
+**The fix, and its narrowness.** The runner block moved to the foot of the
+file, with a comment at the old site saying why it has to stay there. That
+fixes this file and nothing else.
+
+**The generalisable part, which is not fixed.** Two properties of this
+repository make the class recur, and neither has a guard:
+
+1. `checks.yml` enumerates test files by name. A new test file is invisible
+   until somebody edits a workflow, and no seat's token carries `workflows`
+   permission, so the seat that writes the test cannot be the seat that
+   enrols it. A `python3 -m pytest tests/ -q` step would close this, except
+   that `main` currently has 19 failing tests, so such a step would be red on
+   arrival. The honest order is: green `main` first (#233), then one glob.
+2. Suites in `tests/` run as scripts with hand-maintained or
+   position-dependent discovery. `test_press_resilience.py` and
+   `test_press_rehearsal.py` each keep an explicit list of function objects in
+   their `__main__`, which fails the same way by omission rather than by
+   position: a test appended to the file and not to the list is defined,
+   collected by pytest, and never run by CI.
+
+   Both were audited this run and **neither has an orphan today**, so this is
+   a latent mechanism rather than a second live hole:
+
+   ```
+   $ for f in tests/test_press_rehearsal.py tests/test_press_resilience.py; do
+   >   # every `def test_*` in the file, checked against its __main__ block
+   > done
+   (no output: 13 and 20 functions, all reachable)
+   ```
+
+   What makes it worth a guard anyway is that the audit is three lines of
+   shell nothing runs, which is the same sentence this entry opens with.
+   Compare what pytest collects against what the script actually executes, in
+   every suite CI invokes as a script. That is the ledger entry filed against
+   this incident.
+
+**How long it was dead, exactly.** The orphaned test arrived in `70192df`
+("press: a repeated title carries the week's dates in the subject"), merged
+as **#199** on 2026-10-04 21:15 -0600. It appended fourteen lines to the end
+of `tests/test_email_template.py`, which is to say below the runner. So the
+guard was in the tree and out of effect from 2026-10-04 until this run on
+2026-10-06, and **the 2026-10-06 09:00 UTC W40 send happened inside that
+window**. The first Monday send after the guard for duplicate subjects was
+written was also a send that guard did not cover. The issue went out with a
+fresh title, so nothing was lost. The protection was absent rather than
+failed, which is the harder kind to notice.
+
+#199 was reviewed and merged by the owner. The placement is not visible in a
+diff: appending at the end of a test file is the correct thing to do in every
+other suite in this repository, and the fourteen added lines look right
+because they are right. Only the file's own structure makes them unreachable,
+and a reviewer reading a diff does not see the structure.
+
+**Blameless postmortem.** Nobody moved the runner. The file grew a section at
+a time, and the one time a test was appended below it, the author ran it under
+pytest and saw it pass. Both facts were true and the conclusion drawn from
+them was wrong, because the thing that runs in CI and the thing the author ran
+were different programs. The lesson is not "run it as a script too." It is
+that a suite with two runners has two answers, and only one of them is the one
+that gates a merge.
+
+## INC-2026-10-07-a-test-pinned-the-defect-it-was-written-to-end — the second assertion in two days that went red because the library got better (2026-10-07, engineer seat)
+
+**A repeat, and the sharper half is the timing.** On 2026-10-05 at 04:00 UTC
+this seat shipped the reading queue's new order and, in the same work, wrote
+`tests/test_reading_queue.py::test_the_live_queue_serves_the_containment_papers_on_the_next_run`.
+That test asserts, against the live file, that `skills/agent-containment` still
+cites no claim ids. Fifteen hours later, at 19:49 UTC, the same seat fixed
+`test_skill_receipts.py`'s pin of claim `199` and wrote the general lesson into
+the test's own docstring: "a test that pins one id forbids the revision the
+library's own law requires." Then it left the pin it had written that morning
+in place. On 2026-10-06 the skill seat filled `agent-containment`'s claim ids
+in, which is the outcome the queue ordering exists to produce, and the
+assertion went red with a message naming its own obsolescence: "the draft
+gained claim ids, so this test has served its purpose and the next reader
+should delete it."
+
+So the diagnosis and the unfixed instance of it were in one branch, by one
+seat, on one day, and the diagnosis did not reach the instance.
+
+**The class, which now has three entries.**
+`INC-2026-10-02-fixture-pinned-to-a-wall-clock-date` is the same defect with
+the clock as the thing that moves, and it already generalised itself to "a test
+fixture that names a date is a test that expires."
+`INC-2026-09-30-two-checks-steps-red-on-main-for-days` is the same defect with
+the environment as the thing that moves. This entry is the third axis and the
+worst of the three, because what moves here is the product improving. A test
+pinned to a date fails on a day nobody chose. A test pinned to a defect fails
+on the day somebody fixed the defect, which means the gate punishes the work it
+was built to protect.
+
+**It is already company law and the law did not reach `tests/`.** L-E11 in
+`docs/standards/lessons.md` says in its own second clause that "a tripwire that
+fires hardest on the best runs is worse than no tripwire, because the org
+learns to read its colour instead of its message, and the cost lands on the
+true failures it was built for." That rule was harvested from the no-ship
+tripwire in a workflow file, so every example under it is machinery, and
+nothing carried it across to an assertion in a test. Both pins are instances of
+L-E11 written by a seat whose charter tells it to read L-E11.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-07). The slug is
+gone and the rule is asserted instead: whichever skill cites no claims has its
+queue lines served first, and when every skill cites claims the live file has
+nothing to lift, so the order must equal file order. Both states assert
+something and neither is skipped, which is what keeps it a gate after the thing
+it was written about is fixed.
+
+**The gate this wants, named rather than built.** The cheap version of a check
+is one rule, and it is a reading rule rather than a program: an assertion whose
+subject is a specific defect states, in the same breath, what it asserts once
+the defect is gone. The expensive version is a linter over `tests/` for a
+literal that also appears in a register of known-bad state, and nothing in this
+org can tell a deliberate pin from an accidental one, so it would be noise.
+Filed as a ledger entry rather than written here as a rule, because the honest
+version of this gate is the charter sentence and not a program.
+
+## INC-2026-10-07-the-red-main-everyone-cited-was-nine-of-nineteen — six documents quote main's failure count, the guard that gates merges can only see half of it, and two of the three blind files are the ones nobody could clear (2026-10-07, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-07, while
+building the coverage gate for
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`.
+
+**What happened.** Sprint 2026-10-05 item 1 is "get `main`'s checks green
+again", and its acceptance criterion is `gh run list --workflow=checks.yml
+--branch=main --limit 1` showing success. Every document that has reported on
+that item since 2026-10-05 quotes a failure count taken from a seat running
+`python3 -m pytest tests/ -q` in its own sandbox. Measured again this run
+against `origin/main` at `6cbcf2d`, that number is still 19 failed, 1021
+passed.
+
+`checks.yml` cannot see ten of the nineteen.
+
+```
+$ python3 -m pytest tests/ -q          # in a worktree at origin/main
+19 failed, 1021 passed, 11 skipped
+
+$ python3 -m pytest tests/ -q | grep '^FAILED' | sed 's/::.*//' | sort | uniq -c
+      6 tests/test_skill_registrar.py
+      5 tests/test_panel_provenance.py
+      4 tests/test_skill_receipts.py
+      2 tests/test_skill_eval.py
+      2 tests/test_panel_validator.py
+
+$ python3 tools/ci_coverage.py         # measured against main's own tree
+14 of 41 test files run in CI
+  tests/test_skill_receipts.py   -> .github/workflows/checks.yml
+  tests/test_panel_provenance.py -> .github/workflows/checks.yml (via tests/test_skill_receipts.py)
+  tests/test_skill_registrar.py  -> RUN BY NOTHING
+  tests/test_skill_eval.py       -> RUN BY NOTHING
+  tests/test_panel_validator.py  -> RUN BY NOTHING
+```
+
+Nine failures reach the gate. Ten do not. The red tick on `main` is real and
+it is a red tick for the wrong reason, in the sense that it would still be red
+if those ten were fixed and it would go green while they were still failing.
+
+**Why this one matters more than the arithmetic.** The two blind files with
+the most failures are the two the sprint has been unable to clear. Item 1 has
+been open since 2026-10-05 through six attempts, and the PM's pass of
+2026-10-07 12:22 UTC was still asking which of two pull requests would close
+it. Both pull requests are about the skill library. `tests/test_skill_eval.py`
+and `tests/test_skill_registrar.py` are the library's own suites, they hold
+eight of the nineteen failures, and a seat checking the one command the sprint
+names would have seen neither. So the item's own acceptance criterion is
+narrower than the item, and every seat that read the criterion correctly got a
+narrower answer than the one the sprint wanted.
+
+**Why it is a repeat, which is why it is recorded here.** This is the shape of
+`INC-2026-10-06-a-guard-defined-below-its-own-runner-never-ran`, filed by this
+seat yesterday, and that entry named this exact fix in its own
+"generalisable part, which is not fixed": a `python3 -m pytest tests/ -q` step,
+held back because `main` was red and the step would have been red on arrival.
+It is also `INC-2026-10-01-register-checker-wired-to-nothing` and incident 20's
+shape, which is a rule written in the right place and read by nothing between
+the writing and the artifact.
+
+What is new is the magnitude, and the magnitude is the argument. The class was
+previously evidenced by one orphaned test and two unenrolled suites. Measured
+across the directory it is 27 of 41 files on `main`, and 33 of 47 on this
+branch. A guard that runs 34% of the suite is not a guard with gaps. It is a
+sample.
+
+**The fix, and the part of it a seat can reach.** `tools/ci_coverage.py`
+measures it, `tests/test_ci_coverage.py` pins it so the uncovered set can
+shrink and cannot grow, and `.github/workflows-pending/checks.yml` is the
+replacement that takes it to 47 of 47. The first two are in this pull request
+and in effect on merge. The third needs a `workflows` permission no seat holds,
+which is the standing condition recorded as the 2026-09-18 urgent ledger entry
+about that permission, and it is why the gate pins its own file as uncovered:
+the guard against test files that no workflow runs is itself a test file that
+no workflow runs.
+
+The honest order the yesterday's entry named still holds and is now satisfiable
+in one merge rather than two: this branch takes `main` to 0 failed, 1223 passed,
+and the staged workflow is the glob. Merging the branch without applying the
+workflow leaves the suite green and the sample at 14 of 47.
+
+**Blameless postmortem.** Nobody chose to run a third of the suite.
+`checks.yml` was correct on the day it was written, when it ran one step for
+one incident, and it grew one named step per incident for eleven days because
+that is the smallest correct change each time and the only change a reviewer
+can check at a glance. The denominator moved underneath it. Thirty-three
+filenames were never omitted from a list; they were simply added to a
+directory, by seats whose token cannot edit the list, and the list has no
+relationship to the directory that anything checks. The lesson is not that the
+list was wrong. It is that an enumeration and a directory drift apart silently
+by default, and the only enumeration that does not need a guard is the one that
+names the directory.
+
+## INC-2026-10-07-a-charter-dispatched-thirteen-runs-at-work-that-was-already-built — the engineer charter's register list says a specification "does not exist as code yet" and the specification has said "Status: built" for thirteen days (2026-10-07, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-07, on reading
+its own charter's register list at the start of the run.
+
+**What happened.** `prompts/engineer-agent.md`, under "Check the register
+before you ship", names `docs/agents/press-rehearsal.md` and says of it:
+
+> It is the third gate in that law's ladder for a provider change, it does
+> not exist as code yet, and until it does the ladder has two working links
+> and a paragraph. Building it is a break-fix sized piece of work: one Modal
+> function, one scratch table, one more `&&` in the deploy command. Take it
+> when the sprint has room, and if you decline it, say why in your PR so the
+> next run does not rediscover the decision.
+
+The first line of that specification, since 2026-09-24, reads
+`**Status: built, 2026-09-24, engineer seat.**`
+
+```
+$ grep -n "def rehearse" pipeline/weekly.py
+1462:def rehearse() -> str:
+$ grep -n "press_rehearsals" db/schema.sql | head -1
+201:-- ============ press_rehearsals: the scratch print ============
+$ grep -n "rehearse" pipeline/weekly.py | sed -n 3p
+54:      && modal run pipeline/weekly.py::rehearse \
+$ git log --format='%h %ci %s' -1 -S"def rehearse" -- pipeline/weekly.py
+ad86a26 2026-09-24 15:52:34 +0000 rehearse(): one real print, to a scratch row, to nobody
+```
+
+One Modal function, one scratch table, one more `&&`. All three, thirteen days
+ago, plus a suite in `checks.yml` that holds the gate's teeth. The charter's
+own three-item description of the work is a correct description of the code
+that exists.
+
+**What it cost.** This seat runs daily and reads this list every run, so the
+sentence has dispatched thirteen runs at work that was finished before the
+sentence was read. This run spent its first pass on it and found the status
+line in the first paragraph of the file, which is the cheap version of the
+outcome. The expensive version is a run that reads the charter, believes it,
+and rebuilds `rehearse()` beside the one already there, and nothing in the
+charter or the file would have stopped that: the specification's "What to
+build" section is written entirely in the imperative future, so a reader who
+skips the status line finds a complete set of build instructions for a thing
+that is built.
+
+**Why it is a repeat, which is why it is recorded here.** Same class as
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`, which is the
+other finding in this pull request: a document asserting the state of a gate,
+wrongly, with nothing between the assertion and the reader that checks. That
+one was a docstring claiming a CI step it never had. This one is a charter
+claiming an absence that was filled. The two failure modes are the same
+failure mode and they are opposite in sign, which is worth saying because a
+reader looking for stale claims looks for things claimed present and absent is
+the harder direction to audit.
+
+**The fix, which is not in this pull request and cannot be.** The sentence is
+in a charter, and charters are edited only by the owner's merge
+(`prompts/engineer-agent.md`, "Charters can be edited only by the owner's
+merge. Propose changes in the ledger; never include charter edits in your daily
+PR."). So this is filed here and proposed in the ledger, and the charter's own
+instruction is followed literally: **this run declines the work because the
+work is done**, and that sentence exists in this pull request so the next run
+does not rediscover it.
+
+The narrow correction is to delete "it does not exist as code yet" and the two
+sentences after it. The wider one is that `docs/agents/registers.md` maps which
+register has which gate, and neither of the two gates it describes asks whether
+a register's claim about another file is still true. A specification that
+carries a `Status:` line is checkable: the thing it names either resolves in
+the tree or it does not. `tools/ci_coverage.py`, written this run for the other
+incident, is the same shape of check for a different register, and it is one
+file of precedent rather than a general answer.
+
+**Blameless postmortem.** The ExO seat wrote the specification on 2026-09-24
+and the engineer built it the same day, which is the system working fast. The
+charter clause naming it was written in that window, correct at the hour it was
+written, and a status line added to the top of the specification is exactly the
+right way to close a specification out. Nothing was done wrong at any step.
+What is missing is the step nobody owns: when a specification closes, the
+documents that dispatch work at it do not learn, because the closing is written
+where the builder looks and the dispatch is written where the next run looks.
+
+**A third instance, found while checking the second, and this one is in the
+registers map.** `docs/agents/registers.md` is the file whose whole job is to
+record which register has which gate. Its table row for `press-rehearsal.md`
+is right and says "closed". The narrative note below the table, under "The last
+GAP on this table closed, and half of its gate is still parked", is not:
+
+> **The half that is not running.** The CI step that checks the gate still has
+> teeth [...] lives in `.github/workflows-pending/checks.yml`. Nothing in that
+> directory executes. So the deploy chain is guarded and the guard is
+> unguarded.
+
+`checks.yml` was applied by the chair in `4ef55df` on 2026-09-29 and the step
+is live:
+
+```
+$ grep -n "test_press_rehearsal" .github/workflows/checks.yml
+23:      - "tests/test_press_rehearsal.py"
+49:      - "tests/test_press_rehearsal.py"
+136:        run: python3 tests/test_press_rehearsal.py
+```
+
+So the guard has been guarded for eight days and the map says it is not. The
+same passage closes with the rule it was written to teach, "grep main, then
+grep your own branch, and say which one you are quoting", which is the right
+rule and would not have caught this: the passage was true when written and the
+thing that changed is a different file. A claim about another file's state
+needs re-greping when that file changes, not when yours does, and nothing
+tells you when another file changed.
+
+`registers.md` is the ExO seat's file by its own table, so this is filed here
+and left for that seat rather than corrected in this pull request. Three
+instances in one run, in three documents, all of the same shape: the engineer
+charter says a thing is unbuilt and it is built, the registers map says a guard
+is parked and it is live, and a test docstring says it runs in CI and it never
+has. The fourth is already on the books as
+`INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had`. This is not four
+documents being careless. It is one missing mechanism: a claim one file makes
+about another file's state has no owner and no trigger, because the event that
+falsifies it happens somewhere else.
+
+## INC-2026-10-08-a-delivery-guardrail-was-wrong-on-a-schedule — the press surface called a working press a missing issue for nine hours of every Monday, and the gap was named in a planning document three days before any run opened the file (2026-10-08, engineer seat)
+
+**Observed by:** the engineer seat, 2026-10-08, while answering sprint
+2026-10-05 item 4, which asks a run to record whether this gap is still open.
+
+**What happened.** `tools/delivery_health.py` judged the press by comparing the
+newest row in `digests` against the week that had ended. The press cron is
+`0 9 * * 1`. A week ends on Sunday night, so from Monday 00:00 UTC until the
+cron fires at 09:00 the week that has just ended correctly has no row, and for
+those nine hours guardrail 4's own reader reported a missing issue. The site
+surface carried the same comparison and cried wolf on the same Mondays. Both
+verdicts were produced by a press that was working perfectly.
+
+Measured against the pre-fix module, same row, same day:
+
+```
+PRE-FIX,  Monday 2026-10-05, newest row W39 : FAILING | the newest issue is
+          2026-W39 and 2026-W40 has ended; 1 issue(s) missing
+POST-FIX, Monday 2026-10-05 03:00Z          : OK | ... 2026-W40 is not due yet
+POST-FIX, Monday 2026-10-05 11:30Z          : FAILING | ... 1 issue(s) missing
+```
+
+**The class, and why this is a repeat rather than a bug report.** Two entries
+already name a guard whose colour says nothing about the system it watches.
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` is the version where the
+system moves and the guard keeps asserting what it replaced: both commits were
+correct and both guards stayed red for six days.
+`INC-2026-10-07-a-test-pinned-the-defect-it-was-written-to-end` is the version
+where the product improves and the assertion punishes the improvement, and it
+enumerates its own three axes: the clock moves, the environment moves, the
+product improves.
+
+This is a fourth axis and the only one where **nothing moves at all**. The
+check was wrong from the day it was written, and it was wrong cyclically:
+correct six days a week, wrong on the seventh, on a schedule anyone could have
+printed in advance. That is the worst version for the reason L-E11 in
+`docs/standards/lessons.md` already gives, that a tripwire the org learns to
+read the colour of instead of the message of lands its cost on the true
+failures it was built for. A guard that is wrong at a predictable hour is the
+most efficient possible way to teach a seat to discount it, and guardrail 4
+exists specifically so that a seat and not the owner is a failure's first
+reader. Every Monday it trained the seats out of the job it was built for.
+
+**The second half, which is the older class.** This gap was not discovered by
+this run. `docs/sprints/sprint-2026-10-05.md` item 4 names it in its own words,
+on 2026-10-05: the press surface "reads FAILING on any Monday before the cron
+fires, with nothing standing that re-checks after the window closes." The same
+item then asks a run to "record whether this run was that check, or whether the
+gap is still open after today." Three runs of this seat happened between that
+sentence and this entry, on 2026-10-06 and twice on 2026-10-07, and none of them
+opened the file. That is incident 20's class and L-A9's one sentence, recording
+a rule is not enforcing it, with the planning document in the register's seat:
+a correctly written, correctly located, correctly addressed description of a
+defect changed nothing for three days because nothing between the description
+and the file ever fired.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-08, PR #246).
+`press_due_week` answers which issue the press is obliged to have printed by a
+given instant, and that is what both surfaces now judge by. A week inside its
+own window is `pending` and the headline names the issue it is waiting for and
+the time it is waiting until. The grace is two hours past the cron, because the
+scheduled run calls a provider under a 1800-second timeout and then mails every
+subscriber, so a run still going at 09:40 is a working press.
+
+**What the fix deliberately does not forgive,** because a grace window that
+excused everything would be worse than the bug it replaced: an issue two weeks
+old is still a failure at 03:00 on a Monday, and so is an empty `digests`
+table. Both cases are asserted in `tests/test_delivery_health.py` beside the
+window itself.
+
+**One thing this entry cannot close.** The new tests live in
+`tests/test_delivery_health.py`, which is one of the 35 files of 49 that no
+workflow executes, measured by `tools/ci_coverage.py` on this same branch. The
+`pytest tests/ -q` step that would run them is in
+`.github/workflows-pending/checks.yml` and no agent seat can install it
+(incident 12). So this fix is covered by tests that will not run on a pull
+request until the owner copies that file across. Recorded here rather than
+claimed as done.
 ## INC-2026-10-07-stale-server-third-occurrence — The stale-server check has been prescribed twice and committed zero times (2026-10-07, frontend run)
 
 **The repeat, and it is the third.**
@@ -9878,3 +10545,166 @@ discharged its duty by naming the command. A check that exists only as prose in
 a register is a check that every future run must rediscover, and the run that
 most needs it is the one that has not read the entry yet. The fix for a missing
 check is committed code, and the entry's job is to say where it was committed.
+
+## INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from — the one surface that watches production read green for every seat in the org, and told the truth only in a worktree somebody made by hand (2026-10-09, engineer seat)
+
+**Observed by:** the engineer seat, 2026-10-09, running the charter's own
+"check the register before you ship" step.
+
+**What happened.** `tools/delivery_health.py`'s deploy surface compared
+`deploy_runtime` against the working tree and dated the drift with
+`git log -1 HEAD`. Every agent seat in this org runs on its own branch and
+commits inside the hour, so the question the guard actually answered was "has
+this seat committed recently." Two runs of one command, same morning, same
+`deploy_runtime` row, minutes apart:
+
+```
+on engineer/2026-10-09-...   ok       a deploy is pending and still inside the
+                                      24h window: triage (8.9h, 6 undeployed
+                                      commits since c7ab0c8 ...)
+in a clean main worktree     FAILING  the deployed code is not this code:
+                                      triage is 3.9 days behind
+```
+
+Six of the commits the branch run named had never merged and could not be in
+any image. The real count was one, `fa029bf`. So the branch run was wrong
+twice over: wrong about the verdict, and wrong about the evidence for it in
+the direction that makes the drift look like somebody's work in progress.
+
+**Why nobody caught it for eight days.** Because the only run that ever saw
+past it worked around it instead. `INC-2026-10-07-triage-deploy-drift` and the
+ledger entry of 2026-10-08 both record a run re-measuring "in a clean worktree
+on `origin/main`" and getting a different number, and both treat that as a
+measurement technique rather than as a defect in the thing measured. A guard
+that needs a footnote about where to stand has already failed, and the
+footnote is what kept it alive: every subsequent reader had a documented
+reason for the discrepancy.
+
+**The class, and why this is a repeat.** Two of them, and both are already
+heavily cited in this file.
+
+It is `INC-2026-10-08-a-delivery-guardrail-was-wrong-on-a-schedule`, one day
+old, same module, same guardrail, and that entry's own achievement was to
+enumerate the axes along which a guard goes wrong while nothing it watches
+moves: the clock moves, the environment moves, the product improves, and
+nothing moves at all. **This is a fifth axis: the observer moves.** The guard
+was correct in exactly one location and that location was the only one nobody
+ran it from, because no seat's run checks out `main`.
+
+It is also incident 20 and L-A9, recording is not enforcing, in the sharpest
+form this file has yet collected. The hazard was written down three times,
+correctly, before this run:
+
+- `docs/agents/delivery-health.md`'s own two-question guardrail of 2026-10-04
+  names `origin/main` in its shell snippet, which is the right ref, in the
+  register for this exact surface.
+- `tests/test_deploy_drift.py`'s module docstring listed "a branch carries
+  commits that never merged" as one of three cry-wolf cases **and claimed each
+  of the three had a test.** That one had neither a test nor a line of code
+  behind it, from 2026-09-28 until today.
+- The ledger and `INC-2026-10-07-triage-deploy-drift` both printed the
+  discrepancy in plain numbers.
+
+Three correct recordings, in three right places, by three seats, and the
+artifact kept answering the wrong question. The new part this entry adds to
+incident 20's pile is the second bullet: **a test file's own docstring asserted
+coverage that did not exist.** Every other instance of this class is a rule
+nothing checked. This is a rule whose checker was described, named, counted
+among its siblings, and never written, inside the file whose entire job is to
+hold it. A reader auditing the guard would have read that docstring and
+stopped.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-09, PR #253).
+Both halves of the comparison are read out of `_deployable_ref`, which is
+`origin/main`, then `main`, then `HEAD` for a repository with no trunk. A hand
+deploys from the trunk, so the trunk is the only code that has ever been inside
+an image. The headline and the evidence both name the ref that was judged,
+because a guard that says "this checkout" is the guard being fixed here. The
+regression test is `test_a_branch_commit_does_not_reset_the_drift_clock`: a
+trunk four days ahead of the deployed image, a branch commit a minute old, and
+the two verdicts must match to the character. Measured after the fix, the
+branch and a clean `main` worktree of the same repository return byte-identical
+headlines.
+
+**One consequence worth reading rather than discovering.** The dirty-tree
+`unknown` is gone. It was correct while the surface hashed the disk, where an
+uncommitted edit genuinely made the comparison meaningless, and it has no cause
+once both halves come from a commit. The files are reported in the evidence as
+`uncommitted_here` instead, so a reader whose sandbox differs from the verdict
+is told why, and the state is never touched.
+
+**What this entry cannot close.** The same thing yesterday's could not.
+`tests/test_deploy_drift.py` is one of the test files no workflow executes, so
+the regression test above will not run on a pull request until the owner
+installs `.github/workflows-pending/checks.yml` (incident 12).
+
+## INC-2026-10-08-the-pin-list-grows-once-per-run-while-its-fix-waits-for-a-hand - two consecutive runs each added a test file that no workflow runs, and the replacement that would empty the list has been staged since 2026-10-07 (2026-10-08, engineer seat)
+
+**Observed by:** the engineer seat, second dispatch of 2026-10-08, when the
+coverage ratchet in `tests/test_ci_coverage.py` went red on a test file this
+run had just written.
+
+**What happened.** The ratchet worked exactly as designed. It refused the new
+file, printed the sentence that explains why a pinned file is not an
+exemption, and offered the two ways out. Both ways out are closed to a seat:
+one is a step in `.github/workflows/checks.yml`, which no seat's token may
+write, and the other is applying the staged replacement, which is a `git mv`
+only the owner or the chair can perform. So the third option fired, the one
+the list's own comment calls the last resort, and the pin list grew.
+
+It grew yesterday too, for the same reason and in the same file.
+
+```
+$ for r in $(git log --format=%h -8 --follow -- tests/test_ci_coverage.py); do
+    echo "$(git log -1 --format='%ci' $r)  UNCOVERED=$(git show $r:tests/test_ci_coverage.py \
+      | sed -n '/^UNCOVERED = {/,/^}/p' | grep -c '^    "tests/')"
+  done
+2026-10-08 18:12:06 +0000  UNCOVERED=36
+2026-10-07 18:22:20 +0000  UNCOVERED=35
+2026-10-07 18:09:27 +0000  UNCOVERED=34
+```
+
+34, then 35, then 36. The comment above the two newest lines already says it
+in the file: "And the second file this run added, caught by this gate the same
+way and pinned for the same reason: no seat can add it to a workflow." Today
+is the third, and the rate is now one line per run that writes a test.
+
+**What it cost.** Thirty-six test files report nothing on any pull request.
+Two of them are the day-old guards for the two halves of this run's own work,
+and one of the thirty-six is the ratchet itself. Every one passes locally,
+passes for the seat that wrote it, and is silent on the merge that breaks what
+it guards, which is the sentence the gate prints about itself.
+
+The cost is not the ratchet's. It is the shape of a queued item that nobody
+has applied: a staged change's price is paid once when it is filed and again
+by every run after it, and nothing in the org measures the second half. This
+entry is that measurement, as a number that goes up by one a day.
+
+**The fix is one command and it is not a seat's to run.**
+
+```bash
+git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+```
+
+Verified against this branch before filing, so the number is about the file
+and not about hope:
+
+```
+$ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+50 of 50 test files run in CI
+  every test file in tests/ is executed by some workflow
+```
+
+`UNCOVERED` becomes empty on that merge and the ratchet starts guarding
+instead of recording. Until then every run of every seat that writes a test
+adds a line, and the list is an accurate account of what CI does not see
+rather than a list of exceptions anybody chose.
+
+**The general shape, and it is not the ratchet's shape.**
+`INC-2026-09-30-queue-item-2-rotted-a-third-time` is about a queued item going
+stale while it waits. This is the other half of the same cost and it is the
+half with no owner: an item that stays correct while it waits, and charges
+rent to every run in the meantime. A queue of changes that only a hand can
+apply needs a number beside each item saying what the wait has cost so far,
+because the decision to leave something queued is only cheap if nobody
+measures it.

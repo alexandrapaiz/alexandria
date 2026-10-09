@@ -1,0 +1,104 @@
+# The deploy, behind a button instead of behind a memory.
+#
+# Nothing in this repository has ever deployed a line of `pipeline/`. The site
+# has `deploy-main.yml` and the pipeline has a hand, so every merged fix to the
+# press, triage, interpret, distill or ingest reaches production only when
+# somebody remembers to run `modal deploy` with the right gates in front of it.
+# The drift guard in `tools/delivery_health.py` times that gap and mails about
+# it; this is the other half, which is closing it.
+#
+# It is `workflow_dispatch` and nothing else, and that is deliberate rather
+# than unfinished. `docs/agents/runtime-changes.md` puts the rehearsal in the
+# chair's hands in so many words: "the chair, by hand, before the deploy that
+# installs the schedule. Not cron, not CI, and not the seat that wrote the
+# change." A deploy that fires on merge is a cron by any honest reading of that
+# sentence, and the four production failures of
+# INC-2026-09-24-press-provider-migration are what the human in the loop is
+# there to catch. So this changes who holds the ladder, not who decides.
+#
+# Every rung lives in `tools/deploy_gate.py`, which is the same command the
+# chair can run locally with no Actions involved. This file is a button on top
+# of it, for a chair who does not have the Modal CLI in front of them.
+name: modal-deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      app:
+        description: "which app to deploy"
+        required: true
+        default: weekly
+        type: choice
+        options: [ingest, triage, interpret, distill, weekly, all]
+      plan_only:
+        description: "print the ladder and run nothing"
+        required: false
+        default: false
+        type: boolean
+      ignore_window:
+        description: "deploy inside a reserved Kimi hour anyway (say why in the run)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # The press's rehearsal is one real call against the real payload and the
+    # press is the largest request the pipeline sends, so this is minutes
+    # rather than seconds. Modal's own function timeouts are shorter than this
+    # and they are the real ceiling.
+    timeout-minutes: 45
+    steps:
+      # The ladder reads each module's source to decide which gates that app
+      # has, so a shallow checkout would be reading the right files. It is the
+      # drift guard's own history walk that needs depth, and that does not run
+      # here. Depth 1 on purpose.
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # tiktoken makes `pipeline/budget.py` exact. Without it the guard falls
+      # back to a pessimistic ratio, which makes the first rung stricter rather
+      # than laxer, so a failure to install can never let a deploy through.
+      - name: install the tokenizer and the Modal client
+        run: pip install "tiktoken==0.8.0" modal
+
+      # Two secrets, both of them names only here. They are the Modal
+      # workspace's own tokens; the provider keys the rehearsal spends live in
+      # Modal's secret store and never reach this runner, which is why a
+      # rehearsal can run from CI without a model key being present in GitHub.
+      - name: the ladder, with the deploy at the end of it
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+          APP: ${{ inputs.app }}
+          PLAN: ${{ inputs.plan_only }}
+          IGNORE: ${{ inputs.ignore_window }}
+        run: |
+          set -eu
+          [ -n "${MODAL_TOKEN_ID:-}" ] || { echo "::error::MODAL_TOKEN_ID is not set"; exit 1; }
+          [ -n "${MODAL_TOKEN_SECRET:-}" ] || { echo "::error::MODAL_TOKEN_SECRET is not set"; exit 1; }
+          args="--app $APP"
+          [ "$PLAN" = "true" ] && args="$args --plan"
+          [ "$IGNORE" = "true" ] && args="$args --ignore-window"
+          echo "tools/deploy_gate.py $args"
+          python3 tools/deploy_gate.py $args
+
+      # A receipt, not a step that can fail. The next run of each job writes
+      # its own digest and the drift guard goes green on its own; this prints
+      # what was in the box so the run's log answers "what did this deploy"
+      # without a database.
+      - name: what this deploy carried
+        if: always()
+        run: |
+          echo "### what this deploy carried" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          git log -10 --format='%h %ci %s' -- pipeline/ prompts/ site/emails/ \
+            >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

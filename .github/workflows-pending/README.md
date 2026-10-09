@@ -10,6 +10,132 @@ owner or the chair moves it one directory up.
 Nothing in this directory runs. Anything still sitting here is a guard that is
 not guarding yet.
 
+## checks.yml — a REPLACEMENT for the live file, filed 2026-10-07
+
+This is the only entry in this directory that is not a new workflow. The
+file replaces `.github/workflows/checks.yml`, so the apply needs `-f`:
+
+    git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+
+**Two numbers, and they are the whole argument.** The suite holds 49 test
+files. The live `checks.yml` runs 14 of them. Measure it yourself, which is
+the point of the tool rather than the claim:
+
+    python3 tools/ci_coverage.py
+
+The 35 it does not run include `tests/test_markdown.py`, which holds the
+2026-09-19 finding where a crafted passage in an arXiv paper reached the
+public archive as live HTML, and `tests/test_accounts.py`, which holds the
+account and entitlement layer. Both pass. Neither has ever reported
+anything on a pull request.
+
+Filed for item 17 of `docs/agents/pending-workflow-changes.md` and
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. The item was
+written with four filenames in it, because four was what a reader noticed.
+Thirty-three is what the measurement says, and the gap between those two
+numbers is the reason this is a tool and a test rather than another hand
+edit. The live file lists 24 `paths` entries against 14 steps against a
+directory of 47, and a filename in the `paths` list looks exactly like a
+filename in a step while meaning the opposite thing.
+
+### What changed, and nothing else did
+
+The fourteen named pytest steps become one step that runs the suite. Both
+`paths` lists are deleted rather than extended, because item 17 asked for
+"the directories the suite covers" and that turned out to be all of them:
+instrumented with a Python audit hook on 2026-10-07, one full run of
+`pytest tests/` opened files under `.github/`, `db/`, `docs/`, `mcp/`,
+`pipeline/`, `prompts/`, `site/`, `skills/`, `tests/` and `tools/`. That is
+every directory in the repository, and the five entries it leaves out are
+root files. A filter naming every directory is not a filter.
+
+Node is installed, which the live file does not do and needs to. Seven of
+the 47 are `*.test.mjs`, they reach pytest through a Python wrapper, and
+every one of those wrappers calls `pytest.skip` when node is missing. A
+skip is not a pass, so without this step the account, markdown, unsubscribe
+and waitlist halves would be named by the suite and still never run.
+
+The three script-mode press invocations stay, which item 17 explicitly
+allows. They cost under a second each and they keep those files passing in
+the mode a person uses by hand.
+
+### It is checked rather than trusted
+
+`tests/test_ci_coverage.py` reads this file. It asserts that applying it
+leaves zero test files unexecuted, that it keeps both triggers, and that it
+installs node. So an edit here that quietly breaks the thing the file is
+for turns the pull request that makes the edit red. Both halves were
+confirmed red on a deliberate break before this was filed: narrowing the
+suite step to one filename, and adding an unexecuted test file to `tests/`.
+
+Measured with `--only`, so the number is about this file and not about the
+directory it is parked in:
+
+    $ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+    49 of 49 test files run in CI
+      every test file in tests/ is executed by some workflow
+
+### Do not apply this and subscriber-list.yml both
+
+`subscriber-list.yml`, below, runs `tests/test_waitlist.py` and
+`tests/test_unsubscribe.py` and nothing else. This file runs both of them
+inside the suite, so applying this one makes that one two duplicate steps
+on every pull request. Both were filed by this seat, four days apart, and
+the second one makes the first unnecessary rather than wrong.
+
+Apply this file and `subscriber-list.yml` can be dropped. Apply
+`subscriber-list.yml` alone if the one-step change is too large to take
+today, and this file keeps waiting: it guards the signup path, which is the
+one surface in this repository a stranger touches directly, and that is
+worth a narrow guard today over a broad one later.
+
+### Rehearsed from the seat, as far as a seat can
+
+A seat cannot push a workflow file, so the workflow's first run is the
+chair's. What a seat can do is run every step of it, and this one was, on
+2026-10-07, in order, in a container with `tiktoken` and node installed the
+way the job installs them:
+
+```
+python3 pipeline/budget.py                   exit=0  budget check passed
+python3 -m pytest tests/ -q                  exit=0  1239 passed, 1 skipped
+python3 tests/test_press_resilience.py       exit=0  all press-resilience checks passed
+python3 tests/test_email_template.py         exit=0  all green
+python3 tests/test_press_rehearsal.py        exit=0  all rehearsal checks passed
+python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml
+                                             exit=0  49 of 49
+```
+
+The file also parses as YAML, which is worth saying because a seat handing
+over a workflow it cannot run should at least have proved it is a workflow:
+three triggers, eleven steps, four of them `uses`.
+
+**The delta is the durable part of this, so read it before the totals.** The
+same suite is 1239 passed and 1 skipped in a container with `tiktoken` and
+1229 passed and 11 skipped without it, both measured on 2026-10-07. The totals
+move every time a test is added, and two of the numbers in this section were
+already stale by the end of the run that wrote them, which is the defect this
+whole file is about. **Ten is the number that does not move.** Ten of the
+suite's skips are measurements that only the real tokenizer makes,
+in `tests/test_corpus_drain.py`, `tests/test_distill_fulltext_budget.py` and
+`tests/test_rag_fallback.py`, and the live `checks.yml` already installs
+`tiktoken` for the budget step, so this costs nothing new. It is the
+difference between a suite that reports ten measurements and one that skips
+them.
+
+### What is still not guarded after this is applied
+
+The job installs no `node_modules`, so `tests/test_markdown.py`'s one
+`marked` comparison stays skipped. That is the one skip left of the eleven,
+measured above, and it is the renderer's own library rather than the rule
+under test.
+
+The last step is a gate and not a print: `tools/ci_coverage.py` exits
+non-zero when any test file runs in no workflow. On the live tree today it
+exits 1 and names thirty-five files, which is correct and is why the step
+only makes sense in the same commit that applies this file. Pass
+`--report-only` for the report without the verdict.
+
 ## checks.yml — APPLIED 2026-09-29, and this section is history
 
 **Moved to `.github/workflows/checks.yml` by the chair in `4ef55df` on
@@ -108,7 +234,6 @@ one directory up they stop it only for whoever remembers to run the command.
 One command, and it is the owner's or the chair's: a seat's token has no
 `workflows` permission, for the reason the top of this file gives.
 
-<<<<<<< HEAD
 ## adr-numbers.yml — every ADR number names one decision
 
 Filed by the ExO seat 2026-09-30. Fails a pull request, or a push to main,
@@ -141,7 +266,7 @@ rather than passing silently, because a heading-format change would
 otherwise turn this check into a guard in name.
 
     git mv .github/workflows-pending/adr-numbers.yml .github/workflows/adr-numbers.yml
-=======
+
 ## skill-gate.yml — does this revision merge on its own?
 
 Filed by the engineer seat 2026-09-30 for ADR-37, amended the day before when
@@ -178,4 +303,118 @@ snapshot, a SKILL.md edited after its eval, a delta below the previous version's
 lower bound, a version with no trigger, the kill switch set, and a revision that
 introduces a ban-list tell). No key, no network, no database: the graph clause
 reads `docs/research/claim-status.json`, which the daily Modal job writes.
->>>>>>> origin/main
+
+## subscriber-list.yml — the signup and the unsubscribe are guarded
+
+Filed by the engineer seat 2026-10-06 with sprint 2026-10-05 items 2 and 3.
+Runs `tests/test_waitlist.py` and `tests/test_unsubscribe.py` on any change to
+the signup path, the unsubscribe path or `db/schema.sql`.
+
+**Why a new file rather than two more steps in `checks.yml`.** A seat's token
+has no `workflows` permission, so `checks.yml` cannot be edited from a seat's
+run at all, and this directory is the lane that exists instead. The paths and
+both triggers are already right, per the rule at the top of this file.
+
+What it holds is the half CI can hold without a database. Every SQL statement
+in `site/lib/waitlist.js` and `site/lib/unsubscribe.js` is parsed with
+libpg_query and every relation and column it names is resolved against
+`db/schema.sql`, which is why that file is in the paths. The signup's row is
+asserted to be `status = 'active'` and comped, because `pipeline/weekly.py`
+sends to active rows only and anything else is a row waiting on a human, which
+clause 1 of the sprint's definition of done rules out. The unsubscribe route is
+asserted to export POST and no GET, because mail scanners fetch every link in a
+message before a person reads it.
+
+Four deliberate breaks were confirmed red before it was filed: a `'waitlist'`
+status, a `statuss` column, a GET handler on the unsubscribe route, and an
+update scoped by email address rather than by token.
+
+Until it moves, those 44 assertions run in exactly one place, which is whichever
+seat remembers `python3 -m pytest tests/ -q`. The signup path is the one surface
+in this repository a stranger touches directly.
+
+    git mv .github/workflows-pending/subscriber-list.yml .github/workflows/
+
+## modal-deploy.yml, the deploy behind a button instead of behind a memory
+
+Filed 2026-10-08 by the engineer seat, for the `urgent` ledger entry of the
+same morning. One command is the whole argument:
+
+    $ grep -rln "modal deploy" .github/workflows/
+    (no output)
+
+Nothing in this repository has ever deployed a line of `pipeline/`. The site
+has `deploy-main.yml`; the pipeline has a hand. So every merged fix to the
+press, triage, interpret, distill or ingest reaches production only when
+somebody remembers to run `modal deploy` with the right gates in front of it,
+and on the morning this was filed `triage` was 2.9 days behind `main` for
+exactly that reason.
+
+### It is dispatched by hand, and that is the design
+
+`docs/agents/runtime-changes.md` puts the rehearsal in the chair's hands in so
+many words: "the chair, by hand, before the deploy that installs the schedule.
+Not cron, not CI, and not the seat that wrote the change." A deploy that fires
+on merge is a cron by any honest reading of that sentence, and the four
+production failures of `INC-2026-09-24-press-provider-migration` are what the
+human in that loop is there to catch.
+
+The ledger entry asked for a push trigger and this file does not have one. The
+gap is narrower than "no deploy workflow": the chain was written out four
+times in `docs/decisions.md` and enforced once, so the hand that runs it has
+to carry the ladder in its head. This changes who holds the ladder, not who
+decides. `tests/test_deploy_gate.py` asserts the absence of a `push:` trigger,
+so an edit that quietly adds one turns the pull request that makes it red.
+
+### The ladder lives in a tool, so it works before this file moves
+
+Every rung is in `tools/deploy_gate.py`, which runs today with no Actions
+involved:
+
+    python3 tools/deploy_gate.py --plan            # print every app's chain
+    python3 tools/deploy_gate.py --app weekly      # run the press's chain
+
+Which gates an app has is read off its own module, not kept in a list beside
+it: a module that defines `preflight` and `rehearse` is a model-calling app
+and gets `pipeline/budget.py`, then both gates, then the deploy. `ingest`
+defines neither, calls no model, and gets a bare deploy, which is what ADR-12's
+own chain says. The derivation is cross-checked against the register rather
+than trusted: every `modal run <module>::<gate>` the tool produces is a string
+`docs/decisions.md` already contains.
+
+It also refuses to rehearse inside a reserved Kimi hour. Moonshot's
+organization concurrency is 1 at the account level, `pipeline/llm.py`'s
+`KIMI_WINDOWS` is that schedule in machine-readable form, and a rehearsal at
+12:30 UTC takes triage's slot away from triage. That refusal is
+`INC-2026-09-24-kimi-org-concurrency` as a gate instead of as a sentence, and
+the override is `--ignore-window`, which says so in the log.
+
+### Two secrets, and you have to create them
+
+| Secret | What it is |
+|---|---|
+| `MODAL_TOKEN_ID` | the Modal workspace token id, from `modal token new` |
+| `MODAL_TOKEN_SECRET` | its secret half |
+
+Names only here, per the engineer charter. **This is the one thing on this page
+that needs a key rather than only a hand**, which is why the item also appears
+in `docs/agents/pending-workflow-changes.md` under that heading.
+
+The provider keys the rehearsal spends are not in this table and must not be.
+They live in Modal's own secret store, which is where the rehearsal reads them
+from, so a real model call can be made from CI with no model key present in
+GitHub at all. The runner holds a token that can deploy and nothing that can
+spend.
+
+### It is checked rather than trusted
+
+`tests/test_deploy_gate.py` reads this workflow. It asserts the file is
+dispatch-only, that it calls the tool rather than carrying its own copy of the
+chain, that it reads both secrets by name, that it installs the tokenizer the
+budget rung needs, that its `options:` list is exactly the apps the tool knows,
+and that this README has a section naming the secrets. Deliberate breaks
+confirmed red before filing: adding a `push:` trigger, pasting a
+`modal deploy` line into the run block, and dropping an app from the choice
+list.
+
+    git mv .github/workflows-pending/modal-deploy.yml .github/workflows/

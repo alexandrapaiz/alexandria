@@ -420,6 +420,47 @@ def on_main() -> tuple[bool, str]:
 
 # ----------------------------------------------------------- cli
 
+def waiting_problems(rows, problems) -> set[str]:
+    """The problems the provenance panel excuses, which this gate must not block on.
+
+    One law, and it lives in `waiting_on_the_queue` in tools/panel_provenance.py:
+    a `status: draft` skill that names its papers and has an unchecked line in
+    docs/research/reading-queue.md asking for one of them is waiting on the
+    pipeline rather than opting out of revision. The panel reports that as
+    `unknown` instead of `fail`, and ADR-36's gate still blocks either way,
+    because that slice of the panel never returns `pass`.
+
+    This gate did not know it. The panel learned the excuse on 2026-10-05 and
+    `skills/agent-containment` moved from `fail` to `unknown` there, while this
+    gate went on exiting 1 on the same skill over the same sentence. Two answers
+    to one question, and the half that held `python3 -m pytest tests/ -q` red was
+    this one. So the judgment is read from the module that owns it rather than
+    restated here, which is the only arrangement that cannot drift again.
+
+    The import is late on purpose: panel_provenance imports this module at module
+    level, so a top-level import here would be circular. Nothing at import time
+    needs this, and a checkout without the panel simply excuses nothing, which is
+    the conservative direction.
+    """
+    try:
+        import panel_provenance as panel
+    except ImportError:                                 # pragma: no cover
+        return set()
+    waiting: set[str] = set()
+    for row in rows:
+        marker = f"skills/{row.slug}/"
+        for problem in problems:
+            if "cites no claim ids" not in problem or marker not in problem:
+                continue
+            try:
+                raw = (SKILLS_DIR / row.slug / "SKILL.md").read_text()
+            except OSError:                             # pragma: no cover
+                continue
+            if panel.waiting_on_the_queue(row, raw):
+                waiting.add(problem)
+    return waiting
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--files-only", action="store_true",
@@ -438,10 +479,13 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
 
     rows, problems = read_skills()
+    waiting = waiting_problems(rows, problems)
+    blocking = [p for p in problems if p not in waiting]
     report: dict = {
         "skills": [r.as_dict() for r in rows],
         "problems": problems,
-        "state": "failing" if problems else "ok",
+        "waiting": sorted(waiting),
+        "state": "failing" if blocking else "ok",
     }
 
     if args.deprecated:
@@ -486,7 +530,9 @@ def main(argv=None) -> int:
             print(f"  {row.path}: {len(row.claim_ids)} claims, "
                   f"version {row.version or '?'}, status {row.skill_status or '?'}")
         for line in problems:
-            print(f"failing: {line}")
+            # A problem the panel excuses is still printed, because the state is
+            # worth seeing. It just does not decide the exit code.
+            print(f"{'waiting' if line in waiting else 'failing'}: {line}")
         if "unregistered" in report:
             for path in report["unregistered"]:
                 print(f"failing: {path} is on main with no promotions row, so "

@@ -33,7 +33,7 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 
 | Field | Type | What it is |
 |---|---|---|
-| `contract` | number | `1` today, and it is the *result* document's number, not the task file's. A reader that does not know the number should render pending rather than guess. The suites carry their own `suite_version`, which is `1` or `2`, and the two numbers move independently. |
+| `contract` | number | `2` since 2026-10-05, and it is the *result* document's number, not the task file's. A reader that does not know the number should render pending rather than guess. `2` is additions only: every field `1` carried is still present and still means the same thing, and the number moved so a reader that wants the ADR-40 blocks below can tell an older document from one that simply measured nothing. The suites carry their own `suite_version`, which is `1` or `2`, and the two numbers move independently. |
 | `skill` | string | the slug, which must match the directory |
 | `skill_md_sha256` | string | sha256 of the `SKILL.md` this result measured |
 | `date` | string | `YYYY-MM-DD`, the day the run finished |
@@ -58,6 +58,14 @@ page has to say so, the way it already does for a stale trigger-test receipt.
 | `policy` | object | the task file's pre-registered policy, copied verbatim |
 | `per_task` | array | one row per task: `id`, `control`, `scored_by`, `with_mean`, `without_mean`, `delta`, the raw scores, and a note per repetition |
 | `harness` | string | the runner that produced it |
+| `ablation` | object | ADR-40 item 1. `{ differs, pinned, unpinned }`: what was held constant between the two arms, and what this provider would not let the run pin. `unpinned` is the honest half, and a page that shows a delta shows it |
+| `differential` | object | ADR-40 item 2. `{ ceiling, graded, declared_controls, demoted_to_control, reads }`. A task the bare subject already passes contributes a delta of exactly zero, so it becomes a control rather than a denominator |
+| `heldout` | object | ADR-40's refinement item 2. `{ version, written_against, held_out, delta, spread, verdict, reads }`: the delta over the tasks the revision was not written against, which is the number a self-merging edit is gated on |
+| `exploit_test` | object | ADR-40 item 5. `{ ran, ceiling, max_score, per_task, exploited, verdict, reads }`. An answer written to game the rubric must score zero, and `verdict` is `clean`, `exploited` or `not run` |
+| `length_bias` | object | ADR-40 item 6. `{ pairs, threshold, mean_shift, max_abs_shift, per_task, verdict, reads }`: the same content scored at two lengths, so a judge with a length preference is visible rather than inferred |
+| `section_deltas` | object | ADR-40 item 7. One entry per skill section that carried judged evidence, each `{ with_mean, without_mean, delta, spread, samples, tasks, criteria, survival }`. This is what makes a per-section validation tag a measurement instead of a label |
+| `survival` | null or object | reserved for ADR-39's revealed-preference axis. Ursa writes it; the harness only promises the key exists. Null means nobody has measured it, which a page must not render as nobody acting on it |
+| `trajectory` | object | ADR-40 item 4. `{ entries, sandbox, path, commands }` for the executable tasks: where each command ran, and the file that holds the full log |
 | `version` | string | the `version` in the skill's frontmatter when this result was measured |
 | `trigger` | string | what asked for this run: one of ADR-37's four triggers, or `asked for by hand` |
 | `history` | array | one entry per measured version, oldest first, this one last. Append-only, below |
@@ -70,7 +78,16 @@ An arm summary:
   "mean": 0.8,
   "successes": 24,
   "interval95": [0.6143, 0.9229],
-  "reads": "24 of 30"
+  "reads": "24 of 30",
+  "spread": { "n": 10, "sd": 0.31, "min": 0.2, "max": 1.0 },
+  "pass_at": {
+    "k": 3,
+    "tasks": 4,
+    "pass_at_1": 0.75,
+    "pass_at_k": 0.92,
+    "pass_at_1_spread": { "n": 4, "sd": 0.29, "min": 0.33, "max": 1.0 },
+    "reads": "pass@1 0.75, pass@3 0.92 over 4 hard-check task(s)"
+  }
 }
 ```
 
@@ -79,6 +96,15 @@ was 0 or 1, which is the case when every task had a hard check. A run that
 included a rubric produces fractional scores, and then `mean` and `n` are all
 there is. The interval is Clopper-Pearson, exact rather than normal, because at
 these sample sizes the normal approximation is simply wrong.
+
+`spread` and `pass_at` arrived with contract 2 (ADR-40 item 3). They answer two
+questions the interval cannot. `spread` is how much the tasks disagreed with
+each other, which a tight interval around their mean hides by construction, so a
+page that quotes a delta without it is quoting agreement that may not exist.
+`pass_at` is present only for the tasks with a hard check, because pass@k is a
+statement about a pass-or-fail trial and a rubric score of 0.67 is not one; it is
+null when the suite has no such task. `pass_at_k` uses the unbiased estimator,
+not "did any of the k pass", which is biased upward at these sample sizes.
 
 ## `history`, and why a result cannot be replaced
 
@@ -210,6 +236,29 @@ and every skill in the library carries mechanical ban-list findings, mostly em
 dashes inside its own `papers:` list. So the clauses are that the revision breaks
 no case that passed before it and adds no new tell. Written as absolutes they
 would block every revision of every skill on a debt no revision created.
+
+## What a task file may carry, as of contract 2
+
+ADR-40 added five optional fields to the suite side. All five are optional, no
+existing suite is invalid without them, and `python3 tools/skill_eval.py --check`
+reports each absence as a finding rather than an error, because the eight suites
+in the library were written before the rules existed and a gate that fails
+everything is a gate somebody turns off.
+
+| Field | Where | What it is |
+|---|---|---|
+| `certificate` | on a rubric criterion | `{ kind: test \| number \| artifact, names: "..." }`. The verifiable thing in the task that the criterion is tied to. Rubrics with no such tie were exploited 8 to 26 percent of the time, and up to 36 percent under stress; certificate-faithful ones 0 percent |
+| `section` | on a rubric criterion | the `## ` heading of the SKILL.md this criterion's score is evidence about. Checked verbatim against the file, and used for `section_deltas`. Falls back to the task's `sections` |
+| `exploit` | on a task with a rubric | `{ answer: "..." }`, or the string itself: a plausible answer that games the rubric and carries none of its certificates. It must score zero |
+| `written_for` | on a task | the skill version this task was authored alongside. A revision of that version does not get held-out credit for it |
+| `require_certificates` | in `policy` | opt in, and then a missing certificate or a missing exploit answer is an error rather than a finding |
+| `pass_at_k` | in `policy` | the k for pass@k. Defaults to the repetition count, and is clamped to it, because pass@k above n is a number about repetitions that never ran |
+
+The audit ADR-40 item 6 asks for lives in `evals/audit.json` beside the suite,
+one record per task id, written by `tools/skill_eval.py --skill <slug> --audit`.
+It is one-time: a task already audited is skipped unless `--reaudit` is passed.
+A task with no record is a finding, and an audit that answered anything other
+than `ok` to ambiguity, gameability or realism is a finding naming what it found.
 
 ## An example task file
 

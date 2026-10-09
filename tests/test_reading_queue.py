@@ -17,6 +17,7 @@ everything, because what these tests care about is which statements were sent
 and in what order, not that anyone reimplemented Postgres.
 """
 
+import os
 import pathlib
 import sys
 
@@ -470,3 +471,237 @@ def test_there_is_one_cleaner_and_both_callers_use_it():
     assert "re.sub(r\"<[^>]+>\"" not in density
     assert "read_paper().fetch_fulltext(" in distill_source
     assert "re.sub(r\"<[^>]+>\"" not in distill_source
+
+
+# --- who goes first: a blocked skill before a sourced one -------------------
+
+ORDERED = """# Reading queue
+
+- [ ] arxiv:2602.12670 — older, from a skill that already cites claims — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2603.22455 — also older, also sourced — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2609.08371 — newer, from a draft that cites nothing — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2509.22040 — the same draft's second request — asked by skills/agent-containment — 2026-09-30
+- [ ] arxiv:2604.17935 — a line nobody signed — 2026-09-28
+"""
+
+SOURCED = {"skills/skill-library-engineering"}
+
+
+def test_without_the_sourced_set_the_order_is_exactly_what_it_always_was():
+    """The default is unchanged, so no caller is surprised by this."""
+    assert [i.paper_id for i in rq.pending(ORDERED, limit=None)] == [
+        "arxiv:2602.12670", "arxiv:2603.22455", "arxiv:2609.08371",
+        "arxiv:2509.22040", "arxiv:2604.17935"]
+
+
+def test_a_skill_that_cites_no_claims_is_read_before_one_that_cites_plenty():
+    """Owner directive 2026-10-05, item 3.
+
+    47 pending lines, six a run, and the 2026-09-30 containment requests sat
+    behind 27 older lines from skills that already carry claims. That put
+    `skills/agent-containment` eight runs away while it was a draft with
+    `claims: []` holding thirteen tests red. FIFO is right for a queue of
+    equals and these were not equals.
+    """
+    got = [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=SOURCED)]
+    assert got[:2] == ["arxiv:2609.08371", "arxiv:2509.22040"]
+    assert got[2:] == ["arxiv:2602.12670", "arxiv:2603.22455", "arxiv:2604.17935"]
+
+
+def test_file_order_still_decides_inside_each_group():
+    """Only the grouping is new. Within a group the oldest line still wins."""
+    got = [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=SOURCED)]
+    assert got.index("arxiv:2609.08371") < got.index("arxiv:2509.22040")
+    assert got.index("arxiv:2602.12670") < got.index("arxiv:2603.22455")
+
+
+def test_the_per_run_limit_now_spends_itself_on_the_blocked_skill():
+    assert [i.asked_by for i in rq.pending(ORDERED, limit=2, sourced=SOURCED)] \
+        == ["skills/agent-containment", "skills/agent-containment"]
+
+
+PROSE_ASKERS = """# Reading queue
+
+- [ ] arxiv:2602.12670 — older, from a skill that already cites claims — asked by skills/skill-library-engineering — 2026-09-26
+- [ ] arxiv:2609.40115 — RLVR — asked by the chair (owner: make sure the corpus includes RLVR) — 2026-10-05
+- [ ] arxiv:2606.22504 — stop authority — asked by the research seat's L-R1 check — 2026-10-05
+- [ ] arxiv:2609.08371 — from a draft that cites nothing — asked by skills/agent-containment — 2026-09-30
+"""
+
+
+def test_a_line_the_chair_signed_is_not_a_blocked_skills_request():
+    """The defect this fixture is named for, and it had 46 lines on the real file.
+
+    `ASKED_BY` takes one whitespace token, which is right for display and wrong
+    for a decision. The chair signs lines "asked by the chair (owner: ...)" and
+    the research seat signs them "asked by the research seat's L-R1 check", and
+    both read as the token `the`. `the` is outside every `sourced` set, so the
+    grouping read all of them as skills that cannot cite a claim and lifted them
+    over the one skill that actually could not.
+
+    The queue is the draft's only route out of citing nothing, so a phantom
+    blocked group in front of it is the starvation the ordering was built to end,
+    reintroduced by the parser three lines above the ordering.
+    """
+    got = rq.pending(PROSE_ASKERS, limit=None, sourced=SOURCED)
+    assert [i.paper_id for i in got] == [
+        "arxiv:2609.08371",     # the only line a blocked skill signed
+        "arxiv:2602.12670", "arxiv:2609.40115", "arxiv:2606.22504",
+    ], [(i.paper_id, i.asked_by, i.asking_skill) for i in got]
+
+
+def test_the_asker_shown_is_the_text_and_the_asker_obeyed_is_the_slug():
+    """Two fields because they answer two questions, and only one may order.
+
+    `asked_by` is what the line says, so `resolve`'s log can name the chair. Any
+    decision reads `asking_skill`, which is empty unless the line names a skill
+    in the format the file's own header documents.
+    """
+    by_id = {i.paper_id: i for i in rq.parse(PROSE_ASKERS)}
+    chair = by_id["arxiv:2609.40115"]
+    assert chair.asked_by == "the"
+    assert chair.asking_skill == ""
+    skill = by_id["arxiv:2609.08371"]
+    assert skill.asked_by == "skills/agent-containment"
+    assert skill.asking_skill == "skills/agent-containment"
+
+
+def test_the_cli_can_print_the_order_a_run_will_actually_use(tmp_path, capsys):
+    """The observability half of the same defect, and the reason it lasted.
+
+    `main` called `pending` with no `sourced`, so the only tool that reads this
+    module's state printed file order while the cron used the grouped order. A
+    reader could not see which group a line landed in, which is the one fact that
+    went wrong. Default output is unchanged, because a flag that moves nobody's
+    existing output is the cheap version of this.
+    """
+    queue = tmp_path / "q.md"
+    queue.write_text(PROSE_ASKERS)
+    (tmp_path / "skills" / "skill-library-engineering").mkdir(parents=True)
+    (tmp_path / "skills" / "skill-library-engineering" / "SKILL.md").write_text(
+        "---\nprovenance:\n  claims: [200]\n---\n")
+    (tmp_path / "skills" / "agent-containment").mkdir(parents=True)
+    (tmp_path / "skills" / "agent-containment" / "SKILL.md").write_text(
+        "---\nprovenance:\n  claims: []\n---\n")
+
+    assert rq.sourced_from_tree(tmp_path) == {"skills/skill-library-engineering"}
+
+    cwd = os.getcwd()
+    os.chdir(tmp_path)
+    try:
+        assert rq.main([str(queue), "--order"]) == 0
+    finally:
+        os.chdir(cwd)
+    out, err = capsys.readouterr()
+    lines = [l for l in out.splitlines() if l.strip()]
+    assert lines[0].startswith("arxiv:2609.08371"), lines
+    assert "\tblocked\tskills/agent-containment\tNEXT" in lines[0], lines[0]
+    # The chair's line is in the batch because the fixture is short, and it must
+    # say `waits` with no skill, which is the assertion that would have failed.
+    chair = next(l for l in lines if l.startswith("arxiv:2609.40115"))
+    assert "\twaits\t-\t" in chair, chair
+    assert "stands in for `promotions`" in err
+
+
+def test_no_line_on_the_live_file_names_a_skill_the_parser_cannot_read():
+    """Against the real queue, because the fixture above cannot go stale and it can.
+
+    This is the assertion that would have failed on 2026-10-05, the day the
+    ordering shipped. It fails again if a seat invents a third way to sign a line
+    that happens to start with `skills/` and does not parse.
+    """
+    text = rq.read_file(ROOT / rq.QUEUE_PATH)
+    assert text, "the live queue is unreadable"
+    bad = [i.raw[:90] for i in rq.parse(text)
+           if i.asked_by.startswith("skills/") and not i.asking_skill]
+    assert not bad, bad
+
+
+def test_an_unsigned_line_is_not_treated_as_a_blocked_skills_request():
+    """A line nobody signed is not evidence that a skill is stuck on it."""
+    got = rq.pending(ORDERED, limit=None, sourced=SOURCED)
+    assert got[-1].paper_id == "arxiv:2604.17935"
+
+
+def test_no_skill_citing_claims_collapses_to_the_old_order():
+    """The safe fallback, and the one a stale database produces.
+
+    `sourced` comes from `promotions`, so an empty or unwritten table makes
+    every line look blocked. That has to degrade to file order rather than to
+    some other order nobody chose.
+    """
+    assert [i.paper_id for i in rq.pending(ORDERED, limit=None, sourced=set())] \
+        == [i.paper_id for i in rq.pending(ORDERED, limit=None)]
+
+
+def test_the_sourced_set_is_read_from_promotions_and_not_from_the_skills_tree():
+    """`skills/` is not in distill's image and should not be.
+
+    Baking the library into the reading job would make every skill edit need a
+    distill redeploy.
+    """
+    class Rows(FakeConn):
+        def execute(self, sql, params=()):
+            self.statements.append((" ".join(sql.split()), params))
+            cursor = FakeCursor(None)
+            cursor.fetchall = lambda: [("skills/harness-engineering",)]
+            return cursor
+
+    got = rq.skills_with_claims(Rows())
+    assert got == {"skills/harness-engineering"}
+
+
+def test_a_database_that_cannot_answer_is_not_fatal():
+    """A reading job that dies because `promotions` moved has lost the queue."""
+    class Broken:
+        def execute(self, *a, **k):
+            raise RuntimeError("relation \"promotions\" does not exist")
+
+    assert rq.skills_with_claims(Broken()) == set()
+
+
+def test_the_live_queue_serves_a_blocked_skills_papers_on_the_next_run():
+    """The verification the directive asked for, against the real file.
+
+    This used to name `skills/agent-containment` and assert it was still a draft
+    with `claims: []`. That made the test fail the moment the draft was fixed,
+    which is the queue's own purpose being served: on 2026-10-06 the skill seat
+    filled those claim ids in and this assertion went red on a library that had
+    just got better. A test that forbids the outcome it was written to produce is
+    a tripwire aimed at its own side.
+
+    So the slug is gone and the rule is what is asserted. Whichever skill in the
+    library cites no claims, its queue lines come first; and when every skill
+    cites claims, the live file has nothing for the rule to promote and must
+    degrade to file order rather than to some other order nobody chose. Both
+    states are real, both are asserted, and neither is skipped.
+    """
+    import re
+
+    text = rq.read_file(ROOT / rq.QUEUE_PATH)
+    sourced, unsourced = set(), set()
+    for skill in sorted((ROOT / "skills").glob("*/SKILL.md")):
+        cited = re.search(r"claims:\s*\[([^\]]*)\]", skill.read_text())
+        slug = f"skills/{skill.parent.name}"
+        (sourced if cited and cited.group(1).strip() else unsourced).add(slug)
+    assert sourced, "no skill in the library cites a claim id, so `sourced` is empty"
+
+    served = rq.pending(text, sourced=sourced)
+    assert served, "the live queue is empty"
+    before = rq.pending(text)
+
+    asking = {i.asked_by.rstrip("/") for i in rq.parse(text)
+              if not i.checked and i.asked_by} & unsourced
+    if not asking:
+        # Every skill with a line in the queue cites claims. The grouping has
+        # nothing to lift, so it must change nothing at all.
+        assert [i.paper_id for i in served] == [i.paper_id for i in before], (
+            "no skill in the queue is blocked, so the order must be file order")
+        return
+
+    assert any(i.asked_by.rstrip("/") in asking for i in served), \
+        [i.asked_by for i in served]
+    # The thing that was actually broken: not one of their lines was reachable.
+    assert not any(i.asked_by.rstrip("/") in asking for i in before), (
+        "the old order already reached every blocked skill, so this test is no "
+        "longer measuring the defect it was written for")

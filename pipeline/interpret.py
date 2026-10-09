@@ -28,6 +28,27 @@ So interpret now writes on Moonshot's Kimi, the funded account ADR-32 bought
 for the press, with Groq's free tier kept behind it. Oldest first, because the
 owner asked for oldest first and because the oldest claims are the ones whose
 neighbors are already in the graph, so they are the edges that connect the most.
+
+## Why this file changed on 2026-10-05: it carries the maintenance step
+
+Modal's free tier caps scheduled functions at five and ADR-12 recorded all five
+as taken. `pipeline/skill_revision.py` declared a sixth at 16:00 UTC, so the
+daily skill maintenance loop ADR-37 specifies did not have a schedule it could
+keep. The owner's directive of 2026-10-05 folds its daily check in here instead,
+which is what this job's `maintenance_step` is.
+
+Two things about how, because both are deliberate.
+
+It **spawns** rather than calls. `.remote()` would add that job's fifteen
+minutes to this job's wall clock, and this job's window is 14:00-15:00 with
+distill waiting at 15:00, so a slow maintenance pass would have pushed interpret
+into distill's slot and Moonshot's organization concurrency is 1. A spawn runs
+in its own container on its own timeout, and the maintenance job calls no model
+at all, so it contends with nothing in KIMI_WINDOWS.
+
+It spawns **first**, before any claim is judged. A step at the end never runs on
+the day this job spends its full hour or stops at its cap, and the whole point
+of folding it in here is that it runs every day.
 """
 
 import hashlib
@@ -163,6 +184,62 @@ def drain_forecast(remaining: int, per_run: int) -> str:
             f"{runs} more run{'s' if runs != 1 else ''}")
 
 
+#: The maintenance job this run starts: (app name, function name). Named as
+#: strings rather than imported, because importing skill_revision.py here would
+#: pull its image, its secrets and its own `app` into this module and give
+#: Modal two apps in one file.
+MAINTENANCE = ("alexandria-skill-revision", "skill_revision")
+
+
+def maintenance_step() -> str:
+    """Start the daily skill maintenance pass. Never raises, and never blocks.
+
+    ADR-37 specifies a daily maintenance pass and
+    `pipeline/skill_revision.py` is it: register anything that merged
+    unregistered, compute the four revision triggers, append what the library
+    needs read to the reading queue, and dispatch the skill seat once if it
+    found anything. Modal's free tier allows five scheduled functions and
+    ADR-12 recorded all five as taken, so that job's own `modal.Cron` was a
+    sixth that the plan does not run. Folding the trigger in here is the
+    owner's directive of 2026-10-05, and it is one spawn.
+
+    ## This function swallows every exception on purpose
+
+    It is the first thing the scheduled run does, so anything it let escape
+    would cost the day's claim graph to protect the day's skill maintenance,
+    and that is the wrong trade in both directions. The maintenance pass is
+    idempotent and tomorrow's run does the same work, while an interpret run
+    that does not happen is a day of edges nobody draws.
+
+    Observability does not depend on this returning an error either, which is
+    the thing that makes swallowing safe here rather than lazy. The spawned
+    function mails the owner from inside its own container when it fails
+    (`notify_owner`, in skill_revision.skill_revision), and this process has no
+    mail secret and could not do better. What this catches is the narrower
+    case: the app is not deployed, or the function was renamed, so nothing ran
+    and nothing could mail. That case prints a line that names itself and goes
+    into the string this job returns, where the run report reads it.
+    """
+    import modal as modal_sdk
+
+    app_name, function_name = MAINTENANCE
+    try:
+        handle = modal_sdk.Function.from_name(app_name, function_name)
+        call = handle.spawn()
+        return (f"maintenance: spawned {app_name}::{function_name} "
+                f"(call {getattr(call, 'object_id', '?')}); it runs in its own "
+                "container, calls no model, and mails the owner itself if it "
+                "fails. This is the sixth schedule, folded in per the owner's "
+                "directive of 2026-10-05.")
+    except Exception as exc:                        # noqa: BLE001 - never fatal
+        return (f"maintenance: COULD NOT START {app_name}::{function_name}: "
+                f"{type(exc).__name__}: {exc}. Nothing ran, and because nothing "
+                "ran, nothing mailed. ADR-37's daily pass did not happen today: "
+                f"check `modal app list` for {app_name} and redeploy it with "
+                "`modal deploy pipeline/skill_revision.py`. The claim graph "
+                "below is unaffected.")
+
+
 @app.function(
     # 14:00 UTC, unchanged, and now load-bearing. Moonshot's organization
     # concurrency is 1, so this slot has to miss triage's window
@@ -181,6 +258,11 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
     import os
 
     import psycopg
+
+    # The folded-in sixth schedule. First, and it cannot raise: see this
+    # module's docstring and maintenance_step's.
+    maintenance = maintenance_step()
+    print(maintenance)
 
     client = llm()
     prompt, sha = load_prompt()

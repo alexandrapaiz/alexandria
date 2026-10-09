@@ -1549,6 +1549,59 @@ already the sixth instance of a pattern that this page says should be deleted
 rather than extended, and a seventh filename argues the wrong way. The
 structural form covers them by covering everything, which is the point.
 
+**Update 2026-10-07, engineer seat: the structural form is now a file, and the
+count in this item was low by a factor of eight.**
+
+The file is `.github/workflows-pending/checks.yml`, written out in full, with
+its own section in that directory's README. The apply is a force move, because
+it replaces a live file rather than adding one:
+
+    git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+
+This item named four test files. Measured by `python3 tools/ci_coverage.py`,
+written the same run, the real number is **35 of the suite's 49**, counting the
+two test files that run added. The four this item names are in it and so are
+thirty-one others, among them
+`tests/test_skill_eval.py`, `tests/test_reading_queue.py`,
+`tests/test_oauth_redirect_uri.py` and `tests/test_delivery_health.py`. The
+miss was not carelessness. The live file lists 24 `paths` entries against 14
+steps against a directory of 47, and a filename in `paths` looks exactly like a
+filename in a step while meaning the opposite thing, so the live file names
+`tests/test_press_resilience.py` twice and executes it once.
+
+Three things the staged file does that this item did not ask for, each with a
+measurement behind it rather than a preference.
+
+Both `paths` lists are deleted rather than rewritten. This item asked for "the
+directories the suite covers", and an audit hook over one full `pytest tests/`
+run showed that is `.github/`, `db/`, `docs/`, `mcp/`, `pipeline/`, `prompts/`,
+`site/`, `skills/`, `tests/` and `tools/`: every directory in the repository.
+A filter naming all of them is not a filter. This still deletes the `paths`
+halves of items 12 through 16, which is what the recommendation above wanted.
+
+Node is installed. Seven of the 47 are `*.test.mjs` and every Python wrapper
+that runs them calls `pytest.skip` when node is missing, so without
+`actions/setup-node` the account, markdown, unsubscribe and waitlist halves
+would be named by the suite and still never run. A skip is not a pass. This
+item's own smoke test passed `node --test tests/*.test.mjs` by hand and the
+workflow form of that was never specified.
+
+The coverage is under test. `tests/test_ci_coverage.py` pins today's uncovered
+set so it can shrink and cannot grow, and it asserts that the staged file
+covers all 47. Both halves were confirmed red on a deliberate break. The gate
+caught itself on its first run, because a new test file in `tests/` that no
+workflow names is exactly what it is built to catch and it was one.
+
+**And it makes `subscriber-list.yml` unnecessary rather than wrong.** That
+file is filed in `.github/workflows-pending/README.md` and has no numbered item
+on this page, which is its own small instance of what the note at the top of
+item 17 says about this register's numbering.
+`subscriber-list.yml` runs `tests/test_waitlist.py` and
+`tests/test_unsubscribe.py` and nothing else, both of which the suite step
+covers. Apply the structural `checks.yml` and that file can be dropped. Apply
+`subscriber-list.yml` alone if the one-step change is too large to take today.
+Applying both leaves two duplicate steps on every pull request.
+
 ---
 
 ---
@@ -1880,6 +1933,36 @@ whole page unnecessary. It is written out in
 [app-identity-handover.md](app-identity-handover.md) rather than here,
 because it is blocked on `APP_PRIVATE_KEY` existing, not on someone
 applying an edit. `APP_ID` is already set.
+
+**`modal-deploy.yml` needs two secrets and then a hand** (queued
+2026-10-08 by the engineer seat). The file is written and waiting in
+`.github/workflows-pending/modal-deploy.yml`, with its full section in
+that directory's README, so it takes the better of the two lanes above
+and the owner's part is a `git mv`. It is on this page as well because
+the `git mv` alone leaves it broken: it reads `MODAL_TOKEN_ID` and
+`MODAL_TOKEN_SECRET`, and neither repository secret exists today.
+
+```bash
+modal token new          # prints both halves
+# then store them as repository secrets, names exactly:
+#   MODAL_TOKEN_ID
+#   MODAL_TOKEN_SECRET
+```
+
+Why it matters enough to be here: `grep -rln "modal deploy"
+.github/workflows/` returns nothing, so no merged change to `pipeline/`
+has ever reached production without somebody remembering a command.
+This is the gap behind the `urgent` ledger entry of 2026-10-08 and
+behind `triage` sitting 2.9 days behind `main` that morning.
+
+Costs nothing. Modal's free plan already runs these apps and a deploy is
+not a new paid service. The provider keys the rehearsal spends stay in
+Modal's secret store and must not be added to GitHub: the runner holds a
+token that can deploy and nothing that can spend.
+
+**Nothing is blocked on this.** `tools/deploy_gate.py` runs the same
+ladder by hand today, with no Actions and no secret, which is the half
+this seat could ship alone.
 
 ## Applied and deleted
 

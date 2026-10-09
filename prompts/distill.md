@@ -37,7 +37,8 @@ For each claim provide:
   Null when the paper is a finding with no actionable mechanism.
 - `topics` — tags from: skills, context-engineering, harness-engineering,
   loop-engineering, memory, retrieval, multi-agent, evals, post-training,
-  reasoning, serving, systems, tooling, other.
+  reasoning, serving, systems, tooling, protocols, containment, security,
+  self-improvement, other.
 
   `reasoning` covers how a model's reasoning is TRAINED or SPENT, never the
   bare fact that a model reasoned. It holds reasoning-trace supervision and
@@ -54,6 +55,36 @@ For each claim provide:
   data, the curriculum, the budget rule, with the thresholds the source states.
   A `reasoning` claim with a null `procedure` and no number in its evidence is
   usually an `evals` claim that took the wrong tag.
+
+  `protocols` covers the wire contract between agents, or between an agent and
+  its tools: MCP, A2A, agent cards, task lifecycles, tool-calling schemas,
+  agent identity as a principal (SPIFFE, per-agent OAuth, workload identity),
+  and interoperability across independent implementations. Tag it when the
+  claim is about the contract itself. A claim about what an agent *did* over a
+  protocol is `tooling` or `multi-agent`, not this.
+
+  `containment` covers the boundary an agent runs inside and what it costs:
+  sandboxes, microVMs, wasm runtimes, containers and their pinned runtimes,
+  capability and least-privilege schemes, measured escapes and their
+  preconditions, and containment evaluation. Tag it when the claim is about
+  the boundary. A claim about an agent's runtime performance inside a boundary
+  is `systems`; a claim about the attack that crossed it is `security`, and
+  claims about both take both tags.
+
+  `security` covers adversarial pressure on agents and the defenses measured
+  against it: prompt injection and indirect injection, tool poisoning,
+  jailbreaks, exfiltration, sabotage and collusion between agents, guardrails
+  and monitors, and attack success rates. Tag it whenever a claim carries an
+  ASR, a detection rate, or a sabotage frequency. `evals` is for how
+  capability is measured; a security benchmark takes both.
+
+  `self-improvement` covers a system that changes itself and measures the
+  gain: self-evolution, recursive self-improvement, self-play, self-refinement
+  and self-rewarding loops, autonomous research harnesses, and the question of
+  which of their own improvements such a system can be trusted to judge. Tag
+  it when the claim is about the loop that closes back on the system. A single
+  training run that produces a better model is `post-training`; a harness
+  whose own scaffold is the thing being rewritten is this.
 
 Extract 1–5 claims per paper. If a distill-routed paper yields zero claims, say so —
 that is a triage error worth logging, not a failure to invent claims.

@@ -799,41 +799,78 @@ def test_the_registrar_s_problems_are_not_repeated_by_this_reviewer(tmp_path):
 
 # ------------------------------------------- the reviewer over the library
 
-def test_the_live_library_is_reviewable_and_fails_for_one_stated_reason():
+# Which checks are allowed to fail over the real library, and the register
+# sentence each one answers to. The point of the pair of tests below is not the
+# count of failures, it is that no failure over the live library traces to a
+# rule the reviewer invented for itself. So a check earns its place here by
+# naming a document the owner accepted, and the test reads that document.
+#
+# `suite-runnable` was added to this map on 2026-10-06, after it fired against
+# `skills/agent-containment` and turned both tests red. It is a real library
+# defect (`policy.repetitions is not pre-registered, so the run would choose
+# its own n`) on a file this seat may not write, filed `urgent` in the ledger
+# on 2026-10-05. Widening the map is what lets the suite report the defect
+# without the two tests that police the reviewer's vocabulary being the thing
+# that reports it. The fix for the defect itself is a `policy` block under
+# `skills/`, which belongs to the reviewer panel (ADR-13).
+FAIL_CHECKS_WITH_A_REGISTER = {
+    # ADR-36 part 2: an `active` status with no eval behind it.
+    "status-vs-eval": (
+        pathlib.Path("docs") / "decisions.md",
+        "status: draft`, never `active`",
+    ),
+    # docs/product/reviewer-panel.md: the harness's own refusal, read rather
+    # than second-guessed.
+    "suite-runnable": (
+        pathlib.Path("docs") / "product" / "reviewer-panel.md",
+        "labelled\n`suite-runnable`",
+    ),
+}
+
+
+def test_the_live_library_is_reviewable_and_fails_for_stated_reasons():
     """A reviewer that only works on fixtures is a reviewer nobody can read.
 
-    Every skill on this branch fails, and the assertion is about *why*: ADR-36
-    part 2, with no eval behind an `active` status. If a future branch adds the
-    evals, this test changes shape, and that is the point of asserting the
-    reason rather than the count.
+    Skills on this branch fail, and the assertion is about *why*. Every reason
+    has to be one of the checks in `FAIL_CHECKS_WITH_A_REGISTER` above. If a
+    future branch adds the evals, or writes the missing `policy` block, this
+    test changes shape, and that is the point of asserting the reason rather
+    than the count.
     """
     live, _ = registrar.read_skills()
     assert live, "the library has no skills to review"
     verdicts = val.review(rows=live)
     assert len(verdicts) == len(live)
+    allowed = set(FAIL_CHECKS_WITH_A_REGISTER)
     for v in verdicts:
         reasons = {f["check"] for f in v["findings"]
                    if f["severity"] == "fail"}
         if v["verdict"] == "fail":
-            assert reasons <= {"status-vs-eval"}, (
+            assert reasons <= allowed, (
                 f"{v['target']} fails for a reason this test does not know "
-                f"about: {reasons}")
+                f"about: {reasons - allowed}")
 
 
 def test_no_skill_on_this_branch_fails_a_check_this_reviewer_invented():
     """The companion to the provenance suite's version of this assertion.
 
     Every `fail` over the real library has to trace to a sentence in a register
-    the owner accepted. `status-vs-eval` traces to ADR-36 part 2 and that is
-    the only one allowed to fire here.
+    the owner accepted. This test reads the sentence. A check added to the map
+    above without its register, or with a register that stopped saying it, is
+    the failure this catches, which is why the lookup is not just a set.
     """
-    adr36 = (ROOT / "docs" / "decisions.md").read_text()
-    section = adr36.split("## ADR-36")[1].split("## ADR-37")[0]
-    assert "status: draft`, never `active`" in section
+    for check, (register, sentence) in FAIL_CHECKS_WITH_A_REGISTER.items():
+        text = (ROOT / register).read_text()
+        assert sentence in text, (
+            f"{check} claims {register} says {sentence!r} and it does not")
+
+    allowed = set(FAIL_CHECKS_WITH_A_REGISTER)
     for v in val.review(rows=registrar.read_skills()[0]):
         for finding in v["findings"]:
             if finding["severity"] == "fail":
-                assert finding["check"] == "status-vs-eval"
+                assert finding["check"] in allowed, (
+                    f"{v['target']}: {finding['check']} fails over the live "
+                    f"library and no register in this map accounts for it")
 
 
 def test_the_files_only_half_and_the_live_half_return_the_same_verdict():

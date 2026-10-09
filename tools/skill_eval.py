@@ -81,6 +81,7 @@ import datetime as dt
 import hashlib
 import json
 import math
+import os
 import pathlib
 import random
 import re
@@ -88,6 +89,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "pipeline"))
@@ -109,7 +111,13 @@ SUITE_CONTRACTS = (1, 2)
 # own first rule is that a reader which does not know the number renders pending
 # rather than guessing. One constant for two documents means a change to the
 # dialect the harness reads can blank the page it writes.
-RESULT_CONTRACT = 1
+# Two as of 2026-10-05, when ADR-40's items landed. Every key contract 1
+# carried is still there and still means the same thing, so a reader written
+# against 1 is not broken by a 2; the number moved because a reader that wants
+# the per-section deltas, the exploit test or the held-out block has to know
+# whether this document is old enough to lack them. Additions only, and the
+# contract document in site/app/skills/README.md is the one that says so.
+RESULT_CONTRACT = 2
 
 # Defaults. The subject comes from the budget table, so the id here is checked
 # against the provider's live catalog by the same machinery the crons use.
@@ -240,6 +248,179 @@ def bootstrap_delta(per_task: list[dict], draws: int = BOOTSTRAP_DRAWS,
     return (round(point, 4), round(low, 4), round(high, 4))
 
 
+# ADR-40 item 1, the matched ablation. The two arms must differ in the skill file
+# and nothing else: same model, same tools, same retrieval, and "same seed where
+# the provider allows". Two of those three were already true, because both arms
+# go through one `Subject` and one `render_ask`. The seed was not, and neither
+# was the temperature: this runner inherited `pipeline/llm.py`'s 0.2 default,
+# which is matched across the arms and not replayable across runs.
+#
+# "Where the provider allows" is load-bearing, and it is a fact about two
+# providers rather than a preference. Groq's chat completions accept `seed` and
+# document it as best-effort determinism. Moonshot documents k2.6's temperature
+# as fixed and documents no seed at all, and `pipeline/llm.py` already sends it
+# neither. So a run pins what the provider will honour, and the result says in
+# words which knobs were pinned and which could not be. A harness that printed
+# `seed 20261005` next to a provider that ignores it would be claiming a
+# replayability it does not have, and claiming a replayability you do not have is
+# the exact failure this file exists to catch.
+SUBJECT_SEED = 20261005
+SEED_PROVIDERS = ("groq",)
+
+# Pinned rather than inherited, for the same reason. The arms were always matched
+# on temperature; they were not replayable, because the number lived in another
+# file's default argument and a change there would move every measured delta in
+# the library with no entry anywhere saying so.
+EVAL_TEMPERATURE = 0.0
+
+# ADR-40 item 4: an executable task runs in a Docker sandbox. The image is the
+# agent image, so a task runs against the interpreter and the packages a real
+# seat has, and `--network none` is the containment practice the library sells
+# (skills/agent-containment). Overridable by environment because a laptop and
+# the runner do not have the same image cached.
+SANDBOX_IMAGE_DEFAULT = "ghcr.io/alexandrapaiz/alexandria-agent:latest"
+SANDBOX_MODES = ("auto", "docker", "host")
+
+# What a sandboxed command may have. A test that needs the network is a test
+# whose result depends on somebody else's uptime.
+SANDBOX_MEMORY = "1g"
+SANDBOX_PIDS = "256"
+
+# ADR-40 item 5: a rubric criterion is tied to a verifiable certificate in the
+# task. These are the three kinds the ADR names, in its own words: a test, a
+# number, or a named artifact.
+CERTIFICATE_KINDS = ("test", "number", "artifact")
+
+# And the exploit test's ceiling. C476 and C479 measured certificate-faithful
+# rubrics at 0 percent exploited, so zero is the number, not a tolerance.
+EXPLOIT_CEILING = 0.0
+
+# ADR-40 item 6. The audit is one-time per task, so it lives in a file beside
+# the suite rather than being re-run and re-paid for on every eval.
+AUDIT_FILENAME = "audit.json"
+AUDIT_QUESTIONS = (
+    ("ambiguity", "Could a competent engineer read this task two ways that "
+                  "score differently?"),
+    ("gameability", "Can the scoring be satisfied without doing the work the "
+                    "task describes?"),
+    ("realism", "Is this a question somebody doing this job would actually "
+                "ask?"),
+)
+
+# The length-bias check (C934): the same content scored at two lengths. Two
+# tasks, one repetition each, because this costs judge calls and the question is
+# whether the judge has a length preference at all rather than how large it is.
+LENGTH_BIAS_SAMPLE = 2
+LENGTH_BIAS_FLAG = 0.1
+
+
+def seedable(model: str) -> bool:
+    """Will this model's provider honour a seed. Read from the budget table."""
+    try:
+        import budget
+    except Exception:                               # pragma: no cover
+        return False
+    return budget.MODELS.get(model, {}).get("provider") in SEED_PROVIDERS
+
+
+def ablation_manifest(subject_model: str, judge_model: str, reps: int,
+                      sandbox: str) -> dict:
+    """What was held constant between the arms, and what could not be pinned.
+
+    This block is the answer to "what else changed", and it is in the result
+    document so that the answer is on the record rather than in this docstring.
+    `unpinned` is the honest half: a provider that ignores a seed makes a run
+    non-replayable, and the result says so out loud instead of implying the
+    opposite by listing the seed and stopping.
+    """
+    pinned = {"subject_model": subject_model, "judge_model": judge_model,
+              "repetitions": reps, "temperature": EVAL_TEMPERATURE,
+              "system_prompt": "identical, plus the skill body in the with-arm",
+              "task_text": "identical, files included, by render_ask",
+              "tools": "none in either arm",
+              "retrieval": "none in either arm",
+              "sandbox": sandbox,
+              "bootstrap_seed": BOOTSTRAP_SEED}
+    unpinned = []
+    if seedable(subject_model):
+        pinned["subject_seed"] = SUBJECT_SEED
+    else:
+        unpinned.append(
+            f"{subject_model} is not on a provider this harness can send a seed "
+            f"to ({', '.join(SEED_PROVIDERS)}), so the arms are matched but the "
+            "run is not replayable call for call")
+    if not seedable(judge_model):
+        unpinned.append(f"{judge_model} judged without a seed, for the same "
+                        "reason")
+    return {"differs": "the skill body in the subject's system prompt, and "
+                       "nothing else",
+            "pinned": pinned, "unpinned": unpinned}
+
+
+def stdev(values: list[float]) -> float:
+    """The sample standard deviation. Zero below two values, never an error.
+
+    ADR-40 item 3: no conclusion from one sample, and the delta is reported with
+    its spread. The bootstrap interval below answers "how uncertain is the mean".
+    This answers the different question of "how much do the tasks disagree with
+    each other", which an interval around a mean hides by construction.
+    """
+    if len(values) < 2:
+        return 0.0
+    m = mean(values)
+    return math.sqrt(sum((v - m) ** 2 for v in values) / (len(values) - 1))
+
+
+def spread_of(values: list[float]) -> dict:
+    """The spread of a list of numbers, as something printable."""
+    return {"n": len(values), "sd": round(stdev(values), 4),
+            "min": round(min(values), 4) if values else 0.0,
+            "max": round(max(values), 4) if values else 0.0}
+
+
+def pass_at_k(successes: int, n: int, k: int) -> float:
+    """The unbiased pass@k estimator, 1 - C(n-c, k)/C(n, k).
+
+    Codex's estimator, and the reason it is this rather than "did any of the k
+    pass" is that the naive version is biased upward at small n, which is C248's
+    warning about misreading small measurements in the one place this harness
+    could repeat it. With c successes in n repetitions, pass@k is the chance that
+    k draws without replacement from those n contain at least one success.
+    """
+    if n <= 0 or k <= 0:
+        return 0.0
+    k = min(k, n)
+    c = max(0, min(int(successes), n))
+    if n - c < k:
+        return 1.0
+    return round(1.0 - math.comb(n - c, k) / math.comb(n, k), 4)
+
+
+def binary(scores: list[float]) -> bool:
+    return bool(scores) and all(s in (0.0, 1.0) for s in scores)
+
+
+def pass_rates(per_task: list[dict], key: str, k: int) -> dict | None:
+    """pass@1 and pass@k over the tasks whose check is hard enough to have them.
+
+    Only the tasks with a hard check, because pass@k is a statement about a
+    pass-or-fail trial and a rubric score of 0.67 is not one. A suite with no
+    such task gets no pass@k rather than a number computed by rounding, which is
+    how a soft score quietly becomes a hard claim.
+    """
+    rows = [t for t in per_task if binary(t[key])]
+    if not rows:
+        return None
+    at_1 = [mean(t[key]) for t in rows]
+    at_k = [pass_at_k(int(sum(t[key])), len(t[key]), k) for t in rows]
+    return {"k": k, "tasks": len(rows),
+            "pass_at_1": round(mean(at_1), 4),
+            "pass_at_k": round(mean(at_k), 4),
+            "pass_at_1_spread": spread_of(at_1),
+            "reads": f"pass@1 {mean(at_1):.2f}, pass@{k} {mean(at_k):.2f} over "
+                     f"{len(rows)} hard-check task(s)"}
+
+
 def gate_problems(result: dict, previous: dict | None) -> list[str]:
     """Why this result does not clear ADR-37's gate. Empty means it does.
 
@@ -263,6 +444,35 @@ def gate_problems(result: dict, previous: dict | None) -> list[str]:
                         "touch")
     if result["verdict"] != "gain":
         problems.append(f"the verdict is {result['verdict']!r} rather than a gain")
+
+    # ADR-40 item 5. An exploited rubric is not a measurement, so it fails the
+    # gate ahead of the delta: a delta computed by a rubric that scores an answer
+    # written to game it is a number about the rubric.
+    exploit = result.get("exploit_test")
+    if exploit and exploit.get("verdict") == "exploited":
+        problems.append(
+            "an answer written to game the rubric scored "
+            f"{exploit.get('max_score')} on {', '.join(exploit['exploited'])}, "
+            f"against a ceiling of {exploit.get('ceiling')}. ADR-40 item 5: a "
+            "rubric that can be gamed is measuring the rubric")
+
+    # ADR-40 refinement item 2. Only on a document that was measured by a
+    # harness which computes the block. A contract-1 result predates it, and
+    # failing it here would block every revision on the absence of a field
+    # nothing had written yet, which is a gate switched off by a detail.
+    if int(result.get("contract") or 1) >= 2:
+        held = result.get("heldout") or {}
+        if held.get("verdict") == "no held-out set":
+            problems.append(
+                "every graded task is one this revision was written against, so "
+                "there is no held-out evidence that the edit generalizes "
+                "(ADR-40 refinement item 2). Name the tasks with "
+                "--written-against, or add tasks the edit was not written on")
+        elif held.get("verdict") == "does not hold":
+            problems.append(
+                f"the held-out delta is {held['delta']['mean']:+.2f} over "
+                f"{len(held['held_out'])} task(s) the edit was not written "
+                "against, so what improved is the tasks and not the skill")
 
     if previous:
         if previous.get("subject_model") != result["subject_model"]:
@@ -378,8 +588,8 @@ def verdict_of(delta: float, low: float, high: float, min_delta: float) -> str:
 
 # ------------------------------------------------------------------ the files
 
-def skill_dir(slug: str) -> pathlib.Path:
-    return ROOT / "skills" / slug
+def skill_dir(slug: str, root: pathlib.Path | None = None) -> pathlib.Path:
+    return (root or ROOT) / "skills" / slug
 
 
 FRONTMATTER = re.compile(r"^---\n.*?\n---\n", re.S)
@@ -436,8 +646,8 @@ def skill_version(slug: str) -> str:
 TASK_FILENAMES = ("evals.json", "tasks.json")
 
 
-def tasks_path(slug: str) -> pathlib.Path:
-    evals = skill_dir(slug) / "evals"
+def tasks_path(slug: str, root: pathlib.Path | None = None) -> pathlib.Path:
+    evals = skill_dir(slug, root=root) / "evals"
     for name in TASK_FILENAMES:
         if (evals / name).exists():
             return evals / name
@@ -709,6 +919,13 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
     if policy.get("subject") and policy.get("subject") == policy.get("judge"):
         problems.append(f"{slug}: the subject and the judge are the same model")
     problems += unknown_models(policy, slug)
+    # Opt-in, and then it is an error rather than a finding. A suite that
+    # registered `require_certificates` has said its rubrics are tied to
+    # verifiable certificates, and a run that proceeds anyway would be measuring
+    # against a promise the file itself broke.
+    if policy.get("require_certificates"):
+        problems += certificate_problems(spec, slug)
+        problems += exploit_problems(spec, slug)
 
     tasks = spec.get("tasks")
     if not isinstance(tasks, list) or not tasks:
@@ -790,6 +1007,17 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
                 if not item.get("id") or not item.get("asks"):
                     problems.append(f"{slug}/{tid}: a rubric item needs an id "
                                     "and an `asks`")
+                if item.get("section") and headings is not None \
+                        and item["section"] not in headings:
+                    problems.append(
+                        f"{slug}/{tid}: criterion {item.get('id')!r} credits "
+                        f"section {item['section']!r}, which is not a `## ` "
+                        f"heading of {slug}/SKILL.md, so the per-section delta "
+                        "it would produce names a section that does not exist")
+            if task.get("exploit") and not exploit_answer(task):
+                problems.append(f"{slug}/{tid}: `exploit` is present and holds "
+                                "no answer text, so the exploit test would "
+                                "score an empty string")
         if task.get("scored_in") and not is_indicator(task):
             problems.append(f"{slug}/{tid}: scored_in is "
                             f"{task['scored_in']!r}, and the only value this "
@@ -829,8 +1057,9 @@ def conformance(spec: dict, slug: str, base: pathlib.Path) -> list[str]:
     return problems
 
 
-def load_tasks(slug: str) -> tuple[dict, list[str]]:
-    path = tasks_path(slug)
+def load_tasks(slug: str, root: pathlib.Path | None = None
+               ) -> tuple[dict, list[str]]:
+    path = tasks_path(slug, root=root)
     if not path.exists():
         return {}, [f"{slug}: no evals/evals.json. Unmeasured, which is an "
                     "honest state and is never a pass (ADR-36: a skill with no "
@@ -842,9 +1071,76 @@ def load_tasks(slug: str) -> tuple[dict, list[str]]:
     return spec, conformance(spec, slug, path.parent)
 
 
+def library_slugs(root: pathlib.Path | None = None) -> list[str]:
+    base = (root or ROOT) / "skills"
+    return sorted(p.name for p in base.iterdir()
+                  if p.is_dir() and p.name != "_validation")
+
+
+def check_library(root: pathlib.Path | None = None) -> dict:
+    """Every suite's conformance, as data. `--check` only prints it.
+
+    Its own function so the classification can be tested without the live
+    library deciding the answer. The test that asserts "a missing eval file is
+    unmeasured and never a failure" was asserting the exit code of a scan over
+    `skills/`, which made it a test of whether eight files written by another
+    seat happened to be clean that day; it went red on 2026-10-04 for four real
+    suite defects that have nothing to do with what it is named after.
+
+    Exit codes, unchanged: 0 clean, 1 something is malformed, 2 something is
+    unmeasured and nothing is malformed.
+    """
+    root = root or ROOT
+    slugs = library_slugs(root)
+    problems: list[str] = []
+    findings: list[str] = []
+    measured = covered = asked = 0
+    certified = criteria = 0
+    for slug in slugs:
+        spec, found = load_tasks(slug, root=root)
+        problems += found
+        measured += 1 if spec and not found else 0
+        if not spec:
+            continue
+        base = tasks_path(slug, root=root).parent
+        findings += uncovered_sections(spec, slug, base)
+        # ADR-40 items 5 and 6, reported beside the coverage gap they belong
+        # with: a rubric nothing certifies, a rubric with no exploit test, and a
+        # task that has never been audited are all "this number means less than
+        # it looks like it means", which is what a finding says.
+        findings += certificate_problems(spec, slug)
+        findings += exploit_problems(spec, slug)
+        findings += audit_problems(spec, base, slug)
+        hit, of = coverage_counts(spec, base)
+        covered += hit
+        asked += of
+        have, total = certificate_counts(spec)
+        certified += have
+        criteria += total
+    lines = [f"{measured} of {len(slugs)} skills carry a conformant eval file"]
+    if asked:
+        lines.append(f"{covered} of {asked} sections are exercised by at least "
+                     f"one task, excluding the Apply checklist and the caveats")
+    if criteria:
+        lines.append(f"{certified} of {criteria} rubric criteria are tied to a "
+                     f"certificate a reader can check (ADR-40 item 5)")
+    # Absent is unmeasured, not broken: the skill seat writes the tasks and
+    # ADR-36 makes such a skill `draft`. A malformed file is a real failure.
+    # The two are labelled differently on purpose, because a line reading
+    # `failing` against a file nobody has written yet is how a report stops
+    # being read.
+    malformed = [p for p in problems if "no evals/evals.json" not in p]
+    return {"slugs": slugs, "measured": measured, "problems": problems,
+            "malformed": malformed, "findings": findings, "lines": lines,
+            "sections": (covered, asked), "certificates": (certified, criteria),
+            "exit": 1 if malformed else (2 if problems else 0)}
+
+
 # ------------------------------------------------------------------ scoring
 
-def hard_check(task: dict, answer: str, base: pathlib.Path) -> tuple[float, str]:
+def hard_check(task: dict, answer: str, base: pathlib.Path, *,
+               sandbox: str = "host", trajectory=None, arm: str = "",
+               rep: int = 0) -> tuple[float, str]:
     """(1.0 or 0.0, why). The deterministic half, which needs no judge at all."""
     check = task["check"]
     kind = check["type"]
@@ -881,9 +1177,138 @@ def hard_check(task: dict, answer: str, base: pathlib.Path) -> tuple[float, str]
                 f"[{check['low']}, {check['high']}]")
 
     if kind == "command":
-        return run_project_check(task, answer, base, check)
+        return run_project_check(task, answer, base, check, sandbox=sandbox,
+                                 trajectory=trajectory, arm=arm, rep=rep)
 
     return (0.0, f"unknown check type {kind!r}")
+
+
+# --------------------------------------------------------------- the sandbox
+
+def sandbox_image() -> str:
+    return os.environ.get("SKILL_EVAL_SANDBOX_IMAGE") or SANDBOX_IMAGE_DEFAULT
+
+
+def docker_available() -> tuple[bool, str]:
+    """Is there a Docker daemon that will answer. (yes/no, the sentence why).
+
+    `which docker` is not the question. A binary on PATH with no daemon behind it
+    fails every command with the same exit code a failing test uses, which would
+    read as the skill making no difference, symmetrically, in both arms.
+    """
+    exe = shutil.which("docker")
+    if not exe:
+        return (False, "docker is not on PATH")
+    try:
+        done = subprocess.run([exe, "version", "--format",
+                               "{{.Server.Version}}"],
+                              capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return (False, f"docker is on PATH and did not answer ({exc})")
+    if done.returncode != 0:
+        tail = (done.stdout + done.stderr).strip().splitlines()[-1:]
+        return (False, "docker is on PATH and its daemon did not answer"
+                + (": " + tail[0] if tail else ""))
+    return (True, f"docker server {done.stdout.strip()}")
+
+
+def sandbox_decision(mode: str) -> tuple[str, str]:
+    """(where commands will run, the sentence that explains it).
+
+    Three outcomes and the third is the point. `docker` asked for and absent is
+    `refuse`, not a quiet fall back to the host: a suite that pre-registered a
+    sandbox and got the host measured something else, and the whole contract of
+    this file is that the result describes what ran.
+    """
+    if mode == "host":
+        return ("host", "the run asked for the host, so commands run here with "
+                        "a timeout and no container")
+    ok, why = docker_available()
+    if ok:
+        return ("docker", f"{why}, image {sandbox_image()}, --network none")
+    if mode == "docker":
+        return ("refuse", f"this run asked for the Docker sandbox and {why}. "
+                          "Pass --sandbox host to measure on the host instead, "
+                          "and the result will say that is what happened")
+    return ("host", f"{why}, so commands run on the host with a timeout. ADR-40 "
+                    "item 4 wants the container, and this result says it did "
+                    "not get one")
+
+
+def docker_argv(command, work: pathlib.Path) -> list[str]:
+    """The container a task's command runs in. One place, so one thing to read.
+
+    A suite writes its command either as one shell string or as an argv list,
+    and both forms predate this function. A string needs a shell inside the
+    container; a list does not, and wrapping one in `sh -lc` would re-introduce
+    the quoting the list form exists to avoid.
+    """
+    run = ["docker", "run", "--rm", "--network", "none",
+           "--memory", SANDBOX_MEMORY, "--pids-limit", SANDBOX_PIDS,
+           "--workdir", "/work", "--volume", f"{work}:/work",
+           sandbox_image()]
+    if isinstance(command, str):
+        return run + ["/bin/sh", "-lc", command]
+    return run + [str(part) for part in command]
+
+
+def run_in_sandbox(command, work: pathlib.Path, timeout: int,
+                   sandbox: str) -> dict:
+    """Run one command and report everything about the run. Never raises.
+
+    The return value is the trajectory entry ADR-40 item 4 asks to be logged, so
+    it is built here rather than assembled by each caller: one shape, whichever
+    check ran the command, and the exit code is in the same field either way.
+    """
+    started = time.monotonic()
+    entry = {"command": command if isinstance(command, str)
+                        else " ".join(str(part) for part in command),
+             "sandbox": sandbox, "timeout_s": timeout,
+             "network": "none" if sandbox == "docker" else "the host's"}
+    if sandbox == "docker":
+        argv = docker_argv(command, work)
+        entry["image"] = sandbox_image()
+        shell = False
+    else:
+        argv = command
+        shell = isinstance(command, str)
+    try:
+        done = subprocess.run(argv, cwd=None if sandbox == "docker" else work,
+                              shell=shell, capture_output=True, text=True,
+                              env=None if sandbox == "docker" else command_env(),
+                              timeout=timeout)
+    except subprocess.TimeoutExpired:
+        entry.update({"exit_code": None, "outcome": "timed out",
+                      "duration_s": round(time.monotonic() - started, 2)})
+        return entry
+    except OSError as exc:
+        entry.update({"exit_code": None, "outcome": f"could not be run ({exc})",
+                      "duration_s": round(time.monotonic() - started, 2)})
+        return entry
+    tail = (done.stdout + done.stderr).strip().splitlines()
+    entry.update({"exit_code": done.returncode,
+                  "outcome": "exit 0" if done.returncode == 0
+                             else f"exit {done.returncode}",
+                  "duration_s": round(time.monotonic() - started, 2),
+                  "output_tail": tail[-6:]})
+    return entry
+
+
+def log_trajectory(trajectory, task: dict, arm: str, rep: int, answer: str,
+                   entry: dict) -> None:
+    """Append one executable repetition to the run's trajectory, or do nothing.
+
+    The answer is recorded by hash and length rather than in full. The whole
+    answer is already in the eval's own notes path and a trajectory file that
+    carried a thousand model answers would stop being opened, which is the way a
+    log becomes decoration.
+    """
+    if trajectory is None:
+        return
+    trajectory.append(dict(entry, task=task.get("id"), arm=arm, rep=rep + 1,
+                           answer_sha256=hashlib.sha256(
+                               answer.encode("utf-8")).hexdigest()[:16],
+                           answer_chars=len(answer)))
 
 
 def workspace(task: dict, check: dict, base: pathlib.Path,
@@ -938,34 +1363,43 @@ def command_env() -> dict:
     return env
 
 
-def tests_pass(task: dict, answer: str, base: pathlib.Path,
-               check: dict) -> tuple[float, str]:
+def tests_pass(task: dict, answer: str, base: pathlib.Path, check: dict, *,
+               sandbox: str = "host", trajectory=None, arm: str = "",
+               rep: int = 0) -> tuple[float, str]:
     """The answer is written to `answer_path` and `command` decides. Exit 0 wins.
 
-    The command runs through a shell because the suites write it as one string,
-    and it runs inside a temporary copy with a timeout. This is the cheapest and
+    The command runs inside a fresh copy of the project with a timeout, and in a
+    container when this run has one (ADR-40 item 4). This is the cheapest and
     least arguable score in the harness: the tests either pass or they do not,
     and no judge is involved.
+
+    Every repetition that gets here appends one entry to the run's trajectory,
+    which is the record ADR-40 item 4 asks for. The entry says where the command
+    ran, what it exited with, how long it took and which answer produced it, so
+    an executable result can be audited without re-running it.
     """
     with tempfile.TemporaryDirectory() as tmp:
         work = workspace(task, check, base, pathlib.Path(tmp))
         target = work / check["answer_path"]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(extract_code(answer))
-        try:
-            done = subprocess.run(check["command"], cwd=work, shell=True,
-                                  capture_output=True, text=True,
-                                  env=command_env(),
-                                  timeout=check.get("timeout", 180))
-        except subprocess.TimeoutExpired:
-            return (0.0, "the command timed out")
-        except OSError as exc:
-            return (None, f"the command could not be run ({exc})")
-        if done.returncode == 0:
-            return (1.0, "exit 0")
-        tail = (done.stdout + done.stderr).strip().splitlines()[-3:]
-        detail = f"exit {done.returncode}: " + " | ".join(tail)
-        if done.returncode == UNRUNNABLE:
+        entry = run_in_sandbox(check["command"], work,
+                               int(check.get("timeout", 180)), sandbox)
+        entry["answer_path"] = check["answer_path"]
+        log_trajectory(trajectory, task, arm, rep, answer, entry)
+        code = entry.get("exit_code")
+        if code == 0:
+            return (1.0, f"exit 0 ({entry['sandbox']})")
+        if code is None:
+            # Timed out is a real zero: a test suite that never finishes has not
+            # passed. A command that could not be started at all is unmeasured,
+            # because that is a fact about this machine and not about the answer.
+            if entry["outcome"] == "timed out":
+                return (0.0, f"the command timed out after {entry['timeout_s']}s")
+            return (None, f"the command could not be run: {entry['outcome']}")
+        detail = f"exit {code} ({entry['sandbox']}): " + \
+            " | ".join(entry.get("output_tail") or [])
+        if code == UNRUNNABLE:
             return (None, "UNMEASURED, " + detail)
         return (0.0, detail)
 
@@ -1021,8 +1455,9 @@ def statements_prompt(task: dict, answer: str, statements: list[dict],
     return "\n".join(lines)
 
 
-def run_project_check(task: dict, answer: str, base: pathlib.Path,
-                      check: dict) -> tuple[float, str]:
+def run_project_check(task: dict, answer: str, base: pathlib.Path, check: dict,
+                      *, sandbox: str = "host", trajectory=None,
+                      arm: str = "", rep: int = 0) -> tuple[float, str]:
     """Copy the project, drop the answer in, run the command, read the exit code.
 
     A copy every time, because a task that leaves state behind scores the
@@ -1037,17 +1472,17 @@ def run_project_check(task: dict, answer: str, base: pathlib.Path,
         target = work / task["answer_file"]
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(extract_code(answer))
-        try:
-            done = subprocess.run(check["run"], cwd=work, capture_output=True,
-                                  text=True, timeout=check.get("timeout", 120))
-        except subprocess.TimeoutExpired:
-            return (0.0, "the check timed out")
-        except OSError as exc:
-            return (0.0, f"the check could not be run ({exc})")
-        if done.returncode == 0:
-            return (1.0, "exit 0")
-        tail = (done.stdout + done.stderr).strip().splitlines()[-3:]
-        return (0.0, f"exit {done.returncode}: " + " | ".join(tail))
+        entry = run_in_sandbox(check["run"], work,
+                               int(check.get("timeout", 120)), sandbox)
+        entry["answer_path"] = task["answer_file"]
+        log_trajectory(trajectory, task, arm, rep, answer, entry)
+        code = entry.get("exit_code")
+        if code == 0:
+            return (1.0, f"exit 0 ({entry['sandbox']})")
+        if code is None:
+            return (0.0, f"the check {entry['outcome']}")
+        return (0.0, f"exit {code} ({entry['sandbox']}): "
+                + " | ".join(entry.get("output_tail") or []))
 
 
 def extract_code(answer: str) -> str:
@@ -1090,6 +1525,25 @@ def criterion_score(verdict, anchors: dict | None) -> float:
     return 1.0 if text.startswith("y") or text == "1" else 0.0
 
 
+# The key a score that belongs to the whole task is filed under. A hard check
+# produces one number for the task rather than one per criterion, and ADR-40
+# item 7 still wants it attributed to a section, so it is credited to every
+# section the task claims.
+WHOLE_TASK = "__task__"
+
+
+def criterion_scores(verdicts: dict, rubric: list[dict]) -> dict:
+    """Each rubric criterion's own score, by criterion id.
+
+    Split out of `rubric_score` so ADR-40 item 7 can attribute a delta to a
+    section: the per-criterion numbers were computed here all along and then
+    averaged away, which is exactly the credit a section-level finding needs.
+    """
+    return {item["id"]: criterion_score(verdicts.get(item["id"]),
+                                        item.get("anchors"))
+            for item in rubric}
+
+
 def rubric_score(verdicts: dict, rubric: list[dict]) -> tuple[float, str]:
     scores = [criterion_score(verdicts.get(item["id"]), item.get("anchors"))
               for item in rubric]
@@ -1099,6 +1553,411 @@ def rubric_score(verdicts: dict, rubric: list[dict]) -> tuple[float, str]:
     return (mean(scores),
             f"{got:.2f} of {len(rubric)} criteria ({detail})")
 
+
+# ------------------------------------------- certificates, exploits, the audit
+
+# ADR-40 item 5, and the measurement behind it is the reason it is a rule rather
+# than a preference: generated rubrics with no tie to a verifiable certificate in
+# the task were exploited 8 to 26 percent of the time, and up to 36 percent under
+# stress; certificate-faithful ones 0 percent (C476, C479). A certificate is a
+# test, a number or a named artifact, so a criterion that says "does the answer
+# show good judgement" has nothing behind it and a criterion that says "does the
+# answer cite the 4 to 30 point regression" has a number.
+#
+# Findings rather than errors, and that choice has a precedent in this file. The
+# eight real suites were written before this rule existed; a gate that failed
+# them all would block every revision of every skill on a debt no revision
+# created, which is how a check gets turned off (the same argument the trigger
+# test's clause in tools/skill_gate.py makes out loud). A suite opts in with
+# `policy.require_certificates`, and then it is an error.
+
+def criterion_certificate(item: dict) -> dict | None:
+    cert = item.get("certificate")
+    return cert if isinstance(cert, dict) else None
+
+
+def certificate_problems(spec: dict, slug: str) -> list[str]:
+    """Rubric criteria with nothing verifiable behind them. Findings."""
+    out = []
+    for task in spec.get("tasks") or []:
+        for item in task.get("rubric") or []:
+            cert = criterion_certificate(item)
+            if cert is None:
+                out.append(
+                    f"{slug}/{task.get('id')}: rubric criterion "
+                    f"{item.get('id')!r} names no certificate, so the judge is "
+                    "the only thing standing between it and an answer written "
+                    "to please a judge. Add `certificate`: "
+                    f"{{\"kind\": one of {list(CERTIFICATE_KINDS)}, \"names\": "
+                    "the test, the number or the artifact it is tied to}")
+                continue
+            if cert.get("kind") not in CERTIFICATE_KINDS:
+                out.append(f"{slug}/{task.get('id')}: criterion "
+                           f"{item.get('id')!r} has certificate kind "
+                           f"{cert.get('kind')!r}, not one of "
+                           f"{list(CERTIFICATE_KINDS)}")
+            if not str(cert.get("names") or "").strip():
+                out.append(f"{slug}/{task.get('id')}: criterion "
+                           f"{item.get('id')!r} has a certificate kind and "
+                           "names nothing, which is the same gap with a label "
+                           "on it")
+    return out
+
+
+def certificate_counts(spec: dict) -> tuple[int, int]:
+    """(criteria with a certificate, criteria in total)."""
+    have = total = 0
+    for task in spec.get("tasks") or []:
+        for item in task.get("rubric") or []:
+            total += 1
+            cert = criterion_certificate(item)
+            if cert and cert.get("kind") in CERTIFICATE_KINDS \
+                    and str(cert.get("names") or "").strip():
+                have += 1
+    return (have, total)
+
+
+def exploit_answer(task: dict) -> str:
+    """The canned answer that games this task's rubric, or an empty string.
+
+    "Each rubric ships with an exploit test: an answer that games the rubric
+    must not score." The author writes it, because only the author knows which
+    shortcut their own rubric is open to. A plausible-sounding answer with none
+    of the certificates in it is the shape.
+    """
+    raw = task.get("exploit")
+    if isinstance(raw, dict):
+        return str(raw.get("answer") or "")
+    return str(raw or "")
+
+
+def exploit_problems(spec: dict, slug: str) -> list[str]:
+    """Rubric tasks with no exploit test. Findings, for the same reason."""
+    return [f"{slug}/{task.get('id')}: a rubric and no `exploit`, so nothing "
+            "proves the rubric cannot be gamed. ADR-40 item 5 asks every rubric "
+            "to ship an answer that games it, which must score zero"
+            for task in spec.get("tasks") or []
+            if task.get("rubric") and not exploit_answer(task)]
+
+
+def run_exploits(judge, tasks: list[dict], base: pathlib.Path) -> dict:
+    """Score every exploit answer. Anything above zero is the finding.
+
+    The subject is never asked: the exploit answer is written by the task's
+    author and the question is what the *rubric* does with it. So this costs one
+    judge call per rubric task that ships one, and judging is on the free tier.
+    """
+    rows, worst = [], 0.0
+    for task in tasks:
+        canned = exploit_answer(task)
+        if not canned:
+            continue
+        score, why = score_answer(task, canned, judge, base)
+        score = 0.0 if score is None else score
+        worst = max(worst, score)
+        rows.append({"id": task["id"], "score": round(score, 4),
+                     "clean": score <= EXPLOIT_CEILING, "why": why})
+    if not rows:
+        return {"ran": 0, "ceiling": EXPLOIT_CEILING, "verdict": "not run",
+                "reads": "no task shipped an exploit answer, so nothing here "
+                         "says the rubrics cannot be gamed"}
+    bad = [r for r in rows if not r["clean"]]
+    return {"ran": len(rows), "ceiling": EXPLOIT_CEILING,
+            "max_score": round(worst, 4), "per_task": rows,
+            "exploited": [r["id"] for r in bad],
+            "verdict": "exploited" if bad else "clean",
+            "reads": (f"{len(bad)} of {len(rows)} rubrics scored an answer "
+                      f"written to game them, worst {worst:.2f}") if bad
+                     else f"{len(rows)} exploit answer(s) all scored zero"}
+
+
+# ADR-40 item 6's audit. One pass per task, ever, so it is a file beside the
+# suite rather than a cost on every run. PACT's point (C561) is that an
+# ambiguous or gameable task produces a number whose meaning nobody can state,
+# and that the cheapest moment to find out is before the task has been counted.
+
+def audit_path(base: pathlib.Path) -> pathlib.Path:
+    return base / AUDIT_FILENAME
+
+
+def read_audit(base: pathlib.Path) -> dict:
+    path = audit_path(base)
+    if not path.exists():
+        return {}
+    try:
+        doc = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        return {}
+    tasks = doc.get("tasks")
+    return tasks if isinstance(tasks, dict) else {}
+
+
+def audited_clean(record: dict) -> bool:
+    return all(str(record.get(name) or "").strip().lower() == "ok"
+               for name, _ in AUDIT_QUESTIONS)
+
+
+def audit_problems(spec: dict, base: pathlib.Path, slug: str) -> list[str]:
+    """Tasks that have never been audited, and audits that found something."""
+    records = read_audit(base)
+    out = []
+    for task in spec.get("tasks") or []:
+        tid = task.get("id")
+        record = records.get(tid)
+        if not isinstance(record, dict):
+            out.append(f"{slug}/{tid}: never audited for ambiguity, "
+                       "gameability and realism. ADR-40 item 6 asks for one "
+                       "audit per task before it counts: run "
+                       f"`python3 tools/skill_eval.py --skill {slug} --audit`")
+            continue
+        for name, _ in AUDIT_QUESTIONS:
+            verdict = str(record.get(name) or "").strip().lower()
+            if not verdict:
+                out.append(f"{slug}/{tid}: the audit does not answer {name!r}")
+            elif verdict != "ok":
+                out.append(f"{slug}/{tid}: the audit found {name} "
+                           f"({record.get(name)}): "
+                           f"{record.get('notes') or 'no note'}")
+    return out
+
+
+AUDIT_SYSTEM = (
+    "You are auditing an evaluation task before anybody is scored on it. You "
+    "are not answering it. For each question reply exactly \"ok\" when the task "
+    "is clean, or one short sentence naming the problem when it is not. Reply "
+    "in JSON as {\"ambiguity\": ..., \"gameability\": ..., \"realism\": ..., "
+    "\"notes\": \"one sentence\"}."
+)
+
+
+def audit_prompt(task: dict) -> str:
+    lines = ["The task:", "", render_ask(task), ""]
+    if task.get("rubric"):
+        lines += ["How it is scored, by a second model against these criteria:",
+                  ""]
+        for item in task["rubric"]:
+            lines.append(f"- {item.get('id')}: {item.get('asks')}")
+            cert = criterion_certificate(item)
+            if cert:
+                lines.append(f"    tied to a {cert.get('kind')}: "
+                             f"{cert.get('names')}")
+        lines.append("")
+    elif task.get("check"):
+        lines += ["How it is scored, mechanically:", "",
+                  json.dumps(task["check"], sort_keys=True)[:1200], ""]
+    lines += ["The questions:", ""]
+    for name, question in AUDIT_QUESTIONS:
+        lines.append(f"- {name}: {question}")
+    return "\n".join(lines)
+
+
+def run_audit(judge, spec: dict, base: pathlib.Path, judge_model: str,
+              today: str, reaudit: bool = False) -> dict:
+    """Audit every task that has not been audited, and write the file."""
+    records = dict(read_audit(base))
+    fresh = 0
+    for task in spec.get("tasks") or []:
+        tid = task["id"]
+        if tid in records and not reaudit:
+            continue
+        reply = judge.ask(AUDIT_SYSTEM, audit_prompt(task), JUDGE_MAX_TOKENS)
+        records[tid] = {"date": today, "judge": judge_model,
+                        "notes": str(reply.get("notes") or "")[:400]}
+        for name, _ in AUDIT_QUESTIONS:
+            records[tid][name] = str(reply.get(name) or "")[:300]
+        fresh += 1
+    doc = {"contract": 1, "skill": spec.get("skill"), "generated_at": today,
+           "auditor": judge_model, "questions": dict(AUDIT_QUESTIONS),
+           "tasks": records}
+    path = audit_path(base)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n")
+    return {"written": shown(path), "audited_now": fresh,
+            "tasks": len(records),
+            "clean": sum(1 for r in records.values() if audited_clean(r))}
+
+
+# ADR-40 item 6's other half: the length-bias check (C934). Score the same
+# content at two lengths and see whether the number moves. The padding restates
+# nothing and adds no information, which is the whole point: any score change is
+# the judge responding to length rather than to content.
+
+PADDING_PREFACE = ("Restated below in full, adding nothing and changing "
+                   "nothing, for a reader who wants it twice:")
+
+
+def padded(answer: str) -> str:
+    return f"{answer}\n\n{PADDING_PREFACE}\n\n{answer}"
+
+
+def length_bias(judge, tasks: list[dict], answers: dict, base: pathlib.Path,
+                sample: int = LENGTH_BIAS_SAMPLE) -> dict:
+    """Does the judge score the same content differently when it is longer.
+
+    Rubric tasks only, because a hard check cannot have a length preference: a
+    regular expression that matches matches twice as often in a doubled answer
+    and the score is identical either way. Sampled, because this is a question
+    about the instrument and two pairs answer it as well as ten.
+    """
+    rows = []
+    for task in tasks:
+        if len(rows) >= sample:
+            break
+        if not task.get("rubric"):
+            continue
+        answer = answers.get((task["id"], "with")) or ""
+        if not answer.strip():
+            continue
+        short, _ = score_answer(task, answer, judge, base)
+        long_, _ = score_answer(task, padded(answer), judge, base)
+        if short is None or long_ is None:
+            continue
+        rows.append({"id": task["id"], "short": round(short, 4),
+                     "long": round(long_, 4),
+                     "shift": round(long_ - short, 4),
+                     "chars": [len(answer), len(padded(answer))]})
+    if not rows:
+        return {"pairs": 0, "verdict": "not run",
+                "reads": "no rubric task produced an answer to re-score, so "
+                         "the judge's length preference is unmeasured"}
+    shifts = [r["shift"] for r in rows]
+    worst = max(abs(s) for s in shifts)
+    flagged = worst > LENGTH_BIAS_FLAG
+    return {"pairs": len(rows), "threshold": LENGTH_BIAS_FLAG,
+            "mean_shift": round(mean(shifts), 4),
+            "max_abs_shift": round(worst, 4), "per_task": rows,
+            "verdict": "length-sensitive" if flagged else "no length effect",
+            "reads": (f"the same content scored {mean(shifts):+.2f} on average "
+                      f"when doubled in length over {len(rows)} pair(s), worst "
+                      f"{worst:.2f} against a {LENGTH_BIAS_FLAG:.2f} threshold")}
+
+
+# ------------------------------------------------------- credit to the section
+
+def criterion_sections(task: dict, criterion_id: str) -> list[str]:
+    """Which skill sections this criterion's score is evidence about.
+
+    ADR-40 item 7, DRACO's per-step credit (C40) and the role-level credit read
+    from traces (C1442). The criterion may name its own section, which is the
+    precise form; failing that the task's `sections` list is used, which is the
+    field the suite contract already requires and every real suite already
+    fills. A criterion credited to three sections is weak evidence about each of
+    them, and the per-section record says how many criteria stood behind it so a
+    reader can see that rather than infer it.
+    """
+    for item in task.get("rubric") or []:
+        if item.get("id") == criterion_id and item.get("section"):
+            return [str(item["section"])]
+    return [str(s) for s in (task.get("sections") or [])]
+
+
+def section_credit(per_task: list[dict], tasks: list[dict]) -> dict:
+    """Per-section with-arm and without-arm means, their delta and its spread.
+
+    Computed from the per-criterion scores the run recorded, not from the task
+    deltas, so a task whose rubric spans two sections contributes each criterion
+    to the section that criterion is about. Controls and indicators are left
+    out: a control's whole purpose is that the skill must not move it, and
+    averaging it into a section would dilute the section's own evidence with a
+    number designed to be zero.
+    """
+    by_id = {t["id"]: t for t in tasks}
+    buckets: dict[str, dict] = {}
+    for row in per_task:
+        if row.get("control") or row.get("indicator"):
+            continue
+        task = by_id.get(row["id"])
+        if task is None:
+            continue
+        for cid, with_scores in (row.get("credit", {}).get("with") or {}).items():
+            without = (row.get("credit", {}).get("without") or {}).get(cid) or []
+            if not with_scores or not without:
+                continue
+            names = criterion_sections(task, cid) if cid != WHOLE_TASK \
+                else [str(s) for s in (task.get("sections") or [])]
+            for name in names:
+                slot = buckets.setdefault(name, {
+                    "with": [], "without": [], "deltas": [],
+                    "tasks": [], "criteria": []})
+                slot["with"] += with_scores
+                slot["without"] += without
+                slot["deltas"].append(mean(with_scores) - mean(without))
+                if row["id"] not in slot["tasks"]:
+                    slot["tasks"].append(row["id"])
+                label = row["id"] if cid == WHOLE_TASK else f"{row['id']}/{cid}"
+                slot["criteria"].append(label)
+    out = {}
+    for name, slot in sorted(buckets.items()):
+        delta = mean(slot["with"]) - mean(slot["without"])
+        out[name] = {
+            "with_mean": round(mean(slot["with"]), 4),
+            "without_mean": round(mean(slot["without"]), 4),
+            "delta": round(delta, 4),
+            "spread": spread_of(slot["deltas"]),
+            "samples": len(slot["with"]),
+            "tasks": slot["tasks"],
+            "criteria": slot["criteria"],
+            # Reserved for ADR-39. Ursa's per-section survival signal is the
+            # second axis of ADR-40's refinement loop and it does not arrive
+            # from this harness, so the key exists, it is null, and the reader
+            # on the skill's page can tell "nobody has measured this" from
+            # "nobody acted on this" without guessing.
+            "survival": None,
+        }
+    return out
+
+
+# ADR-40 refinement item 2: an edit must raise the held-out differential score,
+# rather than the score on the tasks it was written against (SkillOpt, C865).
+# The harness cannot know which tasks an edit was written against, so it is told:
+# either by the task declaring the skill version it was authored alongside, or by
+# `--written-against` on the run that measures the edit. Both are recorded, so a
+# gate reading the result can tell a real held-out set from an empty one.
+
+def written_against(task: dict, declared: set[str], version: str) -> bool:
+    """Was this task written against the revision under test.
+
+    Both halves must be non-empty to match. A task with no `written_for` and a
+    run with no version string are not the same thing, and reading two blanks as
+    a match made every task count as written-against, which empties the held-out
+    set and turns ADR-40's generalization check into a refusal to measure.
+    """
+    if task["id"] in declared:
+        return True
+    declared_for = str(task.get("written_for") or "").strip()
+    return bool(declared_for) and declared_for == str(version or "").strip()
+
+
+def heldout_block(per_task: list[dict], tasks: list[dict], declared: set[str],
+                  version: str, reps: int) -> dict:
+    """The delta over the tasks this revision was not written against."""
+    by_id = {t["id"]: t for t in tasks}
+    graded = [r for r in per_task
+              if not r.get("control") and not r.get("indicator")
+              and r["with_scores"] and r["without_scores"]]
+    held, written = [], []
+    for row in graded:
+        task = by_id.get(row["id"]) or {}
+        (written if written_against(task, declared, version) else held
+         ).append(row)
+    block = {"version": version,
+             "declared_written_against": sorted(declared),
+             "written_against": [r["id"] for r in written],
+             "held_out": [r["id"] for r in held]}
+    if not held:
+        block.update({"verdict": "no held-out set",
+                      "reads": "every graded task counts as one this revision "
+                               "was written against, so nothing here is "
+                               "evidence that the edit generalizes"})
+        return block
+    delta, low, high = bootstrap_delta(held)
+    block.update({"delta": {"mean": delta, "ci95": [low, high]},
+                  "spread": spread_of([r["delta"] for r in held]),
+                  "pass_at": pass_rates(held, "with_scores", reps),
+                  "verdict": "holds" if delta > 0 else "does not hold",
+                  "reads": f"{delta:+.2f} over {len(held)} held-out task(s), "
+                           f"95% CI {low:+.2f} to {high:+.2f}"})
+    return block
 
 # ------------------------------------------------------------------ the models
 
@@ -1126,9 +1985,16 @@ class Subject:
         self.available = available
 
     def ask(self, system: str, user: str, max_tokens: int) -> dict:
+        # The seed goes only where the provider honours one. `pipeline/llm.py`
+        # omits the key entirely when it is None, so a Moonshot call is byte for
+        # byte the call it was before ADR-40, which is what keeps this change
+        # out of docs/agents/runtime-changes.md's blast radius.
         answer, _ = self.llm.ask_json([self.model], system, user, self.env,
                                       self.cap, max_completion=max_tokens,
-                                      available=self.available)
+                                      temperature=EVAL_TEMPERATURE,
+                                      available=self.available,
+                                      seed=SUBJECT_SEED
+                                      if seedable(self.model) else None)
         return answer
 
 
@@ -1212,7 +2078,9 @@ def render_ask(task: dict) -> str:
     return "\n".join(parts)
 
 
-def score_answer(task: dict, answer: str, judge, base: pathlib.Path
+def score_answer(task: dict, answer: str, judge, base: pathlib.Path, *,
+                 credit: dict | None = None, sandbox: str = "host",
+                 trajectory=None, arm: str = "", rep: int = 0
                  ) -> tuple[float, str]:
     """One answer's score in [0, 1], by whichever instrument the task named.
 
@@ -1227,10 +2095,17 @@ def score_answer(task: dict, answer: str, judge, base: pathlib.Path
     if task.get("rubric"):
         verdicts = judge.ask(JUDGE_SYSTEM, judge_prompt(task, answer),
                              JUDGE_MAX_TOKENS).get("verdicts") or {}
+        per = criterion_scores(verdicts, task["rubric"])
+        if credit is not None:
+            credit.update(per)
         return rubric_score(verdicts, task["rubric"])
 
     if kind == "tests_pass":
-        return tests_pass(task, answer, base, check)
+        score, why = tests_pass(task, answer, base, check, sandbox=sandbox,
+                                trajectory=trajectory, arm=arm, rep=rep)
+        if credit is not None and score is not None:
+            credit[WHOLE_TASK] = score
+        return (score, why)
 
     if kind == "parses":
         ok, why = parses(answer, check)
@@ -1245,6 +2120,8 @@ def score_answer(task: dict, answer: str, judge, base: pathlib.Path
                           JUDGE_MAX_TOKENS)
         verdicts = reply.get("verdicts") or {}
         hits = [criterion_score(verdicts.get(a["id"]), None) for a in statements]
+        if credit is not None:
+            credit.update({a["id"]: h for a, h in zip(statements, hits)})
         return (mean(hits), f"parses, {int(sum(hits))} of {len(hits)} assertions")
 
     if kind == "number_in_range" and check.get("extract"):
@@ -1269,49 +2146,175 @@ def score_answer(task: dict, answer: str, judge, base: pathlib.Path
         verdicts = reply.get("verdicts") or {}
         hits = [criterion_score(verdicts.get(a["id"]), None) for a in statements]
         parts = [in_range] + hits
+        if credit is not None:
+            credit[WHOLE_TASK] = in_range
+            credit.update({a["id"]: h for a, h in zip(statements, hits)})
         return (mean(parts),
                 f"value {value!r} against [{low}, {high}] ({'in' if in_range else 'out'}), "
                 f"{int(sum(hits))} of {len(hits)} secondary")
 
     if check:
-        return hard_check(task, answer, base)
+        score, why = hard_check(task, answer, base, sandbox=sandbox,
+                                trajectory=trajectory, arm=arm, rep=rep)
+        if credit is not None and score is not None:
+            credit[WHOLE_TASK] = score
+        return (score, why)
 
     return (0.0, "nothing scores this task")
 
 
-def run_task(subject, judge, task: dict, skill_body: str, reps: int,
-             base: pathlib.Path) -> dict:
-    """One task, both arms, `reps` times each."""
-    with_system = (SUBJECT_SYSTEM + "\n\n# The skill under test\n\n"
-                   + skill_body)
-    deterministic = (task.get("check") or {}).get("type") == "tests_pass"
-    rows = {"id": task["id"], "control": bool(task.get("control")),
+def task_row(task: dict) -> dict:
+    """The empty per-task record. One shape, whichever pass fills it."""
+    deterministic = (task.get("check") or {}).get("type") in ("tests_pass",
+                                                              "command")
+    return {"id": task["id"], "control": bool(task.get("control")),
             "indicator": is_indicator(task),
+            "demoted": bool(task.get("demoted")),
+            "sections": list(task.get("sections") or []),
             "scored_by": "rubric" if task.get("rubric")
                          else ("hard check" if deterministic else "mixed"),
             "with_scores": [], "without_scores": [], "notes": [],
+            "credit": {"with": {}, "without": {}},
             "unmeasured": 0}
-    ask = render_ask(task)
 
-    for arm, system, bucket in (("with", with_system, "with_scores"),
-                                ("without", SUBJECT_SYSTEM, "without_scores")):
-        for rep in range(reps):
-            reply = subject.ask(system, ask, SUBJECT_MAX_TOKENS)
-            answer = str(reply.get("answer") or "")
-            score, why = score_answer(task, answer, judge, base)
-            if score is None:
-                # Unmeasured, not zero. The repetition is dropped from both the
-                # arm and the count, and the note says why, so a task that could
-                # not be run shows up as a smaller n rather than as a bad result.
-                rows["unmeasured"] += 1
-                rows["notes"].append(f"{arm} rep {rep + 1}: unmeasured ({why})")
-                continue
-            rows[bucket].append(score)
-            rows["notes"].append(f"{arm} rep {rep + 1}: {score:.2f} ({why})")
+
+def arm_pass(subject, judge, task: dict, system: str, reps: int,
+             base: pathlib.Path, rows: dict, arm: str, *,
+             sandbox: str = "host", trajectory=None, kept=None) -> None:
+    """One arm of one task, `reps` times, written into `rows`.
+
+    Factored out of `run_task` because ADR-40 item 2 runs the bare arm first,
+    over every task, before the with-arm exists: the selection pass and the
+    measurement pass have to be the same code or the scores the selection
+    produced cannot honestly be reused as the without-arm's samples.
+    """
+    bucket = f"{arm}_scores"
+    ask = render_ask(task)
+    for rep in range(reps):
+        reply = subject.ask(system, ask, SUBJECT_MAX_TOKENS)
+        answer = str(reply.get("answer") or "")
+        credit: dict = {}
+        score, why = score_answer(task, answer, judge, base, credit=credit,
+                                  sandbox=sandbox, trajectory=trajectory,
+                                  arm=arm, rep=rep)
+        if kept is not None:
+            kept[(task["id"], arm)] = answer
+        if score is None:
+            # Unmeasured, not zero. The repetition is dropped from both the
+            # arm and the count, and the note says why, so a task that could
+            # not be run shows up as a smaller n rather than as a bad result.
+            rows["unmeasured"] += 1
+            rows["notes"].append(f"{arm} rep {rep + 1}: unmeasured ({why})")
+            continue
+        rows[bucket].append(score)
+        for cid, value in credit.items():
+            rows["credit"][arm].setdefault(cid, []).append(value)
+        rows["notes"].append(f"{arm} rep {rep + 1}: {score:.2f} ({why})")
+
+
+def with_system_for(skill_body: str) -> str:
+    return SUBJECT_SYSTEM + "\n\n# The skill under test\n\n" + skill_body
+
+
+def bare_pass(subject, judge, tasks: list[dict], reps: int,
+              base: pathlib.Path, *, sandbox: str = "host", trajectory=None,
+              kept=None) -> dict:
+    """ADR-40 item 2's bare-first pass: the without-skill arm, over every task.
+
+    This runs before the skill is ever loaded, which is the only order in which
+    differential selection is honest. Selecting tasks after seeing both arms
+    would be choosing the comparison from the comparison's own result, and the
+    scores it produced would be the same scores the delta is computed from.
+
+    Every score here is kept and reused as the without-arm's samples, so the
+    pass costs nothing beyond the calls the measurement needed anyway. The
+    repetition count is the pre-registered one for the same reason: a selection
+    made at n of 1 and a measurement made at n of 3 would be selecting on noise
+    and then measuring against it.
+    """
+    out = {}
+    for task in tasks:
+        rows = task_row(task)
+        arm_pass(subject, judge, task, SUBJECT_SYSTEM, reps, base, rows,
+                 "without", sandbox=sandbox, trajectory=trajectory, kept=kept)
+        out[task["id"]] = rows
+    return out
+
+
+# The bare score at or above which a task is not differential. One, because the
+# ADR's words are "tasks it already passes are controls" and a task the bare
+# subject passes every time is one. A task it passes twice in three is partial,
+# it stays graded, and the spread reports the noise.
+DIFFERENTIAL_CEILING = 1.0
+
+
+def differential_selection(tasks: list[dict], bare: dict,
+                           ceiling: float = DIFFERENTIAL_CEILING) -> dict:
+    """Which tasks the delta is computed on, and which became controls.
+
+    ADR-40 item 2: only tasks the bare subject fails or scores partial on count,
+    and the ones it already passes are controls. C412's contrastive pairing is
+    the reason, and the practical reason is arithmetic: a task both arms pass
+    every time contributes a delta of exactly zero to the mean, so leaving it in
+    the graded set drags the measured effect toward zero by however many such
+    tasks the suite happens to hold. It is not a neutral observation, it is a
+    denominator.
+
+    Marks the task dicts in place and returns the record the result carries.
+    A demoted task keeps running in both arms, because a control is a task the
+    skill must not change and that claim needs the with-arm too.
+    """
+    demoted, graded, kept_controls = [], [], []
+    for task in tasks:
+        row = bare.get(task["id"])
+        if task.get("control"):
+            kept_controls.append(task["id"])
+            continue
+        if is_indicator(task):
+            continue
+        if row is None or not row["without_scores"]:
+            graded.append(task["id"])
+            continue
+        bare_mean = mean(row["without_scores"])
+        if bare_mean >= ceiling:
+            task["control"] = True
+            task["demoted"] = True
+            demoted.append({"id": task["id"], "bare_mean": round(bare_mean, 4),
+                            "n": len(row["without_scores"])})
+        else:
+            graded.append(task["id"])
+    return {"ceiling": ceiling, "graded": graded,
+            "declared_controls": kept_controls,
+            "demoted_to_control": demoted,
+            "reads": f"{len(graded)} differential task(s), "
+                     f"{len(demoted)} the bare subject already passed, "
+                     f"{len(kept_controls)} declared control(s)"}
+
+
+def run_task(subject, judge, task: dict, skill_body: str, reps: int,
+             base: pathlib.Path, *, bare: dict | None = None,
+             sandbox: str = "host", trajectory=None, kept=None) -> dict:
+    """One task, both arms, `reps` times each.
+
+    `bare` is the without-arm this task already has, from the bare-first pass.
+    When it is given the without-arm is not asked again: those scores were
+    produced by the same code against the same prompt at the same n, and paying
+    twice for them would double the cost of every run to measure nothing new.
+    """
+    rows = bare if bare is not None else task_row(task)
+    rows["control"] = bool(task.get("control"))
+    rows["demoted"] = bool(task.get("demoted"))
+    arm_pass(subject, judge, task, with_system_for(skill_body), reps, base,
+             rows, "with", sandbox=sandbox, trajectory=trajectory, kept=kept)
+    if bare is None:
+        arm_pass(subject, judge, task, SUBJECT_SYSTEM, reps, base, rows,
+                 "without", sandbox=sandbox, trajectory=trajectory, kept=kept)
 
     rows["with_mean"] = round(mean(rows["with_scores"]), 4)
     rows["without_mean"] = round(mean(rows["without_scores"]), 4)
     rows["delta"] = round(rows["with_mean"] - rows["without_mean"], 4)
+    rows["spread"] = {"with": spread_of(rows["with_scores"]),
+                      "without": spread_of(rows["without_scores"])}
     return rows
 
 
@@ -1334,7 +2337,11 @@ def is_indicator(task: dict) -> bool:
 
 def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
               subject_model: str, judge_model: str, reps: int, spend: float,
-              today: str, version: str = "") -> dict:
+              today: str, version: str = "", *, sandbox: str = "host",
+              sandbox_why: str = "", exploit: dict | None = None,
+              length: dict | None = None, differential: dict | None = None,
+              declared_written_against: set[str] | None = None,
+              trajectory: dict | None = None) -> dict:
     """The result document. This shape is the contract site/app/skills/README.md
     describes, and nothing renders a number this function did not compute."""
     measured = [t for t in per_task if t["with_scores"] and t["without_scores"]]
@@ -1345,15 +2352,24 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
     indicators = [t for t in measured if t.get("indicator")]
     policy = spec.get("policy") or {}
     min_delta = float(policy.get("min_delta", 0.0))
+    # pass@k's k is the pre-registered one or the repetition count, because
+    # pass@k at k greater than n is a number about repetitions that never ran.
+    pass_k = min(int(policy.get("pass_at_k") or reps), reps)
 
     delta, low, high = bootstrap_delta(graded)
-    binary = all(s in (0.0, 1.0) for t in graded
-                 for s in t["with_scores"] + t["without_scores"])
+    all_binary = all(s in (0.0, 1.0) for t in graded
+                     for s in t["with_scores"] + t["without_scores"])
 
     def arm(key: str) -> dict:
         scores = [s for t in graded for s in t[key]]
-        out = {"n": len(scores), "mean": round(mean(scores), 4)}
-        if binary:
+        out = {"n": len(scores), "mean": round(mean(scores), 4),
+               # ADR-40 item 3. The interval below is the uncertainty of this
+               # mean; the spread is how much the tasks disagreed with each
+               # other, and a tight interval around a mean of wildly different
+               # tasks is the number this field exists to stop anyone quoting.
+               "spread": spread_of([mean(t[key]) for t in graded]),
+               "pass_at": pass_rates(graded, key, pass_k)}
+        if all_binary:
             successes = int(sum(scores))
             out["successes"] = successes
             out["interval95"] = list(clopper_pearson(successes, len(scores)))
@@ -1387,7 +2403,31 @@ def summarize(slug: str, sha: str, spec: dict, per_task: list[dict],
         "policy": policy,
         "per_task": per_task,
         "harness": "tools/skill_eval.py",
+        # ADR-40 item 1. What was held constant, and what this provider would
+        # not let the run pin.
+        "ablation": ablation_manifest(subject_model, judge_model, reps,
+                                      sandbox),
+        # ADR-40 item 7. A delta attributed to a section rather than to a file,
+        # which is what makes a per-section validation tag measurable.
+        "section_deltas": section_credit(per_task, spec.get("tasks") or []),
+        # Reserved for ADR-39's revealed-preference axis. Ursa writes it; this
+        # harness only promises the key exists and is honest about being empty.
+        "survival": None,
     }
+    result["delta"]["spread"] = spread_of([t["delta"] for t in graded])
+    if sandbox_why:
+        result["ablation"]["pinned"]["sandbox_why"] = sandbox_why
+    if differential is not None:
+        result["differential"] = differential
+    if exploit is not None:
+        result["exploit_test"] = exploit
+    if length is not None:
+        result["length_bias"] = length
+    if trajectory is not None:
+        result["trajectory"] = trajectory
+    result["heldout"] = heldout_block(
+        per_task, spec.get("tasks") or [], set(declared_written_against or ()),
+        version, reps)
     if indicators:
         # Reported, never scored. `fires` is the with-arm rate, which is the only
         # number an indicator can honestly produce.
@@ -1433,6 +2473,47 @@ def render(result: dict) -> str:
         noun = "task" if c["tasks"] == 1 else "tasks"
         lines.append(f"  controls         {c['tasks']} {noun}, delta "
                      f"{c['delta']:+.2f}, {moved}")
+    for key, label in (("with_skill", "with the skill"),
+                       ("without_skill", "without it")):
+        at = (result.get(key) or {}).get("pass_at")
+        if at:
+            lines.append(f"  {label:16} {at['reads']}")
+    spread = (result.get("delta") or {}).get("spread")
+    if spread and spread.get("n", 0) > 1:
+        lines.append(f"  task spread      sd {spread['sd']:.2f} over "
+                     f"{spread['n']} tasks, {spread['min']:+.2f} to "
+                     f"{spread['max']:+.2f}. A tight interval around tasks "
+                     f"that disagree is not agreement")
+    diff = result.get("differential")
+    if diff:
+        lines.append(f"  differential     {diff['reads']}")
+    held = result.get("heldout")
+    if held:
+        lines.append(f"  held out         {held['reads']}")
+    exploit = result.get("exploit_test")
+    if exploit:
+        lines.append(f"  exploit test     {exploit['verdict']}, "
+                     f"{exploit['reads']}")
+    length = result.get("length_bias")
+    if length:
+        lines.append(f"  length bias      {length['verdict']}, "
+                     f"{length['reads']}")
+    sections = result.get("section_deltas") or {}
+    if sections:
+        lines.append(f"  per section      {len(sections)} section(s) carried "
+                     f"judged evidence")
+        for name, row in sorted(sections.items(),
+                                key=lambda kv: kv[1]["delta"], reverse=True):
+            lines.append(f"    {row['delta']:+.2f}  sd {row['spread']['sd']:.2f} "
+                         f"over {row['samples']} samples  {name}")
+    traj = result.get("trajectory")
+    if traj and traj.get("entries"):
+        lines.append(f"  trajectory       {traj['entries']} command run(s) in "
+                     f"the {traj['sandbox']} sandbox, logged to "
+                     f"{traj.get('path') or 'this result'}")
+    unpinned = (result.get("ablation") or {}).get("unpinned") or []
+    for line in unpinned:
+        lines.append(f"  not pinned       {line}")
     lines.append(f"  spend            ${result['spend_usd']:.4f}")
     if result.get("trigger"):
         lines.append(f"  asked for by     {result['trigger']}")
@@ -1453,17 +2534,42 @@ def render(result: dict) -> str:
     return "\n".join(lines)
 
 
+# The smoke suite. Every path the harness has, including the ones ADR-40 added,
+# against a model whose answers are fixed. The scripted judge grades on the word
+# "harness", which appears in the with-arm's answer and not in the without-arm's,
+# so the rubric path discriminates the way a real judge would.
 SMOKE_SPEC = {
     "contract": SUITE_CONTRACTS[-1],
     "skill": "_smoke",
-    "policy": {"repetitions": 3, "min_delta": 0.2},
+    "policy": {"repetitions": 3, "min_delta": 0.2, "pass_at_k": 3},
     "tasks": [
         {"id": "hard-check", "ask": "What should we do?",
+         "sections": ["Harness before weights"],
          "check": {"type": "contains_all", "patterns": ["harness"]}},
         {"id": "rubric", "ask": "What should we do?",
-         "rubric": [{"id": "names-the-move", "asks": "Does it name the move?"}]},
+         "sections": ["Harness before weights"],
+         "rubric": [{"id": "names-the-move", "asks": "Does it name the move?",
+                     "section": "Debug one agent at a time",
+                     "certificate": {"kind": "artifact",
+                                     "names": "the named move in the answer"}}],
+         # An answer written to please a judge and to carry none of the
+         # certificate. It must score zero (ADR-40 item 5, C476 and C479).
+         "exploit": {"answer": "I would follow best practice, align the "
+                               "stakeholders and iterate toward excellence."}},
         {"id": "control", "control": True, "ask": "What is 2 + 2?",
          "check": {"type": "contains_all", "patterns": ["4"]}},
+        # Graded on paper and not differential in fact: the bare subject answers
+        # it every time, so ADR-40 item 2 demotes it to a control rather than
+        # letting its guaranteed zero delta dilute the measured effect.
+        {"id": "already-passed", "ask": "What is 2 + 2, again?",
+         "sections": ["Harness before weights"],
+         "check": {"type": "contains_all", "patterns": ["4"]}},
+        # The executable path: a real file written into a real workspace and a
+        # real command deciding the score, with the run logged (item 4).
+        {"id": "executable", "ask": "Write the module.",
+         "sections": ["Debug one agent at a time"],
+         "check": {"type": "tests_pass", "answer_path": "answer.txt",
+                   "command": "grep -q harness answer.txt"}},
     ],
 }
 
@@ -1473,28 +2579,90 @@ def smoke() -> int:
     subject = ScriptedSubject(
         with_answer="Change the harness before the weights. 4.",
         without_answer="Fine-tune the model on the stronger one's traces. 4.")
-    per_task = [run_task(subject, subject, task, "the skill body", 3,
-                         pathlib.Path("."))
-                for task in SMOKE_SPEC["tasks"]]
+    base = pathlib.Path(".")
+    tasks = SMOKE_SPEC["tasks"]
+    trajectory: list[dict] = []
+    kept: dict = {}
+    sandbox, sandbox_why = sandbox_decision("host")
+    bare = bare_pass(subject, subject, tasks, 3, base, sandbox=sandbox,
+                     trajectory=trajectory, kept=kept)
+    differential = differential_selection(tasks, bare)
+    per_task = [run_task(subject, subject, task, "the skill body", 3, base,
+                         bare=bare.get(task["id"]), sandbox=sandbox,
+                         trajectory=trajectory, kept=kept)
+                for task in tasks]
+    exploit = run_exploits(subject, tasks, base)
+    length = length_bias(subject, tasks, kept, base)
     result = summarize("_smoke", "0" * 64, SMOKE_SPEC, per_task,
                        "scripted/with-and-without", "scripted/judge", 3, 0.0,
-                       dt.date.today().isoformat())
+                       dt.date.today().isoformat(), sandbox=sandbox,
+                       sandbox_why=sandbox_why, exploit=exploit, length=length,
+                       differential=differential,
+                       trajectory={"entries": len(trajectory),
+                                   "sandbox": sandbox, "path": "not written"})
     print(render(result))
     print(f"\n{subject.calls} scripted calls, $0.00 spent")
-    # What this asserts is the arithmetic, not the model. With this scripted
-    # pair the with-arm passes everything, the without-arm passes nothing that
-    # is being graded, and the control is identical in both arms. Anything else
-    # is a bug in the scorer, the bootstrap or the verdict rule.
-    ok = (result["with_skill"]["reads"] == "6 of 6"
-          and result["without_skill"]["reads"] == "0 of 6"
-          and result["with_skill"]["interval95"][0] == 0.5407
-          and result["delta"]["mean"] == 1.0
-          and result["verdict"] == "gain"
-          and result["controls"]["unchanged"]
-          and result["tasks"] == 2 and result["control_tasks"] == 1)
-    print("smoke: " + ("the harness measures what it should"
-                       if ok else "THE HARNESS IS WRONG"))
-    return 0 if ok else 1
+    # What this asserts is the arithmetic, not the model. With this scripted pair
+    # the with-arm passes everything graded, the without-arm passes nothing
+    # graded, the declared control is identical in both arms, and the task the
+    # bare subject already answered is a control it was not declared as.
+    # Anything else is a bug in the scorer, the selection, the bootstrap or the
+    # verdict rule.
+    sections = result["section_deltas"]
+    checks = {
+        "the with-arm sweeps and the without-arm scores nothing graded":
+            result["with_skill"]["reads"] == "9 of 9"
+            and result["without_skill"]["reads"] == "0 of 9",
+        "the exact binomial bound is the finite-sample one":
+            result["with_skill"]["interval95"][0] == 0.6637,
+        "the delta is a gain and the controls did not move":
+            result["delta"]["mean"] == 1.0 and result["verdict"] == "gain"
+            and result["controls"]["unchanged"],
+        "a task the bare subject already passes becomes a control":
+            [r["id"] for r in differential["demoted_to_control"]]
+            == ["already-passed"]
+            and result["tasks"] == 3 and result["control_tasks"] == 2,
+        "pass@1 and pass@k are reported beside each other":
+            result["with_skill"]["pass_at"]["pass_at_1"] == 1.0
+            and result["with_skill"]["pass_at"]["k"] == 3
+            and result["without_skill"]["pass_at"]["pass_at_k"] == 0.0,
+        "the delta carries its spread over tasks":
+            result["delta"]["spread"]["n"] == 3
+            and result["delta"]["spread"]["sd"] == 0.0,
+        "an answer written to game the rubric scores zero":
+            exploit["verdict"] == "clean" and exploit["ran"] == 1
+            and exploit["max_score"] == 0.0,
+        "the judge does not score the same content differently when doubled":
+            length["verdict"] == "no length effect" and length["pairs"] == 1,
+        "the executable task ran a real command and logged it":
+            len(trajectory) == 6
+            and {e["sandbox"] for e in trajectory} == {"host"}
+            and sorted({e["exit_code"] for e in trajectory}) == [0, 1],
+        "credit lands on the section and not on the file":
+            sections["Harness before weights"]["delta"] == 1.0
+            and sections["Debug one agent at a time"]["delta"] == 1.0
+            and sections["Debug one agent at a time"]["criteria"]
+            == ["rubric/names-the-move", "executable"]
+            and "already-passed" not in
+            sections["Harness before weights"]["tasks"],
+        "every section reserves Ursa's survival signal and claims nothing":
+            all(row["survival"] is None for row in sections.values())
+            and result["survival"] is None,
+        "the held-out set is every graded task when none was named":
+            result["heldout"]["verdict"] == "holds"
+            and sorted(result["heldout"]["held_out"])
+            == ["executable", "hard-check", "rubric"],
+        "the ablation says what it could not pin":
+            result["ablation"]["pinned"]["temperature"] == EVAL_TEMPERATURE
+            and len(result["ablation"]["unpinned"]) == 2,
+    }
+    for label, ok in checks.items():
+        print(("ok:   " if ok else "FAIL: ") + label)
+    if all(checks.values()):
+        print("smoke: the harness measures what it should")
+        return 0
+    print("smoke: THE HARNESS IS WRONG")
+    return 1
 
 
 def main(argv=None) -> int:
@@ -1515,6 +2683,32 @@ def main(argv=None) -> int:
                     help="run inside a reserved Kimi window anyway")
     ap.add_argument("--gate", action="store_true",
                     help="exit 1 unless the verdict is a gain (ADR-37's gate)")
+    ap.add_argument("--sandbox", choices=SANDBOX_MODES, default="auto",
+                    help="where an executable task's command runs. `auto` "
+                         "takes the Docker sandbox when a daemon answers and "
+                         "says so in the result when it does not; `docker` "
+                         "refuses to run without one (ADR-40 item 4)")
+    ap.add_argument("--no-differential", action="store_true",
+                    help="grade every task, including the ones the bare "
+                         "subject already passes. ADR-40 item 2 says not to, "
+                         "and the result records that this run overrode it")
+    ap.add_argument("--no-exploit-test", action="store_true",
+                    help="skip the exploit answers. The result says so, and "
+                         "ADR-37's gate reads a skipped exploit test as "
+                         "unmeasured rather than as clean")
+    ap.add_argument("--no-length-check", action="store_true",
+                    help="skip the judge's length-bias check (ADR-40 item 6)")
+    ap.add_argument("--written-against", default="",
+                    help="comma-separated task ids this revision's edit was "
+                         "written against. They are reported and excluded from "
+                         "the held-out delta, which is the number ADR-40's "
+                         "refinement item 2 gates on")
+    ap.add_argument("--audit", action="store_true",
+                    help="audit each task once for ambiguity, gameability and "
+                         "realism, write evals/audit.json, and run nothing "
+                         "else (ADR-40 item 6)")
+    ap.add_argument("--reaudit", action="store_true",
+                    help="with --audit, audit tasks that already have a record")
     ap.add_argument("--trigger", default="",
                     help="what asked for this run: one of ADR-37's four "
                          "triggers, or a sentence. It is recorded against this "
@@ -1527,42 +2721,18 @@ def main(argv=None) -> int:
         return smoke()
 
     if args.check:
-        import os
-
-        slugs = sorted(p.name for p in (ROOT / "skills").iterdir()
-                       if p.is_dir() and p.name != "_validation")
-        problems, findings, measured = [], [], 0
-        covered = asked = 0
-        for slug in slugs:
-            spec, found = load_tasks(slug)
-            problems += found
-            measured += 1 if spec and not found else 0
-            if spec:
-                base = tasks_path(slug).parent
-                findings += uncovered_sections(spec, slug, base)
-                hit, of = coverage_counts(spec, base)
-                covered += hit
-                asked += of
-        print(f"{measured} of {len(slugs)} skills carry a conformant eval file")
-        if asked:
-            print(f"{covered} of {asked} sections are exercised by at least "
-                  f"one task, excluding the Apply checklist and the caveats")
-        # Absent is unmeasured, not broken: the skill seat writes the tasks and
-        # ADR-36 makes such a skill `draft`. A malformed file is a real failure.
-        # The two are labelled differently on purpose, because a line reading
-        # `failing` against a file nobody has written yet is how a report stops
-        # being read.
-        malformed = [p for p in problems if "no evals/evals.json" not in p]
-        for line in problems:
-            print(("failing: " if line in malformed else "unmeasured: ") + line)
+        report = check_library()
+        for line in report["lines"]:
+            print(line)
+        for line in report["problems"]:
+            print(("failing: " if line in report["malformed"]
+                   else "unmeasured: ") + line)
         # Findings print after the problems and never change the exit code. The
         # suite contract says a section with no task is a finding, so this gate
         # reports it and passes.
-        for line in findings:
+        for line in report["findings"]:
             print("finding: " + line)
-        if malformed:
-            return 1
-        return 2 if problems else 0
+        return report["exit"]
 
     if not args.skill:
         ap.error("--skill, --check or --smoke")
@@ -1634,33 +2804,107 @@ def main(argv=None) -> int:
     judge = Subject(judge_model, os.environ, cap, available)
 
     base = tasks_path(args.skill).parent
+    today = dt.date.today().isoformat()
+
+    if args.audit:
+        # ADR-40 item 6. One pass, written to a file, and nothing is scored:
+        # auditing the tasks and measuring the skill in the same run would let a
+        # task that the audit found gameable count in the same result.
+        report = run_audit(judge, spec, base, judge_model, today, args.reaudit)
+        print(f"audited {report['audited_now']} task(s) this run, "
+              f"{report['clean']} of {report['tasks']} clean; "
+              f"written to {report['written']}")
+        for line in audit_problems(spec, base, args.skill):
+            print("finding: " + line)
+        print(f"\n{cap}")
+        return 0
+
+    sandbox, sandbox_why = sandbox_decision(args.sandbox)
+    print(f"sandbox: {sandbox_why}")
+    if sandbox == "refuse":
+        return 1
+
+    trajectory: list[dict] = []
+    kept: dict = {}
     per_task = []
     stopped = ""
-    for task in spec["tasks"]:
-        print(f"  {task['id']}...")
-        try:
-            per_task.append(run_task(subject, judge, task, body, reps, base))
-        except llm.CapReached as exc:
-            # The cap is not a failure and a run that hits it must not throw away
-            # what it measured. The tasks already finished are a smaller eval,
-            # honestly labelled, and the result says where it stopped.
-            stopped = (f"the ${args.cap:.2f} cap was reached at {task['id']}, "
-                       f"after {len(per_task)} of {len(spec['tasks'])} tasks "
-                       f"({exc})")
-            print(f"  {stopped}")
-            break
-        except llm.NoModelAnswered as exc:
-            stopped = f"no model answered at {task['id']}: {exc}"
-            print(f"  {stopped}")
-            break
+    differential = None
+    try:
+        # ADR-40 item 2's bare-first pass. The without-skill arm runs over every
+        # task before the skill exists in any prompt, the selection is made from
+        # those scores, and the scores are then reused as the without-arm's
+        # samples rather than paid for twice.
+        print(f"  the bare subject first, {len(spec['tasks'])} task(s)...")
+        bare = bare_pass(subject, judge, spec["tasks"], reps, base,
+                         sandbox=sandbox, trajectory=trajectory, kept=kept)
+        if args.no_differential:
+            differential = {"ceiling": None, "overridden": True,
+                            "reads": "differential selection was overridden by "
+                                     "--no-differential, so tasks the bare "
+                                     "subject already passes are still graded "
+                                     "and the delta is pulled toward zero by "
+                                     "however many of those the suite holds"}
+        else:
+            differential = differential_selection(spec["tasks"], bare)
+            print(f"  differential: {differential['reads']}")
+        for task in spec["tasks"]:
+            print(f"  {task['id']}, with the skill...")
+            per_task.append(run_task(subject, judge, task, body, reps, base,
+                                     bare=bare.get(task["id"]),
+                                     sandbox=sandbox, trajectory=trajectory,
+                                     kept=kept))
+    except llm.CapReached as exc:
+        # The cap is not a failure and a run that hits it must not throw away
+        # what it measured. The tasks already finished are a smaller eval,
+        # honestly labelled, and the result says where it stopped.
+        stopped = (f"the ${args.cap:.2f} cap was reached after "
+                   f"{len(per_task)} of {len(spec['tasks'])} tasks ({exc})")
+        print(f"  {stopped}")
+    except llm.NoModelAnswered as exc:
+        stopped = f"no model answered: {exc}"
+        print(f"  {stopped}")
     if not per_task:
         print("nothing was measured, so nothing was written")
         return 1
 
+    # ADR-40 item 5 and the second half of item 6. Both are questions about the
+    # instrument rather than about the skill, both are judge-only, and both are
+    # skipped rather than faked when the cap has already been reached.
+    exploit = length = None
+    if not stopped:
+        try:
+            if not args.no_exploit_test:
+                exploit = run_exploits(judge, spec["tasks"], base)
+                print(f"  exploit test: {exploit['reads']}")
+            if not args.no_length_check:
+                length = length_bias(judge, spec["tasks"], kept, base)
+                print(f"  length bias: {length['reads']}")
+        except (llm.CapReached, llm.NoModelAnswered) as exc:
+            print(f"  the instrument checks stopped: {exc}")
+
+    traj_block = None
+    if trajectory:
+        out_dir = base / "trajectories"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        path = out_dir / f"{today}-{sha[:12]}.json"
+        path.write_text(json.dumps(
+            {"contract": 1, "skill": args.skill, "date": today,
+             "skill_md_sha256": sha, "sandbox": sandbox,
+             "sandbox_why": sandbox_why, "entries": trajectory},
+            indent=2, sort_keys=True) + "\n")
+        traj_block = {"entries": len(trajectory), "sandbox": sandbox,
+                      "path": shown(path),
+                      "commands": sorted({e["command"] for e in trajectory})}
+
+    declared = {t.strip() for t in args.written_against.split(",") if t.strip()}
     result = summarize(args.skill, sha, spec, per_task, subject_model,
-                       judge_model, reps, cap.spent,
-                       dt.date.today().isoformat(),
-                       version=skill_version(args.skill))
+                       judge_model, reps, cap.spent, today,
+                       version=skill_version(args.skill),
+                       sandbox=sandbox, sandbox_why=sandbox_why,
+                       exploit=exploit, length=length,
+                       differential=differential,
+                       declared_written_against=declared,
+                       trajectory=traj_block)
     if stopped:
         result["incomplete"] = stopped
         result["verdict"] = "incomplete: " + result["verdict"]

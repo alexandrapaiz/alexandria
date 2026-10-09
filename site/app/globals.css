@@ -606,11 +606,19 @@ a {
   outline-offset: 2px;
 }
 
-.waitlist-go {
-  flex: none;
+/* `.pill` was written for links and the two buttons that wear it both carried
+   their own reset. A third one (the unsubscribe confirm, 2026-10-06) is the
+   point at which the reset belongs to the class rather than to each caller,
+   because a button with no `font-family: inherit` renders in the browser's own
+   UI font and reads as a different control to the same reader. */
+button.pill {
   border: none;
   cursor: pointer;
   font-family: inherit;
+}
+
+.waitlist-go {
+  flex: none;
   padding: 13px 22px;
   white-space: nowrap;
 }

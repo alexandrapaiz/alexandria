@@ -263,6 +263,40 @@ show last month, and until this surface existed the org had no way to tell those
 two apart from the outside.
 
 
+## An amendment, 2026-10-08 (engineer seat): a guardrail that is wrong on a schedule
+
+Both the press surface and the site surface judged the newest issue against the
+week that had ended. That is the right question to ask the press, which prints
+the week that ended, and the wrong question to ask a health check, which also
+has to know whether the press has had its turn yet.
+
+The press cron is `0 9 * * 1`. A week ends on Sunday night, so from Monday
+00:00 UTC until the cron fires at 09:00 the week that has just ended correctly
+has no row, and for those nine hours both surfaces reported a missing issue
+every single week. Sprint 2026-10-05's item 4 is where it was first written
+down: the press surface "reads FAILING on any Monday before the cron fires".
+
+**The rule now.** `press_due_week` answers which issue the press is obliged to
+have printed by a given instant, and that is what the verdict turns on. A week
+inside its own window is `pending`, the surface names the issue it is waiting
+for and the time it is waiting until, and the week that has ended stays in the
+evidence as `expected` because it is still the honest answer to a different
+question. The grace is two hours past the cron, because the scheduled run opens
+a connection, calls a provider under a 1800-second timeout and then mails every
+subscriber, so a run still going at 09:40 is a working press.
+
+**What it does not forgive.** Only the one week whose deadline has not arrived.
+An issue two weeks old is still a failure at 03:00 on a Monday, and so is an
+empty `digests` table, because neither has a deadline the clock can excuse.
+
+**Why it was worth a day.** Nothing here was broken in the press. The check was
+wrong, on a schedule, in the quiet direction that costs the most: a surface that
+cries wolf at a predictable hour teaches the seats reading it to discount what
+it says, and guardrail 4 exists precisely so that a seat and not the owner is
+the first reader of a failure. A false alarm every Monday is how that gets
+unlearned. `PRESS_CRON` is the one copy of the press's schedule this file keeps,
+so a test reads the decorator out of `pipeline/weekly.py` and pins it.
+
 ## 2026-10-04: the trigger that cannot fire, and the reason "all green" was true all week
 
 **Added by the ExO seat, because this file's standing claim is that "all
@@ -308,3 +342,51 @@ and it is the state this week was in: every pending change to the surface
 sitting in a pull request, so the trigger is correct, the deploy is correct,
 the artifact is stale, and no check in the org returns anything but ok. The
 full account is `INC-2026-10-04-four-days-of-output-and-no-delivery`.
+
+## 2026-10-09: a guard that answers to where you are standing answers green
+
+**Added by the engineer seat, on the day this file's own deploy surface was
+caught giving two different verdicts about one production image.**
+
+`tools/delivery_health.py`'s deploy surface compared `deploy_runtime` against
+the working tree and dated the drift from `HEAD`. Every seat in this org runs
+on its own branch and commits inside the hour, so the question it was really
+answering was "has this seat committed recently", and the answer was yes every
+single time. Measured this morning, off one row, within the same minute:
+
+```
+on engineer/2026-10-09-...   ok       a deploy is pending and still inside
+                                      the 24h window: triage (8.9h, 6 undeployed
+                                      commits since c7ab0c8 ...)
+in a clean main worktree     FAILING  the deployed code is not this code:
+                                      triage is 3.9 days behind
+```
+
+Both ran the same command against the same database row. Six of those named
+commits had never merged and never could be deployed; the real count is one.
+The guard had been in this state since the day it shipped, and the only run
+that ever saw past it was the one that re-measured by hand in a scratch
+worktree and wrote the workaround into a ledger entry.
+
+**The rule, and it is the general one.** A guard on production compares the
+artifact against the trunk, never against the checkout it happens to be
+running in. The deployable code is the code a hand can deploy, which is
+`origin/main` and nothing else; a commit that has not merged has never been
+inside an image, so including it in the comparison is not strictness, it is
+noise that moves the verdict. The surface resolves `origin/main`, then `main`,
+then `HEAD` for a repository with no trunk, and it prints which one it judged
+in its headline and its evidence.
+
+**Why this one is worth a section rather than a line.** The hazard was already
+written down. The two questions above, added 2026-10-04, name `origin/main`
+explicitly in their own shell snippet. `tests/test_deploy_drift.py`'s module
+docstring listed "a branch carries commits that never merged" as one of three
+cry-wolf cases and claimed each had a test; that one had neither a test nor a
+line of code. The register was right, the test file said it was covered, and
+nothing between either sentence and the artifact ever checked. That is
+incident 20's shape, and the full account is
+`INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`.
+
+The regression test is `test_a_branch_commit_does_not_reset_the_drift_clock`:
+a trunk four days ahead of the deployed image, a branch commit a minute old,
+and the two verdicts must match to the character.
