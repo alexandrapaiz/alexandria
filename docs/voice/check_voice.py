@@ -225,6 +225,21 @@ def sweep():
     so this fails three ways: an anchor that has left prompts/digest.md, an
     entry in the range with no row at all, and a row for an entry number the
     register does not have.
+
+    The domain comes from the register and never from the map, which is what
+    keeps this from being the enumeration L-A26 and ban list 36 both warn
+    about: a list of names answers confidently about the world it was written
+    in. Here the register decides which entries must be covered and the map
+    only answers for them, so an entry this file has never heard of fails
+    rather than passing silently.
+
+    What it cannot see, which is the other half of L-A21. An amendment. Nine
+    of these fifty were widened after they were written, entry 13 from three
+    characters to every character outside ASCII and entry 33 from three italic
+    labels to four. The anchor checks that the entry is enforced somewhere and
+    cannot check that the enforcement is as wide as the entry became, so an
+    amendment that outgrows its rule passes here. That is a reading, and it
+    belongs to pass 4 of the grading procedure rather than to this command.
     """
     have = set(entries(BAN.read_text()))
     want = {n for n in have if n <= 50}
