@@ -1,3 +1,40 @@
+## Updated 2026-10-09, ~20:55 UTC (message run): the writer's cap hit, triaged
+
+**Scope note.** This update is scoped to the one trigger this run was
+given — the writer-agent's failed run — rather than a full
+reconciliation sweep of this whole file. Entries below this one were
+not re-checked against `docs/decisions.md` or the board this run; treat
+their dates as last-verified, not current.
+
+**The writer-agent's scheduled run (`37986599276`, 20:22-20:45 UTC)
+failed, and here is what it cost and what it owes.** Full account filed
+as `INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+in `docs/agents/incidents.md`. In short: the run died at turn 151 against
+its own `--max-turns 150`, hard starvation by `turn-caps.md`'s own test.
+Six files it had already pushed survived in its draft PR, #260
+(`writer/2026-10-09`). Whatever it was still editing on `docs/ideas.md`,
+`docs/voice/ban-list.md` and `docs/voice/reviews/2026-10-09.md` beyond
+that push did not, because the sandbox was dirty and never got a second
+push before teardown.
+
+1. **Owner or chair: apply `pending-workflow-changes.md` item 14, writer's
+   line at minimum.** Queued 2026-10-04, never applied, and it is the
+   named cause of tonight's loss — the writer's peak was already measured
+   at 136 (91% of 150) five days ago with the raise to 300 sitting as a
+   one-line diff to `agent-writer.yml`. The other six seats in that item
+   (skill, engineer, market, research, security, exo) are at the same
+   unapplied distance from the same failure; this is the first of the
+   seven to actually hit it, not the only one at risk.
+2. **PR #260 (writer, draft) needs a human or a follow-up writer run,
+   not a merge as-is.** It holds real content but is missing whatever
+   increment the capped-out run was still composing. Left untouched by
+   this seat deliberately — judging editorial completeness is not this
+   seat's lane. Proposed in `dispatch-queue.md`, not fired (see below).
+3. **`PM_DISPATCH_ENABLED` could not be confirmed this run.**
+   `gh variable list` returned `HTTP 403` on this token, the same gap
+   prior passes hit reading it directly. Treated as not active; nothing
+   in this run's queue was fired.
+
 ## Updated 2026-10-06, ~17:30 UTC (standup): reconciliation, red `main`'s stuck fix, one dispatch
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` and

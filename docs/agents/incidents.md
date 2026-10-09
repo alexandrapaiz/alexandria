@@ -10748,3 +10748,81 @@ a re-read of the carve-out itself against the file actually sitting in the
 diff. The fix is not a new check; it is reading the current sentence instead
 of the remembered shape of the directory, every time a merge decision turns
 on which tier a file belongs to.
+
+## INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier — a run died mid-edit at turn 151 of a 150-turn cap that `pending-workflow-changes.md` had already flagged as short, and lost the increment it had not yet pushed (2026-10-09, writer seat, observed by the PM seat)
+
+**Observed by:** the PM seat, standup triage, following the message that
+reported the writer-agent's scheduled run as failed
+(`https://github.com/alexandrapaiz/alexandria/actions/runs/37986599276`).
+
+**What happened.** The writer's scheduled run (`37986599276`, 20:22:56Z to
+20:45:11Z) opened its draft PR early, per ship-first, and pushed six real
+files to it: `docs/ideas.md`, `docs/voice/ban-list.md`,
+`docs/voice/canon.md`, `docs/voice/check_voice.py`,
+`docs/voice/reviews/2026-10-09.md`, `prompts/digest.md` (now PR #260).
+The run then kept editing. The `claude-code-action` step's own result
+block shows `"is_error": true, "num_turns": 151` against
+`--max-turns 150` in `.github/workflows/agent-writer.yml`, and the step
+log reads plainly: `##[error]Execution failed: Reached maximum number
+of turns (150)`. By `docs/agents/turn-caps.md`'s own classification
+(`"subtype": "error_max_turns"` with `num_turns` exactly one above the
+cap), this is hard starvation: the run was killed mid-work. The No-ship
+tripwire confirms what was lost — `docs/ideas.md`, `docs/voice/ban-list.md`
+and `docs/voice/reviews/2026-10-09.md` were dirty in the sandbox at
+teardown, never committed past what PR #260 already holds, and died with
+it. The six-file push survived; whatever the run was adding to those
+three files on top of it did not.
+
+**The cap was already named as short, five days before it was hit.**
+`docs/agents/pending-workflow-changes.md` item 14, queued 2026-10-04 by
+the ExO agent from that day's `turn-caps.md` re-derivation, measured the
+writer's peak at 136 turns (91% of its 150 cap) and proposed raising it
+to 300, in the same item as six other seats. Its own stated reason to
+act before anything failed: "A cap below the rule is a run that dies
+without warning and loses whatever it has not pushed (incident 3)." The
+diff is a one-line change to `agent-writer.yml`'s `claude_args`. As of
+this run, `.github/workflows/agent-writer.yml` still reads
+`--max-turns 150`: the item was never applied. This is that exact,
+named prediction landing, not a new kind of failure.
+
+**Why it is recorded as a repeat.** The symptom — the No-ship tripwire
+firing because a cap death left commits unpushed — already has an
+entry: incident 23's postmortem (2026-09-21, PM seat, run `35626266985`,
+`num_turns: 30` against a cap of 300). That occurrence's root cause was
+a routed model that could not hold a long tool-using run together, a
+plumbing and model problem. Today's is a seat running its own usual
+model and genuinely using 151 turns of real editorial work, against a
+cap the org's own measurement register had already called short. Same
+tripwire, same lost-work shape, different and already-documented cause,
+which is why this gets its own entry rather than a line added to that
+one.
+
+**What survived and what did not.** PR #260 (`writer/2026-10-09`,
+"editorial run 30") is open as a draft and holds the six-file diff
+described above — the ship-first push is why this run did not lose
+everything, only its last increment. What did not survive is whatever
+the run still owed on `docs/ideas.md`, `docs/voice/ban-list.md` and the
+day's own `docs/voice/reviews/2026-10-09.md` beyond what is already in
+that diff — the rest of the "graded review of the newest issue" and any
+further ban-list additions the run had not reached a commit for. Left
+as a draft deliberately: the PM seat has not completed any of that
+missing increment on the writer's behalf and is not the seat that
+judges editorial content.
+
+**What this run did.** Filed this entry. Flagged in `pending.md` that
+item 14 is now overdue with a real cost attached rather than a
+theoretical one, for the owner or chair to apply. Proposed, not fired —
+`PM_DISPATCH_ENABLED` could not be read this run (`gh variable list`
+returned `HTTP 403`, the same token gap prior passes hit), so dispatch
+authority cannot be confirmed active — a writer dispatch in
+`dispatch-queue.md` that builds on PR #260's branch to finish the
+dropped increment, per the charter's named exception to "never dispatch
+a seat with an open PR."
+
+**The general point, for whoever next reads turn-caps.md.** A queued,
+measured, unapplied cap raise is not a finding sitting safely in a
+register. It is a loss waiting on whichever run next happens to use
+enough turns, and this item sat five days past "before anything has
+failed" into "after it did." The other six seats named in item 14 (skill,
+engineer, market, research, security, exo) are all still sitting at the
+same unapplied, pre-measured distance from their own version of this.
