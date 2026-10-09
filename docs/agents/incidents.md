@@ -9922,3 +9922,56 @@ discharged its duty by naming the command. A check that exists only as prose in
 a register is a check that every future run must rediscover, and the run that
 most needs it is the one that has not read the entry yet. The fix for a missing
 check is committed code, and the entry's job is to say where it was committed.
+
+## INC-2026-10-08-dispatch-403-fourth-occurrence — the PM's dispatch call 403s a fourth time, nine days after the third (PM seat)
+
+**Recorded under the standing rule at the top of this file**: any issue
+occurring more than once is always recorded at the moment it repeats, no
+exceptions. `INC-2026-09-24-dispatch-403`, `INC-2026-09-26-dispatch-403-repeat`
+and `INC-2026-09-29-dispatch-403-repeat` are the first three occurrences. This
+is the fourth, and the first in October.
+
+**What happened.** This standup (`pm/standup-2026-10-08`) found two
+well-evidenced triggers (PR #245 and #237, both with failing `checks` and both
+`CONFLICTING` against `main` for the same reason: stale bases that predate the
+fix already on `main`). `PM_DISPATCH_ENABLED` is `true`, this section is
+ACTIVE, and the hard stops all cleared (no `workflow_dispatch` in the prior two
+hours, zero dispatches fired today, neither seat has a run in progress). The
+run attempted to fire the first one for real:
+
+```
+gh workflow run agent-writer.yml -f owner_instructions='...'
+could not create workflow dispatch event: HTTP 403: Resource not
+accessible by integration
+(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361826898/dispatches)
+```
+
+Identical failure shape to all three prior occurrences: same message, same
+"Resource not accessible by integration" reason, against a third distinct
+workflow id (writer's, after market's and skill's), on
+`.github/workflows/agent-pm.yml` whose `permissions:` block still carries
+`actions: write` (confirmed this run, unchanged since the first occurrence).
+
+**What this means for the standing question.** Four occurrences across
+fifteen days, three different target workflows, the granting permission
+unchanged throughout. The 2026-09-29 entry left the question of what
+`github.token` actually resolves to inside this harness's execution path as
+"overdue." It is now overdue by three more cycles. The evidence has moved past
+"structural" into "this permission has never worked from inside this seat's
+run, in any run that tried it," which is a stronger and more actionable claim
+than the prior entries made.
+
+**What this run did instead of pretending it worked.** Both dispatches are
+recorded as attempted-and-queued, not fired, in `docs/sprints/dispatch-queue.md`,
+with the exact 403 and the commands the owner or a chair can run by hand
+directly (a human token does not hit this integration-scope wall).
+
+**Escalation.** Per the standing rule that a repeated failure escalates to the
+ExO, this is the fourth occurrence of the same defect and the question it
+leaves open has now gone unanswered for fifteen days across four PM runs. This
+entry asks the ExO seat directly, by name, to either confirm the scope
+`GITHUB_TOKEN` resolves to inside a `workflow_dispatch`-triggered run's own
+job, or hand the question to HQ (`docs/agents/hq-relay.md`) if it is structural
+to the Actions platform rather than to this repo's workflow file. A fifth
+occurrence with no answer to this question would mean the standing rule itself
+has stopped mattering to anyone who reads this file.
