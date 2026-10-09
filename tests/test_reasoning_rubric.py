@@ -46,13 +46,96 @@ def test_reasoning_is_a_topic_the_database_accepts():
     assert "reasoning" in topics.TOPICS
 
 
+PROMPTS = ("distill.md", "distill-practices.md")
+
+
+def rendered(name: str) -> str:
+    """A distill prompt as the job sends it, which is the only version that
+    matters to any assertion about what the model is told."""
+    return topics.render((ROOT / "prompts" / name).read_text())
+
+
 def test_the_prompts_list_and_the_enforced_list_are_the_same_list():
     # The prompt is what the model is told and TOPICS is what the insert accepts.
     # A tag the prompt offers and the code rejects would be dropped on every
     # claim, silently, which is the class of bug this whole module exists for.
-    offered = topics.prompt_topics((ROOT / "prompts" / "distill.md").read_text())
-    assert offered, "prompts/distill.md no longer lists its topics where this can read them"
-    assert offered == list(topics.TOPICS)
+    #
+    # They cannot disagree any more, because the prompt no longer holds a list:
+    # it holds a marker and `topics.render` fills it. What this still catches is
+    # the way that arrangement breaks, which is a marker that was deleted,
+    # renamed, or never substituted, leaving the model with no vocabulary at all.
+    # Both prompts, because the practices variant offers the same closed list
+    # and nothing checked its copy of it until today.
+    for name in PROMPTS:
+        offered = topics.prompt_topics(rendered(name))
+        assert offered, f"{name} no longer offers its topics where this can read them"
+        assert offered == list(topics.TOPICS), name
+
+
+def test_a_taxonomy_change_touches_no_file_under_prompts():
+    """The vocabulary has one home, and `prompts/` is not it.
+
+    This is the test the arrangement exists for. `prompts/` is Tier C under
+    docs/standards/pm.md §10, because that directory holds the agent charters,
+    so a literal copy of the topic list in a prompt file made every taxonomy
+    change wait on the owner's merge. The four tags of 2026-10-05 waited four
+    days inside a ten-run pull request chain that also carried the fix for a
+    red test suite, and splitting them out would have meant reverting the
+    taxonomy, because the test above pinned the two copies together.
+
+    A topic name is product code. If a tag name reappears as a literal in a
+    prompt file, that whole cost comes back, so this fails on the day it does.
+    """
+    for name in PROMPTS:
+        raw = (ROOT / "prompts" / name).read_text()
+        assert topics.LIST_MARKER in raw, (
+            f"{name} must ask for the list with {topics.LIST_MARKER} rather "
+            "than spelling it out")
+        # `other` is a common English word and `security` and `memory` appear in
+        # ordinary prose, so the literal checked for is the comma run itself:
+        # three consecutive topic names is a list and nothing else.
+        for a, b, c in zip(topics.TOPICS, topics.TOPICS[1:], topics.TOPICS[2:]):
+            assert f"{a}, {b}, {c}" not in raw, (
+                f"{name} carries a literal copy of the topic list, which puts "
+                "a Tier C file in the diff of every taxonomy change")
+
+
+def test_the_rendered_prompt_is_the_prompt_that_was_hashed():
+    """`claims.prompt_sha` covers the vocabulary, which it did not before.
+
+    Adding a tag used to change what the insert accepted and leave every
+    claim's `prompt_sha` untouched, so the audit trail said the vocabulary had
+    not moved on the day it moved. `load_prompt` renders before it hashes, so
+    the sha now identifies the words as well as the file.
+    """
+    import distill
+
+    text, sha = distill.load_prompt("paper")
+    assert topics.LIST_MARKER not in text, (
+        "the marker reached the model, so the prompt was sent with no topic list")
+    assert text == rendered("distill.md")
+    import hashlib
+    assert sha == hashlib.sha256(text.encode()).hexdigest()[:12]
+    # The raw file hashes to something else, which is the whole point: the sha
+    # would otherwise be a fingerprint of a prompt nobody was sent.
+    raw = (ROOT / "prompts" / "distill.md").read_text()
+    assert sha != hashlib.sha256(raw.encode()).hexdigest()[:12]
+
+
+def test_the_vocabulary_moved_without_changing_a_word_the_model_reads():
+    """The move was a refactor, and this is the evidence for that claim.
+
+    Every word, in order, is the word that was in the file before the
+    vocabulary moved out of it, for both prompts. Only the line breaks differ:
+    the four Layer 4 definitions were wrapped at 78 columns and everything
+    around them at 79, which is the visible residue of two copies maintained
+    on two days, and one renderer wraps the whole vocabulary at one width.
+    """
+    for name, chars in (("distill.md", 6056), ("distill-practices.md", 6115)):
+        text = rendered(name)
+        # The character count is unchanged, so the request this prompt sits in
+        # is the same size it was and `pipeline/budget.py`'s sizing is unmoved.
+        assert len(text) == chars, name
 
 
 LAYER_4 = ("protocols", "containment", "security", "self-improvement")
@@ -79,9 +162,13 @@ def test_each_new_topic_is_defined_in_the_prompt_and_not_only_listed():
     each state their boundary against a neighbour, because that is where the
     vocabulary leaks. These four arrived with the same thing.
     """
-    prompt = (ROOT / "prompts" / "distill.md").read_text()
+    prompt = rendered("distill.md")
     for topic in LAYER_4:
         assert f"`{topic}` covers" in prompt, topic
+    # And the definition is a fact about the taxonomy, not about the file, so
+    # the module can answer the same question without reading a prompt at all.
+    # `retag_threads` refuses to run on the strength of this.
+    assert not set(LAYER_4) & set(topics.undefined())
 
 
 def test_the_four_new_tags_survive_the_fold_including_their_typography():
@@ -136,7 +223,7 @@ def test_the_three_aliases_are_the_ones_the_prompt_itself_licenses():
     # made a formatting error, not a judgment.
     for phrase in ("chain-of-thought", "Chain Of Thought", "test-time compute"):
         assert topics.normalize([phrase])[0] == ["reasoning"], phrase
-    prompt = (ROOT / "prompts" / "distill.md").read_text().lower()
+    prompt = rendered("distill.md").lower()
     for alias in topics.ALIASES:
         assert alias.replace("-", " ") in prompt.replace("-", " ") or alias == "cot"
 

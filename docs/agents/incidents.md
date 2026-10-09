@@ -10708,3 +10708,171 @@ rent to every run in the meantime. A queue of changes that only a hand can
 apply needs a number beside each item saying what the wait has cost so far,
 because the decision to leave something queued is only cheap if nobody
 measures it.
+
+## INC-2026-10-09-the-prompts-size-was-measured-once-and-priced-twice-stale — the cost per paper the owner asked for by name was short by half a prompt for three weeks, and no test named the constant (2026-10-09, engineer seat)
+
+**What was wrong.** `pipeline/distill.py` carried
+
+```python
+EXPECTED_PROMPT_TOKENS = 39_059      # 38,069 payload + 990 prompt
+```
+
+with a comment two lines above it reading "measured rather than guessed." It
+was measured, and on the day it was written it was exactly right. Every commit
+that has ever touched the paper prompt, counted with CI's own tokenizer:
+
+| commit | date | `prompts/distill.md` | prompt tokens |
+|---|---|---|---|
+| 41db0c8 | 2026-09-23 | 3,072 chars | 740 |
+| ad7abd9 | 2026-09-26 | 4,120 chars | **990** |
+| 4e1d20d | 2026-10-05 | 6,056 chars | **1,427** |
+
+So the constant was correct for nine days and wrong for four, by 437 tokens of
+input, or 44% of the prompt. `cost_report` is the only consumer and it prints
+cost per paper and projected monthly spend, which are the two numbers the
+owner asked for by name. A second hardcoded `990` sat in the same function's
+ceiling calculation, and a third caller multiplied the understated figure by
+the queue depth to answer "what does clearing the queue cost."
+
+The precision matters to the lesson. This is not a number somebody guessed and
+never checked. It is a number somebody measured correctly, wrote a comment
+about measuring, and then left behind when the thing it measured moved. The
+fix for the first is to go and measure. There is no fix for the second except
+to stop storing the answer.
+
+**Why it is recorded as a repeat.** Two shapes, both already in this file.
+
+The first is the cross-file claim that goes stale because one side was edited,
+named in as many words by
+`INC-2026-10-05-the-rewrite-staled-every-coverage-claim` and
+built against twice at the skill level, where `panel_verdicts.target_sha` and
+`results.json`'s `skill_md_sha256` both exist so that editing a file
+invalidates what was claimed about it. This constant is a claim in
+`pipeline/distill.py` about the size of a file in `prompts/`, and it shipped
+with no such guard while the module next door, `pipeline/budget.py`, sizes
+every other request in the pipeline by reading the live prompt. The capability
+was one import away the whole time.
+`INC-2026-10-04-one-constant-for-two-documents` is the same family and the
+closest sibling: one literal standing in for a fact that two files share.
+
+The second is L-E11's shape, and it is also the shape of
+`INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`, which this
+seat filed earlier the same day: a number
+re-derived from the wrong source, trusted because it was once correct. That
+entry's list of ways a guard goes wrong while nothing it watches moves now
+takes a sixth axis. The clock moves, the environment moves, the product
+improves, nothing moves at all, the observer moves, and now **the thing being
+measured moves and the measurement does not.**
+
+**What made it survivable.** Nothing read it. `grep -rn
+EXPECTED_PROMPT_TOKENS tests/` returned nothing before this run. The constant
+was not wrong in a way that broke a run, because the comment above it says
+plainly that it only prices and never sizes, so the failure mode was a quiet
+understatement in a report rather than a 413. That is also why it is worth
+recording: the org's whole defence against prompt growth, `checks.yml` and the
+`CRON_REQUESTS` table, is aimed at requests that stop fitting. A number that
+only prices has no such defence and gets read by the owner instead of by a
+model.
+
+**What was built.** `distill.prompt_tokens()` counts the rendered prompt
+through `budget.count_tokens` at call time, `EXPECTED_PAYLOAD_TOKENS` keeps the
+measured half that is genuinely a measurement, and all three callers take the
+prompt from the derivation. Two tests in
+`tests/test_distill_fulltext_budget.py` keep it derived: one asserts the count
+matches the text `load_prompt` returns and exceeds the raw file's, the other
+fails if `EXPECTED_PROMPT_TOKENS` or a literal `990` reappears beside a
+`cost_usd` call.
+
+**The general rule, and it is not about this constant.** A number that
+describes another file is a cache, and a cache with no invalidation is a
+comment. Either derive it at the point of use or make something fail when the
+file it describes changes. "Measured rather than guessed" in a comment is a
+claim about the past, and it is the sentence most likely to be true on the day
+it is written and false on every day after.
+
+## INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs — the one job whose output had stopped was the one job the guard could not see, and the deploy surface read ok while saying so (2026-10-09, engineer seat, second run)
+
+**What was wrong.** `pipeline/runtime_sha.py`'s `APPS` listed three scheduled
+jobs. `pipeline/` contains five:
+
+| job | schedule | watched before today |
+|---|---|---|
+| `ingest` | 11:00 UTC daily | no |
+| `triage` | 12:00 UTC daily | yes |
+| `interpret` | 14:00 UTC daily | yes |
+| `distill` | 15:00 UTC daily | **no** |
+| `weekly` | 09:00 UTC Mondays | yes |
+
+The two omitted are the stage that fills `papers` and the stage that fills
+`claims`, which are the two columns `tools/delivery_health.py`'s pipeline
+surface judges. So the guard watched the three jobs whose output no other
+surface grades, and was blind to both jobs whose output it grades itself.
+
+**How it surfaced.** The PM's standup of 2026-10-09 dispatched this seat on a
+real break: the pipeline surface reading `FAILING`, "claims has not moved in 2
+days," with papers current. The public receipt put the last claim at
+2026-10-07T15:15:25, which is the 15:00 UTC distill cron of 10-07. Two
+scheduled runs since then produced nothing.
+
+The deploy surface, asked in the same run, read `ok`. It was not wrong. It was
+answering about triage, interpret and weekly, all three of which had recorded
+that day.
+
+**The cost, stated precisely, because it is not an outage.** Nothing was
+broken by this entry's defect. What it cost is a diagnosis. `distill` was the
+only scheduled job in the pipeline that left no trace of a run, so no seat
+could distinguish three very different causes: a cron that stopped firing, a
+run against an empty queue, and a run that raised. Narrowing further needed
+Modal logs or a database credential and no seat holds either, so the stall
+goes to the ledger as `urgent` with the cause still open. A guard's job is to
+make the next question answerable, and this one made the only question that
+mattered unanswerable about the only job that mattered.
+
+**Why it is recorded as a repeat.** It is the third sighting of one shape in
+one day, on one surface, and the three are worth reading together because each
+is a different way to be blind.
+
+1. `INC-2026-10-08-a-delivery-guardrail-was-wrong-on-a-schedule`: the guard
+   asked the right question at the wrong time.
+2. `INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`, filed this
+   morning by this seat's first run: the guard compared the right thing
+   against the wrong reference.
+3. This one: the guard never looked. Its answer about everything it looked at
+   was correct, which is what kept it quiet.
+
+That morning entry's list of ways a guard goes wrong while nothing it watches
+moves takes another axis. The clock moves, the environment moves, the product
+improves, nothing moves at all, the observer moves, the thing measured moves
+and the measurement does not, and now **the thing that moved was never in
+scope.** Entries 2 and 3 are the same guard, eight hours apart, and the first
+fix did not and could not reveal the second: a guard that is accurate about a
+subset reads as a guard that is accurate.
+
+It is also L-A9's shape, recording is not enforcing, with a detail this
+register has not collected before. Every other instance in this file is a rule
+nothing checked. Here there was a check, `test_the_guard_cannot_be_deployed_
+without_itself`, and it was correct, and it derived its app list from `APPS`
+itself. So the check inherited the gap it should have caught. **A test that
+derives its scope from the thing under test can only ever confirm that the
+thing is consistent with itself.** That is the transferable lesson and it is
+not about this guard.
+
+**What was built.** `APPS` is five of five. `distill` and `ingest` mount
+`runtime_sha.py` and record inside the connection they already open. A missing
+row is read as unmeasured rather than as drift, so adding a job fires no false
+alarm on the day it is added, while an empty table keeps reading as a failure.
+And the list is derived from the repository in CI:
+`tests/test_deploy_drift.py` parses `pipeline/` for `modal.Cron` and
+`modal.Period` with `ast` and fails in both directions. It needs the AST
+rather than a grep because `pipeline/skill_revision.py` carries its old cron
+inside a comment recording that it stopped being scheduled on 2026-10-05, and
+a text search would have demanded a guard on a job that no longer runs.
+
+The general rule is in `docs/agents/delivery-health.md` under
+"2026-10-09, later the same day: a guard is only as wide as its list."
+
+**The part that is still open.** The two new apps read `unknown (never
+recorded)` until the owner runs `modal deploy pipeline/distill.py` and
+`modal deploy pipeline/ingest.py` and their next scheduled runs write a row.
+Until then the deploy surface is `unknown` rather than `ok`, which is the
+honest state and is the first time it has been honest about these two jobs.

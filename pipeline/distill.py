@@ -255,6 +255,12 @@ image = (
     # The taxonomy travels with the job, so the list the tests check is the list
     # the insert enforces.
     .add_local_file("pipeline/topics.py", "/root/topics.py")
+    # The drift guard, so this job can say which deploy it is. Added 2026-10-09
+    # after the pipeline surface read "claims has not moved in 2 days" and
+    # nothing in the org could say whether this job had run: distill was one of
+    # the two scheduled apps `pipeline/runtime_sha.py` never watched, and it is
+    # the stage that fills `claims`.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
     # The reader and the queue parser travel too, so the job reads a paper the
     # same way the seats do (tools/read_paper.py) and drains the same file the
     # skill seat writes (ADR-35).
@@ -362,6 +368,11 @@ def read_paper():
     return _sibling("read_paper")
 
 
+def runtime_guard():
+    """pipeline/runtime_sha.py — the deploy's own fingerprint, written per run."""
+    return _sibling("runtime_sha")
+
+
 def reading_queue():
     """pipeline/reading_queue.py — the parser for docs/research/reading-queue.md."""
     return _sibling("reading_queue")
@@ -415,8 +426,16 @@ def load_prompt(kind: str = "paper") -> tuple[str, str]:
     which version of it. That is the whole audit trail for the practices split:
     `select prompt_sha, count(*) from claims group by 1` says how much of the
     corpus was read as a paper and how much as a field report.
+
+    Rendered before it is hashed, as of 2026-10-09. The topic vocabulary lives
+    in `pipeline/topics.py` and the prompt carries a marker where it goes, so
+    the text hashed here is the text the model is sent. That closes a hole in
+    the audit trail rather than only moving a file: until today, adding a tag
+    changed what the insert accepted and left every claim's `prompt_sha`
+    untouched, so the column said the vocabulary had not moved on the day it
+    moved.
     """
-    text = prompt_path(kind).read_text()
+    text = topics().render(prompt_path(kind).read_text())
     return text, hashlib.sha256(text.encode()).hexdigest()[:12]
 
 
@@ -627,12 +646,41 @@ def preflight() -> str:
 
 #: What the expected request looks like, measured rather than guessed. The mean
 #: payload across the fourteen papers in
-#: docs/evals/2026-09-30-fulltext-token-density.json at FULLTEXT_CHARS, plus the
-#: prompt, against a reply of the size the rehearsal actually produces. Used
+#: docs/evals/2026-09-30-fulltext-token-density.json at FULLTEXT_CHARS. Used
 #: only to PRICE a run; nothing sizes a request off it, because a request is
 #: sized against the worst case and priced against the expectation.
-EXPECTED_PROMPT_TOKENS = 39_059      # 38,069 payload + 990 prompt
+EXPECTED_PAYLOAD_TOKENS = 38_069
 EXPECTED_COMPLETION_TOKENS = 1_200
+
+
+def prompt_tokens(kind: str = "paper") -> int:
+    """The rendered system prompt's size, counted now rather than remembered.
+
+    This used to be the constant `990`, added to the payload above and to the
+    ceiling in `cost_report`. It was measured on 2026-09-26 and it was right:
+    the paper prompt was 4,120 characters and 990 tokens that day. Then the
+    four Layer 4 definitions of 2026-10-05 took it to 6,056 characters and
+    1,427 tokens, and nothing re-measured, so every price this file printed was
+    short by 437 tokens of input. Cost per paper and projected monthly spend
+    are the two numbers the owner asked for by name, and both were among them.
+
+    Counted from `load_prompt`, so it is the rendered text including the topic
+    vocabulary, which is the text the model is actually sent. Through
+    `budget.count_tokens`, which means the exact tokenizer where one is
+    installed and budget's pessimistic 3.0 chars/token fallback otherwise. The
+    distill image installs no tiktoken, so a Modal run prices this prompt at
+    2,019 rather than 1,426 and CI prices it exactly. That is the safe
+    direction for a cost figure and it is the same counter every other request
+    in this pipeline is sized with, where the old constant was 990 everywhere
+    and too low in both.
+    """
+    text, _ = load_prompt(kind)
+    return _sibling("budget").count_tokens(text)
+
+
+def expected_prompt_tokens(kind: str = "paper") -> int:
+    """Payload plus prompt, the request this job expects to send."""
+    return EXPECTED_PAYLOAD_TOKENS + prompt_tokens(kind)
 
 
 def cost_report(guard, model: str) -> list[str]:
@@ -643,10 +691,11 @@ def cost_report(guard, model: str) -> list[str]:
     The owner asked for these two numbers by name; they are computed from
     `budget.MODELS` prices so they cannot drift from what CI projects.
     """
-    expected = guard.cost_usd(EXPECTED_PROMPT_TOKENS, EXPECTED_COMPLETION_TOKENS,
-                              model)
+    prompt = prompt_tokens()
+    expected = guard.cost_usd(EXPECTED_PAYLOAD_TOKENS + prompt,
+                              EXPECTED_COMPLETION_TOKENS, model)
     ceiling = guard.cost_usd(
-        int(FULLTEXT_CHARS / guard.FULLTEXT_CHARS_PER_TOKEN) + 990,
+        int(FULLTEXT_CHARS / guard.FULLTEXT_CHARS_PER_TOKEN) + prompt,
         MAX_COMPLETION_TOKENS, model)
     lines = [
         f"model: {model}   window: {FULLTEXT_CHARS} chars   "
@@ -802,9 +851,9 @@ def rehearse(allow_abstract_only: bool = False) -> str:
             f"the model tagged claims with {sum(dropped.values())} topics off "
             f"the closed list ({sorted(dropped)}), which pipeline/topics.py "
             "drops. Dropped tags mean claims no query can match, which is "
-            "incident 30 and the 18 invisible claims of 2026-09-26. Fix "
-            "prompts/distill.md and pipeline/topics.py together. Nothing was "
-            "deployed.")
+            "incident 30 and the 18 invisible claims of 2026-09-26. The list "
+            "is pipeline/topics.py alone as of 2026-10-09, so fix it there. "
+            "Nothing was deployed.")
     if read_in_full and model != MODELS[0]:
         raise RuntimeError(
             f"the rehearsal was answered by {model}, not by {MODELS[0]}, which "
@@ -880,8 +929,8 @@ def drain() -> str:
 
     per_run = MAX_PAPERS_PER_RUN
     runs = -(-depth // per_run) if per_run else 0
-    expected = guard.cost_usd(EXPECTED_PROMPT_TOKENS, EXPECTED_COMPLETION_TOKENS,
-                              MODELS[0])
+    expected = guard.cost_usd(expected_prompt_tokens(),
+                              EXPECTED_COMPLETION_TOKENS, MODELS[0])
     lines = [
         f"distill queue: {depth} papers, of which {threads} are the standing "
         f"threads and {deep} are deep_read; {waiting} more in the reading queue",
@@ -1018,6 +1067,17 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         print(f"  {note}")
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Say which deploy this is before anything else happens, the way
+        # triage, interpret and weekly have since 2026-09-28. It cannot raise
+        # and cannot abort this transaction; pipeline/runtime_sha.py says how.
+        #
+        # This line is why it exists. On 2026-10-09 the pipeline surface read
+        # FAILING with "claims has not moved in 2 days" while papers stayed
+        # current, and no seat could tell whether this job had stopped firing,
+        # run against an empty queue, or raised: it was the only scheduled job
+        # in the pipeline that left no trace of a run. Six surfaces could see
+        # that claims had stopped and none could see this job at all.
+        print(runtime_guard().record_runtime(conn, "distill", __file__)[1])
         # ADR-35: what the skill seat could not read comes before what the
         # firehose happened to deliver, because a queue line is a person
         # asking and the intake is a subscription.

@@ -1004,6 +1004,31 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
 
+        # Never recorded is a third state, and it used to be read as the
+        # second. An app with no row has told this guard nothing, so the age
+        # of its last commit is not evidence that a deploy is late: it is
+        # evidence that the app is unmeasured. Reading it as drift produces a
+        # FAILING whose number is the age of the code rather than the age of
+        # the deploy, which cries wolf on an app that may be running
+        # perfectly. `ingest` is the live case: it delivered papers at 11:01
+        # UTC on 2026-10-09 and has never recorded a runtime in its life.
+        #
+        # Only when something else did record, and that condition is the whole
+        # of the distinction. An EMPTY table is not five unmeasured apps, it is
+        # a recorder that has never worked, and that is a failure this guard
+        # must keep shouting about: `test_a_job_that_never_reported_is_treated
+        # _as_drift` has held that line since the guard shipped and it still
+        # holds it. One app missing among four that reported is a gap in
+        # coverage. Every app missing is a gap in the mechanism.
+        if row is None and rows:
+            why = ("has never recorded a runtime, so this app is unmeasured "
+                   "rather than behind. It records on its next run after a "
+                   f"deploy: modal deploy {runtime_sha.APPS[app]}")
+            here.update(state=UNKNOWN, why=why)
+            unknowns.append(f"{app} (never recorded)")
+            evidence[app] = here
+            continue
+
         # Reported, never a verdict. Both halves of the comparison now come
         # from a commit, so an uncommitted edit cannot move the answer and
         # refusing to answer because the sandbox is dirty would be a silence
