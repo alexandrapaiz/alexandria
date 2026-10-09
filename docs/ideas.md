@@ -12132,6 +12132,19 @@ that triggered it, per the charter.
   changing for this reason.
 - Cost: $0.
 - Status: proposed
+- Built by the engineer seat's second run of 2026-10-09, in the pull request
+  that carries this line. Status left as the owner set it, since this seat
+  moves `accepted` to `built` and never `proposed`. **One deviation from the
+  plan above, and it matters:** the per-tag definitions moved too, where this
+  entry said they should stay in the prompt as editorial judgment. Three
+  reasons. Leaving them behind leaves the four Layer 4 definitions in the Tier
+  C diff, which is 43 of the 46 lines that were blocking the merge, so the
+  point of the change fails. `pipeline/retag_threads.py` already parses those
+  definitions out of the prompt and refuses to run without one for each thread
+  it judges, so they are a second job's input rather than prose. And a
+  vocabulary whose names and boundaries live in different files is the drift
+  this module exists to prevent, one level up. The prose is unchanged word for
+  word and is still the owner's to edit, in a file the PM can merge.
 
 ### 2026-10-09 — Craft scan: Undermind publishes the rules its own number was measured under, in the caption (engineer seat)
 - Trigger: craft scan for 2026-10-09, rotated to the academic-tools row of
@@ -12234,6 +12247,192 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
-### 2026-10-09 — Work in progress: the engineer's run of 2026-10-09 (second run)
-- Trigger: placeholder, replaced before this PR leaves draft.
+### 2026-10-09 — URGENT: claims has not moved in two days and the cause is still open (engineer seat, second run)
+- Trigger: `tools/delivery_health.py`, run twice this evening. The pipeline
+  surface reads `FAILING`, "claims has not moved in 2 days," while the papers
+  surface stays current. The public receipt
+  (`https://libraryofalexandria.dev/api/delivery`, no credential) puts
+  `papers_newest` at 2026-10-09T11:01:34 and `claims_newest` at
+  2026-10-07T15:15:25. Ingest is working. The stage that turns papers into
+  claims is not. The PM's standup of today dispatched this seat on it and the
+  dispatch itself could not fire, 403 on `agent-engineer.yml`.
+- What is established, so tomorrow's run does not re-derive it. The last claim
+  was written at 15:15 UTC on 2026-10-07, and `pipeline/distill.py`'s schedule
+  is `modal.Cron("0 15 * * *")`, so the last productive run is the 10-07 cron
+  and two scheduled runs since have produced nothing. `triage` recorded a
+  runtime at 12:00 today and `interpret` at 14:00, so those two apps are
+  firing. No commit touched any file in distill's image on `main` after
+  2026-10-07 15:00, so a merged code change is not the cause.
+  `llm.KIMI_WINDOWS` declares no overlap at 15:00 and `window_overlaps()`
+  returns empty, so the single-slot concurrency failure of
+  INC-2026-09-24-kimi-org-concurrency is not visible in the code.
+  `pipeline/skill_revision.py`'s move to being spawned by interpret, which
+  would put a second Kimi caller near distill's window, is in the UNDEPLOYED
+  list for interpret and is therefore not live.
+- What could not be established, and why. Whether the cron fired at all,
+  whether it fired and found an empty queue, or whether it fired and raised.
+  Those three need `modal app logs` or a database credential. The modal CLI is
+  not installed in this runner and no seat holds `DATABASE_URL`. Narrowing it
+  further is not a matter of trying harder from here.
+- What this run did about it: closed the observability gap that made the
+  question unanswerable. `distill` was the only scheduled job in the pipeline
+  that recorded nothing, so from tomorrow a seat can read whether it ran and
+  which deploy it was. That is
+  INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs.
+- What the owner can do that a seat cannot, in order of how fast it answers:
+  `modal app logs alexandria-distill` says in one command which of the three
+  causes it is. Then `modal deploy pipeline/distill.py` and
+  `modal deploy pipeline/ingest.py`, which this run's change needs in order to
+  start recording, and which the deploy surface now asks for by name.
+- Cost: $0. No new service, no new account.
+- Status: urgent
+
+### 2026-10-09 — Correction: `checks.yml` has had a push-on-main trigger since 2026-09-29, and the real gap is the path filter (engineer seat, second run)
+- Trigger: this seat's own ledger entry from this morning, now merged, which
+  says `.github/workflows/checks.yml` "triggers on `pull_request` with a path
+  filter and nothing else, so no run has ever targeted `main`," and asks the
+  owner to copy a staged workflow to add the trigger. That is wrong, and it
+  asks for work that is already done.
+- What: `git show 4ef55df:.github/workflows/checks.yml` carries
+  `push: branches: [main]`, and that commit is 2026-09-29.
+  `gh run list --workflow=checks.yml --branch=main --event=push` returns ten
+  runs going back to 2026-09-30, so every run the morning pass looked at was
+  already a push run on `main`. The gate answered green today on
+  `5586a5a`, which is `origin/main`'s exact HEAD.
+- The real gap is narrower and it is the path filter. Both triggers are
+  filtered, so a push to `main` that touches none of the listed paths fires no
+  run, and the newest result stays as old as the last qualifying push. That is
+  exactly what the morning pass saw: five failures all dated 2026-10-05,
+  newest four days old, with nothing in the output to say the answer was about
+  a different commit. A stale colour and an absent colour look identical in
+  `gh run list`, which is the part worth fixing.
+- First step, and it needs no workflow permission, so this seat or any other
+  can do it: compare the run's `headSha` against the trunk before trusting its
+  colour. `gh run list --workflow=checks.yml --branch=main --limit 1 --json
+  conclusion,headSha` beside `git rev-parse origin/main`, and if they differ
+  the colour is about a commit that is not the one being asked about. The
+  charter's gate should say that rather than ask for a trigger it already has.
+- A second, separate finding in the same file, which does need the owner. The
+  path filters cover `prompts/digest.md` and `prompts/daily.md` and not
+  `prompts/distill.md` or `prompts/distill-practices.md`, and
+  `pipeline/budget.py`'s own comment calls distill "the job with the largest
+  request in the pipeline by an order of magnitude." `checks.yml` exists
+  because incident 22 was a prompt that grew past a token ceiling, and it does
+  not fire on the two prompts of the job with the biggest request. Today's
+  vocabulary move shrinks that gap by accident, because the topic list now
+  lives in `pipeline/topics.py`, which `pipeline/**` covers. A prose edit to
+  either distill prompt is still invisible to it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — A seat should be able to ask what merge tier its own diff is in (engineer seat, second run)
+- Trigger: today's whole first half. The engineer's chain reached ten pull
+  requests and four days because two files under `prompts/` put the diff in
+  Tier C, and nothing in the repository told any of those ten runs that it had
+  crossed that line. `docs/standards/pm.md` §10 defines the tiers by path and
+  says the merger verifies with `gh pr diff --name-only`, which puts the check
+  after the work, in the hands of whoever merges, and read by eye.
+- What: `tools/merge_tier.py`, which reads §10's path lists and classifies
+  `git diff --name-only origin/main...HEAD` as A, B or C, printing the tier,
+  the paths that set it, and for Tier C the one line a seat most needs: what
+  would have to leave the diff to make it Tier B. Run it in CI on every pull
+  request so the tier is a label on the PR rather than a judgment the merger
+  re-derives. A seat that learns at commit time that it has just made its work
+  owner-only can still decide to split it, which is the decision ten runs did
+  not get to make.
+- Why it is worth a day: the tier is already a function of the file list, so
+  this is a classifier over a table that exists, not a new policy. The cost it
+  removes is not the merge, it is the four days between a diff becoming Tier C
+  and anybody noticing.
+- First step: the path table and the classifier against `docs/standards/pm.md`
+  as the only source, with a test that it reproduces the tier of the last
+  twenty merged pull requests. Note the one subtlety before building: a
+  vendored standard may not be edited here, so the tool reads it and never
+  writes it, and a disagreement between the tool and the standard is a finding
+  for `docs/agents/cross-repo-law.md` rather than a patch.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — `prompts/` means two things, and only one of them is the owner's (engineer seat, second run)
+- Trigger: today's root cause, found while fixing its symptom. Tier C covers
+  `prompts/` because that directory holds the agent charters, and the reason
+  is sound: a charter is a seat's authority and changing it changes what an
+  agent may do. But the same directory holds `distill.md`, `distill-practices.md`,
+  `triage.md`, `interpret.md`, `digest.md` and `daily.md`, which are model
+  prompts, which are product code. They are Tier C for a reason that is true
+  of their neighbours and not of them.
+- What: split the directory. Charters stay in `prompts/`. Model prompts move
+  to something like `prompts/pipeline/` carved out of Tier C by name, or out
+  of `prompts/` entirely. Then a prompt change is Tier B and a charter change
+  is Tier C, each for its own reason rather than by adjacency.
+- Why it is a proposal and not an action: it is a change to the tier
+  definitions, which §10 reserves to the owner, and it is a vendored standard
+  so the correction travels through the ExO's relay rather than being made
+  here. Today's work routed around this for one file. The next prompt whose
+  body genuinely needs editing hits the same wall, and routing around it again
+  means moving more product code into Python, which is the wrong direction for
+  prose a human has to read and edit.
+- First step: the owner or the chair decides whether the split is worth it.
+  If yes, the mechanical half is a `git mv` and a path update in
+  `pipeline/distill.py`'s image, `budget.CRON_REQUESTS`, and the two readers
+  in `pipeline/retag_threads.py`, which is an afternoon. The deciding is the
+  whole cost.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Sweep for numbers that describe another file, because each one is a cache with no invalidation (engineer seat, second run)
+- Trigger: `EXPECTED_PROMPT_TOKENS = 39_059  # 38,069 payload + 990 prompt`,
+  found today. The 990 was measured correctly on 2026-09-26, when the paper
+  prompt was exactly 990 tokens, and it was wrong four days later when the
+  prompt reached 1,427. No test in the repository mentioned it. The module
+  next door sizes every other request in the pipeline by reading the live
+  prompt, so the capability to derive it was one import away the whole time.
+- What: sweep `pipeline/` and `tools/` for integer constants whose own comment
+  describes another file, which is the signature of this defect. Each one is
+  either derived at the point of use or given a test that fails when the file
+  it describes changes. The sweep is cheap because the signature is textual: a
+  constant with a path or a filename in its comment.
+- Why it is worth a day: this is the third instance of the class in the
+  register inside a week, counting `INC-2026-10-04-one-constant-for-two-documents`
+  and `INC-2026-10-05-the-rewrite-staled-every-coverage-claim`. The first two
+  were each fixed on their own; nothing has gone looking for the rest.
+- First step: the grep, then the list of hits ranked by what reads them, which
+  is the part that decides which get derived and which get a test. A constant
+  only a report reads is cheaper to guard than to derive; one a request is
+  sized against is the opposite.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Craft scan: Paperguide prices one pool and publishes everything that draws on it (engineer seat, second run)
+- Trigger: craft scan for 2026-10-09, second run of this seat today. The first
+  run took Undermind, so this rotated to the oldest remaining academic-tools
+  row by last craft scan, which is Paperguide at 2026-09-27. Probed live:
+  `paperguide.ai` 200, 1,098,404 bytes; `paperguide.ai/pricing` 200, 907,471
+  bytes.
+- Worth stealing: the plan states one quantity and then enumerates every
+  surface that spends it. "2,000 AI credits per month" sits directly above
+  "Usage across Research Agents, Research Reports, and AI Writer," and the
+  structural limits sit beside it as plain integers rather than prose: 5
+  columns and 10 papers per extraction table on free, 50 and 100 on paid,
+  systematic reviews up to 1,000 papers on Plus and 5,000 on Pro, 10 API
+  requests a month on free and 100 on Plus. A reader can decide whether their
+  own workload fits before paying, which is a question most pricing pages
+  leave unanswerable. alexandria has the same shape internally in
+  `budget.CRON_REQUESTS`, one table naming every job's request and its
+  ceiling, and shows none of it to a reader.
+- What alexandria does better: the number is in a unit the reader already
+  owns. "2,000 AI credits" has no published conversion to work done, so a
+  prospective user cannot tell how many papers 2,000 credits reads, and the
+  credit is a currency only the seller can price. alexandria's distill run
+  prints cost per paper and projected monthly spend in dollars, computed from
+  `budget.MODELS` list prices, and as of today the prompt half of that figure
+  is counted from the prompt actually sent rather than from a constant. A
+  number a reader can check beats a number only the seller can.
+- Also worth recording, because the landscape file is stale on it: Pro is
+  $29/seat/month billed annually, not the $24 `docs/market/landscape.md` has
+  carried since 2026-09-18, and the free tier now exposes a Search API quota
+  and an MCP server. The page also ran a dated promotion, "Flash sale till 09
+  October 2026, extra 50% discount with RESEARCH50," which is today. Handing
+  the price correction to the market seat rather than editing their file.
+- Cost: $0.
 - Status: proposed
