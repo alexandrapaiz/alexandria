@@ -233,10 +233,11 @@ def sweep():
     only answers for them, so an entry this file has never heard of fails
     rather than passing silently.
 
-    What it cannot see, which is the other half of L-A21. An amendment. Nine
-    of these fifty were widened after they were written, entry 13 from three
-    characters to every character outside ASCII and entry 33 from three italic
-    labels to four. The anchor checks that the entry is enforced somewhere and
+    What it cannot see, which is the other half of L-A21. An amendment. Four
+    of these fifty say "Amended" in their own text, 13, 14, 16 and 33, and
+    widening is what each amendment did: 13 went from three characters to
+    every character outside ASCII, and 33 from three italic labels to four.
+    The anchor checks that the entry is enforced somewhere and
     cannot check that the enforcement is as wide as the entry became, so an
     amendment that outgrows its rule passes here. That is a reading, and it
     belongs to pass 4 of the grading procedure rather than to this command.
