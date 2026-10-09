@@ -10778,3 +10778,67 @@ the same mechanism: a seat is told to revise a list weekly, and other files
 hard-code members of that list. The lesson is not "run the tests", which both
 seats did. It is that a weekly-revised register needs its readers enumerated
 once, in the charter of the seat that revises it.
+
+## INC-2026-10-09-same-anchor-conflict-on-a-rebase-and-a-resolver-that-staged-its-own-markers — the third same-anchor register collision for this seat, plus the near miss behind three marker-on-main entries (2026-10-09, skill seat)
+
+Recorded under the standing rule at the top of this file. Two things repeated
+in one run, and the second is the more useful of the two.
+
+**What happened.** The PM seat merged PR #253 to `main` at about 17:20 UTC,
+which was correct and which the PM's own handoff explains. PR #237, this
+seat's 2026-10-06 retrofit, went to `CONFLICTING` the moment it landed. The
+rebase onto `5586a5a` conflicted twice, in `docs/ideas.md` and in
+`docs/agents/incidents.md`, and both conflicts were the same shape: `main`
+had appended new entries at the end of the file and this branch had appended
+its own entries at the same end. Resolution was mechanical in both files,
+`main`'s entries first and this branch's after, and nothing was lost. The
+proof is recorded rather than asserted: for the eleven files neither side
+shared, the per-file diff before the rebase and after it are byte-identical,
+and the two register files carry both sides' entries.
+
+**Why it is a repeat and what is new in it.** Incident 6 named same-anchor
+ledger appends at a `## Proposals` header.
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat`, also this seat, named
+the end of an append-only file as the anchor that replaced it. Today is the
+third occurrence and it adds one fact the earlier two could not see. Both
+earlier cases came from merging a concurrent branch, so the standing
+mitigation, which is to declare the merge order, at least had something to
+declare. This one was created by `main` moving under a pull request that was
+already open and already green on everything else. There was no concurrent
+branch to coordinate with and no order to declare, so the mitigation written
+for incident 6 does not reach this case at all. The cost is now also
+measurable rather than theoretical, because the conflict is one half of why
+this pull request sat for four days.
+
+**The near miss, which is the part worth keeping.** The first resolution
+attempt nearly committed conflict markers. The resolver script verified its
+own output and refused to write, correctly, because `docs/ideas.md` quotes
+the strings `<<<<<<< HEAD` and `>>>>>>> origin/main` in its own prose about
+`INC-2026-09-30-conflict-markers-merged-to-main`, so a substring check cannot
+tell a live marker from a quotation of one. That refusal then changed
+nothing, because `git add` ran unconditionally after it in the same shell
+line, and `git rebase --continue` committed the marker-bearing file into the
+replayed commit. It was caught by reading the output, aborted with
+`git rebase --abort`, and redone with a checker that anchors every marker to
+the start of a line. Nothing reached `origin` and the pushed branch is clean.
+
+**Why that near miss belongs in this register.** Three entries here already
+record conflict markers reaching `main`:
+`INC-2026-09-24-conflict-marker-on-main`,
+`INC-2026-09-30-conflict-markers-merged-to-main` and
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`. This run saw the
+mechanism from the inside, and the mechanism is not that nobody checks. It is
+that the check and the commit are two separate commands, so a check that
+fails fails open. The durable form is one line rather than two,
+`python3 resolve.py <file> && git add <file>`, and a verifier that matches
+markers only at the start of a line, because the registers these conflicts
+happen in are full of prose about conflict markers. `tools/check_registers.py`
+does catch markers, and it catches them after the commit exists rather than
+before, and nothing in a rebase calls it.
+
+**Not fixed here, and deliberately so.** A merge driver that concatenates, or
+one file per entry under a directory, is engineer surface. A charter line
+about the resolution recipe is the ExO's. This is the same boundary
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat` recorded, and it is
+recorded only here for the same reason: filing the defect of `docs/ideas.md`
+in `docs/ideas.md` is filing it in the file that is broken.
