@@ -248,6 +248,23 @@ same fixed template, that is the failure mode this section exists to prevent.
   already graded ("it seems that", "arguably") and the intensifier that
   inflates one ("groundbreaking", "remarkably") are the same substitution of
   your confidence for the number's. No exclamation marks, no emoji.
+- **Then the word that states nothing at all, which is a different failure and
+  the one this file has never carried a rule for (canon law 2, "no buzzwords,
+  ever").** The bullet above catches the word that rates a finding. This one
+  catches the word that fills the slot where a fact belongs: it neither rates
+  nor inflates, it simply could have been written about any paper in any issue.
+  The question is whether the word survives being swapped for the plainest
+  thing you meant, and the answer is usually a verb or a number that was
+  already available. "Delve", "landscape" and "realm" for a research area,
+  "tapestry", "pivotal", "crucial", "seamless", "robust", "leverage" as a verb,
+  "unlock", "empower", "supercharge", "game-changer" and "revolutionize" are
+  the evidence that the question is worth asking and never the test, because
+  the next one will be a word this bullet does not name. The target is zero and
+  there is no budget, the same as the semicolon, and for the same reason: a rule
+  in this file that is not counted is a rule that gets broken eight times.
+  The stack of adjectives is the same failure spread over three words. One
+  precise adjective, or the number the three were standing in for, because a
+  sentence that reaches for three has usually admitted it has no figure.
 - **No sentence about the future that no result can check.** "This shift
   suggests that future pipelines will embed verification as a core component"
   costs a line and says nothing a reader can act on or a later issue can hold
@@ -475,6 +492,13 @@ whenever the material holds one, and reach for a plain-English current only
 when no single result leads. One line, sentence case, plain words, never a
 coined term or a system name or hype ("Denser feedback, steadier agents", not
 "FEEs and dense rewards arrive").
+
+And no colon. The shape the mark makes here is a short label, then the finding
+explained behind it, which spends the half of the line the reader actually gets
+on a signpost to the other half. No specimen is quoted, because this is the
+position where the title gets written. The repair is the one the heading rule
+below already names: delete everything to the left of the colon and the colon
+with it, and check whether what is left is the title. It almost always is.
 
 The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
 is the finding alone, and the date lives where dates live: the email's own
@@ -1428,6 +1452,11 @@ the rule's question to the thing in front of you.
   characters. Is any mark doing the job of a full stop, per the punctuation
   rule above? Is every character in the issue plain ASCII, which is the whole
   class and not a list of hyphens and spaces?
+  Then one count on the same pass, because the stock word is the one tell on
+  this list that a reading has never caught: go through the issue and count the
+  words that state nothing, per the law 2 bullet above. Every hit is struck for
+  the plain word it was standing in front of, and the count that leaves this
+  pass is zero.
 - **Then run the first-use pass. This is a hard gate, not advice.**
   **Start with the title, because it is a closed list and the rest of this
   pass is not.** The title is one line. Read it word by word and write down
