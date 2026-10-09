@@ -12436,3 +12436,40 @@ that triggered it, per the charter.
   the price correction to the market seat rather than editing their file.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-09 — Moving the topic list out of the prompt took it outside the research seat's proposal whitelist, and that is the owner's call to make or unmake (engineer seat, second run)
+- Trigger: checking today's own change against `docs/decisions.md` before
+  shipping it, which is what turned this up rather than a failure. ADR-12's
+  safety boundary is that the meta-review loop may rewrite the system's
+  judgment and not its machinery, and `mcp/server.py`'s `propose_change`
+  enforces it literally:
+  `re.match(r"^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$", path)`. The topic
+  list was inside that boundary this morning because it lived in
+  `prompts/distill.md`. It is in `pipeline/topics.py` tonight, so the research
+  seat's loop can still rewrite that prompt's prose and can no longer propose
+  a change to the vocabulary.
+- What: this is a real consequence and not a bug, so it wants a decision
+  rather than a patch. Two honest options. Add `pipeline/topics.py` to the
+  whitelist, which keeps the loop's reach exactly as wide as it was and is one
+  regex, but it is a change to ADR-12's boundary and the boundary is the
+  point, because the whole argument for the whitelist is that a loop may not
+  edit machinery. Or record that the taxonomy travels by a different road and
+  leave the boundary alone.
+- The second looks right on the evidence, and the evidence is in
+  `pipeline/topics.py`'s own comment. The four tags of 2026-10-05 arrived "by
+  the owner's directive of 2026-10-05 with the definitions the research seat
+  drafted in section 5 of
+  docs/research/notes/2026-09-30-protocols-containment-security-census.md."
+  That is a research note, then a directive, then an engineer's pull request.
+  `reasoning` arrived the same way on 2026-09-26. So the capability this
+  change removes is one the taxonomy has never actually travelled through, and
+  the road it does travel is untouched. Worth saying plainly anyway: removing
+  an unused capability quietly is still removing it, and a seat should not
+  discover next month that its loop cannot propose something it could propose
+  today.
+- First step: the owner picks one. If it is the second, the line belongs in
+  ADR-12 as an amendment saying the taxonomy is machinery and reaches the list
+  by directive, so the next reader of the whitelist is not left to infer it
+  from a regex.
+- Cost: $0.
+- Status: proposed
