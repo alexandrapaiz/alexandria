@@ -415,8 +415,16 @@ def load_prompt(kind: str = "paper") -> tuple[str, str]:
     which version of it. That is the whole audit trail for the practices split:
     `select prompt_sha, count(*) from claims group by 1` says how much of the
     corpus was read as a paper and how much as a field report.
+
+    Rendered before it is hashed, as of 2026-10-09. The topic vocabulary lives
+    in `pipeline/topics.py` and the prompt carries a marker where it goes, so
+    the text hashed here is the text the model is sent. That closes a hole in
+    the audit trail rather than only moving a file: until today, adding a tag
+    changed what the insert accepted and left every claim's `prompt_sha`
+    untouched, so the column said the vocabulary had not moved on the day it
+    moved.
     """
-    text = prompt_path(kind).read_text()
+    text = topics().render(prompt_path(kind).read_text())
     return text, hashlib.sha256(text.encode()).hexdigest()[:12]
 
 
@@ -627,12 +635,36 @@ def preflight() -> str:
 
 #: What the expected request looks like, measured rather than guessed. The mean
 #: payload across the fourteen papers in
-#: docs/evals/2026-09-30-fulltext-token-density.json at FULLTEXT_CHARS, plus the
-#: prompt, against a reply of the size the rehearsal actually produces. Used
+#: docs/evals/2026-09-30-fulltext-token-density.json at FULLTEXT_CHARS. Used
 #: only to PRICE a run; nothing sizes a request off it, because a request is
 #: sized against the worst case and priced against the expectation.
-EXPECTED_PROMPT_TOKENS = 39_059      # 38,069 payload + 990 prompt
+EXPECTED_PAYLOAD_TOKENS = 38_069
 EXPECTED_COMPLETION_TOKENS = 1_200
+
+
+def prompt_tokens(kind: str = "paper") -> int:
+    """The rendered system prompt's size, counted now rather than remembered.
+
+    This used to be the constant `990`, added to the payload above and to the
+    ceiling in `cost_report`. It was measured once and then the prompt grew
+    twice without it: the reasoning rubric of 2026-09-26 took the paper prompt
+    to 1,373 tokens and the four Layer 4 definitions of 2026-10-05 took it to
+    2,019, so every price this file printed was short by half a prompt, and the
+    two numbers the owner asked for by name were among them.
+
+    Counted from `load_prompt`, so it is the rendered text including the topic
+    vocabulary, which is the text the model is actually sent. A number that
+    re-derives itself cannot go stale, and this one went stale twice in three
+    weeks while sitting one line above the comment explaining that it was
+    measured.
+    """
+    text, _ = load_prompt(kind)
+    return _sibling("budget").count_tokens(text)
+
+
+def expected_prompt_tokens(kind: str = "paper") -> int:
+    """Payload plus prompt, the request this job expects to send."""
+    return EXPECTED_PAYLOAD_TOKENS + prompt_tokens(kind)
 
 
 def cost_report(guard, model: str) -> list[str]:
@@ -643,10 +675,11 @@ def cost_report(guard, model: str) -> list[str]:
     The owner asked for these two numbers by name; they are computed from
     `budget.MODELS` prices so they cannot drift from what CI projects.
     """
-    expected = guard.cost_usd(EXPECTED_PROMPT_TOKENS, EXPECTED_COMPLETION_TOKENS,
-                              model)
+    prompt = prompt_tokens()
+    expected = guard.cost_usd(EXPECTED_PAYLOAD_TOKENS + prompt,
+                              EXPECTED_COMPLETION_TOKENS, model)
     ceiling = guard.cost_usd(
-        int(FULLTEXT_CHARS / guard.FULLTEXT_CHARS_PER_TOKEN) + 990,
+        int(FULLTEXT_CHARS / guard.FULLTEXT_CHARS_PER_TOKEN) + prompt,
         MAX_COMPLETION_TOKENS, model)
     lines = [
         f"model: {model}   window: {FULLTEXT_CHARS} chars   "
@@ -802,9 +835,9 @@ def rehearse(allow_abstract_only: bool = False) -> str:
             f"the model tagged claims with {sum(dropped.values())} topics off "
             f"the closed list ({sorted(dropped)}), which pipeline/topics.py "
             "drops. Dropped tags mean claims no query can match, which is "
-            "incident 30 and the 18 invisible claims of 2026-09-26. Fix "
-            "prompts/distill.md and pipeline/topics.py together. Nothing was "
-            "deployed.")
+            "incident 30 and the 18 invisible claims of 2026-09-26. The list "
+            "is pipeline/topics.py alone as of 2026-10-09, so fix it there. "
+            "Nothing was deployed.")
     if read_in_full and model != MODELS[0]:
         raise RuntimeError(
             f"the rehearsal was answered by {model}, not by {MODELS[0]}, which "
@@ -880,8 +913,8 @@ def drain() -> str:
 
     per_run = MAX_PAPERS_PER_RUN
     runs = -(-depth // per_run) if per_run else 0
-    expected = guard.cost_usd(EXPECTED_PROMPT_TOKENS, EXPECTED_COMPLETION_TOKENS,
-                              MODELS[0])
+    expected = guard.cost_usd(expected_prompt_tokens(),
+                              EXPECTED_COMPLETION_TOKENS, MODELS[0])
     lines = [
         f"distill queue: {depth} papers, of which {threads} are the standing "
         f"threads and {deep} are deep_read; {waiting} more in the reading queue",

@@ -89,7 +89,7 @@ def test_the_definitions_are_lifted_from_the_prompt_and_not_restated_here():
     distiller would not have chosen, and the column would stop meaning one
     thing.
     """
-    text = (ROOT / "prompts" / "distill.md").read_text()
+    text = topics.render((ROOT / "prompts" / "distill.md").read_text())
     defs = retag.definitions(text)
     for thread in retag.THREADS:
         assert f"`{thread}` covers" in defs, thread
