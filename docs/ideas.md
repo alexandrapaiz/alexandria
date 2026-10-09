@@ -12071,3 +12071,102 @@ that triggered it, per the charter.
   answer. That is not a feature Exa is missing by accident, it is the
   difference between selling a search endpoint and selling a claim somebody
   will cite.
+
+### 2026-10-09 — Run every guard from two checkouts and make them agree, as a test rather than as a habit (engineer seat)
+- Trigger: today's break-fix. The deploy surface read `ok` on this branch and
+  `FAILING` in a clean `main` worktree, off one `deploy_runtime` row, minutes
+  apart, and the defect survived eight days because the one run that noticed
+  wrote the worktree down as a measurement technique instead of as a bug. The
+  per-guard fix is in this PR. Nothing stops the next surface from reading
+  `HEAD`, because what failed was a property of the whole command and there is
+  no test that asks a property of the whole command.
+- What: one test that treats location as an input. Build a scratch repository
+  with a trunk, add a branch commit, then run every surface twice, once from
+  each checkout, with identical facts, and assert the two reports are equal
+  character for character. Any surface that consults the working tree, the
+  current branch, the clock's timezone or the sandbox's path fails it by
+  construction, and it fails on the day the surface is written rather than on
+  the day somebody builds a worktree by hand. The same harness extends to the
+  other axis the incident register already keeps: run it twice with two clocks
+  and the press window's Monday bug of 2026-10-08 is the same kind of catch.
+- Why it is worth more than the fix it generalises: `tools/delivery_health.py`
+  is six surfaces now and every new guardrail adds one. A reader of this
+  file's own history can count four entries where a guard was correct about
+  the thing it printed and wrong about the conditions it printed it under.
+  This is the first proposal that makes the conditions themselves the subject
+  of a check.
+- First step: `tests/test_guard_invariance.py` with the two-checkout harness
+  and one assertion over the deploy surface only, since that is the one with a
+  known answer today. Extend to the other five once the harness holds.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Move the topic vocabulary out of the prompt, so a taxonomy change stops being the owner's merge (engineer seat)
+- Trigger: not a code observation, a throughput one. This seat's chain is six
+  pull requests deep and the sprint's three open items have been built and
+  unmergeable for four days. The PM has written the same finding in four
+  consecutive passes: everything else in the diff clears Tier B, and the whole
+  thing waits on the owner because two files under `prompts/` are in it. Those
+  two files carry one change, the four topic tags added on 2026-10-05, and
+  `pipeline/distill.py`'s own comment already names the reason they are
+  duplicated there: "a second copy of the list is how prompts/distill.md came
+  to offer tags the database never accepted." The org solved that duplication
+  with a test that fails when the copies drift, which is the right fix for
+  drift and does nothing about the copy.
+- What: delete the copy. `prompts/distill.md` and `prompts/distill-practices.md`
+  carry a marker where the closed list goes, and `load_prompt` fills it from
+  `pipeline/topics.py` before the request, hashing what the model was actually
+  sent so `claims.prompt_sha` keeps meaning what it means today. The
+  per-tag definitions stay in the prompt, because they are editorial judgment
+  and belong to whoever owns the voice; only the list itself moves. Then
+  adding a tag is a one-line change to `pipeline/topics.py`, which is this
+  seat's own surface, and `tests/test_reasoning_rubric.py`'s drift assertion
+  becomes unnecessary rather than merely green.
+- Why it is worth a day: it converts a recurring Tier C merge into a Tier B
+  one, permanently, for the single most frequently edited thing in those two
+  files. Four tags have been added since 2026-09-26 and each one cost the
+  owner a merge. It also removes a class of defect rather than guarding it.
+- First step: the marker and the substitution in `load_prompt`, with a test
+  that the rendered prompt contains every tag in `TOPICS` and no tag outside
+  it. The two prompt files change once, in the owner's merge, and then stop
+  changing for this reason.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Craft scan: Undermind publishes the rules its own number was measured under, in the caption (engineer seat)
+- Trigger: craft scan for 2026-10-09, rotated to the academic-tools row of
+  docs/market/landscape.md and to the one entry there this seat had never
+  opened. `undermind.ai` was last observed 2026-09-18 on "search-snippet
+  confidence only," so this is the first direct read. Probed live this run:
+  `https://www.undermind.ai/` returns 200 and 104,827 bytes.
+- What is worth stealing: the benchmark caption. Undermind's front page claims
+  85% recall at ten minutes against 50% for the best agentic web search it
+  tested, and the caption under the chart does not stop at the number. It says
+  "mean recall over 23 research goals through 10 minutes, linearly
+  interpolated between reporting checkpoints," then "runs that finish early
+  hold their final value to the window edge," then what counts as relevant,
+  "each goal's 20 highest-rated positive papers, capped at the gold size, with
+  fractional credit for cutoff ties." Three separate decisions that would each
+  move the number, declared beside it, in the place a reader meets the number
+  rather than in a methods page they have to go find. A sceptical reader can
+  tell from the caption alone which of those rules is load-bearing.
+  That is the exact discipline today's break-fix was missing. "Triage is 3.9
+  days behind" was printed for eight days with no mention that the answer
+  depended on which branch the reader was standing in, and two runs of the
+  same command got two different numbers because of it. The surface already
+  had the instinct in one place, `read_via`, which says whether a connection
+  or the public receipt answered, and `read_via` is why nobody has ever
+  confused second-hand evidence for first-hand here. It just had one condition
+  declared and three not.
+- What alexandria does better: the number is re-runnable by the reader, not
+  only explained to them. Undermind's method is described and its harness is
+  not published, so a reader can audit the reasoning and cannot reproduce the
+  measurement. Every number in `tools/delivery_health.py` comes from one
+  command that any reader can run with no credential at all, against the live
+  product, through `GET /api/delivery`. This run used that path and nothing
+  else. A described method is an argument. A command is evidence.
+- Where it goes: the first idea above is the generic form, and the specific
+  form shipped in this PR, which is that the deploy headline and every app's
+  evidence block now name the ref they were judged against.
+- Cost: $0.
+- Status: proposed
