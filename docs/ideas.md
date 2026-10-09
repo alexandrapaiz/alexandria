@@ -12170,3 +12170,66 @@ that triggered it, per the charter.
   evidence block now name the ref they were judged against.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-09 — URGENT: the deploy alarm trips and mails nobody, so a four-day drift raises to no one at all (engineer seat)
+- Trigger: today's break-fix made the drift visible from a seat's own run for
+  the first time, and the thing it made visible is that the alarm beside it
+  cannot fire. Run on this branch after the fix: `FAILING deploy ... triage is
+  3.9 days behind ... not mailed: these rows came from
+  https://libraryofalexandria.dev/api/delivery, which cannot write the
+  once-a-day cooldown.` The surface is honest about it, in its own evidence,
+  which is why this is findable at all.
+- What: the alarm's cooldown lives in `deploy_runtime.notified_at`, so mailing
+  requires a database write. No agent seat holds `DATABASE_URL`, which is why
+  the credential-free receipt reader exists at all, and a reader with no write
+  cannot keep a cooldown. Mailing without one is a message every time any
+  seat runs the standup. So the live path is: the drift is correctly detected,
+  correctly reported, correctly reasoned about, and silently not raised. This
+  is sprint 2026-10-05's done-clause 4 failing in the direction nobody wrote
+  down. That clause worried that a failure's first reader was the owner rather
+  than a seat. For this guardrail the first reader is nobody, and it has been
+  nobody since the receipt reader shipped on 2026-10-01.
+- Why this seat cannot close it today: both shapes of fix are outside one day
+  and one of them is outside this seat. Either a seat gets a write-scoped
+  credential, which is the owner's to mint and is the same ask already pending
+  for the reviewer panel's merge token, or the cooldown stops being a database
+  row. The second is buildable here and it is a design decision rather than a
+  patch, because the obvious version has the receipt's `GET` write a timestamp
+  and a read that writes is the wrong shape to introduce quietly.
+- First step, once the shape is chosen: if the answer is the second one, the
+  cooldown can be a row the *site* writes when it serves the receipt, since
+  the site already holds the credential, and the seat's run then reads
+  `notified_at` as a fact rather than writing it. One route, one column, no new
+  secret anywhere.
+- Cost: $0 either way. No new paid service.
+- Status: urgent
+
+### 2026-10-09 — The engineer charter's first pre-ship gate is a command that cannot answer (engineer seat)
+- Trigger: running the gate. `prompts/engineer-agent.md` requires
+  `gh run list --workflow=checks.yml --branch=main --limit 5` before
+  `gh pr ready`, and says in its own words that this is the check that asks
+  "whether the guard is green now," added because two direct pushes to main
+  left guards red for six days. Run this morning it returns five `failure`
+  runs, all from 2026-10-05, the newest four days old. The reason is in the
+  workflow file rather than in the result: `.github/workflows/checks.yml` on
+  `main` triggers on `pull_request` with a path filter and nothing else. The
+  charter asserts the opposite, that `checks.yml` "had no push-on-main trigger
+  until 2026-09-29," which reads as though it has one now.
+- What: so the gate the charter calls the one question about the present
+  returns a stale answer that looks like a current one, every day, to every
+  run of this seat. Four consecutive runs of this seat have reported that
+  number, each correctly labelling it stale, which means the gate costs a
+  command and a paragraph and yields nothing. The real answer today came from
+  running the suite, which is not what the charter asks for.
+- The fix is already staged and is not this seat's to install.
+  `.github/workflows-pending/checks.yml` carries `push: branches: [main]` and
+  an unfiltered `pull_request`, and no agent token may write
+  `.github/workflows/` (incident 12). Until the owner copies that file across,
+  the honest version of this gate is `python3 -m pytest tests/ -q` against a
+  clean trunk checkout, and the charter should say so.
+- First step: the owner's copy of the staged workflow, after which the
+  charter's command starts answering. If that is not happening soon, the
+  charter sentence should name the suite run instead, since a gate that cannot
+  answer teaches the seat to skip it.
+- Cost: $0.
+- Status: proposed
