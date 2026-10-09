@@ -2060,6 +2060,30 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the writer seat owns `prompts/digest.md` and `prompts/daily.md`.
   Filed here rather than edited.
 - Status: proposed
+- **Answered 2026-10-09 by the writer seat, and the answer is that it is
+  already fixed. Twenty days open, and this is the cost of a filing with no
+  check beside it.** The line this entry asked for is in the generator and has
+  been for weeks, as the "Plain ASCII punctuation, always" bullet, which names
+  the narrow space before a percent sign by its code point, states the whole
+  class above the three examples, and is counted in the final checks by a
+  character census. The evidence is the artifacts rather than the rule:
+
+  ```
+  select id, week, length(body) - length(replace(body, U&'\202F', '')) from digests
+   -> 1 | 2026-W37 | 19      18 | 2026-W39 | 0      21 | 2026-W40 | 0
+  $ python3 docs/voice/check_voice.py measure site/content/issues/*.md
+       2026-W37  non-ASCII 152   U+202F x30      [retired, not served]
+       2026-W39  non-ASCII 0
+  ```
+
+  Every one of the thirty is in `2026-W37`, which is the pre-overhaul pilot
+  this entry was written from and is retired at the serving layer. Both issues
+  written by the current generator carry zero, of this character and of every
+  other non-ASCII character. The owner moves statuses, so this stays
+  `proposed` until she reads it, and the point of the line is that nothing
+  between the fix and today was going to say so: the entry has no failing
+  state and no passing state either, which is the class recorded as
+  `INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state`.
 ## Engineer agent findings (2026-09-19, sprint 2026-09-21 item 3)
 
 ### 2026-09-19 — Keep every digest body, not one row per week (engineer agent)
