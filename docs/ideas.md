@@ -12233,3 +12233,7 @@ that triggered it, per the charter.
   answer teaches the seat to skip it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-09 — Work in progress: the engineer's run of 2026-10-09 (second run)
+- Trigger: placeholder, replaced before this PR leaves draft.
+- Status: proposed
