@@ -254,12 +254,13 @@ def test_the_price_counts_the_prompt_the_job_actually_sends():
     """`EXPECTED_PROMPT_TOKENS = 39_059  # 38,069 payload + 990 prompt` was the
     constant here until 2026-10-09, and 990 was measured once.
 
-    The prompt grew twice after that and nothing re-measured it. The reasoning
-    rubric of 2026-09-26 took the paper prompt from 2,964 characters to 4,120,
-    and the four Layer 4 definitions of 2026-10-05 took it to 6,056, which is
-    2,019 tokens. So the two numbers the owner asked for by name, cost per
-    paper and projected monthly spend, were each short by about half a prompt
-    for three weeks, and no test in this repository mentioned the constant.
+    990 was correct on the day it was written: `prompts/distill.md` was 4,120
+    characters and exactly 990 tokens at the reasoning rubric commit. The four
+    Layer 4 definitions of 2026-10-05 took it to 6,056 characters and 1,427
+    tokens, and nothing re-measured. So the two numbers the owner asked for by
+    name, cost per paper and projected monthly spend, were each short by 437
+    tokens of input for four days, and no test in this repository mentioned
+    the constant.
 
     It is derived now. This test is what keeps it derived: a rounded literal
     put back in its place fails here rather than in a price nobody checks.

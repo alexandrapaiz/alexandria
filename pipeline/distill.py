@@ -646,17 +646,22 @@ def prompt_tokens(kind: str = "paper") -> int:
     """The rendered system prompt's size, counted now rather than remembered.
 
     This used to be the constant `990`, added to the payload above and to the
-    ceiling in `cost_report`. It was measured once and then the prompt grew
-    twice without it: the reasoning rubric of 2026-09-26 took the paper prompt
-    to 1,373 tokens and the four Layer 4 definitions of 2026-10-05 took it to
-    2,019, so every price this file printed was short by half a prompt, and the
-    two numbers the owner asked for by name were among them.
+    ceiling in `cost_report`. It was measured on 2026-09-26 and it was right:
+    the paper prompt was 4,120 characters and 990 tokens that day. Then the
+    four Layer 4 definitions of 2026-10-05 took it to 6,056 characters and
+    1,427 tokens, and nothing re-measured, so every price this file printed was
+    short by 437 tokens of input. Cost per paper and projected monthly spend
+    are the two numbers the owner asked for by name, and both were among them.
 
     Counted from `load_prompt`, so it is the rendered text including the topic
-    vocabulary, which is the text the model is actually sent. A number that
-    re-derives itself cannot go stale, and this one went stale twice in three
-    weeks while sitting one line above the comment explaining that it was
-    measured.
+    vocabulary, which is the text the model is actually sent. Through
+    `budget.count_tokens`, which means the exact tokenizer where one is
+    installed and budget's pessimistic 3.0 chars/token fallback otherwise. The
+    distill image installs no tiktoken, so a Modal run prices this prompt at
+    2,019 rather than 1,426 and CI prices it exactly. That is the safe
+    direction for a cost figure and it is the same counter every other request
+    in this pipeline is sized with, where the old constant was 990 everywhere
+    and too low in both.
     """
     text, _ = load_prompt(kind)
     return _sibling("budget").count_tokens(text)

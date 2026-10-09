@@ -10708,3 +10708,84 @@ rent to every run in the meantime. A queue of changes that only a hand can
 apply needs a number beside each item saying what the wait has cost so far,
 because the decision to leave something queued is only cheap if nobody
 measures it.
+
+## INC-2026-10-09-the-prompts-size-was-measured-once-and-priced-twice-stale — the cost per paper the owner asked for by name was short by half a prompt for three weeks, and no test named the constant (2026-10-09, engineer seat)
+
+**What was wrong.** `pipeline/distill.py` carried
+
+```python
+EXPECTED_PROMPT_TOKENS = 39_059      # 38,069 payload + 990 prompt
+```
+
+with a comment two lines above it reading "measured rather than guessed." It
+was measured, and on the day it was written it was exactly right. Every commit
+that has ever touched the paper prompt, counted with CI's own tokenizer:
+
+| commit | date | `prompts/distill.md` | prompt tokens |
+|---|---|---|---|
+| 41db0c8 | 2026-09-23 | 3,072 chars | 740 |
+| ad7abd9 | 2026-09-26 | 4,120 chars | **990** |
+| 4e1d20d | 2026-10-05 | 6,056 chars | **1,427** |
+
+So the constant was correct for nine days and wrong for four, by 437 tokens of
+input, or 44% of the prompt. `cost_report` is the only consumer and it prints
+cost per paper and projected monthly spend, which are the two numbers the
+owner asked for by name. A second hardcoded `990` sat in the same function's
+ceiling calculation, and a third caller multiplied the understated figure by
+the queue depth to answer "what does clearing the queue cost."
+
+The precision matters to the lesson. This is not a number somebody guessed and
+never checked. It is a number somebody measured correctly, wrote a comment
+about measuring, and then left behind when the thing it measured moved. The
+fix for the first is to go and measure. There is no fix for the second except
+to stop storing the answer.
+
+**Why it is recorded as a repeat.** Two shapes, both already in this file.
+
+The first is the cross-file claim that goes stale because one side was edited,
+named in as many words by
+`INC-2026-10-05-the-rewrite-staled-every-coverage-claim` and
+built against twice at the skill level, where `panel_verdicts.target_sha` and
+`results.json`'s `skill_md_sha256` both exist so that editing a file
+invalidates what was claimed about it. This constant is a claim in
+`pipeline/distill.py` about the size of a file in `prompts/`, and it shipped
+with no such guard while the module next door, `pipeline/budget.py`, sizes
+every other request in the pipeline by reading the live prompt. The capability
+was one import away the whole time.
+`INC-2026-10-04-one-constant-for-two-documents` is the same family and the
+closest sibling: one literal standing in for a fact that two files share.
+
+The second is L-E11's shape, and it is also the shape of
+`INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`, which this
+seat filed earlier the same day: a number
+re-derived from the wrong source, trusted because it was once correct. That
+entry's list of ways a guard goes wrong while nothing it watches moves now
+takes a sixth axis. The clock moves, the environment moves, the product
+improves, nothing moves at all, the observer moves, and now **the thing being
+measured moves and the measurement does not.**
+
+**What made it survivable.** Nothing read it. `grep -rn
+EXPECTED_PROMPT_TOKENS tests/` returned nothing before this run. The constant
+was not wrong in a way that broke a run, because the comment above it says
+plainly that it only prices and never sizes, so the failure mode was a quiet
+understatement in a report rather than a 413. That is also why it is worth
+recording: the org's whole defence against prompt growth, `checks.yml` and the
+`CRON_REQUESTS` table, is aimed at requests that stop fitting. A number that
+only prices has no such defence and gets read by the owner instead of by a
+model.
+
+**What was built.** `distill.prompt_tokens()` counts the rendered prompt
+through `budget.count_tokens` at call time, `EXPECTED_PAYLOAD_TOKENS` keeps the
+measured half that is genuinely a measurement, and all three callers take the
+prompt from the derivation. Two tests in
+`tests/test_distill_fulltext_budget.py` keep it derived: one asserts the count
+matches the text `load_prompt` returns and exceeds the raw file's, the other
+fails if `EXPECTED_PROMPT_TOKENS` or a literal `990` reappears beside a
+`cost_usd` call.
+
+**The general rule, and it is not about this constant.** A number that
+describes another file is a cache, and a cache with no invalidation is a
+comment. Either derive it at the point of use or make something fail when the
+file it describes changes. "Measured rather than guessed" in a comment is a
+claim about the past, and it is the sentence most likely to be true on the day
+it is written and false on every day after.
