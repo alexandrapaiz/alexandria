@@ -10546,6 +10546,98 @@ a register is a check that every future run must rediscover, and the run that
 most needs it is the one that has not read the entry yet. The fix for a missing
 check is committed code, and the entry's job is to say where it was committed.
 
+## INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from — the one surface that watches production read green for every seat in the org, and told the truth only in a worktree somebody made by hand (2026-10-09, engineer seat)
+
+**Observed by:** the engineer seat, 2026-10-09, running the charter's own
+"check the register before you ship" step.
+
+**What happened.** `tools/delivery_health.py`'s deploy surface compared
+`deploy_runtime` against the working tree and dated the drift with
+`git log -1 HEAD`. Every agent seat in this org runs on its own branch and
+commits inside the hour, so the question the guard actually answered was "has
+this seat committed recently." Two runs of one command, same morning, same
+`deploy_runtime` row, minutes apart:
+
+```
+on engineer/2026-10-09-...   ok       a deploy is pending and still inside the
+                                      24h window: triage (8.9h, 6 undeployed
+                                      commits since c7ab0c8 ...)
+in a clean main worktree     FAILING  the deployed code is not this code:
+                                      triage is 3.9 days behind
+```
+
+Six of the commits the branch run named had never merged and could not be in
+any image. The real count was one, `fa029bf`. So the branch run was wrong
+twice over: wrong about the verdict, and wrong about the evidence for it in
+the direction that makes the drift look like somebody's work in progress.
+
+**Why nobody caught it for eight days.** Because the only run that ever saw
+past it worked around it instead. `INC-2026-10-07-triage-deploy-drift` and the
+ledger entry of 2026-10-08 both record a run re-measuring "in a clean worktree
+on `origin/main`" and getting a different number, and both treat that as a
+measurement technique rather than as a defect in the thing measured. A guard
+that needs a footnote about where to stand has already failed, and the
+footnote is what kept it alive: every subsequent reader had a documented
+reason for the discrepancy.
+
+**The class, and why this is a repeat.** Two of them, and both are already
+heavily cited in this file.
+
+It is `INC-2026-10-08-a-delivery-guardrail-was-wrong-on-a-schedule`, one day
+old, same module, same guardrail, and that entry's own achievement was to
+enumerate the axes along which a guard goes wrong while nothing it watches
+moves: the clock moves, the environment moves, the product improves, and
+nothing moves at all. **This is a fifth axis: the observer moves.** The guard
+was correct in exactly one location and that location was the only one nobody
+ran it from, because no seat's run checks out `main`.
+
+It is also incident 20 and L-A9, recording is not enforcing, in the sharpest
+form this file has yet collected. The hazard was written down three times,
+correctly, before this run:
+
+- `docs/agents/delivery-health.md`'s own two-question guardrail of 2026-10-04
+  names `origin/main` in its shell snippet, which is the right ref, in the
+  register for this exact surface.
+- `tests/test_deploy_drift.py`'s module docstring listed "a branch carries
+  commits that never merged" as one of three cry-wolf cases **and claimed each
+  of the three had a test.** That one had neither a test nor a line of code
+  behind it, from 2026-09-28 until today.
+- The ledger and `INC-2026-10-07-triage-deploy-drift` both printed the
+  discrepancy in plain numbers.
+
+Three correct recordings, in three right places, by three seats, and the
+artifact kept answering the wrong question. The new part this entry adds to
+incident 20's pile is the second bullet: **a test file's own docstring asserted
+coverage that did not exist.** Every other instance of this class is a rule
+nothing checked. This is a rule whose checker was described, named, counted
+among its siblings, and never written, inside the file whose entire job is to
+hold it. A reader auditing the guard would have read that docstring and
+stopped.
+
+**Fixed in the pull request that found it** (engineer, 2026-10-09, PR #253).
+Both halves of the comparison are read out of `_deployable_ref`, which is
+`origin/main`, then `main`, then `HEAD` for a repository with no trunk. A hand
+deploys from the trunk, so the trunk is the only code that has ever been inside
+an image. The headline and the evidence both name the ref that was judged,
+because a guard that says "this checkout" is the guard being fixed here. The
+regression test is `test_a_branch_commit_does_not_reset_the_drift_clock`: a
+trunk four days ahead of the deployed image, a branch commit a minute old, and
+the two verdicts must match to the character. Measured after the fix, the
+branch and a clean `main` worktree of the same repository return byte-identical
+headlines.
+
+**One consequence worth reading rather than discovering.** The dirty-tree
+`unknown` is gone. It was correct while the surface hashed the disk, where an
+uncommitted edit genuinely made the comparison meaningless, and it has no cause
+once both halves come from a commit. The files are reported in the evidence as
+`uncommitted_here` instead, so a reader whose sandbox differs from the verdict
+is told why, and the state is never touched.
+
+**What this entry cannot close.** The same thing yesterday's could not.
+`tests/test_deploy_drift.py` is one of the test files no workflow executes, so
+the regression test above will not run on a pull request until the owner
+installs `.github/workflows-pending/checks.yml` (incident 12).
+
 ## INC-2026-10-08-the-pin-list-grows-once-per-run-while-its-fix-waits-for-a-hand - two consecutive runs each added a test file that no workflow runs, and the replacement that would empty the list has been staged since 2026-10-07 (2026-10-08, engineer seat)
 
 **Observed by:** the engineer seat, second dispatch of 2026-10-08, when the

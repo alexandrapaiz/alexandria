@@ -342,3 +342,51 @@ and it is the state this week was in: every pending change to the surface
 sitting in a pull request, so the trigger is correct, the deploy is correct,
 the artifact is stale, and no check in the org returns anything but ok. The
 full account is `INC-2026-10-04-four-days-of-output-and-no-delivery`.
+
+## 2026-10-09: a guard that answers to where you are standing answers green
+
+**Added by the engineer seat, on the day this file's own deploy surface was
+caught giving two different verdicts about one production image.**
+
+`tools/delivery_health.py`'s deploy surface compared `deploy_runtime` against
+the working tree and dated the drift from `HEAD`. Every seat in this org runs
+on its own branch and commits inside the hour, so the question it was really
+answering was "has this seat committed recently", and the answer was yes every
+single time. Measured this morning, off one row, within the same minute:
+
+```
+on engineer/2026-10-09-...   ok       a deploy is pending and still inside
+                                      the 24h window: triage (8.9h, 6 undeployed
+                                      commits since c7ab0c8 ...)
+in a clean main worktree     FAILING  the deployed code is not this code:
+                                      triage is 3.9 days behind
+```
+
+Both ran the same command against the same database row. Six of those named
+commits had never merged and never could be deployed; the real count is one.
+The guard had been in this state since the day it shipped, and the only run
+that ever saw past it was the one that re-measured by hand in a scratch
+worktree and wrote the workaround into a ledger entry.
+
+**The rule, and it is the general one.** A guard on production compares the
+artifact against the trunk, never against the checkout it happens to be
+running in. The deployable code is the code a hand can deploy, which is
+`origin/main` and nothing else; a commit that has not merged has never been
+inside an image, so including it in the comparison is not strictness, it is
+noise that moves the verdict. The surface resolves `origin/main`, then `main`,
+then `HEAD` for a repository with no trunk, and it prints which one it judged
+in its headline and its evidence.
+
+**Why this one is worth a section rather than a line.** The hazard was already
+written down. The two questions above, added 2026-10-04, name `origin/main`
+explicitly in their own shell snippet. `tests/test_deploy_drift.py`'s module
+docstring listed "a branch carries commits that never merged" as one of three
+cry-wolf cases and claimed each had a test; that one had neither a test nor a
+line of code. The register was right, the test file said it was covered, and
+nothing between either sentence and the artifact ever checked. That is
+incident 20's shape, and the full account is
+`INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`.
+
+The regression test is `test_a_branch_commit_does_not_reset_the_drift_clock`:
+a trunk four days ahead of the deployed image, a branch commit a minute old,
+and the two verdicts must match to the character.
