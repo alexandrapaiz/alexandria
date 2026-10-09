@@ -255,6 +255,12 @@ image = (
     # The taxonomy travels with the job, so the list the tests check is the list
     # the insert enforces.
     .add_local_file("pipeline/topics.py", "/root/topics.py")
+    # The drift guard, so this job can say which deploy it is. Added 2026-10-09
+    # after the pipeline surface read "claims has not moved in 2 days" and
+    # nothing in the org could say whether this job had run: distill was one of
+    # the two scheduled apps `pipeline/runtime_sha.py` never watched, and it is
+    # the stage that fills `claims`.
+    .add_local_file("pipeline/runtime_sha.py", "/root/runtime_sha.py")
     # The reader and the queue parser travel too, so the job reads a paper the
     # same way the seats do (tools/read_paper.py) and drains the same file the
     # skill seat writes (ADR-35).
@@ -360,6 +366,11 @@ def _sibling(name: str):
 def read_paper():
     """tools/read_paper.py — the one reader, shared by this job and the seats."""
     return _sibling("read_paper")
+
+
+def runtime_guard():
+    """pipeline/runtime_sha.py — the deploy's own fingerprint, written per run."""
+    return _sibling("runtime_sha")
 
 
 def reading_queue():
@@ -1056,6 +1067,17 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         print(f"  {note}")
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
+        # Say which deploy this is before anything else happens, the way
+        # triage, interpret and weekly have since 2026-09-28. It cannot raise
+        # and cannot abort this transaction; pipeline/runtime_sha.py says how.
+        #
+        # This line is why it exists. On 2026-10-09 the pipeline surface read
+        # FAILING with "claims has not moved in 2 days" while papers stayed
+        # current, and no seat could tell whether this job had stopped firing,
+        # run against an empty queue, or raised: it was the only scheduled job
+        # in the pipeline that left no trace of a run. Six surfaces could see
+        # that claims had stopped and none could see this job at all.
+        print(runtime_guard().record_runtime(conn, "distill", __file__)[1])
         # ADR-35: what the skill seat could not read comes before what the
         # firehose happened to deliver, because a queue line is a person
         # asking and the intake is a subscription.

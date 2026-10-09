@@ -283,10 +283,15 @@ def test_a_current_deploy_is_green():
         repo = fixture_repo(Path(tmp), days_ago=9)
         conn = FakeConn([row_for(app, repo) for app in rs.APPS])
         surface = dh.check_deploy(conn, repo, notify=False)
-        check("three jobs running the trunk reads ok",
+        check("every job running the trunk reads ok",
               surface.state == dh.OK, f"{surface.state}: {surface.headline}")
+        # Derived from APPS, not the literal "all 3 jobs" this carried until
+        # 2026-10-09. The rows above already come from APPS, so a hardcoded
+        # count here fails the day the guard starts watching one more job,
+        # which is a test that blocks the fix it should be checking.
         check("and the headline names the ref it judged, not 'this checkout'",
-              surface.headline == "all 3 jobs are running main", surface.headline)
+              surface.headline == f"all {len(rs.APPS)} jobs are running main",
+              surface.headline)
 
 
 def test_an_intentionally_stale_deploy_trips_the_alarm():
@@ -840,3 +845,108 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# ------------------------------------------------- the list cannot go short again
+
+def scheduled_apps() -> dict[str, Path]:
+    """Every module in `pipeline/` that installs a Modal schedule.
+
+    Derived from the source rather than from a list, because a hand-kept list
+    of what to watch is the defect this section exists for. `modal.Cron` and
+    `modal.Period` are the two ways a schedule is installed, and a commented
+    schedule does not count: `pipeline/skill_revision.py` carries the words
+    `modal.Cron("0 16 * * *")` inside a comment explaining that it stopped
+    being scheduled on 2026-10-05, and a text search that counted it would
+    demand a guard on a job that no longer runs on its own.
+    """
+    import ast
+
+    found = {}
+    for path in sorted((ROOT / "pipeline").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if (isinstance(func, ast.Attribute) and func.attr in ("Cron", "Period")
+                    and isinstance(func.value, ast.Name) and func.value.id == "modal"):
+                found[path.stem] = path
+                break
+    return found
+
+
+def test_every_scheduled_app_is_watched_by_the_drift_guard():
+    """A job on a schedule runs unattended, so a job on a schedule is watched.
+
+    `runtime_sha.APPS` held three of five on 2026-10-09, and the two it omitted
+    were `ingest` and `distill`: the stage that fills `papers` and the stage
+    that fills `claims`, which are the two columns the pipeline surface judges.
+    The cost was a diagnosis. The pipeline surface read FAILING with "claims
+    has not moved in 2 days" while the deploy surface read `ok`, and both were
+    telling the truth, because the guard was blind to the only job that could
+    have answered.
+    """
+    watched = {Path(module).stem for module in rs.APPS.values()}
+    scheduled = set(scheduled_apps())
+    missing = sorted(scheduled - watched)
+    assert not missing, (
+        f"these scheduled jobs are not in runtime_sha.APPS: {missing}. A job "
+        "nothing watches can stop firing without any surface noticing.")
+    # And the other direction, so the guard cannot demand a deploy for a job
+    # that no longer has a schedule to be behind on.
+    stale = sorted(watched - scheduled)
+    assert not stale, (
+        f"runtime_sha.APPS watches {stale}, which install no schedule. An "
+        "unscheduled app is deployed by hand when it is needed, so drift "
+        "against the trunk is not a fault worth alarming on.")
+
+
+def test_every_watched_app_records_its_own_runtime():
+    """Being in the list is half of it. The row has to get written.
+
+    Mounting the module is checked by
+    `test_the_guard_cannot_be_deployed_without_itself`. This is the call: an
+    app in `APPS` that never calls `record_runtime` has no row, and a missing
+    row is now read as unmeasured rather than as drift, so the omission would
+    be quiet in exactly the way it was quiet for distill.
+    """
+    for app, module in sorted(rs.APPS.items()):
+        source = (ROOT / module).read_text(encoding="utf-8")
+        assert f'record_runtime(conn, "{app}"' in source, (
+            f"{module} is watched as {app!r} and never records a runtime, so "
+            "the guard has nothing to compare and says so forever")
+
+
+def test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged():
+    """One missing row among several is coverage, not drift.
+
+    The distinction is why adding a job to the guard does not fire a false
+    alarm on the day it is added. `ingest` delivered papers at 11:01 UTC on
+    2026-10-09 and had never recorded a runtime in its life, so dating its
+    drift from its last commit would have reported a job that works as a job
+    that is days behind. An EMPTY table keeps reading as a failure, because
+    that is a recorder that has never worked rather than one app without
+    coverage, and `test_a_job_that_never_reported_is_treated_as_drift` holds
+    that line.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        reporting = [a for a in rs.APPS if a != "ingest"]
+        conn = FakeConn([row_for(app, repo) for app in reporting])
+        surface = dh.check_deploy(conn, repo, notify=False)
+        check("the surface is unknown rather than failing",
+              surface.state == dh.UNKNOWN, f"{surface.state}: {surface.headline}")
+        check("and it names the unmeasured app",
+              "ingest" in surface.headline and "never recorded" in surface.headline,
+              surface.headline)
+        check("the unmeasured app carries no drift number",
+              "drift_hours" not in surface.evidence["ingest"],
+              str(surface.evidence["ingest"]))
+        check("and the deploy command to fix it is in the evidence",
+              "modal deploy pipeline/ingest.py" in surface.evidence["ingest"]["why"],
+              str(surface.evidence["ingest"]))
+        for app in reporting:
+            check(f"{app} is still judged on its own merits",
+                  surface.evidence[app]["state"] == dh.OK,
+                  str(surface.evidence[app]))
