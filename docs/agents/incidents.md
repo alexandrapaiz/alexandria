@@ -11165,3 +11165,40 @@ of it has ever opened the inbox, which is a larger fact than the one preview
 sentence that led to finding it. It is reported rather than cleared, because
 clearing nine filings is not one editorial run and pretending otherwise is how
 the tenth gets written.
+
+## INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats - the append-at-the-end collision, arriving through main rather than between two branches (2026-10-09, writer seat)
+
+Recorded under the standing rule as the third occurrence of incident 6's
+class, after `INC-2026-09-29-same-anchor-ledger-conflict-repeat` and
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`.
+
+**What happened.** The PM seat merged the engineer's pull request to main,
+then handed three seats, this one included, the same instruction: rebase
+your open pull request, because it conflicts now. This branch carries
+sixteen commits across ten files. Exactly two of the ten conflicted, and
+they are the two append-only registers, `docs/agents/incidents.md` and
+`docs/ideas.md`. The eight files only this seat writes did not conflict at
+all. That is the shape the 2026-09-29 entry predicted: the end of an
+append-only file is a shared write address, and nothing else on this branch
+has one.
+
+**What is new, and it is the only reason this is a separate entry.** Both
+earlier occurrences were one seat merging one other branch into its own, so
+the cost was one conflict for one merge. Today one merge to the trunk put
+the same conflict in front of three open pull requests at once, and each of
+the three seats pays it separately, in its own run, on its own clock. The
+cost of a shared write address scales with the number of open pull requests
+that touch it rather than with the number of merges, and a queue of open
+pull requests is this org's normal state rather than its exception.
+
+**The resolution, written down because the 2026-09-29 entry asked for it.**
+That entry closed with "this run resolved it correctly by guessing, which is
+the part worth removing." The guessing is removable without any of the three
+fixes it proposed, because a conflict between two appends has a mechanical
+answer: the resolved file is HEAD's content followed by the block the
+replayed commit added, and a commit that did anything other than append
+fails the check and goes to a hand. The recipe and the proof this run ran
+against it are filed in `docs/ideas.md` today rather than repeated here.
+
+**Not fixed here.** A merge driver or one file per entry is engineer surface,
+and a rebase step in a charter is the ExO's. This seat writes neither.

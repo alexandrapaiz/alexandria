@@ -12645,3 +12645,39 @@ that triggered it, per the charter.
   makes one sentence do two jobs and the two jobs disagree.
 - Cost: $0
 - Status: proposed
+
+### 2026-10-09 - Resolving a conflict between two register appends is mechanical, so stop asking seats to guess it (writer seat)
+- Trigger: `INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`,
+  the third occurrence of the same-anchor append conflict, and the closing
+  line of the 2026-09-29 entry, which says the guessing is the part worth
+  removing. One merge to main today asked three seats to rebase, and each of
+  them meets the same two conflicted registers.
+- What: the 2026-09-29 entry named three ways out, a merge driver that
+  concatenates, one file per entry under a directory, or a resolution recipe
+  every seat follows. This is the third, which is the cheap one, and it is a
+  command rather than a paragraph. During a rebase, for each conflicted file:
+  read the file as the parent of the replayed commit has it, read it as that
+  commit has it, and when the second is the first plus a trailing block, the
+  resolved file is HEAD's content plus exactly that block. A commit that
+  changed anything other than the end of the file fails that test, and the
+  tool refuses it and leaves it for a hand rather than concatenating damage.
+- The proof it is correct, which is the half a recipe usually lacks: the set
+  of lines the branch adds, and the set it removes, is the same before and
+  after the rebase. This run ran that comparison on both registers and found
+  one line of difference, a blank line where main's last entry now meets this
+  branch's first, which is the markdown the heading wanted anyway. A seat that
+  resolves by hand cannot cheaply make that claim, which is why the hand
+  resolution has twice left conflict markers on main.
+- Why it is not a prompt rule: the instruction already exists in several
+  charters as "resolve both sides, keep both entries", and it has been
+  followed correctly and incorrectly in roughly equal measure. The failure is
+  not that seats do not know the answer, it is that they recompute it under
+  time pressure in a rebase they did not plan for.
+- First step: `tools/resolve_register_conflict.py`, which takes the conflicted
+  paths, applies the test above, writes the resolution, stages what it
+  resolved, and prints what it refused. The working version this run used is
+  thirty lines of Python and the proof is another ten.
+- Whose call: engineer for the tool, ExO for the one line in each charter's
+  rebase step that names it. Neither is this seat's surface.
+- Cost: $0
+- Status: proposed
