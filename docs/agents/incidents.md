@@ -10709,6 +10709,499 @@ apply needs a number beside each item saying what the wait has cost so far,
 because the decision to leave something queued is only cheap if nobody
 measures it.
 
+## INC-2026-10-05-writer-stub-merged-as-the-days-review — a run died after the ship-first commit and the placeholder was merged as the day's artifact (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: a repeat of
+`INC-2026-09-24-market-ranking-stub-only`, which is itself a repeat of
+incident 8's "run reports success, ships nothing". Recorded at the moment
+it repeats.
+
+**What happened.** Writer run 25 (PR #198, branch
+`alexandria-writer/2026-10-05-window`) opened its branch, merged PR #189
+forward, wrote the ship-first placeholder into
+`docs/voice/reviews/2026-10-05.md`, pushed, opened the draft, and then
+produced nothing else. The placeholder reads in full: "Status: in
+progress. [...] The graded review, the generator patch and any ban-list
+additions land in this file and in this branch as the run proceeds." That
+pull request was merged, so `main` gained a file named for the day whose
+entire content is a promise.
+
+**What is new, and it is the reason this is worth a number.** The 2026-09-24
+precedent ended with an unmerged draft, which is visible as unfinished work.
+This one was merged. The review register is one of the registers other seats
+and the ExO read, and a file called `docs/voice/reviews/2026-10-05.md` is
+indistinguishable at a glance from a grade that happened. Run 25 also
+inherited run 24's work through the forward merge, so the pull request carried
+a real diff and read as substantial. The empty half was one file inside it.
+
+**What it cost.** One day of editorial grading on the first new artifact in
+six days. Run 26 regraded the same issue, so nothing is permanently lost, and
+the cost is the day plus the register entry that said work had been done.
+
+**Why ship-first is still right.** It is not the cause. Run 25 delivered its
+predecessor's merged work because it shipped early, which is exactly the rule
+working. What the rule lacks is the other end: nothing distinguishes a branch
+whose placeholder was replaced from a branch whose placeholder was merged.
+
+**The fix this seat can make, and the one it cannot.** Run 26 replaced the
+file with a real grade, which closes this instance. The general fix is a check
+that refuses to merge a pull request whose ship-first placeholder text is
+still present, which is pipeline work and is filed in `docs/ideas.md`. The
+placeholder is already a fixed string in every charter's ship-first clause, so
+the check is a grep and not a judgment.
+
+## INC-2026-10-05-the-generators-own-examples-printed-four-times — a specimen quoted in the prompt reached the reader in four places in one issue (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule.** The register already
+holds this class twice, as ban list 53 and ban list 88, and the generator's
+own text records a third instance in the sentence "the last issue printed this
+file's example lead-in word for word". It repeated four times in a single
+issue, so it is recorded at the moment it repeats.
+
+**What happened.** The issue of 2026-10-05 (`digests` id 21, week 2026-W40)
+printed four lines that came out of `prompts/digest.md`:
+
+- "Start with the number that turned out to be wrong." and "The rest is not
+  wrong so much as superseded.", both quoted in the fell-behind slot, both
+  printed verbatim as the opening sentence of that section's two groups. They
+  were quoted there with the words "neither is ever printed".
+- A reading-list heading specimen of the form "Three papers for anyone who
+  ...", printed as the heading with its tail swapped for the day's material.
+- Two of the four slot jobs, which the heading rule rendered as plain English
+  clauses, printed as section headings. "What fell behind" is verbatim from
+  that sentence.
+
+**The mechanism, which the file had already diagnosed about itself.** Three
+lines below the reading-list specimen, the same file says a phrase quoted
+inside the slot the model writes into "is not a prohibition. It is the nearest
+available draft." That sentence was written about a FORBIDDEN phrase. It is
+just as true of a recommended one, and nothing had ever applied it that way.
+A warning attached to a specimen has not once beaten the specimen.
+
+**Why the existing entries did not prevent it.** Ban list 53 and 88 are both
+about where an example is DRAWN FROM, which is the rule that an example must
+not come out of the week being graded. Neither is about where an example SITS.
+The four leaks here were all drawn from safely distant subjects and all sat at
+positions the model writes into. The register had the wrong axis.
+
+**The fix, applied.** All four deleted in PR #227, following the remedy the
+reading-list slot already carried for the "worth the hour" frame: delete it
+and name no replacement, because a replacement offered at that position is the
+next template. Recorded as ban list 93 with the new axis stated. The
+generator still teaches by worked example at other writing positions and this
+run did not inventory them, which is filed rather than guessed at.
+
+## INC-2026-10-05-claims-pass-question-one-failed-again — a superiority claim across three benchmarks, conceded in its own last sentence (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: the claims pass was
+added to `docs/voice/canon.md` on 2026-09-24 because of exactly this failure,
+and the failure recurred eleven days later.
+
+**What happened.** The fell-behind section of 2026-W40 printed:
+
+> Task-adapted low-level VLA policies that reported 86.20% on RoboTwin 2.0 and
+> 97.40% on LIBERO are now outperformed by two separate approaches: Latent
+> Interface Training, which improves LIBERO-Plus success by 3.87-10.70 points
+> while preserving LIBERO average, and Dynin-Robotics, which attains 78.4% on a
+> Franka Research 3 robot with competitive LIBERO and zero-shot LIBERO-Plus
+> performance. The old numbers were real; the new ones are on harder tasks.
+
+"Outperformed" is asserted across three different benchmarks, and 78.4% is
+lower than the 97.40% it is said to outperform. The last sentence then
+concedes the measures are not comparable, after the claim has landed.
+
+**Why it is the same incident.** The original specimen, recorded in the canon
+with the pass itself, is 2026-W39 setting a benchmark success rate of 82.2%
+against a win rate of 87% for simulated fighter aircraft and declaring a
+ceiling broken, with "the contexts differ" in the same sentence. Same two
+halves: a superiority claim across incomparable measures, and a qualifier the
+claim has to survive before it can land. That second half is ban list 50 and
+the canon's rule for it is to drop the claim rather than soften it.
+
+**Where the gate is.** The claims pass is a GRADING procedure in the canon. It
+has no counterpart in `prompts/digest.md` at the point where the comparison
+gets written, so the only thing standing between this shape and the reader is
+a grade that runs after the issue has been sent. That is the finding, and it
+is why the fix is not a louder rule: a comparison is checkable against the
+payload's own benchmark names before the prose exists. Filed in
+`docs/ideas.md` for the engineer, alongside the coverage gate, because both
+need the payload and the draft at once.
+
+## INC-2026-10-05-law-8-coverage-failed-after-its-prompt-fix — ten of thirteen named works carried no link, on a rule already written as a count (2026-10-05, writer seat)
+
+**Recorded by the writer seat under the standing rule**: link coverage failed
+on 2026-09-28 (`INC-2026-09-29-grade-cleared-link-coverage`), was patched in
+the generator as an explicit pre-output count, and failed again.
+
+**What happened.** 2026-W40 names thirteen distinct pieces of work and carries
+three links, all three in the reading list.
+
+```
+$ grep -o "https\?://[^)]*" /tmp/w40.md | wc -l
+3
+```
+
+The traction, new-work and fell-behind sections carry zero links across ten
+named works. The generator's fell-behind instruction says "both papers linked"
+for the superseded kind. Evidence-grade coverage failed in the same shape and
+on the same artifact: five of thirteen works graded, with the entire
+fell-behind section ungraded across six works that all print benchmark
+numbers.
+
+**Why the count did not hold, which is the useful part.** The same issue
+scored zero em dashes and zero non-ASCII characters, both also stated as
+counts. The difference is not the word "count". It is that a character census
+reads only the finished draft, whereas counting links or grades against every
+named work means re-opening the payload while holding the draft. That is the
+move that does not happen, and making the instruction louder has now been
+tried once and failed.
+
+**The fix, routed rather than patched.** This is the second failure after a
+prompt fix, so the writer charter's structure watch applies and it stops being
+prompt work. A gate holding both the payload and the output can match every
+named work against a link and a grade mechanically. Filed in `docs/ideas.md`
+for the engineer. Recorded as ban list 96, whose second ending is this filing.
+
+## INC-2026-10-06-grade-recorded-progress-on-an-unmoved-axis — an editorial grade reported improvement on the one axis the owner says can fail an issue by itself, by counting two things that are not on the canon's list (2026-10-06, writer seat)
+
+**Recorded as a repeat under the standing rule.** The class is a figure in an
+editorial grade that does not mean what the grade says it means, and the
+register already holds `INC-2026-10-04-measurement-attributed-to-the-wrong-artifact`,
+`INC-2026-10-03-law-12-graded-by-grep`, `INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. The 2026-10-04 entry is the
+nearest relative and this one is its inverse: that grade recorded a FAIL against
+a clean artifact, this one recorded progress on an artifact that had not moved.
+
+**What happened.** The editorial review of 2026-10-05 graded canon law 14
+against the stored body of 2026-W40 and wrote: "Shapes on the page: paragraphs,
+five paragraphs opening with a bold lead, and the reading list's italic title
+lines. [...] Three kinds rather than one is real progress over W39's reprint."
+Its measurement table carries no shape row, so three is the only count of this
+kind in the grade and it is in the prose.
+
+**Why three is wrong.** Canon law 14 defines a shape and the definition is a
+closed list of four: "a paragraph, a bulleted list, a line standing alone, a
+subheading inside a section." Neither of the two kinds that grade added to
+"paragraphs" is on it. A paragraph opening with a bold lead is a paragraph, and
+the generator asks for a bold lead in four separate places, so an issue that
+obeys the file will always have several of them to miscount. The reading list's
+title lines are each followed by prose in the same block, so they are
+paragraphs too.
+
+Counted by the canon's own definition, on the same artifact, with the shape
+count added to `docs/voice/check_voice.py` by this run:
+
+```
+$ python3 docs/voice/check_voice.py measure /tmp/wscripts/w40.md site/content/issues/2026-W39.md
+/tmp/wscripts/w40.md
+  shapes 2     links 3     paragraph 17  standalone line 4
+site/content/issues/2026-W39.md
+  shapes 2     links 4     paragraph 14  standalone line 8
+```
+
+Two, and the issue it was called progress over scores the same two. The axis
+did not move. Worse, of 2026-W40's four non-paragraph blocks, three are the
+masthead, the horizontal rule and the close, which arrive on every issue
+whatever the model writes. The model produced one, and it is a short paragraph.
+Zero bulleted lists and zero third-level headings, which are the two devices
+canon law 14 names by name and requires rather than offers.
+
+**Why it matters more than an arithmetic slip.** The owner has ruled twice that
+enjoyability is the failing axis and once, on 2026-09-25, specifically that the
+shape count is the one measurement that cannot be satisfied by splitting
+paragraphs: "four of the five counts below can all pass while this one fails,
+and that is what happened". Every other figure in that grade's table reproduces
+exactly against the same artifact today. The single count the owner singled out
+is the one that did not, and it drifted in the optimistic direction, in the
+grade whose own charter says a flattering grade is a corrupted instrument.
+
+**What let it through.** The other counts in that table came out of
+`docs/voice/check_voice.py`, which was written on 2026-10-04 to stop exactly
+this class of error. It takes the words, the paragraph lengths, the em dashes,
+the semicolons and the character census. It did not take the shape count, so
+the one law-14 count that has its own ruling behind it was the one still being
+taken by eye in prose. An instrument that measures four of five counts does not
+leave the fifth unmeasured, it marks the fifth as the one where a number can be
+whatever the writer expected.
+
+**Fixed in this pull request, in both places.** `check_voice.py measure` now
+reports the kinds of block and prints a line when the count is below two, and it
+accepts a path argument, which it previously ignored and which it could not
+have resolved anyway: it called `relative_to(ROOT)` on every path, so the tool
+written to stop a figure drifting off its artifact raised an exception when
+pointed at the stored `digests` row the canon names as an artifact to grade.
+The generator gains the definition's negative half at the shape gate, naming
+the bold lead and the standing lines as the two things that are not shapes.
+Recorded as ban list 98.
+
+## INC-2026-10-07-law-8-form-graded-by-prefix — two grades cleared a link's form by checking the part of the url the rule names, not the part that reaches the paper (2026-10-07, writer seat)
+
+**This is a repeat of `INC-2026-10-03-law-12-graded-by-grep`, itself the fourth
+occurrence of a chain running back through
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Fifth occurrence of the
+class, same seat, same register, recorded at the moment it repeated per the
+standing rule at the top of this file.**
+
+**What happened.** Canon law 8 says links go to the full text. The grades of
+2026-10-05 and 2026-10-06 split that law correctly into coverage and form, did
+the hard half right, and got the easy half wrong. On coverage they counted
+thirteen named pieces of work against three links and failed the law, which is
+the two-integer verdict the canon asks for and it was done properly. On form
+both recorded a pass, in these words: "Form is clean: three of three are
+`arxiv.org/html/`."
+
+Three of three do begin with `arxiv.org/html/`. The three links are
+`html/2609.29808v1`, `html/2610.01787v1` and `html/2609.22086`. Two carry the
+version suffix the payload handed over and the third does not, and the paper
+behind the third is held in `papers` as both `arxiv:2609.22086` and
+`arxiv:2609.22086v1`. The generator's one string transformation had been taught
+from an example whose input carried no version, against a corpus where 6,994 of
+7,820 arXiv urls do, so the model split the difference across one issue. That is
+ban list 100 and it is fixed in the generator on this branch.
+
+**Why the verdict came out wrong, which is the reusable part and is new to this
+chain.** The four prior occurrences were a violation that could not be quoted, a
+law asserting coverage that needed a count, a law with two clauses under one
+number, and a law whose instrument was narrower than the law and said so. This
+one is different and plainer: the rule and the reader care about two different
+substrings of the same string. Law 8's own text names a prefix, `arxiv.org/html/`,
+because that is the part of the url the rule is about. What decides whether a
+reader reaches the paper is the identifier, which the rule never mentions because
+it is supposed to be copied rather than chosen. So a grade reading the law
+literally checks the half the law talks about, and the half it does not talk
+about is the half that can be wrong. A prefix is also the part a glance can
+verify, and "three of three" is a satisfying sentence to write.
+
+**The procedure change, and it is one line in the canon's pass 3.** Where a rule
+transforms a value the payload supplied, the verdict compares the output to that
+input character by character, and never to the pattern the rule describes. The
+pattern is what the rule had to say in order to be written down. The input is
+what the reader is owed. Added to `docs/voice/canon.md` is not available to this
+seat for the laws section, so it goes in ban list 100's general form and in this
+entry, and the canon change is proposed rather than made.
+
+**Not caught by the instrument either, and that is worth recording.**
+`docs/voice/check_voice.py measure` prints a link count and the links are
+deduplicated into a set, so it reports "links 3" and has no opinion about what
+any of them point at. The one tool this seat has for taking figures off an
+artifact measures link quantity and no link property. Filed as the second half
+of the ledger entry of 2026-10-07.
+
+## INC-2026-10-07-the-editors-own-prose-broke-canon-law-one-again — third occurrence, in three files at once, and the first one outside the review (2026-10-07, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`'s sibling,
+`INC-2026-10-01-the-editors-own-review-broke-canon-law-one`, which was itself
+the second occurrence. Third occurrence, same law, same seat. Recorded per the
+standing rule at the top of this file, which carries no exceptions.**
+
+**What happened.** The run of 2026-10-07 graded canon law 1 on the newest issue
+and printed all eight of its semicolon joins as evidence, with the note that
+five of them were holding an evidence grade together. The same run then wrote
+three semicolon joins of its own:
+
+```
+docs/voice/ban-list.md   "...the part a glance can verify; the identifier is..."
+docs/agents/incidents.md "...in order to be written down; the input is what..."
+docs/ideas.md            "...already fixed on the same branch; this entry is..."
+```
+
+All three were struck before `gh pr ready`, by the end-of-run sweep the
+2026-10-01 entry made law. That entry says two runs of evidence mean the sweep
+finds something every time. It is three runs now, and the prediction held.
+
+**What is new, and it is the reason this is worth an entry rather than a line in
+the review.** The two prior occurrences were both in the review's body prose,
+and the 2026-10-01 fix is written in those terms: it sweeps "every file this
+seat wrote in the run", but its diagnosis is about the compressed aphorism a
+review reaches for when summing a verdict up. None of today's three is in the
+review. They are in a ban-list entry, an incident entry and a ledger entry, and
+all three are the same sentence shape the prior entry identified: a balanced
+pair contrasting what a rule says with what it misses. So the construction, not
+the file, is what carries the defect, and this seat writes that construction
+most often in the registers rather than in the grade.
+
+The sharper version, because it is the same failure the run's own lead finding
+is about. Today's grade found that the generator's one string transformation was
+taught from its minority case, and the lesson written into ban list 100 is to
+check an example against the distribution of its real input. The 2026-10-01 fix
+was written from two specimens in one file and generalised to that file's kind.
+Three of three of today's specimens fall outside it. An incident entry is a
+worked example too, and it was drawn from its own minority case.
+
+**The fix, and it is one word in an existing step rather than a new step.** The
+sweep already covers every file the run wrote, so nothing was missed and no
+defect reached the owner. What is corrected here is the diagnosis attached to
+it: the sentence to distrust is the balanced contrast wherever it appears, and
+the register files are where this seat writes most of them. Proposed for the
+charter's shipping section through the ExO relay, because this seat does not
+edit charters.
+
+## INC-2026-10-08-canon-pass-six-executed-by-inventory-not-by-rendering — the delivery-path pass was run twice by listing constants, and all three defects on the path were in the renderer (2026-10-08, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`, itself the
+fifth occurrence of a chain running back through
+`INC-2026-10-03-law-12-graded-by-grep`,
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Sixth occurrence of the
+class, same seat, recorded at the moment it repeated per the standing rule at
+the top of this file.**
+
+**What happened.** Canon pass 6 was extended on 2026-10-04 with an instruction
+in its own words: "walk the path the words take, from the model's output to the
+reader's eye, and grade every string that joins or changes them on the way."
+The grade of 2026-10-04 wrote that step and the grade of 2026-10-07 inherited
+it. Both executed it by listing reader-facing assignments in `pipeline/` and
+`site/emails/digest.html`, which is what "every string that joins or changes
+them" reads as. Ten names across three files, correctly found, correctly
+graded as sentences.
+
+Today's run executed the same pass by importing `pipeline.email_render` and
+rendering the artifact. Three defects came out of the first command, and not
+one of them is a string:
+
+- `parse_issue` keeps only the first line after the closing rule and discards
+  the rest, so the two-move sign-off the generator is told to write loses a
+  move, and the move it loses is the law 15 scale sentence.
+- `parse_section` reads a top-level bullet as a new item, so every list canon
+  law 14 requires is flattened to paragraphs. Twenty-three bullets across
+  three sections of `site/content/issues/2026-W37.md` produce zero list
+  points.
+- `preheader_for` derives the inbox preview from the opening's first sentence,
+  which for the newest issue is 128 characters of an unfinished either-or.
+
+**Why the class keeps recurring, which is the only part worth adding.** The
+four earlier entries are each a grade checking the half of a rule the rule
+names: the prefix law 8 mentions, the four strings law 12 lists, the links that
+exist rather than the ones missing. This one is a step shaped the same way at
+one remove. The step says "every string", so a seat executing it faithfully
+goes looking for strings, and a `tail[0]` is not a string. The instruction
+named the nouns on the path instead of the path, and a reader obeying it
+inventories the nouns.
+
+So the generalisation, and it is narrower and more useful than "grade the whole
+thing": **a pass over a transformation is executed by running the
+transformation.** Where a register asks a seat to grade what a reader receives,
+the only faithful execution is to produce what the reader receives. Reading the
+code that produces it grades the author's intent, which is the one thing that
+was never in doubt. Three seats have now written correct instructions whose
+verb was weaker than their subject.
+
+**Blameless postmortem.** Nobody did the pass badly. The 2026-10-04 amendment
+is the best version of that step anyone had written, it was executed as
+written, and it found real defects both times. The failure is that "list every
+reader-facing constant" is cheap and "render the artifact" is not obviously the
+same instruction, so the cheap reading won twice. The fix is in the owner's
+file and is filed rather than edited: canon pass 6 should ask for the render
+and name the command. The local half is built, because a rule enforced by a
+sentence is enforced at the reliability of a reading:
+`docs/voice/check_voice.py delivery` runs the real renderer over an artifact,
+fails each of the three cases above, and passes a clean fixture at exit 0.
+
+## INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state — the preheader was filed for the writer seat on 2026-09-24 and sat through four editorial runs (2026-10-08, writer seat)
+
+**This is a repeat of incident 20, the class the owner named when she had to
+give one ruling twice, and of the reasoning that produced canon pass 6. Both
+say recording is not enforcing. Pass 6 gave a failing state to the filings in
+`docs/voice/ban-list.md` and nothing gave one to the filings in
+`docs/ideas.md`, so the same class survived in the second register. Recorded at
+the moment it repeated per the standing rule at the top of this file.**
+
+**What happened.** The ledger entry of 2026-09-24 that built `preheader_for()`
+says the inbox preview is derived from the opening's first sentence, that for
+2026-W39 this "happens to be good", that it is "good by luck", and that the
+real fix is a declared preheader in the generator's output contract. Its
+"whose call" line reads: "the writer seat owns `prompts/digest.md` and the
+voice. This is filed for that seat rather than edited."
+
+That was fourteen days and four editorial runs ago. The entry is still
+`proposed`. The luck ran out in the meantime and no run noticed, because
+nothing a run does opens that file looking for its own name. 2026-10-05's
+preview is 128 characters, the setup half of an either-or, and a mail client
+shows "You ship agents that improve themselves or you ship agents that stay
+safe, and until this " and stops.
+
+**Why it was invisible, stated as the structural fact rather than as a miss.**
+Canon pass 6 exists because, in its own words, "a filing has no failing state
+of its own, and this pass is the failing state". It enumerates the entries in
+one register: every ban-list entry whose ending is a filing. A ledger entry
+addressed to this seat is the identical object with the identical problem, and
+no pass in any charter enumerates those. The register that was given a gate got
+one. The register that hands work BETWEEN seats is the one with no gate, which
+is the worse of the two to leave open, because a filing addressed to nobody at
+least fails loudly when the defect prints.
+
+**Blameless postmortem.** The 2026-09-24 entry did everything right. It named
+the defect, named the seat, named the cheap fix and the better fix, and said
+plainly that the current behaviour was luck. Filing it was correct and the
+engineer was right not to edit the prompt himself. The gap is that the handoff
+had no receiver. Two fixes, both in this pull request: the writer half of the
+2026-09-24 entry is done, and an amendment to canon pass 6 is filed asking the
+pass to re-check every open ledger entry whose "whose call" line names this
+seat, with the day count printed the way the ban-list filings already are.
+
+**And the count is the finding.** The amendment was drafted assuming the
+preheader was a lone straggler. It is not. Nine entries in `docs/ideas.md` are
+still `proposed` and name this seat in their "whose call" line, six of them
+unconditionally:
+
+```
+19 days  2026-09-19  the writing model's narrow no-break spaces
+19 days  2026-09-19  the `Enforced at:` line belongs on the voice registers
+19 days  2026-09-19  two fabrications in the published digest
+14 days  2026-09-24  the writer should choose the preheader
+11 days  2026-09-27  ban list entries 1 to 50 have never been swept
+ 9 days  2026-09-29  the em dash in skill frontmatter versus ban-list 13
+ 8 days  2026-09-30  the provenance field is ASCII, the papers list is not
+```
+
+The 2026-09-27 entry's whose-call line reads "writer seat, next run, no
+dependency on anyone." Eleven days and roughly eleven runs have gone past it.
+So this seat has an inbox of nine, the oldest is nineteen days old, and no run
+of it has ever opened the inbox, which is a larger fact than the one preview
+sentence that led to finding it. It is reported rather than cleared, because
+clearing nine filings is not one editorial run and pretending otherwise is how
+the tenth gets written.
+
+## INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats - the append-at-the-end collision, arriving through main rather than between two branches (2026-10-09, writer seat)
+
+Recorded under the standing rule as the third occurrence of incident 6's
+class, after `INC-2026-09-29-same-anchor-ledger-conflict-repeat` and
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`.
+
+**What happened.** The PM seat merged the engineer's pull request to main,
+then handed three seats, this one included, the same instruction: rebase
+your open pull request, because it conflicts now. This branch carries
+sixteen commits across ten files. Exactly two of the ten conflicted, and
+they are the two append-only registers, `docs/agents/incidents.md` and
+`docs/ideas.md`. The eight files only this seat writes did not conflict at
+all. That is the shape the 2026-09-29 entry predicted: the end of an
+append-only file is a shared write address, and nothing else on this branch
+has one.
+
+**What is new, and it is the only reason this is a separate entry.** Both
+earlier occurrences were one seat merging one other branch into its own, so
+the cost was one conflict for one merge. Today one merge to the trunk put
+the same conflict in front of three open pull requests at once, and each of
+the three seats pays it separately, in its own run, on its own clock. The
+cost of a shared write address scales with the number of open pull requests
+that touch it rather than with the number of merges, and a queue of open
+pull requests is this org's normal state rather than its exception.
+
+**The resolution, written down because the 2026-09-29 entry asked for it.**
+That entry closed with "this run resolved it correctly by guessing, which is
+the part worth removing." The guessing is removable without any of the three
+fixes it proposed, because a conflict between two appends has a mechanical
+answer: the resolved file is HEAD's content followed by the block the
+replayed commit added, and a commit that did anything other than append
+fails the check and goes to a hand. The recipe and the proof this run ran
+against it are filed in `docs/ideas.md` today rather than repeated here.
+
+**Not fixed here.** A merge driver or one file per entry is engineer surface,
+and a rebase step in a charter is the ExO's. This seat writes neither.
 ## INC-2026-10-09-the-prompts-size-was-measured-once-and-priced-twice-stale — the cost per paper the owner asked for by name was short by half a prompt for three weeks, and no test named the constant (2026-10-09, engineer seat)
 
 **What was wrong.** `pipeline/distill.py` carried

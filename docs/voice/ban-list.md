@@ -1282,6 +1282,15 @@ gap that the same collision had left empty (incident 25).
     set no list anywhere, for the sixth grade running. The ornament arrived
     without the structure it was attached to, which is what an unanswered
     formatting escalation looks like on the page.
+    One row appended 2026-10-05, not a restatement. The issue of that day set
+    five bold leads and no list, for the ninth grade running, and it is the
+    first artifact in this sequence that was NOT the one the escalation's
+    patches were written blind against. So the escalation is now tested rather
+    than merely unanswered, and the ornament still arrives without its
+    structure. The one thing that changed is that the generator's single
+    unconditional list requirement, which is the superseded group past two
+    entries, was triggered by that issue's three entries and became a count on
+    the draft in the same pull request.
     Added 2026-10-02. Enforced the same day: the heading gate's collection
     step loses both punctuation-shaped halves in favour of one positional
     unit, any run of bold or italic that BEGINS a line, whatever punctuates
@@ -1593,3 +1602,330 @@ gap that the same collision had left empty (incident 25).
     calls this command. Until a command that already runs does, this entry and
     the two before it are enforced at the reliability of someone choosing to
     type it. Filed in docs/ideas.md for the engineer.
+
+93. The specimen that becomes the sentence, at the position where the model
+    writes. This register already holds two entries about examples leaking into
+    issues, 53 and 88, and both are about where an example is DRAWN FROM: a
+    specimen written out of the week being graded is the answer rather than an
+    illustration of it. This entry is about where an example SITS. A worked
+    sentence quoted inside the slot the generator writes into is the nearest
+    available draft, and it wins against any warning attached to it, including
+    the words "neither is ever printed".
+    The print of 2026-10-05 is the specimen and it carries four in one issue.
+    Two lead-ins quoted in the fell-behind slot opened both of its groups
+    verbatim, having been quoted there with a note that an earlier issue had
+    already printed one of them word for word. A heading of the form "Three
+    papers for anyone who ..." printed as the reading list's heading with its
+    tail swapped for the day's material, three lines above the file's own
+    sentence saying that a phrase quoted inside the slot is not a prohibition
+    but the nearest available draft. And the heading rule opened by rendering
+    the four slot jobs as plain English clauses, two of which printed as
+    section headings, one of them verbatim.
+    The tell, for a run reading the generator rather than an issue: a sentence
+    in prompts/digest.md that a reader could lift into an issue unchanged,
+    sitting inside a `{curly brace}` block or inside the rule that governs one.
+    Quoted BANNED specimens are not this tell, because a model copying a banned
+    specimen is caught by the ban. A quoted GOOD specimen has no such backstop,
+    and the file's own remedy for the "worth the hour" frame is the one that
+    works: delete it and name no replacement, because a replacement offered at
+    that position is the next template.
+    Added 2026-10-05. Enforced by deleting all four, which is the only move
+    with a record of working on this class, plus the slot-job rename that
+    removed the words two of the headings were lifted from.
+    ```
+    LANDED prompts/digest.md: "Two specimen turns stood here and both are deleted rather than re-warned."
+    ```
+    What is NOT enforced, said plainly: the file still teaches by worked example
+    at other writing positions and this run did not inventory them, because
+    counting them is a different job from grading an issue and a guessed count
+    recorded as a sweep is worse than no sweep. Filed in docs/ideas.md.
+
+94. The evidence grade that ate the meaning line. Not a wording defect. A
+    position defect, and the register had no entry for a rule losing to a slot
+    rather than to a phrase.
+    The generator forbids the standalone grade twice, in its own words: the
+    grade is "a clause inside a sentence", and it is "never as a second
+    sentence stapled behind it". Both describe what the grade must not look
+    like. Neither says where it goes. The print of 2026-10-05 ended seven items
+    out of seven on a standalone grade, five of them a noun phrase with no verb
+    in it, so both rules were broken at a position neither of them named.
+    What it costs is a different law. Canon law 14's sixth rule reserves the
+    end of an item for a line of plain meaning with no number in it. The grade
+    was sitting in that position seven times, so the issue explained seven
+    results and told a builder what to do about none of them. Two rules asked
+    for one slot and the file never said which wins.
+    The tell: an item whose last sentence names replication, sample size or
+    whose experiments these were. Also any grade containing a semicolon, which
+    is where that habit is strongest, because the two halves of a grade feel
+    like a matched pair and are two sentences.
+    Added 2026-10-05. Enforced by fixing the position rather than the wording,
+    so the end of an item is declared unavailable.
+    ```
+    LANDED prompts/digest.md: "The last sentence of an item is not available."
+    ```
+
+95. The semicolon nobody was counting. Entry-worthy because of what it reveals
+    about the shape of a rule rather than about the mark.
+    The generator has named the semicolon for weeks, inside a bullet about four
+    punctuation marks, and calls it "banned outright by canon law 1". The print
+    of 2026-10-05 carried eight, against one in the print before it, and all
+    eight were the same construction: two finished sentences in a balanced
+    contrast, which is the shape that feels most like craft. The same issue
+    carried zero em dashes and zero non-ASCII characters.
+    The difference between the mark that went to zero and the mark that went to
+    eight is that one of them was in a count and the other was in prose. That
+    is the generalisable half and it has a limit, which entry 96 is about.
+    Added 2026-10-05. Enforced as a count at the shape gate, beside the
+    character census that holds.
+    ```
+    LANDED prompts/digest.md: "Count the semicolons. The target is zero and there is no budget, the same as the em dash."
+    ```
+
+96. The count that still fails, because it needs the payload and the draft at
+    once. The honest limit on entry 95, written in the same run, because the
+    tidy version of that lesson is false and a later run would have relied on
+    it.
+    Entry 95 says a rule stated as a count is kept. Two counts in the generator
+    were not. Link coverage says "count before you output. Every item in every
+    section carries its own link", and the print of 2026-10-05 named thirteen
+    pieces of work and linked three, all three in the reading list, with zero
+    links across the other three sections. Grade coverage says to count grades
+    against every named piece of work, and that issue graded five of thirteen,
+    with its entire fell-behind section ungraded: six named works, every one
+    printing a benchmark number, no grade anywhere in the section. That is word
+    for word the failure the count rule was written against.
+    So the line is not whether a rule says "count". It is whether the check can
+    be run on the finished draft by itself. A character census, a semicolon
+    tally and a look at how many kinds of block are on the page read only what
+    was just written. Counting links and grades against every named work means
+    re-opening the payload while holding the draft, and that is the move that
+    does not happen.
+    The tell, for a run writing a new rule: if obeying the check requires a
+    field the model has to go back and look up, the check will not be run, and
+    making it louder will not change that.
+    Added 2026-10-05. NOT enforceable in the generator, which is the point of
+    the entry, and this is its second ending. A gate holding both the payload
+    and the output can match named works against links and grades
+    mechanically, and the pipeline is the only thing that holds both. Filed in
+    docs/ideas.md for the engineer. Law 8 coverage has now failed after a
+    prompt fix twice, so the writer charter's structure watch says it stops
+    being prompt work at this point.
+
+97. The count as the item's subject. A traction item whose main clause is a
+    number moving, with the research it supposedly signals demoted to a
+    subordinate clause.
+    The specimen is the whole of the third block of the traction section in the
+    print of 2026-10-05: "The citation pattern on the earlier distillation work
+    also shifted. Rethinking On-Policy Distillation II, which argued that one
+    training example suffices, moved from 2 to 4 citations as a newer paper
+    showed that 0.1% of tokens can match full-token performance. The claim
+    itself is now refined, not merely cited." Three sentences, and the subject
+    of all three is our bookkeeping. The one thing in it a builder could use,
+    that a newer paper matched full-token performance on a tenth of a percent
+    of the tokens, is inside the clause that explains why the count moved.
+    This is not a new rule. It is the rule the generator already states four
+    paragraphs above the citation-mover instruction, that the payload tells the
+    writer why a paper is in front of them and never tells the reader, applied
+    to the one stream it had not been applied to. The grade of 2026-10-05 found
+    this block, named it a partial fail on canon law 2, did not patch it, and
+    wrote it down for the next run.
+    The tell, and it reads on the finished draft alone: strike every number and
+    every word about counting out of the block and read what is left. If nothing
+    survives that a builder could act on, it is not an item.
+    Added 2026-10-06. Enforced in the traction slot, where the stream is
+    described, rather than in a general rule about numbers.
+    ```
+    LANDED prompts/digest.md: "A count moving is bookkeeping, and bookkeeping printed as news is the recipe rather than the product."
+    ```
+
+98. The shape count that counts lines nobody wrote. An entry about this seat's
+    own instrument, because the error was in a grade before it was in an issue.
+    Canon law 14's first count is how many KINDS of block are on the page, and
+    the canon's own definition names four: a paragraph, a bulleted list, a line
+    standing alone, a subheading inside a section. The grade of 2026-10-05
+    recorded three kinds for that print and called it "real progress over W39's
+    reprint". Counted by that definition it is two, and the print before it
+    scored the same two, so the one axis the owner says can fail an issue by
+    itself had not moved at all.
+    Two ways to inflate it, and that grade used the first while the issue used
+    the second. A bold lead opening a paragraph is not a shape, because the
+    paragraph is still a paragraph, and the generator asks for a bold lead in
+    four places so there are always several to count. And the standing lines are
+    not the writer's: of the four non-paragraph blocks in that print, three were
+    the masthead, the horizontal rule and the close, all of which arrive on
+    every issue whatever the model does. The model wrote one, and it was a short
+    paragraph.
+    The tell: a shape count that went up without a list or a third-level heading
+    appearing anywhere in the artifact. Those are the two devices canon law 14
+    names, and if neither is present the count did not move.
+    Added 2026-10-06. Enforced in two places, because the defect was in both.
+    In the generator, at the shape gate.
+    ```
+    LANDED prompts/digest.md: "Count only the kinds of block YOU put on the page."
+    ```
+    And in docs/voice/check_voice.py, which now takes the count that canon law
+    14 says comes first. It took four of law 14's five counts and not the fifth,
+    which is the one the law says can pass the other four and still fail, so the
+    instrument measured everything except the axis the ruling is about. The same
+    patch lets it be pointed at a path outside the repository, because the canon
+    names the stored digests row as an artifact to grade and that row is not a
+    file under site/content/issues/, so the one tool written to stop a figure
+    drifting off its artifact used to raise an exception rather than measure it.
+
+99. The traction stream with no clock. An entry whose subject is a query rather
+    than a sentence, because no sentence can be written that avoids it.
+    The print of 2026-10-05 reported a citation movement as that week's
+    traction. The movement was measured on 2026-09-28, seven days before the
+    issue was written, and it is the newest measurement that exists: the slow
+    loop has not written to citation_log since.
+    The staleness itself was found the same day by another seat and is in the
+    incident register. What belongs here is the half that makes it permanent.
+    The citation_movers query in pipeline/weekly.py takes the latest two checks
+    for each paper, whenever they happened, and reports any increase. It has no
+    time window. So the same twelve movers are handed to the generator every
+    Monday for as long as the slow loop stays quiet, and each Monday they print
+    as this week's. Run against the live database on 2026-10-06, the query
+    returns the identical twelve rows it returned on 2026-10-05, every one of
+    them measured in a window that closed on 2026-09-28, and eight of the twelve
+    are a movement from zero citations to one.
+    The payload then drops the dates. Each mover reaches the generator as a
+    title, a url, citations_before and citations_now, so the model cannot tell a
+    movement measured this morning from one measured a fortnight ago, and no
+    rule written into the prompt can ask it to.
+    Added 2026-10-06. NOT enforceable in the generator, and that is the entry.
+    Filed in docs/ideas.md for the engineer, in two parts: window the query to
+    the issue's own week, and carry the measurement date into the payload so a
+    gate and the writer can both see it.
+100. The worked example drawn from its own minority case. Six entries in this
+    file are about a specimen the model copies as prose (53, 56, 65, 76, 88,
+    93). This is the seventh member of that family and the first one where
+    nothing was copied as prose at all. What got copied was a MAPPING, and the
+    mapping was correct for one input in ten.
+    prompts/digest.md carried exactly one string transformation, at the link
+    rule: `arxiv.org/abs/2609.11042` becomes `https://arxiv.org/html/2609.11042`.
+    The example's input has no version suffix. Of the 7,820 arXiv urls in the
+    corpus the generator is handed, 6,994 carry one, so the single example for
+    the single transformation this file asks for was taught from the 11% case.
+    The print of 2026-10-05 shows what that produces, and the tell is the
+    inconsistency rather than any one link. Three links, same issue, same
+    model, same rule: `html/2609.29808v1` and `html/2610.01787v1` kept the
+    version they were handed and `html/2609.22086` did not. No editor chose
+    that. A model following an example whose shape does not fit its input
+    splits the difference, and splitting the difference on an identifier is how
+    a link stops pointing at a paper.
+    Why the grades missed it, which is the half worth keeping. Two consecutive
+    reviews graded this law's form and both wrote that the form was clean:
+    "three of three are `arxiv.org/html/`". That is a check on the prefix, and
+    law 8's subject is the identifier. A link's prefix is the part the rule
+    talks about and the part a glance can verify. The identifier is the part
+    that decides whether the reader reaches the paper. So the general form, and
+    it applies to any register holding an example of a transformation: grade
+    the example against the DISTRIBUTION of its real input, not against its own
+    internal consistency, and when a rule transforms a string, the verdict
+    compares the output to the payload's input character by character rather
+    than to the pattern the rule describes.
+    Added 2026-10-07. Enforced the same day in prompts/digest.md, which now
+    carries a versioned id in the example and the sentence "Only the path
+    segment changes. The identifier is copied, character for character, version
+    suffix and all." Swept per entry 90: the file holds two arXiv ids and both
+    are the one example, so the count is one and this entry is closed in the
+    generator. docs/voice/canon.md's worked example under law 14 carries a bare
+    id as well, and it is reported rather than struck, because that section
+    changes only by the owner's ruling and the canon is never sent to the model.
+    Gated the same day, because L-A22 says a rule enforced by a sentence is
+    enforced at the reliability of a reading. `docs/voice/check_voice.py links`
+    prints each link's path segment and identifier apart and fails when one
+    artifact disagrees with itself about the version suffix. It fails the print
+    of 2026-10-05 and passes a consistent fixture.
+    LANDED docs/voice/check_voice.py: "one artifact disagrees with itself about the version"
+    The gate's blind spot is in its own docstring rather than in a later grade:
+    an artifact that drops the suffix from EVERY link passes, 2026-W39 is that
+    case, and the stronger comparison against `papers.url` is undecidable while
+    394 groups of rows hold one paper under several ids.
+101. The sign-off written in two moves for a press that sends one. Not a word
+    tell and not a page tell. It is a tell of the register this list has never
+    had an entry for, which is prose graded in the file it was written in and
+    never in the form it is received in. `prompts/digest.md` asks for two
+    closing moves after the rule, a line that hands the day back to the reader
+    and a line of scale. `parse_issue` in `pipeline/email_render.py` assigns
+    the FIRST non-empty line after that rule to the `{{stats}}` slot and drops
+    every line after it. So an issue that sets the two moves as two paragraphs
+    reaches a subscriber missing one of them, and the one missing is the scale
+    sentence, which is the single sentence canon law 15 was written to govern
+    and the only sentence in an issue a reader cannot check against a linked
+    paper. The print of 2026-10-05 ran both moves in one paragraph and arrived
+    whole. Nothing in the generator asked for that, so it was the coin landing
+    the right way up.
+    The general form, because the tell is wider than the sign-off. A rule in a
+    register is about the markdown. A reader is holding the render. Where those
+    two disagree the register wins every grade and loses every send, and the
+    disagreement is invisible to a reading of either file on its own, because
+    each one is correct about its own half.
+    Added 2026-10-08. Enforced the same day in prompts/digest.md, which now
+    requires one paragraph.
+    LANDED prompts/digest.md: "Both moves go in ONE paragraph, with no blank line between them."
+    Gated the same day: `docs/voice/check_voice.py delivery` runs the real
+    renderer over an artifact and prints every sign-off line the inbox does not
+    receive. It passes a clean fixture at exit 0 and names the dropped scale
+    sentence verbatim on a fixture that splits the two moves.
+    LANDED docs/voice/check_voice.py: "sign-off lines"
+    The typography is the filing half and no prompt reaches it. The slot that
+    survives is set at 12px in grey monospace below the sign-off, which is the
+    register of a system footnote, so the issue's closing judgment is demoted
+    even when it is delivered. Filed in docs/ideas.md for the engineer.
+102. The list that law 14 requires and the press flattens. Canon law 14 says
+    parallel results go in a bulleted list with a short bold lead on each,
+    because one shape for a whole issue is what the owner called a hassle to
+    read. `parse_section` reads a top-level markdown bullet as the start of a
+    new ITEM rather than as a point inside one, so `points` stays empty, no
+    marker is set, and the bullets arrive in the inbox as consecutive body
+    paragraphs in the same register as the prose around them. The site renders
+    the same markdown as a real list, so the shape exists on one surface and is
+    undone on the other, after every gate, by code.
+    This is not a prediction. `site/content/issues/2026-W37.md` carries
+    twenty-three top-level bullets across three sections and the renderer
+    produces zero list points from them: ten parallel claims, four overturned
+    ones and nine reading-list entries, every one of them set as a list by the
+    writer and received as a paragraph. The file's eighteen rendered points all
+    come from nested bullets in the one remaining section, so the whole-file
+    counts of 27 and 18 hide the defect by adding the two paths together.
+    The entry is written now rather than when it bites, because the generator
+    on this branch is being patched toward law 14's list and the patch cannot
+    reach a subscriber. Correcting one prediction in the register on the way
+    past: docs/voice/canon.md's pass 6 says the middle-dot marker at
+    `email_render.py` prints "on every bullet" of the first issue that obeys law
+    14. It does not. The marker is only reached by an INDENTED bullet, and the
+    top-level list law 14 actually asks for never gets that far. The character
+    the canon worried about is the lesser half of a defect that deletes the
+    shape instead of mis-setting it.
+    Added 2026-10-08. No prompt change, because the markdown is already right
+    and writing to the parser's shape would be the generator obeying a bug. The
+    fix is one branch in `pipeline/email_render.py`, which is not this seat's
+    file, so this is the second ending: filed in docs/ideas.md for the engineer
+    and reported to the owner as blocking canon law 14 end to end.
+    Gated the same day for visibility, which is all a gate can do from here:
+    `docs/voice/check_voice.py delivery` prints the top-level bullet count
+    beside the rendered point count and fails when an artifact has bullets and
+    no points.
+    LANDED docs/voice/check_voice.py: "rendered as list points"
+103. The opening sentence that sells nothing because it is half a sentence. The
+    press prints the opening's first sentence beside the subject line as the
+    inbox preview, trimmed at one sentence by `preheader_for`, and a mail
+    client shows roughly ninety characters of it. The opening is written to
+    begin an issue a reader has already decided to open. The preview has the
+    opposite job, which is to make them open it. 2026-10-05's first sentence is
+    a hundred and twenty-eight characters, it is the setup half of an either-or
+    whose answer is in the sentence after it, and what reached the inbox was
+    "You ship agents that improve themselves or you ship agents that stay safe,
+    and until this " with the rest cut off and no mark saying so.
+    The ledger said this would happen on 2026-09-24, in the entry that built
+    `preheader_for`: the derived preview "happens to be good. It is good by
+    luck." That entry names this seat as whose call it is, and it has been open
+    fourteen days through four editorial runs, because canon pass 6 re-checks
+    the filings in this file and nothing re-checks a filing in the ledger
+    addressed to this seat.
+    Added 2026-10-08. Enforced the same day in prompts/digest.md.
+    LANDED prompts/digest.md: "Your first sentence is also the inbox preview, so it has to work alone and"
+    Gated the same day: `docs/voice/check_voice.py delivery` prints the preview
+    length and the ninety-character truncation, and fails over ninety.
+    LANDED docs/voice/check_voice.py: "inbox preview"

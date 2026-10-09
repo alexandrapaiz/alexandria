@@ -22,15 +22,24 @@ caught a live defect on the run that wrote it.
    Prints the character census per path, so no figure can be shared between
    two artifacts in a grade.
 
+4. `links`, ban list 100. Law 8's form half. A grade that checks the prefix
+   checks the part of the url the law names and not the part the reader
+   clicks, which cleared a composed identifier twice. Reports path segment and
+   identifier apart, and fails when one artifact disagrees with itself about
+   the version suffix.
+
 Not wired to anything yet, which is the honest half of L-A22: until a command
 that already runs calls this, these three are enforced at the reliability of
 someone choosing to type it. Filed in docs/ideas.md for the engineer, to move
 to tools/ and add to .github/workflows/checks.yml beside check_registers.py.
+The stronger form of check 4 needs the corpus and is filed with it.
 
-Usage:  python3 docs/voice/check_voice.py [enforcements|stale|measure|all]
+Usage:  python3 docs/voice/check_voice.py
+          [enforcements|stale|measure|links|delivery|all] [path...]
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
+import html
 import pathlib
 import re
 import sys
@@ -83,9 +92,16 @@ def enforcements():
     prose, ok, missing = [], [], []
     for num, body in sorted(entries(ban).items()):
         nb = norm(body)
-        if not re.search(r"Enforced\b", nb):
-            continue
         claims = LANDED.findall(body)
+        # The "Enforced" word is what the register's own rule keys on, and it
+        # was this check's precondition until 2026-10-08, when entry 102 landed
+        # a gate without one. That entry's ending is a filing for the engineer
+        # PLUS a gate here, which is a third shape the rule did not anticipate,
+        # and the old precondition skipped the entry whole rather than checking
+        # the line it did carry. A LANDED line is a checkable claim wherever it
+        # sits, so the claim decides now and the word only decides the ratio.
+        if not re.search(r"Enforced\b", nb) and not claims:
+            continue
         if not claims:
             prose.append(num)
             continue
@@ -148,11 +164,111 @@ def hidden_weeks():
     return set(re.findall(r'"([^"]+)"', m.group(1))) if m else set()
 
 
+def shapes(blocks):
+    """How many KINDS of block are on the page, which is canon law 14's first count.
+
+    Law 14 names five counts and says four of them can pass while this one
+    fails, because splitting long paragraphs changes every other number and
+    cannot change this one. The reprint that satisfied the other four and was
+    still rejected scored one. This function was added on 2026-10-06 because
+    the four it could already take were the four the law says are not the
+    failing axis, so the instrument measured everything except the thing the
+    owner's ruling is about.
+    """
+    kinds = collections.Counter()
+    for b in blocks:
+        lines = [x.strip() for x in b.strip().split("\n") if x.strip()]
+        if not lines:
+            continue
+        if lines[0].startswith("### "):
+            kinds["turn"] += 1                     # a subheading inside a section
+        elif lines[0].startswith("#"):
+            kinds["heading"] += 1
+        elif all(re.match(r"^([-*+]|\d+\.)\s", x) for x in lines):
+            kinds["list"] += 1
+        elif len(lines) == 1 and len(b.split()) <= 25:
+            kinds["standalone line"] += 1
+        else:
+            kinds["paragraph"] += 1
+    return kinds
+
+
+ARXIV = re.compile(r"arxiv\.org/(abs|html|pdf)/(\d{4}\.\d{4,5})(v\d+)?")
+
+
+def links(paths=None):
+    """Canon law 8's FORM half, which a prefix check cannot see (ban list 100).
+
+    Two consecutive grades read the newest issue's three links, saw that three
+    of three began with `arxiv.org/html/`, and recorded the form as clean. Two
+    of them carried the version suffix the payload supplied and the third did
+    not. The prefix is the part law 8 names, because it is the part the rule is
+    about. The identifier is the part that decides whether the reader reaches
+    the paper, and the law cannot name it, because it is meant to be copied
+    rather than chosen.
+
+    So this reports the path segment and the identifier separately, and it
+    fails on a disagreement WITHIN one artifact. A version suffix on two links
+    out of three is nobody's editorial choice, and inconsistency is the one
+    tell available without the payload in hand.
+
+    What it cannot see, stated here rather than discovered by a later grade.
+    An artifact that drops the version from EVERY link agrees with itself and
+    passes. 2026-W39 is that case, six html links and no suffix on any of
+    them. Catching it needs each identifier compared to `papers.url`, and that
+    comparison is not decidable today either: 394 groups of rows in `papers`
+    are one arXiv paper under several version ids, so three of W39's four ids
+    match a bare row and a versioned row both, and "copy the identifier
+    exactly" has two correct answers until the corpus is deduplicated. Filed
+    for the engineer with the dedup, because the writer's rule cannot be made
+    unambiguous ahead of it.
+    """
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    retired = hidden_weeks()
+    rc = 0
+    for p in paths:
+        p = pathlib.Path(p)
+        if not p.exists():
+            print(f"{p}: missing")
+            continue
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        off = p.stem in retired
+        found = ARXIV.findall(p.read_text(encoding="utf-8"))
+        print(f"{shown}" + ("   [retired, not served]" if off else ""))
+        if not found:
+            print("  no arXiv links")
+            continue
+        seg = collections.Counter(s for s, _, _ in found)
+        ver = collections.Counter("versioned" if v else "bare" for _, _, v in found)
+        print(f"  arXiv links {len(found):<4} "
+              + "  ".join(f"{k} {v}" for k, v in sorted(seg.items()))
+              + "   " + "  ".join(f"{k} {v}" for k, v in sorted(ver.items())))
+        for s, i, v in found:
+            print(f"    {s:<5} {i}{v or ''}")
+        bad = [s for s in seg if s != "html"]
+        if bad and not off:
+            print(f"    law 8 wants the html full text, not {', '.join(sorted(bad))}")
+            rc = 1
+        if len(ver) > 1 and not off:
+            print("    one artifact disagrees with itself about the version "
+                  "suffix, so at least one identifier was composed rather "
+                  "than copied (ban list 100)")
+            rc = 1
+    print()
+    print("The prefix is what law 8 says. The identifier is what the reader")
+    print("clicks. A verdict on the first is not a verdict on the second.")
+    return rc
+
+
 def measure(paths=None):
     retired = hidden_weeks()
     paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
     rc = 0
     for p in paths:
+        p = pathlib.Path(p)
         if not p.exists():
             print(f"{p}: missing")
             continue
@@ -161,11 +277,26 @@ def measure(paths=None):
         paras = [x for x in re.split(r"\n\s*\n", t) if x.strip()]
         lens = [len(x.split()) for x in paras]
         off = p.stem in retired
-        print(f"{p.relative_to(ROOT)}" + ("   [retired, not served]" if off else ""))
+        # Never relative_to(ROOT): the canon names the stored `digests` row as
+        # an artifact to grade and a row dumped to a file is outside the repo,
+        # so the one tool written to stop a figure drifting off its artifact
+        # used to raise rather than measure it (2026-10-06).
+        try:
+            shown = p.resolve().relative_to(ROOT)
+        except ValueError:
+            shown = p.resolve()
+        print(f"{shown}" + ("   [retired, not served]" if off else ""))
         print(f"  words {len(t.split()):<6} paragraphs {len(paras):<4} "
               f"longest {max(lens) if lens else 0:<4} over100 {len([x for x in lens if x > 100])}")
         print(f"  em dashes {t.count(chr(8212)):<4} semicolons {t.count(';'):<4} "
               f"non-ASCII {sum(na.values()):<5} distinct {len(na)}")
+        kinds = shapes(paras)
+        body = {k: v for k, v in kinds.items() if k != "heading"}
+        links = set(re.findall(r"https?://[^)\\s]+", t))
+        print(f"  shapes {len(body):<5} links {len(links):<5} "
+              + "  ".join(f"{k} {v}" for k, v in sorted(body.items())))
+        if len(body) < 2:
+            print("    one kind of block is a failing issue (canon law 14)")
         for c, k in na.most_common():
             print(f"    U+{ord(c):04X} {unicodedata.name(c, '?'):<28} x{k}")
         if not off and (sum(na.values()) or t.count(chr(8212))):
@@ -176,14 +307,129 @@ def measure(paths=None):
     return rc
 
 
+# The press renders an issue twice. The site gets the markdown, and a
+# subscriber gets `pipeline/email_render.py` over `site/emails/digest.html`.
+# Only the second one edits the words on the way out, and it is the one half of
+# the product no grade had ever executed (ban list 101, 102, 103).
+EMAIL_KEY = "2026-W40"
+
+
+def delivery(paths=None):
+    """What a subscriber receives, which is not what the grade reads.
+
+    Canon pass 6 asks a grade to walk the path the words take, from the
+    model's output to the reader's eye, and grade every string that joins or
+    changes them. Written as a sentence, that pass was executed twice by
+    listing assignments in `pipeline/`. Listing a constant is not running the
+    renderer, and the three findings below were all invisible to a reading.
+
+    So this imports the real renderer and puts the real artifact through it.
+    Three questions, each one a defect already confirmed on 2026-W40:
+
+    1. Does every editorial line reach the inbox? `parse_issue` assigns only
+       the first line after the closing rule to the `{{stats}}` slot and drops
+       the rest. The sign-off is written in two moves, so the issue that sets
+       them as two paragraphs loses one, and the one it loses is the scale
+       sentence canon law 15 exists to protect.
+
+    2. Does a list survive as a list? Law 14 requires parallel results set as
+       bullets. `parse_section` reads a top-level bullet as a new ITEM, so the
+       points list stays empty and three parallel bullets render as three
+       paragraphs in the body register. The site renders the same markdown as
+       a real `<ul>`, so the shape law 14 asks for exists on one surface and
+       is flattened on the other, after the last gate, by code.
+
+    3. Does the inbox preview stand alone? The preview is the first sentence of
+       the opening, which is written to continue into the second. 2026-W40's is
+       128 characters and truncates inside "until this week those two pipel".
+
+    What it cannot see. It does not read the typography, so it cannot tell that
+    the stats slot is 12px grey monospace below the sign-off or that every
+    section heading is set uppercase. Those are the template's, they are filed,
+    and a character census would not find them either.
+    """
+    try:
+        sys.path.insert(0, str(ROOT))
+        from pipeline import email_render as er
+    except Exception as exc:                        # noqa: BLE001
+        print(f"  renderer unavailable, so the delivery path is ungraded: {exc}")
+        return 1
+    paths = paths or sorted((ROOT / "site/content/issues").glob("*.md"))
+    rc = 0
+    for raw in paths:
+        p = pathlib.Path(raw)
+        if not p.exists():
+            print(f"{p}: missing")
+            rc = 1
+            continue
+        md = p.read_text(encoding="utf-8")
+        print(f"{p}")
+        issue = er.parse_issue(md)
+        rendered = er.render_issue(md, EMAIL_KEY, "reader@example.com",
+                                   "https://example.com/u")
+        # Entities have to come back before anything is compared. The first
+        # version of this compared escaped html against raw markdown and
+        # reported 2026-W39's sign-off as dropped over one apostrophe.
+        seen = norm(html.unescape(re.sub(r"<[^>]+>", " ", rendered)))
+
+        # 1. the sign-off, which is every line after the closing rule.
+        tail = [l.strip() for l in re.split(r"^\s*---+\s*$", md, flags=re.M)[-1]
+                .split("\n") if l.strip()]
+        standing = norm(er.CLOSE).rstrip(".")
+        dropped = [l for l in tail if standing not in norm(l)
+                   and norm(er.normalise(plain_md(l)))[:40] not in seen]
+        print(f"  sign-off lines {len(tail)}    dropped {len(dropped)}")
+        for l in dropped:
+            print(f"    DROPPED  {l[:72]}")
+            rc = 1
+
+        # 2. the lists, which law 14 requires and the renderer flattens.
+        bullets = len([l for l in md.split("\n")
+                       if re.match(r"^[-*] +\S", l)])
+        points = sum(len(i["points"]) for s in issue["sections"]
+                     for i in s["items"])
+        print(f"  top-level bullets {bullets}   rendered as list points {points}")
+        if bullets and not points:
+            print("    every bullet was read as a separate item, so the list law 14")
+            print("    asks for reaches a subscriber as paragraphs (ban list 102)")
+            rc = 1
+
+        # 3. the inbox preview.
+        pre = er.preheader_for(issue)
+        print(f"  inbox preview {len(pre)} chars")
+        if len(pre) > 90:
+            print(f"    truncates at  {pre[:90]!r}")
+            print("    the preview is one sentence of the opening, so an opening")
+            print("    written to continue sells a fragment (ban list 103)")
+            rc = 1
+    print()
+    print("The renderer ran. A constant inventory is not this check, and")
+    print("two executions of canon pass 6 found none of the three.")
+    return rc
+
+
+def plain_md(line):
+    """Markdown stripped the way the renderer strips it, for comparison only."""
+    line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line)
+    return re.sub(r"[*_`]", "", line)
+
+
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "all"
+    # Paths after the subcommand go to `measure`. Without this, the arguments
+    # were accepted and silently ignored, so `measure <path>` reported on
+    # site/content/issues and a grade could read the wrong artifact's figures
+    # under the right artifact's name, which is the defect this file exists to
+    # prevent (ban list 91, fixed 2026-10-06).
+    paths = sys.argv[2:]
     rc = 0
+    takes_paths = {"measure", "links", "delivery"}
     for name, fn in (("enforcements", enforcements), ("stale", stale),
-                     ("measure", measure)):
+                     ("measure", measure), ("links", links),
+                     ("delivery", delivery)):
         if which in (name, "all"):
             print(f"==== {name} ====")
-            rc |= fn()
+            rc |= fn(paths) if (name in takes_paths and paths) else fn()
             print()
     return rc
 
