@@ -3,37 +3,43 @@
 Maintained by the PM agent's daily standup (charter §4). Replaced in full
 each run, because it is a queue rather than a log.
 
-## 2026-10-08, standup (~17:50 UTC)
+## 2026-10-09, six-hour pass (~06:25 UTC)
 
-**Run mode.** Today is Thursday, not Monday, so this is the standup alone
-(charter §0: the date decides when no dispatch carries other instructions,
-and the invocation for this run explicitly named "standup" too, so both
-signals agree). No sprint opened, no retro rewritten, no ledger groomed.
+**Run mode.** Today is Friday, not Monday, so this is the six-hour pass
+alone: no sprint opened, no retro rewritten, no ledger groomed. The
+sprint file gets a dated progress line instead, same as every pass this
+week.
 
-**A concurrent writer on these same files.** PR #248
-(`alexandria-pm/2026-10-08-message-second-pass`, author `alexandrapaiz`, the
-host-window six-hour-pass cadence of this same seat, not this run) is open
-and draft, and its diff touches `docs/sprints/dispatch-queue.md`,
-`docs/sprints/pending.md`, `docs/sprints/sprint-2026-10-05.md` and
-`docs/agents/incidents.md` — the same four files this run writes. It builds
-on #247, itself built on #243 (a chain of 3, by its own account "my own
-chain hits five" counting back further). **Expected merge order: this PR
-first** (it is finished and ready; #248 is still a running draft saying
-"filling in as this pass continues"). Whoever merges #248 next should rebase
-it past this one rather than the reverse, since replacing
-`dispatch-queue.md` in full is exactly the collision shape incident 6 named.
-Not touching #248 itself — it is a different cadence's in-flight work, not
-this run's own prior PR.
+**Continuing this seat's own running branch.** This pass builds on the
+branch opened at 00:29 UTC today, which itself closed two earlier pull
+requests in the same day's chain (the message-session branch and the
+standup that merged into it). Nothing from either is lost: both are
+already closed with a pointer forward. Counting from the first pull
+request in today's chain to this one: **seven deep. This seat is
+blocked on merges**, the same shape the charter asks to be named in bold
+rather than quietly worked around.
 
-## The most important finding this run: delivery health, not fleet health, carries the one red line
+## The most important finding this run: one pull request now closes four things at once, and it is still one Tier C file short
 
-`python3 -I tools/delivery_health.py`, the guardrail-4 reader, run fresh this
-standup:
+The engineer's newest pull request (opened about three hours ago, the
+tenth in its own chain) is green and clean against `main`. Past the red
+test suite, the real subscriber row, and the real unsubscribe endpoint
+its predecessors already carried, this one also found and fixed a real
+bug in the delivery-health reader: the deploy check compared production
+against whichever branch happened to run it rather than against the
+trunk, so a seat's own recent commit could make a four-day-old
+production deploy read as fresh. It ships the regression tests for that
+fix too. The only thing between this and `main` is the same single
+condition that has held every pull request in this chain for four days:
+two files under `prompts/` that this seat's own authority does not
+reach.
+
+## Delivery health, read fresh this pass
 
 ```
 ok       press     2026-W40 is written, by kimi-k2.6
 ok       pipeline  ingesting and distilling within 2 days
-FAILING  deploy    the deployed code is not this code: triage is 3.6 days behind.
+FAILING  deploy    the deployed code is not this code: triage is 4.1 days behind.
                     not mailed: these rows came from the public API, which cannot
                     write the once-a-day cooldown
 ok       site      2 issue(s) published, newest 2026-W40
@@ -41,18 +47,14 @@ ok       archive   the record and the archive both end at 2026-W40
 ok       mcp       up, and refusing unauthenticated calls
 ```
 
-Every agent-seat workflow is green (below). The product is not fully green:
-**the live deploy is running code roughly 3.6 days older than what is on
-`main`**, per the drift guard in `tools/delivery_health.py`. This is exactly
-the shape `docs/agents/delivery-health.md`'s 2026-10-04 addition describes —
-a change-triggered deploy whose last fire date does not match the newest
-change it was supposed to carry — and the guard's own alarm cannot mail
-itself because this run reads it through the public API rather than a
-database connection, so it has no cooldown-writing credential. **Nobody is
-being paged for this.** It is not an owner-only blocker (no spend, no
-secret), so it does not belong in "pending items past their date" below; it
-belongs here, named, because the standing rule in this file is to answer
-"green on what evidence" rather than report the fleet and stop.
+Every agent-seat workflow is green (below). The one red surface is the
+same gap a prior pass already named and filed: deploy drift on triage,
+grown by about half a day since the last check, consistent with nobody
+having deployed in between rather than a new problem. Nobody is paged
+for it; it stays here rather than in "pending items past their date"
+because it is not owner-only (no spend, no secret), and the standing
+rule in this file is to answer "green on what evidence" rather than
+report the fleet and stop.
 
 ## The queue gauge (four numbers, charter §4)
 
@@ -61,225 +63,129 @@ gh pr list --state all --limit 200 --json number,state,createdAt,mergedAt
 gh run list --workflow=checks.yml --branch=main --limit 1 --json conclusion,createdAt
 ```
 
-1. **`main`'s age and check state.** Newest merge: PR #244, 2026-10-08
-   06:28:41 UTC, about **11.5 hours old** at this snapshot. The exact
-   command the charter names returns a `checks.yml` run against `main` from
-   2026-10-05 03:36:14 UTC (`failure`) — stale attribution, because
-   `checks.yml`'s trigger is `pull_request` on specific `pipeline/**` and
-   `prompts/{digest,daily}.md` paths only (confirmed by reading the
-   workflow file this run), not `push` to `main`, so no run has targeted
-   `main` directly since that date regardless of what has merged since.
-   The real evidence of `main`'s health this run is the delivery-health
-   finding above, not this stale number.
-2. **Open pull requests: 7 total, 1 opened since the last merge** (#248,
-   opened 12:29 UTC today; the other six — #246, #245, #237, #205, #203,
-   #60 — all predate PR #244's 06:28 UTC merge).
-3. **Conversion, trailing 7 days: 59 merged / 75 opened** (≈0.79).
-4. **Deepest open supersession chain: 8** — the engineer's main-fix line
-   (#204 → #209 → #219 → #226 → #233 → #240 → #242 → #246, the last link
-   open now as #246, "supersedes #242," whose own body said "seventh in a
-   chain" before this one extended it to eight). This seat's own chain
-   (#239 → #241 → #243 → #247 → #248) is 5, named in #248's own title, and
-   is not this run's to carry further since #248 is a different cadence's
-   PR.
+1. **`main`'s age and check state.** Newest merge: the frontend's weekly
+   visual review, 2026-10-08 06:28:40 UTC, about **24 hours old** at
+   this snapshot. The exact command the charter names still returns a
+   stale `checks.yml` run from 2026-10-05 (failure), because that
+   workflow triggers on specific paths in a pull request, not on a push
+   to `main`, so no run has targeted `main` directly since that date
+   regardless of what has merged since. The delivery-health reading
+   above is the real evidence of `main`'s health, not this number.
+2. **Open pull requests: 7 total, 3 opened since the last merge** (the
+   engineer's newest, this seat's own, and the writer's newest; the
+   other four predate the last merge).
+3. **Conversion, trailing 7 days: 59 merged / 77 opened** (≈0.77).
+4. **Deepest open supersession chain: 10** — the engineer's main-fix
+   line, unbroken since 2026-10-05 (ten pull requests, the open one
+   named above). This seat's own chain is 7, named above, and is not
+   counted here since it is this seat's own backlog file, not the
+   org's main-line work.
 
-**Threshold check.** 11.5 hours since the last merge is well under the
-48-hour line. Org-wide throughput is not blocked; main-chain depth and the
+**Threshold check.** 24 hours since the last merge is well under the
+48-hour line. Org-wide throughput is not blocked; chain depth and the
 deploy drift above are the two things actually wrong today.
 
 ## The cap ratio
 
-Measured against the five most recently completed seat runs since the last
-standup (2026-10-07 ~17:45 UTC), `num_turns` pulled from each run's log tail,
+Measured against the four seat runs completed since the last standup
+(2026-10-08 ~17:49 UTC), `num_turns` read from each run's own log,
 caps read fresh from `.github/workflows/agent-*.yml`:
 
-| Seat | Run | `num_turns` | Cap | Ratio |
+| Seat | Run (UTC) | `num_turns` | Cap | Ratio |
 |---|---|---|---|---|
-| writer | 37685229081 (2026-10-07 20:51) | 108 | 150 | **72%** |
-| engineer | 37718849374 (2026-10-08 02:38) | 104 | 200 | 52% |
-| frontend | 37667164895 (2026-10-07 18:28) | 188 | 600 | 31% |
-| pm | 37661479016 (2026-10-07 17:45, last standup) | 52 | 300 | 17% |
+| engineer | 2026-10-08 17:49 | 135 | 200 | 67% |
+| writer | 2026-10-08 20:53 | 106 | 150 | **71%** |
+| engineer | 2026-10-09 02:54 | 111 | 200 | 56% |
+| pm | 2026-10-08 17:49 | 45 | 300 | 15% |
 
-**Writer is the one over 70%: 108/150.** No run has hit its cap, so this is
-not yet a tripwire, but it is the seat to watch — per `docs/agents/
-turn-caps.md`'s own history, a seat that runs daily and drifts upward
-between measurement triggers is the exact failure mode that under-capped the
-writer seat twice before (80→200 on 2026-09-21, and again implicitly since).
-Not proposing a number; reporting the ratio and naming the seat, per rule 5.
+**Writer is still the one over 70%.** No run has hit its cap. Same seat
+flagged last pass, same ratio within a point. Not proposing a number;
+reporting the ratio and naming the seat, per rule 5.
 
-## Failures, last 24h (charter §11.7)
+## Failures, last six hours
 
-`gh run list --status failure --created ">=...-24 hours"` returns 4 runs, all
-the shared `checks` gate on `writer/2026-10-07` (PR #245), none an
-agent-seat's own run:
+Zero. `gh run list --status failure --created ">=2026-10-08T18:00:00Z"`
+(wider than the six-hour window) returns nothing, and no agent-seat
+workflow has failed since the last pass. Nothing to triage, rerun, or
+file.
 
-1. **Stale base, no rerun warranted.** All 4
-   (37685533800, 37687005926, 37687775814, 37688259693, 20:54–21:16 UTC
-   2026-10-07) fail the same job, "digest request fits the model's budget."
-   `main` already carries the fix for exactly this test — commits `7718cf5`
-   ("The press cost check carries its tokenizer's confidence") and `b8ec4b0`
-   ("break-fix: the two tests main's CI has been failing on") — and PR #245
-   was cut before either landed. Rerunning without a rebase would fail
-   identically. This is the trigger for the writer dispatch below, not a
-   rerun.
+## Tier B merge check (`docs/standards/pm.md` §10, §21)
 
-No agent-seat workflow (engineer-agent, writer-agent, pm-agent, etc.) failed
-in this window; both writer-agent and engineer-agent's own runs in this
-period completed successfully (they produced the now-stale-based PRs, they
-did not fail).
+All six other open pull requests checked against the six conditions.
+**Zero qualify for a Tier B merge this run**, the same finding as every
+pass since 2026-10-06.
 
-## Tier B merge check (`docs/standards/pm.md` §10)
-
-All six other open pull requests checked against the six conditions. **Zero
-qualify for a Tier B merge this run** — the common disqualifier is new since
-the last pass: three of the live, non-draft PRs are blocked on Tier C paths,
-not on review.
-
-- **#246** (engineer, "the press guardrail… supersedes #242") — draft: no.
-  Checks: green. **Disqualified on conditions 4 and 5**: `mergeable:
-  CONFLICTING`, and the diff includes `prompts/distill.md` and
-  `prompts/distill-practices.md` — Tier C. Waits for the owner regardless of
-  the conflict.
-- **#245** (writer, "two grades cleared three links…") — **disqualified on
-  conditions 3, 4 and 5**: checks failing (above), diff includes
-  `prompts/digest.md` — Tier C — and `CONFLICTING`. Dispatched below instead
-  of merged.
-- **#237** (skill, "agent-containment retrofit…") — **disqualified on
-  conditions 3, 4 and 5**: checks failing (same budget test, same stale-base
-  cause), diff includes `prompts/skill-extract.md` — Tier C — and
-  `CONFLICTING`. Dispatched below instead of merged.
-- **#205** (finance) — **disqualified on conditions 2 and 5**: draft, and
-  `mergeable: CONFLICTING`. The owner's own in-progress work.
-- **#203** (okr) — **disqualified on condition 2**: draft, despite being
-  otherwise clean and mergeable (`MERGEABLE`/`CLEAN`). The owner's own
-  in-progress work.
-- **#60** (engineer, 18 days old) — **disqualified on conditions 4 and 5**:
-  touches a Tier C prompt and is `CONFLICTING`. Oldest open PR in the repo;
+- **The engineer's newest** (supersedes the ninth link in its own
+  chain) — draft: no. Checks: green. Merge state: clean, no conflicts.
+  **Disqualified on condition 4 only**: the diff carries
+  `prompts/distill.md` and `prompts/distill-practices.md`, Tier C. The
+  single best candidate in the queue, unchanged in kind from the last
+  four passes, better in substance (see above).
+- **The writer's newest** (supersedes its own prior link) —
+  **disqualified on conditions 4 and 5**: `prompts/digest.md` in the
+  diff, and conflicting against `main`.
+- **The skill seat's agent-containment retrofit** (open since
+  2026-10-06, unchanged) — **disqualified on conditions 3, 4 and 5**:
+  checks still fail the same stale-base assertion, `prompts/
+  skill-extract.md` in the diff, and conflicting.
+- **The finance draft** — **disqualified on condition 2** (draft), also
+  conflicting. The owner's own in-progress work.
+- **The OKR draft** — **disqualified on condition 2** (draft) despite
+  being otherwise clean and mergeable. The chair's own in-progress work.
+- **The pre-send quality checklist**, 18 days old — **disqualified on
+  conditions 3, 4 and 5**: a failed deploy check, `prompts/daily.md` in
+  the diff, and conflicting. Oldest open pull request in the repository,
   named again below.
 
 ## Run health
 
-**Fleet.** No agent-seat workflow failed in the last 24 hours; the only
-failures are the shared `checks` gate on a stale-based branch (above). One
-`engineer-agent` run and this `pm-agent` run are both `schedule`-triggered
-and in progress as this is written, started within 41 seconds of each other
-(17:49:17 and 17:49:58 UTC) — not a dispatch collision, both are independent
-cron firings, confirmed via `gh run list --json event` showing `schedule` on
-both.
+**Fleet.** No agent-seat workflow has failed since the last standup.
+Four seat runs completed in the window (engineer twice, writer once, this
+seat's own last standup), all successful. All other Actions runs in the
+window are the shared `checks` gate on pull requests, all green.
 
-**Delivery health.** See the finding above — this is the one surface that is
-not green, and it leads this description rather than sitting in a list.
+**Delivery health.** See the finding above, which leads this description
+rather than sitting in a list.
 
 ## Pending items past their date
 
-1. **PR #60**, the pre-send quality checklist — now **18 days** open, Tier
-   C, conflicting, waiting only on the owner. Unchanged since the last
+1. **The pre-send quality checklist** — now **18 days** open, Tier C,
+   conflicting, waiting only on the owner. Unchanged since the last
    several passes.
-2. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
-   2026-09-26, no live keys visible in the tree as of this run.
-3. **PR #246**, the press-guardrail fix — Tier C (`prompts/distill.md`,
-   `prompts/distill-practices.md`), green and would otherwise be ready; waits
-   only on the owner.
-4. **The dispatch-403 permission gap** — four occurrences in fifteen days,
-   now `INC-2026-10-08-dispatch-403-fourth-occurrence`, escalated to the ExO
-   by name in that entry. Not owner-only, but unanswered across four PM
-   runs.
+2. **The Polar Merchant-of-Record account** — overdue since 2026-09-26,
+   now **13 days**, no live keys visible in the tree.
+3. **The engineer's newest pull request** — green, clean, Tier C
+   (two prompt files); would otherwise be ready; waits only on the
+   owner, and closes the most of anything in the queue if it lands.
+4. **The dispatch permission gap**, four occurrences across fifteen
+   days, already escalated to the ExO by name — not owner-only, but
+   still unanswered.
 
 ## The board
 
-Read via `BOARD_API_URL` this run, before `gh pr list`, per `docs/standards/
-pm.md` §15. The inbox query (`to_seat=pm&to_company=alexandria`) returns 47
-messages, but `to_company` does not appear to filter server-side — the same
-gap a prior pass already flagged for the ExO. Of the 47, none is actually
-addressed to `alexandria`'s `pm` by another seat asking something unanswered;
-they are broadcast `note`s from other companies' PM six-hour passes (`Ursa`,
-`epitome`, `alexandra-systems`) and `done`/`ask` traffic between those other
-companies' seats. **No unanswered ask or handoff addressed to this seat this
-pass.** The board item for the press-resilience cost/backoff defect (created
-2026-09-30, `c69113d9`) can move: `main` carries the fix now (commits
-`7718cf5`, `b8ec4b0`), the remaining work is the three stale-based open PRs
-named above, not a fresh defect — noting this here rather than writing to the
-board, since this run's token has no `BOARD_RUNTIME_TOKEN` write path
-confirmed and the read-only query above is what succeeded.
+Read via the board's message feed this run, before `gh pr list`, per
+`docs/standards/pm.md` §15. The feed returned for "addressed to pm" is
+not scoped to this company, so this run read every entry back to the
+last pass and kept the ones naming alexandria. None is new, and none is
+an unanswered ask or handoff addressed to this seat. The traffic between
+sibling companies' own PM seats (merges, renewed asks, six-hour-pass
+notes) is informational, not addressed here, and needs no reply from
+this seat.
 
 ## Linear trial
 
-Not checked this run (no new signal since 2026-09-19's "still on, no
-verdict" note).
+Not checked this run (no new signal since it was last noted).
 
-## Proposed, not fired: this session's token cannot dispatch (`INC-2026-10-08-dispatch-403-fourth-occurrence`)
+## Proposed, not fired
 
-Both entries below have cleared every hard stop in charter §5 / `docs/
-standards/pm.md` §11.4: `PM_DISPATCH_ENABLED` is `true`, this section is
-ACTIVE, no `workflow_dispatch` fired in the prior two hours (the org is not
-in synchronous mode), zero PM dispatches today (well under the ceiling), one
-per seat, and neither seat has a run in progress. The first was attempted
-for real and 403'd exactly as the three prior occurrences did; the second is
-queued unfired rather than attempted a second time against the same
-confirmed wall.
+Nothing this pass. The engineer, the writer, and the skill seat each
+already hold an open pull request of their own, which is the hard stop
+on dispatching any of them, and none of their own further work would
+clear the one condition actually blocking them — only the owner's merge
+does. The remaining dispatchable seats (research, market, security,
+frontend, okr, sales) have nothing evidenced this window beyond their
+normal cadence, so no entry meets the trigger bar this run.
 
-### 1. writer — build on the open branch for PR #245
+## Dispatched by the PM
 
-**Trigger.** PR #245 (`writer/2026-10-07`) has failed `checks` 4 times in
-the last 24 hours on "digest request fits the model's budget" and is
-`CONFLICTING` against `main`. `main` already carries the fix for that exact
-test (commits `7718cf5`, `b8ec4b0`); #245 was cut before they landed.
-
-**Cost of skipping it today.** The prose-grading work on #245 stays
-unmergeable behind a defect that already has a fix elsewhere, and every day
-it waits the conflict against `main` gets harder to resolve by hand.
-
-```bash
-gh workflow run agent-writer.yml \
-  -f owner_instructions='Build on the open branch for PR #245
-(writer/2026-10-07). Its checks have failed 4 times in the last 24h on
-"digest request fits the model'"'"'s budget" and the PR is CONFLICTING
-against main. Main already carries the fix for that exact test (commits
-7718cf5 "The press cost check carries its tokenizer'"'"'s confidence" and
-b8ec4b0 "break-fix: the two tests main'"'"'s CI has been failing on"); PR
-#245 predates both. Rebase or merge main into the branch, resolve the
-conflict, confirm checks pass, then continue the grading work already on
-the branch.'
-```
-
-**Attempted, not fired.**
-
-```
-could not create workflow dispatch event: HTTP 403: Resource not
-accessible by integration
-(https://api.github.com/repos/alexandrapaiz/alexandria/actions/workflows/361826898/dispatches)
-```
-
-Copy the command above and run it directly, or confirm this workflow's
-`actions: write` permission actually resolves inside a run (the standing
-question in `INC-2026-10-08-dispatch-403-fourth-occurrence`).
-
-### 2. skill — build on the open branch for PR #237
-
-**Trigger.** PR #237 (`skill/2026-10-06-agent-containment-retrofit`) fails
-the same "digest request fits the model's budget" check and is
-`CONFLICTING` against `main`, for the identical reason as #245: it predates
-commits `7718cf5` and `b8ec4b0`.
-
-**Cost of skipping it today.** The containment retrofit (449 lines to 100,
-by its own title) stays unmergeable behind the same already-fixed defect.
-
-**Hard-stop check.** Skill's only open PR is #237 itself; the instruction
-below tells it to build on that exact branch. This would be the second PM
-dispatch today, one per seat, inside the three-a-day ceiling, spaced after
-the writer attempt above.
-
-```bash
-gh workflow run agent-skill.yml \
-  -f owner_instructions='Build on the open branch for PR #237
-(skill/2026-10-06-agent-containment-retrofit). Its checks fail on "digest
-request fits the model'"'"'s budget," the same test PR #245 fails, and the
-PR is CONFLICTING against main for the same reason: it predates main'"'"'s
-fix (commits 7718cf5 and b8ec4b0). Rebase or merge main into the branch,
-resolve the conflict, confirm checks pass, then continue the containment
-retrofit already on the branch.'
-```
-
-**Not fired, per the section above** (the first attempt already confirmed
-the 403; not spending a second identical failed call on the same confirmed
-wall). Copy the command above and run it directly.
+None this run.
