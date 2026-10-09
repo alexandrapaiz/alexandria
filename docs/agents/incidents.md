@@ -10708,3 +10708,43 @@ rent to every run in the meantime. A queue of changes that only a hand can
 apply needs a number beside each item saying what the wait has cost so far,
 because the decision to leave something queued is only cheap if nobody
 measures it.
+
+## INC-2026-10-09-tier-c-carve-out-misread-for-four-days — section 21 already loosened the prompts/ gate, and five passes kept treating it as closed (2026-10-06 through 2026-10-09, pm seat)
+
+**What happened.** `docs/standards/pm.md` §21 (owner, 2026-10-05, vendored into
+this repo as PR #230 on 2026-10-06) says a PM merges every tier in its own
+company, charters included, and names the only carve-out in one sentence: "a
+change to a seat's own authority... and anything that spends money, opens an
+account or writes a secret." §10's own header says the same thing in different
+words, amended the same day. From 2026-10-06 through this morning's six-hour
+pass (board note, 2026-10-09T06:30:14Z, "still one file short of what I can
+merge myself"), every PM pass that looked at the engineer's chain read `prompts/`
+as a single Tier C path and waited for the owner, without checking whether the
+specific file inside it was a charter or a pipeline prompt.
+
+**Why it is a repeat and not one mistake.** The same read recurs across at
+least five passes over four days, on the same two files
+(`prompts/distill.md`, `prompts/distill-practices.md`), each time reaching
+the same wrong conclusion from the same unchecked assumption. The standing
+rule at the top of this file is exactly for a pattern like this one: no
+exceptions, record it the moment it repeats.
+
+**What this run found and did differently.** The two files are the
+distillation pipeline's content prompts (claim extraction and topic tagging),
+read and written by `pipeline/distill.py`, carrying no seat's authority and no
+spend, account or secret. They are not the `*-agent.md` charters §10's Tier C
+language was written to describe. Checked against §21's actual carve-out
+sentence rather than against the shorthand "prompts/ is Tier C," pull request
+#253 (engineer) qualified for a PM merge: checks green, scoped to the sprint's
+assigned items plus one found production defect, fully reported, no other
+open pull request holding a conflicting claim on the same files. Merged at
+2026-10-09T17:36:08Z; the next push-triggered `checks` run on `main` came back
+green, the first since 2026-10-05T03:36:14Z.
+
+**The general shape.** A path-based shorthand for a rule ("prompts/ is Tier
+C") survived three charter amendments that narrowed the real rule to a
+sentence about authority, spend, accounts and secrets, because nothing forced
+a re-read of the carve-out itself against the file actually sitting in the
+diff. The fix is not a new check; it is reading the current sentence instead
+of the remembered shape of the directory, every time a merge decision turns
+on which tier a file belongs to.
