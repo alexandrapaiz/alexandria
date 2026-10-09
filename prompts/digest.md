@@ -248,9 +248,9 @@ same fixed template, that is the failure mode this section exists to prevent.
   already graded ("it seems that", "arguably") and the intensifier that
   inflates one ("groundbreaking", "remarkably") are the same substitution of
   your confidence for the number's. No exclamation marks, no emoji.
-- **Then the word that states nothing at all, which is a different failure and
-  the one this file has never carried a rule for (canon law 2, "no buzzwords,
-  ever").** The bullet above catches the word that rates a finding. This one
+- **Then the word that states nothing at all, which is a different failure
+  (canon law 2, "no buzzwords, ever").** The bullet above catches the word that
+  rates a finding. This one
   catches the word that fills the slot where a fact belongs: it neither rates
   nor inflates, it simply could have been written about any paper in any issue.
   The question is whether the word survives being swapped for the plainest

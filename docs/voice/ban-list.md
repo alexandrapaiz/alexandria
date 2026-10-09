@@ -1,5 +1,11 @@
 # The prose ban list — tells of AI-generated writing
 
+**Enforced at:** prompts/writer-agent.md, grading pass 4, every run, plus the
+"check the register before you ship" step. Entries 1 to 50 are checked by
+`docs/voice/check_voice.py sweep` and the quoted endings from 51 on by
+`docs/voice/check_voice.py enforcements`. Neither command is called by
+anything yet (filed in docs/ideas.md, 2026-10-04).
+
 Companion to docs/design/ban-list.md, for words. The writer seat
 checks every issue against this list, APPENDS new tells as the
 generated-prose aesthetic drifts, and never deletes an entry without
@@ -58,6 +64,38 @@ the tell is a command, the command goes in the entry. Entry 90 is why, and
 entry 89 is the evidence: it named the class, struck its two specimens, and
 left three more live where its own one-line grep would have found them.
 
+**Entries 1 to 50 now have their endings in a command, not in their text
+(writer seat, 2026-10-09).** Every rule above binds the entry that is being
+written. None of them reached backwards, so the fifty entries that predate the
+first of them were never asked whether they had landed anywhere, which was
+filed in docs/ideas.md on 2026-09-27 as this seat's own work with no dependency
+on anyone and went eleven days.
+The pass ran on 2026-10-09 and the full per-entry table is in
+docs/voice/reviews/2026-10-09.md. The answer: 46 of the 50 were already
+enforced in `prompts/digest.md`, three were not and are patched in the same
+pull request as this paragraph, and entry 44 is about generators other than
+this one and cannot be reached from here at any wording.
+Entry 1 is the finding. It is the oldest entry on this register, canon law 2 is
+written from it, and it had never reached the generator in any form: not one of
+its fifteen words was in that file and neither was the word "buzzword". Entry 2
+had no rule either. Entry 11 had one at the heading gate and none at the slot
+where a title is written, which is the position L-A23 says decides.
+No live specimen of entry 1 exists. The census over the newest stored row and
+both published pages came back clean on all fifteen words, so the three issues
+this product has sent obeyed a law the machine that wrote them had never been
+told, and that is the reason the patch is worth its lines rather than a reason
+it is not: the compliance was the model's habit and not a gate.
+What the ending IS, for all fifty, is `docs/voice/check_voice.py sweep`. It
+maps each entry to the shortest distinctive phrase in the generator that
+enforces it and fails when one of them leaves the file. Forty-six of those
+endings would have been the same sentence pointing at four places in one file,
+and the rule above says why that was the wrong shape: a LANDED line asserted
+without checking the generator is worse than the prose it replaced, and the
+check is what does the checking. An entry in that range that gains a prose
+ending gains a row there too, or the command fails on it.
+Three entries carry an ending in their own text as well, below, because theirs
+changed today.
+
 **A third ending, for the entry a prompt cannot reach (writer seat,
 2026-09-30).** Both endings above are written once and neither of them
 runs again. That is enough for an entry the generator can be taught,
@@ -89,7 +127,17 @@ gap that the same collision had left empty (incident 25).
    crucial, seamless, robust, leverage (as a verb), unlock, empower,
    supercharge, game-changer, revolutionize, "in the ever-evolving
    world of".
+   Enforced 2026-10-09, twenty days after it was written, by the sweep above.
+   The generator held nothing against this entry, so the rule is new rather
+   than relocated, and it is a question about the word plus a count, because
+   the one mark that went to zero in that file was the one that was counted.
+   LANDED prompts/digest.md: "catches the word that fills the slot where a fact belongs"
+   LANDED prompts/digest.md: "count the words that state nothing, per the law 2 bullet above"
 2. Three-adjective lists. One precise adjective, or a number.
+   Enforced 2026-10-09, as the last two sentences of entry 1's rule, because
+   the stack of adjectives is the same failure spread over three words and a
+   rule of its own would have been a second place to forget it.
+   LANDED prompts/digest.md: "One precise adjective, or the number the three were standing in for"
 3. Symmetric paragraph rhythm: every item the same length, every
    sentence the same shape. Vary or die.
 4. The hedge stack: "could potentially", "may possibly", "it's
@@ -106,6 +154,13 @@ gap that the same collision had left empty (incident 25).
     End on the last finding or the standing close, never a recap.
 11. Titles with colons where the second half explains the first.
     One finding, one line.
+    Enforced 2026-10-09 at the title slot. The ban was already in the file
+    twice, over section headings and over item headlines, and the heading gate
+    collects the text in front of any colon on any line beginning with `#`,
+    which includes the title. What it was missing is the position: the gate
+    reads finished output and the slot is where a title gets chosen, and
+    L-A23 says the instruction has to be where the writing happens.
+    LANDED prompts/digest.md: "And no colon. The shape the mark makes here is a short label"
 12. Uniform enthusiasm. If every item is important, none is; the
     ranking must be visible in the prose's energy, not just the
     order.
@@ -398,6 +453,15 @@ gap that the same collision had left empty (incident 25).
     exactly that day proving a person was not there. Honesty about a thin day
     is house law and stays. The words are written fresh every time. Added
     2026-09-24 from the empty-day template in prompts/daily.md.
+    Enforced in `prompts/digest.md`, which absorbed the daily cadence, AND
+    filed, because the file this entry was written from is the other generator
+    and no edit here reaches it. Both halves are needed to close the entry.
+    LANDED prompts/digest.md: "A stored sentence kept for empty days is furniture the moment it runs twice"
+    Filed: docs/ideas.md, "One craft layer, two cadence files", 2026-09-24,
+    still `proposed`. Checked 2026-10-09: `prompts/daily.md` has never been on
+    main, and the branch that carries it is now the one behind the open pull
+    request #60 rather than the closed #35 the entry names. Line 121 of that
+    file is this entry's specimen, unchanged, fifteen days on.
 44. The tell the template orders. Entry 25 says an item never ends on its
     citation. prompts/daily.md says "End each item with its source line:
     *paper title* - [link](url)", which mandates entry 25, prints a stylistic
@@ -410,6 +474,35 @@ gap that the same collision had left empty (incident 25).
     handed. This says to read the generator itself, and to read every
     generator, not the one this seat happens to own. Added 2026-09-24 from
     the second generator in PR #35.
+    Filed, and it is the one entry in 1 to 50 that no wording of
+    `prompts/digest.md` can reach, because its subject is the generators this
+    seat does not own. docs/ideas.md, "One craft layer, two cadence files",
+    2026-09-24, still `proposed`.
+    The check, scoped to the branch rather than to main, because the file is
+    not on main and a grep over the working tree finds nothing and reports it
+    as clean:
+
+    ```
+    git show origin/engineer/2026-09-20-digest-quality-gate:prompts/daily.md \
+      | grep -n "source line\|{dates}\|routine, so there is no issue"
+    ```
+
+    Run 2026-10-09, fifteen days after this entry, nineteen days after the
+    pull request opened. All four specimens are live and unchanged: the
+    `[{dates}]` title the owner struck by name, the source line that mandates
+    entry 25 and carries the em dash law 1 forbids, and the stored empty-day
+    sentence of entry 43. `pipeline/weekly.py:835` on that branch selects that
+    file as the daily's prompt, so the day it merges the daily issue is written
+    by 133 lines instead of by this register's generator.
+    The second reading of this entry is the one that matters now and it is not
+    about the daily. "Read every generator" includes the live ones, and the
+    sweep of 2026-10-09 put entry 14's question to `prompts/rag-answer.md`,
+    which orders a claim id into every sentence it writes. It clears, and the
+    reason is the surface rather than the words: the tool hands its caller a
+    `citations` array resolving every id in the same return value, and the
+    caller is an agent. An identifier a reader can resolve from the artifact
+    they are holding is not internal vocabulary. One printed in an issue, where
+    nothing resolves it, still is.
 45. The opening billed to a reader who was not there. "You spent last
     week watching agents get faster by doing less at test time", the
     2026-W39 opening, struck by the owner with "dont assume readers read
