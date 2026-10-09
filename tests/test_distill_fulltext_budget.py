@@ -246,3 +246,53 @@ def test_the_receipt_is_not_a_single_paper():
     densities = [row["chars_per_token"] for row in RECEIPT["papers"]]
     assert max(densities) - min(densities) > 1.0, (
         "these papers are too alike to bound a worst case")
+
+
+# ---------------- the prompt half of the price, measured not remembered ------
+
+def test_the_price_counts_the_prompt_the_job_actually_sends():
+    """`EXPECTED_PROMPT_TOKENS = 39_059  # 38,069 payload + 990 prompt` was the
+    constant here until 2026-10-09, and 990 was measured once.
+
+    990 was correct on the day it was written: `prompts/distill.md` was 4,120
+    characters and exactly 990 tokens at the reasoning rubric commit. The four
+    Layer 4 definitions of 2026-10-05 took it to 6,056 characters and 1,427
+    tokens, and nothing re-measured. So the two numbers the owner asked for by
+    name, cost per paper and projected monthly spend, were each short by 437
+    tokens of input for four days, and no test in this repository mentioned
+    the constant.
+
+    It is derived now. This test is what keeps it derived: a rounded literal
+    put back in its place fails here rather than in a price nobody checks.
+    """
+    counted = distill.prompt_tokens()
+    text, _ = distill.load_prompt("paper")
+    assert counted == budget.count_tokens(text)
+    # The rendered prompt, so the topic vocabulary is inside the number. The
+    # raw file is a third of the size and sizing against it is the hazard
+    # `budget.prompt_text` exists to remove.
+    raw = (ROOT / "prompts" / "distill.md").read_text()
+    assert counted > budget.count_tokens(raw)
+    assert distill.expected_prompt_tokens() == (
+        distill.EXPECTED_PAYLOAD_TOKENS + counted)
+    # The number the stale constant carried. Kept as a literal on purpose: it
+    # is the size of the error, and it is what this test was written to end.
+    assert counted > 990, (
+        "the prompt is smaller than the constant that went stale, so either "
+        "the vocabulary stopped being rendered or the prompt lost its body")
+
+
+def test_no_caller_prices_a_run_off_a_remembered_prompt_size():
+    """One derivation, three callers, and no second copy of the number.
+
+    `cost_report` prints the expected cost and the ceiling, and the queue
+    report multiplies the expected cost by the queue depth. All three take the
+    prompt from `prompt_tokens()`. A literal `990` reappearing beside a
+    `cost_usd` call is the regression.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    assert "EXPECTED_PROMPT_TOKENS" not in source
+    assert "+ 990" not in source
+    for line in source.splitlines():
+        if "cost_usd(" in line:
+            assert "990" not in line, line

@@ -390,3 +390,54 @@ incident 20's shape, and the full account is
 The regression test is `test_a_branch_commit_does_not_reset_the_drift_clock`:
 a trunk four days ahead of the deployed image, a branch commit a minute old,
 and the two verdicts must match to the character.
+
+## 2026-10-09, later the same day: a guard is only as wide as its list
+
+The morning's section above is about a guard comparing the wrong two things.
+This is the other way the same surface goes wrong, found hours later by
+following the PM's dispatch on a real break, and it is the cheaper failure to
+make and the harder one to see.
+
+**What happened.** The pipeline surface read `FAILING`, "claims has not moved
+in 2 days," while the papers surface stayed current through 11:01 UTC. So
+ingest was working and the stage that turns papers into claims was not. The
+deploy surface, asked in the same run, read `ok`.
+
+Both were telling the truth. `pipeline/runtime_sha.py`'s `APPS` held three
+entries, triage, interpret and weekly, and there are five scheduled jobs in
+`pipeline/`. The two it omitted were `ingest` and `distill`: the stage that
+fills `papers` and the stage that fills `claims`, which are the two columns
+the pipeline surface judges. The guard watched the three jobs whose output no
+other surface grades and was blind to both jobs whose output it grades itself.
+
+The cost was a diagnosis rather than an outage. Six surfaces could see that
+claims had stopped. None could see `distill`, because it was the only
+scheduled job in the pipeline that left no trace of a run, so no seat could
+distinguish a cron that stopped firing from a run against an empty queue from
+a run that raised. That distinction is the whole of the next step, and
+answering it needed Modal logs or a database credential, which no seat holds.
+
+**The general rule. A job that runs unattended is watched, and the list of
+what is watched is derived rather than kept.** The second clause is the one
+that matters, because the first was never in dispute: nobody decided not to
+watch `distill`. The list was written when three jobs existed and two more
+were added beside it over the following weeks, and a hand-kept list of what to
+watch has no moment at which it is wrong. `tests/test_deploy_drift.py` now
+parses `pipeline/` for `modal.Cron` and `modal.Period` and fails when a
+scheduled job is not in `APPS`, and fails in the other direction too, so the
+guard cannot demand a deploy for a job that no longer has a schedule to be
+behind on.
+
+**And "never recorded" is a third state, not a stale one.** An app with no row
+has told the guard nothing, so dating its drift from its last commit answers a
+question nobody asked: it reports the age of the code as the age of the
+deploy. `ingest` is the case that proves it, because it delivered papers this
+morning and has never recorded a runtime in its life, and the old path would
+have called a working job days behind. An app with no row now reads `unknown`,
+says it is unmeasured rather than behind, and carries the `modal deploy` line
+that fixes it. An empty table keeps reading as a failure, because that is a
+recorder that has never worked rather than one app without coverage.
+
+The three regression tests are `test_every_scheduled_app_is_watched_by_the_
+drift_guard`, `test_every_watched_app_records_its_own_runtime`, and
+`test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`.
