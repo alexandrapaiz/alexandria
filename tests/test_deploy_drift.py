@@ -11,13 +11,29 @@ it.
 The interesting cases are the ones where this guard could cry wolf, and there
 are three. A seat's own sandbox nearly always has uncommitted edits, a branch
 carries commits that never merged, and a shallow clone cannot date anything.
-All three answer `unknown`, and each has a test, because a health check that
-goes red on a normal Tuesday is a health check nobody reads by Friday. That is
-the argument `tools/delivery_health.py` already makes for its own third state.
+
+**This docstring claimed all three answered `unknown` and that each had a test,
+and the middle one had neither, from 2026-09-28 until 2026-10-09.** Nothing in
+the surface ever looked at which branch it was standing on. The cost was not
+a false alarm, it was the opposite: a branch commit dated the drift from
+itself, so the guard read `ok` on every seat's run while the live `triage`
+image was four days behind the trunk, and it told the truth only in a `main`
+worktree somebody made by hand. The hazard was written down here, in the right
+file, by the seat that owned it, and nothing between the sentence and the
+artifact ever checked it. That is incident 20's shape and it is recorded as
+`INC-2026-10-09-the-deploy-guard-judged-the-branch-it-ran-from`.
+
+So the three cases now read: a dirty sandbox is reported and changes no
+verdict, a branch is not the subject of the question at all, and a shallow
+clone still answers `unknown`. Each has a test below, and this time the branch
+one is `test_a_branch_commit_does_not_reset_the_drift_clock`.
 
 No network, no database, no Modal. The git fixture is a real repository in a
 temporary directory, because the dating and dirty-tree logic is `git log` and
-`git status` and mocking those would test the mock.
+`git status` and mocking those would test the mock. The fixtures name their
+branch `main` explicitly rather than taking `git init`'s default, because the
+default is `master` on some hosts and `main` on others and that would decide
+which of two code paths the whole file exercises.
 
 Run with `python3 tests/test_deploy_drift.py` or under pytest.
 """
@@ -113,7 +129,8 @@ def fixture_repo(tmp: Path, days_ago: float) -> Path:
            "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when,
            "GIT_AUTHOR_NAME": "test", "GIT_AUTHOR_EMAIL": "t@example.com",
            "GIT_COMMITTER_NAME": "test", "GIT_COMMITTER_EMAIL": "t@example.com"}
-    for args in (["init", "-q"], ["add", "-A"], ["commit", "-qm", "fixture"]):
+    for args in (["init", "-q", "-b", "main"], ["add", "-A"],
+                 ["commit", "-qm", "fixture"]):
         subprocess.run(["git", "-C", str(repo), *args], env=env, check=True,
                        capture_output=True)
     return repo
@@ -266,10 +283,10 @@ def test_a_current_deploy_is_green():
         repo = fixture_repo(Path(tmp), days_ago=9)
         conn = FakeConn([row_for(app, repo) for app in rs.APPS])
         surface = dh.check_deploy(conn, repo, notify=False)
-        check("three jobs running this checkout reads ok",
+        check("three jobs running the trunk reads ok",
               surface.state == dh.OK, f"{surface.state}: {surface.headline}")
-        check("and the headline says so plainly",
-              "running this checkout" in surface.headline, surface.headline)
+        check("and the headline names the ref it judged, not 'this checkout'",
+              surface.headline == "all 3 jobs are running main", surface.headline)
 
 
 def test_an_intentionally_stale_deploy_trips_the_alarm():
@@ -339,8 +356,16 @@ def test_a_job_that_never_reported_is_treated_as_drift():
 
 # ------------------------------------------------------- the three honest unknowns
 
-def test_an_uncommitted_edit_is_unknown_and_never_red():
-    """A seat's own sandbox is the normal case, and it is not a broken deploy."""
+def test_an_uncommitted_edit_changes_no_verdict_and_is_still_reported():
+    """A seat's own sandbox is the normal case, and it is not a broken deploy.
+
+    This used to read `unknown`, which was right while the surface hashed the
+    disk: a dirty file made the comparison meaningless. The surface hashes a
+    commit now, so the edit cannot reach either half of the comparison and the
+    honest answer is the one the trunk gives. The edit is still named in the
+    evidence, because a reader whose sandbox differs from the verdict is owed
+    the reason it differs.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         repo = fixture_repo(Path(tmp), days_ago=9)
         conn = FakeConn([row_for(app, repo) for app in rs.APPS])
@@ -350,10 +375,87 @@ def test_an_uncommitted_edit_is_unknown_and_never_red():
         (repo / "pipeline/triage.py").write_text(
             (repo / "pipeline/triage.py").read_text() + "\n# a seat is working here\n")
         surface = dh.check_deploy(conn, repo, notify=False)
-        check("a dirty working tree reads unknown",
-              surface.state == dh.UNKNOWN, f"{surface.state}: {surface.headline}")
-        check("and the headline names the file it cannot account for",
-              "pipeline/triage.py" in surface.headline, surface.headline)
+        check("a dirty working tree is green, because the trunk is current",
+              surface.state == dh.OK, f"{surface.state}: {surface.headline}")
+        check("and the evidence names the file the sandbox has changed",
+              surface.evidence["triage"].get("uncommitted_here")
+              == ["pipeline/triage.py"], str(surface.evidence["triage"]))
+        check("and an app the sandbox did not touch carries no such note",
+              "uncommitted_here" not in surface.evidence["weekly"],
+              str(surface.evidence["weekly"]))
+
+
+def test_a_branch_commit_does_not_reset_the_drift_clock():
+    """The defect of 2026-10-09: the guard judged whatever branch ran it.
+
+    Every agent seat runs on its own branch and commits within the hour, so
+    "is this checkout deployed" had a fresh answer every single run. On
+    2026-10-09 the same guard read `ok` on an engineer branch and `FAILING`
+    ("triage is 3.9 days behind") in a clean `main` worktree, in the same
+    minute, off the same row. This is that, in a fixture: `main` is four days
+    ahead of the deployed image, a branch adds a commit a minute ago, and the
+    verdict must not move.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_history(Path(tmp),
+                               [("pipeline/triage.py", "A merged change")],
+                               base_days_ago=5.0)
+        deployed = _shas(repo)[0]
+        rows = [row_for(app, repo, sha=_digest_at_commit(repo, app, deployed))
+                for app in rs.APPS]
+
+        on_main = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("on main, a four-day-old merge is an alarm",
+              on_main.state == dh.FAILING, f"{on_main.state}: {on_main.headline}")
+
+        # The seat's own branch, with a commit made right now. Before the fix
+        # this reset `_last_commit_at` to minutes and the alarm went quiet.
+        for args in (["checkout", "-q", "-b", "engineer/today"],):
+            subprocess.run(["git", "-C", str(repo), *args], check=True,
+                           capture_output=True)
+        target = repo / "pipeline/triage.py"
+        target.write_text(target.read_text(encoding="utf-8")
+                          + "\n# the seat's own work, not merged\n",
+                          encoding="utf-8")
+        subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True,
+                       capture_output=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.email=t@example.com",
+                        "-c", "user.name=test", "commit", "-qm",
+                        "Today's unmerged work"], check=True, capture_output=True)
+
+        on_branch = dh.check_deploy(FakeConn(rows), repo, notify=False)
+        check("on a branch, the same drift is still the same alarm",
+              on_branch.state == dh.FAILING,
+              f"{on_branch.state}: {on_branch.headline}")
+        check("and the two runs agree on the headline",
+              on_branch.headline == on_main.headline,
+              f"branch: {on_branch.headline}\nmain:   {on_main.headline}")
+        check("and the commit it names is the merged one, not the branch's",
+              "A merged change" in on_branch.headline
+              and "Today's unmerged work" not in on_branch.headline,
+              on_branch.headline)
+        check("and the evidence says which ref it judged",
+              on_branch.evidence["ref"] == "main",
+              str(on_branch.evidence.get("ref")))
+
+
+def test_the_trunk_is_preferred_over_a_local_branch_of_the_same_name():
+    """A seat's sandbox has `origin/main`, and that is the trunk, not `main`.
+
+    The workflows check out a branch and fetch the remote, so a stale local
+    `main` can exist beside a current `origin/main`. The remote-tracking ref is
+    the one a hand deploys from, so it wins.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = fixture_repo(Path(tmp), days_ago=9)
+        check("with only main, main is the subject",
+              dh._deployable_ref(repo) == "main", dh._deployable_ref(repo))
+        subprocess.run(["git", "-C", str(repo), "update-ref",
+                        "refs/remotes/origin/main", "HEAD"], check=True,
+                       capture_output=True)
+        check("with both, origin/main is the subject",
+              dh._deployable_ref(repo) == "origin/main",
+              dh._deployable_ref(repo))
 
 
 def test_a_checkout_that_cannot_date_its_files_is_unknown():
@@ -484,7 +586,7 @@ def fixture_history(tmp: Path, edits: list[tuple[str, str]],
         subprocess.run(["git", "-C", str(repo), *args], env=env, check=True,
                        capture_output=True)
 
-    git("init", "-q", when=base)
+    git("init", "-q", "-b", "main", when=base)
     git("add", "-A", when=base)
     git("commit", "-qm", "the deployed state", when=base)
     for n, (path, subject) in enumerate(edits, start=1):

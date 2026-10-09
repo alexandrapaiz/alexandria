@@ -52,7 +52,8 @@ prose:
 | pipeline | newest rows in `papers` and `claims`        | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
-| deploy   | `deploy_runtime` against this checkout      | git      |
+| deploy   | `deploy_runtime` against the trunk, never   | git      |
+|          | against the branch this is run from         |          |
 
 That column read `DATABASE_URL` for three of the six rows until 2026-10-01, and
 the gap was not academic. No agent seat holds that credential, so every seat ever
@@ -101,12 +102,21 @@ teaches its reader to stop reading it. So a drift younger than
 and past that it is `failing` and the owner is mailed through
 `pipeline/notify.py`.
 
-Three ways this surface refuses to guess, all of them `unknown` rather than a
-verdict. A checkout with uncommitted changes under a job's file list is
-comparing the deploy against something nobody merged, which is the normal state
-of a seat's own sandbox. A checkout too shallow to date the last commit that
-touched those files cannot tell a drift of an hour from a drift of a month.
-And no `DATABASE_URL` means the recorded side cannot be read at all.
+The deploy surface judges the trunk, never the branch it is run from. Both
+halves of its comparison are read out of `origin/main` (see `_deployable_ref`),
+because a hand deploys from the trunk and a commit that has not merged has
+never been inside an image. Until 2026-10-09 it read the working tree instead,
+so a seat's own fresh commit dated the drift at an hour and the surface read
+green on every branch in the org while the live `triage` image was four days
+behind. A guard whose answer depends on where you stand is a guard that reads
+green in the only places anyone actually runs it.
+
+Two ways this surface refuses to guess, both of them `unknown` rather than a
+verdict. A checkout too shallow to date the last commit on the trunk that
+touched a job's files cannot tell a drift of an hour from a drift of a month.
+And no `DATABASE_URL` means the recorded side cannot be read at all. A dirty
+working tree used to be a third; it is reported in the evidence now and changes
+nothing, because an uncommitted edit cannot alter what the trunk says.
 """
 
 from __future__ import annotations
@@ -172,6 +182,15 @@ DEPLOY_HISTORY_LIMIT = 40
 # How many commits a headline names before it starts counting instead. Three
 # fits on a line, and the rest are in the evidence block either way.
 DEPLOY_NAMED_COMMITS = 3
+
+# The only code that was ever deployable. `modal deploy` is run by a hand
+# standing on the trunk, so a commit that has not merged has never been in an
+# image, and judging the running deploy against a branch asks a question nobody
+# needs the answer to. Tried in this order because a seat's sandbox has
+# `origin/main`, a bare clone of the trunk may carry only `main`, and a
+# repository with neither is judged against its own `HEAD` (see
+# `_deployable_ref`).
+DEPLOYABLE_REFS = ("origin/main", "main")
 
 
 class Surface:
@@ -631,7 +650,12 @@ def _git(repo_root: Path, *args: str) -> tuple[int, str]:
 
 
 def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
-    """Which of these files the working tree has changed and not committed."""
+    """Which of these files the working tree has changed and not committed.
+
+    Context for the reader, not a verdict, since 2026-10-09. It used to make
+    the deploy surface answer `unknown`, which was right while the surface
+    hashed the disk and is wrong now that it hashes a commit.
+    """
     status, out = _git(repo_root, "status", "--porcelain", "--", *paths)
     if status != 0 or not out:
         return []
@@ -645,8 +669,38 @@ def _dirty(repo_root: Path, paths: list[str]) -> list[str]:
                    for line in out.splitlines() if line.split(maxsplit=1)[1:]})
 
 
-def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
-    """When the newest commit touching any of these files landed.
+def _deployable_ref(repo_root: Path) -> str:
+    """Which commit the running image is judged against.
+
+    "Is the code on *this checkout* the code the crons are running" was the
+    wrong question, and on 2026-10-09 it answered green on a lie. Every agent
+    seat runs on its own branch, and a branch commit made an hour ago dates the
+    drift at an hour however far behind the trunk the live image really is.
+    The same guard, in the same minute, off the same `deploy_runtime` row, read
+    `ok` ("a deploy is pending and still inside the 24h window") on an engineer
+    branch and `FAILING` ("triage is 3.9 days behind") in a clean `main`
+    worktree. The run that first met this re-measured by hand in a scratch
+    worktree and wrote the workaround down, which leaves a guard whose answer
+    depends on a step the reader has to know to take.
+
+    So the question becomes "is the trunk the code the crons are running",
+    which is the one with an actionable answer: a hand deploys from the trunk,
+    so the trunk is the only code that has ever been in an image.
+
+    `HEAD` when neither ref resolves. That is a repository with no trunk to
+    compare against, where the old question is the only one available and is
+    also the right one, because there is no branch to be standing on.
+    """
+    for ref in DEPLOYABLE_REFS:
+        status, _ = _git(repo_root, "rev-parse", "--verify", "--quiet", ref)
+        if status == 0:
+            return ref
+    return "HEAD"
+
+
+def _last_commit_at(repo_root: Path, paths: list[str],
+                    ref: str = "HEAD") -> datetime | None:
+    """When the newest commit on `ref` touching any of these files landed.
 
     None when the answer cannot be trusted, which is a shallow clone that
     predates the change, git not being present, or a path set nothing in the
@@ -654,7 +708,8 @@ def _last_commit_at(repo_root: Path, paths: list[str]) -> datetime | None:
     `fetch-depth: 0`, so in the place this actually runs daily the answer is
     real; anywhere else it degrades to `unknown` instead of to a guess.
     """
-    status, out = _git(repo_root, "log", "-1", "--format=%cI", "--", *paths)
+    status, out = _git(repo_root, "log", "-1", "--format=%cI", ref,
+                       "--", *paths)
     if status != 0 or not out:
         return None
     try:
@@ -763,8 +818,33 @@ def _digest_at(repo_root: Path, app: str, commit: str,
     return runtime_sha.digest_of(inner)
 
 
+def _paths_at(repo_root: Path, app: str, ref: str) -> list[str] | None:
+    """The repository paths in this app's image, as the manifest read at `ref`.
+
+    The same reasoning `_digest_at` gives for re-reading the manifest at a
+    commit rather than at the working tree, and for the same reason the caller
+    needs it: a branch that adds a file to an image must not change the file
+    list the trunk is judged by, or a seat's own uncommitted work would move
+    the question.
+
+    None when git cannot answer, which the callers turn into `unknown`.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+    blobs = _tree_blobs(repo_root, ref, [module])
+    if blobs is None or module not in blobs:
+        return None
+    status, body = _git_bytes(repo_root, "cat-file", "blob", blobs[module])
+    if status != 0:
+        return None
+    pairs = runtime_sha.manifest(body.decode("utf-8", "replace"))
+    return [module] + [repo for repo, _, _ in pairs]
+
+
 def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
-                       limit: int = DEPLOY_HISTORY_LIMIT) -> dict:
+                       limit: int = DEPLOY_HISTORY_LIMIT,
+                       ref: str = "HEAD") -> dict:
     """Which merged commits the running image does not contain.
 
     "`triage` is 2.9 days behind" does not tell the reader whether the drift is
@@ -791,14 +871,12 @@ def undeployed_commits(repo_root: Path, app: str, recorded_sha: str | None,
                        "is no deployed state to diff against"}
 
     module = runtime_sha.APPS[app]
-    try:
-        source = (Path(repo_root) / module).read_text(encoding="utf-8")
-    except OSError as exc:
-        return {"why": f"{module} cannot be read here ({exc})"}
-    paths = [module] + [repo for repo, _, _ in runtime_sha.manifest(source)]
+    paths = _paths_at(repo_root, app, ref)
+    if paths is None:
+        return {"why": f"{module} cannot be read at {ref} here"}
 
     status, out = _git(repo_root, "log", f"-{limit}",
-                       "--format=%H%x1f%h%x1f%s%x1f%cI", "--", *paths)
+                       "--format=%H%x1f%h%x1f%s%x1f%cI", ref, "--", *paths)
     if status != 0 or not out:
         return {"why": "this checkout has no history for the app's files, so "
                        "the deployed commit cannot be recovered"}
@@ -865,11 +943,18 @@ def deploy_facts(conn) -> dict | str:
 def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                  now: datetime | None = None, notify_conn=None,
                  source: str = DIRECT) -> Surface:
-    """Is the code on this checkout the code the crons are running.
+    """Is the trunk the code the crons are running.
 
     One surface for all three jobs rather than three, because the question the
     reader has is "is anything stale" and the headline can name which. The
     evidence block carries each app separately for whoever wants the detail.
+
+    Judged against `_deployable_ref`, not against this checkout. The reason is
+    the whole of that function's docstring: a seat runs on a branch, and until
+    2026-10-09 a branch commit reset the drift clock, so the one surface that
+    watches production read green for every seat and told the truth only in a
+    worktree somebody made by hand. `ref` is in the evidence so a reader can
+    see which question was answered.
 
     `notify_conn` is a connection or None. None means do not mail, and the two
     reasons for that are a caller passing `notify=False` and the facts having
@@ -877,6 +962,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
     """
     root = Path(repo_root) if repo_root else Path(__file__).resolve().parents[1]
     now = now or datetime.now(timezone.utc)
+    ref = _deployable_ref(root)
 
     try:
         from pipeline import runtime_sha
@@ -889,20 +975,44 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         return Surface("deploy", UNKNOWN, facts, {"read_via": source})
     rows = facts
 
-    evidence, drifted, unknowns, alarms = {"read_via": source}, [], [], []
+    evidence = {"read_via": source, "ref": ref}
+    drifted, unknowns, alarms = [], [], []
+    cache: dict[str, str] = {}
     for app in sorted(runtime_sha.APPS):
-        try:
-            entries = runtime_sha.local_entries(app, root)
-        except OSError as exc:
-            unknowns.append(f"{app} ({exc})")
-            evidence[app] = {"state": UNKNOWN, "why": str(exc)}
+        keys = _paths_at(root, app, ref)
+        local = _digest_at(root, app, ref, cache) if keys else None
+        if (keys is None or local is None) and ref == "HEAD":
+            # A directory with the files in it and no git in it, which is how
+            # this tool arrives anywhere that is not a checkout. There is no
+            # trunk to ask, so read the disk and let the dating step below be
+            # the one that refuses, exactly as it did before 2026-10-09.
+            try:
+                entries = runtime_sha.local_entries(app, root)
+            except OSError as exc:
+                unknowns.append(f"{app} ({exc})")
+                evidence[app] = {"state": UNKNOWN, "why": str(exc)}
+                continue
+            keys = [key for key, _ in entries]
+            local = runtime_sha.digest(entries)
+        if keys is None or local is None:
+            why = f"{ref} has no readable file list for this app here"
+            unknowns.append(f"{app} ({why})")
+            evidence[app] = {"state": UNKNOWN, "why": why}
             continue
-        keys = [key for key, _ in entries]
-        local = runtime_sha.digest(entries)
         row = rows.get(app)
-        here = {"expected_sha": local, "files": len(entries),
+        here = {"expected_sha": local, "files": len(keys), "ref": ref,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
+
+        # Reported, never a verdict. Both halves of the comparison now come
+        # from a commit, so an uncommitted edit cannot move the answer and
+        # refusing to answer because the sandbox is dirty would be a silence
+        # with no cause: a seat's own run leaves this tree dirty every day.
+        # It stays in the evidence because a reader looking at a sandbox that
+        # differs from the verdict deserves to be told why it differs.
+        dirty = _dirty(root, keys)
+        if dirty:
+            here["uncommitted_here"] = dirty
 
         if row and row["runtime_sha"] == local:
             here["state"] = OK
@@ -910,16 +1020,10 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             evidence[app] = here
             continue
 
-        dirty = _dirty(root, keys)
-        if dirty:
-            here.update(state=UNKNOWN, uncommitted=dirty)
-            unknowns.append(f"{app} (uncommitted: {', '.join(dirty)})")
-            evidence[app] = here
-            continue
-
-        changed_at = _last_commit_at(root, keys)
+        changed_at = _last_commit_at(root, keys, ref)
         if changed_at is None:
-            here.update(state=UNKNOWN, why="this checkout cannot date the change")
+            here.update(state=UNKNOWN,
+                        why=f"this checkout cannot date the change on {ref}")
             unknowns.append(f"{app} (no datable history for its files here)")
             evidence[app] = here
             continue
@@ -928,7 +1032,8 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         # Only here, and never on the green path: the walk costs git processes
         # and an app that matches has nothing to name.
         found = undeployed_commits(root, app,
-                                   row["runtime_sha"] if row else None)
+                                   row["runtime_sha"] if row else None,
+                                   ref=ref)
         named = name_undeployed(found)
         here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
                     merged_at=str(changed_at), drift_hours=round(age_hours, 1),
@@ -954,7 +1059,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                     "cooldown is one mail every time the standup runs")
         evidence["alarm"] = note
         return Surface("deploy", FAILING,
-                       f"the deployed code is not this code: {names}. "
+                       f"the deployed code is not {ref}: {names}. "
                        f"{note}", evidence)
     if unknowns:
         return Surface("deploy", UNKNOWN,
@@ -966,7 +1071,7 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                        f"{DEPLOY_GRACE_HOURS}h window: {', '.join(drifted)}",
                        evidence)
     return Surface("deploy", OK,
-                   f"all {len(runtime_sha.APPS)} jobs are running this checkout",
+                   f"all {len(runtime_sha.APPS)} jobs are running {ref}",
                    evidence)
 
 
