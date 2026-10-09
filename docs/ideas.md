@@ -2463,6 +2463,22 @@ owning seat rather than assumed. Arguments in docs/sales/.
   their own next run. One line each.
 - Cost: $0.
 - Status: proposed
+- **The writer's half is done 2026-10-09, twenty days and twenty runs after
+  "next run", and it is two of three rather than three.** `docs/voice/canon.md`
+  and `docs/voice/ban-list.md` now carry the line. `docs/voice/taste.md` does
+  not and will not from this seat: it is the owner's register and this charter
+  says this seat never edits it, so the line there is the chair's or the PM's
+  one-line edit and is the only part of the writer's three still open. Worth
+  saying out loud because this entry assigned three files to a seat that is
+  forbidden to touch one of them, which is the same shape as incident 25.
+- **The design half is still open and it is larger than a marker line.** Four
+  files, and the one checked today has 30 numbered entries and the string
+  "Enforced" appears zero times in it, so the design ban list has no
+  enforcement ending on any entry and no marker at the top. The voice register
+  reached that state by being asked the question in 2026-09-25 and swept on
+  2026-10-09; nothing has asked it of the design register. Frontend seat's
+  call, named here rather than acted on, because that surface is not this
+  seat's.
 
 ### 2026-09-19 — A CI job could make the register checks mechanical (ExO proposal, not built)
 
@@ -3465,6 +3481,34 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Blocked by: nothing. The press being down (incident 24) does not block it
   and is the reason there is time to do it before the daily ships.
 - Cost: $0.
+- **Confirmed 2026-10-09 by the writer seat, with the day's evidence, under
+  canon pass 6. Fifteen days open, and the branch has changed under it.** PR
+  #35 is closed and the file now lives behind the open PR #60, which is
+  nineteen days old, so a reader of this entry looking for `prompts/daily.md`
+  on `main` finds nothing and could reasonably report it clean. It has never
+  been on main. The check has to name the branch:
+
+  ```
+  git show origin/engineer/2026-09-20-digest-quality-gate:prompts/daily.md \
+    | grep -n "source line\|{dates}\|routine, so there is no issue"
+   -> 82: # {Editorial title} [{dates}]
+      95: its source line: *paper title* — [link](url).}
+     121: {dates}: today's papers were routine, so there is no issue.
+  ```
+
+  All four specimens are live and unchanged: the title suffix the owner struck
+  by name, the source line that mandates ban list 25 and carries the em dash
+  canon law 1 forbids, and the stored empty-day sentence of ban list 43.
+  `pipeline/weekly.py:835` on that branch selects that file as the daily's
+  prompt and `:95` uploads it, so the shape of this is unchanged: the day it
+  merges, the daily issue is written by 133 lines rather than by the generator
+  the owner fine-tuned. Nothing in the writer seat's twenty runs of patches is
+  in those 133 lines.
+  The one thing this seat can say that it could not say on 2026-09-24: the
+  reason the parallel file was built is gone. digest.md now carries the daily's
+  length, its slot behaviour, its traction signal and its empty-day issue, so
+  the reland has somewhere to collapse into rather than something to merge
+  against.
 
 ### 2026-09-23 — The measurement system is law in the canon and not in the stylesheet (frontend seat)
 - Trigger: the frontend run of 2026-09-23 audited `site/app/globals.css`
@@ -7149,6 +7193,36 @@ graphs.
 - Whose call: writer seat, next run, no dependency on anyone.
 - Cost: one editorial run, no code.
 - Status: proposed
+- **Executed 2026-10-09, eleven runs after "next run".** The table is in
+  docs/voice/reviews/2026-10-09.md and the result is 46 of 50 already enforced
+  in `prompts/digest.md`, three never enforced at all, and one that no wording
+  of that file can reach.
+  The three: entry 1, the slop lexicon, which is the oldest entry on the
+  register and the one canon law 2 is written from, and whose fifteen words
+  and the word "buzzword" were all absent from the generator. Entry 2, the
+  three-adjective list. Entry 11, the explaining colon in a title, which was
+  banned at the heading gate and not at the slot where a title is chosen. All
+  three are patched in the same pull request as this line. The fourth is entry
+  44, which is about generators other than this one.
+  The prediction in this entry held. "Most entries are word tells the voice
+  section already covers, and the interesting ones are the entries that
+  diagnose machinery, because those are the ones whose fix is a specific
+  change and whose absence is invisible." Entry 1 is not machinery and it is
+  the one that was invisible, because nothing had ever asked the question of
+  an entry that old.
+  **What the ending turned out to be, which is the part this entry got wrong.**
+  It asked for fifty endings written into the register. Forty-six of them would
+  have been one sentence pointing at four places in one file, and the register's
+  own rule says a LANDED line asserted without checking the generator is worse
+  than the prose it replaced. So the ending is `docs/voice/check_voice.py
+  sweep`: a map from each of the fifty entries to the shortest distinctive
+  phrase in the generator that enforces it, which fails when a phrase leaves
+  the file and when an entry in the range has no row. Tested against a
+  generator with one anchor deliberately broken, which names the entry whose
+  enforcement went with it, and against a map with one row deleted, which names
+  the entry nothing covers. A one-time pass would have answered this entry once.
+  The command answers it every run, which is the difference the standard about
+  rules enforced by sentences is about.
 
 ### 2026-09-28 — An editorial repair takes effect only when the owner merges, and the cron prints daily into the gap (writer seat, needs the owner and the engineer)
 
@@ -9949,6 +10023,17 @@ provenance reviewer exists to catch.
   closing note says wiring `checks.yml` needs a `workflows` permission the
   filing seat did not have, and this seat does not have it either.
 - Status: proposed
+- **Confirmed 2026-10-09, five days open, and the title's number is now wrong
+  in the direction that matters.** The file holds six checks rather than three:
+  `enforcements`, `sweep`, `stale`, `measure`, `links` and `delivery`. Nothing
+  calls any of them. Two of the six are the only enforcement that two registers
+  have, which is new since this entry was written: `docs/voice/ban-list.md` now
+  names `sweep` and `enforcements` in its own `Enforced at:` line, so fifty-one
+  ban-list entries are enforced by a command no scheduled thing runs. That is a
+  worse position than the prose it replaced if the command stops being typed,
+  and it is the argument for the one-line wiring rather than against the
+  command. Unchanged: the rename into `tools/` and the `checks.yml` line, both
+  of which need the permission this seat does not have.
 
 ### 2026-09-30 — Model judgment runs at 5 percent of arrival, and every coverage directive lands on it (research seat, for the engineer)
 
