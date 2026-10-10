@@ -13051,3 +13051,122 @@ that triggered it, per the charter.
   new service or a dollar.
 - Cost: $0.
 - Status: urgent
+
+### 2026-10-10 — URGENT, carried with the number: distill had 2099 papers waiting and did not read them (engineer seat, second run)
+- Trigger: the queue depths this morning's pull request added went live at
+  16:16 UTC, and the first reading of them answers the question the two
+  previous urgent entries could not. `claims_newest` is 2026-10-07T15:15:25.
+  `distill_pending` is 2099. `triage_pending` is 1480 and
+  `interpret_pending` is 483. Read with no credential from
+  `https://libraryofalexandria.dev/api/delivery`.
+- What this settles: the stall is not an empty queue. `distill_queue` joins
+  `papers` to `latest_triage` and excludes `rule:backfill`, so 2099 is 2099
+  papers a model judged worth distilling and that carry no `distilled_at`.
+  Three scheduled runs at 15:00 UTC had deep work in front of them and
+  produced no claims. The 10-09 entry listed three candidate causes and this
+  removes the middle one.
+- What is still open, and it is now two causes rather than three: distill ran
+  and extracted nothing, or distill never reached a paper. This run shipped
+  the field that separates them. `papers.distilled_at` is set per paper in the
+  same committed loop as that paper's claims, so a marker that moved while
+  claims stood still is the first case and a marker that stood still with it is
+  the second. The receipt publishes it as `pipeline.distilled_newest` from the
+  merge of this pull request, and `tools/delivery_health.py` already names
+  which first step each case needs.
+- What is only the owner's, unchanged and still in the order that answers
+  fastest: `modal app logs alexandria-distill`. Then `modal deploy
+  pipeline/distill.py` and `modal deploy pipeline/ingest.py`, which are what
+  make those two apps report a runtime at all. Nothing here asks for a new
+  service or a dollar.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-10 — The drift guard reads an undeployed app as unmeasured forever, and unmeasured has no clock (engineer seat, second run)
+- Trigger: `tools/delivery_health.py` read the deploy surface as `unknown`
+  today with "distill (never recorded); ingest (never recorded)". That is
+  `judge_deploy` behaving exactly as written, and the reasoning in its own
+  comment is right: an app with no row has told the guard nothing, so the age
+  of its last commit is not evidence that a deploy is late. The problem is what
+  happens next, which is nothing, forever.
+- What: #256 merged at 18:02 UTC on 2026-10-09 and added `distill` and `ingest`
+  to `runtime_sha.APPS` so the guard would watch all five scheduled jobs
+  instead of three. Twenty-two hours later neither app has recorded a runtime,
+  because the instrumentation only runs once somebody deploys it, and the one
+  surface that would notice is the surface that has correctly decided not to
+  alarm. So the fix for "no seat could see whether distill ran" is itself
+  invisible to the guard, and the two apps that make `papers` and `claims` are
+  the two with no alarm behind them. `unmeasured` is the right answer on the
+  first day and a defect by the third, and nothing in the tool can tell those
+  apart because the state carries no age.
+- First step: give the unmeasured state the clock the drifted state already
+  has. `judge_deploy` can date the commit that added an app to
+  `runtime_sha.APPS`, which it can read from git the same way `_deployable_ref`
+  and the drift dating already do, and raise an app that has been unmeasured
+  for longer than `DEPLOY_GRACE_HOURS` since that commit. The headline writes
+  itself and it is the one the owner needs: the deploy that would start the
+  measurement has not happened. One function, one test per boundary, no schema
+  change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — ADR-39's named reading limit has been crossed, and today is the first time a seat could measure it (engineer seat, second run)
+- Trigger: the first reading of the public queue depths, 2099 papers waiting in
+  `distill_queue`, checked against ADR-39 before writing this down. The check
+  changed the entry, which is the point of running it.
+- What: this is not a discovery and the register says so plainly. ADR-39 has a
+  clause titled "The limit this does not lift" and its words are that twenty
+  full papers a day "is what a tier-0 Moonshot account can read, not what a
+  drained triage queue will produce," that the binding constraint is the
+  1,500,000-token daily allowance rather than the money, and that lifting it is
+  a tier upgrade and the owner's call. `drain_forecast` in
+  `pipeline/distill.py` already prints the remainder and says `OVER A WEEK`
+  when the queue has outgrown the cap, and `modal run
+  pipeline/distill.py::drain` is the dry run ADR-39 promised instead of a
+  constant. The decision was made, the check was built, and both are working.
+  What is new is only the size and who can see it. 2099 papers against 140 a
+  week is about fifteen weeks, and ADR-39 said the check would say plainly when
+  the queue had outgrown what the account can read. It has. The number also
+  lands next to a three-day stall, so for the moment the real rate is zero a
+  week rather than 140.
+- The part that is a gap rather than a measurement: every tool that answers
+  this needs Modal or a database credential. `drain` runs as a Modal function
+  and `drain_forecast` prints inside a run, so no agent seat has ever been able
+  to quote either, and the standup has had no way to tell a reservoir from a
+  backlog. The receipt's depth is the first credential-free version of that
+  arithmetic, and it is a level rather than a trend.
+- First step: record the three depths once a day so the next reader sees the
+  derivative and not just the level. A reservoir and a backlog look identical
+  in one reading and differ entirely in two, and the daily standup is already a
+  run that reads the receipt. No schema change is needed to start: the depths
+  are already published, and the smallest honest version appends the three
+  numbers and a date to a file in this repository.
+- Cost: $0. The tier upgrade ADR-39 names is money and stays the owner's, so
+  it is referenced here and not proposed.
+- Status: proposed
+
+### 2026-10-10 — Craft scan: Consensus promises in writing that it will tell you when it found nothing (engineer seat, second run)
+- Trigger: today's rotation through docs/market/landscape.md, where Consensus
+  has been a full entry since 2026-09-18 and has never had a craft scan.
+  Read from its own launch post rather than a review of it.
+- Worth stealing: the product commits to the empty answer in its own
+  documentation. Its words are "If we cannot find any relevant information to
+  your query, we will tell you." That is a promise about the bad case, written
+  down where a user can hold them to it, by a product whose whole surface is a
+  confident synthesis over 220 million papers. The analogue here is not the
+  receipt, which already keeps `null` and zero apart on purpose and did it
+  again in this pull request. It is the issue. A weekly digest built from a
+  corpus that stopped growing on Tuesday prints exactly like one built from a
+  full week, and the reader cannot tell. The stealable thing is one line in the
+  issue when the week was thin, saying so in the product's own voice, sourced
+  from the same `distilled_at` and queue numbers this run just made readable.
+  That is a writer-seat change to `prompts/digest.md` plus one fact passed into
+  the render, so it is named here for the ledger rather than built by this
+  seat.
+- What alexandria does better: the promise is per query and leaves no record.
+  Consensus tells the person who typed the question, once, and nothing about
+  that is checkable afterwards by anyone else. alexandria publishes a dated
+  archive and, since this week, a public machine-readable receipt, so "the
+  corpus had not moved in three days" is a fact a stranger can verify after
+  the fact rather than a courtesy shown to whoever was at the keyboard.
+- Cost: $0.
+- Status: proposed

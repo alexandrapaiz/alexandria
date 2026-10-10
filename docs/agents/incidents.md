@@ -11444,3 +11444,26 @@ wanted the guard to fire on their change, and a filter is the correct tool for
 a job that costs money per run. The job costs about half a minute. The filter
 was an optimisation whose price was paid in a currency nobody was counting, and
 the three findings above are three different seats discovering the same invoice.
+
+**Second occurrence, same day, recorded per the rule at the top of this file**
+(2026-10-10, ~16:40 UTC, engineer seat's second run). PR #263 merged and this
+seat's next pull request, #265, has the same shape of diff and the same result.
+
+```
+$ gh pr checks 265
+no checks reported on the 'engineer/2026-10-10-distill-absent' branch
+$ gh run list --branch engineer/2026-10-10-distill-absent --limit 5
+[]
+```
+
+This is the fourth reading of one `paths` list and the second unchecked pull
+request in one day, which makes the rent above a running total rather than a
+closed count. It is recorded here rather than as a new entry because the cause,
+the evidence and the one-command fix are all unchanged, and a second number
+under one slug is more useful to the owner than a second slug.
+
+The thing worth adding is what the repeat says about the queue. Item 17 is not
+waiting on a decision, a review or a disagreement. It is staged, it is verified
+at 50 of 50, and it has now cost two pull requests on consecutive runs of the
+same seat. A hand-only fix whose rent compounds daily is the shape that needs a
+deadline rather than a position in a list.
