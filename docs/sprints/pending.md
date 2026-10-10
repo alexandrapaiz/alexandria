@@ -1,3 +1,90 @@
+## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony — full
+reconciliation against `docs/decisions.md`/the board is Monday
+2026-10-12's job. This run's own open pull request
+(`alexandria-pm/2026-10-10-message-pass2`, #264) was already open from a
+six-hour pass earlier today; continued on that branch rather than
+opening a sixth link in today's chain. Full account of everything below
+is in `docs/sprints/dispatch-queue.md`'s matching section.
+
+**Merged under Tier B this run:** #263 (engineer, the delivery receipt's
+queue-depth read) and #237 (skill, the agent-containment retrofit, open
+since 2026-10-06 — unblocked by resolving a docs-only append conflict in
+`docs/agents/incidents.md`/`docs/ideas.md`). `main`'s next `checks.yml`
+run came back green after both.
+
+**Closed as abandoned ship-first placeholders, no real work in either:**
+#258 (engineer) and #255 (market), both ~23 hours old and holding
+nothing but their stub files. Reversible; said so in each closing
+comment.
+
+**Still open, named rather than acted on:** #260 (writer, draft, green,
+not this seat's to force ready), #203 (okr, 5-day-old draft, substantial
+but still a draft), #205 (finance, 5-day-old draft, conflicting, core
+numbers never filled in, finance is dormant so nobody to dispatch), #60
+(engineer, 20 days, Tier C + conflicting, unchanged), #265 (engineer, a
+live schedule-triggered run's own new PR, opened mid-standup — not
+touched while its run is in flight).
+
+**Owed to you, one line each, all unchanged from before this run:**
+1. **The `sql_query` scope decision** — confirmed still unfixed this run
+   by reading `mcp/server.py` directly (no table allowlist). 9 days open.
+2. **Merge PR #60** — the pre-send quality checklist, 20 days open,
+   Tier C, conflicting, only your merge opens it.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, not re-checked for live keys this run.
+
+**Found, not fixed: the board (`board.libraryofalexandria.dev`) is
+materially stale** — its sprint record and its 20 cards are three weeks
+behind this repo's actual sprint file and don't reflect either merge
+this run made or the already-shipped waitlist/unsubscribe work. Named
+here as a ceremony-sized item for Monday rather than attempted as a
+standup-sized fix.
+
+**No dispatch fired or proposed.** `PM_DISPATCH_ENABLED` confirmed
+`true` directly from this job's environment, org not in synchronous
+mode, and nothing in `docs/standards/pm.md` §11.3's criteria table had
+an observed trigger this run — the one live defect (the claims stall)
+already has #265's run in flight against it. See dispatch-queue.md.
+
+## Updated 2026-10-09, ~20:55 UTC (message run): the writer's cap hit, triaged
+
+**Scope note.** This update is scoped to the one trigger this run was
+given — the writer-agent's failed run — rather than a full
+reconciliation sweep of this whole file. Entries below this one were
+not re-checked against `docs/decisions.md` or the board this run; treat
+their dates as last-verified, not current.
+
+**The writer-agent's scheduled run (`37986599276`, 20:22-20:45 UTC)
+failed, and here is what it cost and what it owes.** Full account filed
+as `INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`
+in `docs/agents/incidents.md`. In short: the run died at turn 151 against
+its own `--max-turns 150`, hard starvation by `turn-caps.md`'s own test.
+Six files it had already pushed survived in its draft PR, #260
+(`writer/2026-10-09`). Whatever it was still editing on `docs/ideas.md`,
+`docs/voice/ban-list.md` and `docs/voice/reviews/2026-10-09.md` beyond
+that push did not, because the sandbox was dirty and never got a second
+push before teardown.
+
+1. **Owner or chair: apply `pending-workflow-changes.md` item 14, writer's
+   line at minimum.** Queued 2026-10-04, never applied, and it is the
+   named cause of tonight's loss — the writer's peak was already measured
+   at 136 (91% of 150) five days ago with the raise to 300 sitting as a
+   one-line diff to `agent-writer.yml`. The other six seats in that item
+   (skill, engineer, market, research, security, exo) are at the same
+   unapplied distance from the same failure; this is the first of the
+   seven to actually hit it, not the only one at risk.
+2. **PR #260 (writer, draft) needs a human or a follow-up writer run,
+   not a merge as-is.** It holds real content but is missing whatever
+   increment the capped-out run was still composing. Left untouched by
+   this seat deliberately — judging editorial completeness is not this
+   seat's lane. Proposed in `dispatch-queue.md`, not fired (see below).
+3. **`PM_DISPATCH_ENABLED` could not be confirmed this run.**
+   `gh variable list` returned `HTTP 403` on this token, the same gap
+   prior passes hit reading it directly. Treated as not active; nothing
+   in this run's queue was fired.
+
 ## Updated 2026-10-06, ~17:30 UTC (standup): reconciliation, red `main`'s stuck fix, one dispatch
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` and
