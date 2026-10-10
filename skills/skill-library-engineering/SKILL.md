@@ -67,7 +67,7 @@ research.
 
 ## Most of the value is in the grounding, not in the search on top of it
 
-*Validation: no trial and no consumer report. The ordering advice is ours, read off the papers' own ablations against their own arguments. Eval task sle-t2 covers it and has not been run.*
+*Validation: no trial and no consumer report. The ordering advice is ours, not the paper's, read off the papers' own ablations against their own arguments. Eval task sle-t2 covers it and has not been run.*
 
 Two of these papers build elaborate optimizers over skill text, and both
 report how much that machinery adds beyond a grounded skill. Removing the

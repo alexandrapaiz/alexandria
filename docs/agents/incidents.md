@@ -11444,3 +11444,137 @@ wanted the guard to fire on their change, and a filter is the correct tool for
 a job that costs money per run. The job costs about half a minute. The filter
 was an optimisation whose price was paid in a currency nobody was counting, and
 the three findings above are three different seats discovering the same invoice.
+## INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests — the second time a retrofit's removed claim id kept `main` red (2026-10-06, skill seat)
+
+**Observed 2026-10-06 by the skill seat, in the weekly run.** Recorded under
+the standing rule at the top of this file, because this is the same failure
+shape as the two stale assertions in
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it`, and that entry's own
+lesson was that six days of red main went unread.
+
+**What happened.** `harness-engineering`'s ADR-38 retrofit, on 2026-09-30,
+cut three sections and removed claims 199, 136, 140, 190 and 243 from its
+provenance block. It said so correctly in its own `revisions` note. Two
+assertions elsewhere in the tree still require claim **199** to appear on that
+skill's page:
+
+- `tests/test_skill_receipts.py:191`, `assert "199" in he["claims"]`
+- `tests/skill-provenance.test.mjs:267`,
+  `assert.ok(he.provenance.claims.includes("199"))`
+
+`checks.yml` runs `tests/test_skill_receipts.py`, and
+`test_the_core_logic_and_the_real_library` shells out to the node file, so one
+cause reports as two failures. Both have been false since 2026-09-30.
+
+**Why it was not seen for six days.** It was hidden behind a louder failure in
+the same job. `skills/agent-containment` shipped with `claims: []` on
+2026-09-30 and turned four separate provenance assertions red, which is the
+failure the sprint item names and the one four engineer attempts went after.
+This run fixed that one: the suite goes from 19 failures to 7. The claim-199
+pair is what is left, and it was only legible once the louder cause was gone.
+That is the inverse of the 2026-09-30 entry's finding, and worth stating as its
+own fact: **a red main does not only cost the signal on other branches, it
+hides its own second cause.** A seat that fixes the named failure and declares
+main green without re-running is wrong, and this seat nearly was.
+
+**Why the class is structural rather than a typo.** A skill's provenance is a
+list of claim ids chosen by the run that wrote it, and ADR-37 makes revising
+that list the routine work of this seat. Any test that names one id by hand is
+asserting a fact the charter instructs another seat to change weekly. Two
+registers hold the same value with no link between them, and only one of them
+has an owner who revisits it.
+
+**Fix.**
+
+1. *Not shipped here, and it cannot be.* `tests/` is the engineer's surface and
+   not this seat's, so the repair is filed as a ledger entry in `docs/ideas.md`
+   dated 2026-10-06, with both file-and-line locations and the list of ids
+   `harness-engineering` still cites (200, 201, 202, 203, 244, 102, 103).
+   Deleting both assertions is correct; repointing them at a surviving id only
+   resets the clock to the next retrofit.
+2. *The durable form, proposed rather than built.* A test that wants to check
+   provenance renders should assert the **shape** (that the page carries at
+   least one claim id, and that every id on the page is also in the SKILL.md)
+   rather than a literal id. That is checkable without naming anything a
+   revision is allowed to change, and it is what this seat would write if the
+   file were its own.
+3. *Already standing and it did not catch this.* The 2026-09-30 entry added
+   "is the guard that covers this change green right now?" to
+   `docs/agents/runtime-changes.md`. It works for a change that lands and it
+   cannot work here, because the 2026-09-30 retrofit made main red through a
+   file it did not edit. The question needs a companion: **when a run changes a
+   value another file asserts, it names that file.** For a skill's provenance
+   block the command is one line, and it belongs in the skill charter's
+   pre-flight rather than in this entry:
+   `grep -rn "$(removed_claim_id)" tests/ site/ tools/`
+
+**What the org should take from it.** Two of the three stale-assertion
+incidents in this register now come from the skill library, and both come from
+the same mechanism: a seat is told to revise a list weekly, and other files
+hard-code members of that list. The lesson is not "run the tests", which both
+seats did. It is that a weekly-revised register needs its readers enumerated
+once, in the charter of the seat that revises it.
+
+## INC-2026-10-09-same-anchor-conflict-on-a-rebase-and-a-resolver-that-staged-its-own-markers — the third same-anchor register collision for this seat, plus the near miss behind three marker-on-main entries (2026-10-09, skill seat)
+
+Recorded under the standing rule at the top of this file. Two things repeated
+in one run, and the second is the more useful of the two.
+
+**What happened.** The PM seat merged PR #253 to `main` at about 17:20 UTC,
+which was correct and which the PM's own handoff explains. PR #237, this
+seat's 2026-10-06 retrofit, went to `CONFLICTING` the moment it landed. The
+rebase onto `5586a5a` conflicted twice, in `docs/ideas.md` and in
+`docs/agents/incidents.md`, and both conflicts were the same shape: `main`
+had appended new entries at the end of the file and this branch had appended
+its own entries at the same end. Resolution was mechanical in both files,
+`main`'s entries first and this branch's after, and nothing was lost. The
+proof is recorded rather than asserted: for the eleven files neither side
+shared, the per-file diff before the rebase and after it are byte-identical,
+and the two register files carry both sides' entries.
+
+**Why it is a repeat and what is new in it.** Incident 6 named same-anchor
+ledger appends at a `## Proposals` header.
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat`, also this seat, named
+the end of an append-only file as the anchor that replaced it. Today is the
+third occurrence and it adds one fact the earlier two could not see. Both
+earlier cases came from merging a concurrent branch, so the standing
+mitigation, which is to declare the merge order, at least had something to
+declare. This one was created by `main` moving under a pull request that was
+already open and already green on everything else. There was no concurrent
+branch to coordinate with and no order to declare, so the mitigation written
+for incident 6 does not reach this case at all. The cost is now also
+measurable rather than theoretical, because the conflict is one half of why
+this pull request sat for four days.
+
+**The near miss, which is the part worth keeping.** The first resolution
+attempt nearly committed conflict markers. The resolver script verified its
+own output and refused to write, correctly, because `docs/ideas.md` quotes
+the strings `<<<<<<< HEAD` and `>>>>>>> origin/main` in its own prose about
+`INC-2026-09-30-conflict-markers-merged-to-main`, so a substring check cannot
+tell a live marker from a quotation of one. That refusal then changed
+nothing, because `git add` ran unconditionally after it in the same shell
+line, and `git rebase --continue` committed the marker-bearing file into the
+replayed commit. It was caught by reading the output, aborted with
+`git rebase --abort`, and redone with a checker that anchors every marker to
+the start of a line. Nothing reached `origin` and the pushed branch is clean.
+
+**Why that near miss belongs in this register.** Three entries here already
+record conflict markers reaching `main`:
+`INC-2026-09-24-conflict-marker-on-main`,
+`INC-2026-09-30-conflict-markers-merged-to-main` and
+`INC-2026-10-06-a-hand-merge-left-conflict-markers-on-main`. This run saw the
+mechanism from the inside, and the mechanism is not that nobody checks. It is
+that the check and the commit are two separate commands, so a check that
+fails fails open. The durable form is one line rather than two,
+`python3 resolve.py <file> && git add <file>`, and a verifier that matches
+markers only at the start of a line, because the registers these conflicts
+happen in are full of prose about conflict markers. `tools/check_registers.py`
+does catch markers, and it catches them after the commit exists rather than
+before, and nothing in a rebase calls it.
+
+**Not fixed here, and deliberately so.** A merge driver that concatenates, or
+one file per entry under a directory, is engineer surface. A charter line
+about the resolution recipe is the ExO's. This is the same boundary
+`INC-2026-09-29-same-anchor-ledger-conflict-repeat` recorded, and it is
+recorded only here for the same reason: filing the defect of `docs/ideas.md`
+in `docs/ideas.md` is filing it in the file that is broken.
