@@ -1,9 +1,9 @@
 {
   "skill": "agent-containment",
-  "suite_version": 1,
+  "suite_version": 2,
   "written": "2026-09-30",
   "author": "skill agent (ADR-22)",
-  "note": "Five-prompt trigger test required by prompts/skill-agent.md plus confusion cases for the two nearest library skills. The hard negatives are chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary.",
+  "note": "Four positives, two hard negatives and two confusion cases. Revised 2026-10-06 with the ADR-38 retrofit: ac-pos-3 tested the isolation-tier trigger and is retired with that section (see retired_cases) rather than rewritten, because the skill no longer answers a tier question and a pass would be the wrong outcome. Two positives replace it, one for each delta the retrofit sharpened: the within-tool axis (delta 2) and the unactioned alert (delta 4). ac-pos-2's anchor is requoted from the revised description. The hard negatives are unchanged and still chosen against this skill's worst false-positive risk, which is that isolation vocabulary (sandbox, container, node, rollback) is also ordinary infrastructure vocabulary.",
   "cases": [
     {
       "id": "ac-pos-1",
@@ -18,16 +18,24 @@
       "kind": "positive",
       "expect": "agent-containment",
       "prompt": "An orchestrator of ours delegates to a test runner, a patcher and a verifier, and all four read from one permission policy. A dependency's test fixture printed an official-looking note and the runner edited a source file it had no business touching. How should the permissions be structured instead?",
-      "anchor": "when several sub-agents share one permission policy",
+      "anchor": "when one permission policy covers every hop of a delegation chain",
       "rationale": "The per-principal capability section is the whole answer, including the mechanism the user cannot see: one policy has to grant the union the task needs, so the runner that reads the poisoned output inherits the patcher's write."
     },
     {
       "id": "ac-pos-3",
       "kind": "positive",
       "expect": "agent-containment",
-      "prompt": "We are standing up a few thousand isolated execution environments a day for agent RL rollouts and we are on plain Docker. Do we need Firecracker for the security-sensitive tasks, and what will the microVM boundary cost us in startup and memory?",
-      "anchor": "when choosing between a container, a microVM and a full VM for agent execution",
-      "rationale": "The tier table and the measured price of the boundary answer this directly, and the production numbers behind them come from a platform running about three million of these a day. The question is a design choice about the boundary, not about how many machines to buy."
+      "prompt": "We think we took a prompt injection. Text hidden in a document our agent retrieved made it call a tool we do intend to allow, with an argument the user never supplied. Our plan is tool filtering per sub-agent plus an injection detection classifier over the tool output. Is that the right fix, or should the check on each tool call sit somewhere else?",
+      "anchor": "when tool filtering or injection detection is the proposed fix for a prompt-injection incident",
+      "rationale": "This is delta 2's measured case and the user has proposed exactly the two controls the evidence says are on the wrong axis. A tool-filtering defence left within-tool hijacking at 2.381 to 14.458 percent while cutting cross-tool success to near zero, and the attack described never leaves an authorised tool. The skill's answer is to constrain where each argument's value may originate, which is not a control the user has considered. The prompt names prompt injection, tool filtering and injection detection in the user's own words, which is how the description's clause is phrased, because the pre-registered engine is lexical and a positive case that shares no vocabulary with the description tests the writer's imagination rather than the trigger."
+    },
+    {
+      "id": "ac-pos-4",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "Our agent platform paged on an unusual burst of outbound requests and some pod creations we did not expect, but the alerts went to a review queue and nobody looked until Monday. We are adding two more detection rules and a dashboard. What else should we be doing?",
+      "anchor": "when an agent's alerts fire into a queue nobody acts on",
+      "rationale": "Delta 4's exact situation, including the weekend. The skill's answer is that detection was not the failure in the one reported case (the alerts did fire), so more rules do not help: the missing piece is a mechanical response bound to the alert, and the halt has to freeze the cgroup rather than signal a PID. The monitoring ceiling is independently low, with the best of 40 monitors missing nearly half of completed harm."
     },
     {
       "id": "ac-neg-1",
@@ -57,5 +65,17 @@
       "prompt": "Our five-agent support pipeline fails about a third of its tickets and we cannot tell which sub-agent is responsible. Where should we start?",
       "rationale": "Routes to harness-engineering. This skill's description says sub-agents and permission policy, and the word sub-agent alone must not pull a debugging question into a containment skill: nothing is being contained here, the pipeline is simply underperforming."
     }
-  ]
+  ],
+  "retired_cases": [
+    {
+      "id": "ac-pos-3",
+      "kind": "positive",
+      "expect": "agent-containment",
+      "prompt": "We are standing up a few thousand isolated execution environments a day for agent RL rollouts and we are on plain Docker. Do we need Firecracker for the security-sensitive tasks, and what will the microVM boundary cost us in startup and memory?",
+      "anchor": "when choosing between a container, a microVM and a full VM for agent execution",
+      "rationale": "The tier table and the measured price of the boundary answer this directly, and the production numbers behind them come from a platform running about three million of these a day. The question is a design choice about the boundary, not about how many machines to buy.",
+      "retired": "2026-10-06. This case tested the trigger 'when choosing between a container, a microVM and a full VM for agent execution', and the ADR-38 retrofit cut that section and that clause of the description. It is retired rather than rewritten because the skill no longer answers the question, so a pass would be the wrong outcome. It failed on its last run before retirement (it fired recursive-harness-self-improvement at 0.239 against this skill's 0.201), which is the engine agreeing that the material was never strongly this skill's."
+    }
+  ],
+  "revised": "2026-10-06"
 }

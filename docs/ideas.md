@@ -13051,6 +13051,110 @@ that triggered it, per the charter.
   new service or a dollar.
 - Cost: $0.
 - Status: urgent
+### 2026-10-06 — Two test assertions keep `main` red, and they are outside the skill seat's surface (skill seat)
+
+- What: `tests/test_skill_receipts.py:191` and
+  `tests/skill-provenance.test.mjs:267` both assert that
+  `harness-engineering`'s page carries claim id **199**. Its own ADR-38
+  retrofit removed claim 199 on 2026-09-30 and said so in its
+  `revisions` note, so both assertions have been false ever since.
+  `checks.yml` runs `tests/test_skill_receipts.py`, which is why this
+  keeps `main` red, and `test_the_core_logic_and_the_real_library`
+  shells out to the node file so the one cause shows up as two
+  failures.
+- Why it is a ledger entry and not a commit: `tests/` is not this
+  seat's write surface. This run cleared the four provenance failures
+  that were this seat's (three drifted marker phrasings and
+  `agent-containment`'s empty claims block) and took the suite from 19
+  failures to 7, but `main` does not go green until these two land.
+- First step: the engineer deletes both assertions or repoints them at
+  a claim id `harness-engineering` still cites (200, 201, 202, 203,
+  244, 102, 103). The sprint item that tracks `main`'s red checks
+  (sprint-2026-10-05, item 1) names only the provenance half, so this
+  is the half nobody has written down yet.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Claim 1226 is under-specified and the paper settles it (skill seat)
+
+- What: claim 1226 says ToolFence's runtime overhead "is only 1.9x
+  normal execution time". Claim 1224, from the same paper, says 1.63x.
+  Reading the paper in full this run shows both are real and neither
+  row says which is which: **1.63x is Qwen3-max, 3.79x is GPT-4o, and
+  1.90x is the full-configuration ablation row.** Quoting 1.9x alone
+  understates the cost on the stronger model by more than double.
+- Why: ADR-35's rule is that where the full text narrows a claim row,
+  the paper wins and the row is filed for revision. This is that filing.
+  The skill quotes the range and names the disagreement in its caveats.
+- First step: the research seat rewrites 1226 to carry the model it was
+  measured on, or deprecates it in favour of 1224. A second, more
+  general question sits under it: a single-number overhead claim with
+  no subject model attached is not usable, and distill produced two of
+  them from one table.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — A "no claims exist" finding has a shelf life of days (skill seat)
+
+- What: `agent-containment` shipped on 2026-09-30 with `claims: []` and
+  a caveat explaining that the corpus held zero containment claims, on
+  the strength of a census run that same day. The census was correct
+  then. One week later the corpus holds **15 usable rows** across PACE
+  (2610.01349), ToolFence (2609.37196), Hard Stop and MOLE, and the
+  retrofit cites all 15. The empty block then became the assertion that
+  kept `main` red for six days.
+- Why it is a ledger entry: this is not a mistake in that run, it is a
+  missing habit. A negative corpus finding was written into a shipped
+  artifact as though it were durable, and nothing re-queried it. The
+  same shape will recur on every shelf the library opens before the
+  corpus reaches it.
+- First step: any skill shipping with an empty or thin provenance block
+  carries a re-query date, and the weekly maintenance pass re-runs that
+  query before it reads anything else. Cheap: one `select` per skill.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — The skill page cannot show that a skill is unmeasured (skill seat, rendering gap)
+
+- What: `parseSkill` in `site/lib/content.js` surfaces `name`,
+  `description`, `version`, `status`, `extracted`, `validated`,
+  `claims`, `papers` and `body`. It does not read `provenance.revisions`
+  or `provenance.differential_screen`. Checked directly this run: the
+  retrofitted skill parses cleanly, 15 claims and 7 papers reach the
+  page, and the two fields carrying *why it was revised* and *that no
+  bare-arm screen has run* do not.
+- Why it matters now: ADR-38 made the honest reporting of an unmeasured
+  skill the point of the seat. `status: provisional` reaches the page as
+  a bare word with nothing behind it, so a reader sees a status and not
+  the sentence explaining it. The library's differentiator is the
+  receipt, and this is the receipt not rendering.
+- First step: the engineer adds both fields to `parseSkill` and the
+  skill page shows the newest `revisions` entry and the
+  `differential_screen` line. Flagged rather than built, per the skill
+  charter's step 8.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — A run that changes a weekly-revised list should name that list's readers (skill seat)
+
+- What: add one pre-flight line to the skill charter's run, before a
+  revision ships: when a skill's `provenance.claims` loses an id, run
+  `grep -rn "<the removed id>" tests/ site/ tools/` and fix or file
+  every hit. Two of this register's three stale-assertion incidents come
+  from the skill library, and both have the same mechanism: ADR-37 tells
+  this seat to revise a claim list weekly, and other files hard-code
+  members of it.
+- Why it is a ledger entry and not a commit: `prompts/skill-agent.md` is
+  a charter, and charters are edited only by the owner's merge. Filed
+  with `INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests`,
+  which is the second occurrence.
+- The better half, for whoever owns `tests/`: a provenance test should
+  assert the shape (the page carries at least one claim id, and every id
+  on the page is also in the SKILL.md) rather than a literal id.
+  Repointing a hard-coded id at a surviving one only resets the clock to
+  the next retrofit.
+- First step: the owner decides whether the charter line moves. The grep
+  costs a second and the last occurrence cost six days of red `main`.
 
 ### 2026-10-10 — URGENT, carried with the number: distill had 2099 papers waiting and did not read them (engineer seat, second run)
 - Trigger: the queue depths this morning's pull request added went live at

@@ -163,7 +163,7 @@ parser (site/lib/content.js `parseSkill`) reads:
 name: <kebab-slug, matches the directory name>
 description: <one paragraph, concrete trigger conditions — see "the trigger test" below>
 version: 1
-status: active
+status: provisional   # `active` is earned on a measured positive delta (ADR-38 rule 5), never assumed
 provenance:
   extracted: <YYYY-MM-DD, today>
   validated: ""   # leave empty; the ADR-13 validator fills this at promotion, never fabricate a result here
@@ -177,9 +177,17 @@ provenance:
 
 Never write a non-empty `validated` string. The gold specimen's validated
 field records a real recorded A/B trial result; that trial is the ADR-13
-validator's job, not this prompt's. A draft skill ships with `validated: ""`
-and `status: active` is provisional until the panel passes it — say so in
-the PR body, not in the frontmatter.
+validator's job, not this prompt's. A draft skill ships with `validated: ""`.
+
+**And the template's `status: active` is wrong for a new skill.** ADR-38 rule 5
+earns `status: active` on a positive differential delta on the benchmark subject
+and nothing else, so a skill with no measurement ships `status: provisional` and
+the word *unmeasured* in the PR body. Write `status: provisional` in the
+frontmatter rather than writing `active` and disclaiming it in prose, because
+the frontmatter is what the site renders and the PR body is not. Corrected
+2026-10-06, after this file had prescribed `active` for every draft since ADR-38
+landed. While there is no route to either eval arm, also fill
+`provenance.differential_screen` with the reason the screen could not run.
 
 Body shape, after the specimen:
 
@@ -211,7 +219,14 @@ Body shape, after the specimen:
    traceable to a claim must say so inline, in the specimen's voice: "(ours,
    not the paper's)". This is the line the provenance reviewer polices
    hardest — the one sin the panel exists to catch is overstating evidence.
-5. **An "Apply" checklist**, second to last: the whole skill compressed
+5. **An "Apply" checklist**, placed **first, immediately after the opening
+   paragraph**, with every delta below it. ADR-38 inverted this on 2026-09-30
+   and this list described the old shape until 2026-10-06: a consumer who reads
+   the first twenty lines and stops must have the whole procedure. It is still
+   written last, because you cannot compress sections you have not drafted, and
+   it still reads as item 5 of this list for that reason. The retrofitted gold
+   specimen (skills/harness-engineering/SKILL.md) is the shape to copy. The
+   checklist itself is the whole skill compressed
    into five to seven checkable lines a builder runs down before shipping,
    each line a question with the section it came from. Five to seven is the
    owner's number (2026-09-30), and the reason for the ceiling is that a
