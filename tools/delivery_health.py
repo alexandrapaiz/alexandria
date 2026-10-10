@@ -142,7 +142,7 @@ MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 2  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 3  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -153,9 +153,11 @@ RECEIPT_VERSION = 2  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # A version is readable when every field this reader needs for a verdict is
 # present in it or is optional in it. Version 2 added `queues`, which is
 # optional by construction (an absent queue depth is a fact this reader does not
-# have, never a queue of zero), so version 1 stays readable. A version that
-# removed or renamed a field would not be added to this tuple.
-READABLE_VERSIONS = (1, 2)
+# have, never a queue of zero), so version 1 stays readable. Version 3 added
+# `pipeline.distilled_newest` on the same terms, so versions 1 and 2 stay
+# readable too. A version that removed or renamed a field would not be added to
+# this tuple.
+READABLE_VERSIONS = (1, 2, 3)
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -644,17 +646,26 @@ def pipeline_facts(conn) -> dict:
     """When the corpus last moved, and how much is waiting to move it.
 
     The newest row in `papers` and in `claims`, which is the staleness, plus
-    the queue depths, which are the cause. Read in that order so the cheap
-    pair answers even when the views are absent.
+    two facts that are the cause rather than the clock: the queue depths, and
+    when distill last marked a paper read. Read in that order so the cheap
+    reads answer even when the views are absent.
+
+    `fetched_at` and `distilled_at` come back from one statement, because they
+    are two columns of the same table and neither has an index to use. One scan
+    for two scalars rather than two scans for one each.
     """
+    papers, distilled = conn.execute(
+        "select max(fetched_at), max(distilled_at) from papers").fetchone()
     return {
-        "papers": conn.execute("select max(fetched_at) from papers").fetchone()[0],
+        "papers": papers,
         "claims": conn.execute("select max(created_at) from claims").fetchone()[0],
+        "distilled": distilled,
         "queues": queue_facts(conn),
     }
 
 
-def queue_cause(label: str, queues: dict | None) -> str:
+def queue_cause(label: str, queues: dict | None, distilled: datetime | None = None,
+                now: datetime | None = None) -> str:
     """Why a stalled table stalled, said as a clause on the headline.
 
     `claims` is the only one of the two corpus tables with a queue inside this
@@ -671,6 +682,16 @@ def queue_cause(label: str, queues: dict | None) -> str:
     to stop: "whether the cron fired at all, whether it fired and found an
     empty queue, or whether it fired and raised" needed a credential no seat
     holds. The first two of those three are this clause.
+
+    The third of those three is `distilled`, and it was added once the depth
+    went live and answered only half. The published depth on 2026-10-10 was
+    2099 against a `claims` frozen since 2026-10-07, which settles that the
+    stage had work and leaves the two causes that are not an empty queue. They
+    do not have the same first step, so splitting them is worth a clause:
+    `papers.distilled_at` moves per paper in the same committed loop as that
+    paper's claims, so a marker that moved while `claims` stood still is a
+    stage that read and extracted nothing, and a marker that stood still with
+    it is a stage that never reached a paper.
     """
     if label != "claims":
         return ""
@@ -685,8 +706,38 @@ def queue_cause(label: str, queues: dict | None) -> str:
         return (", with distill_queue empty, so the stage had nothing to read and "
                 "the gap is upstream of it in ingest or triage")
     return (f", with {depth} papers waiting in distill_queue, so the stage had work "
-            f"and did not do it: this is the one that needs "
-            f"`modal app logs alexandria-distill`")
+            f"and did not do it" + _unread_or_unwritten(distilled, now))
+
+
+def _unread_or_unwritten(distilled: datetime | None, now: datetime | None) -> str:
+    """Which of the two remaining causes it is, from the distill marker.
+
+    Split out because the sentence is the actionable half and it is the half a
+    reader quotes. Both readers reach it through `queue_cause`, so the receipt
+    and a connection cannot name different first steps for the same stall.
+
+    `None` is deliberately read as "cannot say" and never as "never ran". A
+    direct connection means it as "no paper carries the marker" and a version 1
+    or 2 receipt has no field at all, and the two arrive here identically. A
+    wrong cause costs more than a missing one, so the one wording that is true
+    of both is the wording used.
+    """
+    if distilled is None:
+        return (", and no distill marker is readable here, so which of those two "
+                "it is needs `modal app logs alexandria-distill`")
+    now = now or datetime.now(timezone.utc)
+    if distilled.tzinfo is None:
+        distilled = distilled.replace(tzinfo=timezone.utc)
+    age = now - distilled
+    days = round(age.days + age.seconds / 86400, 1)
+    if age <= timedelta(days=PIPELINE_STALE_DAYS):
+        return (f", and it marked a paper read {days} days ago, so it ran and "
+                f"extracted nothing: the prompt and the parse are the suspects "
+                f"rather than the cron")
+    return (f", and it has marked nothing read in {days} days either, so it never "
+            f"reached a paper: the cron, the model availability gate and the spend "
+            f"cap are the suspects, and `modal app logs alexandria-distill` is "
+            f"where they show")
 
 
 def judge_pipeline(facts: dict, now: datetime | None = None,
@@ -700,8 +751,12 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     now = now or datetime.now(timezone.utc)
     rows = dict(facts)
     # Out of the staleness loop before it runs: everything left in `rows` is a
-    # timestamp, and the depths are a cause rather than a clock.
+    # corpus timestamp this surface raises on, and these two are a cause rather
+    # than a clock. `distilled` is a timestamp and would otherwise be read as a
+    # third stale table, which would report one outage twice and alarm on a
+    # marker no stage promises to keep current.
     queues = rows.pop("queues", None)
+    distilled = rows.pop("distilled", None)
     stale = []
     evidence = {"read_via": source}
     for label, value in rows.items():
@@ -715,13 +770,16 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
         evidence[label] = {"newest": str(value), "age_days": round(age.days + age.seconds / 86400, 2)}
         if age > timedelta(days=PIPELINE_STALE_DAYS):
             stale.append(f"{label} has not moved in {age.days} days"
-                         + queue_cause(label, queues))
+                         + queue_cause(label, queues, distilled, now))
     # In the evidence on every path, including the healthy one. A queue that is
     # deep while the corpus still moves is not an alarm by this surface's own
     # unit, which is staleness, and inventing a depth threshold here would be a
     # second alarm nobody asked for. It is a number a reader wants beside the
     # dates, so it is reported and not judged.
     evidence["queues"] = queues
+    # Beside the depths and on every path, for the same reason they are: it is
+    # a number a reader wants next to the dates, and it is not judged here.
+    evidence["distilled"] = str(distilled) if distilled is not None else None
     if stale:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
     return Surface("pipeline", OK,
@@ -1342,8 +1400,13 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
     # read the views. Both mean the same thing to the judgement, which is that
     # the depth is a fact this reader does not have, and neither means zero.
     queues = payload.get("queues")
+    # `distilled_newest` is absent on versions 1 and 2 and null when no paper
+    # carries the marker. `_parse_iso` returns None for both, which is the
+    # shape a direct read of an all-null column returns too, so the two readers
+    # hand the judgement the same thing and reach the same sentence.
     pipeline_row = {"papers": _parse_iso(pipeline.get("papers_newest")),
                     "claims": _parse_iso(pipeline.get("claims_newest")),
+                    "distilled": _parse_iso(pipeline.get("distilled_newest")),
                     "queues": queues if isinstance(queues, dict) else None}
 
     deploy = payload.get("deploy")

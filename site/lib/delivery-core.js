@@ -28,7 +28,7 @@
 //    issue itself and claim text is the paid product (lib/graph-live.js says
 //    so in its own words); neither has a field here and neither is queried.
 
-export const RECEIPT_VERSION = 2;
+export const RECEIPT_VERSION = 3;
 
 // Version 2 adds `queues`, the depth of each stage's waiting list, and removes
 // nothing. The bump is here because a reader has to be able to tell a site that
@@ -38,6 +38,17 @@ export const RECEIPT_VERSION = 2;
 // meets the previous receipt. tools/delivery_health.py reads one version back
 // for exactly that reason, and treats an absent `queues` as a fact it does not
 // have rather than as a queue of zero.
+//
+// Version 3 adds `pipeline.distilled_newest` and removes nothing, so every
+// version before it stays readable on the same rule. It exists because version
+// 2 went live and answered half the question it was built for. The queue depth
+// it published was 2099 against a `claims` that had not moved since
+// 2026-10-07, which rules out "the stage had nothing to read" and leaves two
+// causes with different first steps: the stage ran and extracted nothing, or
+// the stage never reached a paper. `papers.distilled_at` is the marker that
+// separates them, because pipeline/distill.py writes it per paper in the same
+// committed loop as that paper's claims. A timestamp and no identifier, so it
+// stays inside rule 2 above.
 
 // A timestamp from Neon arrives as a Date, from a JSON round trip as a
 // string, and from an empty table as null. One shape leaves here.
@@ -57,7 +68,7 @@ function count(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function buildReceipt({ digest, papers, claims, queues, deploy, observedAt }) {
+export function buildReceipt({ digest, papers, distilled, claims, queues, deploy, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -75,6 +86,12 @@ export function buildReceipt({ digest, papers, claims, queues, deploy, observedA
     pipeline: {
       papers_newest: iso(papers),
       claims_newest: iso(claims),
+      // When distill last marked a paper read, which is not the same question
+      // as when it last wrote a claim. `null` means no paper carries the
+      // marker, and the judgement treats that as a fact it does not have
+      // rather than as a stage that never ran, because an absent field on an
+      // older receipt arrives here as the same null.
+      distilled_newest: iso(distilled),
     },
     // How many rows are waiting at each stage, which is the fact that turns
     // "claims has not moved in three days" into a cause. A stalled stage with

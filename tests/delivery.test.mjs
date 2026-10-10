@@ -30,6 +30,10 @@ const FULL = {
   digest: { week: "2026-W39", model: "kimi-k2", created_at: new Date("2026-09-28T09:03:00Z") },
   papers: new Date("2026-09-30T12:01:00Z"),
   claims: new Date("2026-09-30T14:02:00Z"),
+  // Newer than `claims` on purpose. That ordering is the whole point of the
+  // field: distill marked a paper read after it last wrote a claim, which is
+  // the shape that says the stage ran and extracted nothing.
+  distilled: new Date("2026-10-01T15:04:00Z"),
   // Postgres returns `count(*)` as a bigint, which the Neon driver hands back
   // as a string. The fixture carries the strings for that reason and not by
   // accident: a receipt publishing "212" would make the reader's `depth == 0`
@@ -66,6 +70,7 @@ test("the five facts come through in one shape", () => {
   assert.deepEqual(r.pipeline, {
     papers_newest: "2026-09-30T12:01:00.000Z",
     claims_newest: "2026-09-30T14:02:00.000Z",
+    distilled_newest: "2026-10-01T15:04:00.000Z",
   });
   assert.deepEqual(r.queues, {
     triage_pending: 41,
@@ -101,6 +106,20 @@ test("a deploy row carrying an unexpected column does not widen the receipt", ()
     Object.keys(r.deploy[0]).sort().join(","),
     "app,entrypoint,file_count,first_seen_at,notified_at,recorded_at,runtime_sha"
   );
+});
+
+test("a column of nulls publishes null, not a stage that never ran", () => {
+  // `max(distilled_at)` over a table where no paper carries the marker comes
+  // back as null, and so does the field on a receipt published before version
+  // 3. Both have to arrive at the reader as the same thing, because the reader
+  // has one sentence for "cannot say" and it must not be able to reach the
+  // sentence that names the cron.
+  const r = core.buildReceipt({ ...FULL, distilled: null });
+  assert.equal(r.pipeline.distilled_newest, null);
+  assert.equal(r.pipeline.claims_newest, "2026-09-30T14:02:00.000Z");
+  const absent = core.buildReceipt({ ...FULL, distilled: undefined });
+  assert.equal(absent.pipeline.distilled_newest, null);
+  assert.ok("distilled_newest" in absent.pipeline);
 });
 
 test("the top level has exactly six keys", () => {

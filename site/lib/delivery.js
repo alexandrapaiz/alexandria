@@ -47,7 +47,21 @@ export async function loadDeliveryReceipt() {
       order by week desc
       limit 1
     `;
-    const papers = await sql`select max(fetched_at) as newest from papers`;
+    // One statement over `papers` and two scalars back, rather than two scans
+    // of the same table for two of its columns.
+    //
+    // `distilled_at` is the second half of the stall diagnosis. `distill_queue`
+    // says how much was waiting; this says whether the stage read any of it.
+    // pipeline/distill.py sets the marker on a paper in the same committed loop
+    // that writes that paper's claims, so a `distilled_at` that moved while
+    // `claims` stood still means the stage ran and extracted nothing, and one
+    // that stood still with it means the stage never reached a paper at all.
+    // Those two have different first steps and the depth alone cannot tell them
+    // apart, which is where the 2026-10-10 reading of the queues ran out.
+    const papers = await sql`
+      select max(fetched_at) as newest, max(distilled_at) as distilled
+      from papers
+    `;
     const claims = await sql`select max(created_at) as newest from claims`;
 
     // The queue depths: how many rows are waiting at each stage. Same
@@ -100,6 +114,7 @@ export async function loadDeliveryReceipt() {
       receipt: buildReceipt({
         digest: digests[0] ?? null,
         papers: papers[0]?.newest ?? null,
+        distilled: papers[0]?.distilled ?? null,
         claims: claims[0]?.newest ?? null,
         queues,
         deploy,
