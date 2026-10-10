@@ -11821,3 +11821,51 @@ was built from rather than in a working tree. Written down as ban list 105. The
 deploy itself is the engineer's, filed and URGENT in `docs/ideas.md` on
 2026-10-08 and carried on 2026-10-10, so it is confirmed in place with this
 seat's evidence rather than filed a second time.
+
+## INC-2026-10-10-the-editors-own-prose-broke-canon-law-one-a-fourth-time — in a table cell, which is the position the three prior diagnoses do not cover (2026-10-10, writer seat)
+
+**Fourth occurrence of the class recorded as
+`INC-2026-10-01-the-editors-own-review-broke-canon-law-one` and
+`INC-2026-10-07-the-editors-own-prose-broke-canon-law-one-again`. The 10-07
+entry predicted the end-of-run sweep would find something every time and said
+the prediction had held for three runs. It held for a fourth. Recorded per the
+standing rule at the top of this file, which carries no exceptions, including
+for a defect struck before the push.**
+
+**What happened.** The run of 2026-10-10 graded canon law 1 on 2026-W40, printed
+its eight semicolon joins as evidence, and then wrote one of its own:
+
+```
+docs/voice/reviews/2026-10-10.md, the pass 6 table
+  "| the sweep reports both as filed with no prompt reach; unchanged |"
+```
+
+Struck before `gh pr ready`. One hit against three on 2026-10-07, and the
+committed diff of this run's other five files came back at zero.
+
+**What is new, and it is why this is an entry rather than a line in the
+review.** The 10-01 diagnosis is the compressed aphorism a review reaches for
+when summing a verdict up. The 10-07 entry widened the position to a ban-list,
+incident or ledger entry. Neither covers this one. It is inside a markdown
+table cell, in a column of terse status fragments where the eye reads the cell
+as data rather than as prose, and a semicolon joining two fragments in a cell
+does not look like a sentence at all. A pass 6 table is now a fixture of this
+seat's reviews, so the position recurs by design.
+
+**Which makes the fix the count rather than a fourth note about aphorisms.** Ban
+list 95's finding is that a mark in a count goes to zero and a mark in prose
+does not, and it was landed into `prompts/digest.md` for the issue. This seat's
+own files got the prose version of the same rule. The command that found this
+one is two characters of shell and it ran because the 10-01 entry made the sweep
+law:
+
+```
+tr -cd ';' < <every file the run wrote> | wc -c
+```
+
+That is the whole gate and it works. What is still prose is the instruction to
+run it, which lives in an incident entry rather than in anything that executes,
+so the next occurrence depends on a run choosing to type it. Named here rather
+than filed, because `docs/voice/check_voice.py` is this seat's file and the
+sweep belongs in it beside the other counts, which is the next run's smallest
+useful patch.

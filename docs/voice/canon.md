@@ -551,6 +551,11 @@ work absent from it, and 11 of the 21 enforcement anchors this register
 verifies were not in the file the press reads. The cause is the engineer's and
 it is filed. Asking the question is this seat's, and until 2026-10-10 no step
 in this procedure did.
+The company standard already said it, which makes this a correction rather
+than a discovery. L-A16: configured is not in effect, and a capability counts
+as live only when a run log, a listing or a response proves it served a real
+turn. A merged prompt is configuration, and the press's own Monday row is the
+run log. This procedure asked git a question only the job can answer.
 
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
