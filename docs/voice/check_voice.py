@@ -44,12 +44,14 @@ The stronger form of check 4 needs the corpus and is filed with it.
 
 Usage:  python3 docs/voice/check_voice.py
           [enforcements|stale|measure|links|delivery|sweep|all] [path...]
+        python3 docs/voice/check_voice.py enforcements <git-ref>
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
 import html
 import pathlib
 import re
+import subprocess
 import sys
 import unicodedata
 
@@ -79,7 +81,21 @@ def entries(text):
 LANDED = re.compile(r'LANDED\s+(\S+?):\s*"([^"]+)"')
 
 
-def enforcements():
+def at_ref(ref, path):
+    """The bytes of one repository path at one git ref, or None if absent.
+
+    Ban list 105. Every LANDED line in this register is checked against the
+    working tree, and the working tree is not what writes the issue. The press
+    runs an image built by a deploy, so `enforcements` run with no argument
+    answers a question about a branch and reports it in the voice of a question
+    about the product. Given a ref it answers the second question instead.
+    """
+    out = subprocess.run(["git", "show", f"{ref}:{path}"], cwd=ROOT,
+                         capture_output=True)
+    return out.stdout.decode("utf-8", "replace") if out.returncode == 0 else None
+
+
+def enforcements(ref=None):
     """Ban list 92. An entry's enforcement ending may carry one or more
 
     LANDED <path>: "exact text"
@@ -116,7 +132,11 @@ def enforcements():
         for path, text in claims:
             f = ROOT / path
             if path not in cache:
-                cache[path] = norm(f.read_text()) if f.exists() else None
+                if ref:
+                    raw = at_ref(ref, path)
+                    cache[path] = norm(raw) if raw is not None else None
+                else:
+                    cache[path] = norm(f.read_text()) if f.exists() else None
             hay = cache[path]
             if hay is None:
                 missing.append((num, path, text, "no such file"))
@@ -126,6 +146,7 @@ def enforcements():
                 missing.append((num, path, text, "not in file"))
 
     verified = {n for n, _, _ in ok} | {n for n, _, _, _ in missing}
+    print(f"read from   {ref or 'the working tree'}")
     print(f"entries carrying an 'Enforced' ending      {len(prose) + len(verified)}")
     print(f"  carrying a checkable LANDED line         {len(verified)}")
     print(f"  prose only, verifiable by reading        {len(prose)}")
@@ -562,12 +583,18 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery"}
+    # `enforcements` takes a git ref rather than a path, because ban list 105
+    # is about the file the press runs and that file is only reachable through
+    # the commit the deploy was built from.
     for name, fn in (("enforcements", enforcements), ("sweep", sweep),
                      ("stale", stale), ("measure", measure), ("links", links),
                      ("delivery", delivery)):
         if which in (name, "all"):
             print(f"==== {name} ====")
-            rc |= fn(paths) if (name in takes_paths and paths) else fn()
+            if name == "enforcements":
+                rc |= fn(paths[0]) if (which == name and paths) else fn()
+            else:
+                rc |= fn(paths) if (name in takes_paths and paths) else fn()
             print()
     return rc
 

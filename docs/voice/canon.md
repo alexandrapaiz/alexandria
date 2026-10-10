@@ -521,6 +521,37 @@ published issue through two grades, and the newest `digests` row on 2026-09-30
 was written by a bundle from 2026-09-25, so three consecutive grades reported
 on a generator five commits out of date without once noticing.
 
+**Then the same question forwards, which is the one this check was missing
+(added 2026-10-10).** Everything above compares the artifact to the branch, so
+it says what WROTE the last issue. A grade's whole purpose is the next issue,
+and nothing here asked what will write it. Four consecutive runs answered that
+question with merge status, in those words, saying that unless the branch
+merged before Monday the next issue would come from the same generator. The
+branches merged. The generator that writes is still the one that wrote
+2026-W40, because `prompts/digest.md` reaches the press through a deploy and a
+merge is not a deploy.
+
+So take the third integer, and it comes from the job rather than from git:
+
+```
+psql "$NEON_RO_URL" -c "select runtime_sha, recorded_at from deploy_runtime
+    where app = 'weekly' order by recorded_at desc limit 1"
+python3 tools/delivery_health.py --surface deploy --no-notify
+```
+
+The second command names the commit the press is running and the commits
+landed since. Read `prompts/digest.md` at that commit, take its sha, and put
+all three in the grade: what wrote the artifact, what is on the branch, and
+what the press holds. Where the third does not match the second, every patch
+this seat has merged is absent from the machine that writes on Monday, and the
+grade says so at the top, because it changes what the run is for. On
+2026-10-10 the press was running `prompts/digest.md` at sha `c48d09624161`,
+which is the sha that wrote 2026-W40, with six merged revisions of this seat's
+work absent from it, and 11 of the 21 enforcement anchors this register
+verifies were not in the file the press reads. The cause is the engineer's and
+it is filed. Asking the question is this seat's, and until 2026-10-10 no step
+in this procedure did.
+
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
    of the papers. Grade nothing yet. Record four things: where a
