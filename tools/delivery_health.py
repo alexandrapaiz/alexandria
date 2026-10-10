@@ -49,7 +49,7 @@ prose:
 | press    | newest row in `digests`, against the week it | nothing  |
 |          | owes by now, which on a Monday is not the    |          |
 |          | week that has just ended until the cron runs |          |
-| pipeline | newest rows in `papers` and `claims`        | nothing  |
+| pipeline | newest rows in `papers` and `claims`, and the queue depth behind each | nothing  |
 | site     | the issues `/library` actually publishes    | nothing  |
 | mcp      | an unauthenticated probe of `/mcp`          | nothing  |
 | deploy   | `deploy_runtime` against the trunk, never   | git      |
@@ -142,7 +142,20 @@ MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 1  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 2  # must match site/lib/delivery-core.js RECEIPT_VERSION
+
+# And the versions this reader can still read. Exact-match was the rule until
+# 2026-10-10 and it made every additive field an outage: the site deploys on a
+# merge to `main` and a seat's checkout updates the instant the branch lands, so
+# the newest reader meets the previous receipt for as long as the deploy takes,
+# and a refused receipt is all three database surfaces answering `unknown`.
+#
+# A version is readable when every field this reader needs for a verdict is
+# present in it or is optional in it. Version 2 added `queues`, which is
+# optional by construction (an absent queue depth is a fact this reader does not
+# have, never a queue of zero), so version 1 stays readable. A version that
+# removed or renamed a field would not be added to this tuple.
+READABLE_VERSIONS = (1, 2)
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -591,12 +604,89 @@ def check_press(conn, today: date | datetime | None = None) -> Surface:
     return judge_press(press_facts(conn), today)
 
 
+QUEUE_DEPTHS = """
+    select
+      (select count(*) from papers p
+        where not exists (
+          select 1 from latest_triage t where t.paper_id = p.id
+        )),
+      (select count(*) from distill_queue),
+      (select count(*) from interpret_queue)
+"""
+
+
+def queue_facts(conn) -> dict | None:
+    """How many rows wait at each stage, or None when this database cannot say.
+
+    Fail-soft for the same reason site/lib/delivery.js is. These are views in
+    db/schema.sql and `apply_schema` is a hand step, so a database one migration
+    behind must still be able to report when the corpus last moved. The read
+    runs inside `conn.transaction()`, which is a savepoint when the caller is
+    already in a transaction: a failed statement in psycopg aborts the whole
+    transaction, so without it a missing view would take the deploy surface
+    down with it on the same connection.
+
+    None and never zeroes. A queue of zero is a real fact, and it is half of the
+    diagnosis below, so a failed read must not be able to claim it.
+    """
+    try:
+        with conn.transaction():
+            row = conn.execute(QUEUE_DEPTHS).fetchone()
+    except Exception:
+        return None
+    if row is None:
+        return None
+    return {"triage_pending": row[0], "distill_pending": row[1],
+            "interpret_pending": row[2]}
+
+
 def pipeline_facts(conn) -> dict:
-    """When the corpus last moved: the newest row in `papers` and in `claims`."""
+    """When the corpus last moved, and how much is waiting to move it.
+
+    The newest row in `papers` and in `claims`, which is the staleness, plus
+    the queue depths, which are the cause. Read in that order so the cheap
+    pair answers even when the views are absent.
+    """
     return {
         "papers": conn.execute("select max(fetched_at) from papers").fetchone()[0],
         "claims": conn.execute("select max(created_at) from claims").fetchone()[0],
+        "queues": queue_facts(conn),
     }
+
+
+def queue_cause(label: str, queues: dict | None) -> str:
+    """Why a stalled table stalled, said as a clause on the headline.
+
+    `claims` is the only one of the two corpus tables with a queue inside this
+    database. Papers come from arXiv, so ingest's queue is somebody else's
+    index and there is nothing here to count. `distill_queue` is what turns a
+    paper into claims, and a stale `claims` therefore has exactly two causes:
+    the stage had nothing to read, or it had work and did not do it. One number
+    separates them, and separating them is the whole reason the site publishes
+    it.
+
+    The 2026-10-09 ledger entry is the case this is written against. It
+    established that claims had not moved in two days, that triage and
+    interpret were firing, and that no merged commit explained it, and then had
+    to stop: "whether the cron fired at all, whether it fired and found an
+    empty queue, or whether it fired and raised" needed a credential no seat
+    holds. The first two of those three are this clause.
+    """
+    if label != "claims":
+        return ""
+    if queues is None:
+        return (", and no queue depth is published here, so whether distill had "
+                "nothing to read or had work and did not do it cannot be said "
+                "from this reader")
+    depth = queues.get("distill_pending")
+    if depth is None:
+        return ", and distill_queue could not be read, so the cause is still one of two"
+    if depth == 0:
+        return (", with distill_queue empty, so the stage had nothing to read and "
+                "the gap is upstream of it in ingest or triage")
+    return (f", with {depth} papers waiting in distill_queue, so the stage had work "
+            f"and did not do it: this is the one that needs "
+            f"`modal app logs alexandria-distill`")
 
 
 def judge_pipeline(facts: dict, now: datetime | None = None,
@@ -609,6 +699,9 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     """
     now = now or datetime.now(timezone.utc)
     rows = dict(facts)
+    # Out of the staleness loop before it runs: everything left in `rows` is a
+    # timestamp, and the depths are a cause rather than a clock.
+    queues = rows.pop("queues", None)
     stale = []
     evidence = {"read_via": source}
     for label, value in rows.items():
@@ -621,7 +714,14 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
         age = now - value
         evidence[label] = {"newest": str(value), "age_days": round(age.days + age.seconds / 86400, 2)}
         if age > timedelta(days=PIPELINE_STALE_DAYS):
-            stale.append(f"{label} has not moved in {age.days} days")
+            stale.append(f"{label} has not moved in {age.days} days"
+                         + queue_cause(label, queues))
+    # In the evidence on every path, including the healthy one. A queue that is
+    # deep while the corpus still moves is not an alarm by this surface's own
+    # unit, which is staleness, and inventing a depth threshold here would be a
+    # second alarm nobody asked for. It is a number a reader wants beside the
+    # dates, so it is reported and not judged.
+    evidence["queues"] = queues
     if stale:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
     return Surface("pipeline", OK,
@@ -1004,6 +1104,31 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
 
+        # Never recorded is a third state, and it used to be read as the
+        # second. An app with no row has told this guard nothing, so the age
+        # of its last commit is not evidence that a deploy is late: it is
+        # evidence that the app is unmeasured. Reading it as drift produces a
+        # FAILING whose number is the age of the code rather than the age of
+        # the deploy, which cries wolf on an app that may be running
+        # perfectly. `ingest` is the live case: it delivered papers at 11:01
+        # UTC on 2026-10-09 and has never recorded a runtime in its life.
+        #
+        # Only when something else did record, and that condition is the whole
+        # of the distinction. An EMPTY table is not five unmeasured apps, it is
+        # a recorder that has never worked, and that is a failure this guard
+        # must keep shouting about: `test_a_job_that_never_reported_is_treated
+        # _as_drift` has held that line since the guard shipped and it still
+        # holds it. One app missing among four that reported is a gap in
+        # coverage. Every app missing is a gap in the mechanism.
+        if row is None and rows:
+            why = ("has never recorded a runtime, so this app is unmeasured "
+                   "rather than behind. It records on its next run after a "
+                   f"deploy: modal deploy {runtime_sha.APPS[app]}")
+            here.update(state=UNKNOWN, why=why)
+            unknowns.append(f"{app} (never recorded)")
+            evidence[app] = here
+            continue
+
         # Reported, never a verdict. Both halves of the comparison now come
         # from a commit, so an uncommitted edit cannot move the answer and
         # refusing to answer because the sandbox is dirty would be a silence
@@ -1187,12 +1312,14 @@ def read_receipt(url: str | None = None) -> tuple[dict | None, str]:
         return None, f"{url} did not return JSON: {exc}"
     if not isinstance(payload, dict) or payload.get("receipt") != "alexandria-delivery":
         return None, f"{url} answered something that is not a delivery receipt"
-    if payload.get("version") != RECEIPT_VERSION:
+    if payload.get("version") not in READABLE_VERSIONS:
         # A version this reader does not know is not a licence to read the
         # fields it recognises. The missing field would read as a null and a
-        # null here is a surface answering FAILING.
+        # null here is a surface answering FAILING. READABLE_VERSIONS is the
+        # list of versions where that is not true, and its header says what
+        # earns a place on it.
         return None, (f"{url} published receipt version {payload.get('version')} "
-                      f"and this reader speaks version {RECEIPT_VERSION}")
+                      f"and this reader speaks {', '.join(str(v) for v in READABLE_VERSIONS)}")
     return payload, ""
 
 
@@ -1211,8 +1338,13 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
                      "model": press.get("model")}
 
     pipeline = payload.get("pipeline") or {}
+    # `queues` is absent on a version 1 receipt and null when the site could not
+    # read the views. Both mean the same thing to the judgement, which is that
+    # the depth is a fact this reader does not have, and neither means zero.
+    queues = payload.get("queues")
     pipeline_row = {"papers": _parse_iso(pipeline.get("papers_newest")),
-                    "claims": _parse_iso(pipeline.get("claims_newest"))}
+                    "claims": _parse_iso(pipeline.get("claims_newest")),
+                    "queues": queues if isinstance(queues, dict) else None}
 
     deploy = payload.get("deploy")
     if deploy is None:

@@ -9380,6 +9380,28 @@ provenance reviewer exists to catch.
 - Related: canon law 14, ban list 49, and the shape rows in the reviews of
   2026-09-26 through 2026-09-30.
 - Whose call: engineer. Cost: three greps in a chain that already runs.
+- **Updated 2026-10-06 (writer seat), tenth consecutive grade, and the entry now
+  has a number instead of three zeroes.** The counts above were taken by hand.
+  `docs/voice/check_voice.py measure` now takes them, so the record is a command
+  rather than a reading, and the first thing it found was that the figure in the
+  grade of 2026-10-05 was wrong in the optimistic direction
+  (`INC-2026-10-06-grade-recorded-progress-on-an-unmoved-axis`, ban list 98).
+
+  ```
+  $ python3 docs/voice/check_voice.py measure /tmp/wscripts/w40.md site/content/issues/2026-W39.md
+  /tmp/wscripts/w40.md              shapes 2   paragraph 17  standalone line 4
+  site/content/issues/2026-W39.md   shapes 2   paragraph 14  standalone line 8
+  ```
+
+  Two kinds on the newest issue and two on the one before it, so the prompt work
+  of ten grades has moved this axis by zero. Three of W40's four non-paragraph
+  blocks are the masthead, the horizontal rule and the close, which arrive
+  whatever the model writes, so the model's own contribution is one short
+  paragraph. Still zero bulleted lists and zero third-level headings.
+  This strengthens rather than changes the ask: the three greps proposed above
+  are the right gate, and the fourth count to add beside them is the kinds of
+  block, which `check_voice.py shapes()` already computes and which is the one
+  canon law 14 says the other counts can all pass while it fails.
 - Status: proposed
 
 ### 2026-09-30 — A grade cannot tell which generator wrote what it is reading (writer seat, for engineer)
@@ -12132,6 +12154,19 @@ that triggered it, per the charter.
   changing for this reason.
 - Cost: $0.
 - Status: proposed
+- Built by the engineer seat's second run of 2026-10-09, in the pull request
+  that carries this line. Status left as the owner set it, since this seat
+  moves `accepted` to `built` and never `proposed`. **One deviation from the
+  plan above, and it matters:** the per-tag definitions moved too, where this
+  entry said they should stay in the prompt as editorial judgment. Three
+  reasons. Leaving them behind leaves the four Layer 4 definitions in the Tier
+  C diff, which is 43 of the 46 lines that were blocking the merge, so the
+  point of the change fails. `pipeline/retag_threads.py` already parses those
+  definitions out of the prompt and refuses to run without one for each thread
+  it judges, so they are a second job's input rather than prose. And a
+  vocabulary whose names and boundaries live in different files is the drift
+  this module exists to prevent, one level up. The prose is unchanged word for
+  word and is still the owner's to edit, in a file the PM can merge.
 
 ### 2026-10-09 — Craft scan: Undermind publishes the rules its own number was measured under, in the caption (engineer seat)
 - Trigger: craft scan for 2026-10-09, rotated to the academic-tools row of
@@ -12234,6 +12269,788 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-05 — Coverage of links and evidence grades is a pipeline gate, not a prompt rule (writer seat)
+
+- Trigger: `INC-2026-10-05-law-8-coverage-failed-after-its-prompt-fix`, second
+  occurrence. The issue of 2026-10-05 names thirteen distinct pieces of work,
+  links three of them, and grades five. All three links are in the reading
+  list, so the traction, new-work and fell-behind sections carry none across
+  ten named works. The fell-behind section carries no evidence grade at all,
+  across six works that each print a benchmark number.
+- Both rules are already written in `prompts/digest.md` as explicit pre-output
+  counts. That is the point of the filing: the louder-rule move has been tried
+  and the next step cannot be a third rewording. The writer charter's structure
+  watch says a structural fix that fails twice through prompt changes goes to
+  the engineer.
+- Why a prompt cannot reach it, stated as the general rule the same issue
+  demonstrated twice over: the checks that held are the ones that read only the
+  finished draft, which were the character census and the em-dash count, both
+  at zero. The checks that failed need the payload and the draft at the same
+  time. Counting links against named works means re-opening the payload while
+  holding the output, and that is the move that does not happen.
+- What: a gate in the press, after generation and before the insert into
+  `digests`, that extracts every named piece of work from the body, matches
+  each against a payload url and against the presence of an evidence clause in
+  its own item, and fails loudly with the two integers. The pipeline is the
+  only thing in the product that holds the payload and the output at once.
+- The extraction is the hard half and it does not have to be perfect. Every
+  paper the generator may name is in the payload it was handed, so the match
+  runs the other way: for each payload paper the body mentions by title or by
+  system name, assert a link to it exists in the body. That is a substring
+  search over a known list rather than named-entity recognition.
+- First step: the count alone, reported and not enforced, for one week. A gate
+  that fails the send on its first day will be switched off, and the ratio is
+  worth knowing before anything blocks on it.
+- Cost: $0 in model spend. One pass over a body that is already in memory.
+- Status: proposed
+
+### 2026-10-05 — A comparison across two benchmarks is checkable before the prose exists (writer seat)
+
+- Trigger: `INC-2026-10-05-claims-pass-question-one-failed-again`. The issue of
+  2026-10-05 asserted that one approach "outperformed" another across three
+  different benchmarks, with the superseding number lower than the number it
+  supersedes, and conceded in its own last sentence that the measures are not
+  comparable.
+- The canon's claims pass was created for exactly this shape on 2026-09-24,
+  from the same failure in the issue before last. It is a GRADING procedure, so
+  it runs after the issue has been sent. Nothing stands between the shape and
+  the reader at the moment the comparison is written.
+- What: the payload already carries each claim's benchmark name. Where an edge
+  joins two claims whose benchmark names differ, hand the generator that fact
+  in the payload itself, as a field on the edge, rather than hoping the prose
+  rule catches it. A model told "these two numbers are on different benchmarks"
+  in the data it is reading will not write "outperformed", and the same field
+  lets a pre-send check flag any superiority verb sitting in an item built on a
+  cross-benchmark edge.
+- Why this is the engineer's and not the writer's: the writer seat has patched
+  the prose rule for this twice and the register holds two instances. The
+  remaining lever is the payload, which this seat does not own.
+- First step: report, for one week, how many `superseded` and `deprecated`
+  edges in the weekly payload join claims with different benchmark names. If
+  the answer is small, the field is cheap. If it is most of them, the
+  fell-behind section has a bigger problem than its prose.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — Nothing stops a pull request whose ship-first placeholder is still in it (writer seat)
+
+- Trigger: `INC-2026-10-05-writer-stub-merged-as-the-days-review`, a repeat of
+  `INC-2026-09-24-market-ranking-stub-only`. Writer run 25 shipped its
+  placeholder, died, and the placeholder was merged to `main`, so the review
+  register gained a file named for the day whose whole content is "Status: in
+  progress".
+- The 2026-09-24 precedent ended with an unmerged draft, which reads as
+  unfinished. A merged placeholder does not. It sits in a register other seats
+  and the ExO read, under a filename that looks like finished work.
+- Ship-first is not the cause and should not change. It is why that run
+  delivered its predecessor's merged work at all. What is missing is the other
+  end of it.
+- What: a check in `.github/workflows/checks.yml` that greps the diff for the
+  placeholder sentences every charter's ship-first clause tells seats to write,
+  and fails when one is present on a pull request that is not a draft. The text
+  is a fixed string in the charters, so this is a grep and not a judgment.
+  Draft pull requests are exempt by design, because carrying the placeholder is
+  correct while the run is still going.
+- First step: collect the placeholder wording each charter actually prescribes.
+  They are not identical across seats, and the check is only as good as that
+  list.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-05 — The generator still teaches by worked example at positions the model writes into (writer seat)
+
+- Trigger: `INC-2026-10-05-the-generators-own-examples-printed-four-times`, and
+  ban list 93. Four lines of the issue of 2026-10-05 came out of
+  `prompts/digest.md`. All four were deleted in PR #227.
+- This entry is the part that was NOT done, recorded rather than guessed at.
+  The file still carries worked examples at other positions the model writes
+  into, and nobody knows how many. A sweep recorded as done on an estimated
+  count is worse than no sweep, which is the lesson of ban list 90.
+- Why it is filed and not patched in the same run: the run that finds a leak is
+  the run that has just finished thinking about that one slot, and the canon
+  already records that a rule and its own compliance written in one pass share
+  the worst available judge. An inventory of every specimen in a 1,800-line
+  prompt is a job on its own.
+- What: a pass over `prompts/digest.md` that lists every quoted sentence a
+  model could lift into an issue unchanged, separates the ones quoted in order
+  to be banned from the ones quoted as models to follow, and deletes the
+  second kind. Banned specimens stay, because a model copying a banned
+  specimen is caught by its ban. Recommended specimens have no backstop.
+- First step: the list, as a writer-seat run with no issue to grade, so the
+  reading is not competing with a grade for attention.
+- Cost: one writer run.
+- Status: proposed
+
+### 2026-10-05 — Two company standards disagree about whether to quote a good example where the work is written, and the prose case says to hold it back (writer seat, FOR THE ExO TO RELAY UPWARD)
+
+- Not an engineering item. This is a correction to a vendored company standard,
+  filed here because `docs/standards/lessons.md` is never edited in this
+  repository and `docs/agents/hq-relay.md` says the ExO seat writes its
+  entries. The writer charter routes a correction to a parent standard through
+  that relay, so this entry is the evidence, written to be copied with no
+  editing.
+- Trigger: `INC-2026-10-05-the-generators-own-examples-printed-four-times`. Four
+  lines of a subscriber-facing issue came out of the prompt that wrote it.
+- The two rules, as they stand. `L-A14` says a rule forbidding an outcome ships
+  the safe form beside it, "so following the rule is copying rather than
+  composing". `L-A23` says a prohibition must not quote the banned specimen
+  where the work is written, and states the test as "if the nearest quoted
+  example at that position is the thing being BANNED, the prohibition is a
+  supply".
+- What the evidence shows. Three of the four leaks were not banned specimens.
+  They were GOOD examples, quoted at the writing position exactly as `L-A14`
+  asks, and the model copied them exactly as `L-A14` intends. Two were lead-in
+  sentences for a section, printed verbatim. One was a heading frame, printed
+  with its tail swapped. `L-A23` did not catch them because its test names only
+  the banned specimen, and `L-A14` did not merely fail to catch them, it asked
+  for them.
+- The distinction neither rule makes, and it is the whole correction. `L-A14`'s
+  own incident is a shell snippet, where copying the safe form IS the right
+  outcome, because a command has one correct spelling and no voice. The
+  artifact here is prose, where the safe form has to be different every time it
+  is produced. So **a worked example at the point of writing is a supply
+  whenever the output must vary, whether the example is banned or
+  recommended.** Where the output is a command, `L-A14` stands unchanged.
+- Proposed wording, for whoever owns these two: `L-A23`'s test widens from "the
+  thing being banned" to "a sentence the writer could lift unchanged", and
+  `L-A14` gains the scope clause that its safe form belongs at the writing
+  position only where the correct output is identical every time. alexandria's
+  own generator already contains the remedy, discovered independently for one
+  slot and now applied to three more: delete the example and name no
+  replacement, because a replacement offered at that position is the next
+  template.
+- Why this is worth the parent's attention rather than only ours: `L-A23` was
+  written from an alexandria incident in which a banned framework name printed
+  as a subscriber-facing heading for the third time. The same product has now
+  printed four recommended specimens in one issue, which is the same mechanism
+  through the half of it the rule left open.
+- First step: the ExO seat copies this into the relay. No code.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — The traction stream has no clock, so a measurement from last week prints as this week's news
+- Trigger: the writer grade of 2026-10-06, ban list 99. Filed under the
+  writer charter's structure watch: the generator cannot reach this, because
+  the fact it would need is not in the payload.
+- What the issue of 2026-10-05 printed, and it was the only traction datum in
+  it: a paper "moved from 2 to 4 citations". That movement was measured on
+  2026-09-28, seven days before the issue was written, and it is still the
+  newest citation measurement that exists.
+- The staleness of the slow loop was found the same day by another seat and is
+  in the incident register. This entry is the other half, which is why it will
+  keep happening after the loop is restarted.
+- `citation_movers` in `pipeline/weekly.py` takes the latest two checks per
+  paper, whenever they happened, and reports any increase. There is no time
+  window in the query. Run against the live database on 2026-10-06 it returns
+  the identical twelve rows it returned on 2026-10-05, each measured in a
+  window that closed on 2026-09-28, and eight of the twelve are a movement
+  from zero citations to one.
+- The payload then drops the dates. Each mover reaches the generator as a
+  title, a url, `citations_before` and `citations_now`, so the model cannot
+  tell a movement measured this morning from one measured a fortnight ago, and
+  no sentence added to the prompt can ask it to. That is the test the charter's
+  structure watch uses, and this one fails it outright rather than after two
+  attempts.
+- Two parts, and the second matters more than the first. Window the query to
+  the issue's own week, so a stream that has stopped reports as empty instead
+  of repeating. And carry `checked_at` into the payload for every mover, so the
+  generator can say when a movement was measured and a pre-send gate can refuse
+  one older than the issue's window.
+- Worth saying plainly: the generator already handles an empty stream well. It
+  is told that an empty stream is never news and to say the absence as a fact
+  about the field. A windowed query that returns nothing produces a correct
+  issue. The current query returns twelve rows and produces a false one.
+- First step: add the window and the date to the query and the payload dict in
+  `gather()`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-07 — The corpus holds one paper under several version ids, and the issue's links inherit the duplicate (writer seat)
+- Trigger: the writer grade of 2026-10-07, ban list 100. Filed under the
+  writer charter's structure watch. The prompt half of this is already fixed on
+  the same branch. This entry is the half no prompt can reach.
+- The prompt fix: the generator's link rule taught its `abs` to `html` rewrite
+  from an unversioned arXiv id, 6,994 of the corpus's 7,820 arXiv urls carry a
+  version, and the print of 2026-10-05 kept the version on two of its three
+  links and dropped it on the third. The example now carries a `v2` and the
+  rule says the identifier is copied character for character.
+- The part that survives that fix, because it is upstream of the model. 394
+  groups of rows in `papers` are the same arXiv paper held under more than one
+  id:
+
+  ```
+  select count(*) from (
+    select regexp_replace(id,'v[0-9]+$','') base
+    from papers where id like 'arxiv:%' group by 1 having count(*) > 1) d
+   -> 394
+
+  select regexp_replace(id,'v[0-9]+$','') base, string_agg(id, ', ' order by id)
+  from papers where id like 'arxiv:%' group by 1 having count(*) > 1 limit 3
+   arxiv:2609.03753 | arxiv:2609.03753v1, arxiv:2609.03753v2, arxiv:2609.03753v3
+   arxiv:2609.04061 | arxiv:2609.04061, arxiv:2609.04061v1
+   arxiv:2609.22086 | arxiv:2609.22086, arxiv:2609.22086v1
+  ```
+
+- The last group is the one that reached a reader. Designer-RSI is held twice,
+  as `arxiv:2609.22086` and `arxiv:2609.22086v1`, and the reading list's third
+  entry links the bare one while the other two entries link versioned ids. So
+  the inconsistency the prompt fix addresses was not only the model's: for that
+  paper the payload could hand over either string depending on which row the
+  query reaches, and no rule written into the prompt can make one paper's two
+  rows agree.
+- It is also a correctness problem the newsletter is downstream of rather than
+  the cause of. A paper counted twice is counted twice everywhere: in the
+  ingestion figure the close prints, in triage, in the citation checks, and in
+  any claim graph edge drawn to one id and not the other. The issue of
+  2026-10-05 told readers 2,557 papers came in that week, and that figure is a
+  row count over a table that holds 394 known duplicate groups.
+- Two parts. Normalise the id on ingestion, so a paper is one row and a new
+  version updates it rather than inserting beside it. And decide what the
+  canonical url is, because the writer's rule now says copy the identifier
+  exactly, which is only unambiguous once each paper has one.
+- Worth saying plainly about scope: deduplicating a live corpus is a migration
+  and not a day's work, so the first step below is the cheap half that stops it
+  growing. The 394 existing groups can wait behind it.
+- First step: normalise `id` and `url` at the insert in the ingestion path, and
+  report the duplicate-group count in the run's own output so the number is
+  visible rather than discovered by a grade.
+
+### 2026-10-07 — Canon proposal: a rule that transforms a payload value is graded against the input, not against the rule's pattern (writer seat, FOR THE OWNER)
+- Trigger: the writer grade of 2026-10-07. The canon's laws section changes
+  only by the owner's ruling recorded in the taste register, and its
+  maintenance note says this seat proposes canon changes here. So this is a
+  proposal and nothing in `docs/voice/canon.md` was touched.
+- The problem, in one case. Canon law 8 says links go to the full text and
+  names the prefix `arxiv.org/html/`, because the prefix is the part the rule
+  is about. Two consecutive grades read the newest issue's three links, saw
+  that three of three carried that prefix, and recorded the form as clean. Two
+  of the three also carried the version suffix the payload supplied and the
+  third did not, so one of the three links does not name the paper the payload
+  named.
+- Why no amount of care fixes it. The identifier is the part of the url that
+  decides whether a reader reaches the paper, and the law cannot mention it,
+  because the identifier is supposed to be copied rather than chosen. A grade
+  that reads the law closely therefore inspects exactly the half that was
+  never at risk. This is the fifth occurrence of the class the grading
+  procedure already carries three corrections for, and all three of those are
+  about laws that assert an absence or a coverage. This one is about a law that
+  asserts a transformation, which the procedure does not yet name.
+- The proposed amendment, one paragraph in the grading procedure's third pass,
+  beside the existing rule about coverage laws carrying two integers: where a
+  law governs a value the pipeline handed the generator, the verdict compares
+  the artifact's value to the payload's value character by character, and
+  never to the pattern the law describes. The pattern is what the law had to
+  say in order to be written down. The value is what the reader is owed.
+- The local half is built rather than filed, because L-A22 says a rule
+  enforced by a sentence is enforced at the reliability of a reading.
+  `docs/voice/check_voice.py links` now prints each link's path segment and its
+  identifier apart and fails when one artifact disagrees with itself about the
+  version suffix. It fails the print of 2026-10-05 and passes a consistent
+  fixture. What remains for the owner is the canon paragraph, which generalises
+  the rule past links to any value the pipeline hands over.
+- The half that is genuinely not buildable by this seat: comparing each
+  identifier against `papers.url` catches the artifact that drops the suffix
+  from every link, which the local check passes by design. It needs the corpus,
+  and it is not decidable until the 394 duplicate groups in the entry above are
+  resolved, because today three of 2026-W39's four ids match a bare row and a
+  versioned row both.
+- First step: the owner's ruling on the paragraph. The two tool halves are
+  ordered behind the dedup rather than beside it.
+
+### 2026-10-08 — The email renderer drops and demotes the sign-off, and flattens every list law 14 asks for
+- Trigger: the editorial run of 2026-10-08 ran `pipeline/email_render.py` over
+  the newest `digests` row instead of reading it, which is the first time canon
+  pass 6's "walk the path the words take" has been executed by executing it.
+  Two earlier runs performed that pass by listing assignments in `pipeline/`
+  and neither could have found any of this, because nothing below is visible in
+  a constant.
+- The first half, and it loses reader-facing content. `parse_issue` assigns
+  `tail[0]`, the first non-empty line after the closing rule, to the
+  `{{stats}}` slot and discards every line after it. `prompts/digest.md` asks
+  the model to sign off in two moves, so the issue that sets them as two
+  paragraphs sends one. Measured both ways on a fixture:
+
+  ```
+  $ python3 docs/voice/check_voice.py delivery /tmp/wrun/fix/split-signoff.md
+    sign-off lines 3    dropped 1
+      DROPPED  The week ending October 4 brought 2,557 papers in and 127 read in full.
+  ```
+
+  The sentence that goes missing is the scale sentence, which is the one canon
+  law 15 exists to govern and the only sentence in an issue a reader cannot
+  check against a linked paper. 2026-W40 ran both moves in one paragraph and
+  arrived whole, which was luck. The generator half is patched in this pull
+  request to require one paragraph, so the drop is prevented from today. The
+  engineer half is still worth doing, because a renderer that silently discards
+  editorial copy will discard something else later: `issue["stats"]` should take
+  every line after the rule that is not the standing close, or refuse the issue.
+- The second half is typographic and no prompt reaches it. The slot that does
+  survive is `{{stats}}` at `site/emails/digest.html:153`, set at 12px in grey
+  `#86868b` monospace below the 19px close. So the issue's closing judgment,
+  the line that hands the day back to the reader, is delivered in the register
+  of a system footnote. The slot is named for statistics and the generator is
+  told to put a sentence there, which is the actual mismatch. Either the
+  template gains a slot for the sign-off line at body weight, or the generator
+  stops writing one. The first is better and it is the frontend seat's file.
+- The third half blocks canon law 14 end to end. `parse_section` reads a
+  top-level markdown bullet as the start of a new ITEM, so `points` stays empty
+  and a bulleted list arrives in the inbox as consecutive body paragraphs.
+
+  ```
+  $ python3 docs/voice/check_voice.py delivery /tmp/wrun/fix/list.md
+    top-level bullets 2   rendered as list points 0
+  ```
+
+  Already true of a published issue rather than a prediction:
+  `site/content/issues/2026-W37.md` has twenty-three top-level bullets across
+  three sections and the renderer makes zero points from them. All eighteen of
+  the file's rendered points come from nested bullets in the one remaining
+  section, so the whole-file counts of 27 and 18 hide it. The site renders the same markdown as a real list, so the shape
+  exists on one surface and is undone on the other. Law 14 is the owner's
+  ruling that an issue set as one column of grey paragraphs is a failure, the
+  generator on this branch is being patched toward the list, and the patch
+  cannot reach a subscriber until this is fixed. Not patched in the prompt on
+  purpose: the markdown is already correct and writing to the parser's shape
+  would be the generator obeying a bug.
+- Whose call: the engineer owns `pipeline/email_render.py` and the frontend
+  seat owns `site/emails/digest.html`. The writer seat found it, patched the
+  one half a prompt can reach, and gated all three for visibility in
+  `docs/voice/check_voice.py delivery`, which runs the real renderer, passes a
+  clean fixture at exit 0, and fails each of the three cases.
+- First step: the list branch in `parse_section`, because it is the one that
+  blocks a law. The sign-off slot is second and the typography is the owner's
+  ruling to give the frontend seat.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-08 — A ledger entry addressed to a seat has no failing state either
+- Trigger: ban list 103. The ledger entry of 2026-09-24 that built
+  `preheader_for()` says the derived inbox preview "happens to be good. It is
+  good by luck", names the writer seat as whose call the real fix is, and asks
+  for one plain sentence in the generator's output contract. It has been open
+  fourteen days. Four editorial runs have happened since and none of them
+  opened it, so the luck ran out unobserved: 2026-10-05's preview is 128
+  characters, it is the setup half of an either-or, and a mail client cut it at
+  "and until this ".
+- Why nobody looked, which is the part worth building on. Canon pass 6 exists
+  because "a filing has no failing state of its own", and it re-checks every
+  entry in `docs/voice/ban-list.md` whose ending is a filing. A filing in THIS
+  file addressed to the writer seat is the same object with the same problem
+  and no pass re-reads it. The register that was given a failing state got one.
+  The register that hands work between seats did not.
+- The proposed amendment is one line in canon pass 6, which is the owner's
+  file: the pass also re-checks every open ledger entry whose "whose call" line
+  names this seat, and prints the day count the same way.
+- The count is the real finding and it is nine. Nine entries in this file are
+  still `proposed` and name the writer seat in their "whose call" line, six of
+  them unconditionally, the oldest nineteen days old. One of them, from
+  2026-09-27, says "writer seat, next run, no dependency on anyone", and
+  eleven runs have gone past it. The full list with day counts is in
+  `INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state`.
+  So the amendment is not about one straggler. This seat has an unopened inbox
+  and the preheader is the item from it that happened to print.
+- The writer half of the 2026-09-24 entry is done in this pull request without
+  waiting for the amendment. The generator now states that the opening's first
+  sentence is the inbox preview and has to stand alone inside ninety
+  characters, and `check_voice.py delivery` fails over ninety. That is the
+  cheap half. The engineer half the entry asked for, a declared preheader line
+  the parser lifts, is still better, because deriving the sell from the opening
+  makes one sentence do two jobs and the two jobs disagree.
+- Cost: $0
+- Status: proposed
+
+### 2026-10-09 - Resolving a conflict between two register appends is mechanical, so stop asking seats to guess it (writer seat)
+- Trigger: `INC-2026-10-09-one-trunk-merge-put-the-same-conflict-in-front-of-three-seats`,
+  the third occurrence of the same-anchor append conflict, and the closing
+  line of the 2026-09-29 entry, which says the guessing is the part worth
+  removing. One merge to main today asked three seats to rebase, and each of
+  them meets the same two conflicted registers.
+- What: the 2026-09-29 entry named three ways out, a merge driver that
+  concatenates, one file per entry under a directory, or a resolution recipe
+  every seat follows. This is the third, which is the cheap one, and it is a
+  command rather than a paragraph. During a rebase, for each conflicted file:
+  read the file as the parent of the replayed commit has it, read it as that
+  commit has it, and when the second is the first plus a trailing block, the
+  resolved file is HEAD's content plus exactly that block. A commit that
+  changed anything other than the end of the file fails that test, and the
+  tool refuses it and leaves it for a hand rather than concatenating damage.
+- The proof it is correct, which is the half a recipe usually lacks: the set
+  of lines the branch adds, and the set it removes, is the same before and
+  after the rebase. This run ran that comparison on both registers and found
+  one line of difference, a blank line where main's last entry now meets this
+  branch's first, which is the markdown the heading wanted anyway. A seat that
+  resolves by hand cannot cheaply make that claim, which is why the hand
+  resolution has twice left conflict markers on main.
+- Why it is not a prompt rule: the instruction already exists in several
+  charters as "resolve both sides, keep both entries", and it has been
+  followed correctly and incorrectly in roughly equal measure. The failure is
+  not that seats do not know the answer, it is that they recompute it under
+  time pressure in a rebase they did not plan for.
+- First step: `tools/resolve_register_conflict.py`, which takes the conflicted
+  paths, applies the test above, writes the resolution, stages what it
+  resolved, and prints what it refused. The working version this run used is
+  thirty lines of Python and the proof is another ten.
+- Whose call: engineer for the tool, ExO for the one line in each charter's
+  rebase step that names it. Neither is this seat's surface.
+- Cost: $0
+### 2026-10-09 — URGENT: claims has not moved in two days and the cause is still open (engineer seat, second run)
+- Trigger: `tools/delivery_health.py`, run twice this evening. The pipeline
+  surface reads `FAILING`, "claims has not moved in 2 days," while the papers
+  surface stays current. The public receipt
+  (`https://libraryofalexandria.dev/api/delivery`, no credential) puts
+  `papers_newest` at 2026-10-09T11:01:34 and `claims_newest` at
+  2026-10-07T15:15:25. Ingest is working. The stage that turns papers into
+  claims is not. The PM's standup of today dispatched this seat on it and the
+  dispatch itself could not fire, 403 on `agent-engineer.yml`.
+- What is established, so tomorrow's run does not re-derive it. The last claim
+  was written at 15:15 UTC on 2026-10-07, and `pipeline/distill.py`'s schedule
+  is `modal.Cron("0 15 * * *")`, so the last productive run is the 10-07 cron
+  and two scheduled runs since have produced nothing. `triage` recorded a
+  runtime at 12:00 today and `interpret` at 14:00, so those two apps are
+  firing. No commit touched any file in distill's image on `main` after
+  2026-10-07 15:00, so a merged code change is not the cause.
+  `llm.KIMI_WINDOWS` declares no overlap at 15:00 and `window_overlaps()`
+  returns empty, so the single-slot concurrency failure of
+  INC-2026-09-24-kimi-org-concurrency is not visible in the code.
+  `pipeline/skill_revision.py`'s move to being spawned by interpret, which
+  would put a second Kimi caller near distill's window, is in the UNDEPLOYED
+  list for interpret and is therefore not live.
+- What could not be established, and why. Whether the cron fired at all,
+  whether it fired and found an empty queue, or whether it fired and raised.
+  Those three need `modal app logs` or a database credential. The modal CLI is
+  not installed in this runner and no seat holds `DATABASE_URL`. Narrowing it
+  further is not a matter of trying harder from here.
+- What this run did about it: closed the observability gap that made the
+  question unanswerable. `distill` was the only scheduled job in the pipeline
+  that recorded nothing, so from tomorrow a seat can read whether it ran and
+  which deploy it was. That is
+  INC-2026-10-09-the-drift-guard-watched-three-of-five-scheduled-jobs.
+- What the owner can do that a seat cannot, in order of how fast it answers:
+  `modal app logs alexandria-distill` says in one command which of the three
+  causes it is. Then `modal deploy pipeline/distill.py` and
+  `modal deploy pipeline/ingest.py`, which this run's change needs in order to
+  start recording, and which the deploy surface now asks for by name.
+- Cost: $0. No new service, no new account.
+- Status: urgent
+
+### 2026-10-09 — Correction: `checks.yml` has had a push-on-main trigger since 2026-09-29, and the real gap is the path filter (engineer seat, second run)
+- Trigger: this seat's own ledger entry from this morning, now merged, which
+  says `.github/workflows/checks.yml` "triggers on `pull_request` with a path
+  filter and nothing else, so no run has ever targeted `main`," and asks the
+  owner to copy a staged workflow to add the trigger. That is wrong, and it
+  asks for work that is already done.
+- What: `git show 4ef55df:.github/workflows/checks.yml` carries
+  `push: branches: [main]`, and that commit is 2026-09-29.
+  `gh run list --workflow=checks.yml --branch=main --event=push` returns ten
+  runs going back to 2026-09-30, so every run the morning pass looked at was
+  already a push run on `main`. The gate answered green today on
+  `5586a5a`, which is `origin/main`'s exact HEAD.
+- The real gap is narrower and it is the path filter. Both triggers are
+  filtered, so a push to `main` that touches none of the listed paths fires no
+  run, and the newest result stays as old as the last qualifying push. That is
+  exactly what the morning pass saw: five failures all dated 2026-10-05,
+  newest four days old, with nothing in the output to say the answer was about
+  a different commit. A stale colour and an absent colour look identical in
+  `gh run list`, which is the part worth fixing.
+- First step, and it needs no workflow permission, so this seat or any other
+  can do it: compare the run's `headSha` against the trunk before trusting its
+  colour. `gh run list --workflow=checks.yml --branch=main --limit 1 --json
+  conclusion,headSha` beside `git rev-parse origin/main`, and if they differ
+  the colour is about a commit that is not the one being asked about. The
+  charter's gate should say that rather than ask for a trigger it already has.
+- A second, separate finding in the same file, which does need the owner. The
+  path filters cover `prompts/digest.md` and `prompts/daily.md` and not
+  `prompts/distill.md` or `prompts/distill-practices.md`, and
+  `pipeline/budget.py`'s own comment calls distill "the job with the largest
+  request in the pipeline by an order of magnitude." `checks.yml` exists
+  because incident 22 was a prompt that grew past a token ceiling, and it does
+  not fire on the two prompts of the job with the biggest request. Today's
+  vocabulary move shrinks that gap by accident, because the topic list now
+  lives in `pipeline/topics.py`, which `pipeline/**` covers. A prose edit to
+  either distill prompt is still invisible to it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — A seat should be able to ask what merge tier its own diff is in (engineer seat, second run)
+- Trigger: today's whole first half. The engineer's chain reached ten pull
+  requests and four days because two files under `prompts/` put the diff in
+  Tier C, and nothing in the repository told any of those ten runs that it had
+  crossed that line. `docs/standards/pm.md` §10 defines the tiers by path and
+  says the merger verifies with `gh pr diff --name-only`, which puts the check
+  after the work, in the hands of whoever merges, and read by eye.
+- What: `tools/merge_tier.py`, which reads §10's path lists and classifies
+  `git diff --name-only origin/main...HEAD` as A, B or C, printing the tier,
+  the paths that set it, and for Tier C the one line a seat most needs: what
+  would have to leave the diff to make it Tier B. Run it in CI on every pull
+  request so the tier is a label on the PR rather than a judgment the merger
+  re-derives. A seat that learns at commit time that it has just made its work
+  owner-only can still decide to split it, which is the decision ten runs did
+  not get to make.
+- Why it is worth a day: the tier is already a function of the file list, so
+  this is a classifier over a table that exists, not a new policy. The cost it
+  removes is not the merge, it is the four days between a diff becoming Tier C
+  and anybody noticing.
+- First step: the path table and the classifier against `docs/standards/pm.md`
+  as the only source, with a test that it reproduces the tier of the last
+  twenty merged pull requests. Note the one subtlety before building: a
+  vendored standard may not be edited here, so the tool reads it and never
+  writes it, and a disagreement between the tool and the standard is a finding
+  for `docs/agents/cross-repo-law.md` rather than a patch.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — `prompts/` means two things, and only one of them is the owner's (engineer seat, second run)
+- Trigger: today's root cause, found while fixing its symptom. Tier C covers
+  `prompts/` because that directory holds the agent charters, and the reason
+  is sound: a charter is a seat's authority and changing it changes what an
+  agent may do. But the same directory holds `distill.md`, `distill-practices.md`,
+  `triage.md`, `interpret.md`, `digest.md` and `daily.md`, which are model
+  prompts, which are product code. They are Tier C for a reason that is true
+  of their neighbours and not of them.
+- What: split the directory. Charters stay in `prompts/`. Model prompts move
+  to something like `prompts/pipeline/` carved out of Tier C by name, or out
+  of `prompts/` entirely. Then a prompt change is Tier B and a charter change
+  is Tier C, each for its own reason rather than by adjacency.
+- Why it is a proposal and not an action: it is a change to the tier
+  definitions, which §10 reserves to the owner, and it is a vendored standard
+  so the correction travels through the ExO's relay rather than being made
+  here. Today's work routed around this for one file. The next prompt whose
+  body genuinely needs editing hits the same wall, and routing around it again
+  means moving more product code into Python, which is the wrong direction for
+  prose a human has to read and edit.
+- First step: the owner or the chair decides whether the split is worth it.
+  If yes, the mechanical half is a `git mv` and a path update in
+  `pipeline/distill.py`'s image, `budget.CRON_REQUESTS`, and the two readers
+  in `pipeline/retag_threads.py`, which is an afternoon. The deciding is the
+  whole cost.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Sweep for numbers that describe another file, because each one is a cache with no invalidation (engineer seat, second run)
+- Trigger: `EXPECTED_PROMPT_TOKENS = 39_059  # 38,069 payload + 990 prompt`,
+  found today. The 990 was measured correctly on 2026-09-26, when the paper
+  prompt was exactly 990 tokens, and it was wrong four days later when the
+  prompt reached 1,427. No test in the repository mentioned it. The module
+  next door sizes every other request in the pipeline by reading the live
+  prompt, so the capability to derive it was one import away the whole time.
+- What: sweep `pipeline/` and `tools/` for integer constants whose own comment
+  describes another file, which is the signature of this defect. Each one is
+  either derived at the point of use or given a test that fails when the file
+  it describes changes. The sweep is cheap because the signature is textual: a
+  constant with a path or a filename in its comment.
+- Why it is worth a day: this is the third instance of the class in the
+  register inside a week, counting `INC-2026-10-04-one-constant-for-two-documents`
+  and `INC-2026-10-05-the-rewrite-staled-every-coverage-claim`. The first two
+  were each fixed on their own; nothing has gone looking for the rest.
+- First step: the grep, then the list of hits ranked by what reads them, which
+  is the part that decides which get derived and which get a test. A constant
+  only a report reads is cheaper to guard than to derive; one a request is
+  sized against is the opposite.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Craft scan: Paperguide prices one pool and publishes everything that draws on it (engineer seat, second run)
+- Trigger: craft scan for 2026-10-09, second run of this seat today. The first
+  run took Undermind, so this rotated to the oldest remaining academic-tools
+  row by last craft scan, which is Paperguide at 2026-09-27. Probed live:
+  `paperguide.ai` 200, 1,098,404 bytes; `paperguide.ai/pricing` 200, 907,471
+  bytes.
+- Worth stealing: the plan states one quantity and then enumerates every
+  surface that spends it. "2,000 AI credits per month" sits directly above
+  "Usage across Research Agents, Research Reports, and AI Writer," and the
+  structural limits sit beside it as plain integers rather than prose: 5
+  columns and 10 papers per extraction table on free, 50 and 100 on paid,
+  systematic reviews up to 1,000 papers on Plus and 5,000 on Pro, 10 API
+  requests a month on free and 100 on Plus. A reader can decide whether their
+  own workload fits before paying, which is a question most pricing pages
+  leave unanswerable. alexandria has the same shape internally in
+  `budget.CRON_REQUESTS`, one table naming every job's request and its
+  ceiling, and shows none of it to a reader.
+- What alexandria does better: the number is in a unit the reader already
+  owns. "2,000 AI credits" has no published conversion to work done, so a
+  prospective user cannot tell how many papers 2,000 credits reads, and the
+  credit is a currency only the seller can price. alexandria's distill run
+  prints cost per paper and projected monthly spend in dollars, computed from
+  `budget.MODELS` list prices, and as of today the prompt half of that figure
+  is counted from the prompt actually sent rather than from a constant. A
+  number a reader can check beats a number only the seller can.
+- Also worth recording, because the landscape file is stale on it: Pro is
+  $29/seat/month billed annually, not the $24 `docs/market/landscape.md` has
+  carried since 2026-09-18, and the free tier now exposes a Search API quota
+  and an MCP server. The page also ran a dated promotion, "Flash sale till 09
+  October 2026, extra 50% discount with RESEARCH50," which is today. Handing
+  the price correction to the market seat rather than editing their file.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-09 — Moving the topic list out of the prompt took it outside the research seat's proposal whitelist, and that is the owner's call to make or unmake (engineer seat, second run)
+- Trigger: checking today's own change against `docs/decisions.md` before
+  shipping it, which is what turned this up rather than a failure. ADR-12's
+  safety boundary is that the meta-review loop may rewrite the system's
+  judgment and not its machinery, and `mcp/server.py`'s `propose_change`
+  enforces it literally:
+  `re.match(r"^(prompts/[a-z0-9_-]+\.md|sources\.yaml)$", path)`. The topic
+  list was inside that boundary this morning because it lived in
+  `prompts/distill.md`. It is in `pipeline/topics.py` tonight, so the research
+  seat's loop can still rewrite that prompt's prose and can no longer propose
+  a change to the vocabulary.
+- What: this is a real consequence and not a bug, so it wants a decision
+  rather than a patch. Two honest options. Add `pipeline/topics.py` to the
+  whitelist, which keeps the loop's reach exactly as wide as it was and is one
+  regex, but it is a change to ADR-12's boundary and the boundary is the
+  point, because the whole argument for the whitelist is that a loop may not
+  edit machinery. Or record that the taxonomy travels by a different road and
+  leave the boundary alone.
+- The second looks right on the evidence, and the evidence is in
+  `pipeline/topics.py`'s own comment. The four tags of 2026-10-05 arrived "by
+  the owner's directive of 2026-10-05 with the definitions the research seat
+  drafted in section 5 of
+  docs/research/notes/2026-09-30-protocols-containment-security-census.md."
+  That is a research note, then a directive, then an engineer's pull request.
+  `reasoning` arrived the same way on 2026-09-26. So the capability this
+  change removes is one the taxonomy has never actually travelled through, and
+  the road it does travel is untouched. Worth saying plainly anyway: removing
+  an unused capability quietly is still removing it, and a seat should not
+  discover next month that its loop cannot propose something it could propose
+  today.
+- First step: the owner picks one. If it is the second, the line belongs in
+  ADR-12 as an amendment saying the taxonomy is machinery and reaches the list
+  by directive, so the next reader of the whitelist is not left to infer it
+  from a regex.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — Craft scan: OpenAlex publishes a file per day, so a day that produced nothing says so (engineer seat)
+- Trigger: today's craft scan, rotated onto OpenAlex because the rotation has
+  not reached it and because today's own work is a freshness surface. Read
+  against the thing this run spent the day on: the public receipt publishes
+  `claims_newest` and nothing else about the corpus, and three days of silence
+  look exactly like one bad clock.
+- What is worth stealing: OpenAlex's changefiles are one file per calendar day,
+  each holding every entity created or modified on that date, and the
+  snapshot's partitions are organised by the date a record last changed rather
+  than by subject. A consumer asking "did anything happen on Thursday" gets
+  back a file, and an empty one is an answer. alexandria publishes a high-water
+  mark instead, which answers "when did something last happen" and cannot
+  answer "what happened on each of the last seven days". Those are different
+  questions and only the second one distinguishes a flatline from a stage that
+  is failing every other run.
+- What alexandria does better: the freshness path is free here and is paid
+  there. OpenAlex's daily snapshots and changefiles are on paid plans, so free
+  users get a quarterly snapshot, which means the readers least able to pay are
+  the ones who cannot tell how stale their copy is. This library's receipt is
+  unauthenticated on purpose and says why in the route file: no agent seat
+  holds a credential, and a receipt behind a token would need the token in
+  twelve workflows. Freshness is not an upsell.
+- Where it goes: the idea below.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — The receipt publishes a seven-day count, not only a high-water mark (engineer seat)
+- Trigger: the craft scan above, plus the exact sentence today's work could not
+  write. This run made the stall diagnosable by publishing queue depths, so a
+  stale `claims` now names one of two causes. It still cannot say whether
+  distill produced nothing for three days running or produced nothing twice and
+  something small once, because `claims_newest` is a maximum and a maximum
+  forgets.
+- What: one more block on `/api/delivery`, `history`, holding the row count per
+  day for the last seven days for `papers` and `claims`. Two grouped counts,
+  no identifiers, the same metadata rule the rest of the receipt follows. Then
+  `tools/delivery_health.py` prints the week as a row of numbers beside its
+  verdict, and `0 0 0 41 38 52 47` is a different finding from `0 0 0 0 0 0 0`:
+  the first is a stage that broke three days ago and the second is a stage that
+  never ran. Intermittent failure is the shape no high-water mark can show, and
+  it is the shape a rate limit makes.
+- First step: `select date(created_at), count(*) from claims where created_at >
+  now() - interval '7 days' group by 1`, into `buildReceipt` as a fixed-length
+  array of seven days including the empty ones, because an absent day and a
+  zero day are the same distinction this run spent the day drawing.
+- Cost: $0. One more grouped count on a table already scanned by the same
+  route, behind the same five-minute edge cache.
+- Status: proposed
+
+### 2026-10-10 — A seat should be able to ask whether its own diff fires any check at all (engineer seat)
+- Trigger: this run's pre-ship gate. `gh pr checks 263` answered "no checks
+  reported" and `gh run list --branch` answered `[]`, on a pull request that
+  changes a public endpoint's response contract. Not one check red and not one
+  green: the whole diff falls outside `checks.yml`'s `paths` list, so nothing
+  looked. The run found that by asking after it had pushed, which is the only
+  moment the question is cheap to ask and too late to act on.
+- What: a `--diff` mode on `tools/ci_coverage.py`. That tool already answers
+  the file-shaped version of this question, which test files are run by some
+  workflow, and it already parses every workflow in `.github/workflows/`. The
+  diff-shaped version is the same parse used the other way around: take
+  `git diff --name-only origin/main...HEAD`, match it against each workflow's
+  `paths` and `paths-ignore`, and print the workflows this diff triggers. When
+  that list is empty, say so in one loud line, because "no checks" is the one
+  answer a seat will otherwise read as "checks have not finished yet".
+- Why it is worth building even though the path filter is already staged for
+  deletion: the question survives the fix. A repository with twenty workflows
+  will always have diffs that trigger none of them, and the failure is silent
+  by construction. The tool makes it loud, and it makes it loud before the pull
+  request rather than in the retrospective.
+- First step: the matcher against `fnmatch` with `**` handled, tested against
+  the last twenty merged pull requests' file lists and the workflow set they
+  actually triggered, which `gh run list --json headSha,workflowName` can
+  produce as a fixture.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — A sprint item's done criteria should ship with the command that answers it (engineer seat)
+- Trigger: this run's pull-request survey, which the charter requires before
+  writing code. `docs/sprints/sprint-2026-10-05.md` carries items 2 and 3 as
+  the sprint's real point, with notes dated 05:50 UTC saying "still open", and
+  both are built and merged on `main`: `site/lib/waitlist.js` inserts a real
+  `subscribers` row and `site/app/api/unsubscribe/route.js` flips one, through
+  PRs #253 and #256 on 2026-10-09. The survey worked, so no day was lost. What
+  it cost was the survey itself, and the next run pays it again.
+- What: each sprint item's Done clause carries, beside the prose, the one
+  command that answers it. Item 3's prose is "a site route that flips a
+  subscriber's status to unsubscribed from a link in the email", and the
+  command is `test -f site/app/api/unsubscribe/route.js && python3
+  tests/test_unsubscribe.py`. Then a standup runs the sprint file instead of
+  re-deriving its state by reading code, and an item that is done reports done
+  on the first run after it merged rather than on the first run that happens to
+  look.
+- Division of labour, because this crosses two seats: the PM writes the command
+  when the item is groomed, since the criteria are the PM's to set, and the
+  engineer builds the runner that executes them and prints a table. Neither
+  half is useful alone, which is why this is one entry and not two.
+- First step: the runner, against the four items of the current sprint with
+  their commands written by hand this once, so the PM has a working example to
+  groom against rather than a specification.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — URGENT, carried: claims is three days stale, and yesterday's observability fix is still undeployed (engineer seat)
+- Trigger: the live public receipt, read twice this run with no credential.
+  `https://libraryofalexandria.dev/api/delivery` puts `claims_newest` at
+  2026-10-07T15:15:25 and `papers_newest` at 2026-10-09T11:01:34, unchanged
+  from yesterday's reading. `pipeline/distill.py`'s schedule is
+  `modal.Cron("0 15 * * *")`, so three scheduled runs have now produced
+  nothing. Ingest is working and the stage that turns papers into claims is
+  not.
+- What is new since yesterday's entry, and it is the part that matters: the
+  receipt's `deploy` block lists `interpret`, `triage` and `weekly` and no
+  others. #256 merged yesterday and put `distill` and `ingest` into
+  `runtime_sha.APPS` so that each would record a runtime, which was the whole
+  fix for "no seat could see whether distill ran at all." That fix is code on
+  `main` and is not running. It starts working on `modal deploy
+  pipeline/distill.py` and `modal deploy pipeline/ingest.py`, and until then
+  the stage is as invisible as it was on 2026-10-09.
+- What this run added, so tomorrow's run does not re-derive it: the receipt
+  now publishes queue depths, and `tools/delivery_health.py` turns them into
+  the clause the 10-09 entry could not write. An empty `distill_queue` means
+  the stage had nothing to read and the gap is upstream. A deep one means it
+  had work and did not do it. That reaches a seat on the merge of this pull
+  request plus the site deploy it triggers, and it needs no Modal access and
+  no credential.
+- What is still only the owner's, in the order that answers fastest:
+  `modal app logs alexandria-distill` says in one command which of the three
+  causes it is. Then the two deploys above. Nothing in this entry asks for a
+  new service or a dollar.
+- Cost: $0.
+- Status: urgent
 ### 2026-10-06 — Two test assertions keep `main` red, and they are outside the skill seat's surface (skill seat)
 
 - What: `tests/test_skill_receipts.py:191` and

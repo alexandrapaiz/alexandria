@@ -30,6 +30,11 @@ const FULL = {
   digest: { week: "2026-W39", model: "kimi-k2", created_at: new Date("2026-09-28T09:03:00Z") },
   papers: new Date("2026-09-30T12:01:00Z"),
   claims: new Date("2026-09-30T14:02:00Z"),
+  // Postgres returns `count(*)` as a bigint, which the Neon driver hands back
+  // as a string. The fixture carries the strings for that reason and not by
+  // accident: a receipt publishing "212" would make the reader's `depth == 0`
+  // comparison read a deep queue as neither empty nor deep.
+  queues: { triage_pending: "41", distill_pending: "212", interpret_pending: "7" },
   deploy: [
     {
       app: "triage",
@@ -51,7 +56,7 @@ test("the receipt names itself and its version, so a reader can refuse an unknow
   assert.equal(r.observed_at, "2026-10-01T02:00:00.000Z");
 });
 
-test("the four facts come through in one shape", () => {
+test("the five facts come through in one shape", () => {
   const r = core.buildReceipt(FULL);
   assert.deepEqual(r.press, {
     newest_week: "2026-W39",
@@ -61,6 +66,11 @@ test("the four facts come through in one shape", () => {
   assert.deepEqual(r.pipeline, {
     papers_newest: "2026-09-30T12:01:00.000Z",
     claims_newest: "2026-09-30T14:02:00.000Z",
+  });
+  assert.deepEqual(r.queues, {
+    triage_pending: 41,
+    distill_pending: 212,
+    interpret_pending: 7,
   });
   assert.equal(r.deploy[0].app, "triage");
   assert.equal(r.deploy[0].runtime_sha, "0a1b2c3d4e5f");
@@ -93,15 +103,51 @@ test("a deploy row carrying an unexpected column does not widen the receipt", ()
   );
 });
 
-test("the top level has exactly five keys", () => {
+test("the top level has exactly six keys", () => {
   assert.deepEqual(Object.keys(core.buildReceipt(FULL)).sort(), [
     "deploy",
     "observed_at",
     "press",
     "pipeline",
+    "queues",
     "receipt",
     "version",
   ].sort());
+});
+
+test("the queue depths come back as numbers, from the driver's bigint strings", () => {
+  const r = core.buildReceipt(FULL);
+  assert.deepEqual(r.queues, {
+    triage_pending: 41,
+    distill_pending: 212,
+    interpret_pending: 7,
+  });
+});
+
+test("a queue of zero and an unreadable queue are different answers", () => {
+  // The same distinction `deploy` makes, and the reason it matters more here:
+  // zero is half of the diagnosis. An empty distill queue says the stage had
+  // nothing to read, so a failed read that reported zero would name a cause
+  // that nobody established.
+  const empty = core.buildReceipt({
+    ...FULL,
+    queues: { triage_pending: 0, distill_pending: 0, interpret_pending: 0 },
+  });
+  assert.equal(empty.queues.distill_pending, 0);
+  assert.equal(core.buildReceipt({ ...FULL, queues: null }).queues, null);
+  assert.equal(core.buildReceipt({ ...FULL, queues: undefined }).queues, null);
+});
+
+test("a queue row carrying an unexpected column does not widen the receipt", () => {
+  const r = core.buildReceipt({
+    ...FULL,
+    queues: { ...FULL.queues, next_title: "do not publish me" },
+  });
+  assert.ok(!JSON.stringify(r).includes("do not publish me"));
+  assert.equal(
+    Object.keys(r.queues).sort().join(","),
+    "distill_pending,interpret_pending,triage_pending"
+  );
 });
 
 test("an empty digests table is null, which is a fact and not a failure to read", () => {

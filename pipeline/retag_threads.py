@@ -197,7 +197,7 @@ Use only these exact strings in `topics`: {allowed}
 
 
 def definitions(prompt_text: str, threads=THREADS) -> str:
-    """The four definitions, lifted out of `prompts/distill.md`.
+    """The four definitions, lifted out of a RENDERED `prompts/distill.md`.
 
     Read from the prompt rather than restated here, for the reason
     `topics.prompt_topics` exists: the prompt is what the distiller is told, and
@@ -205,6 +205,12 @@ def definitions(prompt_text: str, threads=THREADS) -> str:
     the distiller would not have chosen. A definition this cannot find is a
     thread this job will not offer the model, which fails loudly in `count`
     rather than quietly in the middle of a write.
+
+    The words themselves moved into `pipeline/topics.py` on 2026-10-09 and the
+    prompt carries a marker where they go, so both callers render before they
+    parse. Still parsed back out rather than read from `topics.DEFINITIONS`
+    directly, because what this job needs to match is the text the distiller
+    was sent, and the render is the step that decides what that text is.
     """
     out = []
     lines = prompt_text.splitlines()
@@ -334,9 +340,10 @@ def count() -> str:
     models = cheapest_first(guard)
     patterns = patterns_for(THREADS, order.THREAD_TERMS)
 
-    text = (pathlib.Path("/root/distill.md").read_text()
-            if pathlib.Path("/root/distill.md").exists()
-            else pathlib.Path("prompts/distill.md").read_text())
+    text = taxonomy.render(
+        pathlib.Path("/root/distill.md").read_text()
+        if pathlib.Path("/root/distill.md").exists()
+        else pathlib.Path("prompts/distill.md").read_text())
     defs = definitions(text)
     missing = [t for t in THREADS if f"`{t}` covers" not in defs]
     # The same agreement `tests/test_reasoning_rubric.py` asserts, re-checked
@@ -366,8 +373,9 @@ def count() -> str:
         lines.append(f"cost ceiling for the whole population: "
                      f"{client.calls_within(CAP_USD, 900, MAX_COMPLETION_TOKENS, models[0])}")
         if missing:
-            lines.append(f"REFUSING: no definition in prompts/distill.md for {missing}. "
-                         "The model would be asked to apply a tag nobody defined.")
+            lines.append(f"REFUSING: no definition in topics.DEFINITIONS for "
+                         f"{missing}. The model would be asked to apply a tag "
+                         "nobody defined.")
         if off_list:
             lines.append(f"REFUSING: {off_list} is not on topics.TOPICS, so the "
                          "insert would drop it and this job would write nothing.")
@@ -405,16 +413,17 @@ def retag(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD,
     cap = client.Cap(cap_usd, label="retag-threads")
     patterns = patterns_for(THREADS, order.THREAD_TERMS)
 
-    text = (pathlib.Path("/root/distill.md").read_text()
-            if pathlib.Path("/root/distill.md").exists()
-            else pathlib.Path("prompts/distill.md").read_text())
+    text = taxonomy.render(
+        pathlib.Path("/root/distill.md").read_text()
+        if pathlib.Path("/root/distill.md").exists()
+        else pathlib.Path("prompts/distill.md").read_text())
     defs = definitions(text)
     missing = [t for t in THREADS if f"`{t}` covers" not in defs]
     if missing:
         raise RuntimeError(
-            f"prompts/distill.md defines no boundary for {missing}, so this job "
-            "would ask a model to apply a tag nobody defined. Fix the prompt "
-            "first; pipeline/topics.py and that file are one list.")
+            f"nothing defines a boundary for {missing}, so this job would ask "
+            "a model to apply a tag nobody defined. The definitions are "
+            "topics.DEFINITIONS as of 2026-10-09; fix them there.")
     system = SYSTEM.format(definitions=defs, allowed=", ".join(THREADS))
 
     available, notes = client.usable_models(models, os.environ)

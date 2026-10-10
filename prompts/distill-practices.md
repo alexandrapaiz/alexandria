@@ -74,27 +74,12 @@ For each claim provide:
   reports no failure at all. A post that reports no failure anywhere is worth
   trusting less, not more, and this field being null is how the pipeline can
   see that.
-- `topics` — tags from this closed list, and nothing else: skills,
-  context-engineering, harness-engineering, loop-engineering, memory,
-  retrieval, multi-agent, evals, post-training, reasoning, serving, systems,
-  tooling, protocols, containment, security, self-improvement, other. A tag
-  off this list is dropped on insert and counted, so it is coverage that looks
-  real and is not.
+- `topics` — tags from this closed list, and nothing else:
+  <!-- topics:list -->
+  A tag off this list is dropped on insert and counted, so it is coverage
+  that looks real and is not.
 
-  `systems` and `serving` carry most field reports: this is where production
-  infrastructure, deployment, capacity and inference cost belong.
-
-  `containment` and `security` are where a field report most often lands in
-  the four tags added on 2026-10-05, because a practitioner writing about
-  agents in production is usually writing about the boundary they ran inside
-  or the attack that crossed it. The boundary itself is `containment` and the
-  adversary is `security`; a report that measures both takes both. Keep
-  `systems` for what the agent cost to run inside the boundary. The full
-  definitions are in prompts/distill.md and the two files share one list.
-  `harness-engineering` and `loop-engineering` are for reports about running
-  agents themselves. `reasoning` covers how a model's reasoning is TRAINED or
-  SPENT, never the bare fact that a model reasoned, and a field report rarely
-  earns it.
+  <!-- topics:field-report-routing -->
 
 Extract 1-5 claims per source. Prefer three good claims to five padded ones.
 
