@@ -14,8 +14,9 @@ export const dynamic = "force-dynamic";
 //
 // What it exposes is bounded by lib/delivery-core.js, which builds every field
 // by name: the newest issue's week, model and date, when the corpus last moved,
-// and the content digests the scheduled jobs report. No issue text, no claim
-// text, no subscriber, no address, no key. See that file's header for the rule.
+// how many rows wait at each pipeline stage, and the content digests the
+// scheduled jobs report. No issue text, no claim text, no subscriber, no
+// address, no key. See that file's header for the rule.
 //
 // Cached at the edge for five minutes. The reader of this is a standup that runs
 // once a day and a drift guard whose smallest unit is 24 hours, so freshness

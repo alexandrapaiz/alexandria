@@ -28,7 +28,16 @@
 //    issue itself and claim text is the paid product (lib/graph-live.js says
 //    so in its own words); neither has a field here and neither is queried.
 
-export const RECEIPT_VERSION = 1;
+export const RECEIPT_VERSION = 2;
+
+// Version 2 adds `queues`, the depth of each stage's waiting list, and removes
+// nothing. The bump is here because a reader has to be able to tell a site that
+// publishes the field from one that does not, and the site deploys on a merge
+// to `main` while a seat's checkout updates the moment the branch lands. Those
+// two clocks are minutes to hours apart, so for that window the newest reader
+// meets the previous receipt. tools/delivery_health.py reads one version back
+// for exactly that reason, and treats an absent `queues` as a fact it does not
+// have rather than as a queue of zero.
 
 // A timestamp from Neon arrives as a Date, from a JSON round trip as a
 // string, and from an empty table as null. One shape leaves here.
@@ -48,7 +57,7 @@ function count(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function buildReceipt({ digest, papers, claims, deploy, observedAt }) {
+export function buildReceipt({ digest, papers, claims, queues, deploy, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -66,6 +75,24 @@ export function buildReceipt({ digest, papers, claims, deploy, observedAt }) {
     pipeline: {
       papers_newest: iso(papers),
       claims_newest: iso(claims),
+    },
+    // How many rows are waiting at each stage, which is the fact that turns
+    // "claims has not moved in three days" into a cause. A stalled stage with
+    // an empty queue has nothing to read and the gap is upstream of it. A
+    // stalled stage with a deep queue has work and is not doing it, which is
+    // the only one of the two that needs the owner's `modal app logs`. The
+    // ledger carried that question as urgent on 2026-10-09 and closed it with
+    // "narrowing it further is not a matter of trying harder from here",
+    // because the depth was readable only with a credential no seat holds.
+    //
+    // Counts and no identifiers, so this stays metadata under rule 2 above: a
+    // number of waiting papers names no paper. `null` means the query could not
+    // be run, the same contract as `deploy`, and never zero. Zero is a queue
+    // that was read and is empty, which is half of the diagnosis.
+    queues: queues == null ? null : {
+      triage_pending: count(queues.triage_pending),
+      distill_pending: count(queues.distill_pending),
+      interpret_pending: count(queues.interpret_pending),
     },
     // One row per scheduled job, written by the job itself (pipeline/runtime_sha.py).
     // The sha is a digest of repository file contents, so it discloses no file
