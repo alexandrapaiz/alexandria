@@ -229,7 +229,7 @@ QUEUES = {"triage_pending": 41, "distill_pending": 212, "interpret_pending": 7}
 
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
             papers=None, claims=None, deploy=None, version=None,
-            press_present=True, queues="default"):
+            press_present=True, queues="default", distilled="default"):
     """A receipt whose corpus moved last night, whatever night it is.
 
     The press surface is judged against the `today` these tests pass in, so the
@@ -252,7 +252,8 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
         "press": ({"newest_week": week, "created_at": created, "model": "kimi-k2"}
                   if press_present else None),
         "pipeline": {"papers_newest": papers if papers is not None else fresh,
-                     "claims_newest": claims if claims is not None else fresh},
+                     "claims_newest": claims if claims is not None else fresh,
+                     "distilled_newest": fresh if distilled == "default" else distilled},
         "queues": QUEUES if queues == "default" else queues,
         "deploy": deploy if deploy is not None else [],
     }
@@ -383,17 +384,34 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
 
     The rule that makes it safe is in READABLE_VERSIONS' own header: a version
     stays readable only while every field this reader needs is present in it or
-    optional in it. `queues` is optional by construction.
+    optional in it. `queues` is optional by construction and so is
+    `distilled_newest`, which is why both bumps left every older version
+    readable instead of costing a window of three unknown surfaces each.
     """
     check("version 1 is in the readable list", 1 in dh.READABLE_VERSIONS)
     payload = receipt(version=1)
     payload.pop("queues", None)
+    payload["pipeline"].pop("distilled_newest", None)
     with served(status=200, body=payload):
         got, why = dh.read_receipt()
     check("a version 1 receipt is accepted", got is not None, why)
     _, pipeline_row, _ = dh.receipt_facts(payload)
     check("and its absent queue depth reads as unknown, not as zero",
           pipeline_row["queues"] is None, str(pipeline_row))
+    check("and its absent distill marker reads as unknown too",
+          pipeline_row["distilled"] is None, str(pipeline_row))
+
+    # Version 2 is the one actually live while this lands, so it is the window
+    # that really happens rather than the one that happened last time.
+    live = receipt(version=2)
+    live["pipeline"].pop("distilled_newest", None)
+    with served(status=200, body=live):
+        got, why = dh.read_receipt()
+    check("a version 2 receipt is accepted", got is not None, why)
+    _, row2, _ = dh.receipt_facts(live)
+    check("it keeps its queue depths", row2["queues"] == QUEUES, str(row2))
+    check("and its absent marker is still not a stage that never ran",
+          row2["distilled"] is None, str(row2))
 
 
 def test_a_credential_that_does_not_work_falls_through_to_the_receipt():
@@ -530,7 +548,8 @@ def test_a_connection_and_a_receipt_reach_the_same_verdict():
     for week, expect in (("2026-W39", dh.OK), ("2026-W36", dh.FAILING)):
         conn = FakeConn({
             "from digests": (week, created, "kimi-k2"),
-            "max(fetched_at)": (moved,),
+            # One statement, two columns: (max(fetched_at), max(distilled_at)).
+            "max(fetched_at)": (moved, moved),
             "max(created_at) from claims": (moved,),
             "distill_queue": (41, 212, 7),
         })
@@ -562,27 +581,44 @@ def test_a_connection_and_a_receipt_reach_the_same_verdict():
 def test_both_readers_name_the_same_cause_for_a_stalled_stage():
     """The property the queue depths were added for, held across both readers.
 
-    A stale `claims` has two causes and one number separates them. The 2026-10-09
-    ledger entry had to stop at "whether it fired and found an empty queue, or
-    whether it fired and raised", because the depth needed a credential no seat
-    holds. If the receipt and a connection disagreed about the cause, the seat
-    with no credential would read a different diagnosis from the one the owner
-    reads, which is worse than the silence it replaced.
-    """
-    moved = datetime.now(timezone.utc) - timedelta(hours=14)
-    stalled = datetime.now(timezone.utc) - timedelta(days=3)
+    A stale `claims` has three causes and two facts separate them. The depth
+    says whether the stage had anything to read, and `papers.distilled_at` says
+    whether it read any of it. The 2026-10-09 ledger entry had to stop at
+    "whether it fired and found an empty queue, or whether it fired and raised"
+    because the depth needed a credential no seat holds, and the 2026-10-10
+    reading stopped one step later, with a depth of 2099 that settled the first
+    of those and not the second.
 
-    cases = (("an empty queue", (41, 0, 7), {"triage_pending": 41,
-                                             "distill_pending": 0,
-                                             "interpret_pending": 7},
+    If the receipt and a connection disagreed about the cause, the seat with no
+    credential would read a different diagnosis from the one the owner reads,
+    which is worse than the silence it replaced.
+    """
+    # Whole seconds, because the marker is compared across a round trip through
+    # the receipt's own ISO format and that format carries no microseconds. A
+    # fixture with them would fail on the formatting rather than on the
+    # behaviour, and the behaviour is that both readers reach one sentence.
+    moved = (datetime.now(timezone.utc) - timedelta(hours=14)).replace(microsecond=0)
+    stalled = (datetime.now(timezone.utc) - timedelta(days=3)).replace(microsecond=0)
+    empty = {"triage_pending": 41, "distill_pending": 0, "interpret_pending": 7}
+
+    # The fourth column is the distill marker, and the last three cases are
+    # what it was added for: a deep queue is one fact with two causes, and the
+    # marker is what picks between them. Each phrase below is the first step a
+    # reader would actually take, so a case that named the wrong one would send
+    # the owner to the wrong place with full confidence.
+    cases = (("an empty queue", (41, 0, 7), empty, moved,
               "distill_queue empty"),
-             ("a deep queue", (41, 212, 7), QUEUES,
-              "212 papers waiting in distill_queue"),
-             ("no depth at all", None, None,
+             ("a deep queue the stage read from", (41, 212, 7), QUEUES, moved,
+              "it ran and extracted nothing"),
+             ("a deep queue the stage never reached", (41, 212, 7), QUEUES, stalled,
+              "it never reached a paper"),
+             ("a deep queue and no marker", (41, 212, 7), QUEUES, None,
+              "no distill marker is readable here"),
+             ("no depth at all", None, None, moved,
               "no queue depth is published here"))
 
-    for name, row, published, phrase in cases:
-        answers = {"max(fetched_at)": (moved,),
+    for name, row, published, marker, phrase in cases:
+        answers = {"max(fetched_at)": (moved, marker),
                    "max(created_at) from claims": (stalled,)}
         if row is not None:
             answers["distill_queue"] = row
@@ -590,7 +626,8 @@ def test_both_readers_name_the_same_cause_for_a_stalled_stage():
 
         payload = receipt(papers=moved.strftime(WEEK_FORMAT),
                           claims=stalled.strftime(WEEK_FORMAT),
-                          queues=published)
+                          queues=published,
+                          distilled=marker.strftime(WEEK_FORMAT) if marker else None)
         _, pipeline_row, _ = dh.receipt_facts(payload)
         via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
 
@@ -604,12 +641,16 @@ def test_both_readers_name_the_same_cause_for_a_stalled_stage():
         check(f"{name}: the depths are in the evidence either way",
               direct.evidence["queues"] == via_receipt.evidence["queues"],
               str(direct.evidence["queues"]))
+        check(f"{name}: and so is the marker, by both readers",
+              direct.evidence["distilled"] == via_receipt.evidence["distilled"],
+              f"{direct.evidence['distilled']!r} vs "
+              f"{via_receipt.evidence['distilled']!r}")
 
     # A deep queue on a corpus that is still moving is not this surface's
     # alarm. Its unit is staleness, and a depth threshold here would be a
     # second alarm nobody specified.
     healthy = dh.judge_pipeline(dh.pipeline_facts(FakeConn({
-        "max(fetched_at)": (moved,),
+        "max(fetched_at)": (moved, moved),
         "max(created_at) from claims": (moved,),
         "distill_queue": (41, 9000, 7)})))
     check("a deep queue alone does not raise", healthy.state == dh.OK, healthy.headline)
@@ -628,7 +669,7 @@ def test_a_missing_view_costs_the_depth_and_nothing_else():
 
     stalled = datetime.now(timezone.utc) - timedelta(days=3)
     moved = datetime.now(timezone.utc) - timedelta(hours=14)
-    facts = dh.pipeline_facts(NoViews({"max(fetched_at)": (moved,),
+    facts = dh.pipeline_facts(NoViews({"max(fetched_at)": (moved, stalled),
                                        "max(created_at) from claims": (stalled,)}))
     check("the depth is None and not zero", facts["queues"] is None)
     surface = dh.judge_pipeline(facts)

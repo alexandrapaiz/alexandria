@@ -141,20 +141,40 @@ def test_weeks_between_counts_issues_not_days():
 
 def test_pipeline_staleness():
     now = datetime.now(timezone.utc)
-    fresh = FakeConn({"from papers": (now - timedelta(hours=6),),
+    # The `papers` row is one statement with two columns since 2026-10-10:
+    # (max(fetched_at), max(distilled_at)). The second is a cause rather than a
+    # clock, so nothing in this test raises on it.
+    fresh = FakeConn({"from papers": (now - timedelta(hours=6),
+                                      now - timedelta(hours=4)),
                       "from claims": (now - timedelta(hours=5),)})
     check("a corpus that moved today is ok",
           dh.check_pipeline(fresh).state == dh.OK)
 
-    stale = FakeConn({"from papers": (now - timedelta(days=5),),
+    stale = FakeConn({"from papers": (now - timedelta(days=5),
+                                      now - timedelta(hours=4)),
                       "from claims": (now - timedelta(hours=5),)})
     s = dh.check_pipeline(stale)
     check("ingest stopped five days ago is failing", s.state == dh.FAILING, s.headline)
     check("and the headline names which table", "papers" in s.headline, s.headline)
 
-    empty = FakeConn({"from papers": (None,), "from claims": (None,)})
+    # A stale `papers` takes no cause clause, because the clause is about the
+    # one stage with a queue inside this database and arXiv is not it.
+    check("and it does not borrow distill's diagnosis",
+          "distill" not in s.headline, s.headline)
+
+    empty = FakeConn({"from papers": (None, None), "from claims": (None,)})
     check("empty corpus tables are failing",
           dh.check_pipeline(empty).state == dh.FAILING)
+
+    # A marker that has never been set must not read as a stage that never ran.
+    # It is the same None a version 2 receipt hands over, and the two readers
+    # have to reach one sentence from it.
+    never = FakeConn({"from papers": (now - timedelta(hours=6), None),
+                      "from claims": (now - timedelta(days=4),)})
+    n = dh.check_pipeline(never)
+    check("a stall with no marker at all still fails", n.state == dh.FAILING, n.headline)
+    check("and the marker is reported as absent rather than guessed",
+          n.evidence["distilled"] is None, str(n.evidence))
 
 
 def test_naive_timestamps_do_not_crash_the_comparison():
@@ -164,9 +184,22 @@ def test_naive_timestamps_do_not_crash_the_comparison():
     rather than refusing to answer.
     """
     naive = datetime.utcnow() - timedelta(hours=2)
-    conn = FakeConn({"from papers": (naive,), "from claims": (naive,)})
+    conn = FakeConn({"from papers": (naive, naive), "from claims": (naive,)})
     check("a naive timestamp is read as UTC",
           dh.check_pipeline(conn).state == dh.OK)
+
+    # The distill marker is compared against the clock too, so it needs the
+    # same assumption. A TypeError there would take out the whole surface at
+    # exactly the moment it has something to say. Asked of the clause directly,
+    # because this file's fake has no savepoint and so never publishes a queue
+    # depth, and the clause does not reach the marker without one.
+    deep = {"triage_pending": 41, "distill_pending": 212, "interpret_pending": 7}
+    recent = dh.queue_cause("claims", deep, datetime.utcnow() - timedelta(hours=3))
+    check("a naive marker from a recent run does not crash",
+          "ran and extracted nothing" in recent, recent)
+    old = dh.queue_cause("claims", deep, datetime.utcnow() - timedelta(days=4))
+    check("and a naive marker from no run at all is read as UTC too",
+          "marked nothing read in 4.0 days" in old, old)
 
 
 def test_the_week_rule_comes_from_the_press():
