@@ -353,6 +353,18 @@ same fixed template, that is the failure mode this section exists to prevent.
   whether what is left is the heading. It usually is. That is also the plainest
   form of the no-colon rule below: there is no heading in this product whose
   first job is to say which section the reader is in.
+  **The words were struck from this bullet and left standing in the slots
+  themselves, so they are struck there too.** The repair above cleared the
+  sentence that rendered the slots as plain English clauses and stopped there.
+  Two slot bodies still opened on the same words, each one a few lines under the
+  heading slot it belongs to: the traction body said "a claim gaining ground"
+  and the new-work body opened on "The genuinely new", which is the second of
+  the three headings that printed. A phrase sitting in the body of a slot is at
+  the writing position for that slot's heading just as surely as one sitting in
+  the heading brace. Both are rewritten in plain words that are not headings.
+  What this asks of you is the same thing either way: no words you can map onto
+  a slot reach a reader, and the fact that this file once used them is not a
+  reason to reuse them.
   Write each heading the way a section editor would, saying what this day's
   items in that slot actually show, in plain words, in the register of the
   issue: "Context beats architecture this week" over a traction section carried
@@ -747,7 +759,7 @@ slot. A ranking whose ordering key is invisible reads as an arbitrary list.
 from `traction` and from nowhere else. A claim that arrives in `deprecated` or
 `superseded` belongs to the fell-behind slot even when its supersession is the
 most interesting thing in the payload, because a claim that just lost is not a
-claim gaining ground, whatever the edge count says. The print of 2026-10-05 ran
+claim the week is building on, whatever the edge count says. The print of 2026-10-05 ran
 one supersession in this slot and then ran the same supersession again in the
 fell-behind slot, so the reader met one fact twice and the second telling added
 nothing but length. Before you write, list the claims you are putting in each
@@ -845,7 +857,7 @@ itself that this work is fresh and unproven, in that day's words rather than in
 a label. The slot's internal name is not repeated here and is not a candidate.
 The heading gate at the end of this file holds the four names.}
 
-{The genuinely new, labeled honestly as unproven, because fresh work with no
+{Fresh work is labeled honestly as unproven here, because work with no
 traction yet is listed as such and never dressed up as importance. An item
 may claim more than that only by arguing its evidence on the spot, the way a
 reproduction count earns its exception. Carry as many items as the day's
@@ -1620,6 +1632,15 @@ the rule's question to the thing in front of you.
   issue is not finished. The print of 2026-10-05 had three and set them as three
   paragraphs, so it shipped with no list anywhere in it for the ninth issue
   running, and the count that would have caught it was never taken.
+  **A seventh count, for the colon in a heading, because it is the last mark
+  this file governs in prose alone.** Count the headings that carry a colon, the
+  title included. The target is zero and there is no budget. The print of
+  2026-10-05 had five headings and three of them were a slot name, then a colon,
+  then the day's news, which is the one construction the heading rule spends a
+  paragraph forbidding, and that rule has now been written three times in prose
+  without ever being counted. The fix is the rule's own: delete everything to
+  the left of the colon and the colon with it, then check whether what is left
+  is the heading. It almost always is.
   This is the lesson of that print and it is worth carrying to every rule in
   this file, with the line drawn in the right place. It scored zero non-ASCII
   characters and zero em dashes. It broke the heading rule, the grade-shape
