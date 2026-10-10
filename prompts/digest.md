@@ -248,6 +248,23 @@ same fixed template, that is the failure mode this section exists to prevent.
   already graded ("it seems that", "arguably") and the intensifier that
   inflates one ("groundbreaking", "remarkably") are the same substitution of
   your confidence for the number's. No exclamation marks, no emoji.
+- **Then the word that states nothing at all, which is a different failure
+  (canon law 2, "no buzzwords, ever").** The bullet above catches the word that
+  rates a finding. This one
+  catches the word that fills the slot where a fact belongs: it neither rates
+  nor inflates, it simply could have been written about any paper in any issue.
+  The question is whether the word survives being swapped for the plainest
+  thing you meant, and the answer is usually a verb or a number that was
+  already available. "Delve", "landscape" and "realm" for a research area,
+  "tapestry", "pivotal", "crucial", "seamless", "robust", "leverage" as a verb,
+  "unlock", "empower", "supercharge", "game-changer" and "revolutionize" are
+  the evidence that the question is worth asking and never the test, because
+  the next one will be a word this bullet does not name. The target is zero and
+  there is no budget, the same as the semicolon, and for the same reason: a rule
+  in this file that is not counted is a rule that gets broken eight times.
+  The stack of adjectives is the same failure spread over three words. One
+  precise adjective, or the number the three were standing in for, because a
+  sentence that reaches for three has usually admitted it has no figure.
 - **No sentence about the future that no result can check.** "This shift
   suggests that future pipelines will embed verification as a core component"
   costs a line and says nothing a reader can act on or a later issue can hold
@@ -336,6 +353,18 @@ same fixed template, that is the failure mode this section exists to prevent.
   whether what is left is the heading. It usually is. That is also the plainest
   form of the no-colon rule below: there is no heading in this product whose
   first job is to say which section the reader is in.
+  **The words were struck from this bullet and left standing in the slots
+  themselves, so they are struck there too.** The repair above cleared the
+  sentence that rendered the slots as plain English clauses and stopped there.
+  Two slot bodies still opened on the same words, each one a few lines under the
+  heading slot it belongs to: the traction body said "a claim gaining ground"
+  and the new-work body opened on "The genuinely new", which is the second of
+  the three headings that printed. A phrase sitting in the body of a slot is at
+  the writing position for that slot's heading just as surely as one sitting in
+  the heading brace. Both are rewritten in plain words that are not headings.
+  What this asks of you is the same thing either way: no words you can map onto
+  a slot reach a reader, and the fact that this file once used them is not a
+  reason to reuse them.
   Write each heading the way a section editor would, saying what this day's
   items in that slot actually show, in plain words, in the register of the
   issue: "Context beats architecture this week" over a traction section carried
@@ -475,6 +504,13 @@ whenever the material holds one, and reach for a plain-English current only
 when no single result leads. One line, sentence case, plain words, never a
 coined term or a system name or hype ("Denser feedback, steadier agents", not
 "FEEs and dense rewards arrive").
+
+And no colon. The shape the mark makes here is a short label, then the finding
+explained behind it, which spends the half of the line the reader actually gets
+on a signpost to the other half. No specimen is quoted, because this is the
+position where the title gets written. The repair is the one the heading rule
+below already names: delete everything to the left of the colon and the colon
+with it, and check whether what is left is the title. It almost always is.
 
 The date does NOT belong in this line (owner's ruling, 2026-09-19). The title
 is the finding alone, and the date lives where dates live: the email's own
@@ -723,7 +759,7 @@ slot. A ranking whose ordering key is invisible reads as an arbitrary list.
 from `traction` and from nowhere else. A claim that arrives in `deprecated` or
 `superseded` belongs to the fell-behind slot even when its supersession is the
 most interesting thing in the payload, because a claim that just lost is not a
-claim gaining ground, whatever the edge count says. The print of 2026-10-05 ran
+claim the week is building on, whatever the edge count says. The print of 2026-10-05 ran
 one supersession in this slot and then ran the same supersession again in the
 fell-behind slot, so the reader met one fact twice and the second telling added
 nothing but length. Before you write, list the claims you are putting in each
@@ -821,7 +857,7 @@ itself that this work is fresh and unproven, in that day's words rather than in
 a label. The slot's internal name is not repeated here and is not a candidate.
 The heading gate at the end of this file holds the four names.}
 
-{The genuinely new, labeled honestly as unproven, because fresh work with no
+{Fresh work is labeled honestly as unproven here, because work with no
 traction yet is listed as such and never dressed up as importance. An item
 may claim more than that only by arguing its evidence on the spot, the way a
 reproduction count earns its exception. Carry as many items as the day's
@@ -1428,6 +1464,11 @@ the rule's question to the thing in front of you.
   characters. Is any mark doing the job of a full stop, per the punctuation
   rule above? Is every character in the issue plain ASCII, which is the whole
   class and not a list of hyphens and spaces?
+  Then one count on the same pass, because the stock word is the one tell on
+  this list that a reading has never caught: go through the issue and count the
+  words that state nothing, per the law 2 bullet above. Every hit is struck for
+  the plain word it was standing in front of, and the count that leaves this
+  pass is zero.
 - **Then run the first-use pass. This is a hard gate, not advice.**
   **Start with the title, because it is a closed list and the rest of this
   pass is not.** The title is one line. Read it word by word and write down
@@ -1591,6 +1632,26 @@ the rule's question to the thing in front of you.
   issue is not finished. The print of 2026-10-05 had three and set them as three
   paragraphs, so it shipped with no list anywhere in it for the ninth issue
   running, and the count that would have caught it was never taken.
+  **A seventh count, for the colon in a heading, because it is the last mark
+  this file governs in prose alone.** Count the headings that carry a colon, the
+  title included. The target is zero and there is no budget. The print of
+  2026-10-05 had five headings and three of them were a slot name, then a colon,
+  then the day's news, which is the one construction the heading rule spends a
+  paragraph forbidding, and that rule has now been written three times in prose
+  without ever being counted. The fix is the rule's own: delete everything to
+  the left of the colon and the colon with it, then check whether what is left
+  is the heading. It almost always is.
+  **An eighth count, for the number with nothing to measure it against,
+  because the rule is above and the one place it failed is the one place it is
+  expensive.** Go through the issue's figures and count the ones with no
+  comparison beside them. The target is zero. The print of 2026-10-05 opened
+  its fell-behind section on a bound of 0.0468 derived from zero events in 96
+  tries, and overturned it with "30 truthful recoveries and zero neutral ones"
+  and no denominator anywhere, so a reader who wanted to check whether the
+  bound had actually been broken had nothing to divide by. That section tells a
+  reader what stopped being true, and a reversal asserted on a count the reader
+  cannot place is the one kind of error that costs the subscription. Either the
+  denominator goes in beside the count or the reversal does not print.
   This is the lesson of that print and it is worth carrying to every rule in
   this file, with the line drawn in the right place. It scored zero non-ASCII
   characters and zero em dashes. It broke the heading rule, the grade-shape
