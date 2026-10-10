@@ -14,7 +14,7 @@ import { buildReceipt } from "./delivery-core.js";
 // throws is not, and a seat reading this from a sandbox cannot see the
 // environment, so this field is its only diagnosis.
 //
-// Four queries, and no parameter from the request reaches any of them. Two are
+// Five queries, and no parameter from the request reaches any of them. Two are
 // cheap by construction: `digests` is ordered on its unique `week` index and
 // `deploy_runtime` has one row per scheduled job. The two `max()` reads over
 // `papers` and `claims` have no index to use and scan, which is thousands of
@@ -23,6 +23,14 @@ import { buildReceipt } from "./delivery-core.js";
 // caches at the edge, so repeat traffic does not reach Neon at all. If either
 // table grows enough for the scan to matter, the answer is an index on the two
 // timestamps rather than a different endpoint.
+//
+// The fifth is the queue depths, and it is the most expensive one here, so it
+// is worth saying what it costs. `distill_queue` joins `papers` to
+// `latest_triage`, which is a `distinct on` over `triage_log`, and the triage
+// backlog count is an anti-join over the same pair. That is two passes over
+// thousands of rows rather than millions, once per five minutes per edge
+// region, against a surface whose absence left a stalled pipeline undiagnosable
+// for three days. It is one round trip and three scalars come back.
 export async function loadDeliveryReceipt() {
   const url = process.env.DATABASE_URL;
   if (!url) return { reason: "DATABASE_URL is not set in the site's environment" };
@@ -41,6 +49,32 @@ export async function loadDeliveryReceipt() {
     `;
     const papers = await sql`select max(fetched_at) as newest from papers`;
     const claims = await sql`select max(created_at) as newest from claims`;
+
+    // The queue depths: how many rows are waiting at each stage. Same
+    // fail-soft contract as `deploy` below and for the same reason. These are
+    // views in db/schema.sql, `apply_schema` is a hand step, and losing the
+    // press and the corpus timestamps because a view is absent would be the
+    // wrong trade. One statement so the three counts are one round trip.
+    //
+    // `latest_triage` rather than `triage_log` for the backlog, so a paper
+    // triaged twice counts once, which is the same view `distill_queue` joins.
+    let queues = null;
+    try {
+      const rows = await sql`
+        select
+          (select count(*) from papers p
+            where not exists (
+              select 1 from latest_triage t where t.paper_id = p.id
+            )) as triage_pending,
+          (select count(*) from distill_queue)   as distill_pending,
+          (select count(*) from interpret_queue) as interpret_pending
+      `;
+      queues = rows[0] ?? null;
+    } catch {
+      // null, not zeroes. A queue of zero is a real and useful fact (the stage
+      // has nothing to read), so a failed read must not be able to claim it.
+      queues = null;
+    }
 
     // deploy_runtime lands with the drift guard and `apply_schema` is a hand
     // step, so a missing table is a state this really meets. It is the one
@@ -67,6 +101,7 @@ export async function loadDeliveryReceipt() {
         digest: digests[0] ?? null,
         papers: papers[0]?.newest ?? null,
         claims: claims[0]?.newest ?? null,
+        queues,
         deploy,
         observedAt: new Date(),
       }),
