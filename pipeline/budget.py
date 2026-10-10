@@ -1087,6 +1087,36 @@ def request_text(spec, chars: int) -> str:
     return _filler_tokens(round(chars / density))
 
 
+def _taxonomy():
+    """pipeline/topics.py, from whichever of the two layouts this is running in.
+
+    The same two-path trick `pipeline/distill.py` uses for the same reason: the
+    module is a sibling in a checkout and a sibling at /root inside the image,
+    and deciding which from an environment variable goes stale the first time
+    the image changes.
+    """
+    for path in ("/root", str(ROOT / "pipeline")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import topics
+
+    return topics
+
+
+def prompt_text(spec: dict) -> str:
+    """A cron's system prompt as the job actually sends it.
+
+    Read through here rather than off the path, because the distill prompts
+    carry a marker where the topic vocabulary goes and the vocabulary is about
+    a quarter of the file. Sizing the request against the unrendered file would
+    under-count the largest request in the pipeline by roughly 300 tokens, and
+    a budget guard that under-counts is the one direction that matters: it
+    would say a request fits on the day it stops fitting. A prompt with no
+    marker in it comes back unchanged.
+    """
+    return _taxonomy().render((ROOT / spec["prompt"]).read_text())
+
+
 def check_cron_requests() -> list[str]:
     """Every model a corpus cron can reach for can actually take its request.
 
@@ -1101,6 +1131,7 @@ def check_cron_requests() -> list[str]:
             problems.append(f"{label}: {spec['prompt']} is missing, so no "
                             "request can be sized for it")
             continue
+        prompt = prompt_text(spec)
         reservation, _ = request_reservation(spec)
         user = request_text(spec, request_payload_chars(spec))
         degraded = (request_text(spec, spec["degrades_to_chars"])
@@ -1108,8 +1139,7 @@ def check_cron_requests() -> list[str]:
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue        # check_crons already reports this
-            report = check_request(prompt_path.read_text(), user, reservation,
-                                   model)
+            report = check_request(prompt, user, reservation, model)
             if report.fits:
                 continue
             if degraded is not None:
@@ -1117,8 +1147,8 @@ def check_cron_requests() -> list[str]:
                 # big one not fitting costs quality rather than the run. What
                 # must fit is the retry, and if that does not fit either then the
                 # job has nowhere left to go and this is a real problem.
-                fallback = check_request(prompt_path.read_text(), degraded,
-                                         reservation, model)
+                fallback = check_request(prompt, degraded, reservation,
+                                         model)
                 if fallback.fits:
                     continue
             problems.append(
@@ -1154,16 +1184,17 @@ def cron_degradations() -> list[str]:
         prompt_path = ROOT / spec["prompt"]
         if not prompt_path.exists():
             continue
+        prompt = prompt_text(spec)
         reservation, _ = request_reservation(spec)
         big = request_text(spec, request_payload_chars(spec))
         small = request_text(spec, spec["degrades_to_chars"])
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue
-            full = check_request(prompt_path.read_text(), big, reservation, model)
+            full = check_request(prompt, big, reservation, model)
             if full.fits:
                 continue
-            short = check_request(prompt_path.read_text(), small, reservation, model)
+            short = check_request(prompt, small, reservation, model)
             notes.append(
                 f"{label} rank {rank} ({model}) cannot take a full paper: "
                 f"{full.summary()}. It falls back to abstract[:"
@@ -1183,14 +1214,14 @@ def cron_request_report() -> list[str]:
         if not prompt_path.exists():
             lines.append(f"  {label}: {spec['prompt']} missing")
             continue
+        prompt = prompt_text(spec)
         reservation, how = request_reservation(spec)
         user = request_text(spec, request_payload_chars(spec))
         lines.append(f"  {label}, worst request, reservation {reservation}{how}")
         for rank, model in enumerate(request_models(label, spec), start=1):
             if model not in MODELS:
                 continue
-            report = check_request(prompt_path.read_text(), user, reservation,
-                                   model)
+            report = check_request(prompt, user, reservation, model)
             lines.append(f"    {rank}. [{MODELS[model]['provider']}] "
                          f"{report.summary()}")
             if rank == 1:

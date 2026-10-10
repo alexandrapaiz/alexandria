@@ -113,10 +113,12 @@ def measure(papers: list[str], window: int, model: str) -> dict:
     the request is the fact, and `check_request` is the same arithmetic the
     guard and CI use rather than a second copy of it.
     """
-    prompt = (pathlib.Path(__file__).resolve().parent.parent
-              / "prompts" / "distill.md").read_text()
-    reservation, _ = budget.request_reservation(
-        budget.CRON_REQUESTS["distill (pipeline/distill.py)"])
+    spec = budget.CRON_REQUESTS["distill (pipeline/distill.py)"]
+    # Through budget rather than off the path: the prompt carries a marker where
+    # the topic vocabulary goes, and an unrendered read measures a request the
+    # job never sends.
+    prompt = budget.prompt_text(spec)
+    reservation, _ = budget.request_reservation(spec)
     rows, failures = [], []
     for pid in papers:
         try:

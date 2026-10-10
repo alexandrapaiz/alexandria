@@ -44,12 +44,28 @@ import hashlib
 import pathlib
 import re
 
-# The three jobs this guards, and the module `modal deploy` is pointed at for
+# Every job on a schedule, and the module `modal deploy` is pointed at for
 # each. The deploy command goes in the alarm, so the owner reads what to run
 # rather than what is wrong.
+#
+# This held three of the five scheduled jobs until 2026-10-09, and the two it
+# omitted were `ingest` and `distill`, which is to say the stage that produces
+# `papers` and the stage that produces `claims`. Those are the two columns
+# `tools/delivery_health.py`'s pipeline surface judges, so the guard was blind
+# to both jobs whose output it grades. It cost a diagnosis: on 2026-10-09 the
+# pipeline surface read FAILING with "claims has not moved in 2 days" and
+# nothing in the org could say whether distill had run, because distill was the
+# one job that recorded nothing. The deploy surface read `ok` the whole time
+# and was telling the truth about the three apps it knew about.
+#
+# `tests/test_deploy_drift.py` derives this list from the repository now and
+# fails when a scheduled app is missing from it, because a hand-kept list of
+# what to watch is the defect rather than this instance of it.
 APPS = {
+    "ingest": "pipeline/ingest.py",
     "triage": "pipeline/triage.py",
     "interpret": "pipeline/interpret.py",
+    "distill": "pipeline/distill.py",
     "weekly": "pipeline/weekly.py",
 }
 

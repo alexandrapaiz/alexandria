@@ -39,11 +39,15 @@ sys.path.insert(0, str(ROOT / "pipeline"))
 
 import distill                                                   # noqa: E402
 import evidence                                                  # noqa: E402
+import topics                                                    # noqa: E402
 
 SOURCE = (ROOT / "pipeline" / "distill.py").read_text()
 SCHEMA = (ROOT / "db" / "schema.sql").read_text()
-PRACTICES = (ROOT / "prompts" / "distill-practices.md").read_text()
-PAPER = (ROOT / "prompts" / "distill.md").read_text()
+# Rendered, because the topic vocabulary lives in `pipeline/topics.py` as of
+# 2026-10-09 and the prompt files carry a marker where it goes. Asserting
+# against the raw file would assert against a prompt no model is ever sent.
+PRACTICES = topics.render((ROOT / "prompts" / "distill-practices.md").read_text())
+PAPER = topics.render((ROOT / "prompts" / "distill.md").read_text())
 
 
 # ---------------- the prompt exists and is a different prompt ----------------
