@@ -1,3 +1,8 @@
+## Updated 2026-10-10, ~18:25 UTC (six-hour pass, in progress): triage starting
+
+This pass is still gathering evidence. The previous entry is kept below
+until this run replaces it with a full account.
+
 ## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — full
