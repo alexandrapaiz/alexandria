@@ -1641,6 +1641,17 @@ the rule's question to the thing in front of you.
   without ever being counted. The fix is the rule's own: delete everything to
   the left of the colon and the colon with it, then check whether what is left
   is the heading. It almost always is.
+  **An eighth count, for the number with nothing to measure it against,
+  because the rule is above and the one place it failed is the one place it is
+  expensive.** Go through the issue's figures and count the ones with no
+  comparison beside them. The target is zero. The print of 2026-10-05 opened
+  its fell-behind section on a bound of 0.0468 derived from zero events in 96
+  tries, and overturned it with "30 truthful recoveries and zero neutral ones"
+  and no denominator anywhere, so a reader who wanted to check whether the
+  bound had actually been broken had nothing to divide by. That section tells a
+  reader what stopped being true, and a reversal asserted on a count the reader
+  cannot place is the one kind of error that costs the subscription. Either the
+  denominator goes in beside the count or the reversal does not print.
   This is the lesson of that print and it is worth carrying to every rule in
   this file, with the line drawn in the right place. It scored zero non-ASCII
   characters and zero em dashes. It broke the heading rule, the grade-shape
