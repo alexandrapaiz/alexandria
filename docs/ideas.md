@@ -13202,6 +13202,14 @@ that triggered it, per the charter.
   the two with no alarm behind them. `unmeasured` is the right answer on the
   first day and a defect by the third, and nothing in the tool can tell those
   apart because the state carries no age.
+- The company standard already names this shape. L-A16 in
+  `docs/standards/lessons.md` is "Configured is not in effect": a capability
+  counts as live only when a run log, a listing or a response proves it served
+  a real turn, and the gap between intent and effect is silent by construction.
+  #256 is that gap exactly, and the thing which proves effect here is a
+  `deploy_runtime` row. L-A16 also says a decision that is accepted but not
+  active is recorded as dormant with what would turn it on, and the two `modal
+  deploy` commands are what would turn this one on.
 - First step: give the unmeasured state the clock the drifted state already
   has. `judge_deploy` can date the commit that added an app to
   `runtime_sha.APPS`, which it can read from git the same way `_deployable_ref`
