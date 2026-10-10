@@ -12919,3 +12919,241 @@ that triggered it, per the charter.
   from a regex.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-10 — Craft scan: OpenAlex publishes a file per day, so a day that produced nothing says so (engineer seat)
+- Trigger: today's craft scan, rotated onto OpenAlex because the rotation has
+  not reached it and because today's own work is a freshness surface. Read
+  against the thing this run spent the day on: the public receipt publishes
+  `claims_newest` and nothing else about the corpus, and three days of silence
+  look exactly like one bad clock.
+- What is worth stealing: OpenAlex's changefiles are one file per calendar day,
+  each holding every entity created or modified on that date, and the
+  snapshot's partitions are organised by the date a record last changed rather
+  than by subject. A consumer asking "did anything happen on Thursday" gets
+  back a file, and an empty one is an answer. alexandria publishes a high-water
+  mark instead, which answers "when did something last happen" and cannot
+  answer "what happened on each of the last seven days". Those are different
+  questions and only the second one distinguishes a flatline from a stage that
+  is failing every other run.
+- What alexandria does better: the freshness path is free here and is paid
+  there. OpenAlex's daily snapshots and changefiles are on paid plans, so free
+  users get a quarterly snapshot, which means the readers least able to pay are
+  the ones who cannot tell how stale their copy is. This library's receipt is
+  unauthenticated on purpose and says why in the route file: no agent seat
+  holds a credential, and a receipt behind a token would need the token in
+  twelve workflows. Freshness is not an upsell.
+- Where it goes: the idea below.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — The receipt publishes a seven-day count, not only a high-water mark (engineer seat)
+- Trigger: the craft scan above, plus the exact sentence today's work could not
+  write. This run made the stall diagnosable by publishing queue depths, so a
+  stale `claims` now names one of two causes. It still cannot say whether
+  distill produced nothing for three days running or produced nothing twice and
+  something small once, because `claims_newest` is a maximum and a maximum
+  forgets.
+- What: one more block on `/api/delivery`, `history`, holding the row count per
+  day for the last seven days for `papers` and `claims`. Two grouped counts,
+  no identifiers, the same metadata rule the rest of the receipt follows. Then
+  `tools/delivery_health.py` prints the week as a row of numbers beside its
+  verdict, and `0 0 0 41 38 52 47` is a different finding from `0 0 0 0 0 0 0`:
+  the first is a stage that broke three days ago and the second is a stage that
+  never ran. Intermittent failure is the shape no high-water mark can show, and
+  it is the shape a rate limit makes.
+- First step: `select date(created_at), count(*) from claims where created_at >
+  now() - interval '7 days' group by 1`, into `buildReceipt` as a fixed-length
+  array of seven days including the empty ones, because an absent day and a
+  zero day are the same distinction this run spent the day drawing.
+- Cost: $0. One more grouped count on a table already scanned by the same
+  route, behind the same five-minute edge cache.
+- Status: proposed
+
+### 2026-10-10 — A seat should be able to ask whether its own diff fires any check at all (engineer seat)
+- Trigger: this run's pre-ship gate. `gh pr checks 263` answered "no checks
+  reported" and `gh run list --branch` answered `[]`, on a pull request that
+  changes a public endpoint's response contract. Not one check red and not one
+  green: the whole diff falls outside `checks.yml`'s `paths` list, so nothing
+  looked. The run found that by asking after it had pushed, which is the only
+  moment the question is cheap to ask and too late to act on.
+- What: a `--diff` mode on `tools/ci_coverage.py`. That tool already answers
+  the file-shaped version of this question, which test files are run by some
+  workflow, and it already parses every workflow in `.github/workflows/`. The
+  diff-shaped version is the same parse used the other way around: take
+  `git diff --name-only origin/main...HEAD`, match it against each workflow's
+  `paths` and `paths-ignore`, and print the workflows this diff triggers. When
+  that list is empty, say so in one loud line, because "no checks" is the one
+  answer a seat will otherwise read as "checks have not finished yet".
+- Why it is worth building even though the path filter is already staged for
+  deletion: the question survives the fix. A repository with twenty workflows
+  will always have diffs that trigger none of them, and the failure is silent
+  by construction. The tool makes it loud, and it makes it loud before the pull
+  request rather than in the retrospective.
+- First step: the matcher against `fnmatch` with `**` handled, tested against
+  the last twenty merged pull requests' file lists and the workflow set they
+  actually triggered, which `gh run list --json headSha,workflowName` can
+  produce as a fixture.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — A sprint item's done criteria should ship with the command that answers it (engineer seat)
+- Trigger: this run's pull-request survey, which the charter requires before
+  writing code. `docs/sprints/sprint-2026-10-05.md` carries items 2 and 3 as
+  the sprint's real point, with notes dated 05:50 UTC saying "still open", and
+  both are built and merged on `main`: `site/lib/waitlist.js` inserts a real
+  `subscribers` row and `site/app/api/unsubscribe/route.js` flips one, through
+  PRs #253 and #256 on 2026-10-09. The survey worked, so no day was lost. What
+  it cost was the survey itself, and the next run pays it again.
+- What: each sprint item's Done clause carries, beside the prose, the one
+  command that answers it. Item 3's prose is "a site route that flips a
+  subscriber's status to unsubscribed from a link in the email", and the
+  command is `test -f site/app/api/unsubscribe/route.js && python3
+  tests/test_unsubscribe.py`. Then a standup runs the sprint file instead of
+  re-deriving its state by reading code, and an item that is done reports done
+  on the first run after it merged rather than on the first run that happens to
+  look.
+- Division of labour, because this crosses two seats: the PM writes the command
+  when the item is groomed, since the criteria are the PM's to set, and the
+  engineer builds the runner that executes them and prints a table. Neither
+  half is useful alone, which is why this is one entry and not two.
+- First step: the runner, against the four items of the current sprint with
+  their commands written by hand this once, so the PM has a working example to
+  groom against rather than a specification.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-10 — URGENT, carried: claims is three days stale, and yesterday's observability fix is still undeployed (engineer seat)
+- Trigger: the live public receipt, read twice this run with no credential.
+  `https://libraryofalexandria.dev/api/delivery` puts `claims_newest` at
+  2026-10-07T15:15:25 and `papers_newest` at 2026-10-09T11:01:34, unchanged
+  from yesterday's reading. `pipeline/distill.py`'s schedule is
+  `modal.Cron("0 15 * * *")`, so three scheduled runs have now produced
+  nothing. Ingest is working and the stage that turns papers into claims is
+  not.
+- What is new since yesterday's entry, and it is the part that matters: the
+  receipt's `deploy` block lists `interpret`, `triage` and `weekly` and no
+  others. #256 merged yesterday and put `distill` and `ingest` into
+  `runtime_sha.APPS` so that each would record a runtime, which was the whole
+  fix for "no seat could see whether distill ran at all." That fix is code on
+  `main` and is not running. It starts working on `modal deploy
+  pipeline/distill.py` and `modal deploy pipeline/ingest.py`, and until then
+  the stage is as invisible as it was on 2026-10-09.
+- What this run added, so tomorrow's run does not re-derive it: the receipt
+  now publishes queue depths, and `tools/delivery_health.py` turns them into
+  the clause the 10-09 entry could not write. An empty `distill_queue` means
+  the stage had nothing to read and the gap is upstream. A deep one means it
+  had work and did not do it. That reaches a seat on the merge of this pull
+  request plus the site deploy it triggers, and it needs no Modal access and
+  no credential.
+- What is still only the owner's, in the order that answers fastest:
+  `modal app logs alexandria-distill` says in one command which of the three
+  causes it is. Then the two deploys above. Nothing in this entry asks for a
+  new service or a dollar.
+- Cost: $0.
+- Status: urgent
+### 2026-10-06 — Two test assertions keep `main` red, and they are outside the skill seat's surface (skill seat)
+
+- What: `tests/test_skill_receipts.py:191` and
+  `tests/skill-provenance.test.mjs:267` both assert that
+  `harness-engineering`'s page carries claim id **199**. Its own ADR-38
+  retrofit removed claim 199 on 2026-09-30 and said so in its
+  `revisions` note, so both assertions have been false ever since.
+  `checks.yml` runs `tests/test_skill_receipts.py`, which is why this
+  keeps `main` red, and `test_the_core_logic_and_the_real_library`
+  shells out to the node file so the one cause shows up as two
+  failures.
+- Why it is a ledger entry and not a commit: `tests/` is not this
+  seat's write surface. This run cleared the four provenance failures
+  that were this seat's (three drifted marker phrasings and
+  `agent-containment`'s empty claims block) and took the suite from 19
+  failures to 7, but `main` does not go green until these two land.
+- First step: the engineer deletes both assertions or repoints them at
+  a claim id `harness-engineering` still cites (200, 201, 202, 203,
+  244, 102, 103). The sprint item that tracks `main`'s red checks
+  (sprint-2026-10-05, item 1) names only the provenance half, so this
+  is the half nobody has written down yet.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — Claim 1226 is under-specified and the paper settles it (skill seat)
+
+- What: claim 1226 says ToolFence's runtime overhead "is only 1.9x
+  normal execution time". Claim 1224, from the same paper, says 1.63x.
+  Reading the paper in full this run shows both are real and neither
+  row says which is which: **1.63x is Qwen3-max, 3.79x is GPT-4o, and
+  1.90x is the full-configuration ablation row.** Quoting 1.9x alone
+  understates the cost on the stronger model by more than double.
+- Why: ADR-35's rule is that where the full text narrows a claim row,
+  the paper wins and the row is filed for revision. This is that filing.
+  The skill quotes the range and names the disagreement in its caveats.
+- First step: the research seat rewrites 1226 to carry the model it was
+  measured on, or deprecates it in favour of 1224. A second, more
+  general question sits under it: a single-number overhead claim with
+  no subject model attached is not usable, and distill produced two of
+  them from one table.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — A "no claims exist" finding has a shelf life of days (skill seat)
+
+- What: `agent-containment` shipped on 2026-09-30 with `claims: []` and
+  a caveat explaining that the corpus held zero containment claims, on
+  the strength of a census run that same day. The census was correct
+  then. One week later the corpus holds **15 usable rows** across PACE
+  (2610.01349), ToolFence (2609.37196), Hard Stop and MOLE, and the
+  retrofit cites all 15. The empty block then became the assertion that
+  kept `main` red for six days.
+- Why it is a ledger entry: this is not a mistake in that run, it is a
+  missing habit. A negative corpus finding was written into a shipped
+  artifact as though it were durable, and nothing re-queried it. The
+  same shape will recur on every shelf the library opens before the
+  corpus reaches it.
+- First step: any skill shipping with an empty or thin provenance block
+  carries a re-query date, and the weekly maintenance pass re-runs that
+  query before it reads anything else. Cheap: one `select` per skill.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — The skill page cannot show that a skill is unmeasured (skill seat, rendering gap)
+
+- What: `parseSkill` in `site/lib/content.js` surfaces `name`,
+  `description`, `version`, `status`, `extracted`, `validated`,
+  `claims`, `papers` and `body`. It does not read `provenance.revisions`
+  or `provenance.differential_screen`. Checked directly this run: the
+  retrofitted skill parses cleanly, 15 claims and 7 papers reach the
+  page, and the two fields carrying *why it was revised* and *that no
+  bare-arm screen has run* do not.
+- Why it matters now: ADR-38 made the honest reporting of an unmeasured
+  skill the point of the seat. `status: provisional` reaches the page as
+  a bare word with nothing behind it, so a reader sees a status and not
+  the sentence explaining it. The library's differentiator is the
+  receipt, and this is the receipt not rendering.
+- First step: the engineer adds both fields to `parseSkill` and the
+  skill page shows the newest `revisions` entry and the
+  `differential_screen` line. Flagged rather than built, per the skill
+  charter's step 8.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-06 — A run that changes a weekly-revised list should name that list's readers (skill seat)
+
+- What: add one pre-flight line to the skill charter's run, before a
+  revision ships: when a skill's `provenance.claims` loses an id, run
+  `grep -rn "<the removed id>" tests/ site/ tools/` and fix or file
+  every hit. Two of this register's three stale-assertion incidents come
+  from the skill library, and both have the same mechanism: ADR-37 tells
+  this seat to revise a claim list weekly, and other files hard-code
+  members of it.
+- Why it is a ledger entry and not a commit: `prompts/skill-agent.md` is
+  a charter, and charters are edited only by the owner's merge. Filed
+  with `INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests`,
+  which is the second occurrence.
+- The better half, for whoever owns `tests/`: a provenance test should
+  assert the shape (the page carries at least one claim id, and every id
+  on the page is also in the SKILL.md) rather than a literal id.
+  Repointing a hard-coded id at a surviving one only resets the clock to
+  the next retrofit.
+- First step: the owner decides whether the charter line moves. The grep
+  costs a second and the last occurrence cost six days of red `main`.
+- Cost: $0.
+- Status: proposed

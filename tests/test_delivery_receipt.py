@@ -20,6 +20,7 @@ the same verdict, because two readers of one question is exactly the shape that
 grows two answers.
 """
 
+import contextlib
 import json
 import re
 import shutil
@@ -31,6 +32,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import sql_schema as q  # noqa: E402
 
 from tools import delivery_health as dh  # noqa: E402
 
@@ -67,8 +71,55 @@ def test_the_endpoint_never_selects_the_product():
     # list and the assertion reads a sentence as a schema.
     sql_only = re.sub(r"//[^\n]*", "", READER)
     read = sorted(set(re.findall(r"\bfrom\s+(\w+)", sql_only)))
-    check("the only tables read are the four this answers for",
-          read == ["claims", "deploy_runtime", "digests", "papers"], str(read))
+    check("the only tables read are the ones this answers for",
+          read == ["claims", "deploy_runtime", "digests", "distill_queue",
+                   "interpret_queue", "latest_triage", "papers"], str(read))
+    # The three views added in version 2 are counted and never selected from,
+    # which is what keeps a queue depth metadata rather than product. `select
+    # count(*) from distill_queue` publishes a number of waiting papers and
+    # names no paper, and `distill_queue` is `select p.*` over `papers`, so
+    # selecting from it instead of counting it would publish the corpus.
+    check("the queue views are counted and never selected from",
+          re.findall(r"from\s+(distill_queue|interpret_queue)", sql_only)
+          == ["distill_queue", "interpret_queue"]
+          and sql_only.count("count(*) from distill_queue") == 1
+          and sql_only.count("count(*) from interpret_queue") == 1, sql_only)
+    check("the triage backlog asks whether a row exists, not for the row",
+          "select 1 from latest_triage" in sql_only
+          and sql_only.count("latest_triage") == 1)
+
+
+def test_every_statement_resolves_against_the_schema():
+    """The half the JavaScript tests cannot execute, parsed the way the server
+    parses it.
+
+    docs/agents/runtime-changes.md names the site deploy as a runtime, and a
+    statement inside a serverless route has no gate between the merge and
+    production: this org runs no Postgres in CI, so the first execution is a
+    stranger loading the page, or the standup asking whether the press printed.
+    libpg_query is the server's own parser, so resolving every relation and
+    column against db/schema.sql is the strongest check available here. It
+    catches the two failures that actually happen, a typo and a name that was
+    added to a query and not to the schema, and tests/test_waitlist.py and
+    tests/test_unsubscribe.py have used these same helpers since 2026-10-06.
+
+    The reason this file did not until today is the reason it matters today:
+    the queue depths name three views and an anti-join where the rest of the
+    route named four tables and nothing else, and `distill_queue` is the only
+    relation on this route that db/schema.sql drops and recreates.
+    """
+    statements = q.literals(READER)
+    check("the reader's statements were found at all", len(statements) >= 5,
+          sorted(statements))
+    for name, sql in sorted(statements.items()):
+        try:
+            q.assert_resolves(name, sql)
+            print(f"  ok   {name} resolves")
+        except AssertionError as exc:
+            check(f"{name} resolves", False, str(exc).splitlines()[0])
+        except Exception as exc:  # pglast absent, which is a skip and not a pass
+            print(f"  skip {name}: {type(exc).__name__}: {exc}")
+            return
 
 
 def test_the_endpoint_takes_no_input():
@@ -134,13 +185,22 @@ def test_the_pure_core_stays_import_free():
 
 
 def test_the_two_sides_agree_on_the_version():
-    """A reader that speaks version 1 must refuse a version 2 receipt, and it
-    can only do that while the two constants are the same number."""
+    """The reader has to know which version the site is publishing, and it can
+    only know that while the two constants are the same number.
+
+    READABLE_VERSIONS is the separate question of which older receipts it will
+    still accept, and the newest of them is this one: a reader that claimed to
+    read a version ahead of the one the site serves would be describing a
+    receipt that does not exist yet.
+    """
     m = re.search(r"RECEIPT_VERSION\s*=\s*(\d+)", CORE)
     check("the site declares a version", m is not None)
     check("and the reader speaks the same one",
           m and int(m.group(1)) == dh.RECEIPT_VERSION,
           f"site={m.group(1) if m else None} reader={dh.RECEIPT_VERSION}")
+    check("the version the site serves is the newest one the reader reads",
+          max(dh.READABLE_VERSIONS) == dh.RECEIPT_VERSION,
+          str(dh.READABLE_VERSIONS))
 
 
 def test_the_reader_and_the_route_name_the_same_url():
@@ -164,9 +224,12 @@ def test_the_route_is_inside_the_paths_that_trigger_a_deploy():
 WEEK_FORMAT = "%Y-%m-%dT%H:%M:%S+00:00"
 
 
+QUEUES = {"triage_pending": 41, "distill_pending": 212, "interpret_pending": 7}
+
+
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
-            papers=None, claims=None, deploy=None, version=1,
-            press_present=True):
+            papers=None, claims=None, deploy=None, version=None,
+            press_present=True, queues="default"):
     """A receipt whose corpus moved last night, whatever night it is.
 
     The press surface is judged against the `today` these tests pass in, so the
@@ -181,7 +244,7 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
     fresh = (now - timedelta(hours=14)).strftime(WEEK_FORMAT)
     return {
         "receipt": "alexandria-delivery",
-        "version": version,
+        "version": dh.RECEIPT_VERSION if version is None else version,
         # The receipt's own timestamp, which nothing judges an age against
         # today. It stays next to `fresh` on purpose: the moment a reader does
         # start checking how old a receipt is, this has to move with it.
@@ -190,6 +253,7 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
                   if press_present else None),
         "pipeline": {"papers_newest": papers if papers is not None else fresh,
                      "claims_newest": claims if claims is not None else fresh},
+        "queues": QUEUES if queues == "default" else queues,
         "deploy": deploy if deploy is not None else [],
     }
 
@@ -297,14 +361,39 @@ def test_every_way_the_receipt_can_be_wrong_is_unknown():
               out["press"].headline)
 
 
-def test_a_newer_version_is_refused_rather_than_partly_read():
-    """The failure mode this prevents: version 2 renames a field, this reader
+def test_a_version_this_reader_cannot_read_is_refused_rather_than_partly_read():
+    """The failure mode this prevents: a version renames a field, this reader
     reads the old name, gets None, and reports an empty digests table as a
     press that printed nothing."""
-    with served(status=200, body=receipt(version=2)):
+    unknown = max(dh.READABLE_VERSIONS) + 1
+    with served(status=200, body=receipt(version=unknown)):
         payload, why = dh.read_receipt()
     check("the payload is refused", payload is None)
-    check("and the reason names both versions", "version 2" in why and "version 1" in why, why)
+    check("and the reason names the version it got and the ones it speaks",
+          f"version {unknown}" in why
+          and all(str(v) in why for v in dh.READABLE_VERSIONS), why)
+
+
+def test_the_previous_version_is_still_readable_through_the_deploy_window():
+    """Why this is not laxity. The site deploys on a merge to `main` and a
+    seat's checkout updates the instant the branch lands, so between those two
+    the newest reader meets the previous receipt. Exact-match version checking
+    turned that window into all three database surfaces answering `unknown`,
+    which is the same blindness the receipt was built to end.
+
+    The rule that makes it safe is in READABLE_VERSIONS' own header: a version
+    stays readable only while every field this reader needs is present in it or
+    optional in it. `queues` is optional by construction.
+    """
+    check("version 1 is in the readable list", 1 in dh.READABLE_VERSIONS)
+    payload = receipt(version=1)
+    payload.pop("queues", None)
+    with served(status=200, body=payload):
+        got, why = dh.read_receipt()
+    check("a version 1 receipt is accepted", got is not None, why)
+    _, pipeline_row, _ = dh.receipt_facts(payload)
+    check("and its absent queue depth reads as unknown, not as zero",
+          pipeline_row["queues"] is None, str(pipeline_row))
 
 
 def test_a_credential_that_does_not_work_falls_through_to_the_receipt():
@@ -405,6 +494,17 @@ class FakeConn:
                 return _Result(row)
         raise AssertionError(f"no canned answer for {sql!r}")
 
+    def transaction(self):
+        """psycopg's savepoint, which `queue_facts` runs its read inside.
+
+        A real one matters to the behaviour under test: without the savepoint a
+        missing view aborts the transaction and takes the deploy surface down
+        with it on the same connection. Here it only has to exist, and a fake
+        that lacked it would make `queue_facts` return None for the wrong
+        reason and quietly pass the tests that assert a cause.
+        """
+        return contextlib.nullcontext()
+
 
 class _Result:
     def __init__(self, row):
@@ -432,6 +532,7 @@ def test_a_connection_and_a_receipt_reach_the_same_verdict():
             "from digests": (week, created, "kimi-k2"),
             "max(fetched_at)": (moved,),
             "max(created_at) from claims": (moved,),
+            "distill_queue": (41, 212, 7),
         })
         direct_press = dh.judge_press(dh.press_facts(conn), today)
         direct_pipeline = dh.judge_pipeline(dh.pipeline_facts(conn))
@@ -456,6 +557,84 @@ def test_a_connection_and_a_receipt_reach_the_same_verdict():
         check(f"pipeline {week}: both readers agree",
               via_receipt_pipeline.state == direct_pipeline.state
               == dh.OK)
+
+
+def test_both_readers_name_the_same_cause_for_a_stalled_stage():
+    """The property the queue depths were added for, held across both readers.
+
+    A stale `claims` has two causes and one number separates them. The 2026-10-09
+    ledger entry had to stop at "whether it fired and found an empty queue, or
+    whether it fired and raised", because the depth needed a credential no seat
+    holds. If the receipt and a connection disagreed about the cause, the seat
+    with no credential would read a different diagnosis from the one the owner
+    reads, which is worse than the silence it replaced.
+    """
+    moved = datetime.now(timezone.utc) - timedelta(hours=14)
+    stalled = datetime.now(timezone.utc) - timedelta(days=3)
+
+    cases = (("an empty queue", (41, 0, 7), {"triage_pending": 41,
+                                             "distill_pending": 0,
+                                             "interpret_pending": 7},
+              "distill_queue empty"),
+             ("a deep queue", (41, 212, 7), QUEUES,
+              "212 papers waiting in distill_queue"),
+             ("no depth at all", None, None,
+              "no queue depth is published here"))
+
+    for name, row, published, phrase in cases:
+        answers = {"max(fetched_at)": (moved,),
+                   "max(created_at) from claims": (stalled,)}
+        if row is not None:
+            answers["distill_queue"] = row
+        direct = dh.judge_pipeline(dh.pipeline_facts(FakeConn(answers)))
+
+        payload = receipt(papers=moved.strftime(WEEK_FORMAT),
+                          claims=stalled.strftime(WEEK_FORMAT),
+                          queues=published)
+        _, pipeline_row, _ = dh.receipt_facts(payload)
+        via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
+
+        check(f"{name}: both readers say failing",
+              direct.state == via_receipt.state == dh.FAILING, direct.headline)
+        check(f"{name}: the headline names the cause",
+              phrase in direct.headline, direct.headline)
+        check(f"{name}: and both readers word it identically",
+              direct.headline == via_receipt.headline,
+              f"{direct.headline!r} vs {via_receipt.headline!r}")
+        check(f"{name}: the depths are in the evidence either way",
+              direct.evidence["queues"] == via_receipt.evidence["queues"],
+              str(direct.evidence["queues"]))
+
+    # A deep queue on a corpus that is still moving is not this surface's
+    # alarm. Its unit is staleness, and a depth threshold here would be a
+    # second alarm nobody specified.
+    healthy = dh.judge_pipeline(dh.pipeline_facts(FakeConn({
+        "max(fetched_at)": (moved,),
+        "max(created_at) from claims": (moved,),
+        "distill_queue": (41, 9000, 7)})))
+    check("a deep queue alone does not raise", healthy.state == dh.OK, healthy.headline)
+    check("but it is still reported",
+          healthy.evidence["queues"]["distill_pending"] == 9000)
+
+
+def test_a_missing_view_costs_the_depth_and_nothing_else():
+    """`apply_schema` is a hand step, so a database one migration behind is a
+    state this really meets. It must cost the cause and not the staleness."""
+    class NoViews(FakeConn):
+        def execute(self, sql, params=None):
+            if "distill_queue" in sql:
+                raise RuntimeError('relation "distill_queue" does not exist')
+            return super().execute(sql, params)
+
+    stalled = datetime.now(timezone.utc) - timedelta(days=3)
+    moved = datetime.now(timezone.utc) - timedelta(hours=14)
+    facts = dh.pipeline_facts(NoViews({"max(fetched_at)": (moved,),
+                                       "max(created_at) from claims": (stalled,)}))
+    check("the depth is None and not zero", facts["queues"] is None)
+    surface = dh.judge_pipeline(facts)
+    check("the staleness still reports", "claims has not moved in 3 days" in surface.headline)
+    check("and the headline says the cause is unavailable",
+          "no queue depth is published here" in surface.headline, surface.headline)
 
 
 def test_the_direct_reader_is_still_the_one_that_mails():
