@@ -1,5 +1,12 @@
 # The voice canon
 
+**Enforced at:** prompts/writer-agent.md, the run's grading step, every run,
+one verdict per law with a quoted line as evidence. The mechanical half of
+several laws runs as `docs/voice/check_voice.py`, which nothing calls yet
+(filed in docs/ideas.md, 2026-10-04). Added 2026-10-09 against the ExO's
+filing of 2026-09-19, which asked for this line on three of this seat's files
+and got two: taste.md is the owner's and this seat never edits it.
+
 Where the newsletter's words come from. The owner was frequently
 dissatisfied with the writing and structure because nobody owned the
 words as a craft; this canon and the writer seat (ADR-28) fix that the
