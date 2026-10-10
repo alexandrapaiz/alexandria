@@ -2022,3 +2022,74 @@ gap that the same collision had left empty (incident 25).
     Gated the same day: `docs/voice/check_voice.py delivery` prints the preview
     length and the ninety-character truncation, and fails over ninety.
     LANDED docs/voice/check_voice.py: "inbox preview"
+104. The slot name cleared from the rule and left standing in the slot. Entry 90
+    is the class named and not swept, and this is that failure inside the repair
+    of a different entry, which is how it hid.
+    The print of 2026-10-05 put three headings on the page that were a slot
+    name, a colon, and the day's news. The grade found it the same morning,
+    traced the two worst of them to one sentence at the top of the heading rule
+    that used to render the four slots as plain English clauses, struck that
+    sentence, and wrote a paragraph explaining that a paraphrase of a banned
+    heading is the banned heading. Good diagnosis, and it stopped at the rule.
+    Two slot BODIES still opened on the same words. The traction body carried
+    "a claim gaining ground" and the new-work body's first four words were "The
+    genuinely new", which is the second of the three headings that printed,
+    sitting four lines below the heading brace it governs. Both were found on
+    2026-10-10 by one grep for the phrases the repair itself names.
+    The tell is where a repair looks. A rule that explains a leak is read as
+    the source of the leak, so the sweep runs over the rule's own paragraph and
+    stops, and the slot a few lines down is the position the model actually
+    writes from (L-A23, entry 93). So when a phrase is struck anywhere in this
+    generator, grep the whole file for it before the commit, including the slot
+    bodies, including the file's own prose about itself, and print the count.
+    One hit is a result. Entry 89 found three that way and entry 90 was written
+    to make it routine, and neither of them reached across into another entry's
+    repair.
+    Added 2026-10-10. Enforced the same day: both phrases rewritten in plain
+    words that are not headings, with the reason recorded in the heading rule so
+    a later run does not restore them as explanation.
+    LANDED prompts/digest.md: "The words were struck from this bullet and left standing in the slots"
+105. The enforcement that merged and never deployed. Not a prose tell. It is a
+    defect in every ending this register has, and in the command written to
+    check them.
+    `prompts/digest.md` is read by a job inside a container image. The image is
+    built by a deploy, nothing in this repository performs one automatically,
+    and the press runs on a Monday cron. So the file that writes an issue is the
+    file as it stood whenever a hand last deployed, and every "LANDED
+    prompts/digest.md" line above asserts an enforcement in a working tree.
+    On 2026-10-10 the two were eleven apart:
+
+    ```
+    psql "$NEON_RO_URL" -c "select runtime_sha, recorded_at from deploy_runtime
+        where app = 'weekly' order by recorded_at desc limit 1"
+      -> 0cbc51a0e248 | 2026-10-05 09:00:19+00
+    python3 tools/delivery_health.py --surface deploy --no-notify
+      -> weekly is 1.1 days behind (13 undeployed commits since 3bbf430)
+    git show 3bbf430:prompts/digest.md | sha256sum | cut -c1-12
+      -> c48d09624161        # the sha that wrote 2026-W40 on 2026-10-05
+    python3 docs/voice/check_voice.py enforcements 3bbf430
+      -> 11 FAIL on prompts/digest.md, 4 on docs/voice/check_voice.py, exit 1
+    ```
+
+    Six revisions of this seat's work were on `main` and none of them were in
+    the machine. The semicolon count, the shape count, the heading repair, the
+    one-paragraph sign-off, the inbox-preview rule and the buzzword count all
+    read as landed in this file and were absent from the file the press reads.
+    The reason this belongs here rather than only in the ledger is that four
+    grades named the risk and named the wrong gate. Each one wrote that unless
+    the branch merged before Monday, the next issue would come from the same
+    generator. The branches merged on 2026-10-08 and the sentence stayed true,
+    so the seat was watching a number that does not decide the outcome. The
+    tell, for any register in this repository whose entries end in a file
+    change: name the path the words take to the reader, and verify the ending at
+    the last point on that path that you can read. For this seat that point is a
+    git ref, not a branch.
+    Added 2026-10-10. Gated the same day, which is the only half this seat owns:
+    `docs/voice/check_voice.py enforcements <git-ref>` reads every LANDED path
+    at a commit instead of from the working tree, and the canon's artifact check
+    now takes three shas rather than two, so a grade says what wrote the last
+    issue, what is on the branch, and what the press holds.
+    LANDED docs/voice/check_voice.py: "read from   "
+    The deploy itself is the engineer's and it is filed and URGENT in
+    docs/ideas.md on 2026-10-08 and carried on 2026-10-10, so it is confirmed in
+    place here with this seat's evidence rather than filed a second time.

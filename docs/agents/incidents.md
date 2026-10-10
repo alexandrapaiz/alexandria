@@ -11718,3 +11718,106 @@ enough turns, and this item sat five days past "before anything has
 failed" into "after it did." The other six seats named in item 14 (skill,
 engineer, market, research, security, exo) are all still sitting at the
 same unapplied, pre-measured distance from their own version of this.
+
+## INC-2026-10-10-the-sweep-stopped-at-the-rule-and-the-slot-below-it-kept-the-phrase — ban list 90's own class, inside another entry's repair (2026-10-10, writer seat)
+
+**This is a repeat of the failure ban list 89 recorded and ban list 90 was
+written to make routine: a class is named, its visible specimens are struck,
+and one grep the next morning finds more live in the same file. Entry 89 found
+three that way on 2026-10-04 and a fourth inside its own repair. Recorded at
+the moment it repeated per the standing rule at the top of this file.**
+
+**What happened.** The print of 2026-W40 (2026-10-05) carried three section
+headings in the shape "What is gaining ground: ...", "What is genuinely new:
+..." and "What fell behind: ...", which is the slot name, a colon, and the
+day's news. Canon law 12 forbids the framework from printing and the owner has
+ruled on it twice (taste.md, 2026-09-19, the second time in the word "AGAIN").
+
+The grade of 2026-10-05 found it the same morning and diagnosed it correctly.
+It traced two of the three headings to one sentence at the top of
+`prompts/digest.md`'s heading rule which rendered the four slots as plain
+English clauses, struck that sentence, and added a paragraph whose own words
+are "A paraphrase of a banned heading is the banned heading."
+
+It did not grep the rest of the file. On 2026-10-10 one command found two
+phrases still standing, each a few lines under the heading slot it governs:
+
+```
+$ grep -n "gaining ground\|The genuinely new" prompts/digest.md
+750: claim gaining ground, whatever the edge count says.       # traction body
+848: {The genuinely new, labeled honestly as unproven, ...     # new-work body
+```
+
+The second is the first four words of the slot body for the section whose
+heading printed as "What is genuinely new", four lines below a heading brace
+that says in terms "The slot's internal name is not repeated here and is not a
+candidate." It was repeated, in the block immediately after.
+
+**Why it was invisible.** A repair that explains a leak reads as the source of
+the leak, so the sweep ran over the rule's own paragraph and stopped there. Ban
+list 90 says to run a generalising entry's tell over the whole generator and
+print the count, and it was obeyed on the entries it was written beside and not
+on the heading repair, which belongs to a different entry and was not being
+written as a class. L-A23's point is the position: the prohibition sat in a
+rule, the phrase sat in a slot, and the slot is where the writing happens.
+
+**Fixed in this pull request.** Both phrases rewritten in plain words that are
+not headings, the reason recorded in the heading rule so a later run does not
+restore them as explanation, and the tell written down as ban list 104: when a
+phrase is struck anywhere in the generator, grep the whole file for it before
+the commit and print the count, including the slot bodies and the file's own
+prose about itself.
+
+## INC-2026-10-10-four-editorial-grades-named-the-merge-as-the-gate-when-the-gate-is-the-deploy — six merged generator revisions, none of them in the machine that writes (2026-10-10, writer seat)
+
+**This is a repeat of the class `pipeline/runtime_sha.py` exists for, in its own
+words "the org has now paid for that gap twice": incident 24, and PR #110,
+merged 2026-09-26 and inert for days with three documents describing its
+behaviour as live. This is the third occurrence and the first inside this
+seat's own instrument. Recorded at the moment it repeated per the standing rule
+at the top of this file.**
+
+**What happened.** The editorial runs of 2026-10-05, 10-06, 10-07 and 10-08 all
+graded 2026-W40 and all four closed on the same judgment in the same terms:
+unless the pull request merges before Monday, the next issue is written by the
+same generator and the grade changed nothing. Run 27's words: "Unless this pull
+request merges before Monday 09:00 UTC, next week's issue is written by the
+same generator that wrote this one."
+
+The pull requests merged. #251 went into `main` on 2026-10-08, carrying six
+revisions of `prompts/digest.md`. The sentence stayed true anyway:
+
+```
+$ python3 tools/delivery_health.py --surface deploy --no-notify
+  weekly is 1.1 days behind (13 undeployed commits since 3bbf430)
+$ git show 3bbf430:prompts/digest.md | sha256sum | cut -c1-12
+  c48d09624161          # the sha that wrote 2026-W40 on 2026-10-05
+$ git show origin/main:prompts/digest.md | sha256sum | cut -c1-12
+  3aad8a6b9c44
+$ python3 docs/voice/check_voice.py enforcements 3bbf430
+  11 FAIL on prompts/digest.md, 4 on docs/voice/check_voice.py, exit 1
+```
+
+Eleven of the twenty-one enforcement anchors this seat's own register verifies
+are absent from the generator the press runs: the semicolon count, the shape
+count, the heading repair's specimens, the one-paragraph sign-off, the
+inbox-preview rule and the buzzword count among them. `check_voice.py
+enforcements` reported all twenty-one present on the morning the press held ten
+of them, because it read the working tree.
+
+**Why it was invisible, as a structural fact rather than a miss.** The canon's
+own artifact check is one integer against one integer, the stored row's
+`prompt_sha` against the branch's. That answers what WROTE the last issue. A
+grade exists for the next issue and no step in the procedure asked what will
+write it, so four runs substituted the nearest number they had, which was merge
+status, and merge status does not decide it. `deploy_runtime` has held the
+answer since 2026-09-26 and this seat had never queried it.
+
+**Fixed in this pull request, on the half this seat owns.** The canon's
+pre-pass-1 check now takes three shas and prints all three, with the two
+commands that produce the third. `check_voice.py enforcements` takes a git ref
+so every LANDED line in the ban list can be verified at the commit the press
+was built from rather than in a working tree. Written down as ban list 105. The
+deploy itself is the engineer's, filed and URGENT in `docs/ideas.md` on
+2026-10-08 and carried on 2026-10-10, so it is confirmed in place with this
+seat's evidence rather than filed a second time.
