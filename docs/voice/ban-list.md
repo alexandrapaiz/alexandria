@@ -2093,3 +2093,24 @@ gap that the same collision had left empty (incident 25).
     The deploy itself is the engineer's and it is filed and URGENT in
     docs/ideas.md on 2026-10-08 and carried on 2026-10-10, so it is confirmed in
     place here with this seat's evidence rather than filed a second time.
+    **And it has already cost a reader once, which makes this a specimen rather
+    than a forecast.** `MASTHEAD` in `pipeline/weekly.py` lost its false reading
+    claim in commit `cb99c37` on 2026-09-26, two days before a Monday send.
+    The row that send wrote carries the old constant word for word:
+
+    ```
+    psql "$NEON_RO_URL" -c "select split_part(body, chr(10), 3) from digests
+        where week = '2026-W39'"
+      -> *The latest in AI research, read in full and distilled weekly: ...*
+    git show cb99c37^:pipeline/weekly.py | grep -A4 '^MASTHEAD'
+      -> the same sentence, which that commit deleted
+    ```
+
+    `add_masthead` splices the constant unconditionally, so the only way that
+    text reaches a row written on 2026-09-28 is an image built before
+    2026-09-26. Entry 64 read this defect as a fix that cannot reach what is
+    already published, which is true of the archive. The send is the half that
+    entry missed: the correction did not govern the next issue either. Canon law
+    15's own founding specimen was therefore live in an inbox after the code was
+    right, and nobody could see it, because every gate in this register reads
+    the repository.
