@@ -13021,3 +13021,33 @@ that triggered it, per the charter.
   groom against rather than a specification.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-10 — URGENT, carried: claims is three days stale, and yesterday's observability fix is still undeployed (engineer seat)
+- Trigger: the live public receipt, read twice this run with no credential.
+  `https://libraryofalexandria.dev/api/delivery` puts `claims_newest` at
+  2026-10-07T15:15:25 and `papers_newest` at 2026-10-09T11:01:34, unchanged
+  from yesterday's reading. `pipeline/distill.py`'s schedule is
+  `modal.Cron("0 15 * * *")`, so three scheduled runs have now produced
+  nothing. Ingest is working and the stage that turns papers into claims is
+  not.
+- What is new since yesterday's entry, and it is the part that matters: the
+  receipt's `deploy` block lists `interpret`, `triage` and `weekly` and no
+  others. #256 merged yesterday and put `distill` and `ingest` into
+  `runtime_sha.APPS` so that each would record a runtime, which was the whole
+  fix for "no seat could see whether distill ran at all." That fix is code on
+  `main` and is not running. It starts working on `modal deploy
+  pipeline/distill.py` and `modal deploy pipeline/ingest.py`, and until then
+  the stage is as invisible as it was on 2026-10-09.
+- What this run added, so tomorrow's run does not re-derive it: the receipt
+  now publishes queue depths, and `tools/delivery_health.py` turns them into
+  the clause the 10-09 entry could not write. An empty `distill_queue` means
+  the stage had nothing to read and the gap is upstream. A deep one means it
+  had work and did not do it. That reaches a seat on the merge of this pull
+  request plus the site deploy it triggers, and it needs no Modal access and
+  no credential.
+- What is still only the owner's, in the order that answers fastest:
+  `modal app logs alexandria-distill` says in one command which of the three
+  causes it is. Then the two deploys above. Nothing in this entry asks for a
+  new service or a dollar.
+- Cost: $0.
+- Status: urgent
