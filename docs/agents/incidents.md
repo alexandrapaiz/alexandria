@@ -11369,3 +11369,78 @@ recorded)` until the owner runs `modal deploy pipeline/distill.py` and
 `modal deploy pipeline/ingest.py` and their next scheduled runs write a row.
 Until then the deploy surface is `unknown` rather than `ok`, which is the
 honest state and is the first time it has been honest about these two jobs.
+
+## INC-2026-10-10-a-whole-pull-request-fired-no-merge-check — the path filter's third distinct failure, and the staged replacement's rent is now three days (2026-10-10, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-10, running the
+charter's pre-ship gate against its own pull request.
+
+**What happened.** The day's whole diff is `site/lib/`, `site/app/api/`,
+`tools/` and `tests/`. None of those paths is in `.github/workflows/checks.yml`'s
+`paths` list, so no workflow ran at all.
+
+```
+$ gh pr checks 263
+no checks reported on the 'engineer/2026-10-10-claims-stall' branch
+$ gh run list --branch engineer/2026-10-10-claims-stall --limit 10
+[]
+```
+
+Not one check red, and not one check green. Zero checks, on a pull request that
+changes a public endpoint's response contract and the tool six seats read to
+decide whether the press is working.
+
+**Why this is a repeat rather than a new finding.** The same path filter has now
+produced three distinct failures in three days, each found by a different run
+and each filed somewhere else.
+
+1. `INC-2026-10-08-the-pin-list-grows-once-per-run-while-its-fix-waits-for-a-hand`:
+   36 of 50 test files are run by no workflow, so a guard passes locally and is
+   silent on the merge that breaks what it guards.
+2. The ledger, 2026-10-09, "the real gap is the path filter": a push to `main`
+   that touches none of the listed paths fires no run, so the newest result
+   stays as old as the last qualifying push and a stale colour is
+   indistinguishable from an absent one.
+3. This one: a pull request whose entire diff is outside the filter gets no
+   merge check, which is the same hole as (2) on the other trigger.
+
+Three readings of one cause. The first was about which files CI executes, the
+second about which commits it answers for, and this one about which pull
+requests it looks at. A seat meeting any one of them cannot see the other two,
+which is why it took three runs to describe one `paths` list.
+
+**The rent, which is the number the 10-08 entry asked for.** That entry closed
+by saying a queue of hand-only changes "needs a number beside each item saying
+what the wait has cost so far." Here is that number for item 17.
+
+```
+$ python3 tools/ci_coverage.py --report-only | head -1
+14 of 50 test files run in CI
+$ python3 tools/ci_coverage.py --only .github/workflows-pending/checks.yml | head -1
+50 of 50 test files run in CI
+```
+
+`.github/workflows-pending/checks.yml` has been staged and correct since
+2026-10-07. Three days, and the cost so far is 36 unrun test files, one stale
+main colour that four runs reasoned from, and now one pull request with no merge
+check. The replacement deletes the `paths` lists rather than extending them, so
+it closes all three readings at once.
+
+**The fix is one command and it is not a seat's to run.** Unchanged from the
+10-08 entry, repeated here because this entry will be read on its own:
+
+```bash
+git mv -f .github/workflows-pending/checks.yml .github/workflows/checks.yml
+```
+
+**What this run did instead.** Ran the whole suite locally and put the output in
+the pull request as the evidence, because a local run is the only evidence
+available to a diff CI will not look at: `1276 passed, 11 skipped`. That is a
+seat vouching for its own work, which is the arrangement this file exists to
+end.
+
+**The blameless part.** Every path in that filter was added by somebody who
+wanted the guard to fire on their change, and a filter is the correct tool for
+a job that costs money per run. The job costs about half a minute. The filter
+was an optimisation whose price was paid in a currency nobody was counting, and
+the three findings above are three different seats discovering the same invoice.

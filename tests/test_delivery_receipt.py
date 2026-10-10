@@ -32,6 +32,9 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import sql_schema as q  # noqa: E402
 
 from tools import delivery_health as dh  # noqa: E402
 
@@ -84,6 +87,39 @@ def test_the_endpoint_never_selects_the_product():
     check("the triage backlog asks whether a row exists, not for the row",
           "select 1 from latest_triage" in sql_only
           and sql_only.count("latest_triage") == 1)
+
+
+def test_every_statement_resolves_against_the_schema():
+    """The half the JavaScript tests cannot execute, parsed the way the server
+    parses it.
+
+    docs/agents/runtime-changes.md names the site deploy as a runtime, and a
+    statement inside a serverless route has no gate between the merge and
+    production: this org runs no Postgres in CI, so the first execution is a
+    stranger loading the page, or the standup asking whether the press printed.
+    libpg_query is the server's own parser, so resolving every relation and
+    column against db/schema.sql is the strongest check available here. It
+    catches the two failures that actually happen, a typo and a name that was
+    added to a query and not to the schema, and tests/test_waitlist.py and
+    tests/test_unsubscribe.py have used these same helpers since 2026-10-06.
+
+    The reason this file did not until today is the reason it matters today:
+    the queue depths name three views and an anti-join where the rest of the
+    route named four tables and nothing else, and `distill_queue` is the only
+    relation on this route that db/schema.sql drops and recreates.
+    """
+    statements = q.literals(READER)
+    check("the reader's statements were found at all", len(statements) >= 5,
+          sorted(statements))
+    for name, sql in sorted(statements.items()):
+        try:
+            q.assert_resolves(name, sql)
+            print(f"  ok   {name} resolves")
+        except AssertionError as exc:
+            check(f"{name} resolves", False, str(exc).splitlines()[0])
+        except Exception as exc:  # pglast absent, which is a skip and not a pass
+            print(f"  skip {name}: {type(exc).__name__}: {exc}")
+            return
 
 
 def test_the_endpoint_takes_no_input():
