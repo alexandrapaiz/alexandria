@@ -28,7 +28,7 @@
 //    issue itself and claim text is the paid product (lib/graph-live.js says
 //    so in its own words); neither has a field here and neither is queried.
 
-export const RECEIPT_VERSION = 3;
+export const RECEIPT_VERSION = 4;
 
 // Version 2 adds `queues`, the depth of each stage's waiting list, and removes
 // nothing. The bump is here because a reader has to be able to tell a site that
@@ -49,6 +49,26 @@ export const RECEIPT_VERSION = 3;
 // separates them, because pipeline/distill.py writes it per paper in the same
 // committed loop as that paper's claims. A timestamp and no identifier, so it
 // stays inside rule 2 above.
+//
+// Version 4 adds `pipeline.triaged_newest` and `pipeline.linked_newest`, on
+// the same additive terms again. Version 3 went live and narrowed the stall to
+// "distill never reached a paper", which leaves the three suspects its own
+// headline names: the cron, the model availability gate and the spend cap. Two
+// of those belong to the Moonshot account and one belongs to this job alone,
+// and the stages either side of distill are the control that splits them.
+// Triage (12:00 UTC) and interpret (14:00 UTC) are Kimi callers on the same
+// organization key, which pipeline/llm.py's KIMI_WINDOWS lists in one table,
+// and distill runs at 15:00 after both. So a triage judgement written since
+// distill last worked is evidence the account was answering a caller, and a
+// day on which all three stopped together is one shared cause rather than
+// three separate ones.
+//
+// `triage_log.created_at` is the stronger of the two, because triage writes a
+// row for every paper it judges, a discard included. `claim_links.created_at`
+// is weaker on purpose and is published anyway: interpret writes an edge only
+// when the model finds a relation, so a quiet run leaves no row and an absent
+// edge is not an absent run. The judgement in tools/delivery_health.py takes
+// either stage's freshness as enough and names which one it read.
 
 // A timestamp from Neon arrives as a Date, from a JSON round trip as a
 // string, and from an empty table as null. One shape leaves here.
@@ -68,7 +88,8 @@ function count(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function buildReceipt({ digest, papers, distilled, claims, queues, deploy, observedAt }) {
+export function buildReceipt({ digest, papers, distilled, claims, triaged,
+                               linked, queues, deploy, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -92,6 +113,12 @@ export function buildReceipt({ digest, papers, distilled, claims, queues, deploy
       // rather than as a stage that never ran, because an absent field on an
       // older receipt arrives here as the same null.
       distilled_newest: iso(distilled),
+      // The two sibling Kimi stages' own output markers, for the one question
+      // the marker above cannot answer: is the provider answering anybody.
+      // `null` means here what it means everywhere else on this receipt, which
+      // is a fact it does not have and never a stage that never ran.
+      triaged_newest: iso(triaged),
+      linked_newest: iso(linked),
     },
     // How many rows are waiting at each stage, which is the fact that turns
     // "claims has not moved in three days" into a cause. A stalled stage with

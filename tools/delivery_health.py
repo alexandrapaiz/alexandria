@@ -142,7 +142,7 @@ MCP_URL = "https://ap4509--alexandria-mcp-serve.modal.run"
 # publishes the rows this command judges and no seat needs a credential to read
 # them. Facts only: the judgement below is the single copy.
 RECEIPT_URL = f"{SITE_URL}/api/delivery"
-RECEIPT_VERSION = 3  # must match site/lib/delivery-core.js RECEIPT_VERSION
+RECEIPT_VERSION = 4  # must match site/lib/delivery-core.js RECEIPT_VERSION
 
 # And the versions this reader can still read. Exact-match was the rule until
 # 2026-10-10 and it made every additive field an outage: the site deploys on a
@@ -155,9 +155,10 @@ RECEIPT_VERSION = 3  # must match site/lib/delivery-core.js RECEIPT_VERSION
 # optional by construction (an absent queue depth is a fact this reader does not
 # have, never a queue of zero), so version 1 stays readable. Version 3 added
 # `pipeline.distilled_newest` on the same terms, so versions 1 and 2 stay
-# readable too. A version that removed or renamed a field would not be added to
+# readable too, and version 4 added the two sibling-stage markers on the same
+# terms again. A version that removed or renamed a field would not be added to
 # this tuple.
-READABLE_VERSIONS = (1, 2, 3)
+READABLE_VERSIONS = (1, 2, 3, 4)
 
 # Which reader answered. It goes in every surface's evidence as `read_via`,
 # because "the press printed" and "a second-hand record says the press printed"
@@ -642,13 +643,46 @@ def queue_facts(conn) -> dict | None:
             "interpret_pending": row[2]}
 
 
+SIBLING_MARKERS = """
+select (select max(created_at) from triage_log),
+       (select max(created_at) from claim_links)
+"""
+
+
+def sibling_facts(conn) -> dict | None:
+    """When the two stages either side of distill last wrote anything.
+
+    Triage writes `triage_log`, interpret writes `claim_links`, and both call
+    Kimi on the same Moonshot organization key distill calls
+    (`pipeline/llm.py` KIMI_WINDOWS holds all four windows in one table).
+    Distill's window is 15:00 UTC, after triage's 12:00 and interpret's 14:00,
+    so these two rows answer the question distill's own markers cannot:
+    whether the provider was answering anybody.
+
+    Fail-soft, and a dict of nulls rather than None for both, which is the same
+    contract `queue_facts` has for a weaker version of the same reason. Both
+    tables have existed since the first schema, so an absent one is unlikely
+    rather than impossible, and a read that failed must not be able to report a
+    stage that has written nothing.
+    """
+    try:
+        with conn.transaction():
+            row = conn.execute(SIBLING_MARKERS).fetchone()
+    except Exception:
+        return None
+    if row is None:
+        return None
+    return {"triage": row[0], "interpret": row[1]}
+
+
 def pipeline_facts(conn) -> dict:
     """When the corpus last moved, and how much is waiting to move it.
 
     The newest row in `papers` and in `claims`, which is the staleness, plus
-    two facts that are the cause rather than the clock: the queue depths, and
-    when distill last marked a paper read. Read in that order so the cheap
-    reads answer even when the views are absent.
+    three facts that are the cause rather than the clock: the queue depths,
+    when distill last marked a paper read, and when the two sibling Kimi
+    stages last wrote anything. Read in that order so the cheap reads answer
+    even when the views are absent.
 
     `fetched_at` and `distilled_at` come back from one statement, because they
     are two columns of the same table and neither has an index to use. One scan
@@ -661,11 +695,12 @@ def pipeline_facts(conn) -> dict:
         "claims": conn.execute("select max(created_at) from claims").fetchone()[0],
         "distilled": distilled,
         "queues": queue_facts(conn),
+        "siblings": sibling_facts(conn),
     }
 
 
 def queue_cause(label: str, queues: dict | None, distilled: datetime | None = None,
-                now: datetime | None = None) -> str:
+                now: datetime | None = None, siblings: dict | None = None) -> str:
     """Why a stalled table stalled, said as a clause on the headline.
 
     `claims` is the only one of the two corpus tables with a queue inside this
@@ -706,10 +741,11 @@ def queue_cause(label: str, queues: dict | None, distilled: datetime | None = No
         return (", with distill_queue empty, so the stage had nothing to read and "
                 "the gap is upstream of it in ingest or triage")
     return (f", with {depth} papers waiting in distill_queue, so the stage had work "
-            f"and did not do it" + _unread_or_unwritten(distilled, now))
+            f"and did not do it" + _unread_or_unwritten(distilled, now, siblings))
 
 
-def _unread_or_unwritten(distilled: datetime | None, now: datetime | None) -> str:
+def _unread_or_unwritten(distilled: datetime | None, now: datetime | None,
+                         siblings: dict | None = None) -> str:
     """Which of the two remaining causes it is, from the distill marker.
 
     Split out because the sentence is the actionable half and it is the half a
@@ -735,9 +771,66 @@ def _unread_or_unwritten(distilled: datetime | None, now: datetime | None) -> st
                 f"extracted nothing: the prompt and the parse are the suspects "
                 f"rather than the cron")
     return (f", and it has marked nothing read in {days} days either, so it never "
-            f"reached a paper: the cron, the model availability gate and the spend "
-            f"cap are the suspects, and `modal app logs alexandria-distill` is "
-            f"where they show")
+            f"reached a paper" + _provider_or_cron(siblings, now))
+
+
+def _age_days(value: datetime | None, now: datetime) -> float | None:
+    """How old a marker is, in days to one decimal, or None when there is none."""
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    age = now - value
+    return round(age.days + age.seconds / 86400, 1)
+
+
+# Which stage writes which table, in the order their crons fire, so the
+# sentence below reads in the order the day happened. `pipeline/llm.py`
+# KIMI_WINDOWS is the table those windows come from.
+SIBLING_STAGES = (("triage", "triage_log"), ("interpret", "claim_links"))
+
+
+def _provider_or_cron(siblings: dict | None, now: datetime | None) -> str:
+    """Of the three suspects for a stage that never read, which ones survive.
+
+    The clause this continues leaves three: distill's cron, the model
+    availability gate and the spend cap. The first belongs to this job alone
+    and the other two belong to the Moonshot organization key that triage,
+    interpret and the press all share, so the sibling stages are the control
+    that splits them. Triage runs at 12:00 UTC and interpret at 14:00, both
+    before distill's 15:00, and triage writes a `triage_log` row for every
+    paper it judges, a discard included. So a sibling row written while distill
+    wrote nothing is evidence the account answered a caller, and three stages
+    that went quiet on the same day are one cause rather than three.
+
+    `None` is "cannot say" here exactly as it is everywhere else on this
+    surface, and it arrives from three places that have to stay equivalent: a
+    receipt older than version 4 with no field at all, a version 4 receipt
+    whose site could not run the query, and a direct read of two tables that
+    are genuinely empty. A wrong first step costs more than a missing one, so
+    all three keep the suspect list the stall carried before this clause.
+    """
+    now = now or datetime.now(timezone.utc)
+    ages = [(stage, _age_days((siblings or {}).get(stage), now))
+            for stage, _ in SIBLING_STAGES]
+    readable = [(stage, days) for stage, days in ages if days is not None]
+    if not readable:
+        return (": the cron, the model availability gate and the spend cap are "
+                "the suspects, no sibling stage's marker is readable here to "
+                "split them, and `modal app logs alexandria-distill` is where "
+                "they show")
+    said = " and ".join([f"{readable[0][0]} last wrote {readable[0][1]} days ago"]
+                        + [f"{stage} {days} days ago"
+                           for stage, days in readable[1:]])
+    fresh = [stage for stage, days in readable if days <= PIPELINE_STALE_DAYS]
+    if fresh:
+        return (f": {said}, so the Moonshot account was answering a caller "
+                f"after distill stopped, which leaves this job's own cron, its "
+                f"deploy and its caps rather than the provider, and `modal app "
+                f"logs alexandria-distill` is where they show")
+    return (f": {said}, so every stage on the shared Moonshot key went quiet "
+            f"together, which makes the account, its key and its daily token "
+            f"allowance the first place to look rather than distill's cron")
 
 
 def judge_pipeline(facts: dict, now: datetime | None = None,
@@ -757,6 +850,19 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     # marker no stage promises to keep current.
     queues = rows.pop("queues", None)
     distilled = rows.pop("distilled", None)
+    # Out of the loop for the same reason, and it matters more here: these are
+    # two other stages' timestamps, and this surface raises on the corpus
+    # tables. Left in `rows` they would make a quiet interpret run read as a
+    # third stale table and report one outage twice.
+    siblings = rows.pop("siblings", None)
+    # One shape for "cannot say", collapsed here rather than at either reader.
+    # A failed query hands this None, a version 3 receipt has no fields to hand
+    # it, and two genuinely empty tables hand it two nulls. All three mean the
+    # same thing, and leaving them in three shapes is how the credentialled
+    # reader and the credential-free one grow different evidence blocks for one
+    # state.
+    if siblings is not None and not any(siblings.values()):
+        siblings = None
     stale = []
     evidence = {"read_via": source}
     for label, value in rows.items():
@@ -770,7 +876,7 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
         evidence[label] = {"newest": str(value), "age_days": round(age.days + age.seconds / 86400, 2)}
         if age > timedelta(days=PIPELINE_STALE_DAYS):
             stale.append(f"{label} has not moved in {age.days} days"
-                         + queue_cause(label, queues, distilled, now))
+                         + queue_cause(label, queues, distilled, now, siblings))
     # In the evidence on every path, including the healthy one. A queue that is
     # deep while the corpus still moves is not an alarm by this surface's own
     # unit, which is staleness, and inventing a depth threshold here would be a
@@ -780,6 +886,13 @@ def judge_pipeline(facts: dict, now: datetime | None = None,
     # Beside the depths and on every path, for the same reason they are: it is
     # a number a reader wants next to the dates, and it is not judged here.
     evidence["distilled"] = str(distilled) if distilled is not None else None
+    # Same rule again: reported on every path, judged on none. A seat reading
+    # the evidence block wants the two dates next to the three above even when
+    # the corpus is moving and nothing is wrong.
+    evidence["siblings"] = (None if siblings is None else
+                            {stage: (str(siblings.get(stage))
+                                     if siblings.get(stage) is not None else None)
+                             for stage, _ in SIBLING_STAGES})
     if stale:
         return Surface("pipeline", FAILING, "; ".join(stale), evidence)
     return Surface("pipeline", OK,
@@ -1404,10 +1517,17 @@ def receipt_facts(payload: dict) -> tuple[dict | None, dict, dict | str]:
     # carries the marker. `_parse_iso` returns None for both, which is the
     # shape a direct read of an all-null column returns too, so the two readers
     # hand the judgement the same thing and reach the same sentence.
+    # The sibling markers are absent on versions 1 to 3 and null on a version 4
+    # receipt whose site could not read the two tables. Both arrive here as
+    # None, which is the shape a direct read of two empty tables hands the
+    # judgement, so neither reader can reach a first step the other cannot.
+    siblings = {"triage": _parse_iso(pipeline.get("triaged_newest")),
+                "interpret": _parse_iso(pipeline.get("linked_newest"))}
     pipeline_row = {"papers": _parse_iso(pipeline.get("papers_newest")),
                     "claims": _parse_iso(pipeline.get("claims_newest")),
                     "distilled": _parse_iso(pipeline.get("distilled_newest")),
-                    "queues": queues if isinstance(queues, dict) else None}
+                    "queues": queues if isinstance(queues, dict) else None,
+                    "siblings": siblings}
 
     deploy = payload.get("deploy")
     if deploy is None:

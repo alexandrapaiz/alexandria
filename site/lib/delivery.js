@@ -1,7 +1,7 @@
 import { neon } from "@neondatabase/serverless";
 import { buildReceipt } from "./delivery-core.js";
 
-// Reads the four facts the delivery receipt publishes.
+// Reads the facts the delivery receipt publishes.
 //
 // Fails closed, the same contract as lib/entitlement.js and lib/graph-live.js,
 // and returns `{ receipt }` or `{ reason }`, never a receipt full of nulls. The
@@ -14,7 +14,7 @@ import { buildReceipt } from "./delivery-core.js";
 // throws is not, and a seat reading this from a sandbox cannot see the
 // environment, so this field is its only diagnosis.
 //
-// Five queries, and no parameter from the request reaches any of them. Two are
+// Six queries, and no parameter from the request reaches any of them. Two are
 // cheap by construction: `digests` is ordered on its unique `week` index and
 // `deploy_runtime` has one row per scheduled job. The two `max()` reads over
 // `papers` and `claims` have no index to use and scan, which is thousands of
@@ -24,13 +24,17 @@ import { buildReceipt } from "./delivery-core.js";
 // table grows enough for the scan to matter, the answer is an index on the two
 // timestamps rather than a different endpoint.
 //
-// The fifth is the queue depths, and it is the most expensive one here, so it
+// The queue depths are the most expensive one here, so it
 // is worth saying what it costs. `distill_queue` joins `papers` to
 // `latest_triage`, which is a `distinct on` over `triage_log`, and the triage
 // backlog count is an anti-join over the same pair. That is two passes over
 // thousands of rows rather than millions, once per five minutes per edge
 // region, against a surface whose absence left a stalled pipeline undiagnosable
 // for three days. It is one round trip and three scalars come back.
+//
+// The sixth is the sibling markers, added in version 4, and it is two more
+// unindexed `max()` reads in one statement over two tables of the same size as
+// the two above. Its own comment at the call site says what it buys.
 export async function loadDeliveryReceipt() {
   const url = process.env.DATABASE_URL;
   if (!url) return { reason: "DATABASE_URL is not set in the site's environment" };
@@ -63,6 +67,30 @@ export async function loadDeliveryReceipt() {
       from papers
     `;
     const claims = await sql`select max(created_at) as newest from claims`;
+
+    // The two sibling stages' output markers, which is the fact that says
+    // whether the provider is answering anybody at all. Distill, triage and
+    // interpret all call Kimi on one organization key and distill runs last,
+    // so a triage row written after distill last worked rules out the account
+    // and leaves this one job's cron, deploy and caps. Fail-soft for the same
+    // reason the depths are, and nulls rather than an absent object: a reader
+    // that cannot tell "no edge yet" from "could not look" would eventually
+    // name the provider on no evidence.
+    //
+    // Two scalar subqueries in one statement, so this is one round trip over
+    // two tables of thousands of rows rather than two. Neither column is
+    // indexed, which is the same trade `papers` and `claims` already make
+    // above, and the route's five-minute edge cache is what keeps it off Neon.
+    let siblings = null;
+    try {
+      const rows = await sql`
+        select (select max(created_at) from triage_log)  as triaged,
+               (select max(created_at) from claim_links) as linked
+      `;
+      siblings = rows[0] ?? null;
+    } catch {
+      siblings = null;
+    }
 
     // The queue depths: how many rows are waiting at each stage. Same
     // fail-soft contract as `deploy` below and for the same reason. These are
@@ -116,6 +144,8 @@ export async function loadDeliveryReceipt() {
         papers: papers[0]?.newest ?? null,
         distilled: papers[0]?.distilled ?? null,
         claims: claims[0]?.newest ?? null,
+        triaged: siblings?.triaged ?? null,
+        linked: siblings?.linked ?? null,
         queues,
         deploy,
         observedAt: new Date(),

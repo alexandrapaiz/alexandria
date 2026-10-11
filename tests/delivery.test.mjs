@@ -34,6 +34,13 @@ const FULL = {
   // field: distill marked a paper read after it last wrote a claim, which is
   // the shape that says the stage ran and extracted nothing.
   distilled: new Date("2026-10-01T15:04:00Z"),
+  // The two sibling Kimi stages' markers. Triage's is fresher than the distill
+  // marker on purpose, because that ordering is the one the version 4 fields
+  // were added to detect: the shared account answered a caller after distill
+  // last did any work, which rules the provider out and leaves distill's own
+  // cron and caps.
+  triaged: new Date("2026-10-02T12:06:00Z"),
+  linked: new Date("2026-10-01T14:03:00Z"),
   // Postgres returns `count(*)` as a bigint, which the Neon driver hands back
   // as a string. The fixture carries the strings for that reason and not by
   // accident: a receipt publishing "212" would make the reader's `depth == 0`
@@ -71,6 +78,8 @@ test("the five facts come through in one shape", () => {
     papers_newest: "2026-09-30T12:01:00.000Z",
     claims_newest: "2026-09-30T14:02:00.000Z",
     distilled_newest: "2026-10-01T15:04:00.000Z",
+    triaged_newest: "2026-10-02T12:06:00.000Z",
+    linked_newest: "2026-10-01T14:03:00.000Z",
   });
   assert.deepEqual(r.queues, {
     triage_pending: 41,
@@ -120,6 +129,31 @@ test("a column of nulls publishes null, not a stage that never ran", () => {
   const absent = core.buildReceipt({ ...FULL, distilled: undefined });
   assert.equal(absent.pipeline.distilled_newest, null);
   assert.ok("distilled_newest" in absent.pipeline);
+});
+
+test("a sibling stage that has written nothing publishes null, not a date", () => {
+  // `max(created_at)` over an empty `claim_links` comes back null, and so does
+  // the field on any receipt published before version 4. Both have to reach
+  // the reader as the same thing, because the reader has one sentence for
+  // "cannot say" and it must not be able to reach the sentence that names the
+  // Moonshot account on no evidence.
+  const r = core.buildReceipt({ ...FULL, triaged: null, linked: undefined });
+  assert.equal(r.pipeline.triaged_newest, null);
+  assert.equal(r.pipeline.linked_newest, null);
+  assert.ok("triaged_newest" in r.pipeline && "linked_newest" in r.pipeline);
+  // And the marker it is the control for is untouched by their absence.
+  assert.equal(r.pipeline.distilled_newest, "2026-10-01T15:04:00.000Z");
+});
+
+test("the pipeline block has exactly the five markers and nothing else", () => {
+  // Every field built by name, the same defence the press block has. A column
+  // added to `papers`, `triage_log` or `claim_links` cannot arrive here by
+  // being spread in, and a timestamp is the widest thing any of these three
+  // stages publishes.
+  assert.equal(
+    Object.keys(core.buildReceipt(FULL).pipeline).sort().join(","),
+    "claims_newest,distilled_newest,linked_newest,papers_newest,triaged_newest"
+  );
 });
 
 test("the top level has exactly six keys", () => {
