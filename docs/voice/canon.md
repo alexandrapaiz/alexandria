@@ -699,6 +699,26 @@ run log. This procedure asked git a question only the job can answer.
    both. The repair is to name the setup or to print one number, and the
    worked example under law 14 carries this defect too, in the pair 44.3 and
    30, which is reported to the owner rather than edited here.
+   **A fifth question, and it is put to this pass and to every pass above it
+   rather than to the issue** (added 2026-10-11,
+   `INC-2026-10-11-two-more-gates-cleared-the-half-of-the-sentence-they-were-pointed-at`).
+   Where a pass clears a sentence, name which part of that sentence the pass
+   actually read, and put the remaining parts to the laws separately. A verdict
+   that says PASS on a sentence carrying two claims has graded one claim.
+   Two specimens from one artifact, both cleared five times. The close of
+   2026-W40 was graded on its verbs, which were right, and never on the
+   calendar span it put around them, which the generator forbids in its own
+   words. Question four above was run on a latency reported once in
+   microseconds and once in milliseconds, and cleared it, because the question
+   compares numerals and a unit change makes one quantity into two numerals
+   that look nothing like each other. Each gate was pointed at the property
+   that failed on the day the gate was written, so the half of the sentence
+   that has never failed is the half nothing reads, and it stays unread until
+   it fails. Convert, normalise or count before comparing anything a reader
+   will read as a quantity, and say in the verdict what was compared.
+   The cheap version of this question, and it is the one to run: for every PASS
+   in passes 2 through 5, write the half-sentence the verdict is actually
+   about. Where that is shorter than the sentence, the rest is ungraded.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at

@@ -13391,3 +13391,36 @@ that triggered it, per the charter.
   the fact rather than a courtesy shown to whoever was at the keyboard.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-11 — This seat's gates all live in the one file that needs a deploy, and the ones that could run on a schedule do not (writer seat)
+- Trigger: today's editorial run patched six rules into `prompts/digest.md` and
+  every one of them is a sentence a model reads at generation time, inside a
+  file that reaches the press through `modal deploy`. The press is still
+  running that file as it stood on 2026-10-04, so the count of this seat's
+  enforcements that exist nowhere but a working tree rose from eleven to twelve
+  today and rises again with every run.
+- The part that is not the deploy: six of today's twelve absent rules are pure
+  draft arithmetic. Count the semicolons. Count the headings carrying a colon.
+  Count the kinds of block on the page. Count the figures with no comparison.
+  Count the figures needing leading zeros and the decimals ending in zero.
+  Count the items under a heading against the items the heading describes. Each
+  one reads the finished text and nothing else, and `docs/voice/check_voice.py`
+  already takes four of them off a file on disk.
+- The ask, and it is small: a check that runs those counts over the newest
+  `digests` row and exits non-zero, wired where a Monday send can reach it.
+  Not a model gate and not a rewrite. The counts exist, the tool exists, and
+  the artifact is in a table. What is missing is the three lines that read the
+  newest row instead of a path and the workflow step that calls it.
+- Why it is worth doing even after the deploy is fixed: a rule inside
+  `prompts/digest.md` is enforced at the reliability of a model reading a file,
+  which is L-A22, and it can only ever be enforced before the text exists. A
+  count over the finished row is enforced at the reliability of a shell and
+  runs on text the reader is about to get. The two are not substitutes, and
+  this seat currently has only the weaker one.
+- Scope note: `docs/voice/check_voice.py` is this seat's file and the three
+  lines that read a row are this seat's to write. The workflow step is not, and
+  that is the whole filing. PR #60's pre-send quality gate has been open since
+  2026-09-20 and is the natural home for it, so the right answer may be a
+  conversation with that branch rather than a new one.
+- Cost: $0.
+- Status: proposed
