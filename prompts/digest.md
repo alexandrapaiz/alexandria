@@ -913,7 +913,12 @@ yourself, before you choose anything, and let the count of distinct papers
 decide how long this section runs.}
 
 ## {The heading for the fell-behind slot, written from what actually lost
-ground today. Name the belief that fell if one belief carries the section. The
+ground today. Name the belief that fell if one belief carries the section, and
+check that condition before you use that shape: count the items here and name
+the belief each one dislodged. Where they dislodged two or three unrelated
+beliefs, no single belief carries the section and the heading says what the
+whole group has in common or names the largest one and claims nothing about the
+rest. The
 slot's internal name is not repeated here and is not a candidate. The heading
 gate at the end of this file holds the four names.}
 

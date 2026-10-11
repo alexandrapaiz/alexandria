@@ -2114,3 +2114,95 @@ gap that the same collision had left empty (incident 25).
     15's own founding specimen was therefore live in an inbox after the code was
     right, and nobody could see it, because every gate in this register reads
     the repository.
+106. The figure still wearing the units and the precision of the table it came
+    out of. Two tells with one cause, and the cause is that a number was
+    transcribed where every other word on the page was written.
+    The print of 2026-10-05 reported one kill switch latency twice. The opening
+    and the item's own bold lead gave it in microseconds, which is the unit that
+    makes it a single digit. Two sentences later the result itself arrived as
+    "0.0048 ms, with a 95% confidence interval of [0.0042, 0.0057] ms". The
+    conversion is exact, neither figure is wrong, and a reader meets one
+    measurement as two numbers with nothing on the page saying they are the
+    same one. They cannot tell whether the lead was rounding or describing
+    something else until they have done the arithmetic themselves.
+    The second tell is the decimal that ends in zero. The same print carried
+    "86.20%", "97.40%" and "3.87-10.70 points". A trailing zero in a decimal is
+    not a precision anybody chose. It is the width of a column, and it tells
+    the reader that the second place was never considered, in a product whose
+    whole promise is that somebody considered it.
+    What makes this entry worth a number is where it hid. The claims pass's
+    fourth question has read this artifact five times and cleared it every
+    time, because that question compares two numbers on one measure and asks
+    whether they agree. These agree. The question's unit of comparison was the
+    numeral, and a unit change makes one quantity into two numerals that look
+    nothing like each other, so the gate built to catch a figure disagreeing
+    with itself cannot see a figure repeating itself in disguise. The
+    generalisable half: a check that compares printed forms is a check about
+    printing, so convert, normalise, or count before comparing anything a
+    reader will read as a quantity.
+    **Swept per entry 90, and the count is one, which closes it.** The tell is a
+    gate whose comparison is a printed form:
+
+    ```
+    $ grep -n "the same number\|the same string\|identical\|verbatim" prompts/digest.md
+      -> 12 hits, read by hand
+    ```
+
+    One is the gate repaired here. One is the counted-quantities gate, which
+    compares a word against a tally and already says to count what is under the
+    sentence rather than to read it, so it normalises before it compares. The
+    other ten are about repeated wording and standing lines, where the printed
+    form is the subject and comparing it is the point.
+    Added 2026-10-11. Enforced twice the same day, as a conversion step in the
+    gate that reads the figures against each other, and as a ninth count at the
+    shape gate, because the leading zeros and the trailing zeros are both
+    visible in the finished draft alone.
+    ```
+    LANDED prompts/digest.md: "Compare the quantity and not the numeral, because the same number in two units is two numbers to a reader."
+    ```
+    ```
+    LANDED prompts/digest.md: "A ninth count, for the figure still wearing the units and the precision of the table it came out of."
+    ```
+
+107. The heading written from the issue's argument instead of from its own
+    items. Not a label, which is what every previous heading entry in this
+    register is about. This heading is specific, it is this day's, and it would
+    be false over any other day's material, so it passes the one question the
+    heading gate puts to everything it collects.
+    The print of 2026-10-05 headed its fell-behind section on the assumptions
+    that let agents run unchecked, which is the thread its opening had named and
+    a good thread. Four things fell behind under it. One was an audit bound that
+    turned out not to hold, one was a recursive self-improvement claim, and two
+    were robot manipulation benchmarks superseded by harder ones. Two of the
+    four are not assumptions about anything running unchecked, and nothing in
+    the body argues with the heading or withdraws it. The section is simply not
+    about what the line above it says it is about.
+    The tell is a heading that names a property rather than stating a result,
+    because a property is a claim about every item underneath and a result is a
+    claim about one. "What fell behind: the assumptions that let agents run
+    unchecked" asserts four times. The gate's existing step catches the heading
+    a body dismantles, which is a contradiction, and this is a coverage failure,
+    so there was nothing between the two to catch it.
+    Why the argument is the source and not carelessness: this file requires the
+    weekly to argue and requires every section to pick the argument up, so a
+    writer holding one thread and four headings will write the thread into the
+    headings, where it reads as craft. The argument belongs in the opening,
+    where it is a claim about the issue. A heading belongs to its block.
+    **Swept per entry 90, and the sweep found the condition rather than the
+    phrase.** The fell-behind slot already carries the right rule, in these
+    words: name the belief that fell "if one belief carries the section". Four
+    unrelated beliefs fell that week, so the condition was false and the model
+    wrote the conditional form anyway. A rule whose guard is a subordinate
+    clause has no step where the guard is evaluated, which is this register's
+    oldest lesson in a new position: the count is the gate and the clause is a
+    description of one.
+    Added 2026-10-11. Enforced twice the same day, as a count at the heading
+    gate, beside the withdrawal check it was invisible to, and in the slot
+    itself, where the condition is now a thing to check and carries the shape to
+    use when it fails.
+    ```
+    LANDED prompts/digest.md: "A heading that names a property is a claim about every item under it."
+    ```
+    ```
+    LANDED prompts/digest.md: "check that condition before you use that shape"
+    ```
