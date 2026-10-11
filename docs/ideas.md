@@ -13282,3 +13282,119 @@ that triggered it, per the charter.
   the fact rather than a courtesy shown to whoever was at the keyboard.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-11 — URGENT: the distill stall is four days old, and the code it stalled on has not changed since 2026-10-05
+- Trigger: today's reading of the live receipt, which is version 3 and now
+  answers the question version 2 could not. `claims_newest` and
+  `distilled_newest` are the same instant, `2026-10-07T15:15:25.492Z`, which
+  is distill's own 15:00 UTC window on 10-07. Three scheduled runs since then
+  have written no claim and marked no paper read, against a `distill_queue` of
+  2099. Two facts narrow it further than yesterday's entry could. First,
+  `deploy_runtime` shows triage running at 2026-10-10T12:30:53Z and interpret
+  at 2026-10-10T14:00:05Z, so Modal's scheduler is firing the crons either
+  side of distill's. Second, both of those rows carry `first_seen_at` of
+  2026-10-05, so the images they are running were deployed before the 10-07
+  run that worked, and nothing has been deployed since. The same code produced
+  claims on 10-07 and nothing on 10-08, 10-09 and 10-10.
+- What: a stage that produces nothing while its queue grows by about 20 papers
+  a day is the product's single point of failure, because every surface
+  downstream of it reads `claims`. The code is not the variable, so what is
+  left is the environment: the Moonshot account's balance or its tier-0 daily
+  allowance, the `moonshot` secret itself, distill's own spend cap, or the
+  full-text fetch the window depends on. Distill's absence from
+  `deploy_runtime` is explained and is not evidence of a dead cron: ingest has
+  no row either and ingest demonstrably ran at 2026-10-10T11:00:50Z, because
+  both apps were added to `runtime_sha.APPS` in 807d403 on 2026-10-09 and
+  neither image is newer than that.
+- First step: `modal app logs alexandria-distill`, which is the owner's and
+  needs no change to anything. The credential-free half is in this pull
+  request and is already built: receipt version 4 publishes the newest row
+  each sibling stage wrote and the model that wrote it, so the next run can
+  say whether the shared account answered a caller after distill stopped. It
+  reports "cannot say" until the merge deploys the site, which is the honest
+  answer and not a silence.
+- Cost: $0 to diagnose. If the cause is the account's balance or its tier, the
+  fix is money and the owner's alone.
+- Status: urgent
+
+### 2026-10-11 — The deploy guard has a control for "never recorded" sitting next to it, and does not use it
+- Trigger: reading today's deploy surface against the pipeline surface. The
+  deploy block names interpret, triage and weekly and has no row for distill or
+  ingest, which reads like two crons that never fire. It is not: ingest wrote
+  `papers` at 2026-10-10T11:00:50Z, in its own 11:00 UTC window, with no
+  `deploy_runtime` row at all. So `never recorded` means the image predates
+  807d403, and the guard already has the one fact that proves it, because the
+  sibling it is reporting on is current.
+- What: this is the 2026-10-10 entry's "unmeasured has no clock", sharpened by
+  the thing that makes it decidable rather than only wrong. The repository
+  knows when it started asking each app to record, because that is the commit
+  that added the app to `runtime_sha.APPS`, and `tools/delivery_health.py`
+  already walks git history to name undeployed commits. So `judge_deploy` can
+  say "distill has recorded nothing in the 1.4 days since this repository
+  began asking it to, so it has not been deployed since then", which is a
+  statement about a deploy rather than a shrug. The same reading also
+  distinguishes the two cases that matter: an app whose output moved while its
+  row is absent is behind on its deploy, and an app with neither is a cron to
+  go and look at. Today that second case is empty and nobody can see that it
+  is empty.
+- First step: in `judge_deploy`, for an app with no row, read the commit date
+  of the change that added it to `runtime_sha.APPS` and report `behind` rather
+  than `unknown` once that date is older than `DEPLOY_GRACE_HOURS`. The clock
+  is derivable from the checkout with no new column and no new query, and
+  `tests/test_deploy_drift.py` already builds fixture repositories to assert
+  against.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-11 — One marker per stage, derived, so the next diagnosis costs no deploy
+- Trigger: the receipt went to version 2 on 2026-10-09, version 3 on 2026-10-10
+  and version 4 in this pull request. Each bump added one timestamp or one
+  count, each answered about half of one question about the same stall, and
+  each cost a merge and a site deploy before any seat could read the answer.
+  Three days of elapsed time to ask three questions of one database, with the
+  stall running the whole time.
+- What: every bump has had the same shape, which is "name the newest row in
+  one more table". That is a table of stages rather than three hand-written
+  fields: a stage is a name, a table, a timestamp column, and optionally the
+  column that records which model wrote it. `pipeline/runtime_sha.py` already
+  keeps exactly this kind of derived list for the deploy guard and
+  `tests/test_deploy_drift.py` fails when a scheduled app is missing from it.
+  Built that way, the receipt publishes a marker for every stage the pipeline
+  has, the next question about a stage is a read rather than a release, and the
+  version number stops moving for additive facts. It stays inside the
+  endpoint's own rule, because a stage marker is a timestamp and a model id and
+  names no paper, no claim and no subscriber.
+- First step: lift the four markers this receipt now publishes into one
+  `STAGES` constant in `site/lib/delivery-core.js`, derive the queries from it
+  in `site/lib/delivery.js`, and assert in `tests/test_delivery_receipt.py`
+  that every stage in the constant has a published marker. No new table and no
+  new column, and the statement-resolution gate in that test file already
+  checks generated SQL against `db/schema.sql`.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-11 — Craft scan: Last Week in AI counts the week in its own subject line (engineer seat)
+- Trigger: today's rotation through docs/market/landscape.md. Last Week in AI
+  has been an entry since the file was written and has never had a craft scan,
+  and TheSequence, which was the first pick for the same reason, is behind a
+  Cloudflare challenge that refuses both `curl` and the fetch tool, so it could
+  not be opened at all. Read from its own archive this run.
+- Worth stealing: the subject line is three counted facts. "Last Week in AI
+  #346 - 719 math manuscripts, 2 Western open models, 1 more safety
+  resignation", and the issue before it, "#345 - 5 new models, 9 misalignment
+  incidents, some Dots". A reader in an inbox can tell a heavy week from a
+  light one without opening anything, because the numbers are in the line the
+  mail client shows. alexandria's issue subject names the week and nothing
+  else, so the thin week this corpus has just had would arrive looking exactly
+  like a full one. The counts this would need are already computed: the press
+  gathers them to write the issue, and two of them are published on
+  `/api/delivery` as of this week.
+- What alexandria does better: the issue id is a calendar fact rather than a
+  counter. Last Week in AI's archive shows no posts in the weeks of 27 July,
+  10 August and 17 August, and the issue that followed is numbered #342 and
+  titled "The newsletter is finally back!", so the sequence closed over the
+  gap and only the title says anything happened. An ISO week label cannot do that:
+  a missing `2026-W41` is a hole in `/library` that no later issue can fill,
+  and a stranger can check it against the receipt without being told.
+- Cost: $0.
+- Status: proposed

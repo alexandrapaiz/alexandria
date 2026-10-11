@@ -34,6 +34,16 @@ const FULL = {
   // field: distill marked a paper read after it last wrote a claim, which is
   // the shape that says the stage ran and extracted nothing.
   distilled: new Date("2026-10-01T15:04:00Z"),
+  // The two sibling Kimi stages' newest rows. Triage's is fresher than the
+  // distill marker on purpose, because that ordering is the one version 4 was
+  // added to detect: the shared account answered a caller after distill last
+  // did any work, which rules the provider out and leaves distill's own cron
+  // and caps. `claim_links.method` carries `model@prompt_sha` as it does in
+  // the table, so the fixture exercises the half that has to be dropped.
+  siblings: {
+    triage: { newest: new Date("2026-10-02T12:06:00Z"), model: "kimi-k2.6" },
+    interpret: { newest: new Date("2026-10-01T14:03:00Z"), model: "kimi-k2.6@deadbeef" },
+  },
   // Postgres returns `count(*)` as a bigint, which the Neon driver hands back
   // as a string. The fixture carries the strings for that reason and not by
   // accident: a receipt publishing "212" would make the reader's `depth == 0`
@@ -71,6 +81,10 @@ test("the five facts come through in one shape", () => {
     papers_newest: "2026-09-30T12:01:00.000Z",
     claims_newest: "2026-09-30T14:02:00.000Z",
     distilled_newest: "2026-10-01T15:04:00.000Z",
+  });
+  assert.deepEqual(r.siblings, {
+    triage: { newest: "2026-10-02T12:06:00.000Z", model: "kimi-k2.6" },
+    interpret: { newest: "2026-10-01T14:03:00.000Z", model: "kimi-k2.6" },
   });
   assert.deepEqual(r.queues, {
     triage_pending: 41,
@@ -122,7 +136,57 @@ test("a column of nulls publishes null, not a stage that never ran", () => {
   assert.ok("distilled_newest" in absent.pipeline);
 });
 
-test("the top level has exactly six keys", () => {
+test("a sibling stage with no row publishes null, and an unreadable block is null", () => {
+  // Three states and they are genuinely different. An empty `claim_links` is a
+  // stage with no row, which is a fact. A `siblings` of null is the site
+  // failing to run the query. And a receipt published before version 4 has no
+  // block at all. The last two have to reach the reader as the same thing,
+  // because it has one sentence for "cannot say" and it must not be able to
+  // reach the sentence that names the Moonshot account on no evidence.
+  const empty = core.buildReceipt({
+    ...FULL,
+    siblings: { triage: FULL.siblings.triage, interpret: null },
+  });
+  assert.equal(empty.siblings.interpret, null);
+  assert.deepEqual(empty.siblings.triage, {
+    newest: "2026-10-02T12:06:00.000Z",
+    model: "kimi-k2.6",
+  });
+  assert.equal(core.buildReceipt({ ...FULL, siblings: null }).siblings, null);
+  assert.equal(core.buildReceipt({ ...FULL, siblings: undefined }).siblings, null);
+  // And the marker these two are the control for is untouched by their absence.
+  assert.equal(empty.pipeline.distilled_newest, "2026-10-01T15:04:00.000Z");
+});
+
+test("a sibling row carrying an unexpected column does not widen the receipt", () => {
+  // Every field built by name, the same defence the press block has.
+  // `triage_log.reasoning` is a model's prose about a paper, so a row that
+  // arrived with it must not be able to publish it.
+  const r = core.buildReceipt({
+    ...FULL,
+    siblings: {
+      triage: { ...FULL.siblings.triage, reasoning: "do not publish me" },
+      interpret: FULL.siblings.interpret,
+    },
+  });
+  assert.ok(!JSON.stringify(r).includes("do not publish me"));
+  assert.equal(Object.keys(r.siblings.triage).sort().join(","), "model,newest");
+});
+
+test("the prompt sha in claim_links.method is dropped, as digests.prompt_sha is", () => {
+  const r = core.buildReceipt(FULL);
+  assert.equal(r.siblings.interpret.model, "kimi-k2.6");
+  assert.ok(!JSON.stringify(r).includes("deadbeef"));
+});
+
+test("the pipeline block has exactly the three markers and nothing else", () => {
+  assert.equal(
+    Object.keys(core.buildReceipt(FULL).pipeline).sort().join(","),
+    "claims_newest,distilled_newest,papers_newest"
+  );
+});
+
+test("the top level has exactly seven keys", () => {
   assert.deepEqual(Object.keys(core.buildReceipt(FULL)).sort(), [
     "deploy",
     "observed_at",
@@ -130,6 +194,7 @@ test("the top level has exactly six keys", () => {
     "pipeline",
     "queues",
     "receipt",
+    "siblings",
     "version",
   ].sort());
 });
