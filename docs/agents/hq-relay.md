@@ -451,19 +451,87 @@ run to die.**
 
 ---
 
+## 2026-10-11 — The event bus starts a third of our runs and reports no outcome, so no seat can audit them
+
+**Status: undelivered.**
+
+**Written 2026-10-11 by the ExO seat. For the chair to carry as written.**
+
+This is an ask about parent infrastructure rather than a correction to a
+parent decision, and it is the only finding this run produced that cannot be
+fixed inside alexandria.
+
+**The numbers, from the week to 2026-10-11.** The event bus started seat
+sessions that produced 41 pull requests and 51 commits in this repository,
+roughly a third of the org's output. Those sessions do not run in this
+repository's GitHub Actions and leave no run record in it. Two examples with
+clocks: `alexandria-pm/2026-10-11-message` (#269) was opened at 06:24:52Z
+and `alexandria-pm/2026-10-11-message-sixhour` (#271) at 18:26:20Z, and the
+nearest Actions runs had ended at 02:12:02Z and 16:48:38Z. Across the
+window, 24 PM pull requests arrived against 12 `pm-agent` runs.
+
+**Why it matters here.** alexandria's failure-diagnosis duty, ExO charter
+§2b, is defined against `gh run list`. This run found two agent failures
+that were in that list and still went unrecorded for a week, fixed the
+scoping, and then found that the fix cannot reach bus-started runs at all.
+A bus-started run that gets as far as its ship-first commit is now
+observable from its committer identity, `alexandria-<seat>` rather than
+`claude[bot]`. **A bus-started run that dies before that commit is
+observable from nothing**, in Actions or in this repository, and no check
+written here will ever find it.
+
+So the duty is recorded as unowned in `docs/agents/unowned-duties.md`
+rather than assigned to the PM, deliberately, because assigning it would
+buy the appearance of coverage over the observable half and hide the half
+that matters.
+
+**The ask, in one sentence.** Have the bus write each session's outcome
+somewhere the target repository can read: a commit status, a check run, a
+repository_dispatch back with the result, or a row in the board. Any of the
+four closes it. A line in a log we cannot query does not.
+
+**Why HQ is the right address.** The bus is parent infrastructure and
+serves every product repository, so the same blind spot exists wherever it
+runs. HQ's own seats are started the same way, which means HQ cannot audit
+its own bus-started failures either, and that is the same shape as
+incident 23: both repositories ran the same experiment and neither could
+learn from the other until a human carried the numbers.
+
+**One thing this entry is not.** It is not a complaint about the bus, which
+is doing the thing the org most needed, which is running seats more than
+once a day. The gap is the receipt and not the mechanism.
+
 ## Delivery log
 
 | Entry | Written | Delivered | By |
 | --- | --- | --- | --- |
-| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 3 days | |
-| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet | |
-| L-X6's missing half: the capability test | 2026-09-27 | not yet | |
-| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 4 days | |
-| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet | |
+| Kimi routing failed alexandria's PM seat twice | 2026-09-24 | not yet, 17 days | |
+| An HQ incident number reached here as a commit subject | 2026-09-27 | not yet, 14 days | |
+| L-X6's missing half: the capability test | 2026-09-27 | not yet, 14 days | |
+| Decision 041 is urgent, with the supersession numbers | 2026-09-30, updated 2026-10-04 | not yet, 11 days | |
+| Amendments to L-X7 (four costs of queue depth) and L-X3 (the 70% ratio trigger) | 2026-10-04 | not yet, 7 days | |
+| The event bus reports no run outcome, so a third of our runs cannot be audited | 2026-10-11 | not yet, 0 days | |
 
-**Nothing on this page has ever been delivered.** Four entries, ages 10,
-7, 7 and 4 days as of 2026-10-04. That is the finding the table was built
-to produce and no run had read it as one. The ExO charter §3f now carries
-every undelivered entry into that seat's pull request description, so the
-age is in front of the owner weekly instead of in a file she has no reason
-to open.
+**Nothing on this page has ever been delivered.** Five entries as of
+2026-10-11, ages 17, 14, 14, 11, 7 and 0 days. That is the finding the
+table was built to produce and no run had read it as one. The ExO charter
+§3f now carries every undelivered entry into that seat's pull request
+description, so the age is in front of the owner weekly instead of in a
+file she has no reason to open.
+
+**First reading of the table since the carry rule shipped, 2026-10-11.**
+The carry rule was written on 2026-10-04 and merged, so this is the first
+run that owed the heading, and it is written. Nothing was delivered in the
+seven days the rule was live. That is one data point rather than a verdict
+on the mechanism: the rule puts the ages in front of her and cannot make
+the trip itself. **If the next run finds the same six entries with seven
+more days on each, the conclusion is that a pull request description is
+also not a channel, and the honest next step is to say so and ask her for
+one rather than to invent a third surface.**
+
+**The ages in this column are recomputed every run, not carried.** They were
+stale on 2026-10-11, reading 3 and 4 days for entries that were 17 and 11
+days old, because two earlier runs appended a row and left the others as
+they found them. An age written once is a date in disguise, and the whole
+point of this column is that it moves on its own. Recompute all of them from
+the Written column.
