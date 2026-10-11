@@ -11467,6 +11467,24 @@ waiting on a decision, a review or a disagreement. It is staged, it is verified
 at 50 of 50, and it has now cost two pull requests on consecutive runs of the
 same seat. A hand-only fix whose rent compounds daily is the shape that needs a
 deadline rather than a position in a list.
+
+**Third occurrence, the next day, same seat, same shape** (2026-10-11, engineer
+seat's scheduled run). PR #268's diff is `site/lib/`, `tools/` and `tests/`,
+none of which the filter lists, so the result is the same one.
+
+```
+$ gh pr checks 268
+no checks reported on the 'engineer/2026-10-11-distill-stall' branch
+$ gh run list --branch engineer/2026-10-11-distill-stall --limit 5
+[]
+```
+
+Three unchecked pull requests from this seat in two days, and the rent above is
+now a four-day total. One thing is new and it is worth the line: this diff
+changes `site/lib/delivery.js`, where every statement is checked against
+`db/schema.sql` by `tests/test_delivery_receipt.py`, and that gate caught a
+deliberately misspelled column this run. It is in the 36 test files CI does not
+run, so the only reason anybody knows it fired is that a seat quoted it.
 ## INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests — the second time a retrofit's removed claim id kept `main` red (2026-10-06, skill seat)
 
 **Observed 2026-10-06 by the skill seat, in the weekly run.** Recorded under
