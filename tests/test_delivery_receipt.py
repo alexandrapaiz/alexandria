@@ -72,8 +72,19 @@ def test_the_endpoint_never_selects_the_product():
     sql_only = re.sub(r"//[^\n]*", "", READER)
     read = sorted(set(re.findall(r"\bfrom\s+(\w+)", sql_only)))
     check("the only tables read are the ones this answers for",
-          read == ["claims", "deploy_runtime", "digests", "distill_queue",
-                   "interpret_queue", "latest_triage", "papers"], str(read))
+          read == ["claim_links", "claims", "deploy_runtime", "digests",
+                   "distill_queue", "interpret_queue", "latest_triage",
+                   "papers", "triage_log"], str(read))
+    # The two tables version 4 added, asked for a timestamp and nothing else.
+    # `triage_log.reasoning` is a model's prose about a paper and
+    # `claim_links.relation` is an edge of the graph the subscription buys, so
+    # a `max()` over one column each is the whole of what belongs here.
+    check("the sibling reads ask for a timestamp and a model, nothing else",
+          re.findall(r"from (triage_log|claim_links)", sql_only)
+          == ["triage_log", "claim_links"]
+          and "reasoning" not in sql_only and "relation" not in sql_only
+          and "score" not in sql_only and "confidence" not in sql_only,
+          sql_only)
     # The three views added in version 2 are counted and never selected from,
     # which is what keeps a queue depth metadata rather than product. `select
     # count(*) from distill_queue` publishes a number of waiting papers and
@@ -227,9 +238,22 @@ WEEK_FORMAT = "%Y-%m-%dT%H:%M:%S+00:00"
 QUEUES = {"triage_pending": 41, "distill_pending": 212, "interpret_pending": 7}
 
 
+def SIBLINGS(when, model="kimi-k2.6"):
+    """A sibling block where both stages wrote at `when`, on a Moonshot model.
+
+    The model is not decoration. Every corpus stage falls back to Groq's free
+    tier, so the judgement reads which account served the newest row, and a
+    fixture that left the model out would exercise the "cannot say" branch
+    while looking like the healthy one.
+    """
+    return {"triage": {"newest": when, "model": model},
+            "interpret": {"newest": when, "model": model}}
+
+
 def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
             papers=None, claims=None, deploy=None, version=None,
-            press_present=True, queues="default", distilled="default"):
+            press_present=True, queues="default", distilled="default",
+            siblings="default"):
     """A receipt whose corpus moved last night, whatever night it is.
 
     The press surface is judged against the `today` these tests pass in, so the
@@ -254,6 +278,7 @@ def receipt(week="2026-W39", created="2026-09-28T09:03:00+00:00",
         "pipeline": {"papers_newest": papers if papers is not None else fresh,
                      "claims_newest": claims if claims is not None else fresh,
                      "distilled_newest": fresh if distilled == "default" else distilled},
+        "siblings": (SIBLINGS(fresh) if siblings == "default" else siblings),
         "queues": QUEUES if queues == "default" else queues,
         "deploy": deploy if deploy is not None else [],
     }
@@ -391,6 +416,7 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
     check("version 1 is in the readable list", 1 in dh.READABLE_VERSIONS)
     payload = receipt(version=1)
     payload.pop("queues", None)
+    payload.pop("siblings", None)
     payload["pipeline"].pop("distilled_newest", None)
     with served(status=200, body=payload):
         got, why = dh.read_receipt()
@@ -404,6 +430,7 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
     # Version 2 is the one actually live while this lands, so it is the window
     # that really happens rather than the one that happened last time.
     live = receipt(version=2)
+    live.pop("siblings", None)
     live["pipeline"].pop("distilled_newest", None)
     with served(status=200, body=live):
         got, why = dh.read_receipt()
@@ -412,6 +439,23 @@ def test_the_previous_version_is_still_readable_through_the_deploy_window():
     check("it keeps its queue depths", row2["queues"] == QUEUES, str(row2))
     check("and its absent marker is still not a stage that never ran",
           row2["distilled"] is None, str(row2))
+
+
+def test_the_version_three_window_is_the_one_this_change_opens():
+    """Version 3 is live while version 4 lands, so it is the window that really
+    happens this time rather than the one that happened last time. Its absent
+    sibling markers have to read as a fact the reader does not have, and never
+    as two stages that have written nothing, because the second of those names
+    the Moonshot account as the suspect."""
+    live = receipt(version=3)
+    live.pop("siblings", None)
+    with served(status=200, body=live):
+        got, why = dh.read_receipt()
+    check("a version 3 receipt is accepted", got is not None, why)
+    _, row, _ = dh.receipt_facts(live)
+    check("it keeps its distill marker", row["distilled"] is not None, str(row))
+    check("and its absent sibling block reads as cannot say",
+          row["siblings"] is None, str(row))
 
 
 def test_a_credential_that_does_not_work_falls_through_to_the_receipt():
@@ -624,10 +668,17 @@ def test_both_readers_name_the_same_cause_for_a_stalled_stage():
             answers["distill_queue"] = row
         direct = dh.judge_pipeline(dh.pipeline_facts(FakeConn(answers)))
 
+        # Sibling markers held at absent on both sides, because this test is
+        # about the depth and the distill marker. The clause they add is the
+        # subject of test_the_sibling_stages_split_the_provider_from_this_one_cron
+        # below, and a fixture that published them here while `FakeConn` had no
+        # answer for the statement would fail on the difference between two
+        # tests rather than on either one's behaviour.
         payload = receipt(papers=moved.strftime(WEEK_FORMAT),
                           claims=stalled.strftime(WEEK_FORMAT),
                           queues=published,
-                          distilled=marker.strftime(WEEK_FORMAT) if marker else None)
+                          distilled=marker.strftime(WEEK_FORMAT) if marker else None,
+                          siblings=None)
         _, pipeline_row, _ = dh.receipt_facts(payload)
         via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
 
@@ -717,3 +768,106 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+def test_the_sibling_stages_split_the_provider_from_this_one_cron():
+    """The property version 4 was added for, held across both readers.
+
+    "Distill never reached a paper" leaves three suspects and its own headline
+    names them: the cron, the model availability gate and the spend cap. Two of
+    those are the Moonshot organization key that triage, interpret and the
+    press share, and one is this job alone, so they do not have the same first
+    step and the stall's own markers cannot choose between them.
+
+    Triage runs at 12:00 UTC and interpret at 14:00, both before distill's
+    15:00, and triage writes a `triage_log` row for every paper it judges. So a
+    sibling row written while distill wrote nothing is evidence the account
+    answered a caller, and three stages quiet since the same day are one cause
+    rather than three. The sentence has to be identical from a connection and
+    from the receipt for the same reason every other sentence here does: the
+    seat with no credential and the owner must not read different first steps.
+    """
+    moved = (datetime.now(timezone.utc) - timedelta(hours=14)).replace(microsecond=0)
+    stalled = (datetime.now(timezone.utc) - timedelta(days=3)).replace(microsecond=0)
+
+    kimi, groq = "kimi-k2.6", "openai/gpt-oss-120b"
+    cases = (
+        ("Moonshot answered a caller", (moved, kimi), (stalled, kimi),
+         "the Moonshot account answered a caller after distill stopped"),
+        ("the fallback carried the small stages", (moved, groq), (moved, groq),
+         "which is the Groq fallback and not Moonshot"),
+        ("every stage on the key went quiet", (stalled, kimi), (stalled, kimi),
+         "every stage on the shared Moonshot key went quiet together"),
+        ("a model no price table knows", (moved, "who-knows-9"), (None, None),
+         "no table here says which account served that"),
+        ("neither sibling has written at all", (None, None), (None, None),
+         "no sibling stage's marker is readable here"),
+    )
+
+    for name, triage, interpret, phrase in cases:
+        direct = dh.judge_pipeline(dh.pipeline_facts(FakeConn({
+            "max(fetched_at)": (moved, stalled),
+            "max(created_at) from claims": (stalled,),
+            "distill_queue": (41, 212, 7),
+            # The two sibling statements, keyed on the table each one reads.
+            # A None timestamp stands for an empty table, which `fetchone`
+            # answers with no row at all.
+            "from triage_log": triage if triage[0] else None,
+            "from claim_links": interpret if interpret[0] else None,
+        })))
+
+        def published(entry):
+            when, model = entry
+            return (None if when is None else
+                    {"newest": when.strftime(WEEK_FORMAT), "model": model})
+
+        payload = receipt(papers=moved.strftime(WEEK_FORMAT),
+                          claims=stalled.strftime(WEEK_FORMAT),
+                          distilled=stalled.strftime(WEEK_FORMAT),
+                          siblings={"triage": published(triage),
+                                    "interpret": published(interpret)})
+        _, pipeline_row, _ = dh.receipt_facts(payload)
+        via_receipt = dh.judge_pipeline(pipeline_row, source=dh.RECEIPT_URL)
+
+        check(f"{name}: both readers say failing",
+              direct.state == via_receipt.state == dh.FAILING, direct.headline)
+        check(f"{name}: the headline names which of the three it is",
+              phrase in direct.headline, direct.headline)
+        check(f"{name}: and both readers word it identically",
+              direct.headline == via_receipt.headline,
+              f"{direct.headline!r} vs {via_receipt.headline!r}")
+        check(f"{name}: the markers are in the evidence either way",
+              direct.evidence["siblings"] == via_receipt.evidence["siblings"],
+              f"{direct.evidence['siblings']!r} vs "
+              f"{via_receipt.evidence['siblings']!r}")
+
+    # Two empty tables and a query that could not run are one answer, and that
+    # is deliberate rather than a convenience: a reader that reported "no
+    # sibling has ever written" from a failed read would name the provider on
+    # no evidence at all.
+    unreadable = dh.judge_pipeline(dh.pipeline_facts(FakeConn({
+        "max(fetched_at)": (moved, stalled),
+        "max(created_at) from claims": (stalled,),
+        "distill_queue": (41, 212, 7)})))
+    check("a sibling read that failed says cannot say, not never wrote",
+          "no sibling stage's marker is readable here" in unreadable.headline,
+          unreadable.headline)
+    check("and it is reported as absent rather than as two nulls",
+          unreadable.evidence["siblings"] is None,
+          str(unreadable.evidence["siblings"]))
+
+    # A fresh sibling on a corpus that is still moving says nothing at all,
+    # because this clause only exists inside a stall. The surface's unit is
+    # staleness and these two markers are never an alarm of their own.
+    healthy = dh.judge_pipeline(dh.pipeline_facts(FakeConn({
+        "max(fetched_at)": (moved, moved),
+        "max(created_at) from claims": (moved,),
+        "distill_queue": (41, 212, 7),
+        "from triage_log": (stalled, "kimi-k2.6"),
+        "from claim_links": (stalled, "kimi-k2.6@abc123")})))
+    check("a quiet sibling alone does not raise", healthy.state == dh.OK,
+          healthy.headline)
+    check("but it is still reported",
+          healthy.evidence["siblings"]["triage"]["newest"] == str(stalled),
+          str(healthy.evidence["siblings"]))
+    check("and the prompt sha in claim_links.method never reaches the evidence",
+          healthy.evidence["siblings"]["interpret"]["model"] == "kimi-k2.6",
+          str(healthy.evidence["siblings"]))
