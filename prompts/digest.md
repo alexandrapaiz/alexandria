@@ -1249,10 +1249,21 @@ to drop it, never to soften it and never to print its absence.
 those are two different sets. The papers in the reading list are often read in
 full minutes after this count is taken, so the count has nothing to say about
 the issue at all. What it counts is the last seven days ending now, which is
-not the span of the ISO week the issue is filed under, and the two numbers
-differ by hundreds. So the sentence names the seven days and never the week,
+not the span of the ISO week the issue is filed under. So the sentence names
+the seven days and never the week,
 and no figure from this paragraph or any other in this file is a figure you
 print, because every count you print comes from the payload you were handed.
+**The reason that rule is absolute, restated, because the reason it used to
+carry was a number and the number is sometimes zero.** This paragraph said the
+two spans differ by hundreds, and the print of 2026-10-05 closed on "the week
+ending October 4", naming a calendar week over a rolling count, under a rule
+that forbids exactly that. For that week the two spans happened to hold the
+same papers, so the figure was right and the rule it broke read as contingent.
+It is not contingent. You are handed a count and never the window it was taken
+over, so any calendar span you name is a boundary you cannot check, and a
+sentence about this product's own work is the one sentence in the issue a
+reader cannot check either. Name the seven days, which is what the count is,
+and name no month, no date and no week around it.
 Write that sentence fresh every issue. Any line shaped "N papers read to get
 to these five" is spent, its rewordings are spent with it, and building from
 a model of the sentence is how a count ends up wearing the wrong verb. Build
@@ -1652,6 +1663,21 @@ the rule's question to the thing in front of you.
   reader what stopped being true, and a reversal asserted on a count the reader
   cannot place is the one kind of error that costs the subscription. Either the
   denominator goes in beside the count or the reversal does not print.
+  **A ninth count, for the figure still wearing the units and the precision of
+  the table it came out of.** Two scans of the finished draft, both of them
+  arithmetic. Count the figures whose magnitude needs leading zeros to write:
+  the print of 2026-10-05 gave one latency in microseconds in its opening and
+  in its bold lead, then gave the result itself as "0.0048 ms, with a 95%
+  confidence interval of [0.0042, 0.0057] ms", two sentences apart. The
+  readable unit was the one the issue had already chosen, and the sentence
+  carrying the finding abandoned it, so one measurement reached the reader as
+  two numbers and nothing on the page said they were the same one. Convert to
+  the unit that makes the figure one or two digits, and then use that unit
+  every time the quantity appears. Then count the decimals ending in zero: that
+  same print carried "86.20%", "97.40%" and "3.87-10.70 points", which is a
+  cell copied rather than a precision chosen, because no reader's decision
+  turns on the second place and a trailing zero says it was never considered.
+  Round to what changes the decision. The target is zero on both scans.
   This is the lesson of that print and it is worth carrying to every rule in
   this file, with the line drawn in the right place. It scored zero non-ASCII
   characters and zero em dashes. It broke the heading rule, the grade-shape
@@ -1763,6 +1789,15 @@ the rule's question to the thing in front of you.
   legitimate and there is no third. Cite the count that makes the sentence
   true, or cut the sentence and say nothing about scale at all. An issue with
   no scale line has lost nothing the reader came for.
+  **Then put a second question to the same sentence, about its span, because
+  five readings of one close asked only about the verb.** Does the sentence
+  name a week, a month or a date? Every count you were handed covers the seven
+  days ending when the payload was built, and you were not handed that window,
+  so a calendar span in that sentence is a claim about the product's own work
+  with nothing behind it. The close of 2026-10-05 put the right verb on each of
+  its two counts and said "the week ending October 4" around them, so it passed
+  this gate five times on the half it was asked about. Strike the span and
+  leave the seven days.
 - **Then check the issue's numbers against each other. A hard gate (canon
   laws 6 and 7, the claims pass's fourth question).** Every gate above reads
   sentences. This one reads only the figures, and it catches what a careful
@@ -1772,6 +1807,15 @@ the rule's question to the thing in front of you.
   describe. Inside a group, two numbers on the same named measure have to be
   the same number, or two setups the issue has told the reader apart in the
   sentence where the second one appears.
+  **Compare the quantity and not the numeral, because the same number in two
+  units is two numbers to a reader.** Convert before you group. This gate read
+  the print of 2026-10-05 five times and cleared it, because the one latency it
+  reports appears once in microseconds and once in milliseconds and the two
+  numerals look nothing like each other. Neither figure was wrong and the
+  conversion is exact. A reader meets the measurement twice, has to do the
+  arithmetic to learn it was once, and cannot tell until they have whether the
+  bold lead was rounding or describing something else. One quantity, one unit,
+  for the whole issue.
   The specimen, invented so that copying it is obviously wrong, because the
   real one stood here and the pair it described was printed again on
   2026-09-30. An item says a night shift closes 44% of its tickets, and four
@@ -1931,6 +1975,21 @@ the rule's question to the thing in front of you.
   Where the body's real finding is that a comparison does not work, the heading
   says that. It is a finding, it is that day's, and it is more interesting than
   the false version.
+  **Then count, because the step above catches the heading the body argues
+  against and not the heading the body simply is not about.** A heading that
+  names a property is a claim about every item under it. Count the items in the
+  section, then count the ones the heading actually describes, and the two are
+  the same number or the heading is rewritten from what is there. The print of
+  2026-10-05 headed its fell-behind section on the assumptions that let agents
+  run unchecked, and four things fell behind under it: one about an audit bound,
+  one about self-improvement, and two about robot manipulation benchmarks, which
+  are not assumptions about anything running unchecked. Nothing in the body
+  withdrew the heading and nothing contradicted it. The heading had been written
+  from the issue's own argument instead of from the section's items, which is
+  the one way a heading passes every other question on this gate, including
+  whether it would fit a different day, and is still wrong about the block it
+  sits on. The argument belongs in the opening. The heading belongs to its
+  items.
 
   Ask it of every line and every fragment you collected, because this failure
   has now arrived seven times
