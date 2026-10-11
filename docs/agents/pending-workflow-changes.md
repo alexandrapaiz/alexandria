@@ -3,6 +3,47 @@
 **Enforced at:** prompts/exo-agent.md §5, which verifies each queued
 item against the live workflow files every run.
 
+## The overlap table, regenerated every run
+
+**Added 2026-10-11, and it replaces the rule that every item restate its own
+neighbours.** That rule produced nineteen paragraphs each claiming to list
+the other items touching its files, each written on a different day, each
+rotting on its own. Four were false on 2026-10-04. Five of item 14's eight
+lines were false on 2026-10-11. Seventeen of the nineteen omit at least one
+neighbour today. **A fact about the whole page cannot be maintained in
+nineteen places**, which is the same lesson as "two readers of one question
+grow two answers" in `delivery-health.md`.
+
+So the overlap lives here, once, and the ExO charter's §5 regenerates it
+every run from the corrected sweep rather than asking each item to remember.
+
+| Workflow file | Items that touch it | What each edits, so the order can be judged |
+|---|---|---|
+| `checks.yml` | 12-CI, 13-CI, 14-CI, 15-CI, 16, 17, 19, 20 | **the only real hazard on this page.** All eight add entries to the same two `paths:` lists and steps to the same job. Apply in ascending order and read each item's own "if item N is applied first" note; several already carry one |
+| `agent-engineer.yml` | 5, 6, 9, 10, 14 | 5 adds a step, 6 adds an `env:` line, 9 adds a concurrency block, 10 replaces a step body, 14 edits `claude_args`. Disjoint; any order |
+| `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint; any order |
+| `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args` |
+| `agent-writer.yml` | 4a, 6, 20, 21 | 4a a `prompt:` block, 6 an `env:` line, 20 a whole new file, 21 `claude_args`. Disjoint; any order |
+| `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. Disjoint |
+| `agent-exo.yml` | 7, 14 | 7 rewrites a prompt paragraph, 14 edits `claude_args`. Disjoint |
+| `agent-market.yml` | 14, 20 | 14 edits both of this file's two `claude_args` steps, 20 adds a file. Disjoint |
+| `agent-security.yml`, `hq-origin-notice.yml`, `agent-frontend.yml`, `agent-finance.yml`, `agent-okr.yml` | one item each | nothing to order |
+
+**Read this table rather than an item's ordering paragraph where the two
+disagree, and when you find a disagreement, delete the paragraph.** The
+paragraphs are being retired as their items are touched rather than in one
+sweep, because rewriting seventeen of them in a single run would be this
+seat editing other seats' queued work on a day none of it is being applied.
+
+**The command that regenerates it**, which is the corrected sweep from ExO
+charter §5. The old version matched the full path only, so it missed every
+bare filename on the page:
+
+```bash
+grep -oE '(\.github/workflows/)?(agent-[a-z]+|checks|deploy-main|build-agent-image|hq-origin-notice)\.yml' \
+  docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
+```
+
 ## How to name an item on this page, and how to read the numbers that exist
 
 **New items get a slug, never the next number** (rule added 2026-10-11 by

@@ -830,8 +830,24 @@ grep -oE '(\.github/workflows/)?(agent-[a-z]+|checks|deploy-main|build-agent-ima
   docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
 ```
 
-Any file named by two items needs both items' ordering paragraphs to name
-the other.
+**And the answer goes in one table rather than into every item** (changed
+2026-10-11). The old rule was that any file named by two items needs both
+items' ordering paragraphs to name the other. That rule asks nineteen items
+to each maintain a fact about the whole page, and it has failed every time
+it has been checked: four paragraphs false on 2026-10-04, five of item 14's
+eight lines false on 2026-10-11, and seventeen of nineteen omitting at least
+one neighbour on the day this was written. `checks.yml` is named by eight
+items and not one of the eight names all seven others.
+
+So the queue page now opens with an overlap table, and **regenerating it
+from the command above is this seat's job every run**. An item's own
+ordering paragraph is retired when that item is next touched; where a
+paragraph and the table disagree, the table is right, because it was
+generated this run and the paragraph was written on some other day.
+
+A fact about the whole artifact is maintained in one place or it is
+maintained nowhere. That is the same rule `delivery-health.md` states as two
+readers of one question growing two answers, applied to prose.
 
 **That command used to match the full path only, which is why it reported
 health on a page that names files bare** (corrected 2026-10-11). The queue
