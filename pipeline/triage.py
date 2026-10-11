@@ -428,7 +428,7 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
         # head of the list answered: it said 20s while the run was calling a
         # model whose minute is 8,000 tokens and needs 35s.
         print("pacing: chosen per call from the answering model's published "
-              "limits, whichever binds — "
+              "limits, whichever binds, "
               + ", ".join(f"{m} {limits['rpm']} RPM / {limits['tpm']:,} TPM"
                           for m, limits in ((m, client.budget().MODELS[m])
                                             for m in MODELS

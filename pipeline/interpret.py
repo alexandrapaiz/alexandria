@@ -289,7 +289,7 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
         # The rule, not a number: the pause is chosen after each call from the
         # model that answered it and the tokens it drew. See llm.pace.
         print("pacing: chosen per call from the answering model's published "
-              "limits, whichever binds — "
+              "limits, whichever binds, "
               + ", ".join(f"{m} {limits['rpm']} RPM / {limits['tpm']:,} TPM"
                           for m, limits in ((m, client.budget().MODELS[m])
                                             for m in MODELS

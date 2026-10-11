@@ -430,7 +430,7 @@ def retag(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD,
     for note in notes:
         print(f"availability: {note}")
     print(f"models cheapest-first: {models}; pacing chosen per call from the "
-          "answering model's published limits, whichever binds — "
+          "answering model's published limits, whichever binds, "
           + ", ".join(f"{m} {client.budget().MODELS[m]['rpm']} RPM / "
                       f"{client.budget().MODELS[m]['tpm']:,} TPM"
                       for m in models if m in client.budget().MODELS))
