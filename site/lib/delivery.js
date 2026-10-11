@@ -14,7 +14,7 @@ import { buildReceipt } from "./delivery-core.js";
 // throws is not, and a seat reading this from a sandbox cannot see the
 // environment, so this field is its only diagnosis.
 //
-// Six queries, and no parameter from the request reaches any of them. Two are
+// Seven queries, and no parameter from the request reaches any of them. Two are
 // cheap by construction: `digests` is ordered on its unique `week` index and
 // `deploy_runtime` has one row per scheduled job. The two `max()` reads over
 // `papers` and `claims` have no index to use and scan, which is thousands of
@@ -32,9 +32,10 @@ import { buildReceipt } from "./delivery-core.js";
 // region, against a surface whose absence left a stalled pipeline undiagnosable
 // for three days. It is one round trip and three scalars come back.
 //
-// The sixth is the sibling markers, added in version 4, and it is two more
-// unindexed `max()` reads in one statement over two tables of the same size as
-// the two above. Its own comment at the call site says what it buys.
+// The last two are the sibling markers, added in version 4: one newest-row
+// read each over `triage_log` and `claim_links`, two tables of the same size
+// as the two above and with no index on the column either. Their comment at
+// the call site says what they buy and why they are two statements.
 export async function loadDeliveryReceipt() {
   const url = process.env.DATABASE_URL;
   if (!url) return { reason: "DATABASE_URL is not set in the site's environment" };
@@ -68,26 +69,41 @@ export async function loadDeliveryReceipt() {
     `;
     const claims = await sql`select max(created_at) as newest from claims`;
 
-    // The two sibling stages' output markers, which is the fact that says
-    // whether the provider is answering anybody at all. Distill, triage and
-    // interpret all call Kimi on one organization key and distill runs last,
-    // so a triage row written after distill last worked rules out the account
-    // and leaves this one job's cron, deploy and caps. Fail-soft for the same
-    // reason the depths are, and nulls rather than an absent object: a reader
-    // that cannot tell "no edge yet" from "could not look" would eventually
-    // name the provider on no evidence.
+    // The two sibling stages' newest rows, which is the fact that says whether
+    // the provider is answering anybody at all. Distill, triage and interpret
+    // all call Kimi on one organization key and distill runs last, so a
+    // triage row written on a Moonshot model after distill last worked rules
+    // the account out and leaves this one job's cron, deploy and caps.
+    // Fail-soft for the same reason the depths are, and a stage of null rather
+    // than a block of null when a table is merely empty: a reader that cannot
+    // tell "no edge yet" from "could not look" would eventually name the
+    // provider on no evidence.
     //
-    // Two scalar subqueries in one statement, so this is one round trip over
-    // two tables of thousands of rows rather than two. Neither column is
-    // indexed, which is the same trade `papers` and `claims` already make
-    // above, and the route's five-minute edge cache is what keeps it off Neon.
+    // The model is published with the timestamp because every corpus stage
+    // falls back to Groq's free tier when Moonshot refuses (ADR-39), so a
+    // sibling row alone proves only that some model answered. Which one it
+    // was sends a reader to two different places, and the two tables record
+    // it: `triage_log.model` and `claim_links.method`.
     let siblings = null;
     try {
-      const rows = await sql`
-        select (select max(created_at) from triage_log)  as triaged,
-               (select max(created_at) from claim_links) as linked
+      // Two statements rather than one with subqueries, because each one is a
+      // newest-row read and not a `max()`: the model that wrote the newest row
+      // is the half that says which account answered, and a scalar subquery
+      // per column would scan each table twice to get the pair. `order by
+      // created_at desc limit 1` is one pass and a top-N either way, the same
+      // cost as the `max()` reads above, and neither column is indexed.
+      const triaged = await sql`
+        select created_at as newest, model
+        from triage_log order by created_at desc limit 1
       `;
-      siblings = rows[0] ?? null;
+      const linked = await sql`
+        select created_at as newest, method as model
+        from claim_links order by created_at desc limit 1
+      `;
+      // An empty table is a stage with no row, which is a fact. The block is
+      // null only when a query threw, which is the contract `deploy` and
+      // `queues` already keep.
+      siblings = { triage: triaged[0] ?? null, interpret: linked[0] ?? null };
     } catch {
       siblings = null;
     }
@@ -144,8 +160,7 @@ export async function loadDeliveryReceipt() {
         papers: papers[0]?.newest ?? null,
         distilled: papers[0]?.distilled ?? null,
         claims: claims[0]?.newest ?? null,
-        triaged: siblings?.triaged ?? null,
-        linked: siblings?.linked ?? null,
+        siblings,
         queues,
         deploy,
         observedAt: new Date(),

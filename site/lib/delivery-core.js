@@ -50,25 +50,27 @@ export const RECEIPT_VERSION = 4;
 // committed loop as that paper's claims. A timestamp and no identifier, so it
 // stays inside rule 2 above.
 //
-// Version 4 adds `pipeline.triaged_newest` and `pipeline.linked_newest`, on
-// the same additive terms again. Version 3 went live and narrowed the stall to
+// Version 4 adds the `siblings` block, on the same additive terms again. Version 3 went live and narrowed the stall to
 // "distill never reached a paper", which leaves the three suspects its own
 // headline names: the cron, the model availability gate and the spend cap. Two
 // of those belong to the Moonshot account and one belongs to this job alone,
 // and the stages either side of distill are the control that splits them.
 // Triage (12:00 UTC) and interpret (14:00 UTC) are Kimi callers on the same
 // organization key, which pipeline/llm.py's KIMI_WINDOWS lists in one table,
-// and distill runs at 15:00 after both. So a triage judgement written since
-// distill last worked is evidence the account was answering a caller, and a
-// day on which all three stopped together is one shared cause rather than
-// three separate ones.
+// and distill runs at 15:00 after both. So a triage judgement written on a
+// Moonshot model since distill last worked is evidence the account was
+// answering a caller, and a day on which all three stopped together is one
+// shared cause rather than three separate ones.
 //
 // `triage_log.created_at` is the stronger of the two, because triage writes a
 // row for every paper it judges, a discard included. `claim_links.created_at`
 // is weaker on purpose and is published anyway: interpret writes an edge only
 // when the model finds a relation, so a quiet run leaves no row and an absent
 // edge is not an absent run. The judgement in tools/delivery_health.py takes
-// either stage's freshness as enough and names which one it read.
+// either stage's freshness as enough and names which one it read, and the
+// model each stage wrote on is published beside it, because every corpus stage
+// falls back to Groq's free tier and a fallback that carried the small stages
+// is a different finding from an account that answered them.
 
 // A timestamp from Neon arrives as a Date, from a JSON round trip as a
 // string, and from an empty table as null. One shape leaves here.
@@ -88,8 +90,22 @@ function count(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-export function buildReceipt({ digest, papers, distilled, claims, triaged,
-                               linked, queues, deploy, observedAt }) {
+// One sibling stage's newest row: when it was written and what wrote it.
+// `null` for the stage means the table is empty, which is a fact, and the
+// whole `siblings` block is null when the query could not run at all.
+//
+// The model comes out of `triage_log.model` as it stands and out of
+// `claim_links.method` with its prompt sha dropped, because `method` is
+// `model@sha` and the sha is not this endpoint's to publish.
+function stage(row) {
+  if (row === null || row === undefined) return null;
+  const wrote = iso(row.newest);
+  const model = text(row.model, 120);
+  return { newest: wrote, model: model === null ? null : model.split("@")[0] };
+}
+
+export function buildReceipt({ digest, papers, distilled, claims, siblings,
+                               queues, deploy, observedAt }) {
   return {
     receipt: "alexandria-delivery",
     version: RECEIPT_VERSION,
@@ -113,12 +129,29 @@ export function buildReceipt({ digest, papers, distilled, claims, triaged,
       // rather than as a stage that never ran, because an absent field on an
       // older receipt arrives here as the same null.
       distilled_newest: iso(distilled),
-      // The two sibling Kimi stages' own output markers, for the one question
-      // the marker above cannot answer: is the provider answering anybody.
-      // `null` means here what it means everywhere else on this receipt, which
-      // is a fact it does not have and never a stage that never ran.
-      triaged_newest: iso(triaged),
-      linked_newest: iso(linked),
+    },
+    // What the two stages either side of distill last wrote, and which model
+    // wrote it. A block of its own rather than two more fields on `pipeline`,
+    // the same shape `queues` has and for the same reason: these are a cause
+    // rather than a clock, and `null` means the site could not run the query.
+    //
+    // The model is the half that makes this decisive. Every corpus stage calls
+    // Kimi through pipeline/llm.py and every one of them falls back to Groq's
+    // free tier when Moonshot refuses (ADR-39), so a sibling that wrote
+    // something proves a model answered and does not by itself say which
+    // account. `triage_log.model` and `claim_links.method` record the one that
+    // did, and those two answers send a reader to different places: Moonshot
+    // answering means distill's own cron, deploy or caps, and the Groq
+    // fallback carrying the small stages means the shared account may be
+    // refusing everybody, with distill the one stage whose 250,000-character
+    // payload the free tier cannot take.
+    //
+    // `method` is `model@prompt_sha` and only the model half is published. The
+    // sha is the same class of field as `digests.prompt_sha`, which this
+    // endpoint has never published and tests/delivery.test.mjs holds it to.
+    siblings: siblings == null ? null : {
+      triage: stage(siblings.triage),
+      interpret: stage(siblings.interpret),
     },
     // How many rows are waiting at each stage, which is the fact that turns
     // "claims has not moved in three days" into a cause. A stalled stage with
