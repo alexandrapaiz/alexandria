@@ -11869,3 +11869,84 @@ so the next occurrence depends on a run choosing to type it. Named here rather
 than filed, because `docs/voice/check_voice.py` is this seat's file and the
 sweep belongs in it beside the other counts, which is the next run's smallest
 useful patch.
+
+## INC-2026-10-11-two-more-gates-cleared-the-half-of-the-sentence-they-were-pointed-at — the close graded on its verb six times and never on its span, and the claims pass comparing numerals where the issue changed units (2026-10-11, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`, itself the
+fifth occurrence of a chain running back through
+`INC-2026-10-03-law-12-graded-by-grep`,
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Sixth occurrence of the
+class, same seat, same register, and two instances in one run rather than one.
+Recorded at the moment it repeated, per the standing rule at the top of this
+file.**
+
+**What happened, twice.**
+
+The first. Canon law 15 forbids the issue from claiming to have read what it
+only ingested. `prompts/digest.md` carries a second rule about the same
+sentence, in its own words: the count covers the last seven days ending now,
+"which is not the span of the ISO week the issue is filed under", so "the
+sentence names the seven days and never the week". The close of 2026-W40 reads
+"The week ending October 4 brought 2,557 papers in and 127 read in full." Six
+grades have read that sentence. Five passed law 15 on it and the fifth called it
+the best line in the issue.
+
+Nothing in those grades was careless. The law-15 gate in `prompts/digest.md`
+asks one question of the sentence and names it: which count in `stats` is this
+about, and is its verb the act that count records. Both counts are right and
+both verbs are right, so the gate returns a pass and the gate is correct. The
+sentence has a second part the gate never looks at, which is the span it claims
+the counts were taken over, and that part is governed by a different rule in a
+different section of the same file with nothing joining them.
+
+The second, in the same artifact. The claims pass's fourth question groups the
+issue's figures by the system they describe and asks whether two numbers on one
+named measure agree. 2026-W40 reports one kill switch latency in its bold lead
+in microseconds and two sentences later as "0.0048 ms, with a 95% confidence
+interval of [0.0042, 0.0057] ms". That is one quantity. The question's unit of
+comparison is the numeral, and a unit change makes one quantity into two
+numerals that look nothing like each other, so five executions of a question
+built to catch a figure disagreeing with itself could not see a figure repeating
+itself in disguise.
+
+**Why both came out wrong, which is the reusable part.** The five prior
+occurrences in this chain were a violation that could not be quoted, a law
+asserting coverage that needed a count, a law with two clauses under one number,
+a law whose instrument was narrower than the law and said so, and a rule naming
+one substring of a string where the reader cares about another. These two are
+L-A21's first half stated exactly: a gate's scope is narrower than its subject.
+What is new is where the narrowness lives. In both cases the gate is pointed at
+a property of the sentence rather than at the sentence, and the property it
+names is the one that failed before. The law-15 gate was written the day a verb
+was wrong. The fourth question was written the day two numerals disagreed. Each
+one encodes its founding specimen, so the half of the sentence that has never
+failed yet is the half no gate reads, and it stays unread until it fails.
+
+That is a procedure defect rather than a prose defect, and it is the reason this
+run found two things in an artifact five previous runs had already graded. The
+sixth reading of an issue produces less than the first reading of a gate.
+
+**The procedure change, and it is one sentence in the canon's grading passes
+rather than in the laws.** Where a pass clears a sentence, name which part of
+that sentence the pass actually read, and put the remaining parts to the laws
+separately. A verdict that says "PASS" on a sentence with two claims in it has
+graded one claim. Added to `docs/voice/canon.md` under pass 5, which is
+procedure and belongs to this seat, and the laws section is untouched.
+
+**Both halves also patched in the generator**, because a canon change binds the
+grader and not the writer: the law-15 gate now asks about the span as a second
+question with its own repair, and the figures gate converts before it groups.
+Ban list 106 carries the units finding with its sweep. The close's own rule has
+its justification replaced, because the reason it used to carry was a number,
+the number was zero for the week in question, and a rule defended by a
+contingent fact reads as a contingent rule.
+
+**One thing this entry does not claim.** The artifact's figures were correct in
+both cases. 2,557 papers did arrive in the window the sentence named, because
+ingest runs on a cron that does not fire in the eighteen hours where the two
+spans differ, and 0.0048 ms is 4.8 microseconds. Nothing reached a reader as a
+false number. What reached them was a boundary the writer could not check and a
+measurement printed twice, and both are the kind of defect that is invisible
+until somebody asks a gate what it cannot see.
