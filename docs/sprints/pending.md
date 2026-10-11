@@ -1,3 +1,8 @@
+## Updated 2026-10-11, ~18:20 UTC (six-hour pass): placeholder, full account follows in this same PR
+
+Draft opened first per ship-first. Full triage, merge check and sprint
+update follow in this same pull request.
+
 ## Updated 2026-10-11, ~16:45 UTC (standup, completing the stalled six-hour pass): the distill stall is the finding, no merge qualifies, no dispatch fires
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — Monday
