@@ -3477,6 +3477,19 @@ arriving on a future "key day" and neither knows about this one.
   names, unchanged from the registered incident, no new ones. README updated
   for the third run mode, the partly-opened merge gate, and an architecture
   diagram that said cron only. The mermaid was re-rendered before shipping.
+- **The market charter asked that seat to read every "Seen and not mine"
+  section and never to write one.** §3b's fourth check found PR #255, the
+  market run of 2026-10-09, with no such section, and the cause is the
+  charter rather than the run: okr, security and research each carry a
+  `## Seen and not mine` section telling the seat to write one, and market
+  carried only the instruction to sweep everyone else's. **Grepping twelve
+  charters for the phrase returns market-agent.md**, so the duty reads as
+  covered from the only cheap check there is. Covered from the consuming
+  side, absent from the producing side. That is the polarity trap §3b
+  already names, earning its place a second time after the writer charter
+  that mentioned site copy in order to forbid it. The producing half is now
+  in the charter. **The transferable bit: when a grep for a duty returns the
+  seat that consumes it, you have not found the owner.**
 - **`PROJECTS_TOKEN` is wired into this seat's workflow**, so §5b's Projects
   reconciliation check is now reachable and was not performed this run.
   Flagging it rather than claiming it.
@@ -3506,6 +3519,11 @@ arriving on a future "key day" and neither knows about this one.
    staged file.
 7. **Do not re-infer that the App handover happened.** Read the probe
    section above first.
+8. **Did the market seat's next run write a "Seen and not mine" section?**
+   If it did, the charter edit reached the run. If it did not, check the
+   inline `prompt:` block in `agent-market.yml` against the charter, because
+   that is the disagreement §2 and queue item 15 are about and this seat has
+   never checked it for the market workflow.
 
 ### One thing that is simply working
 
