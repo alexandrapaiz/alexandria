@@ -23,17 +23,46 @@ every run from the corrected sweep rather than asking each item to remember.
 | `agent-engineer.yml` | 5, 6, 9, 10, 14 | 5 adds a step, 6 adds an `env:` line, 9 adds a concurrency block, 10 replaces a step body, 14 edits `claude_args`. Disjoint; any order |
 | `agent-pm.yml` | 5, 6, 14, 15 | 5 a step, 6 an `env:` line, 14 `claude_args`, 15 a `prompt:` block. Disjoint; any order |
 | `agent-skill.yml` | 6, 12, 13, 14 | 6 and 12 both add to the `env:` block, so whichever lands second appends rather than replaces. 13 a `prompt:` block, 14 `claude_args` |
-| `agent-writer.yml` | 4a, 6, 20, 21 | 4a a `prompt:` block, 6 an `env:` line, 20 a whole new file, 21 `claude_args`. Disjoint; any order |
+| `agent-writer.yml` | 4a, 6, 21 | 4a a `prompt:` block, 6 an `env:` line, 21 `claude_args`. Disjoint, any order |
 | `agent-research.yml` | 6, 14 | an `env:` line and a `claude_args` line. Disjoint |
 | `agent-exo.yml` | 7, 14 | 7 rewrites a prompt paragraph, 14 edits `claude_args`. Disjoint |
-| `agent-market.yml` | 14, 20 | 14 edits both of this file's two `claude_args` steps, 20 adds a file. Disjoint |
-| `agent-security.yml`, `hq-origin-notice.yml`, `agent-frontend.yml`, `agent-finance.yml`, `agent-okr.yml` | one item each | nothing to order |
+| `agent-market.yml`, `agent-security.yml`, `agent-frontend.yml`, `hq-origin-notice.yml` | one item each (14, 14, 10, 5) | nothing to order |
+
+**The first version of this table, written an hour before this one, had three
+errors in it**, and they are left on the record because they are the argument
+for the table rather than against it. It said `agent-writer.yml` was touched
+by item 20, which does not touch it; it said `agent-market.yml` was touched
+by items 14 and 20, where it is item 14 alone; and it listed
+`agent-finance.yml` and `agent-okr.yml` as having one item each when no item
+names either. All three came from a splitter whose item boundaries ran past
+the last `###` heading into this page's trailing sections, so the final
+items absorbed text that was not theirs.
+
+**Two things follow, and the second is the point.** First, an item-boundary
+bug reads exactly like an overlap: both produce a filename attributed to an
+item that does not contain it, which is why the error survived into a
+published table. Second, **the regeneration rule caught it within the same
+run that made it**, because the table is generated from one command and
+re-checked against that command before shipping, which is precisely what
+nineteen hand-maintained paragraphs could never do. A fact kept in one place
+can be wrong. It cannot be quietly wrong in nineteen different ways.
 
 **Read this table rather than an item's ordering paragraph where the two
 disagree, and when you find a disagreement, delete the paragraph.** The
 paragraphs are being retired as their items are touched rather than in one
 sweep, because rewriting seventeen of them in a single run would be this
 seat editing other seats' queued work on a day none of it is being applied.
+
+**One human read is still required, and here is exactly which one.** The
+sweep finds a filename, not a verb, so it cannot tell an item that *edits*
+`agent-writer.yml` from an item that *mentions* it. Item 14 names
+`agent-writer.yml` once, in the sentence saying the writer row moved to item
+21, and the sweep reports it as a fifth item on that file. The table records
+the **edit** set, so item 14 is not in the `agent-writer.yml` row. This is
+§3b's rule that a grep finds vocabulary and not polarity, arriving in the
+one place on this page where it changes an answer. Read each hit before you
+put it in the table, and do not let a later run flip the row back on the raw
+count.
 
 **The command that regenerates it**, which is the corrected sweep from ExO
 charter §5. The old version matched the full path only, so it missed every
@@ -325,22 +354,17 @@ published in ExO charter §5, and that command matched
 least as often. The under-count was inherited as a statement of fact. The
 command is corrected in the charter and this is its output.
 
-The complete overlap list, by file, from the corrected sweep:
-
-| File this item edits | Other items naming it |
-|---|---|
-| `agent-skill.yml` | 6, 12, 13 |
-| `agent-engineer.yml` | 5, 6, 9, 10 |
-| `agent-exo.yml` | 7 |
-| `agent-market.yml` | 20 |
-| `agent-research.yml` | 6 |
-| `agent-security.yml` | none |
+**The overlap table at the top of this page is the authority and it is
+regenerated every run.** Read it rather than this paragraph. For this item's
+files it says: `agent-skill.yml` with 6, 12 and 13, `agent-engineer.yml`
+with 5, 6, 9 and 10, `agent-exo.yml` with 7, `agent-research.yml` with 6,
+and `agent-market.yml` and `agent-security.yml` with nothing.
 
 What the old paragraph got wrong, for the record: it called
-`agent-research.yml` and `agent-market.yml` "named by this item alone" and
-both have a second item, it listed three neighbours for
-`agent-engineer.yml` where there are four, and it listed `agent-pm.yml`,
-which this item does not touch at all.
+`agent-research.yml` "named by this item alone" when item 6 also names it,
+it listed three neighbours for `agent-engineer.yml` where there are four,
+and it listed `agent-pm.yml`, which this item does not touch at all. It also
+listed `agent-writer.yml`, which moved to item 21.
 
 **Any order still works, and now for a checked reason rather than an
 assumed one.** Every item in the right-hand column edits a `prompt:` block,
@@ -2055,13 +2079,12 @@ measurement was right, the proposal was right, the lane was right, and the
 seat still lost work twice, because the fix needs a hand and the hand saw
 one item asking for seven edits.
 
-**Ordering.** `agent-writer.yml` is named by items 4a, 6, 14 and 20 as well
-as by this one, from the corrected whole-page sweep. Item 4a edits a
-`prompt:` block, item 6 adds an `env:` line, item 20 adds a whole file, and
-item 14 no longer touches this file at all. None of them sits inside a
-`claude_args` line, so any order works. If both this item and item 14 are
-applied, this one supersedes item 14's deleted writer row and the two do not
-overlap.
+**Ordering.** See the overlap table at the top of the page, which is the
+authority. `agent-writer.yml` is named by items 4a and 6 as well as by this
+one. Item 4a edits a `prompt:` block and item 6 adds an `env:` line, so
+neither sits inside a `claude_args` line and any order works. Item 14 no
+longer touches this file, because this item is the writer row that was
+removed from it.
 
 **Cost.** $0 unless a run uses the turns. A cap is a tripwire, not a budget.
 
