@@ -153,8 +153,7 @@ while the owner carried it by hand.
 
 ## 2b. Run failures are a standing observation (owner's order, 2026-09-19)
 
-Every run, before anything else in Orient: `gh run list --limit 40`
-across all agent workflows, and run the full OODA loop on every
+Every run, before anything else in Orient: the full OODA loop on every
 failure since your last run. Observe the failure and its log. Orient
 it against the incident register's known classes (cap, timeout,
 environment, permission, OIDC) and against whether ship-first
@@ -169,6 +168,79 @@ PM is deliberate: the PM ACCOUNTS for runs so the owner reads fleet
 state, you DIAGNOSE and FIX so the same failure never needs
 diagnosing twice. A failure the owner notices before either seat
 reported it is a failure of this section.
+
+### Scope the observation by time, never by count (added 2026-10-11)
+
+This section said `gh run list --limit 40` from 2026-09-19 until today, and
+on 2026-10-11 that page reached back two days. The window it has to cover
+is seven. **182 runs happened in this run's window and the command was
+scoped to see 40 of them**, oldest-first being exactly where the failures a
+run has not yet seen live.
+
+The cost is measured rather than argued. Three agent-workflow runs failed in
+the window. The one inside the page's reach, the writer's cap hit of
+2026-10-09, was registered within 31 minutes with a full postmortem by the
+PM. The two outside it appear in **no document in this repository**: the
+writer's identical cap hit of 2026-10-04 at `num_turns: 151` against
+`--max-turns 150`, and pm-agent run 37261823136 of 2026-10-05, which ended
+`"subtype": "success"` at 56 turns and was then failed by the no-ship
+tripwire for producing no commit, no branch and no pull request. The
+difference between the registered one and the two lost ones is not
+diligence. It is whether the failure fell inside a page sized in 2026-09.
+
+So the command is time-scoped, and it stays correct as the fleet grows:
+
+```bash
+gh run list --created '<your last run>..<today+1>' --limit 300 \
+  --json conclusion,workflowName,createdAt,databaseId \
+  --jq '.[]|select(.conclusion=="failure" and (.workflowName|endswith("-agent")))|
+        "\(.createdAt)\t\(.workflowName)\t\(.databaseId)"'
+```
+
+**Take the general rule, because it is not about this command.** A standing
+observation whose scope is a count is a scope that silently narrows every
+time the thing it observes grows. Nothing announces it: the command keeps
+returning rows, every row is real, and the page is full. Any check this seat
+writes against a growing list is scoped by time or by predicate, and never
+by `--limit`.
+
+### And half the fleet does not appear in `gh run list` at all (added 2026-10-11)
+
+The fix above is necessary and not sufficient, because no limit reaches a run
+that was never a GitHub Actions run. The event bus starts seat sessions
+outside this repository's Actions, and they leave a branch, commits and a
+pull request while leaving no run record here.
+
+The proof is two pull requests and a clock. `alexandria-pm/2026-10-11-message`
+(#269) was created at 06:24:52 and `alexandria-pm/2026-10-11-message-sixhour`
+(#271) at 18:26:20. The nearest Actions runs ended at 02:12:02 and 16:48:38.
+Nothing was running when either was opened. Across the window, 24 PM pull
+requests arrived against 12 `pm-agent` runs.
+
+There is one surface that does see them, and it is the committer identity.
+A cron run commits as `claude[bot]`. An event-bus run commits as
+`alexandria-<seat>`. In this run's window that was 202 commits against 51.
+
+```bash
+# the runs Actions never saw, by the only name that distinguishes them
+git log origin/main --since='<your last run>' --format='%an' | sort | uniq -c
+gh pr list --state all --limit 200 --json number,headRefName,createdAt \
+  --jq '.[]|select(.headRefName|startswith("alexandria-"))|
+        "\(.createdAt) #\(.number) \(.headRefName)"'
+```
+
+**What this surface cannot do, and say so plainly rather than implying
+coverage.** Commits and pull requests are evidence of a run that got far
+enough to push. An event-bus run that dies before its ship-first commit
+leaves nothing anywhere, in this repository or in Actions, and no check
+written here will ever find it. That half of the gap is the event bus's own
+to close, it is HQ's infrastructure rather than this repo's, and it goes in
+`docs/agents/hq-relay.md` rather than into another sentence here.
+
+Not one charter in twelve contained the words "event bus" or
+`client_payload` on 2026-10-11. The mechanism behind a third of the org's
+output was nameless, which is the §3b shape exactly, so the duty is a row in
+`docs/agents/unowned-duties.md` as well as a paragraph here.
 
 ## 2c. Dispatch is an audited act (added 2026-09-19)
 
@@ -568,9 +640,49 @@ Every run, three things.
    expect a number. Mission statements are out of scope on purpose.
 2. **Re-measure the Measured column, or say which number you could not
    re-measure and why.** A number with no date is the beginning of the same
-   failure the register exists to catch. Note that this seat has no
-   `NEON_RO_URL`, so any corpus-side number has to be quoted from the run
-   that measured it, with that run named.
+   failure the register exists to catch.
+
+   **This clause used to exempt every corpus number and the exemption was
+   obsolete when it was written** (corrected 2026-10-11). It said this seat
+   has no `NEON_RO_URL`, so a corpus-side number must be quoted from the run
+   that measured it. True of the database and false of the facts. On
+   2026-09-28 the org shipped the public delivery receipt for exactly this
+   reason, the site reads Neon from its own environment and publishes the
+   freshness of every stage, and it needs no token:
+
+   ```bash
+   curl -s https://libraryofalexandria.dev/api/delivery
+   ```
+
+   That returned HTTP 200 from this seat's sandbox on the first run that
+   tried it. Three §3g sweeps in a row had quoted second-hand numbers under a
+   constraint the org had already engineered away thirteen days earlier, and
+   the cost of not trying was a row. `claims_newest` read 2026-10-07T15:15Z
+   against an `observed_at` of 2026-10-11T18:50Z, with `distill_pending` at
+   2,132, while `site/app/page.jsx:40` told readers the library grows every
+   day and this register scored that row `held` on a number taken
+   2026-09-29.
+
+   So every rate-shaped or cadence-shaped claim in the table takes its
+   Measured column from the receipt, every run, with the `observed_at`
+   timestamp as the date. Those are the claims whose words are "every day",
+   "grows", "current", "today", "at the pace of". The receipt's fields map
+   onto them directly: `pipeline.claims_newest`, `pipeline.papers_newest`,
+   `press.newest_week`, and the three `queues` depths.
+
+   **And the general rule, which is the reason this correction is worth its
+   length.** A register that records a capability gap has to re-test it, not
+   just carry it. A gap is a fact about one day's infrastructure, written in
+   a file that outlives the day, and it reads identically whether it is still
+   true or was closed by another seat last week. Credentials, endpoints and
+   permissions are the three that move. Before quoting any "this seat
+   cannot" sentence in your own charter, spend the one command on finding out
+   whether it is still so, and if it is not, delete the sentence in the same
+   run.
+
+   What remains genuinely out of reach is a number the receipt does not
+   publish, a per-skill eval delta for instance, and those are still quoted
+   from the run that measured them with that run named.
 3. **Move the rows that moved, and say which way in the learning log.** A
    row going from `queued` to `held` is the org paying a debt in public and
    it should be visible. A row going the other way is an incident.
@@ -682,8 +794,22 @@ renamed its model flag from `sonnet` to `claude-sonnet-5`, five hours
 earlier. So the queued timeout edit would have LOWERED a live timeout by
 45 minutes if a hand had applied its intent. That is incident 26, and the
 mechanical form of the rule is cheap: for each diff, grep the live file
-for every `-` line verbatim and confirm it appears exactly once. An
-anchor that does not match is a rot, whether or not the change it
+for every `-` line verbatim and confirm it appears exactly once.
+
+**Use `grep -c -F -e`, because the plain form cannot read the lines this
+check exists for** (corrected 2026-10-11). Every anchor in a `claude_args`
+or a flag diff begins with a dash, so `grep -cF "$line" file` hands the
+line to the shell as an option and the command dies with "invalid option"
+instead of counting. That is not a false negative, it is an error, and an
+error skimmed in a loop of eight looks exactly like a zero. `-e` is what
+says the next argument is a pattern:
+
+```bash
+grep -c -F -e "          claude_args: \"--max-turns 150 ...\"" \
+  .github/workflows/agent-writer.yml      # must print 1
+```
+
+An anchor that does not match is a rot, whether or not the change it
 describes still makes sense, and a diff whose intent has been overtaken
 is cancelled in the item rather than left to a reader's judgment. The same goes for ordering: when two queued items touch one file,
 say which comes first and what breaks if the owner applies them in the
@@ -700,12 +826,40 @@ page, because it is the one that tells a reader they may stop looking.
 One command settles it for the whole queue:
 
 ```bash
-grep -oE '\.github/workflows/[a-z-]+\.yml' docs/agents/pending-workflow-changes.md \
-  | sort | uniq -c | sort -rn
+grep -oE '(\.github/workflows/)?(agent-[a-z]+|checks|deploy-main|build-agent-image|hq-origin-notice)\.yml' \
+  docs/agents/pending-workflow-changes.md | sed 's#.*/##' | sort | uniq -c | sort -rn
 ```
 
 Any file named by two items needs both items' ordering paragraphs to name
 the other.
+
+**That command used to match the full path only, which is why it reported
+health on a page that names files bare** (corrected 2026-10-11). The queue
+page writes `agent-writer.yml` inside a sentence at least as often as it
+writes `.github/workflows/agent-writer.yml` in a heading, and the old regex
+required the directory. So the sweep under-counted, and an item whose
+ordering paragraph was written from its output inherited the under-count as
+a statement of fact.
+
+The damage was measured on the item that was most careful about it. Item 14
+closes with "Checked with the whole-page sweep, re-run after this item was
+written, rather than from memory" and then lists the complete overlap set
+for its eight files. Re-run on bare filenames, **five of those eight lines
+are wrong**: `agent-research.yml` and `agent-market.yml` are each described
+as named by item 14 alone and are each named by a second item,
+`agent-writer.yml` names one of its three neighbours, and the engineer and
+PM lines each miss two. The item did everything the rule asked. The rule's
+command could not see the page.
+
+**So the lesson is one layer below the 2026-10-04 one, and it is the one to
+keep.** That run's rule was that a new mechanical check gets run across the
+whole artifact in the run that writes it. The missing half is that it gets
+**validated against the artifact first**: feed it one instance you have
+confirmed by eye and require it to find that instance. A check is only as
+good as its ability to see, and a check that under-matches reports health in
+the same words as a check that found nothing wrong. Both of this seat's
+published checks were broken in that direction, and both had passed every
+run since they were written.
 
 **Run it across the whole page, every run, and run it again after your own
 edits** (added 2026-10-04, `INC-2026-10-04-ordering-paragraph-rot-survived-its-own-rule`).
