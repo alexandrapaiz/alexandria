@@ -1012,7 +1012,7 @@ def bake_off(n_papers: int = 8, models: list[str] | None = None) -> list[dict]:
             except Exception as exc:                        # noqa: BLE001
                 entry[model] = [{"claim": f"PROVIDER ERROR: {exc}",
                                  "evidence": "", "topics": []}]
-            time.sleep(client.pace(model))
+            time.sleep(client.pace(model, cap.last_tokens))
         results.append(entry)
         print(f"distilled on {len(candidates)} models: {title[:60]}")
     print(cap.line())
@@ -1337,7 +1337,7 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
             # budget.MODELS rather than hardcoded, so the day the account moves
             # up a tier the drain speeds up by editing the table that has to be
             # edited anyway.
-            time.sleep(client.pace(answered_by))
+            time.sleep(client.pace(answered_by, cap.last_tokens))
 
         # The research seat strikes the queue line, and it strikes what this
         # log says was read. One line, greppable, naming the ids.

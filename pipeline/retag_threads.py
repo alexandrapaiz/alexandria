@@ -429,8 +429,11 @@ def retag(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD,
     available, notes = client.usable_models(models, os.environ)
     for note in notes:
         print(f"availability: {note}")
-    pause = client.pace(models[0])
-    print(f"models cheapest-first: {models}; pacing {pause:.1f}s between calls")
+    print(f"models cheapest-first: {models}; pacing chosen per call from the "
+          "answering model's published limits, whichever binds, "
+          + ", ".join(f"{m} {client.budget().MODELS[m]['rpm']} RPM / "
+                      f"{client.budget().MODELS[m]['tpm']:,} TPM"
+                      for m in models if m in client.budget().MODELS))
 
     judged = added_rows = 0
     tally: dict[str, int] = {t: 0 for t in THREADS}
@@ -485,9 +488,17 @@ def retag(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD,
                 else:
                     conn.commit()
                 print(f"  {judged} judged, {added_rows} retagged, {cap.line()}")
-            if pause:
-                import time
-                time.sleep(pause)
+            # Paced by the model that ANSWERED and the size of the call it just
+            # took, not by the head of the list: the fallback's minute is 8,000
+            # tokens where Moonshot's is 500,000, so a pause chosen before the
+            # walk ran is a 429 this caller caused. llm.pace says why.
+            #
+            # Unconditional, where this used to be gated on a pre-loop pause
+            # being truthy. A dry run sends the same real calls to the same
+            # provider, so it is paced the same, and the old gate was always
+            # true: pace never returns less than PACE_FLOOR_SECONDS.
+            import time
+            time.sleep(client.pace(model, cap.last_tokens))
 
         if dry_run:
             conn.rollback()

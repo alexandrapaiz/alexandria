@@ -420,12 +420,20 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
         print(f"reasoning-first: {priority_planned} of "
               f"{sum(len(c) for c in plan)} planned papers are "
               "reasoning-model research by title")
-        pause = client.pace(MODEL)
         print(f"{sum(len(c) for c in plan)} papers planned across {len(plan)} calls: "
               + ", ".join(f"{t}={n}" for t, n in sorted(planned.items())))
-        print(f"pacing: {pause:.0f}s between calls ({MODEL} is "
-              f"{client.budget().MODELS[MODEL]['rpm']} requests a minute), "
-              f"cap ${cap_usd:.2f}")
+        # Printed as a rule rather than as one number, because the pause is now
+        # chosen after each call, from the model that answered and the tokens it
+        # drew. One number here was a log that told the truth only while the
+        # head of the list answered: it said 20s while the run was calling a
+        # model whose minute is 8,000 tokens and needs 35s.
+        print("pacing: chosen per call from the answering model's published "
+              "limits, whichever binds, "
+              + ", ".join(f"{m} {limits['rpm']} RPM / {limits['tpm']:,} TPM"
+                          for m, limits in ((m, client.budget().MODELS[m])
+                                            for m in MODELS
+                                            if m in client.budget().MODELS))
+              + f"; cap ${cap_usd:.2f}")
 
         judged = 0
         per_tier: dict[str, int] = {}
@@ -463,7 +471,12 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
                 judged += 1
                 per_tier[chunk[i][3]] = per_tier.get(chunk[i][3], 0) + 1
             conn.commit()
-            time.sleep(pause)
+            # Paced by the model that ANSWERED and the size of the
+            # call it just took, not by the head of the list: the
+            # fallback's minute is 8,000 tokens where Moonshot's is
+            # 500,000, so a pause chosen before the walk ran is a
+            # 429 this caller caused. llm.pace says why.
+            time.sleep(client.pace(model, cap.last_tokens))
 
         # The per-tier split is the evidence that the drain is fair. If a future run
         # prints one tier again, the inversion is back.
@@ -717,7 +730,6 @@ def retriage(max_papers: int = 200, cap_usd: float = RETRIAGE_CAP_USD) -> str:
         rows = conn.execute(RETRIAGE_CANDIDATES,
                             (sha, PRIORITY_PATTERNS, max_papers)).fetchall()
         print(f"{len(rows)} reasoning papers at 'index' to re-judge at prompt {sha}")
-        pause = client.pace(MODEL)
         for start in range(0, len(rows), BATCH):
             chunk = [(pid, title, abstract, tier)
                      for pid, title, abstract, tier, _, _ in rows[start:start + BATCH]]
@@ -755,7 +767,12 @@ def retriage(max_papers: int = 200, cap_usd: float = RETRIAGE_CAP_USD) -> str:
                 moved[f"index -> {decision}"] = moved.get(f"index -> {decision}", 0) + 1
                 judged += 1
             conn.commit()
-            time.sleep(pause)
+            # Paced by the model that ANSWERED and the size of the
+            # call it just took, not by the head of the list: the
+            # fallback's minute is 8,000 tokens where Moonshot's is
+            # 500,000, so a pause chosen before the walk ran is a
+            # 429 this caller caused. llm.pace says why.
+            time.sleep(client.pace(model, cap.last_tokens))
 
         # The movement matrix is the evidence the rubric changed something. If
         # every paper stays at index, the prompt did not do what it says.
