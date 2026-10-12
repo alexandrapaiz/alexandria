@@ -1469,22 +1469,156 @@ def fallback_daily_draw() -> tuple[dict[str, int], list[str]]:
     per_model: dict[str, int] = {}
     lines = []
     for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
-        models = [m for m in cron_model_lists().get(label, [])
-                  if m in MODELS
-                  and MODELS[m]["provider"] != MODELS[PRIMARY_MODEL]["provider"]]
-        if not models:
+        landing = fallback_landing(label)
+        if not landing:
             lines.append(f"  {label}: no model outside "
                          f"{MODELS[PRIMARY_MODEL]['provider']} in its list, so "
                          "a primary outage stops it outright")
             continue
-        landing = models[0]
         size, basis = fallback_call_tokens(label, landing, per_call)
         calls = fallback_calls(label)
         draw = calls * size
+        # Which of the two ceilings the run will actually meet. The call
+        # ceiling was sized against a paid account's minute and the money cap
+        # cannot bind at $0.00 a million, so on the free tier it is the token
+        # share that stops the run first. Reporting the call ceiling's draw
+        # here was what made this surface read 642,650 tokens against a
+        # 200,000-token day: a number the jobs could not spend even if they
+        # tried, which hid the one they could.
+        bound = f"{calls} calls"
+        try:
+            ceiling = fallback_ceiling(label)
+        except LookupError as exc:
+            lines.append(f"  {label}: {exc}")
+            per_model[landing] = per_model.get(landing, 0) + draw
+            continue
+        if ceiling < draw:
+            draw, bound = ceiling, f"{ceiling:,}-token share"
         per_model[landing] = per_model.get(landing, 0) + draw
-        lines.append(f"  {label}: {calls} x {size:,} = {draw:,} tokens of "
-                     f"{landing}'s day ({basis})")
+        lines.append(f"  {label}: {draw:,} tokens of {landing}'s day, held "
+                     f"by its {bound} at {size:,} a call ({basis})")
     return per_model, lines
+
+
+def fallback_landing(label: str) -> str | None:
+    """The model `label` lands on when the primary's provider stops answering.
+
+    The first entry in the job's own list that is not on the primary's
+    provider, which is where the walk in `llm.ask_json` stops. None means the
+    job has no model outside that provider at all, so a primary outage stops it
+    outright rather than degrading it.
+    """
+    models = [m for m in cron_model_lists().get(label, [])
+              if m in MODELS
+              and MODELS[m]["provider"] != MODELS[PRIMARY_MODEL]["provider"]]
+    return models[0] if models else None
+
+
+def fallback_share(label: str) -> tuple[int, str]:
+    """Tokens `label` may draw on the fallback in one run, and the derivation.
+
+    Derived, never chosen. The free tier publishes a day (`tpd`), the request
+    guard already holds back `MARGIN` of it, and the jobs that land on that
+    model share what is left in equal parts. Equal is the whole point: the
+    day the primary is absent, the corpus is consumed in schedule order, so
+    any split that is not even is a split where the job that runs first
+    decides how much of the day the job that runs last gets. Distill runs
+    last (`llm.KIMI_WINDOWS`), and four days of no claims is what the
+    uneven version costs.
+
+    An equal share also moves on its own. A job whose model list changes so
+    that it lands somewhere else stops sharing this model's day, and the two
+    that remain get half each with no number here to edit.
+    """
+    landing = fallback_landing(label)
+    if not landing:
+        raise LookupError(
+            f"{label} has no model outside {MODELS[PRIMARY_MODEL]['provider']} "
+            "in its list, so it has no fallback day to be given a share of.")
+    allowance = MODELS[landing].get("tpd")
+    if not allowance:
+        raise LookupError(
+            f"{landing} publishes no daily token allowance in budget.MODELS, "
+            f"so {label}'s share of it cannot be derived. A share chosen "
+            "without the published number is a number somebody remembered.")
+    sharers = sorted(l for l in KIMI_DAILY_DRAW
+                     if fallback_landing(l) == landing)
+    budgeted = int(allowance * (1 - MARGIN))
+    return budgeted // len(sharers), (
+        f"{landing}'s {allowance:,}-token day, {budgeted:,} after the "
+        f"{MARGIN:.0%} margin, split {len(sharers)} ways between "
+        f"{', '.join(s.split(' (')[0] for s in sharers)}")
+
+
+def fallback_ceiling(label: str) -> int:
+    """The per-run fallback ceiling `label`'s own source publishes.
+
+    Read out of the job rather than held here, the same discipline as
+    `fallback_calls` and `cron_caps`: the job is what runs, so the job holds
+    the number and this file holds the arithmetic that the number has to
+    satisfy. `check_fallback_shares` is where the two meet.
+    """
+    path = CRON_MODELS[label]
+    source = (ROOT / path).read_text()
+    match = re.search(r"^FALLBACK_TOKENS_PER_RUN = ([\d_]+)", source, re.M)
+    if not match:
+        raise LookupError(
+            f"{path} publishes no FALLBACK_TOKENS_PER_RUN where this guard "
+            "looks for one. On the day the primary is absent that job's only "
+            "remaining bound is its call ceiling, which was sized for a paid "
+            "account: it will spend the free tier's whole day and the job "
+            "scheduled after it writes nothing. That is the shape of the "
+            "2026-10-08 stall.")
+    return int(match.group(1).replace("_", ""))
+
+
+def check_fallback_shares() -> list[str]:
+    """Each corpus job's fallback ceiling fits its share of the free day.
+
+    A failure rather than a note, unlike `check_fallback_tpd`. That one
+    reports a ceiling on how much degradation the corpus can absorb, which is
+    a fact about the world. This one reports a job and this file disagreeing
+    about arithmetic, which is the `check_kimi_tpd` class of defect and the
+    only kind of red this file raises.
+
+    Three ways to fail, and the third is the one the stall needed: a job with
+    no ceiling at all, a job whose ceiling is bigger than its own share, and
+    ceilings that are each fine and together ask for more day than the
+    provider allows.
+    """
+    problems = []
+    totals: dict[str, int] = {}
+    for label in sorted(KIMI_DAILY_DRAW):
+        landing = fallback_landing(label)
+        if not landing:
+            continue
+        try:
+            share, basis = fallback_share(label)
+            ceiling = fallback_ceiling(label)
+        except LookupError as exc:
+            problems.append(str(exc))
+            continue
+        totals[landing] = totals.get(landing, 0) + ceiling
+        if ceiling > share:
+            problems.append(
+                f"{label} may draw {ceiling:,} tokens a run on {landing} "
+                f"against the {share:,} that is its share ({basis}). The jobs "
+                "run in schedule order, so a share overrun is not this job "
+                "spending a little too much, it is the job after it in "
+                "llm.KIMI_WINDOWS meeting 429s for the rest of the UTC day.")
+    for landing, asked in sorted(totals.items()):
+        allowance = MODELS[landing].get("tpd")
+        if not allowance:
+            continue
+        budgeted = int(allowance * (1 - MARGIN))
+        if asked > budgeted:
+            problems.append(
+                f"the corpus jobs' fallback ceilings add up to {asked:,} "
+                f"tokens of {landing}'s {allowance:,}-token day, {budgeted:,} "
+                f"after the {MARGIN:.0%} margin. Every ceiling can fit its own "
+                "share and still bust the day if a share was derived against "
+                "a different set of sharers than the set that exists.")
+    return problems
 
 
 def fallback_call_tokens(label: str, model: str,
@@ -2029,6 +2163,14 @@ def main() -> int:
         for problem in check_fallback_pacing():
             failures.append(problem)
             print(f"  PACING: {problem}")
+        for label in sorted(KIMI_DAILY_DRAW):
+            if fallback_landing(label):
+                share, basis = fallback_share(label)
+                print(f"  {label}: {share:,} tokens a run is its share "
+                      f"({basis})")
+        for problem in check_fallback_shares():
+            failures.append(problem)
+            print(f"  FALLBACK SHARE: {problem}")
         notes = check_fallback_tpd()
         if notes:
             print("\n  more than the free tier's day (not a failure, a "
