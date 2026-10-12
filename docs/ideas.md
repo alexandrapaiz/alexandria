@@ -13783,3 +13783,60 @@ that triggered it, per the charter.
   depth measured by a judge that only read the abstract.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-12 — The payload cannot tell a 211-claim week from a 923-claim week (writer seat)
+- Trigger: grading canon law 11, length follows the news, with a number on both
+  sides for the first time. `press_rehearsals.payload_stats` across all four
+  rehearsals, spanning two different weeks, reads `new_claims` 22 every time and
+  `supported_claims` 12 every time. Those are the literals `limit 22` at
+  `pipeline/weekly.py:337` and `limit 12` at `:368`. Claims created per week over
+  the last five weeks: 280, 923, 211, 287, 295.
+- The gap: the week varies by a factor of 4.4 and the slate the generator sees is
+  constant, because both queries saturate their cap every single week by a factor
+  of ten to forty. The owner's ruling of 2026-09-19 is that the amount of real
+  news decides the length, never a template, and a cap that always binds is a
+  template with a number on it. No wording of `prompts/digest.md` can let a
+  writer see past it, which is why this is filed rather than patched.
+- The ask, and it is small: hand the generator the unclipped total beside each
+  clipped slate. One integer per stream in the `stats` block the payload already
+  carries, so a writer can tell a week that produced 22 candidates from a week
+  that produced 400 and was cut to 22. Not a bigger cap: 280 items would be a
+  worse issue than 13, and the cap is a reasonable cap. What is missing is the
+  signal that it bound.
+- Why it is worth doing: law 11 is the law the owner stated as padding and
+  truncating being the same failure, and the only honest length verdict needs the
+  denominator. A grade can now measure what the issue printed and what the
+  payload offered; neither number says what the week held.
+- Related filing, same two queries, so read them together: the entry of
+  2026-09-23, "The queries return claims and the issue prints items", which is
+  about the UNIT those limits are counted in. This one is about the limits
+  binding. A fix to either should look at the other.
+- Blocked by: nothing. `gather()` is `pipeline/weekly.py` and this seat never
+  touches pipeline code.
+- Cost: $0, no new service, no model call.
+- Status: proposed
+
+### 2026-10-12 — The published issue carries no record of what it was offered (writer seat)
+- Trigger: the same law 11 verdict. `press_rehearsals` has a `payload_stats`
+  column and `digests` does not. The columns on `digests` are id, week, body,
+  model, prompt_sha, created_at.
+- The gap: the artifact a reader actually received carries no trace of the
+  material it was written from, so the one law about the relation between the two
+  cannot be graded on it at all. Today's grade measured the news side on
+  `press_rehearsals` id 4, a different row from a different run five and a half
+  hours earlier, and said so under the measurement-attribution rule. That rule
+  exists because a figure outlives its subject, and grading one row's law on
+  another row's numbers is the shape it was written to prevent.
+- The ask: one `jsonb` column on `digests`, written from the same dict the
+  rehearsal insert already passes. `pipeline/weekly.py:1413` does the digests
+  insert and `:1537` does the rehearsal insert with the stats in hand, so the
+  value is already computed at both call sites.
+- Why it is worth doing beyond this one law: every count the issue prints about
+  itself comes from that dict, and law 15 is the law about those counts. A grade
+  that wants to check the close's figures against the run that produced them
+  currently reads a neighbouring row and hopes the window matched. On 2026-10-05
+  it did not: the rehearsal recorded 111 papers read in full and the issue printed
+  127, five and a half hours apart.
+- Blocked by: nothing, and it is independent of the filing above.
+- Cost: $0.
+- Status: proposed

@@ -12162,3 +12162,148 @@ reached a cron: the deploy surface shows every corpus image `first_seen_at`
 2026-10-05, so the running containers predate both. `python3
 tools/deploy_gate.py --app all --plan` prints the chain, the first link of
 which is the guard that holds this arithmetic.
+
+## INC-2026-10-12-the-grade-could-not-tell-an-edition-from-an-archive — seven editorial grades opened on "the newest issue is 2026-W40", and the sentence changed meaning underneath them (2026-10-12, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-12, executing the canon's
+pre-pass-1 procedure and finding that none of its three checks could answer
+whether an issue was missing.
+
+**What happened.** The press ran this morning. `deploy_runtime` records the
+`weekly` app at `2026-10-12 09:00:07`. `digests` has no row for 2026-W41, and
+`python3 tools/delivery_health.py --surface press --no-notify` reads FAILING:
+"the newest issue is 2026-W40 and 2026-W41 has ended; 1 issue(s) missing".
+
+Seven consecutive grades, 2026-10-05 through today, opened on the newest
+`digests` row and named it the newest issue. On 2026-10-05 that meant the issue
+published that morning. Today it means the only issue there is, published seven
+days ago, with a send missing in between. The two statements are the same words
+and different facts, and nothing in the grading procedure distinguished them.
+
+**Why the procedure could not see it.** The pre-pass-1 step exists precisely
+because this seat kept grading the wrong artifact, and it has been extended twice
+for that reason. It asks which copy (`site/content/issues/` versus the stored
+row), and which generator, in three shas, forwards and backwards. Every one of
+those compares the artifact to a generator. None asks whether the artifact is the
+current edition. A check that reads the newest row has read a row.
+
+**This is the third occurrence of one shape.**
+
+- `INC-2026-09-30-standing-defect-unverified-for-three-grades` — the grade read
+  the wrong COPY. Three grades reported on a generator five commits out of date.
+- 2026-10-10, recorded inside the canon's own procedure rather than here — the
+  grade read the wrong GENERATOR, because four runs answered "what will write the
+  next issue" with merge status, and a merge is not a deploy.
+- Today — the grade read the wrong EDITION.
+
+Each one is a check that read the thing in front of it and never asked whether
+that thing was the thing it was supposed to be reading. The company standard
+already covers it and is cited in the procedure: L-A16, configured is not in
+effect, and only the job's own run log proves what served a real turn.
+
+**The fix, landed.** `docs/voice/canon.md` pre-pass-1 now asks the edition
+question before the three shas, with the command, and requires the artifact's
+date, its cadence and the count of missing sends at the top of the grade. Where
+an issue is missing, that fact goes above the shas, because a seat patching a
+generator that printed nothing last week is working on the second-order problem
+and should say so out loud.
+
+**Not the writer's half.** Why the press printed nothing is the engineer's, it is
+filed and urgent on their side, and PR #282 is open against it. This entry is
+about a grading procedure that could not tell a missing issue from a quiet week,
+which is this seat's own.
+
+## INC-2026-10-12-a-pass-verdict-carried-the-evidence-of-its-own-failure — law 9 passed with the defect written into the clause after "except", and law 4 passed by routing its defect to a law that never graded it (2026-10-12, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-12, re-reading the previous
+day's verdicts for the half of each sentence the gate had not read, which is the
+fifth question that run had itself added.
+
+**What happened.** Two verdicts in the grade of 2026-10-11, both PASS, both
+carrying the evidence of a failure in their own text.
+
+Law 9, verbatim: "PASS on structure. The context-first invariant holds,
+attribution is institution-first **except where a lone researcher is counted
+among 'three labs'**, and the four sections are in her order." The clause after
+"except" is a real defect in the published issue's opening sentence. Nothing else
+in the org grades it. Its only appearance anywhere was inside a pass.
+
+Law 4, verbatim: "PASS. [...] Its two undefined nouns are the first-use failure
+of 2026-10-05 and 2026-10-08 and that is law 12a's verdict, not this one's." Law
+4 has two clauses, and the second is that a builder knows from one line whether
+to open the issue. An undefined noun in the title is exactly what defeats that
+clause. One sentence was split across two laws and each verdict passed the half it
+held, with law 12a's remedy (a gloss at first use) unable to reach a reader who
+has not opened the issue.
+
+**Why this is not the incident recorded the day before.**
+`INC-2026-10-11-two-more-gates-cleared-the-half-of-the-sentence-they-were-pointed-at`
+is about the half a gate never reads, and its remedy is the fifth question: name
+which part of the sentence the verdict is actually about. Neither verdict above is
+caught by that question, because each one's text already names the whole sentence.
+The gate read both halves, wrote the failing one down, and passed. That is a
+different mechanism and a worse one, because the finding was in hand.
+
+**The seventh occurrence of the family, and the family is incident 20's.** A
+register was written to and nothing checked it. Here the register is the review
+itself.
+
+**The fix, landed.** `docs/voice/canon.md` gains a sixth question in the claims
+pass: a grep over the finished review for every PASS, read for a concession.
+Except, apart from, other than, aside from, though, while, only, but. A verdict
+carrying one about its own subject is a FAIL with its evidence already attached,
+and the honest form is a split verdict naming both parts, which pass 3 already
+allowed and law 3's verdict in today's grade now uses. Routing a defect to
+another law is legitimate exactly once: when that law's verdict actually grades
+it, so the review says which verdict will and checks that it did.
+
+Applied immediately: laws 4 and 9 both reverse to FAIL in the grade of
+2026-10-12, and law 11 reverses for a related reason, which makes three verdicts
+moved by one question on the day it was written.
+
+## INC-2026-10-12-a-finding-that-lived-only-in-a-review-had-no-failing-state — a defect found on 2026-10-08, given no ban-list entry, re-found twice and still live four days later (2026-10-12, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-12, tracing one defect back
+through three of its own grades.
+
+**What happened.** On 2026-10-08 the claims pass found that the published issue's
+opening said "Three labs showed" over three findings, the second of which is "An
+independent researcher, Jose Luis Pino" by the issue's own account sixty words
+later. The review wrote it down in these words: "the count is right and the noun
+is wrong, which is the smallest version of the thing this pass exists for." No
+ban-list entry was added. That review's own count paragraph says "Nothing else
+was patched."
+
+On 2026-10-11 the same defect reappeared as the clause after "except" inside a
+PASS on law 9 (recorded separately as
+`INC-2026-10-12-a-pass-verdict-carried-the-evidence-of-its-own-failure`).
+
+On 2026-10-12, four days and two grades after it was first found, it is live in
+`prompts/digest.md` and in the artifact, and the generator turns out to supply
+it: `grep -nE "\b(Two|Three|Four|two|three|four) labs\b" prompts/digest.md`
+printed five hits outside the gates, three of them at positions where the model
+writes the opening.
+
+**The structural cause, which is the point of this entry.** The ban list is a
+register with a gate. Its own header says an entry is not finished when it is
+written, every entry carries either the sentence that now enforces it or the
+ledger filing saying why none can, and `docs/voice/check_voice.py enforcements`
+checks the quoted ones. That gate binds pass 4's output and nothing else. Passes
+1, 2, 3, 5 and 6 produce defects too, and no step in the procedure ever re-reads a
+previous review's prose. A finding that lives only in a review therefore has no
+failing state at all, which is exactly what the ban list's header says about a
+tell that only gets written down.
+
+**L-A9 one level up.** Recording a rule is not enforcing it; this is recording a
+FINDING and not enforcing it, and the org has the second gate for rules and not
+for findings. Incident 20's lesson is that every register needs two gates, one
+that decides something gets written down and one that decides something gets
+checked before it ships. The review has the first and not the second.
+
+**The fix, landed.** `docs/voice/canon.md` gains a section saying every new
+defect a grade finds, in any pass, becomes a ban-list entry in the same pull
+request, or the review says in one line why no entry can hold it. The entry then
+inherits the ending rule, which is the only rule in this seat's registers a
+command can check. A grade may still decide not to patch, and 2026-10-08's reason
+was sound; what it may not do is leave the finding somewhere nothing reads again.
+The defect itself is ban list 109, enforced the same day at the counting gate.
