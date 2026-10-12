@@ -662,6 +662,16 @@ purpose rather than struck.**
   success rate on them. It does not name the other seven, so the line stands
   as a list that still has to be read out of the paper.
 
+- **The end-to-end cost of a containment control** (line 160). Left open,
+  because the line asks for cost in a real deployment and this week's cluster
+  answers a narrower question. What is now measurable is the *utility* cost of
+  fine-grained enforcement on a benchmark: 3.3 points for EvoSafeHarness
+  against a 35.6-point attack-success reduction (C307), 3.80 points for
+  ToolFence against a 21-point reduction (C1224). That is enough to stop a
+  builder arguing that enforcement is too expensive to try, and it is not the
+  wall-clock-and-dollars figure the line wants. The one paper's 145-to-316
+  second mean remains the only end-to-end number in the corpus.
+
 **One item queued by this run.**
 
 - [ ] question -- Re-run the `contradicts` precision measurement under the

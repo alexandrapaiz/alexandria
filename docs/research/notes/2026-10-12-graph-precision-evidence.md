@@ -1,4 +1,4 @@
-# Evidence note — 2026-10-12 research run
+# Evidence note -- 2026-10-12 research run
 
 Every number in `docs/research/briefs/2026-10-12.md` with the query that
 produced it. Read-only, through `NEON_RO_URL`. Labels for the precision
@@ -30,7 +30,7 @@ measurement is possible for the first time.
 `contradicts` is 33 edges, so this is the **population and not a sample**: no
 seed, no draw, nothing to re-draw. Every edge was read as both claim texts and
 labelled `correct`, `wrong`, or `unsure` by the standard the interpret prompt
-sets — "acting on both claims is impossible; the new evidence points the
+sets -- "acting on both claims is impossible; the new evidence points the
 opposite way." `unsure` means a defensible reading exists either way; the tool
 excludes it from both denominators.
 
@@ -42,16 +42,16 @@ $ python3 tools/graph_audit.py --labels docs/research/notes/2026-10-12-contradic
 
 Two readings, and the second is the one that matters.
 
-**Precision is 17.2%.** Five edges of 33 are defensible: `587→431`
+**Precision is 17.2%.** Five edges of 33 are defensible: `587->431`
 (in-domain measurement overstates cross-dataset transfer ~5x and improvements
 can hurt out-of-domain, against more domain QA data improving in-task while
-maintaining out-of-domain robustness), `616→533`, `669→200`, `701→533`,
-`849→322` (harness materially changes how a model benefits from Skills,
+maintaining out-of-domain robustness), `616->533`, `669->200`, `701->533`,
+`849->322` (harness materially changes how a model benefits from Skills,
 against COBRA-Skills being robust to harness changes).
 
 **Confidence carries no signal, and is inverted at the top.** Precision is
 flat near 0.17-0.19 across the bands that hold 29 of the 33 edges, and the two
-highest-confidence edges in the graph — `12→11` at 0.88 and `136→129` at 0.90 —
+highest-confidence edges in the graph -- `12->11` at 0.88 and `136->129` at 0.90 --
 are both wrong. The audit's own `confidence calibration` metric reads `ok`
 because it only asks how many distinct values the judge uses. It uses thirty.
 They mean nothing.
@@ -80,7 +80,7 @@ group by 1 order by 1;
 ```
 
 Twenty-two claims. Crossing them against the labels: **322, 431 and 533 rest
-on at least one edge that holds. The other nineteen do not.** Vision §1 names
+on at least one edge that holds. The other nineteen do not.** Vision section 1 names
 "left behind" as one of the digest's three kinds of finding, so 86% of the
 index behind one of the product's three pillars is wrong.
 
@@ -96,7 +96,7 @@ where l.relation='contradicts' group by 1 having count(*)>1 order by 2 desc;
 ```
 
 Twelve of the 33 edges point at four claims, and all four are **negative
-results** — a limitation, a null, a regression, an underperformance. Nothing
+results** -- a limitation, a null, a regression, an underperformance. Nothing
 else in the graph attracts edges like this.
 
 The mechanism is visible in the pairs. C772 "diverse, high-quality SFT
@@ -104,7 +104,7 @@ establishes a strong capability floor" is written as contradicting C89 "SFT on
 code-edit tasks overfits to the specific corruption patterns seen during
 training": one is a scope the other excludes, and both are true. C865, an
 ablation of skill-optimisation components, is written as contradicting C533,
-about token-level supervision in Qwen — different subjects entirely. C931, a
+about token-level supervision in Qwen -- different subjects entirely. C931, a
 27B model matching a 72B with a harness, against C200, imitation fine-tuning
 regressing: different interventions.
 
@@ -112,14 +112,14 @@ So the judge reads **"a limitation of X" against "a success near X" as
 opposition**, when the honest answer is almost always that they measure
 different things. The existing prompt has guards for two neighbouring cases
 (different systems on one benchmark, one system on different benchmarks) and
-none for this one, which is the diff in §7.
+none for this one, which is the diff in section 7.
 
 Two secondary classes, each with instances:
 
-- **Scale-class mismatch.** `897→604`: Magenta at 100% on AIME 2026 against
+- **Scale-class mismatch.** `897->604`: Magenta at 100% on AIME 2026 against
   ZGCM-1-7B "ranks first on average ... at the 7B-8B scale". A frontier score
   does not refute a claim about the best 7-8B model.
-- **Successor read as refutation.** `863→625`: GraphSkillEvo improving on the
+- **Successor read as refutation.** `863->625`: GraphSkillEvo improving on the
   SkillOpt baseline is `refines`, which the prompt already says, pointed at
   the wrong relation.
 
@@ -129,19 +129,19 @@ Two secondary classes, each with instances:
 select l.from_claim, l.to_claim, c1.paper_id, l.created_at::date
 from claim_links l join claims c1 on c1.id=l.from_claim join claims c2 on c2.id=l.to_claim
 where l.relation='contradicts' and c1.paper_id=c2.paper_id order by l.created_at;
---  12→11  arxiv:2609.04611  2026-09-08
--- 190→188 arxiv:2609.10522  2026-09-19
--- 289→288 arxiv:2609.09219  2026-09-29   <- reached readers in W40
--- 478→477 arxiv:2609.16816  2026-10-01
--- 574→570 arxiv:2609.17652  2026-10-02
+--  12->11  arxiv:2609.04611  2026-09-08
+-- 190->188 arxiv:2609.10522  2026-09-19
+-- 289->288 arxiv:2609.09219  2026-09-29   <- reached readers in W40
+-- 478->477 arxiv:2609.16816  2026-10-01
+-- 574->570 arxiv:2609.17652  2026-10-02
 ```
 
 The same five rows the 2026-10-05 run reported, unchanged. Read in full they
 are one results table each, and two of them are the tell-tale the prompt names
-in its own words. `12→11` is "an expert-authored reference implementation
+in its own words. `12->11` is "an expert-authored reference implementation
 achieves 82.2% ... establishing a high ceiling" beside "the strongest tested
-configuration ... passes only 23.9%" — the prompt's phrase for this is "an
-expert ceiling beside a measured score". `574→570` is "Fathom does not provide
+configuration ... passes only 23.9%" -- the prompt's phrase for this is "an
+expert ceiling beside a measured score". `574->570` is "Fathom does not provide
 speedups when the index resides in GPU memory" beside Fathom's 1.67x headline:
 a limitation beside a headline number, also named in the prompt.
 
@@ -150,7 +150,7 @@ for the reason the rule states in its own first sentence: "You are not told
 which paper a candidate came from, so you must infer it." `paper_id` is a
 column the pipeline is holding and does not pass. That is an engineer fix, it
 was engineer item 0 and 2 in the 2026-10-05 brief, and it is not a diff this
-seat can propose. §7 does not try.
+seat can propose. section 7 does not try.
 
 ## 6. The best-evidenced cluster the corpus has ever held is invisible to the
 machinery that would surface it
@@ -166,8 +166,8 @@ from claims where claim ~* '(attack success|hijack|prompt injection|privilege
 ```
 
 24 claims from 15 papers, **22 of them `controlled`** against a corpus
-baseline of 57.8%. This is the owner's named Layer 4 priority — containment
-evaluation, "how you test that an agent cannot reach what it must not" — and
+baseline of 57.8%. This is the owner's named Layer 4 priority -- containment
+evaluation, "how you test that an agent cannot reach what it must not" -- and
 it arrived.
 
 And the machinery cannot see it. Of the ten highest-id claims in the cluster,
@@ -184,7 +184,7 @@ from claims c where id in (1993,1992,1882,1861,1769,1653,1295,1225,1224,1221);
 The skill seat's documented method for finding a cluster is `semantic_search`
 plus the supports edges. For this cluster, `semantic_search` cannot reach the
 eight with no embedding and the supports edges do not exist. The system was
-told what to look for, found it, and cannot surface it. §3 of the brief hands
+told what to look for, found it, and cannot surface it. section 3 of the brief hands
 over the ids directly, which is the way around it that needs no deploy.
 
 ## 7. Embeddings stop dead at 2026-10-04
@@ -205,10 +205,10 @@ created on or after 2026-10-04 has a null embedding, and every claim before it
 has one**, 422 claims and 21.1% of the corpus, with a clean boundary at a date.
 All 422 are also uninterpreted (`interp_no_emb` is 0), so embedding is the gate
 in front of interpret, and interpret is running ~11 days behind on what it can
-reach — C1119, created 2026-10-01, was interpreted on 2026-10-12.
+reach -- C1119, created 2026-10-01, was interpreted on 2026-10-12.
 
 Consequence for this seat: **discovery signal 3.1 cannot see the last nine
-days.** Everything in §2 of the brief is computed on claims up to 2026-10-03,
+days.** Everything in section 2 of the brief is computed on claims up to 2026-10-03,
 which is stated there rather than implied.
 
 ## 8. Citation velocity is 14 days dark
@@ -266,7 +266,7 @@ Eight skills stand in `skills/`. The charter tells this seat to run exactly
 this query before proposing one, "to avoid duplicating an existing proposal",
 so that gate has been reading an empty table for every run that has ever run
 it. Same class as `human_verdict`, which the 2026-10-05 brief found has never
-been written in any row. Both are watch items in §6, not this week's diff.
+been written in any row. Both are watch items in section 6, not this week's diff.
 
 ## 11. Evidence grades, updated
 
@@ -288,7 +288,7 @@ of 1,996) and **15 of 33**, of which **10 deprecate** a claim at confidence
 >= 0.7. The share improved; the absolute count of asserted-origin deprecating
 edges did not.
 
-## 12. The deploy, and why §7 proposes into `interpret` and not `triage`
+## 12. The deploy, and why section 7 proposes into `interpret` and not `triage`
 
 The charter requires this check before spending the week's proposal on an
 image-baked file.
@@ -314,7 +314,7 @@ $ git show ea61cbc:prompts/triage.md | sha256sum | cut -c1-12   # 32252384ecd7  
 ```
 
 The deployed triage prompt is `ea61cbc`, of 2026-09-29. The prompt at HEAD is
-`fa029bf` — **this seat's own proposal from 2026-10-05**, merged, and still not
+`fa029bf` -- **this seat's own proposal from 2026-10-05**, merged, and still not
 in production seven days later, with 8,861 rows written against the old one
 since. `deploy_runtime` agrees that nothing has shipped:
 
@@ -334,6 +334,6 @@ the incident register in this pull request.
 
 `prompts/interpret.md` is the exception on this table and the reason the diff
 goes there: its deployed sha equals HEAD, so a merge into it is a merge that
-can reach production. It still needs someone to run `modal deploy` — and the
+can reach production. It still needs someone to run `modal deploy` -- and the
 row above it is the proof that this does not happen on its own. One deploy
 ships both.
