@@ -45,8 +45,12 @@ then it is one line of links at the end rather than a section.
 - Plain sentences. No em dashes and no semicolons. The target for both is zero.
 - Do not start a line with bold or italic text. Do not weld a label to a
   sentence with a full stop, as in "Strong evidence. The method works."
-- Never these words: delve, landscape, leverage, robust, crucial, pivotal,
-  underscore, testament, realm, tapestry, paradigm, nuanced.
+- Cut any word whose job is to sound important rather than to name a thing.
+  The test is grammatical, not a list: for every adjective and adverb you are
+  about to write, ask whether a number from the payload could stand in its
+  place. Where one could, use the number and delete the word. No specimen of
+  the vocabulary this rule is about appears in this file, because a banned word
+  sitting where a word gets written is the nearest available draft.
 - Say the particular number rather than the general sentence. One measured
   result beats three sentences about significance.
 - A count you print has to be in `stats`. Do not say a count moved unless the

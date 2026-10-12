@@ -11930,3 +11930,178 @@ reached a cron: the deploy surface shows every corpus image `first_seen_at`
 2026-10-05, so the running containers predate both. `python3
 tools/deploy_gate.py --app all --plan` prints the chain, the first link of
 which is the guard that holds this arithmetic.
+
+## INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue — the product's one output, missing, with every machine involved reporting correctly (2026-10-12, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-12, 20:40 UTC,
+running `python3 tools/delivery_health.py` as the first observation step of an
+ordinary OODA cycle. The press surface read `FAILING  press  the newest issue
+is 2026-W40 and 2026-W41 has ended; 1 issue(s) missing`, and the live site
+agreed: `GET /library/2026-W41` returns 404, `/library/2026-W40` returns 200,
+and `/library` lists `2026-W39` and `2026-W40` and nothing newer. The Monday
+09:00 UTC cron had fired about eleven hours earlier.
+
+**What happened.** The press walked its fallback list, every entry was refused,
+and the week got no issue. The arithmetic, printed by the org's own guard on
+every run since 2026-09-24:
+
+| rank | model | the request | the ceiling | verdict |
+| --- | --- | --- | --- | --- |
+| 1 | kimi-k2.6 | 104,323 tokens | 222,822 usable | fits, and did not answer |
+| 2 | openai/gpt-oss-120b | 104,323 tokens | 6,800 usable | over by 97,523 |
+| 3 | qwen/qwen3.8-27b | 104,323 tokens | 6,800 usable | over by 97,523 |
+| 4 | openai/gpt-oss-20b | 104,323 tokens | 6,800 usable | over by 97,523 |
+
+`prompts/digest.md` is 1,919 lines, which is 43,750 tokens before a single
+claim is attached, so the prompt and the output reservation alone are 67,750
+tokens against a free-tier minute of 8,000. `budget.fit_payload` says in its
+own words that no payload selection can rescue this. The three Groq entries
+have therefore never been able to print, and the comment beside
+`FALLBACK_MODELS` has said as much since incident 24: they are there "for the
+day the prompt gets shorter or a ceiling moves. A last resort that prints
+something small beats a last resort that does not exist."
+
+Nothing was broken on 2026-10-12. Every component behaved as specified. The
+guard printed `DOES NOT FIT` three times, `write_digest` moved down the list
+correctly, `PressCannotPrint` was raised with the whole trail, and
+`notify_owner` mailed it. What did not exist was the thing the comment was
+waiting for, so the honest statement of the defect is that the press's
+degraded path was a list rather than a path, for 18 days, and the week the
+primary went quiet is the week that discovered it.
+
+**The repeat, which is why this is filed.** The class is
+`a fallback that cannot take the request is not a fallback`, and the org has
+now met it four times:
+
+- incident 22, 2026-09-24: the press's single model refused a request larger
+  than its minute. Fixed by sizing the request.
+- `INC-2026-09-24-press-provider-migration`: the fallback list existed and
+  three of its four failures were on paths nothing had exercised.
+- `INC-2026-10-11` and `INC-2026-10-12-the-free-tiers-day...`: the corpus
+  stages' fallback was configured and unpaced, then paced and unshared.
+- this entry: the press's fallback was configured and arithmetically
+  impossible, which is the same defect with the smallest possible symptom,
+  one missing artifact and no error anywhere.
+
+`budget.check_request` has printed the evidence for this entry on every CI run
+for 18 days. A guard whose output nothing is required to act on is a guard
+that documents an outage in advance.
+
+**What shipped with this entry.** `prompts/digest-short.md`, a generator prompt
+sized to the minute the free tier actually publishes;
+`budget.short_issue_room`, which derives the output reservation and the payload
+allowance from that published minute rather than choosing them;
+`budget.check_short_issue`, which fails the deploy when no model off the
+primary's provider can print even the short edition; and `weekly.print_issue`,
+which reaches for the short edition only when the full one fits nothing. The
+issue says it is short, in a line the press adds rather than the generator, and
+the owner gets `ALARM_SUBJECT_SHORT_EDITION` when it is what went out.
+
+**What it does not fix.** The short prompt carries a handful of the 103 entries
+in `docs/voice/ban-list.md`, because the rest do not fit in a 6,800-token
+request. The short edition is therefore the lesser issue by construction, and
+which rules survive is an editorial judgment that belongs to the writer seat
+rather than to the arithmetic in this diff.
+
+## INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-is-in — gate 3 asks the broken thing for permission to deploy its own repair (2026-10-12, engineer seat, second run)
+
+**Observed by:** the same run, reading the three commands the previous run's
+urgent ledger entry had addressed to the owner, and then reading what those
+commands do.
+
+**What happened.** Two merged pull requests, #270 and #275, sized the
+fallback's minute and the fallback's day so that the corpus could carry itself
+with the primary absent. Both were inert, because a Modal app is deployed by a
+command and no seat holds the token. The ledger said so and called it three
+commands. The commands cannot complete.
+
+`tools/deploy_gate.py --app all --plan` prints each chain as
+`python3 pipeline/budget.py && modal run <app>::preflight && modal run
+<app>::rehearse && modal deploy <app>`, and `rehearse` ends like this in
+`pipeline/triage.py` and `pipeline/interpret.py` both:
+
+```python
+if model != MODELS[0]:
+    raise client.NoModelAnswered(
+        f"the rehearsal was answered by {model}, not by {MODELS[0]}, which "
+        "is what the deploy installs. A receipt from a fallback is not a "
+        "receipt: fix the head of the list before deploying, because "
+        "tomorrow's cron meets it first.")
+```
+
+`MODELS[0]` is `kimi-k2.6`. The primary was not answering, which is the whole
+reason there was a fix to deploy: `tools/delivery_health.py` reported triage
+answering on `openai/gpt-oss-120b` and interpret on `qwen/qwen3.8-27b` the same
+morning. So every corpus rehearsal was answered by a fallback, every chain
+stopped at the third `&&`, and the stall entered its sixth day with its cure
+sitting in `main`. The press chain stopped one rung earlier, at `preflight`,
+for the reason the entry above gives.
+
+The gate is not wrong. It is right on every day except the one day its own
+subject is the outage, and on that day it inverts: refusing the deploy is what
+keeps the outage. No seat had noticed, because the seat that writes the fix is
+not the seat that runs the command, and the command's refusal is only ever read
+by the owner.
+
+**The repeat.** The class is L-A16, `configured is not in effect`, which the
+ledger already cited this week for the undeployed fixes. This entry is the
+layer under it: not only is configured not in effect, the path from configured
+to in effect had a gate that could not open. `INC-2026-10-07-a-charter-
+dispatched-thirteen-runs-at-work-that-was-already-built` is the same shape in a
+different register, work that exists and cannot be reached.
+
+**What shipped with this entry.** `budget.head_receipt`, one text and one
+argument for all four gates, and `--allow-fallback` on
+`pipeline/triage.py::rehearse`, `pipeline/interpret.py::rehearse` and
+`pipeline/weekly.py::rehearse`. It refuses by default, exactly as before, and
+the refusal now names the hatch. With the hatch open it prints what it forgave
+and the receipt says the degraded path was what was proved. Modelled on
+`pipeline/distill.py::rehearse --allow-abstract-only`, which has carried this
+shape since 2026-09-27 and is the reason distill was the one corpus app whose
+chain could have completed today.
+
+## INC-2026-10-12-the-writers-cap-raise-landed-with-no-smoke-run — a `--max-turns` change whose first execution will be a scheduled run (2026-10-12, engineer seat, second run, reported not fixed)
+
+**Observed by:** the engineer seat's machinery-diff check, which is step 0 of
+this seat's "check the register before you ship" clause and the reason that
+clause exists.
+
+**What the diff showed.** `git log --since="36 hours ago" -- .github/ pipeline/`
+returns two real changes. The first is pull request #275, this morning's
+fallback-share work, explained by its own description and assessed by that run.
+The second is pull request #278, merged at 20:03 UTC today, one line:
+
+```
+-  claude_args: "--max-turns 150 --permission-mode bypassPermissions --model claude-opus-5"
++  claude_args: "--max-turns 225 --permission-mode bypassPermissions --model claude-opus-5"
+```
+
+**Question one is answered and question two is not.** A merged pull request
+explains it, in full and well: two exhaustions six days apart, both at
+`num_turns 151`, the second losing commits it had never pushed, and L-X3 as
+amended giving the step of half again rather than a doubling. That is the
+reasoning the law asks for. What `gh run list --workflow=agent-writer.yml`
+shows is that the newest writer run is 2026-10-11 19:46 UTC on `39a8062`,
+which is before the raise. No run has executed under the new cap.
+
+`docs/agents/runtime-changes.md` puts `claude_args` and `--max-turns` on its
+list by name and says turn caps are on it deliberately, "because they look like
+numbers rather than machinery, and incident 15 is a day of six failures caused
+by numbers." Its closing line is the test applied here: any runtime change with
+no smoke run behind it in `gh run list` is a finding. The next scheduled writer
+run will be this change's first execution, which is the one thing that law
+exists to prevent.
+
+**The proportion, stated rather than left to be inferred.** The change is
+monotonic and permissive, it moves one integer up, and the most likely outcome
+is that it simply works. This entry is not a prediction that it will fail. It
+is the finding the law asks for, filed because the law has no exemption for a
+change that looks obviously correct, and because the same seat's own cap was
+the subject of `INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-
+five-days-earlier` three days ago, which makes this the second cap event in
+four days and a repeat under the standing rule at the top of this file.
+
+**Not fixed, deliberately.** This seat cannot push a workflow file, so the
+remedy is a `workflow_dispatch` of the writer seat before its next scheduled
+run, which is the owner's. Reported in one line in the pull request that
+carries this entry.
