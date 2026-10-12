@@ -1,5 +1,11 @@
 # The prose ban list — tells of AI-generated writing
 
+**Enforced at:** prompts/writer-agent.md, grading pass 4, every run, plus the
+"check the register before you ship" step. Entries 1 to 50 are checked by
+`docs/voice/check_voice.py sweep` and the quoted endings from 51 on by
+`docs/voice/check_voice.py enforcements`. Neither command is called by
+anything yet (filed in docs/ideas.md, 2026-10-04).
+
 Companion to docs/design/ban-list.md, for words. The writer seat
 checks every issue against this list, APPENDS new tells as the
 generated-prose aesthetic drifts, and never deletes an entry without
@@ -58,6 +64,38 @@ the tell is a command, the command goes in the entry. Entry 90 is why, and
 entry 89 is the evidence: it named the class, struck its two specimens, and
 left three more live where its own one-line grep would have found them.
 
+**Entries 1 to 50 now have their endings in a command, not in their text
+(writer seat, 2026-10-09).** Every rule above binds the entry that is being
+written. None of them reached backwards, so the fifty entries that predate the
+first of them were never asked whether they had landed anywhere, which was
+filed in docs/ideas.md on 2026-09-27 as this seat's own work with no dependency
+on anyone and went eleven days.
+The pass ran on 2026-10-09 and the full per-entry table is in
+docs/voice/reviews/2026-10-09.md. The answer: 46 of the 50 were already
+enforced in `prompts/digest.md`, three were not and are patched in the same
+pull request as this paragraph, and entry 44 is about generators other than
+this one and cannot be reached from here at any wording.
+Entry 1 is the finding. It is the oldest entry on this register, canon law 2 is
+written from it, and it had never reached the generator in any form: not one of
+its fifteen words was in that file and neither was the word "buzzword". Entry 2
+had no rule either. Entry 11 had one at the heading gate and none at the slot
+where a title is written, which is the position L-A23 says decides.
+No live specimen of entry 1 exists. The census over the newest stored row and
+both published pages came back clean on all fifteen words, so the three issues
+this product has sent obeyed a law the machine that wrote them had never been
+told, and that is the reason the patch is worth its lines rather than a reason
+it is not: the compliance was the model's habit and not a gate.
+What the ending IS, for all fifty, is `docs/voice/check_voice.py sweep`. It
+maps each entry to the shortest distinctive phrase in the generator that
+enforces it and fails when one of them leaves the file. Forty-six of those
+endings would have been the same sentence pointing at four places in one file,
+and the rule above says why that was the wrong shape: a LANDED line asserted
+without checking the generator is worse than the prose it replaced, and the
+check is what does the checking. An entry in that range that gains a prose
+ending gains a row there too, or the command fails on it.
+Three entries carry an ending in their own text as well, below, because theirs
+changed today.
+
 **A third ending, for the entry a prompt cannot reach (writer seat,
 2026-09-30).** Both endings above are written once and neither of them
 runs again. That is enough for an entry the generator can be taught,
@@ -89,7 +127,17 @@ gap that the same collision had left empty (incident 25).
    crucial, seamless, robust, leverage (as a verb), unlock, empower,
    supercharge, game-changer, revolutionize, "in the ever-evolving
    world of".
+   Enforced 2026-10-09, twenty days after it was written, by the sweep above.
+   The generator held nothing against this entry, so the rule is new rather
+   than relocated, and it is a question about the word plus a count, because
+   the one mark that went to zero in that file was the one that was counted.
+   LANDED prompts/digest.md: "catches the word that fills the slot where a fact belongs"
+   LANDED prompts/digest.md: "count the words that state nothing, per the law 2 bullet above"
 2. Three-adjective lists. One precise adjective, or a number.
+   Enforced 2026-10-09, as the last two sentences of entry 1's rule, because
+   the stack of adjectives is the same failure spread over three words and a
+   rule of its own would have been a second place to forget it.
+   LANDED prompts/digest.md: "One precise adjective, or the number the three were standing in for"
 3. Symmetric paragraph rhythm: every item the same length, every
    sentence the same shape. Vary or die.
 4. The hedge stack: "could potentially", "may possibly", "it's
@@ -106,6 +154,13 @@ gap that the same collision had left empty (incident 25).
     End on the last finding or the standing close, never a recap.
 11. Titles with colons where the second half explains the first.
     One finding, one line.
+    Enforced 2026-10-09 at the title slot. The ban was already in the file
+    twice, over section headings and over item headlines, and the heading gate
+    collects the text in front of any colon on any line beginning with `#`,
+    which includes the title. What it was missing is the position: the gate
+    reads finished output and the slot is where a title gets chosen, and
+    L-A23 says the instruction has to be where the writing happens.
+    LANDED prompts/digest.md: "And no colon. The shape the mark makes here is a short label"
 12. Uniform enthusiasm. If every item is important, none is; the
     ranking must be visible in the prose's energy, not just the
     order.
@@ -398,6 +453,15 @@ gap that the same collision had left empty (incident 25).
     exactly that day proving a person was not there. Honesty about a thin day
     is house law and stays. The words are written fresh every time. Added
     2026-09-24 from the empty-day template in prompts/daily.md.
+    Enforced in `prompts/digest.md`, which absorbed the daily cadence, AND
+    filed, because the file this entry was written from is the other generator
+    and no edit here reaches it. Both halves are needed to close the entry.
+    LANDED prompts/digest.md: "A stored sentence kept for empty days is furniture the moment it runs twice"
+    Filed: docs/ideas.md, "One craft layer, two cadence files", 2026-09-24,
+    still `proposed`. Checked 2026-10-09: `prompts/daily.md` has never been on
+    main, and the branch that carries it is now the one behind the open pull
+    request #60 rather than the closed #35 the entry names. Line 121 of that
+    file is this entry's specimen, unchanged, fifteen days on.
 44. The tell the template orders. Entry 25 says an item never ends on its
     citation. prompts/daily.md says "End each item with its source line:
     *paper title* - [link](url)", which mandates entry 25, prints a stylistic
@@ -410,6 +474,35 @@ gap that the same collision had left empty (incident 25).
     handed. This says to read the generator itself, and to read every
     generator, not the one this seat happens to own. Added 2026-09-24 from
     the second generator in PR #35.
+    Filed, and it is the one entry in 1 to 50 that no wording of
+    `prompts/digest.md` can reach, because its subject is the generators this
+    seat does not own. docs/ideas.md, "One craft layer, two cadence files",
+    2026-09-24, still `proposed`.
+    The check, scoped to the branch rather than to main, because the file is
+    not on main and a grep over the working tree finds nothing and reports it
+    as clean:
+
+    ```
+    git show origin/engineer/2026-09-20-digest-quality-gate:prompts/daily.md \
+      | grep -n "source line\|{dates}\|routine, so there is no issue"
+    ```
+
+    Run 2026-10-09, fifteen days after this entry, nineteen days after the
+    pull request opened. All four specimens are live and unchanged: the
+    `[{dates}]` title the owner struck by name, the source line that mandates
+    entry 25 and carries the em dash law 1 forbids, and the stored empty-day
+    sentence of entry 43. `pipeline/weekly.py:835` on that branch selects that
+    file as the daily's prompt, so the day it merges the daily issue is written
+    by 133 lines instead of by this register's generator.
+    The second reading of this entry is the one that matters now and it is not
+    about the daily. "Read every generator" includes the live ones, and the
+    sweep of 2026-10-09 put entry 14's question to `prompts/rag-answer.md`,
+    which orders a claim id into every sentence it writes. It clears, and the
+    reason is the surface rather than the words: the tool hands its caller a
+    `citations` array resolving every id in the same return value, and the
+    caller is an agent. An identifier a reader can resolve from the artifact
+    they are holding is not internal vocabulary. One printed in an issue, where
+    nothing resolves it, still is.
 45. The opening billed to a reader who was not there. "You spent last
     week watching agents get faster by doing less at test time", the
     2026-W39 opening, struck by the owner with "dont assume readers read
@@ -1929,3 +2022,187 @@ gap that the same collision had left empty (incident 25).
     Gated the same day: `docs/voice/check_voice.py delivery` prints the preview
     length and the ninety-character truncation, and fails over ninety.
     LANDED docs/voice/check_voice.py: "inbox preview"
+104. The slot name cleared from the rule and left standing in the slot. Entry 90
+    is the class named and not swept, and this is that failure inside the repair
+    of a different entry, which is how it hid.
+    The print of 2026-10-05 put three headings on the page that were a slot
+    name, a colon, and the day's news. The grade found it the same morning,
+    traced the two worst of them to one sentence at the top of the heading rule
+    that used to render the four slots as plain English clauses, struck that
+    sentence, and wrote a paragraph explaining that a paraphrase of a banned
+    heading is the banned heading. Good diagnosis, and it stopped at the rule.
+    Two slot BODIES still opened on the same words. The traction body carried
+    "a claim gaining ground" and the new-work body's first four words were "The
+    genuinely new", which is the second of the three headings that printed,
+    sitting four lines below the heading brace it governs. Both were found on
+    2026-10-10 by one grep for the phrases the repair itself names.
+    The tell is where a repair looks. A rule that explains a leak is read as
+    the source of the leak, so the sweep runs over the rule's own paragraph and
+    stops, and the slot a few lines down is the position the model actually
+    writes from (L-A23, entry 93). So when a phrase is struck anywhere in this
+    generator, grep the whole file for it before the commit, including the slot
+    bodies, including the file's own prose about itself, and print the count.
+    One hit is a result. Entry 89 found three that way and entry 90 was written
+    to make it routine, and neither of them reached across into another entry's
+    repair.
+    Added 2026-10-10. Enforced the same day: both phrases rewritten in plain
+    words that are not headings, with the reason recorded in the heading rule so
+    a later run does not restore them as explanation.
+    LANDED prompts/digest.md: "The words were struck from this bullet and left standing in the slots"
+105. The enforcement that merged and never deployed. Not a prose tell. It is a
+    defect in every ending this register has, and in the command written to
+    check them.
+    `prompts/digest.md` is read by a job inside a container image. The image is
+    built by a deploy, nothing in this repository performs one automatically,
+    and the press runs on a Monday cron. So the file that writes an issue is the
+    file as it stood whenever a hand last deployed, and every "LANDED
+    prompts/digest.md" line above asserts an enforcement in a working tree.
+    On 2026-10-10 the two were eleven apart:
+
+    ```
+    psql "$NEON_RO_URL" -c "select runtime_sha, recorded_at from deploy_runtime
+        where app = 'weekly' order by recorded_at desc limit 1"
+      -> 0cbc51a0e248 | 2026-10-05 09:00:19+00
+    python3 tools/delivery_health.py --surface deploy --no-notify
+      -> weekly is 1.1 days behind (13 undeployed commits since 3bbf430)
+    git show 3bbf430:prompts/digest.md | sha256sum | cut -c1-12
+      -> c48d09624161        # the sha that wrote 2026-W40 on 2026-10-05
+    python3 docs/voice/check_voice.py enforcements 3bbf430
+      -> 11 FAIL on prompts/digest.md, 4 on docs/voice/check_voice.py, exit 1
+    ```
+
+    Six revisions of this seat's work were on `main` and none of them were in
+    the machine. The semicolon count, the shape count, the heading repair, the
+    one-paragraph sign-off, the inbox-preview rule and the buzzword count all
+    read as landed in this file and were absent from the file the press reads.
+    The reason this belongs here rather than only in the ledger is that four
+    grades named the risk and named the wrong gate. Each one wrote that unless
+    the branch merged before Monday, the next issue would come from the same
+    generator. The branches merged on 2026-10-08 and the sentence stayed true,
+    so the seat was watching a number that does not decide the outcome. The
+    tell, for any register in this repository whose entries end in a file
+    change: name the path the words take to the reader, and verify the ending at
+    the last point on that path that you can read. For this seat that point is a
+    git ref, not a branch.
+    Added 2026-10-10. Gated the same day, which is the only half this seat owns:
+    `docs/voice/check_voice.py enforcements <git-ref>` reads every LANDED path
+    at a commit instead of from the working tree, and the canon's artifact check
+    now takes three shas rather than two, so a grade says what wrote the last
+    issue, what is on the branch, and what the press holds.
+    LANDED docs/voice/check_voice.py: "read from   "
+    The deploy itself is the engineer's and it is filed and URGENT in
+    docs/ideas.md on 2026-10-08 and carried on 2026-10-10, so it is confirmed in
+    place here with this seat's evidence rather than filed a second time.
+    **And it has already cost a reader once, which makes this a specimen rather
+    than a forecast.** `MASTHEAD` in `pipeline/weekly.py` lost its false reading
+    claim in commit `cb99c37` on 2026-09-26, two days before a Monday send.
+    The row that send wrote carries the old constant word for word:
+
+    ```
+    psql "$NEON_RO_URL" -c "select split_part(body, chr(10), 3) from digests
+        where week = '2026-W39'"
+      -> *The latest in AI research, read in full and distilled weekly: ...*
+    git show cb99c37^:pipeline/weekly.py | grep -A4 '^MASTHEAD'
+      -> the same sentence, which that commit deleted
+    ```
+
+    `add_masthead` splices the constant unconditionally, so the only way that
+    text reaches a row written on 2026-09-28 is an image built before
+    2026-09-26. Entry 64 read this defect as a fix that cannot reach what is
+    already published, which is true of the archive. The send is the half that
+    entry missed: the correction did not govern the next issue either. Canon law
+    15's own founding specimen was therefore live in an inbox after the code was
+    right, and nobody could see it, because every gate in this register reads
+    the repository.
+106. The figure still wearing the units and the precision of the table it came
+    out of. Two tells with one cause, and the cause is that a number was
+    transcribed where every other word on the page was written.
+    The print of 2026-10-05 reported one kill switch latency twice. The opening
+    and the item's own bold lead gave it in microseconds, which is the unit that
+    makes it a single digit. Two sentences later the result itself arrived as
+    "0.0048 ms, with a 95% confidence interval of [0.0042, 0.0057] ms". The
+    conversion is exact, neither figure is wrong, and a reader meets one
+    measurement as two numbers with nothing on the page saying they are the
+    same one. They cannot tell whether the lead was rounding or describing
+    something else until they have done the arithmetic themselves.
+    The second tell is the decimal that ends in zero. The same print carried
+    "86.20%", "97.40%" and "3.87-10.70 points". A trailing zero in a decimal is
+    not a precision anybody chose. It is the width of a column, and it tells
+    the reader that the second place was never considered, in a product whose
+    whole promise is that somebody considered it.
+    What makes this entry worth a number is where it hid. The claims pass's
+    fourth question has read this artifact five times and cleared it every
+    time, because that question compares two numbers on one measure and asks
+    whether they agree. These agree. The question's unit of comparison was the
+    numeral, and a unit change makes one quantity into two numerals that look
+    nothing like each other, so the gate built to catch a figure disagreeing
+    with itself cannot see a figure repeating itself in disguise. The
+    generalisable half: a check that compares printed forms is a check about
+    printing, so convert, normalise, or count before comparing anything a
+    reader will read as a quantity.
+    **Swept per entry 90, and the count is one, which closes it.** The tell is a
+    gate whose comparison is a printed form:
+
+    ```
+    $ grep -n "the same number\|the same string\|identical\|verbatim" prompts/digest.md
+      -> 12 hits, read by hand
+    ```
+
+    One is the gate repaired here. One is the counted-quantities gate, which
+    compares a word against a tally and already says to count what is under the
+    sentence rather than to read it, so it normalises before it compares. The
+    other ten are about repeated wording and standing lines, where the printed
+    form is the subject and comparing it is the point.
+    Added 2026-10-11. Enforced twice the same day, as a conversion step in the
+    gate that reads the figures against each other, and as a ninth count at the
+    shape gate, because the leading zeros and the trailing zeros are both
+    visible in the finished draft alone.
+    ```
+    LANDED prompts/digest.md: "Compare the quantity and not the numeral, because the same number in two units is two numbers to a reader."
+    ```
+    ```
+    LANDED prompts/digest.md: "A ninth count, for the figure still wearing the units and the precision of the table it came out of."
+    ```
+
+107. The heading written from the issue's argument instead of from its own
+    items. Not a label, which is what every previous heading entry in this
+    register is about. This heading is specific, it is this day's, and it would
+    be false over any other day's material, so it passes the one question the
+    heading gate puts to everything it collects.
+    The print of 2026-10-05 headed its fell-behind section on the assumptions
+    that let agents run unchecked, which is the thread its opening had named and
+    a good thread. Four things fell behind under it. One was an audit bound that
+    turned out not to hold, one was a recursive self-improvement claim, and two
+    were robot manipulation benchmarks superseded by harder ones. Two of the
+    four are not assumptions about anything running unchecked, and nothing in
+    the body argues with the heading or withdraws it. The section is simply not
+    about what the line above it says it is about.
+    The tell is a heading that names a property rather than stating a result,
+    because a property is a claim about every item underneath and a result is a
+    claim about one. "What fell behind: the assumptions that let agents run
+    unchecked" asserts four times. The gate's existing step catches the heading
+    a body dismantles, which is a contradiction, and this is a coverage failure,
+    so there was nothing between the two to catch it.
+    Why the argument is the source and not carelessness: this file requires the
+    weekly to argue and requires every section to pick the argument up, so a
+    writer holding one thread and four headings will write the thread into the
+    headings, where it reads as craft. The argument belongs in the opening,
+    where it is a claim about the issue. A heading belongs to its block.
+    **Swept per entry 90, and the sweep found the condition rather than the
+    phrase.** The fell-behind slot already carries the right rule, in these
+    words: name the belief that fell "if one belief carries the section". Four
+    unrelated beliefs fell that week, so the condition was false and the model
+    wrote the conditional form anyway. A rule whose guard is a subordinate
+    clause has no step where the guard is evaluated, which is this register's
+    oldest lesson in a new position: the count is the gate and the clause is a
+    description of one.
+    Added 2026-10-11. Enforced twice the same day, as a count at the heading
+    gate, beside the withdrawal check it was invisible to, and in the slot
+    itself, where the condition is now a thing to check and carries the shape to
+    use when it fails.
+    ```
+    LANDED prompts/digest.md: "A heading that names a property is a claim about every item under it."
+    ```
+    ```
+    LANDED prompts/digest.md: "check that condition before you use that shape"
+    ```

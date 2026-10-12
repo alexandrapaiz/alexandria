@@ -1,5 +1,12 @@
 # The voice canon
 
+**Enforced at:** prompts/writer-agent.md, the run's grading step, every run,
+one verdict per law with a quoted line as evidence. The mechanical half of
+several laws runs as `docs/voice/check_voice.py`, which nothing calls yet
+(filed in docs/ideas.md, 2026-10-04). Added 2026-10-09 against the ExO's
+filing of 2026-09-19, which asked for this line on three of this seat's files
+and got two: taste.md is the owner's and this seat never edits it.
+
 Where the newsletter's words come from. The owner was frequently
 dissatisfied with the writing and structure because nobody owned the
 words as a craft; this canon and the writer seat (ADR-28) fix that the
@@ -514,6 +521,42 @@ published issue through two grades, and the newest `digests` row on 2026-09-30
 was written by a bundle from 2026-09-25, so three consecutive grades reported
 on a generator five commits out of date without once noticing.
 
+**Then the same question forwards, which is the one this check was missing
+(added 2026-10-10).** Everything above compares the artifact to the branch, so
+it says what WROTE the last issue. A grade's whole purpose is the next issue,
+and nothing here asked what will write it. Four consecutive runs answered that
+question with merge status, in those words, saying that unless the branch
+merged before Monday the next issue would come from the same generator. The
+branches merged. The generator that writes is still the one that wrote
+2026-W40, because `prompts/digest.md` reaches the press through a deploy and a
+merge is not a deploy.
+
+So take the third integer, and it comes from the job rather than from git:
+
+```
+psql "$NEON_RO_URL" -c "select runtime_sha, recorded_at from deploy_runtime
+    where app = 'weekly' order by recorded_at desc limit 1"
+python3 tools/delivery_health.py --surface deploy --no-notify
+```
+
+The second command names the commit the press is running and the commits
+landed since. Read `prompts/digest.md` at that commit, take its sha, and put
+all three in the grade: what wrote the artifact, what is on the branch, and
+what the press holds. Where the third does not match the second, every patch
+this seat has merged is absent from the machine that writes on Monday, and the
+grade says so at the top, because it changes what the run is for. On
+2026-10-10 the press was running `prompts/digest.md` at sha `c48d09624161`,
+which is the sha that wrote 2026-W40, with six merged revisions of this seat's
+work absent from it, and 11 of the 21 enforcement anchors this register
+verifies were not in the file the press reads. The cause is the engineer's and
+it is filed. Asking the question is this seat's, and until 2026-10-10 no step
+in this procedure did.
+The company standard already said it, which makes this a correction rather
+than a discovery. L-A16: configured is not in effect, and a capability counts
+as live only when a run log, a listing or a response proves it served a real
+turn. A merged prompt is configuration, and the press's own Monday row is the
+run log. This procedure asked git a question only the job can answer.
+
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
    of the papers. Grade nothing yet. Record four things: where a
@@ -656,6 +699,26 @@ on a generator five commits out of date without once noticing.
    both. The repair is to name the setup or to print one number, and the
    worked example under law 14 carries this defect too, in the pair 44.3 and
    30, which is reported to the owner rather than edited here.
+   **A fifth question, and it is put to this pass and to every pass above it
+   rather than to the issue** (added 2026-10-11,
+   `INC-2026-10-11-two-more-gates-cleared-the-half-of-the-sentence-they-were-pointed-at`).
+   Where a pass clears a sentence, name which part of that sentence the pass
+   actually read, and put the remaining parts to the laws separately. A verdict
+   that says PASS on a sentence carrying two claims has graded one claim.
+   Two specimens from one artifact, both cleared five times. The close of
+   2026-W40 was graded on its verbs, which were right, and never on the
+   calendar span it put around them, which the generator forbids in its own
+   words. Question four above was run on a latency reported once in
+   microseconds and once in milliseconds, and cleared it, because the question
+   compares numerals and a unit change makes one quantity into two numerals
+   that look nothing like each other. Each gate was pointed at the property
+   that failed on the day the gate was written, so the half of the sentence
+   that has never failed is the half nothing reads, and it stays unread until
+   it fails. Convert, normalise or count before comparing anything a reader
+   will read as a quantity, and say in the verdict what was compared.
+   The cheap version of this question, and it is the one to run: for every PASS
+   in passes 2 through 5, write the half-sentence the verdict is actually
+   about. Where that is shorter than the sentence, the rest is ungraded.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at

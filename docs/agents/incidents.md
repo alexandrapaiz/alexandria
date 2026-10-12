@@ -11737,6 +11737,238 @@ failed" into "after it did." The other six seats named in item 14 (skill,
 engineer, market, research, security, exo) are all still sitting at the
 same unapplied, pre-measured distance from their own version of this.
 
+## INC-2026-10-10-the-sweep-stopped-at-the-rule-and-the-slot-below-it-kept-the-phrase — ban list 90's own class, inside another entry's repair (2026-10-10, writer seat)
+
+**This is a repeat of the failure ban list 89 recorded and ban list 90 was
+written to make routine: a class is named, its visible specimens are struck,
+and one grep the next morning finds more live in the same file. Entry 89 found
+three that way on 2026-10-04 and a fourth inside its own repair. Recorded at
+the moment it repeated per the standing rule at the top of this file.**
+
+**What happened.** The print of 2026-W40 (2026-10-05) carried three section
+headings in the shape "What is gaining ground: ...", "What is genuinely new:
+..." and "What fell behind: ...", which is the slot name, a colon, and the
+day's news. Canon law 12 forbids the framework from printing and the owner has
+ruled on it twice (taste.md, 2026-09-19, the second time in the word "AGAIN").
+
+The grade of 2026-10-05 found it the same morning and diagnosed it correctly.
+It traced two of the three headings to one sentence at the top of
+`prompts/digest.md`'s heading rule which rendered the four slots as plain
+English clauses, struck that sentence, and added a paragraph whose own words
+are "A paraphrase of a banned heading is the banned heading."
+
+It did not grep the rest of the file. On 2026-10-10 one command found two
+phrases still standing, each a few lines under the heading slot it governs:
+
+```
+$ grep -n "gaining ground\|The genuinely new" prompts/digest.md
+750: claim gaining ground, whatever the edge count says.       # traction body
+848: {The genuinely new, labeled honestly as unproven, ...     # new-work body
+```
+
+The second is the first four words of the slot body for the section whose
+heading printed as "What is genuinely new", four lines below a heading brace
+that says in terms "The slot's internal name is not repeated here and is not a
+candidate." It was repeated, in the block immediately after.
+
+**Why it was invisible.** A repair that explains a leak reads as the source of
+the leak, so the sweep ran over the rule's own paragraph and stopped there. Ban
+list 90 says to run a generalising entry's tell over the whole generator and
+print the count, and it was obeyed on the entries it was written beside and not
+on the heading repair, which belongs to a different entry and was not being
+written as a class. L-A23's point is the position: the prohibition sat in a
+rule, the phrase sat in a slot, and the slot is where the writing happens.
+
+**Fixed in this pull request.** Both phrases rewritten in plain words that are
+not headings, the reason recorded in the heading rule so a later run does not
+restore them as explanation, and the tell written down as ban list 104: when a
+phrase is struck anywhere in the generator, grep the whole file for it before
+the commit and print the count, including the slot bodies and the file's own
+prose about itself.
+
+## INC-2026-10-10-four-editorial-grades-named-the-merge-as-the-gate-when-the-gate-is-the-deploy — six merged generator revisions, none of them in the machine that writes (2026-10-10, writer seat)
+
+**This is a repeat of the class `pipeline/runtime_sha.py` exists for, in its own
+words "the org has now paid for that gap twice": incident 24, and PR #110,
+merged 2026-09-26 and inert for days with three documents describing its
+behaviour as live. This is the third occurrence and the first inside this
+seat's own instrument. Recorded at the moment it repeated per the standing rule
+at the top of this file.**
+
+**What happened.** The editorial runs of 2026-10-05, 10-06, 10-07 and 10-08 all
+graded 2026-W40 and all four closed on the same judgment in the same terms:
+unless the pull request merges before Monday, the next issue is written by the
+same generator and the grade changed nothing. Run 27's words: "Unless this pull
+request merges before Monday 09:00 UTC, next week's issue is written by the
+same generator that wrote this one."
+
+The pull requests merged. #251 went into `main` on 2026-10-08, carrying six
+revisions of `prompts/digest.md`. The sentence stayed true anyway:
+
+```
+$ python3 tools/delivery_health.py --surface deploy --no-notify
+  weekly is 1.1 days behind (13 undeployed commits since 3bbf430)
+$ git show 3bbf430:prompts/digest.md | sha256sum | cut -c1-12
+  c48d09624161          # the sha that wrote 2026-W40 on 2026-10-05
+$ git show origin/main:prompts/digest.md | sha256sum | cut -c1-12
+  3aad8a6b9c44
+$ python3 docs/voice/check_voice.py enforcements 3bbf430
+  11 FAIL on prompts/digest.md, 4 on docs/voice/check_voice.py, exit 1
+```
+
+Eleven of the twenty-one enforcement anchors this seat's own register verifies
+are absent from the generator the press runs: the semicolon count, the shape
+count, the heading repair's specimens, the one-paragraph sign-off, the
+inbox-preview rule and the buzzword count among them. `check_voice.py
+enforcements` reported all twenty-one present on the morning the press held ten
+of them, because it read the working tree.
+
+**Why it was invisible, as a structural fact rather than a miss.** The canon's
+own artifact check is one integer against one integer, the stored row's
+`prompt_sha` against the branch's. That answers what WROTE the last issue. A
+grade exists for the next issue and no step in the procedure asked what will
+write it, so four runs substituted the nearest number they had, which was merge
+status, and merge status does not decide it. `deploy_runtime` has held the
+answer since 2026-09-26 and this seat had never queried it.
+
+**Fixed in this pull request, on the half this seat owns.** The canon's
+pre-pass-1 check now takes three shas and prints all three, with the two
+commands that produce the third. `check_voice.py enforcements` takes a git ref
+so every LANDED line in the ban list can be verified at the commit the press
+was built from rather than in a working tree. Written down as ban list 105. The
+deploy itself is the engineer's, filed and URGENT in `docs/ideas.md` on
+2026-10-08 and carried on 2026-10-10, so it is confirmed in place with this
+seat's evidence rather than filed a second time.
+
+## INC-2026-10-10-the-editors-own-prose-broke-canon-law-one-a-fourth-time — in a table cell, which is the position the three prior diagnoses do not cover (2026-10-10, writer seat)
+
+**Fourth occurrence of the class recorded as
+`INC-2026-10-01-the-editors-own-review-broke-canon-law-one` and
+`INC-2026-10-07-the-editors-own-prose-broke-canon-law-one-again`. The 10-07
+entry predicted the end-of-run sweep would find something every time and said
+the prediction had held for three runs. It held for a fourth. Recorded per the
+standing rule at the top of this file, which carries no exceptions, including
+for a defect struck before the push.**
+
+**What happened.** The run of 2026-10-10 graded canon law 1 on 2026-W40, printed
+its eight semicolon joins as evidence, and then wrote one of its own:
+
+```
+docs/voice/reviews/2026-10-10.md, the pass 6 table
+  "| the sweep reports both as filed with no prompt reach; unchanged |"
+```
+
+Struck before `gh pr ready`. One hit against three on 2026-10-07, and the
+committed diff of this run's other five files came back at zero.
+
+**What is new, and it is why this is an entry rather than a line in the
+review.** The 10-01 diagnosis is the compressed aphorism a review reaches for
+when summing a verdict up. The 10-07 entry widened the position to a ban-list,
+incident or ledger entry. Neither covers this one. It is inside a markdown
+table cell, in a column of terse status fragments where the eye reads the cell
+as data rather than as prose, and a semicolon joining two fragments in a cell
+does not look like a sentence at all. A pass 6 table is now a fixture of this
+seat's reviews, so the position recurs by design.
+
+**Which makes the fix the count rather than a fourth note about aphorisms.** Ban
+list 95's finding is that a mark in a count goes to zero and a mark in prose
+does not, and it was landed into `prompts/digest.md` for the issue. This seat's
+own files got the prose version of the same rule. The command that found this
+one is two characters of shell and it ran because the 10-01 entry made the sweep
+law:
+
+```
+tr -cd ';' < <every file the run wrote> | wc -c
+```
+
+That is the whole gate and it works. What is still prose is the instruction to
+run it, which lives in an incident entry rather than in anything that executes,
+so the next occurrence depends on a run choosing to type it. Named here rather
+than filed, because `docs/voice/check_voice.py` is this seat's file and the
+sweep belongs in it beside the other counts, which is the next run's smallest
+useful patch.
+
+## INC-2026-10-11-two-more-gates-cleared-the-half-of-the-sentence-they-were-pointed-at — the close graded on its verb six times and never on its span, and the claims pass comparing numerals where the issue changed units (2026-10-11, writer seat)
+
+**This is a repeat of `INC-2026-10-07-law-8-form-graded-by-prefix`, itself the
+fifth occurrence of a chain running back through
+`INC-2026-10-03-law-12-graded-by-grep`,
+`INC-2026-10-01-grade-cleared-a-law-by-grading-half-of-it`,
+`INC-2026-09-29-grade-cleared-link-coverage` and
+`INC-2026-09-26-grade-cleared-a-printed-violation`. Sixth occurrence of the
+class, same seat, same register, and two instances in one run rather than one.
+Recorded at the moment it repeated, per the standing rule at the top of this
+file.**
+
+**What happened, twice.**
+
+The first. Canon law 15 forbids the issue from claiming to have read what it
+only ingested. `prompts/digest.md` carries a second rule about the same
+sentence, in its own words: the count covers the last seven days ending now,
+"which is not the span of the ISO week the issue is filed under", so "the
+sentence names the seven days and never the week". The close of 2026-W40 reads
+"The week ending October 4 brought 2,557 papers in and 127 read in full." Six
+grades have read that sentence. Five passed law 15 on it and the fifth called it
+the best line in the issue.
+
+Nothing in those grades was careless. The law-15 gate in `prompts/digest.md`
+asks one question of the sentence and names it: which count in `stats` is this
+about, and is its verb the act that count records. Both counts are right and
+both verbs are right, so the gate returns a pass and the gate is correct. The
+sentence has a second part the gate never looks at, which is the span it claims
+the counts were taken over, and that part is governed by a different rule in a
+different section of the same file with nothing joining them.
+
+The second, in the same artifact. The claims pass's fourth question groups the
+issue's figures by the system they describe and asks whether two numbers on one
+named measure agree. 2026-W40 reports one kill switch latency in its bold lead
+in microseconds and two sentences later as "0.0048 ms, with a 95% confidence
+interval of [0.0042, 0.0057] ms". That is one quantity. The question's unit of
+comparison is the numeral, and a unit change makes one quantity into two
+numerals that look nothing like each other, so five executions of a question
+built to catch a figure disagreeing with itself could not see a figure repeating
+itself in disguise.
+
+**Why both came out wrong, which is the reusable part.** The five prior
+occurrences in this chain were a violation that could not be quoted, a law
+asserting coverage that needed a count, a law with two clauses under one number,
+a law whose instrument was narrower than the law and said so, and a rule naming
+one substring of a string where the reader cares about another. These two are
+L-A21's first half stated exactly: a gate's scope is narrower than its subject.
+What is new is where the narrowness lives. In both cases the gate is pointed at
+a property of the sentence rather than at the sentence, and the property it
+names is the one that failed before. The law-15 gate was written the day a verb
+was wrong. The fourth question was written the day two numerals disagreed. Each
+one encodes its founding specimen, so the half of the sentence that has never
+failed yet is the half no gate reads, and it stays unread until it fails.
+
+That is a procedure defect rather than a prose defect, and it is the reason this
+run found two things in an artifact five previous runs had already graded. The
+sixth reading of an issue produces less than the first reading of a gate.
+
+**The procedure change, and it is one sentence in the canon's grading passes
+rather than in the laws.** Where a pass clears a sentence, name which part of
+that sentence the pass actually read, and put the remaining parts to the laws
+separately. A verdict that says "PASS" on a sentence with two claims in it has
+graded one claim. Added to `docs/voice/canon.md` under pass 5, which is
+procedure and belongs to this seat, and the laws section is untouched.
+
+**Both halves also patched in the generator**, because a canon change binds the
+grader and not the writer: the law-15 gate now asks about the span as a second
+question with its own repair, and the figures gate converts before it groups.
+Ban list 106 carries the units finding with its sweep. The close's own rule has
+its justification replaced, because the reason it used to carry was a number,
+the number was zero for the week in question, and a rule defended by a
+contingent fact reads as a contingent rule.
+
+**One thing this entry does not claim.** The artifact's figures were correct in
+both cases. 2,557 papers did arrive in the window the sentence named, because
+ingest runs on a cron that does not fire in the eighteen hours where the two
+spans differ, and 0.0048 ms is 4.8 microseconds. Nothing reached a reader as a
+false number. What reached them was a boundary the writer could not check and a
+measurement printed twice, and both are the kind of defect that is invisible
+until somebody asks a gate what it cannot see.
+
 ## INC-2026-10-11-the-free-tiers-minute-was-sized-for-one-request-and-never-for-a-drain — Groq's 8,000 tokens a minute, the same ceiling as incident 22, missed in the other half of the code (2026-10-11, engineer seat, second run)
 
 **Observed by:** the engineer seat's second scheduled run of 2026-10-11, reading
