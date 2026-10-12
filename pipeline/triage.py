@@ -154,6 +154,25 @@ CAP_USD = 0.60
 # seconds, so 90 calls is about 52 minutes inside a 60-minute timeout.
 MAX_CALLS_PER_RUN = 90
 
+# The same ceiling for the day the primary does not answer, where that number
+# is wrong by a factor of five. Every model in the fallback list is priced at
+# $0.00 a million, so CAP_USD buys infinite calls and MAX_CALLS_PER_RUN is the
+# only bound left; 90 calls at the measured 4,713 tokens a call is 424,170
+# tokens of a free tier that allows 200,000 a day, shared with interpret and
+# distill. This job holds the 12:00 UTC window and distill holds 15:00, so
+# spending the day here is not an overrun this job pays for. It is distill
+# meeting a 429 on every call three hours later, which is
+# `INC-2026-10-08-the-distill-stall` exactly: four days of no claims while
+# this stage and interpret kept writing rows.
+#
+# 56,000 is distill's, interpret's and this job's equal share of the
+# allowance after the 15% margin, derived in `budget.fallback_share` from the
+# provider's published `tpd` rather than chosen here, and checked against this
+# constant by `budget.check_fallback_shares()`. It buys 11 calls, so 110
+# papers judged on a degraded day instead of 730 on a day that leaves the
+# stages after it nothing.
+FALLBACK_TOKENS_PER_RUN = 56_000
+
 # How each run's call budget is shared out, in batches per pass. This replaced a
 # single ORDER BY that sorted tier 'a' fourth and left 'a-low' in the CASE's else
 # branch, which starved the arXiv firehose for the whole life of the pipeline:
@@ -438,7 +457,22 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
         judged = 0
         per_tier: dict[str, int] = {}
         stopped = "plan exhausted"
+        # Tokens this run has drawn on a model that is not the primary's. Only
+        # those count: the ceiling below is a share of the free tier's day, so
+        # a call Moonshot answered has no business spending it.
+        fallback_drawn = 0
         for chunk in plan:
+            # Checked before the call, so the run stops AT its share rather
+            # than one call past it, and named, because "we ran out of the free
+            # tier's day" and "we ran out of money" want different fixes.
+            if fallback_drawn >= FALLBACK_TOKENS_PER_RUN:
+                stopped = f"the {FALLBACK_TOKENS_PER_RUN:,}-token fallback share"
+                print(f"stopping: {fallback_drawn:,} tokens drawn off the "
+                      "primary's provider, which is this job's share of the "
+                      "free tier's day. Not a failure and not a cost problem: "
+                      "it leaves interpret and distill a day to run in, and "
+                      "the next run resumes.")
+                break
             try:
                 out, model = client.ask_json(
                     MODELS, system, render_batch(chunk), os.environ, cap,
@@ -476,6 +510,8 @@ def triage(max_calls: int = MAX_CALLS_PER_RUN, cap_usd: float = CAP_USD):
             # fallback's minute is 8,000 tokens where Moonshot's is
             # 500,000, so a pause chosen before the walk ran is a
             # 429 this caller caused. llm.pace says why.
+            if client.on_fallback(model):
+                fallback_drawn += cap.last_tokens
             time.sleep(client.pace(model, cap.last_tokens))
 
         # The per-tier split is the evidence that the drain is fair. If a future run

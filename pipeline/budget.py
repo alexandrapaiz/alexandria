@@ -2158,16 +2158,16 @@ def main() -> int:
     # the fallback's own day, which is a ceiling rather than a defect.
     print("the fallback's day (every corpus job on the free tier at once)")
     try:
-        _, lines = fallback_daily_draw()
-        print("\n".join(lines))
-        for problem in check_fallback_pacing():
-            failures.append(problem)
-            print(f"  PACING: {problem}")
         for label in sorted(KIMI_DAILY_DRAW):
             if fallback_landing(label):
                 share, basis = fallback_share(label)
                 print(f"  {label}: {share:,} tokens a run is its share "
                       f"({basis})")
+        _, lines = fallback_daily_draw()
+        print("\n".join(lines))
+        for problem in check_fallback_pacing():
+            failures.append(problem)
+            print(f"  PACING: {problem}")
         for problem in check_fallback_shares():
             failures.append(problem)
             print(f"  FALLBACK SHARE: {problem}")

@@ -1271,3 +1271,146 @@ def test_a_paced_fallback_drain_still_finishes_inside_its_own_timeout():
         f"{distill.MAX_PAPERS_PER_RUN} papers at "
         f"{llm.pace('openai/gpt-oss-120b', size):.0f}s a paper is {spent:.0f}s "
         f"of a {timeout}s window, before a single HTTP round trip")
+
+
+# ---------------- the day the primary is absent has a share per stage ----------------
+
+def test_every_corpus_job_publishes_a_fallback_share_and_the_shares_fit():
+    """The ceiling that was missing for the four days `claims` stood still.
+
+    Every job had a bound for the day it is paying: a spend cap, a call count,
+    and for distill a token share of Moonshot's allowance. None of the three
+    binds on the free tier. The cap cannot, because every Groq model in
+    `budget.MODELS` is priced at $0.00 a million; the call counts were sized
+    against a paid minute and together ask 642,650 tokens of a 200,000-token
+    day. So the stage that runs last in `llm.KIMI_WINDOWS` met a day two other
+    stages had already spent, which is a 429 on every call and no claims.
+    """
+    assert budget.check_fallback_shares() == [], budget.check_fallback_shares()
+    for job, label in ((triage, "triage (pipeline/triage.py)"),
+                       (interpret, "interpret (pipeline/interpret.py)"),
+                       (distill, "distill (pipeline/distill.py)")):
+        share, _ = budget.fallback_share(label)
+        assert budget.fallback_ceiling(label) == job.FALLBACK_TOKENS_PER_RUN, (
+            f"{label}'s guard and its job disagree about the ceiling the job "
+            "will actually apply")
+        assert job.FALLBACK_TOKENS_PER_RUN <= share
+
+
+def test_the_fallback_share_is_derived_from_the_published_day_not_chosen(
+        monkeypatch):
+    """A share somebody picked is a number that stops being true quietly.
+
+    The provider publishes the day, the request guard already holds back
+    `MARGIN` of it, and the jobs that land on that model split what is left
+    evenly. Nothing here is an opinion, so a tier change or a fourth stage
+    moves every share with no constant in this file to edit.
+    """
+    label = "distill (pipeline/distill.py)"
+    landing = budget.fallback_landing(label)
+    allowance = budget.MODELS[landing]["tpd"]
+    sharers = sum(1 for other in budget.KIMI_DAILY_DRAW
+                  if budget.fallback_landing(other) == landing)
+    share, basis = budget.fallback_share(label)
+    assert share == int(allowance * (1 - budget.MARGIN)) // sharers
+    assert f"{allowance:,}" in basis and f"{sharers} ways" in basis
+
+    # And it moves with the published number rather than being pinned to it.
+    monkeypatch.setitem(budget.MODELS[landing], "tpd", allowance * 2)
+    doubled, _ = budget.fallback_share(label)
+    assert doubled == int(allowance * 2 * (1 - budget.MARGIN)) // sharers
+    assert doubled > share
+
+
+def test_the_shares_together_fit_the_free_tier_s_day():
+    """The acceptance number, as the guard now reads it.
+
+    Before this change the corpus asked 642,650 tokens of a day that allows
+    200,000. `check_fallback_tpd` printed that as a note and named lowering a
+    per-run ceiling as the lever; this is the lever, pulled.
+    """
+    per_model, _ = budget.fallback_daily_draw()
+    for model, draw in per_model.items():
+        allowance = budget.MODELS[model]["tpd"]
+        assert draw <= int(allowance * (1 - budget.MARGIN)), (
+            f"{draw:,} tokens asked of {model}'s {allowance:,}-token day")
+    assert budget.check_fallback_tpd() == [], budget.check_fallback_tpd()
+
+
+def test_on_fallback_asks_about_the_provider_and_not_the_model_list():
+    """Which account paid, which is the question the walk never answered.
+
+    A job's own list is no help: its head and its tail can be the same
+    provider or three different ones, and what decides which day a call spends
+    is the provider behind the id that answered.
+    """
+    assert llm.on_fallback(budget.PRIMARY_MODEL) is False
+    primary = budget.MODELS[budget.PRIMARY_MODEL]["provider"]
+    for model, limits in budget.MODELS.items():
+        assert llm.on_fallback(model) is (limits["provider"] != primary)
+    # An id the table does not know keeps the primary's larger ceiling: a run
+    # should not throttle itself to a fifth of its day on a guess.
+    assert llm.on_fallback("a-model-nobody-added-to-the-table") is False
+
+
+def test_the_fallback_share_stops_the_run_and_names_itself(
+        loop_env, monkeypatch, capsys):
+    """A fourth ceiling, a fourth message, because it wants a fourth fix.
+
+    Money, Moonshot's day, the paper count and now the free tier's day. The
+    right answer to this one is neither more money nor a higher tier: it is
+    that the corpus is running degraded and every stage gets a third of a day
+    a fifth the size.
+    """
+    monkeypatch.setattr(distill, "MODELS", ["openai/gpt-oss-120b"])
+    monkeypatch.setattr(distill, "FALLBACK_TOKENS_PER_RUN", 30_000)
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the 30,000-token fallback share" in out
+    assert "A thin day of claims rather than none" in out
+    assert out.count("claims (paper)") == 1, (
+        "the share is checked before the call, so the run stops AT it rather "
+        "than one paper past it")
+
+
+def test_the_fallback_share_does_not_slow_the_run_the_primary_answers(
+        loop_env, monkeypatch, capsys):
+    """Half of what makes this safe: the fix must not touch the working day.
+
+    A ceiling on the free tier's day that also bound a Kimi run would make
+    every normal day 94% smaller, which is a worse outage than the one it is
+    fixing. Only tokens drawn off the primary's provider count against it, so
+    a share of one token stops nothing while Moonshot is answering.
+    """
+    monkeypatch.setattr(distill, "FALLBACK_TOKENS_PER_RUN", 1)
+    drive(monkeypatch, PAPERS, [paper_reply(claims=[CLAIM])],
+          reader=_WholePaper(40_000))
+    out = capsys.readouterr().out
+    assert "stopped on: the queue ran out" in out
+    assert out.count("claims (paper)") == len(PAPERS)
+
+
+def test_the_share_is_checked_before_the_call_in_every_corpus_job():
+    """A drain that checks afterwards overshoots, and overshooting is the bug.
+
+    One call past the share is one call of the next stage's day, and the next
+    stage is the one that was writing nothing. Asserted in the source of all
+    three, because two of them have no token ceiling of any kind to sit beside
+    and nothing else would catch a check added after the call.
+    """
+    for path, loop, call in (
+            ("pipeline/distill.py",
+             "for pid, title, abstract, decision, source in papers:",
+             "out, answered_by = extract_claims("),
+            ("pipeline/triage.py", "for chunk in plan:",
+             "out, model = client.ask_json("),
+            ("pipeline/interpret.py",
+             "for claim_id, claim_text, embedding in queue:",
+             "out, model = client.ask_json(")):
+        body = (ROOT / path).read_text()
+        body = body[body.index(loop):]
+        assert body.index("if fallback_drawn >= FALLBACK_TOKENS_PER_RUN:") \
+            < body.index(call), f"{path} checks its share after it has spent it"
+        assert "if client.on_fallback(" in body, (
+            f"{path} never adds to fallback_drawn, so its share can never bind")
