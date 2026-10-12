@@ -1843,6 +1843,304 @@ def check_drift() -> list[str]:
     return problems
 
 
+# ---------------- gate 3, and the day the head is what is broken ----------------
+
+
+def head_receipt(model: str, models: list[str], allow_fallback: bool,
+                 *, gate: str) -> tuple[str | None, str]:
+    """Is a receipt from `model` a receipt for the job the deploy installs.
+
+    Returns (refusal, note). The refusal is the text the caller raises with,
+    None when there is nothing to refuse. The note is the line the caller
+    prints, empty when there is nothing to forgive. The caller raises, because
+    the four gates that ask this question raise four different exceptions and
+    this file imports none of them.
+
+    Gate 3 of `docs/agents/runtime-changes.md` exists to stop a deploy whose
+    rehearsal was answered by something other than what will run, and that is
+    the right question on nearly every day. It has one failure mode and
+    2026-10-12 is it: when the HEAD of the list is the thing that is broken, and
+    the change waiting in the image is the degraded path the outage needs, the
+    gate refuses to deploy the fix for the outage because of the outage.
+
+    What that cost, in one morning. Two merged pull requests, #270 and #275,
+    sized the fallback's minute and the fallback's day so the corpus could carry
+    itself with the primary absent. Both were inert, because a Modal app is
+    deployed by a command. The command is
+    `budget.py && preflight && rehearse && modal deploy`, and `rehearse` ends
+    with this comparison. The primary was not answering, so every corpus
+    rehearsal was answered by a Groq model, so every chain stopped at the third
+    `&&`, so the stall entered its sixth day with its cure sitting in `main`.
+
+    So the hatch, modelled exactly on distill's `--allow-abstract-only`, which
+    has carried this shape since 2026-09-27: refuse by default, forgive when
+    asked in so many words, and print what is being forgiven so the receipt says
+    which of the two things was proved. An escape hatch that is silent about
+    what it let through is how a degraded deploy becomes the new normal without
+    anybody deciding that it should.
+    """
+    head = models[0]
+    if model == head:
+        return None, ""
+    if not allow_fallback:
+        return (
+            f"the rehearsal was answered by {model}, not by {head}, which is "
+            "what the deploy installs. A receipt from a fallback is not a "
+            "receipt: fix the head of the list before deploying, because "
+            "tomorrow's cron meets it first.\n"
+            f"    modal run {gate} --allow-fallback\n"
+            "is the hatch for the one day that reasoning inverts: when the "
+            "head is itself what is broken and the change in this image is the "
+            "degraded path the outage needs, refusing the deploy keeps the "
+            "outage. The hatch prints what it forgives and the receipt says "
+            "the fallback was what answered. Nothing was deployed.",
+            "")
+    return None, (
+        f"  FORGIVEN: {head} did not answer and {model} did. This receipt "
+        f"proves the degraded path, not the path a healthy day runs, so {head} "
+        "is still broken after this deploy and the next rehearsal has to be "
+        "run without the hatch to find out when it is not.")
+
+
+# ---------------- the short edition ----------------
+#
+# INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue.
+# `prompts/digest.md` is 1,919 lines, which is tens of thousands of tokens
+# before a single claim is attached, so on a free-tier model at 8,000 tokens a
+# minute the press's request is over budget by more than a factor of ten and
+# `fit_payload` says so in its own words: no payload selection can rescue this.
+# The press's three Groq entries have therefore never been able to print, and
+# the file that holds them says as much in a comment. On 2026-10-12 the primary
+# stopped answering, `write_digest` walked the whole list, every entry was
+# refused by this file's arithmetic, and the week got no issue at all.
+#
+# So the degraded path gets its own prompt, sized to the minute the free tier
+# actually publishes. This file sizes it. What it SAYS is
+# prompts/digest-short.md, which is the writer seat's surface and not this
+# one's: 103 entries of docs/voice/ban-list.md do not fit in a request this
+# size, and choosing which of them survive is an editorial judgment rather
+# than an arithmetic one.
+
+#: The degraded edition's generator prompt, read out of the repo the way every
+#: other press prompt is.
+SHORT_ISSUE_PROMPT = "prompts/digest-short.md"
+
+#: Where that prompt states the ceiling it writes to. The number lives in the
+#: prompt because the prompt is what the model obeys, and this guard reads it
+#: rather than keeping a copy, for the reason `cron_caps` gives about spend
+#: caps: a guard with its own copy of a number stops guarding the moment
+#: somebody edits the thing that runs.
+SHORT_ISSUE_CEILING = re.compile(r"^WORD CEILING: (\d+)\s*$", re.M)
+
+#: Tokens an English word costs, pessimistically. `FALLBACK_CHARS_PER_TOKEN`
+#: above is 3.0 against a measured 4.32 for editorial prose, and this is the
+#: same direction on the same reasoning: 1.5 tokens a word where prose measures
+#: nearer 1.3. A reservation derived from it is a reservation that is slightly
+#: too big, and too big ends a sentence where too small truncates one.
+TOKENS_PER_WORD = 1.5
+
+#: The output reservation has to cover the issue's words twice over. On
+#: 2026-09-24 a 24,000-token reservation came back empty with finish_reason
+#: 'length', because the model's hidden reasoning had spent all of it before it
+#: wrote a word (`weekly.call_model` carries that note and disables thinking on
+#: Moonshot, verified by probe). No such probe exists for the Groq models this
+#: edition runs on and this seat holds no key to run one, so the arithmetic
+#: assumes the thinking happens and pays for it rather than sending a parameter
+#: nobody has tested.
+REASONING_MULTIPLE = 2
+
+
+def short_issue_text() -> str:
+    """prompts/digest-short.md, read out of the repository."""
+    path = ROOT / SHORT_ISSUE_PROMPT
+    if not path.exists():
+        raise LookupError(
+            f"{SHORT_ISSUE_PROMPT} does not exist, so the press has no "
+            "degraded edition. The full issue's prompt cannot fit a free-tier "
+            "request by more than a factor of ten, so a day the primary stops "
+            "answering is a week with no issue. 2026-10-12 is that day.")
+    return path.read_text()
+
+
+def short_issue_words(prompt: str | None = None) -> int:
+    """The word ceiling the short prompt sets for itself.
+
+    `prompt` is the text, so the container can pass the copy it is actually
+    running and CI can read the one in the tree. Same two-path discipline as
+    `weekly.budget()`.
+    """
+    source = short_issue_text() if prompt is None else prompt
+    match = SHORT_ISSUE_CEILING.search(source)
+    if not match:
+        raise LookupError(
+            f"{SHORT_ISSUE_PROMPT} states no `WORD CEILING: <n>` line where "
+            "this guard looks for one. The output reservation is derived from "
+            "that number, so without it the press would send a reservation "
+            "nobody sized and find out on a Monday whether the issue fits.")
+    return int(match.group(1))
+
+
+def smallest_payload() -> dict:
+    """The worst payload trimmed to one row in every stream.
+
+    This is what `fit_payload` produces on its last pass before it gives up, so
+    it is the floor a request has to leave room for. Built from
+    `worst_case_payload` rather than written out, so a new stream is in it the
+    day it is in the payload.
+    """
+    payload = worst_case_payload()
+    for name in ("new_claims", "superseded", "deprecated", "deep_reads"):
+        if isinstance(payload.get(name), list):
+            payload[name] = payload[name][:1]
+    traction = payload.get("traction") or {}
+    for name in ("supported_claims", "citation_movers"):
+        if isinstance(traction.get(name), list):
+            traction[name] = traction[name][:1]
+    return payload
+
+
+@dataclass
+class ShortRoom:
+    """What the short edition has to work with on one model, and whether it is enough."""
+
+    model: str
+    prompt_tokens: int
+    limit: int
+    words: int
+    floor: int
+
+    @property
+    def room(self) -> int:
+        """Tokens left for the payload and the reply together."""
+        return self.limit - self.prompt_tokens - ENVELOPE_TOKENS
+
+    @property
+    def reservation(self) -> int:
+        """Half the room, for the reply.
+
+        Even, and derived. The two halves pay for different things and neither
+        is worth more than the other: a reservation too small truncates the
+        issue mid-sentence, and a payload allowance too small is an issue with
+        nothing in it. An even split is also the one split that needs no number
+        in this file to maintain it.
+        """
+        return self.room // 2
+
+    @property
+    def payload_tokens(self) -> int:
+        return self.room - self.reservation
+
+    @property
+    def needed(self) -> int:
+        """The reservation the prompt's own word ceiling requires."""
+        return int(self.words * TOKENS_PER_WORD * REASONING_MULTIPLE)
+
+    @property
+    def fits(self) -> bool:
+        return (self.reservation >= self.needed
+                and self.payload_tokens >= self.floor)
+
+    def summary(self) -> str:
+        _, ceiling = binding_limit(self.model)
+        verdict = "can print the short edition" if self.fits else "CANNOT"
+        return (
+            f"{self.model}: prompt {self.prompt_tokens} + envelope "
+            f"{ENVELOPE_TOKENS} leaves {self.room} of {self.limit} usable "
+            f"({ceiling} less {MARGIN:.0%} margin), split into a "
+            f"{self.reservation}-token reply and a {self.payload_tokens}-token "
+            f"payload; {verdict} ({self.words} words needs {self.needed} "
+            f"reply tokens, one row per stream needs {self.floor})"
+        )
+
+
+def short_issue_room(model: str, prompt: str | None = None) -> ShortRoom:
+    """What the short edition has on `model`, derived from the published minute.
+
+    Nothing here is chosen. The provider publishes the ceiling, `MARGIN` is the
+    headroom the request guard already holds back everywhere else, the prompt
+    costs what it costs, and what is left is split in two. Change the prompt and
+    every number below moves with it, which is the property that makes this a
+    guard rather than a note somebody has to remember to update.
+    """
+    source = short_issue_text() if prompt is None else prompt
+    return ShortRoom(
+        model=model,
+        prompt_tokens=count_tokens(source),
+        limit=limit_for(model),
+        words=short_issue_words(source),
+        floor=count_tokens(encode(smallest_payload())),
+    )
+
+
+def short_issue_offprimary() -> list[str]:
+    """The press's fallback entries that are not on the primary's provider.
+
+    The only list the degraded edition is about. The primary can print both
+    editions on any day it answers, so a check that counts it has answered a
+    question no Monday ever asks.
+    """
+    primary = MODELS[PRIMARY_MODEL]["provider"]
+    return [m for m in fallback_models()
+            if m in MODELS and m not in DECOMMISSIONED
+            and MODELS[m]["provider"] != primary]
+
+
+def short_issue_printers(prompt: str | None = None) -> list[str]:
+    """Which of those can actually print it."""
+    return [m for m in short_issue_offprimary()
+            if short_issue_room(m, prompt).fits]
+
+
+def check_short_issue() -> list[str]:
+    """The press can still print on the day its primary stops answering.
+
+    A failure rather than a note, which is the opposite call from
+    `check_fallback_tpd` one screen up, and the difference is what the two
+    degradations cost. A corpus day on the free tier is a slow corpus: triage
+    and interpret kept writing rows through the whole of this week's outage. A
+    press Monday on the free tier was silence, because the press's only output
+    is the issue and there is no smaller version of an issue that did not get
+    written. Guardrail 4 of docs/agents/delivery-health.md reads the artifact
+    rather than the scheduler for exactly this reason, and on 2026-10-12 the
+    artifact was a 404 at /library/2026-W41.
+
+    What it asks is not "can the press print", because on a healthy day the
+    primary answers and that question is always yes. It asks whether anything
+    OFF the primary's provider can print, which is the question a Monday
+    answers.
+    """
+    problems = []
+    try:
+        prompt = short_issue_text()
+        words = short_issue_words(prompt)
+    except LookupError as exc:
+        return [str(exc)]
+    if words <= 0:
+        return [f"{SHORT_ISSUE_PROMPT} sets a word ceiling of {words}."]
+
+    primary = MODELS[PRIMARY_MODEL]["provider"]
+    offprimary = short_issue_offprimary()
+    if not offprimary:
+        return [
+            "the press's fallback list is entirely on "
+            f"{primary}, so there is no degraded path to size: a day that "
+            "provider does not answer is a week with no issue, whatever this "
+            "prompt says."
+        ]
+    if not short_issue_printers(prompt):
+        problems.append(
+            "no model off " + primary + " can print even the short edition, "
+            "so the press has no degraded path and a primary outage on a "
+            "Monday is a week with no issue. That is "
+            "INC-2026-10-12 exactly. Either "
+            f"{SHORT_ISSUE_PROMPT} gets shorter, or its word ceiling comes "
+            "down, or the list gains a model with a larger per-request "
+            "budget.\n"
+            + "\n".join(f"  {short_issue_room(m, prompt).summary()}"
+                        for m in offprimary))
+    return problems
+
+
 # ---------------- the guard's own tests ----------------
 
 def selftest() -> list[str]:
@@ -2031,6 +2329,29 @@ def main() -> int:
                   f"{count_tokens(prompt) + press.max_completion} tokens, "
                   "before a single row of payload.")
         print()
+
+    # The degraded edition, which is the answer to the `fits_any` branch above
+    # rather than a second press. A model that cannot take the full issue is not
+    # a model that can take nothing, and until 2026-10-12 the press behaved as
+    # though it were: it walked a list of three Groq entries that its own guard
+    # had always reported as over budget, and wrote nothing.
+    try:
+        short = short_issue_text()
+        words = short_issue_words(short)
+        print(f"the short edition ({SHORT_ISSUE_PROMPT}, {len(short)} chars, "
+              f"{count_tokens(short)} tokens, {words}-word ceiling)")
+        for model in fallback_models():
+            if model in MODELS:
+                print(f"  {short_issue_room(model, short).summary()}")
+        printers = short_issue_printers(short)
+        print(f"  off the primary's provider, {len(printers)} model(s) can "
+              f"print it: {', '.join(printers) or 'NONE'}")
+    except LookupError as exc:
+        print(f"the short edition: {exc}")
+    for problem in check_short_issue():
+        failures.append(problem)
+        print(f"  SHORT EDITION: {problem}")
+    print()
 
     # The MCP server's synthesis list. It is not a press and has no payload to
     # size, but it is a runtime that calls a model, and nothing checked it until
