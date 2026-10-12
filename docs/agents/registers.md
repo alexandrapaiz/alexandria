@@ -83,6 +83,10 @@ file spent a day describing a policy the org had abandoned.
 | `docs/agents/durable-execution.md` | ExO | ExO, on the owner's question | none, and correctly none | a decision note rather than a rule | new 2026-09-24, not a register and listed so nobody gates it |
 | `panel_verdicts` (the ADR-13 audit trail, `docs/product/reviewer-panel.md`) | engineer builds, ADR-13 owns | `pipeline/skill_revision.py` step 2 files one verdict per skill daily, derived rather than typed | **queued, not firing**: item 18 of `docs/agents/pending-workflow-changes.md`, amended 2026-10-03, adds all three reviewers' suites to `checks.yml` and no reviewer command (the entry argues each of the three exclusions separately). This cell said the first of those already ran, from the day it was written, and no workflow has ever named it (INC-2026-10-03-panel-reviewer-claims-a-ci-step-it-never-had) | a skill changes weekly, the reviewer fires daily once the job is deployed | new 2026-10-02, filed by the engineer seat; corrected 2026-10-03 by the same seat. The register is a table rather than a file because ADR-13 says every verdict is a structured row. All three reviewers exist as of 2026-10-03 (provenance, adversary, validator), so `panel_consensus`'s three passes on one text are reachable for the first time; no skill earns them today, and the validator fails all six on ADR-36 part 2. The write gate fires. The pre-ship gate is queued and needs the chair's hand, and this row is the reason that distinction is now stated rather than assumed |
 | `docs/product/graph-quality.md` | engineer | engineer writes each bound with the argument for it beside the number | `python3 tools/graph_audit.py` against the corpus, plus `tests/test_graph_audit.py` on every pull request touching the audit, the tools or `db/schema.sql` | the graph changes daily, the bounds rarely, and the audit half is gated by nothing yet | new 2026-09-29. Two gates, and only one of them can fire. The CI half is live on any pull request that touches the SQL or the schema it resolves against. The audit half answers `unknown` in every seat sandbox for want of a read-only `DATABASE_URL`, which was the same missing credential that left three of delivery-health.md's five surfaces unreadable until 2026-10-01. That one was closed by publishing the four facts it needed as a public receipt, and this one cannot be: the audit runs ten SELECTs across the whole corpus and a public endpoint for those would be the paid product. So `NEON_RO_URL` is now this row's blocker alone |
+| `docs/agents/quality-claims.md` | ExO | ExO writes one row per public claim | ExO §3g every run, artifact-side in the writer's copy round and the frontend's setting step | the site changes weekly, claims rarely, gated weekly | new 2026-09-30. **Its Measured column was the gap and it is closed as of 2026-10-11**: the column now reads from `GET /api/delivery` for every rate-shaped claim, so this seat re-measures rather than quoting. `INC-2026-10-11-a-public-claim-went-false-while-the-org-published-the-refutation-hourly` is what the gap cost |
+| `docs/agents/skill-eval-program.md` | skill and engineer | the eval program's own spec | **GAP**: no `Enforced at:` line and no charter opens it by name | per skill shipped | listed 2026-10-11 by the ExO sweep, which is the first run that noticed the file exists. Either it is a register and needs a gate, or it is a plan and belongs beside the ADR that ordered it |
+| `docs/agents/skill-maintenance-run-note.md` | skill | a run note rather than a register | **not a register**, listed so nobody gates it | n/a | listed 2026-10-11. A note from one run, correctly ungated, and named here only so the §3d grep stops returning it as an unexplained gap |
+| `docs/voice/enjoyability-benchmark-2026-10-05.md` | writer | the writer's benchmark for one axis | **GAP**: no `Enforced at:` line. The dated-benchmark shape already has precedent in `prose-benchmark-2026-09-19.md`, which is also ungated | per editorial run | listed 2026-10-11. The question for the writer seat is whether a dated benchmark is a register at all or a measurement, and the answer should be the same for both files |
 
 ## What this run changed
 
@@ -554,3 +558,36 @@ ledger entry proposing the clause, and named here in the honest state rather
 than marked closed. This is the cadence finding from the other direction: not a
 gate that fires too slowly, but a rule whose gate fires at one of the twelve
 seats it binds.
+
+## The 2026-10-11 sweep
+
+Four files existed that this map did not list, which makes the map itself
+the thing with the gap. `docs/agents/quality-claims.md` had been a register
+for eleven days with a row nowhere on this page.
+`docs/agents/skill-eval-program.md`,
+`docs/agents/skill-maintenance-run-note.md` and
+`docs/voice/enjoyability-benchmark-2026-10-05.md` are new since the last
+sweep. All four are added above.
+
+**The detection rule needs its own detector, and here it is.** §3d of the
+ExO charter greps for registers missing an `Enforced at:` line, which finds
+ungated registers. It cannot find a register this map has never heard of,
+because the grep reads the territory and the verdict lives in the map. One
+command closes it, and it belongs in the sweep from now on:
+
+```bash
+# every candidate register, against the ones this page actually lists
+for f in docs/agents/*.md docs/voice/*.md docs/design/*.md; do
+  grep -q "$(basename "$f")" docs/agents/registers.md || echo "unlisted: $f"
+done
+```
+
+**And the polarity test's first subject is now answered.** `docs/voice/value.md`
+exists on `main`, 168 lines, drafted by the writer seat to the
+`copy-pipeline.md` spec, and its own status line reads "awaiting her
+approval". So incident 25's missing positive artifact is written and the
+gate downstream of it is the owner's ruling rather than a seat's work. The
+ratio test in §3d has something to count on both sides for the first time:
+`taste.md` at 276 lines of rulings against `value.md`'s 168 lines of target.
+What is still open is the approval, and that is hers, not a GAP on this
+page.

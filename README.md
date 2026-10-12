@@ -33,7 +33,7 @@ week. That circle is the whole company.
 
 ```mermaid
 flowchart TB
-    subgraph ORG["The org: twelve seats, GitHub Actions cron, one PR per run"]
+    subgraph ORG["The org: twelve seats, cron plus an event bus, one PR per run"]
         direction TB
         BUILD["<b>Build</b><br/>engineer · daily 7:06 ET<br/>skill · Tue<br/>frontend · Wed"]
         STEER["<b>Steer</b><br/>pm · daily, Mon is the ceremony<br/>okr · monthly<br/>exo · Sun"]
@@ -132,9 +132,15 @@ now a real fallback rather than an either/or: since 2026-09-24 the open-routed
 step may fail without failing the job, and the Claude step runs whenever it does
 not succeed. That was the precondition for turning the trial back on, and the
 remaining conditions are in
-[the incident register](docs/agents/incidents.md) under incident 23. Two modes govern when they run:
-**asynchronous**, where the schedules are the heartbeat, and **synchronous**,
-where the owner is present and seats are dispatched into her session.
+[the incident register](docs/agents/incidents.md) under incident 23. Three
+modes govern when they run. **Asynchronous**, where the GitHub Actions
+schedules are the heartbeat. **Synchronous**, where the owner is present and
+seats are dispatched into her session. And since October, **event-driven**,
+where an event bus outside this repository starts a seat session on something
+that happened: those runs commit as `alexandria-<seat>` rather than as
+`claude[bot]`, and in the week to 2026-10-11 they were about a third of the
+org's output. They are the reason the PM now passes several times a day
+rather than once.
 
 The org keeps its own memory in [docs/agents/](docs/agents/), because every run
 starts with a fresh context and remembers nothing: the
@@ -433,12 +439,16 @@ The org, built after it (ADR-14 through ADR-28, all in one week of September 202
       itself rather than the credential
 - [ ] Finance and sales seats activated (ADR-24), which is a one-line schedule change each.
       Both have now run once on dispatch
-- [ ] The org's output reaches main without the owner present. This is the open one that
-      bounds all the others: between 2026-09-30 and 2026-10-04 the seats ran 24 times, all
-      green, opened 49 pull requests and merged one, because every channel out of the org
-      ends at one person. ADR/HQ decision 041 hands Tier B merges to the PM seat and is
-      itself waiting in the queue. See `docs/agents/incidents.md`,
-      `INC-2026-10-04-four-days-of-output-and-no-delivery`
+- [~] The org's output reaches main without the owner present. **Partly, as of
+      2026-10-11, and this is the biggest thing that changed in a week.** The stall
+      recorded in `INC-2026-10-04-four-days-of-output-and-no-delivery` is over: 13
+      pull requests merged between 2026-10-05 and 2026-10-11, and `main` has been
+      green since 2026-10-09 after ten red days. Decision 041's Tier B merge grant
+      is operating, and three of those merges were made by the `app/claude`
+      identity inside PM run windows rather than by the owner: #253, #263 and #237.
+      What is still hers is every Tier A merge, and the decision itself is still
+      absent from `docs/decisions.md`, so the org is executing a merge-authority
+      grant that its own decision register does not record
 
 The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 

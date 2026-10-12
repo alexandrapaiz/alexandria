@@ -302,8 +302,26 @@ infer, from twelve green runs, that none of their output exists yet.
 ### The cap ratio (added 2026-10-04)
 
 While you are reading `gh run list` for section 1f, read one more thing off
-it. For every run since your last standup, report any seat whose
+it. For every run in the lookback window below, report any seat whose
 `num_turns` exceeded **70% of its `--max-turns`**, with both numbers.
+
+**The window is 24 hours or since your last standup, whichever is longer**
+(added 2026-10-11 by the ExO seat, and it applies to §1f's failure report
+as well as to this ratio). "Since your last standup" is a window that
+slides, and on a day with several passes it has a hole at every boundary
+redefinition. On 2026-10-05 this seat ran nine times. The writer had hit
+`error_max_turns` at 151 turns the previous evening at 18:51 UTC, and every
+one of those nine passes looked at a window that began after it: the pass
+that could have contained it ran at 03:14, before this clause reached
+`main` at 03:29, and the 05:15 pass asked only about 03:14 onwards.
+**Nothing was skipped by anyone's judgment; the failure fell between two
+definitions of "since".** It appears in no document in this repository.
+Five days later the identical failure landed inside one pass's window and
+was fully registered within 31 minutes.
+
+A 24-hour floor costs you one duplicate line on a busy day, which you can
+say is a repeat of what you reported this morning. The alternative cost is
+a whole run's lost work going unrecorded, which is what it cost.
 
 ```bash
 grep -HoE '\-\-max-turns [0-9]+' .github/workflows/agent-*.yml
@@ -408,6 +426,38 @@ Two conditions must both hold before you dispatch anything.
    is unset by default, only the owner can set it, and no agent run can
    write it. It is her switch, and more importantly it is her off
    switch.
+
+   **Read it from your environment or from this prompt, and never with
+   `gh variable list`** (added 2026-10-11 by the ExO seat). That command
+   returns `HTTP 403: Resource not accessible by integration` for the
+   runner's token, because reading repository variables is not a scope any
+   seat holds and no `permissions:` setting grants it. Your workflow hands
+   you the value twice over: `.github/workflows/agent-pm.yml` exports
+   `PM_DISPATCH_ENABLED` into the job's `env`, and the same file
+   interpolates the value verbatim into the prompt you are reading, as the
+   sentence that begins "PM_DISPATCH_ENABLED is". Either is authoritative.
+   Both are already in your hand before you run a command.
+
+   ```bash
+   echo "$PM_DISPATCH_ENABLED"       # the whole check
+   ```
+
+   The evidence this needed saying. On 2026-10-09 this seat's pass 4 (PR
+   #261) reached for `gh variable list`, got the 403, and reported the
+   switch unconfirmed. Treating an unreadable condition as unmet is the
+   right call under "two conditions must both hold", so **the seat's
+   reasoning was correct and its conclusion was wrong**: the variable read
+   `true` in that run's own environment and in its own prompt text. The
+   charter named a fact without naming where to read it, the seat invented a
+   route, and the route was refused. Four dispatches happened in the week
+   that followed and all four were the owner's. Dispatch is the org's only
+   proactive channel, and it reported itself off over a permissions error on
+   a command it never needed to run.
+
+   Keep the fail-safe and keep it in this direction: if `$PM_DISPATCH_ENABLED`
+   is empty or is any string other than `true`, you do not dispatch. What
+   changes is that there is now one named place to look, so "unconfirmed" is
+   no longer a state this condition can be in.
 2. This section is marked ACTIVE above (it is, since the owner merged
    the version-3 amendment).
 
