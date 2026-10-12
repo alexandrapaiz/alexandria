@@ -140,6 +140,10 @@ class Cap:
         self.completion_tokens = 0
         self.calls = 0
         self.per_model: dict[str, int] = {}
+        #: Tokens the LAST call actually drew, provider-counted. Pacing reads
+        #: it, because the limit that binds on a free tier is tokens a minute
+        #: and nothing else in this class knows the size of one call.
+        self.last_tokens = 0
 
     def allows(self) -> bool:
         return self.spent < self.limit_usd
@@ -171,6 +175,7 @@ class Cap:
         self.prompt_tokens += prompt
         self.completion_tokens += completion
         self.spent += guard.cost_usd(prompt, completion, model)
+        self.last_tokens = prompt + completion
         self.calls += 1
         self.per_model[model] = self.per_model.get(model, 0) + 1
 
@@ -367,12 +372,43 @@ def usable_models(models: list[str], env) -> tuple[set[str] | None, list[str]]:
 PACE_FLOOR_SECONDS = 1.0
 
 
-def pace(model: str) -> float:
-    """Seconds to wait between calls to `model`, from its published RPM."""
-    rpm = budget().MODELS.get(model, {}).get("rpm") or 0
-    if rpm <= 0:
-        return 3.0          # no published RPM: the old Groq pause, unchanged
-    return max(60.0 / rpm, PACE_FLOOR_SECONDS)
+def pace(model: str, tokens_per_call: int | None = None) -> float:
+    """Seconds to wait between calls to `model`, from whichever limit binds.
+
+    Two published ceilings can decide how fast a drain may go, and which one
+    binds depends entirely on the model. On Moonshot it is requests: 3 RPM on
+    this account against a 500,000-token minute, so one call every 20 seconds
+    and the token budget never notices. On every Groq free-tier model in
+    `budget.MODELS` it is tokens: 30 RPM against 8,000 TPM, so any call larger
+    than 266 tokens runs out of minute before it runs out of requests.
+
+    Until 2026-10-11 this read RPM alone, and that was correct for exactly as
+    long as the primary answered. The fallback walk made it wrong: a corpus job
+    that steps to Groq is paced at 2 seconds a call, and at triage's measured
+    4,713 tokens a call that asks the free tier for 141,000 tokens a minute
+    against the 8,000 it publishes. What comes back is a 429 the caller caused,
+    four retries with backoff, then the next model, then the same thing again,
+    so the stage stops rather than slows. That is the fallback failing to carry
+    a corpus it is sized to carry, and the arithmetic is the whole of it.
+
+    `tokens_per_call` is the size of the call just made, provider-counted:
+    `Cap.last_tokens`. Pass it. Without it this still returns the RPM pause,
+    because an unpaced caller is worse than a caller paced by the older of the
+    two rules, but a scheduled job that omits it is a job that will meet
+    `budget.check_fallback_pacing()` in CI.
+    """
+    spec = budget().MODELS.get(model, {})
+    rpm = spec.get("rpm") or 0
+    by_requests = 60.0 / rpm if rpm > 0 else 3.0   # no published RPM: the old pause
+    by_tokens = 0.0
+    tpm = spec.get("tpm") or 0
+    if tokens_per_call and tpm > 0:
+        # The whole minute, not the margin: this paces a drain rather than
+        # sizing one request, and a job that paces itself to 85% of the
+        # published minute drains 15% slower every day for a headroom the
+        # per-request guard already holds back once.
+        by_tokens = 60.0 * float(tokens_per_call) / tpm
+    return max(by_requests, by_tokens, PACE_FLOOR_SECONDS)
 
 
 # Moonshot applies organization concurrency at the ACCOUNT level, and this

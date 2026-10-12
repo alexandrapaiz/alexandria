@@ -18,6 +18,7 @@ what was sent and on what the caller did with what came back.
 
 import json
 import pathlib
+import re
 import sys
 
 import httpx
@@ -1147,3 +1148,126 @@ def test_the_daily_draw_reads_the_paper_count_out_of_the_job():
     # And the arithmetic downstream of it actually uses that number.
     total, _ = budget.kimi_daily_draw()
     assert distill.MAX_PAPERS_PER_RUN * per_call <= total
+
+
+# ---------------- pacing, the limit that actually binds (2026-10-11) ----------
+
+def test_pace_reads_the_limit_that_binds_on_each_provider():
+    """Requests a minute on Moonshot, tokens a minute on the free tier.
+
+    `llm.pace` read RPM alone until 2026-10-11, which is right for exactly one
+    of the two providers in `budget.MODELS`. Moonshot gives this account 3 RPM
+    against a 500,000-token minute, so one call every 20 seconds and the token
+    budget never binds. Every Groq free-tier model gives 30 RPM against 8,000
+    TPM, so a call over 266 tokens runs out of minute long before it runs out
+    of requests, and a drain paced from RPM asks for fifteen times what the
+    provider publishes.
+    """
+    paper = budget.KIMI_DAILY_DRAW["distill (pipeline/distill.py)"][1]
+    batch = budget.KIMI_DAILY_DRAW["triage (pipeline/triage.py)"][1]
+
+    # The primary is unchanged, and that is half of what makes this safe: the
+    # fix must not slow the drain on the provider that works.
+    assert llm.pace(budget.PRIMARY_MODEL, paper) == pytest.approx(20.0)
+    assert llm.pace(budget.PRIMARY_MODEL) == pytest.approx(20.0)
+
+    for model, limits in budget.MODELS.items():
+        if limits["provider"] == budget.MODELS[budget.PRIMARY_MODEL]["provider"]:
+            continue
+        pause = llm.pace(model, batch)
+        assert pause * limits["tpm"] >= batch * 60.0 - 1e-6, (
+            f"{model} publishes {limits['tpm']:,} tokens a minute and a "
+            f"{batch:,}-token call every {pause:.1f}s asks for "
+            f"{batch * 60.0 / pause:,.0f}")
+        # And the defect itself, stated as the number it produced: RPM alone
+        # on this model is 2 seconds, which is the pause that stopped the
+        # corpus for four days.
+        assert pause > 60.0 / limits["rpm"]
+
+
+def test_every_paced_caller_tells_pace_how_big_its_call_was():
+    """A one-argument pace() is a job that paces from the wrong limit.
+
+    The source is the only place to ask this. The pause is taken inside a Modal
+    container, after a walk whose landing model nothing outside the run can
+    predict, so a test that waits for production to disagree is a test that
+    costs four days of claims.
+    """
+    assert budget.check_fallback_pacing() == [], budget.check_fallback_pacing()
+    for path in budget.PACED_CALLERS:
+        source = (ROOT / path).read_text()
+        assert "cap.last_tokens" in source, (
+            f"{path} is paced but passes no provider-counted call size")
+
+
+def test_the_cap_that_bounds_a_run_cannot_bind_on_a_free_tier():
+    """So the fallback's day is sized from the call ceiling, not the spend cap.
+
+    Every Groq model in `budget.MODELS` is priced at $0.00 a million, which is
+    correct and makes `CAP_USD` unable to stop anything. What is left is the
+    job's own per-run call ceiling, and it is a bigger number than the cap
+    allows at Moonshot's prices: triage's day is 70 calls when it is paying and
+    90 when it is not.
+    """
+    label = "triage (pipeline/triage.py)"
+    priced = budget.KIMI_DAILY_DRAW[label][0]
+    assert budget.fallback_calls(label) == triage.MAX_CALLS_PER_RUN
+    assert budget.fallback_calls(label) > priced, (
+        "the free tier's call budget must be the one that is larger, or this "
+        "whole guard is measuring the wrong day")
+    for model, limits in budget.MODELS.items():
+        if limits["provider"] == "groq":
+            assert limits["price_in"] == 0.0 and limits["price_out"] == 0.0
+
+
+def test_the_fallback_day_is_sized_at_the_request_the_job_can_actually_send():
+    """Distill's fallback day is abstracts, because no free model takes a paper.
+
+    A day sized at 40,259 tokens a paper would be a day distill cannot have:
+    the full-text request is 102,272 tokens against 6,800 usable, so what
+    actually goes to the free tier is `abstract[:6000]`. Sizing the degraded
+    day at the primary's request would over-count it by an order of magnitude
+    and point the fix at the wrong job.
+    """
+    label = "distill (pipeline/distill.py)"
+    measured = budget.KIMI_DAILY_DRAW[label][1]
+    size, basis = budget.fallback_call_tokens(label, "openai/gpt-oss-120b",
+                                              measured)
+    assert "counted" in basis and size < measured / 5
+
+    # Triage's request fits the free tier untouched, so its measured number is
+    # the right one and the basis says so.
+    size, basis = budget.fallback_call_tokens("triage (pipeline/triage.py)",
+                                              "openai/gpt-oss-120b",
+                                              budget.KIMI_DAILY_DRAW[
+                                                  "triage (pipeline/triage.py)"][1])
+    assert basis == "measured"
+
+    per_model, lines = budget.fallback_daily_draw()
+    assert per_model, "no corpus job lands anywhere when the primary is absent"
+    assert all(budget.MODELS[m]["provider"] != "moonshot" for m in per_model)
+
+
+def test_a_paced_fallback_drain_still_finishes_inside_its_own_timeout():
+    """The pause that respects the provider has to leave a drain that drains.
+
+    A correct pause that does not fit the Modal timeout is a job that is killed
+    mid-run instead of rate-limited mid-run, which is the same outage wearing a
+    different hat. Distill's window is 90 minutes and this is the arithmetic
+    that says 20 abstracts fit inside it.
+    """
+    source = (ROOT / "pipeline" / "distill.py").read_text()
+    # The drain's own decorator, not whichever @app.function comes first in the
+    # file: distill.py declares several and they do not share a timeout.
+    decorator = source[:source.index("def distill(max_papers")]
+    timeout = int(re.findall(r"^\s+timeout=(\d+),", decorator, re.M)[-1])
+    label = "distill (pipeline/distill.py)"
+    size, _ = budget.fallback_call_tokens(
+        label, "openai/gpt-oss-120b", budget.KIMI_DAILY_DRAW[label][1])
+    # Two calls a paper on the fallback: the full text is refused before it is
+    # paced, and the abstract is the one that answers and is paced.
+    spent = distill.MAX_PAPERS_PER_RUN * llm.pace("openai/gpt-oss-120b", size)
+    assert spent < timeout * 0.75, (
+        f"{distill.MAX_PAPERS_PER_RUN} papers at "
+        f"{llm.pace('openai/gpt-oss-120b', size):.0f}s a paper is {spent:.0f}s "
+        f"of a {timeout}s window, before a single HTTP round trip")

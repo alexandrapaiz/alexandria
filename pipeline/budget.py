@@ -1357,6 +1357,224 @@ def check_kimi_tpd() -> list[str]:
     ]
 
 
+#: Every file in the pipeline that paces its own calls to a model. The pause a
+#: drain takes between calls is a runtime number in exactly the way a timeout
+#: is, and until 2026-10-11 nothing checked it: `llm.pace` read requests a
+#: minute and ignored tokens a minute, which is the right limit on Moonshot and
+#: the wrong one on every free-tier model in MODELS above.
+PACED_CALLERS = [
+    "pipeline/triage.py",
+    "pipeline/interpret.py",
+    "pipeline/distill.py",
+    "pipeline/retag_threads.py",
+]
+
+
+def check_fallback_pacing() -> list[str]:
+    """Every paced caller tells `pace` how big its call was, and the pause fits.
+
+    Two questions, because the defect of 2026-10-11 needed both to be answered
+    wrongly before it could happen.
+
+    **Does the caller pass a size.** `llm.pace(model)` returns a pause computed
+    from requests a minute alone, which is correct on Moonshot and wrong by a
+    factor of fifteen on Groq's free tier. A one-argument call is therefore a
+    job that will pace itself into a 429 the moment the fallback walk steps off
+    the primary. The source is the only place to ask: the pause is taken inside
+    a Modal container nothing here can reach.
+
+    **Does the pause the job will take fit the model's minute.** Having passed
+    a size, the job gets `max(60/rpm, 60*tokens/tpm)`, so the arithmetic can
+    only fail if `pace` stops reading one of the two limits. Checked anyway,
+    at every job's measured per-call draw against every model it can reach,
+    because this is the check that would have failed on 2026-10-07 and the
+    reason it did not exist is that nobody had written it.
+
+    `KIMI_DAILY_DRAW` supplies the per-call sizes. They are measured numbers
+    from docs/finance/opex.md and the token-density receipt rather than
+    tokenizer estimates, so this guard holds whether or not tiktoken is
+    installed, which is the difference between a check that gates a deploy and
+    a check that is skipped on the machine where the deploy happens.
+    """
+    problems = []
+    for path in PACED_CALLERS:
+        source = (ROOT / path).read_text()
+        bare = re.findall(r"\.pace\(\s*([A-Za-z_][\w.\[\]\"\']*)\s*\)", source)
+        for call in bare:
+            problems.append(
+                f"{path} calls pace({call}) with no token count, so it paces "
+                "from requests a minute alone. That is Moonshot's binding "
+                "limit and not the fallback's: on a free-tier model it asks "
+                "for about fifteen times the tokens a minute the provider "
+                "publishes, and what comes back is a 429 this caller caused. "
+                "Pass the size of the call just made, which is "
+                "`cap.last_tokens`.")
+        if ".pace(" not in source:
+            problems.append(
+                f"{path} is in budget.PACED_CALLERS but no longer calls pace() "
+                "at all, so either it stopped pacing or this list is stale. An "
+                "unpaced drain against a published rate limit is a run that "
+                "stops rather than slows.")
+
+    try:
+        client = _llm()
+    except Exception as exc:                     # noqa: BLE001
+        return problems + [f"pipeline/llm.py could not be read, so the pause "
+                           f"each corpus job takes is unchecked: {exc}"]
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        for model in cron_model_lists().get(label, []):
+            limits = MODELS.get(model)
+            if not limits or not limits.get("tpm"):
+                continue
+            pause = client.pace(model, per_call)
+            # The pause the model's own minute requires, compared as a pause
+            # rather than as the rate it implies: an exact fit divides back to
+            # the published ceiling and a float would put it a hair over.
+            needs = 60.0 * per_call / limits["tpm"]
+            if pause + 1e-6 < needs:
+                problems.append(
+                    f"{label} on {model} would pause {pause:.1f}s between "
+                    f"{per_call:,}-token calls where {model}'s "
+                    f"{limits['tpm']:,}-token minute needs {needs:.1f}s, so it "
+                    f"asks for {per_call * 60.0 / pause:,.0f} tokens a minute "
+                    f"and gets a 429 it caused. llm.pace has stopped reading "
+                    f"one of the two limits. ({how})")
+    return problems
+
+
+def fallback_daily_draw() -> tuple[dict[str, int], list[str]]:
+    """What the corpus day asks of the FALLBACK when the primary is absent.
+
+    The day Moonshot stops answering, every corpus job walks to the same free
+    tier, and nothing in this file had ever added that day up. `check_kimi_tpd`
+    sizes the primary's day and stops at the primary, which is the provider
+    that is working on the day you read the number.
+
+    Two things make the fallback's day different from the primary's rather than
+    simply smaller, and both of them push the draw up at the moment the
+    allowance drops:
+
+    - **The spend cap cannot bind.** Every Groq model here is priced at $0.00 a
+      million, so `CAP_USD` buys infinite calls and the only remaining bound on
+      a run is its own call ceiling: `MAX_CALLS_PER_RUN`, not the cap the
+      finance projection is built from. Triage's day is 70 calls at Moonshot's
+      prices and 90 on the free tier.
+    - **The allowance is a fifth of the size.** 200,000 tokens a day per model
+      against Moonshot's 1,500,000.
+
+    Returns ({model: tokens asked of it}, lines). The model each job lands on
+    is the first one in its own list that is not on the primary's provider,
+    which is where the walk in `llm.ask_json` stops.
+    """
+    per_model: dict[str, int] = {}
+    lines = []
+    for label, (spec, per_call, how) in sorted(KIMI_DAILY_DRAW.items()):
+        models = [m for m in cron_model_lists().get(label, [])
+                  if m in MODELS
+                  and MODELS[m]["provider"] != MODELS[PRIMARY_MODEL]["provider"]]
+        if not models:
+            lines.append(f"  {label}: no model outside "
+                         f"{MODELS[PRIMARY_MODEL]['provider']} in its list, so "
+                         "a primary outage stops it outright")
+            continue
+        landing = models[0]
+        size, basis = fallback_call_tokens(label, landing, per_call)
+        calls = fallback_calls(label)
+        draw = calls * size
+        per_model[landing] = per_model.get(landing, 0) + draw
+        lines.append(f"  {label}: {calls} x {size:,} = {draw:,} tokens of "
+                     f"{landing}'s day ({basis})")
+    return per_model, lines
+
+
+def fallback_call_tokens(label: str, model: str,
+                         measured: int) -> tuple[int, str]:
+    """Tokens one call draws on `model`, and where the number comes from.
+
+    The measured per-call draw in `KIMI_DAILY_DRAW` is the size of the request
+    the job sends to the PRIMARY, and for distill that is a whole paper, which
+    no fallback here can take. A day on the free tier sized at 40,259 tokens a
+    paper would be a day the job cannot have: what it actually sends there is
+    the documented degradation, `abstract[:degrades_to_chars]`.
+
+    So: the measured number where the job's real request fits the model, and
+    this guard's own arithmetic on the degraded payload where it does not. The
+    second is a token count rather than a measurement, exact with tiktoken and
+    deliberately high without it, which is the safe direction for a ceiling.
+    """
+    spec = CRON_REQUESTS.get(label)
+    if not spec or "degrades_to_chars" not in spec:
+        return measured, "measured"
+    prompt = prompt_text(spec)
+    reservation, _ = request_reservation(spec)
+    big = check_request(prompt, request_text(spec, request_payload_chars(spec)),
+                        reservation, model)
+    if big.fits:
+        return measured, "measured"
+    small = check_request(prompt, request_text(spec, spec["degrades_to_chars"]),
+                          reservation, model)
+    return small.total, (f"counted, at the abstract[:{spec['degrades_to_chars']}] "
+                         "it degrades to here")
+
+
+def fallback_calls(label: str) -> int:
+    """A job's call budget on a provider whose prices are zero.
+
+    `CRON_CAPS` is denominated in money and the fallback is free, so the cap
+    that bounds a run on Moonshot bounds nothing here and the job's own call
+    ceiling is what is left. Read out of the job, for the reason `cron_caps`
+    gives: a guard holding its own copy of a number stops guarding the moment
+    somebody edits the job.
+    """
+    source = (ROOT / CRON_MODELS[label]).read_text()
+    for name in ("MAX_CALLS_PER_RUN", "MAX_PAPERS_PER_RUN", "MAX_CLAIMS_PER_RUN"):
+        match = re.search(rf"^{name} = ([\d_]+)", source, re.M)
+        if match:
+            return int(match.group(1).replace("_", ""))
+    raise LookupError(
+        f"{CRON_MODELS[label]} publishes no per-run call ceiling where this "
+        "guard looks for one, so on a provider whose prices are zero nothing "
+        "bounds the run: the spend cap cannot bind and neither can this.")
+
+
+def check_fallback_tpd() -> list[str]:
+    """The fallback's day, named rather than failed.
+
+    Deliberately not a deploy-blocking failure, and the distinction matters.
+    The primary's day busting is a plan that cannot work; the fallback's day
+    busting is a plan that works until a provider has a bad morning, which is
+    a ceiling on how much degradation the corpus can absorb rather than a
+    reason to refuse to deploy a working primary. `main` prints these beside
+    `cron_degradations` for the same reason.
+
+    What makes it worth printing is that this is the shape of 2026-10-08. The
+    corpus wrote no claims for four days while triage and interpret kept
+    writing rows, both of them on the Groq fallback, and no surface in the org
+    could say how much of the free tier's day the corpus had already spent by
+    the time distill's window opened at 15:00 UTC.
+    """
+    notes = []
+    per_model, _ = fallback_daily_draw()
+    for model, draw in sorted(per_model.items()):
+        allowance = MODELS[model].get("tpd")
+        if not allowance:
+            continue
+        budgeted = int(allowance * (1 - MARGIN))
+        if draw <= budgeted:
+            continue
+        fits = [f"{label}" for label, (spec, per_call, _) in KIMI_DAILY_DRAW.items()]
+        notes.append(
+            f"a day on {model} asks {draw:,} tokens against the "
+            f"{allowance:,} it allows, {budgeted:,} after the {MARGIN:.0%} "
+            f"margin. So a primary outage lasting one day does not degrade the "
+            f"corpus evenly: the jobs that run earliest spend the allowance "
+            f"and the jobs that run latest meet 429s. The order is the "
+            f"schedule in llm.KIMI_WINDOWS, which puts distill last. Lowering "
+            f"a per-run call ceiling is the lever ({', '.join(fits)}), and it "
+            f"costs nothing because the fallback is free.")
+    return notes
+
+
 def check_kimi_windows() -> list[str]:
     """No two jobs that call Kimi can be running at the same time.
 
@@ -1798,6 +2016,30 @@ def main() -> int:
     for problem in check_kimi_tpd():
         failures.append(problem)
         print(f"  DAILY TOKENS: {problem}")
+    print()
+
+    # And the day the primary does not answer at all, which is the one no
+    # number in this file described until 2026-10-11. Two halves: the pause
+    # each job takes on the fallback, which is a defect when it is wrong, and
+    # the fallback's own day, which is a ceiling rather than a defect.
+    print("the fallback's day (every corpus job on the free tier at once)")
+    try:
+        _, lines = fallback_daily_draw()
+        print("\n".join(lines))
+        for problem in check_fallback_pacing():
+            failures.append(problem)
+            print(f"  PACING: {problem}")
+        notes = check_fallback_tpd()
+        if notes:
+            print("\n  more than the free tier's day (not a failure, a "
+                  "ceiling on how long an outage the corpus survives):")
+            for note in notes:
+                print(f"    {note}")
+        else:
+            print("  the whole corpus day fits the fallback's allowance")
+    except LookupError as exc:
+        failures.append(str(exc))
+        print(f"FALLBACK: {exc}")
     print()
 
     if failures:

@@ -13398,3 +13398,109 @@ that triggered it, per the charter.
   and a stranger can check it against the receipt without being told.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-11 — The pause a run takes is in no table (engineer seat, second run)
+- Trigger: today's diagnosis of the four-day `claims` stall. The receipt could
+  say which model answered each sibling stage, which is what narrowed the cause
+  to the account, and it could not say how fast each stage was calling it. The
+  defect was entirely in that second number: triage asked for 14,139 tokens a
+  minute against a published 8,000 and distill asked for 174,900, and no
+  surface in the org held either figure. Three runs looked at the right tables
+  and could not see it.
+- What: every corpus stage already writes the model that answered into its own
+  log (`triage_log.model`, `claim_links.method`, `claims.prompt_sha`). None of
+  them writes the pause it took between calls or the tokens the provider
+  counted, so a stage that is rate-limited into uselessness is
+  indistinguishable from a stage with an empty queue. `llm.Cap` now knows both
+  numbers at the moment of the call, and it already prints a one-line spend
+  summary every run. The addition is one row per run in a `drain_log` table:
+  stage, model, calls, prompt and completion tokens, the mean pause, and the
+  reason the run stopped, which `pipeline/distill.py` already computes as
+  `stopped` and then prints and discards. The receipt then publishes the newest
+  row per stage beside the markers it already has, and "the stage ran and was
+  throttled" stops looking like "the stage did not run".
+- First step: the table and one insert at the end of distill's drain, which is
+  the stage whose `stopped` string is already the most specific of the three.
+  `pipeline/runtime_sha.py` is the pattern to copy: it writes one row per run
+  from inside the job and cannot abort the transaction it shares.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-11 — A per-run call ceiling for the day the primary is absent (engineer seat, second run)
+- Trigger: `budget.fallback_daily_draw()`, written in this run, reads 630,770
+  tokens asked of a free tier that allows 200,000 a day. Triage alone asks
+  424,170. The spend cap that bounds every run on Moonshot cannot bind at $0.00
+  a million, so the ceiling that survives a provider outage is
+  `MAX_CALLS_PER_RUN`, which was sized for a paid account and is 90 rather than
+  the cap's 70.
+- What: the fallback day is not merely smaller than the primary's, it is
+  consumed in schedule order, so distill at 15:00 UTC meets a day that triage
+  spent at 12:00. The fix is a second, smaller call ceiling that applies when
+  the answering model's provider is not the primary's: the job reads it the
+  same way it reads the cap, and the walk already knows which provider answered.
+  Sized from the published allowance rather than chosen, which makes it 36
+  calls for triage, 17 for interpret and the remainder for distill, and leaves
+  every stage writing something during an outage instead of two stages writing
+  everything and the third nothing. It costs no money because the fallback is
+  free, and it buys the degraded day an even shape.
+- First step: `budget.fallback_calls()` already reads each job's ceiling out of
+  its source, and `check_fallback_tpd()` already prints the overrun. Add the
+  provider-conditional ceiling to triage first, since it is the stage that
+  spends the allowance, and assert in `tests/test_corpus_drain.py` that the
+  three ceilings together fit `tpd` after the margin.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-11 — One 429 is three different refusals and the client retries all three (engineer seat, second run)
+- Trigger: reading `llm.call_one`'s 429 branch while tracing today's stall. It
+  backs off and retries four times, which is correct for "you are going too
+  fast" and wrong for the two other things a 429 carries. Groq answers 429 for a
+  request larger than the minute and, once a day's allowance is gone, for every
+  request until the UTC day turns. Four retries with backoff against either one
+  is 210 seconds spent to learn nothing, three times over for three models, per
+  call, and the walk then reports "every model failed" with the three causes
+  flattened into one sentence.
+- What: the provider says which it is in the body, and the body is already
+  captured (`resp.text[:400]`). Classify it: a refusal naming the request's own
+  size is permanent for this payload and the walk should move to the next model
+  immediately, a refusal naming the day is permanent for every model on that
+  provider and the walk should skip the provider's whole list rather than
+  asking it three more times, and anything else is the transient case the
+  backoff was written for. The gain is not speed, it is that
+  `NoModelAnswered`'s message then names the cause a seat has to act on, which
+  is the sentence three runs of diagnosis were missing.
+- First step: a `_refusal_kind(body)` helper in `pipeline/llm.py` with its
+  patterns taken from the real bodies the two providers return, plus the cases
+  in `tests/test_corpus_drain.py` that already fake a 429 and can assert on
+  which branch was taken. No provider call and no key.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-11 — Craft scan: Semantic Scholar publishes the limit and who shares it (engineer seat, second run)
+- Trigger: today's rotation through docs/market/landscape.md, picked for the
+  overlap with this run's own finding. Elicit's help centre and FAQ were the
+  first two picks and both are unreadable from a sandbox, one a dead article id
+  and the other behind a Cloudflare challenge, so the scan moved to the entry
+  below them. Read from semanticscholar.org/product/api this run.
+- Worth stealing: the rate limit is a published product fact, stated with its
+  sharing model and its honest caveat. "Most Semantic Scholar endpoints are
+  available to the public without authentication, but they are rate-limited to
+  1000 requests per second shared among all unauthenticated users. Requests may
+  also be further throttled during periods of heavy use." Then, separately,
+  "The introductory rate limit for an API key is 1 RPS on all endpoints." A
+  developer learns the ceiling, who they are sharing it with, and that it can
+  tighten, before writing a line. alexandria keeps the same kind of numbers in
+  `pipeline/budget.py` for the providers it consumes, and publishes nothing
+  about the limits it imposes or the ones it is living inside. Today's stall is
+  what the second gap costs: the org was inside a shared allowance it had never
+  added up, and the word "shared" is the one Semantic Scholar's sentence gets
+  right.
+- What alexandria does better: every limit in `budget.MODELS` carries the date
+  it was read from the provider's live documentation, in a comment above the
+  block, and a model with no entry raises rather than defaulting, so a number
+  here is never remembered. Semantic Scholar's own page carries no "as of" date
+  on either figure, and "further throttled during periods of heavy use" is not
+  checkable from outside, which is exactly the shape of claim this repository's
+  guards refuse to accept from a provider and should keep refusing to make.
+- Cost: $0.
+- Status: proposed

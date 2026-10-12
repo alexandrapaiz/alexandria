@@ -285,11 +285,16 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
             "select id, claim, embedding from interpret_queue order by id limit %s",
             (max_claims,),
         ).fetchall()
-        pause = client.pace(MODEL)
         print(f"{depth} claims queued, {len(queue)} taken this run, oldest first")
-        print(f"pacing: {pause:.0f}s between calls ({MODEL} is "
-              f"{client.budget().MODELS[MODEL]['rpm']} requests a minute), "
-              f"cap ${cap_usd:.2f}")
+        # The rule, not a number: the pause is chosen after each call from the
+        # model that answered it and the tokens it drew. See llm.pace.
+        print("pacing: chosen per call from the answering model's published "
+              "limits, whichever binds, "
+              + ", ".join(f"{m} {limits['rpm']} RPM / {limits['tpm']:,} TPM"
+                          for m, limits in ((m, client.budget().MODELS[m])
+                                            for m in MODELS
+                                            if m in client.budget().MODELS))
+              + f"; cap ${cap_usd:.2f}")
 
         linked = 0
         seen = 0
@@ -333,7 +338,12 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                         (claim_id, cid, rel, confidence, method),
                     )
                     linked += 1
-                time.sleep(pause)
+                # Paced by the model that ANSWERED and the size of the
+                # call it just took, not by the head of the list: the
+                # fallback's minute is 8,000 tokens where Moonshot's is
+                # 500,000, so a pause chosen before the walk ran is a
+                # 429 this caller caused. llm.pace says why.
+                time.sleep(client.pace(model, cap.last_tokens))
             else:
                 no_neighbors += 1
             # The marker is written whether or not the claim had neighbors: a

@@ -11736,3 +11736,107 @@ enough turns, and this item sat five days past "before anything has
 failed" into "after it did." The other six seats named in item 14 (skill,
 engineer, market, research, security, exo) are all still sitting at the
 same unapplied, pre-measured distance from their own version of this.
+
+## INC-2026-10-11-the-free-tiers-minute-was-sized-for-one-request-and-never-for-a-drain — Groq's 8,000 tokens a minute, the same ceiling as incident 22, missed in the other half of the code (2026-10-11, engineer seat, second run)
+
+**Observed by:** the engineer seat's second scheduled run of 2026-10-11, reading
+the version 4 delivery receipt that its own earlier run had shipped that
+morning.
+
+**What happened.** `pipeline/llm.py pace()` returned a pause computed from
+requests a minute and nothing else.
+
+```python
+def pace(model: str) -> float:
+    """Seconds to wait between calls to `model`, from its published RPM."""
+    rpm = budget().MODELS.get(model, {}).get("rpm") or 0
+```
+
+That is the limit that binds on Moonshot, where this account has 3 requests a
+minute against a 500,000-token minute, so one call every 20 seconds and the
+token budget never notices. It is the wrong limit on every Groq free-tier model
+in `budget.MODELS`, which publish 30 requests a minute against **8,000 tokens a
+minute**. Above 266 tokens a call, the minute binds and the requests do not.
+
+So the arithmetic of a corpus job that walks to the fallback, which is what
+ADR-39 exists to make it do:
+
+| job | call size, measured | pause it took | tokens a minute it asked for | published |
+| --- | --- | --- | --- | --- |
+| distill | 5,830 (the abstract it degrades to) | 2.0s | 174,900 | 8,000 |
+| triage | 4,713 | 20.0s, the primary's | 14,139 | 8,000 |
+| interpret | 1,000 | 20.0s, the primary's | 3,000 | 8,000 |
+
+Distill asks for twenty-two times the minute it has. What comes back is a 429,
+which `call_one` treats as a transient rate limit and retries four times with
+backoff, then the walk moves to the next model and asks the same impossible
+question again. After three models the walk raises `NoModelAnswered`, the drain
+retries with the abstract, meets the same 429, and prints "no model would take
+the abstract either, so this is the provider and not the payload" and stops.
+Zero claims, on a provider that was answering.
+
+**The two shapes of the same defect, because three of the four callers were
+worse than distill.** `triage`, `interpret` and `retag_threads` did not pace
+from the model that answered at all. Each computed one pause before its loop,
+from the HEAD of its model list, and kept using and printing that number while
+a different model served every call.
+
+```python
+pause = client.pace(MODEL)          # MODEL is kimi-k2.6, always
+print(f"pacing: {pause:.0f}s between calls ({MODEL} is "
+      f"{client.budget().MODELS[MODEL]['rpm']} requests a minute), ...")
+```
+
+A log that says `pacing: 20s between calls (kimi-k2.6 is 3 requests a minute)`
+in a run where every call went to `openai/gpt-oss-120b` is not a log that is
+slightly stale. It names the wrong model and the wrong limit, and the triage
+rows in the database say which model actually answered, so the two records in
+the same run disagree.
+
+**Why this is a repeat and not a new finding.** Incident 22 is this exact
+ceiling, on this exact provider, one layer up: a single request larger than
+Groq's 8,000-token minute is rejected 413, which `pipeline/budget.py`'s whole
+request guard exists to prevent and prevents correctly. Its own comment at the
+top of that file still says so.
+
+```
+#   22 established that a single request larger than TPM is rejected 413 before
+```
+
+The org read that incident as a fact about one request and built the guard that
+one request needs. A drain is not one request. The same number governs how fast
+a sequence of requests may go, nothing in the repository held that half of it,
+and `llm.pace` was written a week later, in the Kimi migration (d1e1131,
+2026-09-26), to the binding limit of the provider that migration was moving to. One ceiling, two consequences, one of them guarded since 2026-09-24 and
+the other unguarded until today.
+
+It is also the third time a provider difference has arrived as a retry-policy
+defect. `INC-2026-09-24-press-provider-migration` failure 2 is Moonshot's
+concurrency refusal sending `retry-after: 1`, honoured by a client whose other
+call takes minutes, and the fix note for it is four lines above the 429 branch
+that swallowed today's failure.
+
+**What it cost.** Four days of the corpus, and a diagnosis that spent three runs
+on the wrong half of the problem. `claims` last moved at 2026-10-07T15:15:25Z.
+The receipt read this morning shows 2,132 papers waiting in `distill_queue` and
+both sibling stages answering on `openai/gpt-oss-120b`, which is the reading
+that says the Moonshot account is refusing everybody and the fallback is
+carrying the org. The fallback was carrying triage and interpret at a fifth of
+their rate and carrying distill not at all, and no surface could say that,
+because the pause a run takes is not written to any table.
+
+**What was fixed in this entry's own pull request.** `pace(model, tokens)`
+returns whichever of the two published limits binds, from the size of the call
+just made rather than from a model chosen before the walk ran. All four callers
+pass `Cap.last_tokens`, which is the provider's own count. The primary is
+unchanged by arithmetic and by test: a 40,259-token paper on `kimi-k2.6` still
+paces at 20 seconds. `budget.check_fallback_pacing()` fails the deploy gate on
+a one-argument `pace` call and on a pause that does not fit the answering
+model's minute, and `budget.fallback_daily_draw()` prints the day the fallback
+is asked for, which is 630,770 tokens against a 200,000-token allowance.
+
+**What is still open after it.** The Moonshot account itself. Every stage in
+the pipeline answered on the Groq fallback today, which is the receipt's own
+reading for an account refusing its callers, and nothing a seat can push fixes
+a key or a balance. That is the owner's, and this run's pull request says so at
+the top rather than leaving it in a register.
