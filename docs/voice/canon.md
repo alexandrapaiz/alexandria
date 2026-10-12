@@ -691,7 +691,7 @@ asked whether that thing was the thing it was supposed to be reading.
    That is the verdict law 11 was always asking for and no grade has ever had.
    Two things follow and the second is the finding. The rehearsal row carries
    the payload and the published `digests` row does not, so on the artifact a
-   reader actually received this law cannot be graded at all; it is graded on a
+   reader actually received this law cannot be graded at all. It is graded on a
    neighbouring row and the grade says which row it came from, per the
    measurement-attribution rule in pass 1. And the fix for that is filed rather
    than written here, because a column on the `digests` table is the engineer's.

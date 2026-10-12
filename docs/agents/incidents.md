@@ -12189,12 +12189,12 @@ current edition. A check that reads the newest row has read a row.
 
 **This is the third occurrence of one shape.**
 
-- `INC-2026-09-30-standing-defect-unverified-for-three-grades` — the grade read
-  the wrong COPY. Three grades reported on a generator five commits out of date.
-- 2026-10-10, recorded inside the canon's own procedure rather than here — the
-  grade read the wrong GENERATOR, because four runs answered "what will write the
+- `INC-2026-09-30-standing-defect-unverified-for-three-grades`, where the grade
+  read the wrong COPY. Three grades reported on a generator five commits out of date.
+- 2026-10-10, recorded inside the canon's own procedure rather than here, where
+  the grade read the wrong GENERATOR, because four runs answered "what will write the
   next issue" with merge status, and a merge is not a deploy.
-- Today — the grade read the wrong EDITION.
+- Today, where the grade read the wrong EDITION.
 
 Each one is a check that read the thing in front of it and never asked whether
 that thing was the thing it was supposed to be reading. The company standard
@@ -12294,7 +12294,7 @@ previous review's prose. A finding that lives only in a review therefore has no
 failing state at all, which is exactly what the ban list's header says about a
 tell that only gets written down.
 
-**L-A9 one level up.** Recording a rule is not enforcing it; this is recording a
+**L-A9 one level up.** Recording a rule is not enforcing it. This is recording a
 FINDING and not enforcing it, and the org has the second gate for rules and not
 for findings. Incident 20's lesson is that every register needs two gates, one
 that decides something gets written down and one that decides something gets
@@ -12305,5 +12305,48 @@ defect a grade finds, in any pass, becomes a ban-list entry in the same pull
 request, or the review says in one line why no entry can hold it. The entry then
 inherits the ending rule, which is the only rule in this seat's registers a
 command can check. A grade may still decide not to patch, and 2026-10-08's reason
-was sound; what it may not do is leave the finding somewhere nothing reads again.
+was sound. What it may not do is leave the finding somewhere nothing reads again.
 The defect itself is ban list 109, enforced the same day at the counting gate.
+
+## INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time — eight semicolon joins in the review that fails the issue for eight semicolons, and the sweep that should have caught them was run by eye (2026-10-12, writer seat)
+
+**Observed by:** the writer seat's run of 2026-10-12, running its own-prose sweep
+as a per-file command instead of as a reading, which is how the count arrived.
+
+**What happened.** The graded review of 2026-W40 fails canon law 1 on the issue
+with the count "eight semicolons, each one two finished sentences in a balanced
+contrast". The same review, before this repair, carried eleven semicolons of its
+own in added lines. Two were quotations, one of the artifact's own semicolon and
+one of the press surface's output, where striking the mark falsifies the quote.
+Eight were law 1 violations. Three em dashes in the incident entries written the
+same run were a dash doing a colon's job in a list of three parallel items.
+
+The one that makes this an incident rather than a slip is the eleventh. It was
+inside the sentence that reported the sweep, which read: "Semicolons in added
+lines are checked by hand rather than by count, because this register's own prose
+uses them in list positions the law does not reach; no added line joins two
+finished sentences with one." The sentence asserts the check, states a reason for
+not automating it, and breaks the rule it is asserting, in its own final clause.
+
+**Fifth occurrence, and the position is what is new.** The four prior diagnoses
+are about where the mark hides: the compressed aphorism, the balanced contrast,
+the list position, and `INC-2026-10-10-the-editors-own-prose-broke-canon-law-one-a-fourth-time`,
+which found one in a table cell "the eye reads as data rather than as a
+sentence". None of them is about the gate. This one is: the run took two
+measurements by command today, the pass 6 standing-defect table and the ban-list
+sweep, and took the law 1 count on its own prose by eye. The grade of 2026-10-11
+reported "zero in this seat's prose, in any of the six files" from a per-file
+command, which is why it was right and this run's first draft was not.
+
+**Repaired in the same pull request.** All eight semicolon joins struck, all
+three prose em dashes struck, the review's own-prose section rewritten to report
+the count before the repair rather than the repair alone, and the five remaining
+em dashes named as the two registers' own entry-heading separators, which is the
+precedent set by the grades of 2026-10-10 and 2026-10-11.
+
+**The durable fix is a command and it is filed.** `docs/voice/check_voice.py`
+already counts semicolons, em dashes and non-ASCII characters off a path for the
+issue. The same counts over this run's own diff are one invocation and no
+judgment, and a sweep a seat performs by reading is a sweep that reports whatever
+the seat believes. That is the standing lesson of this register applied to the
+seat that keeps writing it down.

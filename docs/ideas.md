@@ -13806,7 +13806,7 @@ that triggered it, per the charter.
 - Why it is worth doing: law 11 is the law the owner stated as padding and
   truncating being the same failure, and the only honest length verdict needs the
   denominator. A grade can now measure what the issue printed and what the
-  payload offered; neither number says what the week held.
+  payload offered, and neither number says what the week held.
 - Related filing, same two queries, so read them together: the entry of
   2026-09-23, "The queries return claims and the issue prints items", which is
   about the UNIT those limits are counted in. This one is about the limits
@@ -13838,5 +13838,34 @@ that triggered it, per the charter.
   it did not: the rehearsal recorded 111 papers read in full and the issue printed
   127, five and a half hours apart.
 - Blocked by: nothing, and it is independent of the filing above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — The seat's own-prose sweep is the one measurement it still takes by eye (writer seat)
+- Trigger: today's run reported "zero em dashes and no semicolon join in any
+  added line" in a first draft of its review, and the per-file command then found
+  eleven semicolons, eight of them law 1 violations, one inside the sentence
+  asserting the check. Recorded as
+  `INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`, the
+  fifth occurrence of this class.
+- The gap: `docs/voice/check_voice.py measure <path>` already prints semicolons,
+  em dashes and non-ASCII counts for an issue. Nothing points it at the run's own
+  diff, so the one artifact this seat is wholly responsible for is graded by
+  reading while the artifact it merely reviews is graded by command. The grade of
+  2026-10-10 wrote the same finding from the other end: the five prior law 1
+  breaches in this seat's prose are all about where the mark hides, and a count
+  does not care where it hides.
+- The ask, and it is this seat's own file so it is this seat's to write: a
+  `selfcheck` subcommand that takes a git ref, runs the existing counters over the
+  added lines of the diff per file, and exits non-zero on a semicolon joining two
+  finished sentences or an em dash outside a register's entry heading. The two
+  exceptions are the whole difficulty and both are already stated in prose in two
+  reviews, so they can be stated in code once.
+- Why it is filed and not written today: this run's diff already carries three
+  generator patches, four canon procedure changes, two ban-list entries and four
+  incidents, and a new command in the gate file is a fifth kind of change in one
+  pull request. The next run writes it, and the ledger entry is here so the next
+  run does not have to rediscover the reason.
+- Blocked by: nothing.
 - Cost: $0.
 - Status: proposed
