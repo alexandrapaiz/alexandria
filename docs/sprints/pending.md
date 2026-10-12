@@ -1,3 +1,138 @@
+## Updated 2026-10-11, ~18:20 UTC (six-hour pass): placeholder, full account follows in this same PR
+
+Draft opened first per ship-first. Full triage, merge check and sprint
+update follow in this same pull request.
+
+## Updated 2026-10-11, ~16:45 UTC (standup, completing the stalled six-hour pass): the distill stall is the finding, no merge qualifies, no dispatch fires
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony — Monday
+2026-10-12 opens the next sprint and does the full reconciliation. This
+run's own open pull request (`alexandria-pm/2026-10-11-message`, #269)
+was already open, a draft left ten hours earlier by a six-hour pass that
+got no further than naming itself ("triage starting", one commit, no
+real triage). Continued on that branch rather than opening a new one:
+merged `main` into it first (it was a full day behind, missing PR #268),
+then did the standup's own reading on top. This is the pull request
+both the six-hour pass and this standup ship as.
+
+**The headline is delivery health, not the queue.** `claims_newest` and
+`distilled_newest` on the live receipt (`GET /api/delivery`) are both
+frozen at `2026-10-07T15:15:25Z`, four days behind `papers_newest`
+(today, 11:01 UTC). `distill_pending` is 2132 and has grown by roughly
+20 a day since the stall started. This is already `urgent` in
+`docs/ideas.md` (2026-10-11 entry) and already has an in-progress
+engineer run against it (PR #270, started 16:37 UTC, not touched here
+per the standing rule against editing a live run's own branch). What
+that entry narrows the cause to, and what nobody but the owner can
+check, is below.
+
+**Run health.** Zero failures in the last 24 hours
+(`gh run list --status failure` since 2026-10-10T16:39Z returns
+nothing). Two runs in progress as this is written (this pm-agent run,
+and engineer-agent's PR #270) are not yet measurable.
+
+**Delivery health, the other half.** Press: newest issue 2026-W40,
+printed 2026-10-05, next due 2026-10-12 (not yet in its window). Site:
+reachable, serving 2026-W40. Pipeline: ingest, triage and interpret are
+all current (newest rows today); distill is the one stalled stage,
+above. MCP server: **could not be checked this run** — no record in
+this sandbox of its deployed `modal.run` endpoint, so this is named as
+unchecked rather than silently skipped.
+
+**The cap ratio.** Two runs since the last pass crossed 70% of their
+own cap: engineer-agent (`38066706694`, 2026-10-10 16:12 UTC) at
+**158/200 (79%)**, and writer-agent (`38080446679`, 2026-10-10 19:36
+UTC) at **139/150 (92.7%)** — the writer's second near-miss in three
+days, after actually hitting 151/150 on 2026-10-09
+(`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`).
+`docs/agents/pending-workflow-changes.md` item 14 (the raise to 300 for
+seven seats, writer included) is still unapplied — confirmed directly,
+`agent-writer.yml` still reads `--max-turns 150` — now seven days queued
+against a cap that has twice come within single digits of killing a run
+mid-work.
+
+**Tier B merge check (`docs/standards/pm.md` §10/§21).** Every open pull
+request, checked fresh:
+
+- **#270** (engineer) — a live run's own PR, in flight as this standup
+  writes. Not evaluated; not touched.
+- **#269** (this seat's own) — excluded by Tier B's own first rule (a
+  PM's own PR waits for another merger).
+- **#267** (writer, editorial run 31) — clean, green, not a draft. **Disqualified anyway**: its diff touches `prompts/digest.md`, a Tier C
+  path (charters), so this seat cannot merge it under Tier B regardless
+  of how clean it is. Waits on the owner.
+- **#205** (finance) — draft, conflicting. Disqualified; finance is
+  dormant, nobody to dispatch to finish it.
+- **#203** (okr) — draft, substantial (1223 lines), but still a draft.
+  Disqualified; not this seat's call to mark another seat's work ready.
+- **#60** (engineer, the pre-send quality checklist) — not a draft, but
+  conflicting and Tier C (`prompts/daily.md`). Disqualified on both
+  grounds, same as every prior pass. Now **21 days** open, still the
+  oldest open PR in the repository, still waiting only on the owner.
+
+**No merges performed this run.** Nothing qualified.
+
+**The queue gauge, four numbers.**
+1. `main`'s last merge: 2026-10-11 06:25:33 UTC (PR #268), about 10h20m
+   ago. The newest `checks.yml` run *on* `main` is still 2026-10-10
+   16:19:15 UTC (`success`) — stale, not red: at least two merges since
+   then (including #268) fell entirely outside the workflow's `paths`
+   filter, the same gap already named in incidents.md as item 17
+   (`INC-2026-10-10-a-whole-pull-request-fired-no-merge-check`), which
+   recorded its third occurrence yesterday and already carries a staged,
+   verified fix (`git mv .github/workflows-pending/checks.yml
+   .github/workflows/checks.yml`) that no seat may apply.
+2. **Open pull requests: 6** (#270, #269, #267, #205, #203, #60), **1
+   opened since the last merge** (#270, 16:39:17 UTC, a live run's own
+   PR).
+3. **Conversion, trailing 7 days: 67 merged / 83 opened** (≈0.81).
+   Healthy.
+4. **Deepest open supersession chain: #267**, depth 2 (supersedes #260,
+   which is closed). Not a blocker at that depth.
+
+**Threshold check.** ~10h20m since the last merge, well under the 48h
+line. Not the headline — delivery health is, above.
+
+**No dispatch fired or proposed.** `PM_DISPATCH_ENABLED` confirmed
+`true` directly from this job's environment. The org is not in
+synchronous mode (no `workflow_dispatch` event in the last two hours;
+the newest is 2026-10-05). Checked every dispatchable seat against
+`docs/standards/pm.md` §11.3's criteria table: engineer and writer are
+both hard-stopped by their own open pull requests (#270, #267); finance
+is dormant; the remaining dispatchable seats (research, market, skill,
+security, frontend, okr) have no open pull request but also no observed
+trigger this run — no failed run, no ADR or ruling naming them with no
+run following since 2026-10-05, and no sprint item due this week that
+they own and have not touched. Nothing invented. See
+`docs/sprints/dispatch-queue.md`.
+
+**Inbox, checked first per the board protocol.** Nothing addressed to
+`pm`/`alexandria` since 2026-10-10 18:27 UTC (HQ's pm confirming this
+seat's own standup PR was already merged by someone else), and that one
+needed no further answer. The notes from other companies' PM seats in
+the shared feed are broadcasts (`to_seat`/`to_company` both null), not
+addressed here, and none of them name alexandria.
+
+**Owed to you, one line each.**
+1. **The distill stall's next step is yours**: `modal app logs
+   alexandria-distill`. The ledger's 2026-10-11 entry narrows the cause
+   to the environment, not the code (same images have run since
+   2026-10-05, and produced claims once, on 10-07) — the Moonshot
+   account's balance, tier, or secret are the named suspects, and
+   checking them needs the Modal dashboard access no seat holds. 4 days
+   stalled, growing ~20 items a day.
+2. **Merge PR #60** — the pre-send quality checklist, 21 days open,
+   Tier C, conflicting, nothing further owed from any seat.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26 (now 15 days), and O1 KR1's $20 spine needs it purchasable
+   by 2026-10-13, **2 days away**.
+
+**Also still open, named rather than repeated in full:** the `sql_query`
+scope decision (10 days, security's finding, fix shape is yours to
+pick); the writer's cap raise (item 14 above, now a second near-miss);
+the staged `checks.yml` replacement (above, a one-command fix only HQ's
+side of `.github/workflows` can apply).
+
 ## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — full
