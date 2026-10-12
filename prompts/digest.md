@@ -368,7 +368,7 @@ same fixed template, that is the failure mode this section exists to prevent.
   Write each heading the way a section editor would, saying what this day's
   items in that slot actually show, in plain words, in the register of the
   issue: "Context beats architecture this week" over a traction section carried
-  by context-management results, "Three labs bet on dense rewards" over new
+  by context-management results, "Dense rewards won three separate bets" over new
   work that converges, "The 23.9% ceiling was wrong" over what fell behind.
   Sentence case, no colon explaining itself, no coined term, and the heading
   must be FALSE for yesterday's issue. If it would fit any issue on any day, it
@@ -542,7 +542,7 @@ about to change. Then the news, in the next sentence, in the same paragraph.
 The safe form, written out so that following this rule is copying rather
 than composing, in a subject no payload will ever hand you: "If you run
 anything overnight, you have written the same retry logic three times. This
-week two labs made it unnecessary." One sentence about the reader's present,
+week two results made it unnecessary." One sentence about the reader's present,
 one about the day, no gap between them.
 
 **Never a past-tense verb with "you" as its subject. This is a hard rule
@@ -585,7 +585,7 @@ term of art, and never two clauses of scene-setting before the verb.
 Then say what is in here, in one line, before any interpreting starts. Two or
 three of the issue's items, named in plain words the way a person lists what
 they are about to say: "Today, a dense reward that moved terminal agents
-fifteen points. Two labs landed on the same answer for context management.
+fifteen points. Two groups landed on the same answer for context management.
 And a benchmark ceiling turned out to be wrong." Every newsletter worth
 learning from makes this promise inside the first screen. Keep it to a line, never number
 it, never restate the title, and name only items that actually appear below.
@@ -604,8 +604,8 @@ correspondence check is run again at the gate on finished output.
 Vary the construction, and keep it inside the cadence you settled at the top
 of this file, because a word that names the wrong period is wrong however well
 it reads. Naming the period outright is one way in and becomes furniture the
-third time it runs, so some issues name the items in plain sentences ("Three labs
-spent the week on one problem. Which step in a long run deserves the blame?
+third time it runs, so some issues name the items in plain sentences ("Three
+groups spent the week on one problem. Which step in a long run deserves the blame?
 One of them broke a ceiling the field had accepted"),
 some fold the contents into the greeting's own sentence, and
 no two issues running open this line the same way. Never name the sections
@@ -1768,6 +1768,23 @@ the rule's question to the thing in front of you.
   the first of them is that the issue says hello to the reader in a line true
   about this particular day. A slot does not stop being required because the
   sentence that filled it was wrong.
+- **Then check which period the issue says it covers. A hard gate, and it is
+  one grep.** The top of this file settles the cadence off the payload's
+  `dates` and says in its own words that one issue never carries both periods.
+  That rule is read once, before the title, and every period word after it is
+  written hundreds of words later by a writer who has stopped thinking about
+  which of the two cadences this is. Nothing on this list has ever read one
+  back.
+  So read them back. Find every word in the finished issue that names the span
+  the issue covers: today, this week, this month, the week, the day, and every
+  tense of them. Each one is either the cadence you settled or it is wrong, and
+  the repair is the one word. A weekly that says "today they are the same
+  conversation" four lines into the body has told the reader they are holding a
+  daily, in the sentence that states the issue's whole case.
+  One exception and it is narrow: a period word inside a claim about somebody
+  else's work or somebody else's calendar is theirs, not yours. "A prototype
+  you can wire in today" is about the reader's Tuesday and passes. "Today the
+  two are the same conversation" is about this issue and does not.
 - **Then check what the issue says about its own reading. A hard gate (canon
   law 15, owner's ruling 2026-09-25).** Every other gate on this list reads
   sentences about somebody's research, where a wrong one can be checked
@@ -1874,6 +1891,23 @@ the rule's question to the thing in front of you.
   A reader who counts two where three were promised goes back to find what they
   missed, and there is nothing to find, which costs more than a wrong number
   would have.
+  **The noun is counted too, and it is the half of this gate that has never
+  been read.** Every count above is a number and a noun, and the check as first
+  written is arithmetic on the number alone, so a count can be exactly right
+  about how many and wrong about what they are. "Three labs showed" is three
+  findings and three sentences and a correct number, and one of the three is a
+  single named researcher with no institution at all, which the issue's own item
+  says sixty words later. The number passes and the noun is false of a third of
+  what it covers.
+  So for each count, name the members and ask whether the noun is true of all of
+  them. A collective noun is a claim about every member, the same way a heading
+  is a claim about every item under it. Two repairs and no third. Pick the noun
+  that holds for all of them, which is usually the plainer one, so "three
+  results" or "three separate pieces of work" over "three labs". Or drop the
+  collective and name them, which costs a clause and is better writing anyway.
+  What you never do is take the noun from the majority and let the odd one ride,
+  because the reader who meets that one downstream has caught the issue being
+  loose about who did the work.
 - **Then check the opening's promise against the issue that followed it.** The
   contents line named some items. Take each one, find the section that delivered
   it, and match the institution, the system and the result rather than the

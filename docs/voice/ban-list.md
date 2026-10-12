@@ -2206,3 +2206,88 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "check that condition before you use that shape"
     ```
+
+108. The weekly that says today. A period word that names the wrong span, in an
+    issue whose own generator settles the span before the title is written and
+    then never reads one back.
+    The specimen is the published 2026-W40, four lines into the body, in the
+    sentence that states the issue's whole case:
+
+    > You ship agents that improve themselves or you ship agents that stay safe,
+    > and until this week those two pipelines barely spoke. Today they are the
+    > same conversation.
+
+    "Until this week" is right. "Today" is a daily's word, and the two sit in
+    adjacent sentences about the same fact, so the reader is told twice what they
+    are holding and told it differently both times. Three other period words in
+    the issue are correct, which is why this reads as a slip rather than as a
+    wrong model of the product. It is the slip that matters: a reader who cannot
+    tell whether this is Monday's weekly or Monday's daily cannot tell what the
+    next one will be either.
+    The generator has the rule and had it the whole time, in its own words at the
+    top of the file: "One issue never carries both periods." It is read once,
+    before the title, and the period words are written hundreds of words later.
+    Every other rule on this register of that shape, the stands-alone tense, the
+    attributive subject, the counts, the headings, the slot names, ended up with a
+    gate that reads the finished text, because a rule read at the start of a long
+    piece of writing is a rule in force for the first paragraph. This one had no
+    gate and the sweep of the whole file for the word "cadence" finds it in ten
+    places, none of them in the gates.
+    Six grades never mentioned it. The reason is worth recording, because it is
+    this register's commonest shape: no verdict owns the cadence. Law 11 is about
+    length, law 13 is about standing alone, law 9 is about structure, and the
+    period word falls between all three.
+    Added 2026-10-12. Enforced the same day as a gate on finished output,
+    immediately before the law 15 gate, reading every period word back against
+    the cadence the payload settled, with one narrow exception for a period word
+    inside somebody else's claim.
+    ```
+    LANDED prompts/digest.md: "Each one is either the cadence you settled or it is wrong, and the repair is the one word."
+    ```
+
+109. The count that is right about how many and wrong about what they are. A
+    collective noun covering a group none of whose members it is true of, under
+    a number that is exactly correct.
+    The specimen is the opening of 2026-W40:
+
+    > Three labs showed that an agent can edit its own harness for four dollars,
+    > that a POSIX signal can stop a rogue run in five microseconds, and that the
+    > memory you write into weights may be the memory you lose.
+
+    Three findings follow, three sections deliver them, and the second is "An
+    independent researcher, Jose Luis Pino", which the issue's own item says sixty
+    words later. The number is three and it is right. The noun is "labs" and it is
+    false of a third of what it covers.
+    The tell is the collective noun under a count, because a collective is a claim
+    about every member in exactly the way a heading is a claim about every item
+    under it, which is entry 107. The two entries are the same defect in two
+    positions, and the reason neither gate caught the other's is that the counting
+    gate was written to check arithmetic and the heading gate was written to check
+    specificity. A number and a noun arrive in one phrase and only the number was
+    ever read.
+    The repair is the plainer noun, "three results" or "three separate pieces of
+    work", or dropping the collective and naming them. Not the hedge: "three labs
+    and one independent researcher" over a group of three is worse writing and
+    still wrong about the count.
+    **The generator supplied this one, and the sweep is the evidence.** Per entry
+    90, the tell was run over `prompts/digest.md` before it was patched:
+    `grep -nE "\b(Two|Three|Four|two|three|four) labs\b" prompts/digest.md`
+    printed five hits outside the gates, at the bullet rule, the heading example,
+    the greeting's safe form, and both contents-line examples. Three of those five
+    sit at positions where the model is writing the opening, which is where "Three
+    labs showed" was printed. Four are struck in this pull request. The fifth, at
+    the bullet rule, states a condition rather than supplying a sentence, and it
+    stays.
+    **This entry is four days late and that is its own finding.** The defect was
+    found on 2026-10-08 by pass 5, written into that review, given no entry and no
+    patch, and found again on 2026-10-11 inside a PASS verdict as the clause after
+    "except". Recorded as
+    `INC-2026-10-12-a-finding-that-lived-only-in-a-review-had-no-failing-state`,
+    and the procedure change is in the canon: every pass's new defect becomes an
+    entry here, or the review says why none can hold it.
+    Added 2026-10-12. Enforced the same day at the counting gate, which now names
+    the members and asks whether the noun is true of all of them before it checks
+    the arithmetic.
+    ```
+    LANDED prompts/digest.md: "A collective noun is a claim about every member, the same way a heading is a claim about every item under it."
+    ```

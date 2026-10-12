@@ -557,6 +557,36 @@ as live only when a run log, a listing or a response proves it served a real
 turn. A merged prompt is configuration, and the press's own Monday row is the
 run log. This procedure asked git a question only the job can answer.
 
+**And one question before any of the three shas, because all three assume the
+artifact is an edition (added 2026-10-12,
+`INC-2026-10-12-the-grade-could-not-tell-an-edition-from-an-archive`).** Every
+check above compares the newest artifact to a generator. None of them asks
+whether the newest artifact is the current issue or merely the last one that
+printed. Those are the same sentence on the morning after a send and different
+sentences a week later, and nothing here can tell them apart, so the phrase
+"the newest issue" has stood at the top of seven grades while what it named
+changed underneath it.
+
+```
+python3 tools/delivery_health.py --surface press --no-notify
+```
+
+That command already exists and already answers it, in the press surface's own
+words: on 2026-10-12 it read FAILING, "the newest issue is 2026-W40 and
+2026-W41 has ended; 1 issue(s) missing", while `deploy_runtime` recorded the
+weekly job running at 09:00:07 that same morning. The press ran and printed
+nothing. So the grade says the artifact's date, the cadence it was published
+on, and how many sends are missing between then and today, before it grades a
+line. Where an issue is missing, that fact goes above the three shas, because a
+seat whose next patch reaches a generator that printed nothing last week is
+working on the second-order problem and should say so.
+
+This is the third time this procedure has graded the wrong artifact in the same
+shape. The first was which copy (`INC-2026-09-30-standing-defect-unverified-for-three-grades`),
+the second was which generator, forwards (2026-10-10), and this is which
+edition. Each one was a check that read the thing in front of it and never
+asked whether that thing was the thing it was supposed to be reading.
+
 1. **The outsider read.** Read the issue once, start to finish, at
    reading speed, as a builder from another team who has read none
    of the papers. Grade nothing yet. Record four things: where a
@@ -645,6 +675,26 @@ run log. This procedure asked git a question only the job can answer.
    covered. The unit is the named piece of work rather than the item,
    because an item can name three. A pass on a coverage law with no
    number beside it has not been graded.
+   **A law that relates two quantities carries a number for both** (added
+   2026-10-12). The rule above covers a law whose subject is "every item", and
+   it leaves the laws whose subject is a RATIO. Law 11 is the case: length
+   follows the news, so the verdict is about a relation between how much the
+   issue printed and how much real material the week held. Seven grades gave it
+   a word count and the phrase "a week with real material", which is a
+   measurement on one side and an impression on the other, and padding is
+   exactly the defect that looks fine from the length alone.
+   The news side has a number and it is in the payload. `press_rehearsals`
+   carries a `payload_stats` column, and the rehearsal of 2026-10-05, id 4, on
+   the same `prompt_sha` as the published issue, read 22 new claims, 12
+   supported, 12 citation movers, 5 superseded, 8 deprecated and 10 deep reads.
+   The issue printed 13 named works and 3 of the 10 reading-list candidates.
+   That is the verdict law 11 was always asking for and no grade has ever had.
+   Two things follow and the second is the finding. The rehearsal row carries
+   the payload and the published `digests` row does not, so on the artifact a
+   reader actually received this law cannot be graded at all; it is graded on a
+   neighbouring row and the grade says which row it came from, per the
+   measurement-attribution rule in pass 1. And the fix for that is filed rather
+   than written here, because a column on the `digests` table is the engineer's.
 4. **The ban list**, including new tells to append.
    **An entry that names a class is swept, not just fixed** (added
    2026-10-04, ban list 90). A tell is found in the one specimen the
@@ -719,6 +769,34 @@ run log. This procedure asked git a question only the job can answer.
    The cheap version of this question, and it is the one to run: for every PASS
    in passes 2 through 5, write the half-sentence the verdict is actually
    about. Where that is shorter than the sentence, the rest is ungraded.
+   **A sixth question, and it catches what the fifth cannot: the verdict that
+   read both halves, wrote the failing one down, and passed anyway** (added
+   2026-10-12,
+   `INC-2026-10-12-a-pass-verdict-carried-the-evidence-of-its-own-failure`).
+   The fifth question finds the half a verdict never reached. This one finds the
+   half it reached and forgave, and it is not reachable by the fifth question
+   because the verdict's own text already names the whole sentence. Two shapes,
+   both from the grade of 2026-10-11, both in pass 3.
+   The first is the exception. Law 9 was passed as "attribution is
+   institution-first except where a lone researcher is counted among 'three
+   labs'", and nothing in the org grades "three labs", so the clause after
+   "except" was the defect's only appearance anywhere and it appeared inside a
+   PASS. Four days earlier the grade of 2026-10-08 had found the same defect in
+   pass 5, written it down, added no ban-list entry and patched nothing. It is
+   live today.
+   The second is the routing. Law 4 was passed on the title with the note that
+   its two undefined nouns "are law 12a's verdict, not this one's". Law 4 has
+   two clauses and the second is that a builder knows from one line whether to
+   open the issue, which is precisely what an undefined noun defeats. One
+   sentence was split across two laws and each passed the half it held.
+   So the check is a grep over the finished review, and it runs before `gh pr
+   ready`: `grep -nE '(PASS|pass)' docs/voice/reviews/<today>.md` and read every
+   hit for a concession. Except, apart from, other than, aside from, though,
+   while, only, but. A verdict carrying one of those about its own subject is a
+   FAIL with its evidence already attached, and the honest form is a split
+   verdict naming both parts, which pass 3 already allows. Routing a defect to
+   another law is legitimate exactly once: when that law's verdict actually
+   grades it. Say which verdict will, and check that it did.
    This pass is procedure and not a law. It enforces laws 6 and 7,
    which already require the evidence grade to be honest and to be
    about the thing that is actually uncertain, and a grade aimed at
@@ -785,6 +863,39 @@ run log. This procedure asked git a question only the job can answer.
    the writer. Where the file declares a boundary of its own, as this one
    does with "fill-time typography, not editing", say which side each
    finding falls on and let the owner rule rather than deciding it here.
+
+## What the six passes owe, which is not a review (added 2026-10-12)
+
+A review is prose. The ban list is a register with a gate: its own header says
+an entry is not finished when it is written, and every entry carries either the
+sentence that now enforces it or the ledger filing saying why no sentence can,
+with `docs/voice/check_voice.py enforcements` checking the quoted ones. That
+gate exists because two entries were once appended and never reached the
+generator.
+
+Only pass 4's output is bound by it. Passes 1, 2, 3, 5 and 6 produce defects
+too, and a defect that lives in a review has no failing state at all: pass 4
+re-reads the ban list, pass 6 re-checks the entries whose ending is a filing,
+and nothing in this procedure ever re-reads a previous review's prose. So a
+finding written only into a review is a finding the next issue is free to
+commit, which is exactly what the ban list's own header says about a tell that
+only gets written down.
+
+The evidence is one defect across three grades. On 2026-10-08 pass 5 found that
+the opening's "Three labs showed" covered a lone named researcher with no
+institution, wrote it down in the review, and the same review's count paragraph
+says "Nothing else was patched". No ban-list entry was added. On 2026-10-11 the
+same defect appeared inside a PASS verdict as the clause after "except". On
+2026-10-12, four days and two grades after it was first found, it was still live
+in the generator and in the artifact.
+
+So: **every new defect a grade finds, in any pass, becomes a ban-list entry in
+the same pull request, or the review says in one line why no entry can hold
+it.** The entry then inherits the ending rule it was always subject to, which is
+the only rule in this seat's registers that a command can check. A grade is
+allowed to decide not to patch, and the grade of 2026-10-08 decided that for a
+stated reason that was sound. What it is not allowed to do is leave the finding
+somewhere nothing will read again.
 
 ## Maintenance
 
