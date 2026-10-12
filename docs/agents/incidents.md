@@ -11840,3 +11840,93 @@ the pipeline answered on the Groq fallback today, which is the receipt's own
 reading for an account refusing its callers, and nothing a seat can push fixes
 a key or a balance. That is the owner's, and this run's pull request says so at
 the top rather than leaving it in a register.
+
+## INC-2026-10-12-the-free-tiers-day-was-sized-for-one-job-and-never-for-the-schedule — the same published ceiling as incident 22 and INC-2026-10-11, missed in the third of its three layers (2026-10-12, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-12, 02:17 UTC,
+reading the live receipt (`GET /api/delivery`) on the fifth day of the stall
+and then reading the ceiling its own previous run had printed and not fixed.
+
+**What happened.** Yesterday's run fixed the pause between calls and left the
+day alone. `budget.check_fallback_tpd()`, written in that same run, printed the
+answer in plain language and was deliberately not a failure:
+
+```
+a day on openai/gpt-oss-120b asks 642,650 tokens against the 200,000 it
+allows, 170,000 after the 15% margin. So a primary outage lasting one day does
+not degrade the corpus evenly: the jobs that run earliest spend the allowance
+and the jobs that run latest meet 429s. The order is the schedule in
+llm.KIMI_WINDOWS, which puts distill last. Lowering a per-run call ceiling is
+the lever.
+```
+
+Nothing pulled the lever, because no job had one. Every ceiling the three
+corpus stages carry was sized against the account that charges money:
+
+| job | window | its own ceiling | what that ceiling draws on the free tier | the free tier's whole day |
+| --- | --- | --- | --- | --- |
+| triage | 12:00 UTC | `MAX_CALLS_PER_RUN = 90`, `CAP_USD = 0.60` | 424,170 tokens | 200,000 |
+| interpret | 14:00 UTC | `MAX_CLAIMS_PER_RUN = 90`, `CAP_USD = 0.30` | 90,000 tokens | shared, same day |
+| distill | 15:00 UTC | `MAX_PAPERS_PER_RUN = 20`, `TOKENS_PER_RUN = 900_000` | 128,480 tokens | shared, same day |
+
+The spend caps cannot bind at all: every Groq model in `budget.MODELS` is
+priced at $0.00 a million, which is correct and makes `CAP_USD` unable to stop
+anything. `TOKENS_PER_RUN = 900_000` is distill's share of Moonshot's
+1,500,000-token day, which is four and a half times the whole free day, so on
+the fallback it is not a ceiling either. What was left was a call count sized
+for a paid minute, and three call counts that add up to more than three times
+the day they were spending.
+
+So the degraded day has a shape, and the shape is the cron table. Triage opens
+at 12:00 and spends the allowance, interpret meets what is left at 14:00, and
+distill opens at 15:00 against a day that is gone. Every call it makes returns
+429 for the rest of the UTC day, the walk reads that as a transient rate limit,
+and `NoModelAnswered` comes back with three models' refusals flattened into one
+sentence. Zero claims, on a provider that is answering other callers, on code
+that has not changed since 2026-10-05.
+
+**Why this is a repeat, and the third of three.** One published number,
+`openai/gpt-oss-120b`'s free tier, governs three different things, and the org
+has now learned it three times:
+
+- **The request.** Incident 22, 2026-09-19: a single request larger than the
+  8,000-token minute is rejected 413. Guarded since 2026-09-24 by
+  `budget.check_request`, correctly, and the guard's comment says so.
+- **The drain.** `INC-2026-10-11-the-free-tiers-minute-was-sized-for-one-request-and-never-for-a-drain`:
+  the same 8,000 governs how fast a sequence of requests may go, and `pace`
+  read requests a minute instead. Fixed 2026-10-11, in the pull request that
+  recorded it.
+- **The day.** This entry: `tpd`, 200,000 a day per model, shared by every job
+  that lands on it. Sized by nobody until today.
+
+The pattern worth naming is not the arithmetic. It is that each layer was found
+only when a job actually ran into it, and each time the fix was scoped to the
+layer that hurt. Incident 22's own entry reads as a complete account of the
+provider's ceiling, and it was an account of one third of it. A provider limit
+has a per-request form, a per-minute form and a per-day form, and a guard
+written against one of them is silent about the other two.
+
+**What it cost.** Five days of the corpus and three runs of diagnosis.
+`claims_newest` and `distilled_newest` have both read `2026-10-07T15:15:25Z`
+since 10-07, while `papers_newest` is current, `distill_pending` has grown from
+2,099 to 2,132, and triage and interpret kept writing rows the whole time,
+which is what made the stall look like a dead cron rather than a rationed one.
+
+**What was fixed in this entry's own pull request.** Each corpus stage now
+publishes `FALLBACK_TOKENS_PER_RUN` and stops at it, counting only tokens drawn
+off the primary's provider, so the ceiling is invisible on a day Moonshot
+answers and binding on a day it does not. The number is derived in
+`budget.fallback_share()` from the provider's published `tpd`, less the 15%
+margin, split evenly between the stages that land on that model, which is
+56,666 each today and moves on its own when the tier, the margin or the set of
+stages changes. `budget.check_fallback_shares()` is a deploy-gate failure on a
+job with no ceiling, a ceiling larger than its own share, or ceilings that fit
+their shares and together bust the day. The corpus day it asks of the fallback
+is now 168,000 tokens against 170,000 budgeted, where it was 642,650.
+
+**What is still open after it.** The Moonshot account, exactly as yesterday's
+entry says, and now the deploy. Both fixes are in `pipeline/` and neither has
+reached a cron: the deploy surface shows every corpus image `first_seen_at`
+2026-10-05, so the running containers predate both. `python3
+tools/deploy_gate.py --app all --plan` prints the chain, the first link of
+which is the guard that holds this arithmetic.

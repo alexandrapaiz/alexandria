@@ -13504,3 +13504,140 @@ that triggered it, per the charter.
   guards refuse to accept from a provider and should keep refusing to make.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-12 — URGENT: the stall's cause is fixed in the tree and the tree is not what is running
+- Trigger: today's receipt, read at 02:17 UTC. `claims_newest` and
+  `distilled_newest` both still read `2026-10-07T15:15:25.492Z`, five days
+  behind `papers_newest` (2026-10-11T11:01:37Z), and `distill_pending` is 2,132.
+  The second half of the trigger is the deploy block in the same receipt: every
+  corpus app's `first_seen_at` is `2026-10-05T...`, so the containers that ran
+  yesterday's 12:00, 14:00 and 15:00 windows were built before either of this
+  week's two fixes existed. Yesterday's pacing fix merged at 18:27 UTC and has
+  never executed.
+- What: there are now two merged changes in `pipeline/` that together explain
+  and close the stall, and a third fact that makes both of them inert. The
+  minute was wrong (INC-2026-10-11, fixed yesterday) and the day was unshared
+  (INC-2026-10-12, fixed in this pull request). Neither reaches a cron on a
+  merge, because a Modal app is deployed by a command and `modal deploy` is the
+  owner's: no seat holds the token. So the thing that is urgent today is not a
+  diagnosis any more. It is three commands, and they are hers. L-A16 is the
+  rule this is an instance of, "configured is not in effect", and the receipt is
+  the proof rather than the workflow file.
+- First step: `python3 tools/deploy_gate.py --app all --plan` prints the chain
+  for all five apps, already ordered, with `python3 pipeline/budget.py` as the
+  first link of each, which is the guard that holds this arithmetic. The three
+  that matter are triage, interpret and distill. The rehearsal link in each
+  chain makes one real call, so a chain that completes is also the first
+  evidence anybody has about whether the Moonshot account answers at all today,
+  which is the other open question and is answered for free by running this.
+- Cost: $0. If the rehearsals come back refusing on Moonshot, the account's
+  balance or tier is the remaining cause and that is money and the owner's.
+- Status: urgent
+
+### 2026-10-12 — The press is the fourth caller on the free tier's day and no guard counts it
+- Trigger: writing `budget.fallback_share()` today. It divides the fallback's
+  budgeted day between the jobs in `KIMI_DAILY_DRAW`, which is triage, interpret
+  and distill, and the split is exactly right for those three. It is also
+  wrong, because `pipeline/weekly.py` carries its own `FALLBACK_MODELS` list and
+  lands on the same `openai/gpt-oss-120b`, at 09:00 UTC on a Monday, three
+  hours before the first corpus stage opens. The press is absent from
+  `KIMI_DAILY_DRAW` as well, so neither the primary's day nor the fallback's has
+  ever counted the one job the product is named after.
+- What: on a degraded Monday the issue is printed first and spends an uncounted
+  part of the 200,000 tokens, and the three corpus shares then add up to more
+  than what is left. The press should win that contest, since an issue reaching
+  a subscriber outranks a day of corpus drain, but winning it silently is how
+  the corpus loses a Monday without anybody being able to say why. The fix is
+  to make the press a sharer rather than an exception: add it to
+  `KIMI_DAILY_DRAW` with its measured request size, derive four shares instead
+  of three, and give the press the largest one deliberately rather than by
+  running earliest.
+- First step: `budget.fallback_models()` already reads the press's list out of
+  `weekly.py`, and `check_request` already measures its request against every
+  model in it, so the measured per-call size exists. The work is one entry in
+  `KIMI_DAILY_DRAW`, a weight in `fallback_share` so the split is not forced to
+  be even, and the case in `tests/test_corpus_drain.py` that asserts the four
+  shares fit the day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — The drain forecast does not know which ceiling stopped the run
+- Trigger: Undermind's published benchmark, read in today's craft scan (note
+  below), against `distill.drain_forecast()`. Undermind states that its
+  production search stops on its own after 2.9 minutes on average while the
+  benchmark curve was traced with an extended budget, so a reader can tell the
+  measured rate from the shipped one. alexandria's forecast prints one rate.
+  `drain_forecast(remaining, per_run)` takes what the run achieved and divides,
+  which silently means "at the rate of whichever day this was".
+- What: a degraded run and a healthy run produce the same shaped sentence with
+  numbers that differ by a factor of forty, and the one surface that tells the
+  owner when the queue has outgrown the pipeline cannot tell her which of the
+  two she is reading. Distill on Moonshot is 20 papers a day, which clears 2,132
+  in about 107 days; distill on a third of the free tier's day is 8 papers,
+  which clears it in 266 and is losing ground against an intake of roughly 20 a
+  day. "OVER A WEEK" is printed in both cases. The forecast should name the
+  ceiling that actually bound the run, which the loop already computes as
+  `stopped`, and print the healthy rate beside the degraded one when they
+  differ.
+- First step: pass `stopped` into `drain_forecast` and have it print the second
+  number only when the bound was the fallback share. `tests/test_corpus_drain.py`
+  already drives the loop to each of its four ceilings, so the assertion is one
+  case per ceiling in a harness that exists.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — A per-run share is exact only while each stage runs once a UTC day
+- Trigger: deriving the share this run. `fallback_share` divides the provider's
+  day by the number of stages that land on the model, which gives each stage a
+  per-run number, and `FALLBACK_TOKENS_PER_RUN` is then enforced per run. Those
+  are the same thing only because each corpus cron fires once a day. Nothing
+  makes that true: a manual `modal run pipeline/distill.py::distill`, a
+  rehearsal, a backfill, or a retried run all spend the same provider day
+  against a fresh per-run ceiling, and the provider's day turns at UTC midnight
+  rather than at the end of a run.
+- What: the ceiling I shipped today is a correct answer to the scheduled case
+  and no answer at all to the second run. The honest version reads the day's
+  draw rather than assuming it, which needs one row per run in a table the org
+  does not have yet. That table is already proposed as `drain_log` (the
+  2026-10-11 entry "The pause a run takes is in no table"), so this is not a
+  second table: it is the first thing `drain_log` would be read FOR, and the
+  argument for building it is stronger with a ceiling that depends on it than
+  it was as observability alone.
+- First step: build `drain_log` as that entry's first step describes, then have
+  `FALLBACK_TOKENS_PER_RUN` become a floor on the remainder: the run's ceiling
+  is its share minus what this UTC day's rows already drew on that provider.
+  Until then the per-run form holds and `budget.check_fallback_shares()` is
+  honest about what it checks, which is the schedule and not the day.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — Craft scan: Undermind publishes the budget its production search actually stops at (engineer seat)
+- Trigger: today's rotation through docs/market/landscape.md. Elicit is still
+  unreadable from this sandbox (Cloudflare challenge, third run in a row),
+  Consensus was the 2026-10-10 pick and Semantic Scholar the 2026-10-11 pick, so
+  the scan moved to the next unscanned entry under "Academic research tools".
+  Read from undermind.ai this run.
+- Worth stealing: the benchmark is published with the gap between the measured
+  configuration and the shipped one stated as a number, in its own method
+  section. "Undermind runs the production deep search with an extended budget to
+  trace the full ten-minute curve. A production search stops on its own after
+  2.9 minutes on average. Resubmitting a similar search continues from existing
+  results." So a reader learns the headline (85% of the key papers at ten
+  minutes, against 50% for the best agent they tested), and in the same
+  paragraph learns that the product they will actually use stops at under three
+  and tells them how to get the rest of the curve. The gold standard is built by
+  scoring every paper any system retrieved, with the judge separate from every
+  subject, which is ADR-40's bar arrived at independently. alexandria publishes
+  its ceilings (`budget.MODELS`, every number dated to the provider's live
+  documentation) and publishes nothing about the rate a run actually achieves
+  against them, which is the gap the ledger entry above turns into work.
+- What alexandria does better: Undermind's own method says "The judge assesses
+  relevance from each paper's abstract," so the gold standard behind an 85% is
+  an abstract-level judgment, and the product's claim about reading depth rests
+  on it. Every claim in this corpus records whether it came from the full text
+  or from the abstract (`papers.fulltext_chars`, null when it was abstract
+  alone), the issue prints that count rather than asserting depth, and a run
+  that fell back to abstracts says so in its own log. Depth we can count beats
+  depth measured by a judge that only read the abstract.
+- Cost: $0.
+- Status: proposed

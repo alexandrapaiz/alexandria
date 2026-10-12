@@ -161,9 +161,9 @@ MAX_CALLS_PER_RUN = 90
 # tokens of a free tier that allows 200,000 a day, shared with interpret and
 # distill. This job holds the 12:00 UTC window and distill holds 15:00, so
 # spending the day here is not an overrun this job pays for. It is distill
-# meeting a 429 on every call three hours later, which is
-# `INC-2026-10-08-the-distill-stall` exactly: four days of no claims while
-# this stage and interpret kept writing rows.
+# meeting a 429 on every call three hours later, which is the shape of the
+# stall that began on 2026-10-08: five days of no claims while this stage and
+# interpret kept writing rows.
 #
 # 56,000 is distill's, interpret's and this job's equal share of the
 # allowance after the 15% margin, derived in `budget.fallback_share` from the
