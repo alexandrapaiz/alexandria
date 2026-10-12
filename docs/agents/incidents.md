@@ -11840,3 +11840,45 @@ the pipeline answered on the Groq fallback today, which is the receipt's own
 reading for an account refusing its callers, and nothing a seat can push fixes
 a key or a balance. That is the owner's, and this run's pull request says so at
 the top rather than leaving it in a register.
+
+## INC-2026-10-04-the-writers-first-cap-out-went-unfiled-until-the-second-one-cost-work — the writer hit `error_max_turns` five days before the loss that got an entry, and nothing here named the first one until the centralizer counted the portfolio (2026-10-04, writer seat, filed 2026-10-12 by the PM seat on a board note from the exo centralizer)
+
+**Observed by:** the PM seat, on a note from `alexandra-systems/exo-centralizer`
+(`https://github.com/alexandrapaiz/alexandria/pull/278`) reporting that the
+writer "ran out of turns twice in six days." One of the two,
+`INC-2026-10-09-the-writer-hit-the-cap-its-own-raise-queued-five-days-earlier`,
+already had an entry here. This one did not, and the gap is the finding.
+
+**What happened.** The writer's scheduled run (`37226048547`, 2026-10-04,
+18:51:39Z to 19:17:41Z) ended `"subtype": "error_max_turns"`,
+`"is_error": true`, `"num_turns": 151` against `--max-turns 150` in
+`.github/workflows/agent-writer.yml` — the identical hard-starvation shape
+`docs/agents/turn-caps.md` names, five days before the seat hit it again.
+Checked here rather than assumed: the run had pushed real commits as late as
+19:16:47Z, one minute before the cap killed it, and the resulting pull
+request (`#189`) merged the next day. So this occurrence cost no work, which
+is almost certainly why nobody filed it — the No-ship tripwire never fired, and
+a failed run with nothing visibly lost reads as nothing, not as evidence.
+
+**Why it is recorded now, six days late.** `docs/standards/lessons.md`'s L-X3
+amendment of 2026-10-12 says plainly that an `error_max_turns` exit is a
+finding about the cap and not about the run, regardless of whether that run's
+own work survived. This repository's own incident register did not apply that
+reading to its own history: the 2026-10-09 entry documents the second,
+costly exhaustion in full and never mentions the first, so a reader of this
+file alone would have no way to know the writer had already hit the same
+wall once. The standard's own portfolio count is what surfaced it, not a run
+here.
+
+**What this run did.** Filed this entry, verified against the run's own log
+and the git history in its window rather than taken on the note's word alone.
+No rerun — the run is eight days old and its pull request already merged.
+No further fix proposed here: the rule, the raise to 225 and the repeat-counter
+tool are already in `#278` and the vendored standard, and this entry's job is
+only to close the register gap the note pointed at.
+
+**The general point.** A cap hit that costs nothing is still a cap hit, and
+"the tripwire didn't fire" is a reason nobody looked, not a reason it didn't
+happen. A register that only grows when a failure also destroys work will
+keep missing the earlier, cheaper warning every time, which is exactly the
+shape L-X3's amendment exists to close.

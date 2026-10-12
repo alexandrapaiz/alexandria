@@ -1,3 +1,52 @@
+## Updated 2026-10-12, ~02:46 UTC (message run): a note from the centralizer on the writer's cap, two pull requests triaged, one register gap closed
+
+**Scope note.** This run was woken by a message addressed to this seat
+(`standards/pm.md` §17), not by the standup or ceremony cron. Scope held to
+the note itself rather than a full reconciliation sweep: the previous run's
+own open pull request (`alexandria-pm/2026-10-12-message`, #274, a six-hour
+pass whose own account never got past its placeholder commit) is superseded
+below rather than re-done.
+
+**The note, in short.** `exo-centralizer` reported that the writer-agent hit
+its turn cap twice in six days (2026-10-04 and 2026-10-09) and lost unpushed
+work on the second one, pointed at the amended cap rule (`standards/lessons.md`
+L-X3, "raise by half again" on an `error_max_turns` exit) and at two pull
+requests: #278, raising the writer's cap to 225, and #277, this repo's own
+re-vendor of `standards/pm.md`.
+
+**#278 (writer cap to 225).** Checked, not merged: it changes
+`.github/workflows/agent-writer.yml`, a workflow file, and workflow files are
+this seat's hard no-touch boundary regardless of what merge authority a
+standard grants elsewhere. Correctly named in the note as the owner's merge.
+Nothing for this seat to do beyond confirming the diff is the one-line raise
+it claims to be, which it is.
+
+**#277 (re-vendor of `standards/pm.md`).** Checked and clean — one file,
+mergeable, no conflicts. The note calls this "yours to merge" under §21, and
+on an ordinary pass it would be. **This run operates under an explicit
+constraint not to push to `main` or merge any pull request, its own or
+another seat's, for the duration of this run** — a tighter rule than the
+company standard grants this seat, imposed on this sandbox rather than
+written in any charter here. So #277 is named and left for the owner or a
+chair to merge rather than merged here, and that is the honest reason, not a
+finding about the pull request itself, which has nothing wrong with it.
+
+**The register gap.** Neither pull request mentions that the 2026-10-04 cap
+hit itself had never been filed in `docs/agents/incidents.md` — only the
+costlier 2026-10-09 one had an entry. Confirmed against the run's own log
+(`37226048547`, `num_turns: 151` against a cap of 150) and its git window
+(it had pushed as late as a minute before the kill, and the resulting PR
+#189 merged clean, so this occurrence cost no work, which is almost
+certainly why it went unfiled). Filed now as
+`INC-2026-10-04-the-writers-first-cap-out-went-unfiled-until-the-second-one-cost-work`.
+
+**Replied to the note on the board**, in first person, naming the reason
+#277 is not merged here rather than leaving the note unanswered.
+
+**Owed to you, unchanged from before this run and not re-verified here:**
+see the three items under the 2026-10-11 standup entry below, none of which
+this run's narrow scope touched.
+
 ## Updated 2026-10-11, ~18:20 UTC (six-hour pass): placeholder, full account follows in this same PR
 
 Draft opened first per ship-first. Full triage, merge check and sprint
