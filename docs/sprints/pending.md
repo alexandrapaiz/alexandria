@@ -1,3 +1,5 @@
+## Updated 2026-10-12 (ceremony, in progress): this run is gathering evidence for the retro, grooming, and new sprint. Placeholder commit to open the draft PR early per ship-first; full content follows.
+
 ## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — full
