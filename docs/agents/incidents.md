@@ -11930,3 +11930,65 @@ reached a cron: the deploy surface shows every corpus image `first_seen_at`
 2026-10-05, so the running containers predate both. `python3
 tools/deploy_gate.py --app all --plan` prints the chain, the first link of
 which is the guard that holds this arithmetic.
+
+## INC-2026-10-12-meta-review-proposal-merged-never-deployed — the recursive loop's first merged self-improvement spent a week not running (2026-10-12, research seat)
+
+**Found by:** the research charter's own gate, "check that the file you
+are proposing into can reach production", run before spending this
+week's one system diff.
+
+**What it found.** `prompts/triage.md` at HEAD is `3ea6485103c3`, which is
+commit `fa029bf`, "research 2026-10-05 meta-review: triage reads containment
+too narrowly in two places". The deployed prompt is `32252384ecd7`, which is
+`ea61cbc` of 2026-09-29.
+
+```sql
+select left(prompt_sha,12) sha, count(*), max(created_at)::date from triage_log group by 1;
+-- 32252384ecd7 | 8861 | 2026-10-12
+```
+
+8,861 rows written against the superseded prompt, the newest of them today.
+`deploy_runtime` agrees from the other side: `weekly`, `triage` and
+`interpret` all carry `first_seen_at` of 2026-10-05, so no image has been
+replaced in seven days.
+
+**The repeat this is.** `INC-2026-09-28-repair-written-never-deployed` is the
+general form and this is its fifth instance, after incident 25,
+`INC-2026-09-26-interpret-stale-third-sighting`, and
+`INC-2026-09-30-triage-runtime-change-with-no-rehearsal`, which is this exact
+file and predicted this exact outcome in its own last paragraph: "If that PR
+is not merged, `ea61cbc` still needs its own `modal deploy
+pipeline/triage.py`." It was the newer commit that ended up waiting.
+
+**What is new, and why it is worth an entry rather than a cross-reference.**
+Every prior instance was a pipeline fix or an owner's direct push. This one is
+the output of the self-improvement loop itself (ADR-7): a proposal this seat
+produced from evidence, reviewed, merged, and never run. O3 KR2 counts "the
+meta-review loop merges its first self-improvement PR"; that happened on
+2026-10-05 and the merge bought nothing, because the prompt it changed has not
+judged a single paper. A loop that closes at the merge and not at the deploy
+measures itself on the wrong event.
+
+**It also cost this week's proposal its first choice.** The charter bars
+proposing into a file whose deployed sha is stale, for the reason it states:
+a second fix stacked behind an undeployed first one reads as progress and
+changes nothing. So the triage prompt was barred as a target today even though
+the week's evidence pointed at it, and the diff went to
+`prompts/interpret.md`, whose deployed sha does equal HEAD. The cost of the
+undeployed fix is therefore not only its own absence; it is that the next fix
+cannot be written where it is needed.
+
+**No blame in it.** The 2026-10-05 brief checked the three shas and found them
+matching main, and said so: "the deploy freeze that made incidents 25 and 26
+is over". That was true when it was written. The freeze returned the moment
+that run's own PR merged, because a merge is what creates the gap and nothing
+closes it automatically.
+
+**What would actually close it** is unchanged from
+`INC-2026-09-30-triage-runtime-change-with-no-rehearsal`: a deployed-sha check
+that runs on a schedule and fails loudly, rather than six seats inferring it
+by hand. The org has now inferred this state by hand six times, twice from
+this seat. `tools/delivery_health.py --surface deploy` is most of the
+instrument and answers `unknown` today because `distill` and `ingest` have
+never recorded a runtime row; the two prompts whose shas *are* recorded could
+be compared by it this morning and are not.
