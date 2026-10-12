@@ -385,6 +385,57 @@ def on_fallback(model: str) -> bool:
     return bool(primary) and spec.get("provider") != primary.get("provider")
 
 
+def head_receipt(model: str, models: list[str], allow_fallback: bool,
+                 *, gate: str) -> str:
+    """Is a receipt from `model` a receipt for the job the deploy installs.
+
+    Gate 3 of `docs/agents/runtime-changes.md` exists to stop a deploy whose
+    rehearsal was answered by something other than what will run, and that is
+    the right question on nearly every day. It has one failure mode and
+    2026-10-12 is it: when the HEAD of the list is the thing that is broken,
+    and the change waiting in the image is the degraded path the outage needs,
+    the gate refuses to deploy the fix for the outage because of the outage.
+
+    What that cost, in one morning. Two merged pull requests, #270 and #275,
+    sized the fallback's minute and the fallback's day so the corpus could
+    carry itself with the primary absent. Both were inert, because a Modal app
+    is deployed by a command. The command is
+    `budget.py && preflight && rehearse && modal deploy`, and `rehearse` ends
+    with this comparison. The primary was not answering, so every corpus
+    rehearsal was answered by a Groq model, so every chain stopped at the third
+    `&&`, so the stall entered its sixth day with its cure sitting in `main`.
+
+    So the hatch, modelled exactly on distill's `--allow-abstract-only`, which
+    has carried this shape since 2026-09-27: refuse by default, forgive when
+    asked in so many words, and print what is being forgiven so the receipt
+    says which of the two things was proved. An escape hatch that is silent
+    about what it let through is how a degraded deploy becomes the new normal
+    without anybody deciding that it should.
+
+    Returns the line to print, which is empty when the head answered and there
+    is nothing to forgive. Raises `NoModelAnswered` when a fallback answered
+    and nobody asked for the hatch.
+    """
+    head = models[0]
+    if model == head:
+        return ""
+    if not allow_fallback:
+        raise NoModelAnswered(
+            f"the rehearsal was answered by {model}, not by {head}, which is "
+            "what the deploy installs. A receipt from a fallback is not a "
+            "receipt: fix the head of the list before deploying, because "
+            "tomorrow's cron meets it first.\n"
+            f"    modal run {gate} --allow-fallback\n"
+            "is the hatch for the one day that reasoning inverts: when the "
+            f"head is itself what is broken and the change in this image is "
+            "the degraded path the outage needs, refusing the deploy keeps the "
+            "outage. The hatch prints what it forgives and the receipt says "
+            "the fallback was what answered. Nothing was deployed.")
+    return (f"  FORGIVEN: {head} did not answer and {model} did. This receipt "
+            f"proves the degraded path, not the path a healthy day runs, so "
+            f"{head} is still broken after this deploy and the next rehearsal "
+            "has to be run without the hatch to find out when it is not.")
+
 # ---------------- pacing, and the one-at-a-time band ----------------
 
 # Moonshot's tier-0 ceiling for kimi-k2.6 is 3 requests per minute, which is the

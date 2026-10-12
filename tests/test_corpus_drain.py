@@ -1414,3 +1414,92 @@ def test_the_share_is_checked_before_the_call_in_every_corpus_job():
             < body.index(call), f"{path} checks its share after it has spent it"
         assert "if client.on_fallback(" in body, (
             f"{path} never adds to fallback_drawn, so its share can never bind")
+
+
+# ---------------- gate 3 on the day the head is what is broken ----------------
+#
+# INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-is-in.
+# Two merged pull requests sized the fallback's minute and the fallback's day,
+# both of them inert until a deploy, and the third rung of every corpus deploy
+# chain ends by asking whether the head of the model list answered. The primary
+# was not answering. That is what the hatch below is for, and these are the
+# tests that hold its two halves: it refuses by default, and when it forgives it
+# says so in the receipt.
+
+
+def test_a_fallback_receipt_is_refused_by_default():
+    """The ordinary day, unchanged. A receipt from a fallback is not a receipt."""
+    with pytest.raises(llm.NoModelAnswered) as caught:
+        llm.head_receipt("openai/gpt-oss-120b", ["kimi-k2.6", "openai/gpt-oss-120b"],
+                         False, gate="pipeline/triage.py::rehearse")
+    said = str(caught.value)
+    assert "kimi-k2.6" in said and "openai/gpt-oss-120b" in said
+    # The refusal carries the way out of it. A gate that refuses without naming
+    # its own hatch is a gate the operator routes around instead of using.
+    assert "modal run pipeline/triage.py::rehearse --allow-fallback" in said
+
+
+def test_the_head_answering_is_silent():
+    """Nothing to forgive means nothing printed. The receipt stays clean."""
+    assert llm.head_receipt("kimi-k2.6", ["kimi-k2.6", "openai/gpt-oss-120b"],
+                            False, gate="x") == ""
+    assert llm.head_receipt("kimi-k2.6", ["kimi-k2.6"], True, gate="x") == ""
+
+
+def test_the_hatch_says_what_it_forgave():
+    """Forgiving quietly is how a degraded deploy becomes the new normal.
+
+    The returned line has to name both models and has to say that the head is
+    still broken after the deploy, because that is the fact the next person to
+    read the receipt needs and the deploy itself will not tell them.
+    """
+    line = llm.head_receipt("openai/gpt-oss-120b",
+                            ["kimi-k2.6", "openai/gpt-oss-120b"], True,
+                            gate="pipeline/triage.py::rehearse")
+    assert "FORGIVEN" in line
+    assert "kimi-k2.6" in line and "openai/gpt-oss-120b" in line
+    assert "still broken" in line
+
+
+def test_every_corpus_rehearsal_has_a_hatch_and_defaults_to_refusing():
+    """The three corpus gates, read out of their own source.
+
+    Distill's hatch is `--allow-abstract-only` and predates this one by two
+    weeks; it is the shape the other two were modelled on, so it counts here
+    rather than being special-cased away. What every one of them must have is a
+    parameter that defaults to False, because a hatch that is open by default is
+    not a hatch, it is the removal of the gate.
+    """
+    for path, flag in (("pipeline/triage.py", "allow_fallback"),
+                       ("pipeline/interpret.py", "allow_fallback"),
+                       ("pipeline/distill.py", "allow_abstract_only")):
+        source = (ROOT / path).read_text()
+        assert f"def rehearse({flag}: bool = False)" in source, (
+            f"{path}'s rehearsal has no {flag} hatch defaulting to False, so "
+            "the day its model list's head is what is broken, the gate refuses "
+            "to deploy the fix for it")
+
+
+def test_the_corpus_rehearsals_forgive_only_the_head():
+    """The hatch is not a `--force`.
+
+    Triage's short-batch check and interpret's edge-set check are faults in the
+    answer rather than in which account gave it, so both must still raise with
+    the hatch open. Asserted in the source, because running either rehearsal
+    needs a provider and a key.
+    """
+    for path, other in (("pipeline/triage.py",
+                         "if len(good) != len(REHEARSAL_BATCH):"),
+                        ("pipeline/interpret.py", "if not edges:"),
+                        ("pipeline/interpret.py",
+                         "if len(edges) == len(REHEARSAL_NEIGHBORS):")):
+        source = (ROOT / path).read_text()
+        body = source[source.index("def rehearse("):]
+        assert other in body, f"{path} lost the check that is not about the head"
+        # The hatch must reach head_receipt and nothing else: once in the
+        # signature, once in the call. A third mention is the hatch leaking
+        # into a check it was never meant to forgive.
+        assert body.count("allow_fallback") == 2, (
+            f"{path} mentions its hatch {body.count('allow_fallback')} times "
+            "inside rehearse(), so it reaches something other than "
+            "head_receipt")

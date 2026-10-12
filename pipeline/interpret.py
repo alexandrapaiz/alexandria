@@ -429,10 +429,11 @@ def preflight() -> str:
     secrets=[modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
     timeout=900,
 )
-def rehearse() -> str:
+def rehearse(allow_fallback: bool = False) -> str:
     """Gate 3: one real call, on the real prompt, writing nothing.
 
         modal run pipeline/interpret.py::rehearse
+        modal run pipeline/interpret.py::rehearse --allow-fallback
 
     The real prompt, provider, key, reservation and timeout. The claim and its
     five candidates are a fixed sample carried in this file, chosen so that the
@@ -440,6 +441,13 @@ def rehearse() -> str:
     supports), 102 narrows it (refines), 103 reports the opposite
     (contradicts), and 104 and 105 are unrelated and should draw nothing. A
     model that labels all five, or none, fails the gate.
+
+    `--allow-fallback` is the hatch for the day the head of the list is itself
+    what is broken and the change in the image is the degraded path the outage
+    needs. `llm.head_receipt` holds the argument and the morning that proved
+    it. It forgives the head and nothing else: an edge set that labels
+    everything or nothing still raises, because that is a fault in the answer
+    rather than in which account gave it.
     """
     import os
 
@@ -481,12 +489,13 @@ def rehearse() -> str:
             f"the rehearsal related the new claim to all {len(edges)} "
             "candidates, two of which are unrelated by construction. A model "
             "that labels everything makes the graph noise. Nothing was deployed.")
-    if model != MODELS[0]:
-        raise client.NoModelAnswered(
-            f"the rehearsal was answered by {model}, not by {MODELS[0]}, which "
-            "is what the deploy installs. A receipt from a fallback is not a "
-            "receipt.")
-    return (f"rehearsal ok: {model} drew {len(edges)} of "
+    forgiven = client.head_receipt(
+        model, MODELS, allow_fallback,
+        gate="pipeline/interpret.py::rehearse")
+    if forgiven:
+        print(forgiven)
+    on = "on the degraded path" if forgiven else "ok"
+    return (f"rehearsal {on}: {model} drew {len(edges)} of "
             f"{len(REHEARSAL_NEIGHBORS)} candidates at prompt {sha} in "
             f"{elapsed:.1f}s for ${cap.spent:.5f}, wrote nothing")
 
