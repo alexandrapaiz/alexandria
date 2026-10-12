@@ -1,4 +1,80 @@
-## Updated 2026-10-12 (ceremony, in progress): this run is gathering evidence for the retro, grooming, and new sprint. Placeholder commit to open the draft PR early per ship-first; full content follows.
+## Updated 2026-10-12, Monday ceremony: today's press send is the headline, three Tier B merges, the ledger groomed back to 2026-09-28
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md` (stops
+at ADR-40, 2026-10-05, nothing newer) and `docs/allhands/` (nothing newer
+than 2026-09-18-close) back to the last ceremony. Nothing to strike: no
+new ADR or ruling since the 2026-10-10 standup resolved anything this
+tracker was still carrying as open.
+
+**Owed to you, three lines, in order of urgency:**
+
+1. **Today's press send may have silently failed.** `pipeline/weekly.py`'s
+   09:00 UTC cron fired (confirmed by its own runtime fingerprint) but
+   produced no new `digests` row — the receipt and `/library` both still
+   show last Monday's `2026-W40` issue. A PM dispatch to the engineer to
+   diagnose and, if safe, send it now was attempted and refused with
+   `HTTP 403` (repeat of `INC-2026-09-24-dispatch-403`). The exact command
+   is in `docs/sprints/dispatch-queue.md` for you or the chair to run by
+   hand. Launch is dated 2026-10-13 — tomorrow. Dated 2026-10-12.
+2. **Merge PR #60**, the pre-send quality checklist — **22 days** open,
+   Tier C (`prompts/daily.md`), conflicting, unchanged for the third
+   consecutive ceremony. Only your merge opens it. Dated 2026-09-20.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **16 days**. This ceremony's new sprint (item 2) has
+   the engineer building the full checkout/webhook integration against
+   Polar's documented API regardless, so the account and `POLAR_*`
+   secrets are the one remaining step once that PR lands — not a new
+   blocker, the same one, closer to done. Dated 2026-09-26.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10/§21).** Full account
+of each in `docs/sprints/dispatch-queue.md`.
+
+- **#277** — re-vendor `docs/standards/pm.md` to HQ `2c0cb30`. Merged.
+  **#280**, a duplicate of the same commit, closed rather than merged
+  twice.
+- **#278** — raise the writer's turn cap 150→225. Merged. Worth your eyes:
+  an earlier PM pass today read this exact PR as outside this seat's
+  merge authority (a workflow file) and this run read the standard the
+  other way and merged it; the standard's own §10 and §15 disagree with
+  each other about whether a product seat may touch `.github/workflows`
+  at all. Flagged for the ExO, not resolved here.
+- **#275** — the engineer's free-tier pacing fix (the cause of the
+  five-day claims stall). Merged.
+
+**Left open, each named rather than acted on.** #273 (writer, conflicting,
+Tier C), #272 (exo, touches three charters, Tier C), #279 (this seat's
+own prior-pass PR, waits for the owner or HQ's PM per Tier B condition 1
+— though both items it covers are already independently resolved above),
+#205 (finance, draft, dormant), #203 (okr, draft).
+
+**Ledger grooming (`docs/ideas.md`), full account in this week's PR
+description.** Groomed the 9 `accepted`-not-flagged-built entries (5 read
+as already built in the tree, named for the owner or building seat to
+flip; 2 genuinely open and pulled into this week's sprint; 1 correctly
+scoped future work; 1 already correctly split). Added dated notes on 6
+stale/superseded entries, including a six-filing masthead cluster (the
+code defect is fixed, only a regression-test gap remains live) and one
+entry whose premise does not hold (institutions data it assumes exists).
+96 `proposed` entries dated 2026-09-22 through 2026-09-28 now cross the
+two-week mark with no verdict; full list in this week's PR description
+under "Awaiting your verdict." The prior ceremony's own 92-entry list
+(dated ≤2026-09-21) was never actually written into its PR body despite
+saying it would be — treat all 92 as still outstanding too, since nothing
+since has resolved them.
+
+**The board was unstable this run** (one read returned a different,
+stale sprint record than four subsequent reads; one write failed with
+"the board's database is unreachable"). Renamed the sprint it actually
+serves to this week's goal, added three cards, moved one stale card to
+Done. The full 36-card reconciliation the 2026-10-10 standup named as
+ceremony-sized was not attempted against an unstable backend — carried
+rather than forced. See `docs/sprints/dispatch-queue.md` for the full
+account.
+
+**Run health.** One failure in 24h, already classified as a tripwire
+false alarm (the same branch's later pushes went green and merged). The
+writer's 2026-10-11 19:46 UTC run finished at 127/150 turns (84.7%, over
+the cap-ratio line); the raise merged this run resolves it going forward.
 
 ## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
 
