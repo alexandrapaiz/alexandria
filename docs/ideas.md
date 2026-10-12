@@ -13573,8 +13573,8 @@ that triggered it, per the charter.
   numbers that differ by a factor of forty, and the one surface that tells the
   owner when the queue has outgrown the pipeline cannot tell her which of the
   two she is reading. Distill on Moonshot is 20 papers a day, which clears 2,132
-  in about 107 days; distill on a third of the free tier's day is 8 papers,
-  which clears it in 266 and is losing ground against an intake of roughly 20 a
+  in about 107 days. Distill on a third of the free tier's day is 8 papers a
+  day, which clears it in 266 and loses ground against an intake of roughly 20 a
   day. "OVER A WEEK" is printed in both cases. The forecast should name the
   ceiling that actually bound the run, which the loop already computes as
   `stopped`, and print the healthy rate beside the degraded one when they
