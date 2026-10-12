@@ -102,6 +102,20 @@ CAP_USD = 0.30
 # alone would allow.
 MAX_CLAIMS_PER_RUN = 90
 
+# And the ceiling for the day the primary is absent, which the number above
+# cannot be. Every fallback model here is free, so CAP_USD buys infinite calls
+# and the claim count is the only bound left; on Groq's free tier the binding
+# resource is not calls or money but the 200,000 tokens a day it allows per
+# model, shared with triage at 12:00 UTC and distill at 15:00. This job's
+# calls are the smallest in the pipeline at a measured 1,000 tokens, so its
+# share is generous in calls: 56 of them, where 90 would be 90,000 tokens and
+# half of what is left after triage.
+#
+# 56,000 is the equal share of the allowance after the 15% margin, derived in
+# `budget.fallback_share` from the provider's published `tpd` and held against
+# this constant by `budget.check_fallback_shares()`.
+FALLBACK_TOKENS_PER_RUN = 56_000
+
 image = (
     modal.Image.debian_slim()
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1")
@@ -300,7 +314,21 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
         seen = 0
         no_neighbors = 0
         stopped = "queue exhausted"
+        # Tokens drawn on a model that is not the primary's, and only those:
+        # the ceiling below is a share of the free tier's day, so a call
+        # Moonshot answered does not spend it.
+        fallback_drawn = 0
         for claim_id, claim_text, embedding in queue:
+            # Before the call, so the run stops at its share rather than one
+            # call past it. Leaving this day's remainder to distill is the
+            # whole point: this job holds 14:00 UTC and distill holds 15:00.
+            if fallback_drawn >= FALLBACK_TOKENS_PER_RUN:
+                stopped = f"the {FALLBACK_TOKENS_PER_RUN:,}-token fallback share"
+                print(f"stopping: {fallback_drawn:,} tokens drawn off the "
+                      "primary's provider, which is this job's share of the "
+                      "free tier's day. The next run resumes from the same "
+                      "queue.")
+                break
             # time-directional: only judge against strictly older claims
             neighbors = conn.execute(
                 """
@@ -343,6 +371,8 @@ def interpret(max_claims: int = MAX_CLAIMS_PER_RUN, cap_usd: float = CAP_USD):
                 # fallback's minute is 8,000 tokens where Moonshot's is
                 # 500,000, so a pause chosen before the walk ran is a
                 # 429 this caller caused. llm.pace says why.
+                if client.on_fallback(model):
+                    fallback_drawn += cap.last_tokens
                 time.sleep(client.pace(model, cap.last_tokens))
             else:
                 no_neighbors += 1

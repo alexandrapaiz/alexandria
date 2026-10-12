@@ -221,6 +221,22 @@ CAP_USD = 1.50
 # `budget.check_kimi_tpd()` holds the arithmetic above against the table.
 TOKENS_PER_RUN = 900_000
 
+# The same ceiling for the day Moonshot does not answer, where 900,000 is not a
+# ceiling at all. The fallback list is Groq's free tier, which allows 200,000
+# tokens a day per model and shares that day with triage at 12:00 UTC and
+# interpret at 14:00. This job holds 15:00, last in `llm.KIMI_WINDOWS`, so on
+# a degraded day it meets whatever the two stages before it left, and until
+# today they were sized to leave nothing: 424,170 tokens asked by triage alone
+# against the 200,000 the provider allows.
+#
+# 56,000 is this job's equal share of the allowance after the 15% margin,
+# derived in `budget.fallback_share` from the published `tpd` and held against
+# this constant by `budget.check_fallback_shares()`. A paper degraded to
+# `abstract[:6000]` counts about 6,424 tokens here, so the share is 8 papers:
+# a thin day, and a thin day of claims is the thing four days of no claims did
+# not have.
+FALLBACK_TOKENS_PER_RUN = 56_000
+
 # The clock. Moonshot's tier-0 rate is 3 requests a minute, so one paper every
 # 20 seconds, and a 40,000-token request with thinking disabled takes another
 # 30 to 40 seconds to come back. Twenty papers is therefore about 20 minutes of
@@ -1178,6 +1194,7 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
         broke_reported = 0     # field claims that named a failure
         stopped = "the queue ran out"
         answered: dict[str, int] = {}
+        fallback_drawn = 0     # tokens drawn off the primary's provider only
         for pid, title, abstract, decision, source in papers:
             # Three ceilings, and the tightest one ends the run. Each is checked
             # BEFORE the call, so the run stops AT its limit rather than one
@@ -1194,6 +1211,17 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
                 print(f"stopping: {drawn:,} tokens drawn, which is this job's "
                       f"share of Moonshot's tier-0 daily allowance. Not a "
                       "failure and not a cost problem: the next run resumes.")
+                break
+            # Four ceilings now, because the day above belongs to an account
+            # that may not be answering. `fallback_drawn` counts only what was
+            # drawn off the primary's provider, against a day a fifth the size
+            # and shared three ways.
+            if fallback_drawn >= FALLBACK_TOKENS_PER_RUN:
+                stopped = f"the {FALLBACK_TOKENS_PER_RUN:,}-token fallback share"
+                print(f"stopping: {fallback_drawn:,} tokens drawn off the "
+                      "primary's provider, which is this job's share of the "
+                      "free tier's day. A thin day of claims rather than none, "
+                      "and the next run resumes.")
                 break
             # A field report is read by the practices prompt. Same call, same
             # JSON contract, different questions: what they did, why, and what
@@ -1262,6 +1290,8 @@ def distill(max_papers: int = MAX_PAPERS_PER_RUN, queue_text: str | None = None,
                     print(f"stopping: no model answered:\n{exc}")
                     break
             answered[answered_by] = answered.get(answered_by, 0) + 1
+            if client.on_fallback(answered_by):
+                fallback_drawn += cap.last_tokens
             claims = out.get("claims", [])
             # The practices prompt is allowed to return nothing, and says why in
             # `skipped`. A launch post yielding zero claims is the right answer,

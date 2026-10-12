@@ -359,6 +359,32 @@ def usable_models(models: list[str], env) -> tuple[set[str] | None, list[str]]:
         return None, [f"could not read provider catalogs ({exc}); "
                       "trusting budget.MODELS and letting a 404 move the walk on"]
 
+def on_fallback(model: str) -> bool:
+    """Is `model` off the primary's provider, so the free tier's day is paying?
+
+    The walk in `ask_json` is silent about which account answered, and until
+    2026-10-11 nothing downstream of it asked. It has to be asked, because the
+    two days are not the same size: Moonshot allows 1,500,000 tokens a day to
+    this org and Groq's free tier allows 200,000 per model, shared by every
+    corpus job. A per-run ceiling sized for the first is no ceiling at all
+    against the second, and the job that runs last in `KIMI_WINDOWS` is the one
+    that finds out.
+
+    An id with no entry in `budget.MODELS` returns False, which keeps the
+    primary's larger ceiling. That is the safe direction: a job should not
+    throttle itself to a fifth of its day because a model id it does not
+    recognize answered one call. The table is also the one place a new model
+    has to be added before anything here can call it, so the unknown case is
+    a bug in the table rather than a day in production.
+    """
+    guard = budget()
+    spec = guard.MODELS.get(model)
+    if not spec:
+        return False
+    primary = guard.MODELS.get(guard.PRIMARY_MODEL, {})
+    return bool(primary) and spec.get("provider") != primary.get("provider")
+
+
 # ---------------- pacing, and the one-at-a-time band ----------------
 
 # Moonshot's tier-0 ceiling for kimi-k2.6 is 3 requests per minute, which is the
