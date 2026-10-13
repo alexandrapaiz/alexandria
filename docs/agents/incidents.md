@@ -12201,9 +12201,23 @@ $ python3 tools/ci_coverage.py --report-only --workflows .github/workflows-pendi
 ```
 
 One difference worth recording, because it is the opposite of the "no checks at
-all" finding above. This run's diff touches `db/schema.sql`, which the live
-`paths:` filter does name, so this pull request does report checks. They are
-the same fourteen steps, and the forty assertions this run wrote are not among
-them. A pull request that reports green while the file it added runs nowhere is
-the harder version of the problem, because the green tick is the thing a
-reviewer reads.
+all" finding above. This run's diff touches `pipeline/**` and `db/schema.sql`,
+both named in the live `paths:` filter, so `checks.yml` does run on this branch
+and passed on the commit that carried them. They are the same fourteen steps,
+and the forty-one assertions this run wrote are not among them. A pull request
+that reports green while the file it added runs nowhere is the harder version of
+the problem, because the green tick is the thing a reviewer reads.
+
+**And one measurement note, because it nearly became a false finding here.**
+`gh pr checks` reads the head commit only. Run against this pull request four
+minutes after a push it answered `no checks reported on the
+'engineer/2026-10-13-institution-backfill' branch`, the same sentence quoted
+above as evidence for #285, while `gh run list --branch` showed two completed,
+successful `checks` runs on the same branch. For #285 the sentence was true and
+checked both ways: that branch has no workflow runs at all, by
+`gh run list --branch engineer/2026-10-13-polar-spine`, which returns nothing.
+For this one it was a queue delay. The two commands answer different questions,
+and a seat reporting "no checks" should run both, because L-E11's rule applies
+to a guard's absence exactly as it applies to its colour: the smallest true
+thing here is "the head commit has no completed check yet", not "this pull
+request has no continuous integration".
