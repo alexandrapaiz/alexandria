@@ -444,5 +444,12 @@ The launch, 2026-10-13. Tracked in [docs/backlog.md](docs/backlog.md).
 
 - [ ] Site deployed on Vercel with real content in the digest archive
 - [ ] Email capture live before Stripe exists
-- [ ] Stripe account, keys, and the $20 spine wired to payment
-- [ ] Pricing and gating on the site match free digest plus $20 spine
+- [ ] Polar account, keys, and the $20 spine wired to payment. Not Stripe: ADR-30
+      replaced it with a Merchant of Record on 2026-09-19, because Stripe does not
+      operate in Guatemala. The code is built and merged as of 2026-10-13, so what
+      is left in this line is an account that does not exist yet and four
+      environment variables. The checklist is
+      [docs/product/polar-go-live.md](docs/product/polar-go-live.md)
+- [x] Pricing and gating on the site match free digest plus $20 spine. `/pricing`
+      prints ADR-31's three offers and `site/lib/entitlement.js` reads the paid
+      flag off the Clerk user, which it could not do until 2026-10-13

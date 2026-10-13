@@ -13,10 +13,8 @@ export const dynamic = "force-dynamic";
 // subscription it produces, so a buyer who passed through here arrives at
 // /api/polar-webhook carrying their own Clerk id, and the webhook matches
 // them exactly instead of by the email address they typed into a payment
-// form. A bare link on the page cannot do that, because the page is static
-// and does not know who is reading it.
-//
-// It also keeps /pricing static. Only this route is dynamic.
+// form. A bare link on the page cannot do that: the href is rendered before
+// anybody clicks it, so it is the same href for everybody.
 //
 // GET rather than POST, which is the opposite of /api/unsubscribe's call
 // and for the opposite reason: a link preview fetching this one starts a
