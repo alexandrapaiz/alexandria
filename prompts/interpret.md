@@ -17,17 +17,20 @@ Relations, judged strictly:
   being superseded," so a loose `refines` announces a replacement that never
   happened.
 - `contradicts` — acting on both claims is impossible; the new evidence points the
-  opposite way. Reserve for genuine conflict, not difference of emphasis. Two
+  opposite way. Reserve for genuine conflict, not difference of emphasis. Three
   things that are never contradictions, however opposed the numbers look:
   **different systems measured on the same benchmark** (that is a comparison,
   and a low score next to a high one is usually the paper stating its own
-  headroom), and **the same system measured on different benchmarks** (that is
-  scope, and belongs to `refines` if it belongs anywhere).
+  headroom), **the same system measured on different benchmarks** (that is
+  scope, and belongs to `refines` if it belongs anywhere), and **results from
+  different size classes** (a frontier model's score does not refute a claim
+  about the best model at 7B: "ranks first at the 7B-8B scale" is a claim
+  about a bracket, not about the maximum).
 - `duplicates` — same assertion, different paper.
 - `unrelated` — semantic similarity was superficial; no real relation. Most
   candidate pairs are this. Emitting `unrelated` is the default, not a failure.
 
-## Two rules that override the labels above
+## Three rules that override the labels above
 
 **1. Co-reported results are not conflicts.** You are not told which paper a
 candidate came from, so you must infer it. Candidates are nearest neighbours by
@@ -48,7 +51,29 @@ papers that both say "the same benchmark" are almost never talking about the
 same benchmark. If a relation depends on such a phrase resolving across a paper
 boundary, the answer is `unrelated`.
 
-Worked example of both failures. Claim A: "On four memory-dependent RMBench
+**3. A limitation is not refuted by a success somewhere near it.** The
+largest single source of wrong `contradicts` edges in this graph is a claim
+reporting a limitation, a null result, a regression, or an underperformance,
+against which later positive results pile up as contradictions. They almost
+never are. Before labelling a negative candidate `contradicts`, require all
+three of: the **same technique**, the **same scope**, and the **same measured
+quantity**. If any one of them differs, the two claims measure different
+things and both are true. Use `refines` when the new claim bounds where the
+limitation applies, and `unrelated` otherwise.
+
+Three worked examples, all of them edges this graph got wrong. "Diverse,
+high-quality SFT establishes a strong capability floor" against "SFT on
+code-edit tasks overfits to the specific corruption patterns seen during
+training": same technique family, *different scope*, and the second is a case
+the first does not cover. Correct answer: `refines`. An ablation of
+skill-optimisation components against a finding about token-level supervision
+in Qwen: *different technique*, no relation at all. Correct answer:
+`unrelated`. A 27B model matching a 72B once equipped with a harness, against
+imitation fine-tuning on expert trajectories causing regression: *different
+intervention*, because equipping is not fine-tuning. Correct answer:
+`unrelated`.
+
+Worked example of rules 1 and 2 failing together. Claim A: "On four memory-dependent RMBench
 tasks, the same execution approach attains only 12.5% average success." Claim B
 (different paper): "An expert-authored reference implementation achieves an
 82.2% success rate on the same benchmark." Embedding similarity is high and

@@ -571,10 +571,11 @@ def preflight() -> str:
     secrets=[modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
     timeout=900,
 )
-def rehearse() -> str:
+def rehearse(allow_fallback: bool = False) -> str:
     """Gate 3: one real call, on the real prompt, writing nothing.
 
         modal run pipeline/triage.py::rehearse
+        modal run pipeline/triage.py::rehearse --allow-fallback
 
     The first two gates ask questions about the request. This one exercises the
     provider, and every one of the four failures of
@@ -586,6 +587,13 @@ def rehearse() -> str:
     It raises on any failure, so the chair's `&&` chain stops before the deploy,
     and it refuses to pass on a fallback: a receipt from a different model is
     not a receipt for the model about to be deployed.
+
+    `--allow-fallback` is the hatch for the day that reasoning inverts, when the
+    head of the list is itself what is broken and the change in the image is the
+    degraded path the outage needs. `llm.head_receipt` holds the whole argument
+    and the morning that proved it. The hatch forgives the head and nothing
+    else: a batch that comes back short still raises, because that is a fault in
+    the answer rather than in which account gave it.
     """
     import os
 
@@ -624,14 +632,14 @@ def rehearse() -> str:
             "batch will silently leave the rest untriaged forever, because the "
             "resume query cannot tell 'not yet judged' from 'judged and "
             "dropped'. Nothing was deployed.")
-    if model != MODELS[0]:
-        raise client.NoModelAnswered(
-            f"the rehearsal was answered by {model}, not by {MODELS[0]}, which "
-            "is what the deploy installs. A receipt from a fallback is not a "
-            "receipt: fix the head of the list before deploying, because "
-            "tomorrow's cron meets it first.")
-    return (f"rehearsal ok: {model} judged {len(good)} papers at prompt {sha} "
-            f"in {elapsed:.1f}s for ${cap.spent:.5f}, wrote nothing")
+    forgiven = client.head_receipt(
+        model, MODELS, allow_fallback,
+        gate="pipeline/triage.py::rehearse")
+    if forgiven:
+        print(forgiven)
+    on = "on the degraded path" if forgiven else "ok"
+    return (f"rehearsal {on}: {model} judged {len(good)} papers at prompt "
+            f"{sha} in {elapsed:.1f}s for ${cap.spent:.5f}, wrote nothing")
 
 
 # What one re-triage run may spend. 47 papers is 5 calls at BATCH=10, so the

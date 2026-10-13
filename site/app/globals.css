@@ -1707,6 +1707,49 @@ button.pill {
   color: var(--ink);
 }
 
+/* Three offers, not two (ADR-31: the trial, the month, the lifetime). The
+   two-column rule above stays the default, because every other page that
+   borrows .tiers has two of them, and 2+1 on a three-up grid reads as one
+   plan that did not fit. */
+.tiers.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* The trial lives inside the monthly card rather than in a fourth column,
+   because it is the same plan with its first three days free. It sits above
+   the card's action, so `margin-top: auto` on the pill still pins the
+   button to the bottom of every card and the three buttons line up. */
+.tier-note {
+  margin-top: auto;
+  padding-top: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--gray);
+}
+
+.tier-note + .pill {
+  margin-top: 18px;
+}
+
+.tier.featured .tier-note {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tier.featured .tier-note a {
+  color: var(--paper);
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  /* A third column at this width leaves the price and the bullets fighting
+     for the same 180 pixels, so the three stack into one before the
+     640px breakpoint below ever applies. */
+  .tiers.three {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+}
+
 @media (max-width: 640px) {
   /* stacked, these are two large bordered blocks rather than two columns,
      so they need more air between them than a grid gutter */

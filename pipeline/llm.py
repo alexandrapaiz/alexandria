@@ -385,6 +385,23 @@ def on_fallback(model: str) -> bool:
     return bool(primary) and spec.get("provider") != primary.get("provider")
 
 
+def head_receipt(model: str, models: list[str], allow_fallback: bool,
+                 *, gate: str) -> str:
+    """Is a receipt from `model` a receipt for the job the deploy installs.
+
+    A thin wrapper on `budget.head_receipt`, which holds the text and the whole
+    argument, so that the four gates in this repository refuse in the same words
+    and `pipeline/weekly.py` can use it without importing this module, which is
+    not in its image. Raises `NoModelAnswered` when a fallback answered and
+    nobody asked for the hatch. Returns the line to print, empty when the head
+    answered and there is nothing to forgive.
+    """
+    refusal, note = budget().head_receipt(model, models, allow_fallback,
+                                          gate=gate)
+    if refusal:
+        raise NoModelAnswered(refusal)
+    return note
+
 # ---------------- pacing, and the one-at-a-time band ----------------
 
 # Moonshot's tier-0 ceiling for kimi-k2.6 is 3 requests per minute, which is the
