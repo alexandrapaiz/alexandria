@@ -11979,6 +11979,26 @@ signup. A passing test pinned it. Filed as the `urgent` ledger entry of
 today's date rather than fixed here, because it decides what a comped friend
 is entitled to and that is the owner's call.
 
+**Measured, not inferred, after the pull request was opened.** The entry
+above was written from the gate's own failure, which says these two files
+run in no workflow. The pull request then said something stronger:
+
+```
+$ gh pr checks 285
+no checks reported on the 'engineer/2026-10-13-polar-spine' branch
+```
+
+Not a red tick. No tick. `checks.yml`'s `paths:` filter lists fourteen test
+files by name plus `pipeline/**`, `skills/**`, `db/schema.sql` and
+`site/lib/skill-provenance.js`, and a diff of five new `site/` files, two new
+`tests/` files and three documents matches none of them. The filter is
+behaving exactly as written. So the whole payments layer, including the
+signature check on `/api/polar-webhook`, is proposed for merge with no
+continuous integration behind it at all, and the only evidence that the 1,315
+tests pass is a seat's own transcript. That is the state item 17 fixes, and
+it is worse than "a file nobody runs": the pull request does not even claim
+to have been checked, so there is no red for a reviewer to notice.
+
 **The fix, and the part a seat can reach.** None of it. Applying item 17
 needs a `workflows` permission no seat holds. The reachable half is already
 done: the measurement exists, the gate pins the set so it can shrink and
