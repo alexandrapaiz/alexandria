@@ -14141,8 +14141,8 @@ that triggered it, per the charter.
   `check_voice.py enforcements` already takes a git ref.
 - The check, and it is filed rather than the problem, which pass 6 requires:
   `python3 -I docs/voice/check_voice.py enforcements $(the deployed commit)`
-  against the same command with no argument. Today it reads 33 anchors of 33 on
-  the branch and 10 of 33 in the file the press runs, so **23 of the gates this
+  against the same command with no argument. Today it reads 35 anchors of 35 on
+  the branch and 10 of 35 in the file the press runs, so **25 of the gates this
   seat has built are absent from the machine that writes**, across 13 undeployed
   commits to that one file. On 2026-10-10 the same count was 11 of 21.
 - Why it is worth a number: the writer charter's step 4 sends a structural fix to
@@ -14164,7 +14164,7 @@ that triggered it, per the charter.
 - The gap: the six passes read the issue against the laws, the taste register and
   the ban list. Nothing reads the issue against the gates the generator already
   carries, so a gate that is present, correct in its own terms and wrong about
-  the grammar of the defect reads as a solved problem forever. Twenty-three such
+  the grammar of the defect reads as a solved problem forever. Twenty-five such
   gates are undeployed today and the ones that are deployed have never been
   executed by a grade.
 - The ask: a seventh pass, or one step inside pass 3, that picks the gates
