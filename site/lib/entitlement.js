@@ -1,4 +1,7 @@
 import { neon } from "@neondatabase/serverless";
+import { currentUser } from "@clerk/nextjs/server";
+import { primaryEmail } from "./account-core";
+import { spineFromMetadata } from "./polar-core";
 
 // The paid spine (docs/vision.md §0, priced 2026-09-17) is the operational
 // layer: the skill library, the claim graph, and automations. It costs $20 a
@@ -9,27 +12,38 @@ import { neon } from "@neondatabase/serverless";
 // db/schema.sql. 'full' is the $20 tier.
 export const SPINE_TIER = "full";
 
-// STILL THE PRE-CLERK STUB, and the comment that used to sit here said Clerk
-// was not wired yet. It is. `@clerk/nextjs` landed 2026-09-17: middleware.js
-// runs clerkMiddleware, /sign-in and /sign-up are real routes, and
-// /api/clerk-webhook exists. What did not change is this function, so it still
-// returns null for everyone and `hasSpine()` below can therefore never return
-// true, for a paying subscriber or for anyone else.
+// The signed-in person's primary address, or null when nobody is signed in.
 //
-// The consequence is that the whole $20 spine is shut. It fails closed, so
-// nothing leaks, and that is the only good news in it. Rewiring this to read
-// the signed-in user's primary email address is the engineer's `urgent` item
-// in docs/ideas.md and it is deliberately not done here, because a security
-// run fixes defects and does not build the accounts path.
+// This was the pre-Clerk stub until 2026-10-13 and it returned null for
+// everyone, which meant `hasSpine()` below could never return true for
+// anybody, paying or not. The whole $20 spine was shut. It failed closed,
+// which was the only good thing about it.
 export async function currentEmail() {
-  return null;
+  const user = await currentUser().catch(() => null);
+  return primaryEmail(user);
 }
 
-// Fails closed by design. No session, no connection string, or a query that
-// throws all resolve to "not entitled", because a check that opens when the
-// database is unreachable is not a check.
+// Two ways to hold the spine, and they are read in that order.
+//
+// 1. A Polar payment (ADR-30, ADR-31). /api/polar-webhook writes the flag
+//    onto the Clerk user's metadata, so this read is the session token and
+//    costs no round trip. The flag carries its own expiry, which is what
+//    makes it safe: Polar's revoke event can be late or can go missing,
+//    and an entitlement that expires by itself cannot outlive what was
+//    paid for.
+// 2. A comped or 'full' subscribers row, which is how the owner's friends
+//    have it and predates payments entirely.
+//
+// Fails closed at every step. No session, no flag, an unreadable expiry, no
+// connection string, or a query that throws all resolve to "not entitled",
+// because a check that opens when something is unreachable is not a check.
 export async function hasSpine() {
-  const email = await currentEmail();
+  const user = await currentUser().catch(() => null);
+  if (!user) return false;
+
+  if (spineFromMetadata(user.publicMetadata, Date.now())) return true;
+
+  const email = primaryEmail(user);
   if (!email) return false;
 
   const url = process.env.DATABASE_URL;
@@ -42,7 +56,7 @@ export async function hasSpine() {
       from subscribers
       where lower(email) = lower(${email})
         and status = 'active'
-        and tier = ${SPINE_TIER}
+        and (tier = ${SPINE_TIER} or comp = true)
       limit 1
     `;
     return rows.length > 0;
