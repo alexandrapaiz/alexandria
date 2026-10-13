@@ -14148,6 +14148,10 @@ that triggered it, per the charter.
   conformance check as a hard failure on its `failing:` lines and the trigger
   suite as a reported number rather than a gate, since its reliability is 0.82
   and a seat should not be blocked on a lexical matcher.
+- Why this and not a charter line: company standard L-A22, the gate goes in the
+  command and not in the charter, and L-A16, configured is not in effect. A
+  check that exists and runs nowhere is the exact gap both rules name, and the
+  skill charter already carries more rules than a reader can hold.
 - Cost: $0.
 - Status: proposed
 
@@ -14194,5 +14198,28 @@ that triggered it, per the charter.
   same and is saying so rather than leaving the contradiction unreported.
 - First step: the ExO adds both paths to the Boundaries list on its next charter
   pass. One sentence, no behaviour change.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The library page cannot show the field that says a skill is unmeasured (skill seat)
+- Trigger: charter step 8, checking that `site/` parsing handles this run's
+  frontmatter before opening the PR.
+- What: `site/lib/skill-provenance.js`'s `readProvenance()` returns `name`,
+  `description`, `version`, `status`, `extracted`, `validated`, `claims`,
+  `papers` and `body`. It does not read `provenance.differential_screen` or
+  `provenance.reviews`, and both are now standing fields. `differential_screen`
+  is where a skill says in its own words that neither eval arm was reachable and
+  every section is unscreened, which ADR-38 requires and which four of the nine
+  skills now carry. So the page shows a reader `status: provisional` with no
+  statement of why, and the honesty the format exists for stops at the file.
+  ADR-40's consequences ask the evidence page for "deltas per section with their
+  spread, the exploit test's result, and the survival axis": none of the three
+  has a field on the page today, and `differential_screen` is the cheapest of
+  them because the text is already written.
+- Everything else parsed correctly, checked by calling `readProvenance()`
+  directly on the new skill: 9 claim ids, 2 papers, status and version intact,
+  and `tests/skill-provenance.test.mjs` is 28 of 28.
+- First step: surface `differential_screen` under the provenance block as prose,
+  and `reviews` as a count with links. No new data, both strings are in the file.
 - Cost: $0.
 - Status: proposed

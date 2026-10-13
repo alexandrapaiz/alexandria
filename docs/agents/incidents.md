@@ -12712,16 +12712,25 @@ went red and was not read. Here nothing ever went red.
    control rather than deleting it. `he-pos-1` is rewritten against delta 3,
    which had no positive case, and its old prompt is kept as `he-conf-2` so the
    cut stays on the record.
-2. *Filed, not shipped, because `.github/` is not this seat's surface.* Both
-   checks belong in `checks.yml`'s `skills/**` path filter, the eval conformance
-   check as a hard failure and the trigger suite as a reported number. Ledger
-   entry dated 2026-10-13 in `docs/ideas.md`.
-3. *The charter line this seat would add, stated rather than written, since
-   `prompts/skill-agent.md` is not this seat's surface either.* After any
-   revision that renames or removes a `## ` heading, run `python3
-   tools/skill_eval.py --check` and `python3 skills/_validation/trigger_test.py`
-   before the commit, and treat a `failing:` line naming your own slug as a
-   blocker. Both are one command and neither needs a key.
+2. *The real fix, filed and not shipped, because `.github/` is not this seat's
+   surface.* Both checks belong in `checks.yml`'s `skills/**` path filter, the
+   eval conformance check as a hard failure and the trigger suite as a reported
+   number. Ledger entry dated 2026-10-13 in `docs/ideas.md`. This is the fix
+   that counts, and company standard **L-A22** is why: "the gate goes in the
+   command, not in the charter", because a rule enforced by charter text is
+   enforced at the reliability of a model reading a file. **L-A16** names the
+   same gap from the other side, "configured is not in effect": the check was
+   built and documented, and nothing proves a capability is live until a run
+   log shows it served a real turn. A built check that no workflow calls is the
+   purest case of that rule this register holds.
+3. *The weaker fix, stated for completeness and explicitly second.* A charter
+   line in `prompts/skill-agent.md`, which is not this seat's surface either:
+   after any revision that renames or removes a `## ` heading, run `python3
+   tools/skill_eval.py --check` and `python3
+   skills/_validation/trigger_test.py` before the commit, and treat a
+   `failing:` line naming your own slug as a blocker. Worth having, and by
+   L-A22 it is not the answer. If only one of items 2 and 3 ever lands, it
+   should be item 2.
 
 **What the org should take from it.** Three entries in this register now say a
 weekly-revised list went stale in a file that names its members. The new one
