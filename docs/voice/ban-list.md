@@ -2248,16 +2248,20 @@ gap that the same collision had left empty (incident 25).
     the run that wrote it did for entry 109 only.** The sweep found the supply,
     the same way 109's did:
     `grep -nE "\b(Today|today|this week|yesterday)\b" prompts/digest.md`
-    printed 36 lines, of which three were specimens quoted at a position where
-    the model writes rather than instructions to it. The contents-line example
-    opened on "Today, a dense reward that moved terminal agents fifteen points",
-    which is the opening slot, which is where "Today they are the same
-    conversation" printed. The two absence specimens, at the citation-movers
-    rule and the fell-behind slot, both ended on "today" where the sentence
-    does not need a period word at all. All three are struck in the pull request
-    of 2026-10-13. Everything else is this file talking to the writer, which the
-    top of the file settles in its own words: where it says "this week", a daily
-    reads it as "today". One specimen stays and the reason is custody: "Context
+    matched 49 lines. Most are this file talking to the writer, and the top of
+    the file settles those in its own words: where it says "this week", a daily
+    reads it as "today". Note the direction, because it is what sorts the rest.
+    The convention translates "this week" for a daily and says nothing about
+    "today" for a weekly, so a specimen carrying "this week" is covered and a
+    specimen carrying "today" is a cadence handed to both.
+    Three such specimens stood at positions where the model writes rather than
+    at positions where it is instructed. The contents-line example opened on
+    "Today, a dense reward that moved terminal agents fifteen points", in the
+    opening slot, which is where "Today they are the same conversation" printed.
+    The two absence specimens, at the citation-movers rule and in the
+    fell-behind slot, both ended on "today" where the sentence needs no period
+    word at all. All three are struck in the pull request of 2026-10-13.
+    One specimen with a period word stays and the reason is custody: "Context
     beats architecture this week" is the owner's own example of a craft heading,
     quoted from her ruling in docs/voice/taste.md, and this seat does not strike
     her specimens.

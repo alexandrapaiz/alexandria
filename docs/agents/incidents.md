@@ -12725,13 +12725,15 @@ the sweep found five supplies, four of which were struck. Entry 108 was not
 swept, and its review says so without noticing: "Patched as a gate immediately
 before the law 15 gate."
 
-Swept today, entry 108 had three supplies, all of them specimens quoted at a
-position where the model writes rather than instructions to it. The contents-line
-example opened on "Today, a dense reward that moved terminal agents fifteen
-points", in the opening slot, which is exactly where the artifact printed "Today
-they are the same conversation" in a weekly. Two absence specimens ended on
-"today" where the sentence needs no period word at all. All three are struck in
-the pull request of 2026-10-13.
+Swept today, the tell matched 49 lines of the generator and three of them were
+specimens standing where the model writes rather than instructions to it. The
+contents-line example opened on "Today, a dense reward that moved terminal
+agents fifteen points", in the opening slot, which is exactly where the artifact
+printed "Today they are the same conversation" in a weekly. Two absence
+specimens ended on "today" where the sentence needs no period word at all. All
+three are struck in the pull request of 2026-10-13. The rest sorted cleanly on
+the file's own convention, which translates its "this week" to "today" for a
+daily and says nothing in the other direction.
 
 **Why this is a repeat.** Entry 90 exists because entry 89 shipped on 2026-10-03
 without a sweep and one grep the next morning found three more live in the

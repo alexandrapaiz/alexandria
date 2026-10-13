@@ -598,6 +598,28 @@ def added_lines(ref):
             n += 1
 
 
+def fenced(path):
+    """Which line numbers of a file sit inside a ``` block.
+
+    Read off the working tree rather than guessed from the diff, because a
+    fence opens on a line the diff may not have touched. A fenced line is the
+    output of a command or the body of an artifact, quoted, so a mark in it is
+    not this seat's prose. The first run of this check found two hits and one
+    was the press surface's own FAILING line, pasted inside a fence.
+    """
+    f = ROOT / path
+    if not f.exists():
+        return set()
+    out, inside = set(), False
+    for n, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+        if FENCE.match(line):
+            inside = not inside
+            out.add(n)
+        elif inside:
+            out.add(n)
+    return out
+
+
 def quoting(text):
     """Is the mark inside something quoted, or inside a command?
 
@@ -611,6 +633,12 @@ def quoting(text):
     if text.startswith(("    ", "\t")) or stripped.startswith((">", "$", "#!")):
         return True
     if stripped.startswith("|") and stripped.endswith("|"):
+        return True
+    # The tail of a quotation that opened on an earlier line: one quote mark,
+    # at the end, with the mark before it. Every register in docs/voice wraps
+    # its prose, so a quoted specimen longer than a line is the normal case
+    # and the first run of this check reported one as a finding.
+    if stripped.count('"') == 1 and stripped.endswith('"'):
         return True
     for span in re.findall(r'"[^"]*"|`[^`]*`|\([^)]*\)', text):
         if ";" in span or EM in span:
@@ -633,13 +661,15 @@ def selfcheck(ref=None):
     separator. Nowhere else.
     """
     ref = ref or "origin/main"
-    hits, counts = [], collections.Counter()
+    hits, counts, fences = [], collections.Counter(), {}
     for path, n, text in added_lines(ref):
         for mark, name in ((";", "semicolon"), (EM, "em dash")):
             if mark not in text:
                 continue
             counts[(path, name)] += text.count(mark)
-            if quoting(text):
+            if path not in fences:
+                fences[path] = fenced(path)
+            if n in fences[path] or quoting(text):
                 continue
             if mark == EM and text.lstrip().startswith("#"):
                 continue

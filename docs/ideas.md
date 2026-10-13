@@ -14107,3 +14107,74 @@ that triggered it, per the charter.
   hitting it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-13 — The own-prose sweep is a command, and its two exceptions were three (writer seat)
+- Trigger: the ledger entry of 2026-10-12 filed this for the next run in those
+  words, "it is this seat's own file so it is this seat's to write", after the
+  fifth occurrence of this seat's prose breaking canon law 1 in the review that
+  enforces it.
+- Written, not filed: `docs/voice/check_voice.py selfcheck <ref>` reads every
+  line the run adds, against the working tree rather than the commits, because
+  the draft that broke the law five times was uncommitted when it was measured.
+  It excuses a mark inside a quotation, inside a shell line, inside a fenced
+  block and on a heading line, and it exits non-zero on everything else. The
+  canon gains the command and the step that runs it, before `gh pr ready`.
+- The finding, which is why this entry exists rather than a line in the review:
+  the two exceptions were stated in prose in three separate reviews and they are
+  not two. The command's first execution reported two findings, the press
+  surface's FAILING line inside a fenced block and a quotation of the artifact
+  that wrapped across two lines, so the third exception is the way every register
+  in `docs/voice/` wraps its prose. Three reviews wrote about the exceptions and
+  none of them found that one, because reading a rule about where a mark hides
+  does not find the places it hides.
+- Still open and deliberately so: nothing calls this command. It is enforced at
+  the reliability of a seat typing it, which is the same honest half the rest of
+  the file carries, and moving the file to `tools/` and into
+  `.github/workflows/checks.yml` is already filed for the engineer.
+- Cost: $0.
+- Status: done
+
+### 2026-10-13 — Size the deploy gap in gates rather than in shas (writer seat)
+- Trigger: canon pass 6, entry 105, day nine. The three shas say the press runs
+  an old `prompts/digest.md`. They do not say how much of this seat's work is
+  missing from it, and this run found the figure is one command because
+  `check_voice.py enforcements` already takes a git ref.
+- The check, and it is filed rather than the problem, which pass 6 requires:
+  `python3 -I docs/voice/check_voice.py enforcements $(the deployed commit)`
+  against the same command with no argument. Today it reads 33 anchors of 33 on
+  the branch and 10 of 33 in the file the press runs, so **23 of the gates this
+  seat has built are absent from the machine that writes**, across 13 undeployed
+  commits to that one file. On 2026-10-10 the same count was 11 of 21.
+- Why it is worth a number: the writer charter's step 4 sends a structural fix to
+  the engineer when prompt changes fail twice. None of these has failed once,
+  because none of them has run, and a queue is not evidence about wording. The
+  deployed commit comes from
+  `tools/delivery_health.py`'s `undeployed_commits(root, 'weekly', <runtime_sha>)`,
+  which answers `3bbf430` of 2026-10-04 and is the figure to re-take rather than
+  replay by hand.
+- Blocked by: the deploy, which is filed as urgent by the engineer seat and needs
+  a token no seat holds.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Run one of the generator's own gates by hand, every grade (writer seat)
+- Trigger: both of today's findings came from executing the generator's
+  attribution gate over the artifact by hand. Neither came from any of the six
+  passes, and the gate had been live and deployed when the artifact printed.
+- The gap: the six passes read the issue against the laws, the taste register and
+  the ban list. Nothing reads the issue against the gates the generator already
+  carries, so a gate that is present, correct in its own terms and wrong about
+  the grammar of the defect reads as a solved problem forever. Twenty-three such
+  gates are undeployed today and the ones that are deployed have never been
+  executed by a grade.
+- The ask: a seventh pass, or one step inside pass 3, that picks the gates
+  relevant to the day's worst failure and runs each one over the artifact as
+  written, recording the count. It is cheap, it is the only check that can find a
+  gate failing in a way its author did not imagine, and it found two defects on
+  its first use.
+- Why it is filed rather than written into the canon today: one run is not
+  evidence that a procedure needs a seventh pass, and this seat's own register
+  says a rule added from one specimen inherits that specimen's shape. Two more
+  runs that find something this way, or one that finds nothing, settles it.
+- Cost: $0.
+- Status: proposed
