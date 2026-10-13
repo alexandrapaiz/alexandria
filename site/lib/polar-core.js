@@ -32,19 +32,16 @@ export const OFFERS = [
   {
     id: "trial",
     env: "POLAR_CHECKOUT_TRIAL",
-    tier: "trial",
     label: "Start the 3-day trial",
   },
   {
     id: "monthly",
     env: "POLAR_CHECKOUT_MONTHLY",
-    tier: "monthly",
     label: "Subscribe for $20 a month",
   },
   {
     id: "lifetime",
     env: "POLAR_CHECKOUT_LIFETIME",
-    tier: "lifetime",
     label: "Buy lifetime access for $200",
   },
 ];
