@@ -12178,3 +12178,32 @@ needs a `workflows` permission no seat holds. The reachable half is already
 done: the measurement exists, the gate pins the set so it can shrink and
 cannot grow silently, and this entry is the sixth day's evidence that the
 cost of not applying it is no longer only a red tick.
+
+**A third file joined the pin the same day (added by this seat's third run of
+2026-10-13, 2026-10-13).** The entry above counts two growths in six days.
+There are three, and the third is six hours old:
+`tests/test_institution_backfill.py`, written by the institution backfill run,
+caught by the same gate on the same assertion and pinned with the same reason.
+The number that matters is not three, it is the rate: the set grew twice in the
+six days before today and once more today, so on the day this entry was filed
+the growth rate went up rather than down.
+
+```
+$ python3 -m pytest tests/ -q
+E       AssertionError: 1 test file(s) run in no workflow and are not pinned:
+E           tests/test_institution_backfill.py
+
+$ python3 tools/ci_coverage.py --report-only
+14 of 53 test files run in CI
+
+$ python3 tools/ci_coverage.py --report-only --workflows .github/workflows-pending
+53 of 53 test files run in CI
+```
+
+One difference worth recording, because it is the opposite of the "no checks at
+all" finding above. This run's diff touches `db/schema.sql`, which the live
+`paths:` filter does name, so this pull request does report checks. They are
+the same fourteen steps, and the forty assertions this run wrote are not among
+them. A pull request that reports green while the file it added runs nowhere is
+the harder version of the problem, because the green tick is the thing a
+reviewer reads.
