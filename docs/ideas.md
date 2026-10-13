@@ -2060,6 +2060,30 @@ owning seat rather than assumed. Arguments in docs/sales/.
 - Whose call: the writer seat owns `prompts/digest.md` and `prompts/daily.md`.
   Filed here rather than edited.
 - Status: proposed
+- **Answered 2026-10-09 by the writer seat, and the answer is that it is
+  already fixed. Twenty days open, and this is the cost of a filing with no
+  check beside it.** The line this entry asked for is in the generator and has
+  been for weeks, as the "Plain ASCII punctuation, always" bullet, which names
+  the narrow space before a percent sign by its code point, states the whole
+  class above the three examples, and is counted in the final checks by a
+  character census. The evidence is the artifacts rather than the rule:
+
+  ```
+  select id, week, length(body) - length(replace(body, U&'\202F', '')) from digests
+   -> 1 | 2026-W37 | 19      18 | 2026-W39 | 0      21 | 2026-W40 | 0
+  $ python3 docs/voice/check_voice.py measure site/content/issues/*.md
+       2026-W37  non-ASCII 152   U+202F x30      [retired, not served]
+       2026-W39  non-ASCII 0
+  ```
+
+  Every one of the thirty is in `2026-W37`, which is the pre-overhaul pilot
+  this entry was written from and is retired at the serving layer. Both issues
+  written by the current generator carry zero, of this character and of every
+  other non-ASCII character. The owner moves statuses, so this stays
+  `proposed` until she reads it, and the point of the line is that nothing
+  between the fix and today was going to say so: the entry has no failing
+  state and no passing state either, which is the class recorded as
+  `INC-2026-10-08-a-ledger-filing-addressed-to-a-seat-has-no-failing-state`.
 ## Engineer agent findings (2026-09-19, sprint 2026-09-21 item 3)
 
 ### 2026-09-19 — Keep every digest body, not one row per week (engineer agent)
@@ -2463,6 +2487,22 @@ owning seat rather than assumed. Arguments in docs/sales/.
   their own next run. One line each.
 - Cost: $0.
 - Status: proposed
+- **The writer's half is done 2026-10-09, twenty days and twenty runs after
+  "next run", and it is two of three rather than three.** `docs/voice/canon.md`
+  and `docs/voice/ban-list.md` now carry the line. `docs/voice/taste.md` does
+  not and will not from this seat: it is the owner's register and this charter
+  says this seat never edits it, so the line there is the chair's or the PM's
+  one-line edit and is the only part of the writer's three still open. Worth
+  saying out loud because this entry assigned three files to a seat that is
+  forbidden to touch one of them, which is the same shape as incident 25.
+- **The design half is still open and it is larger than a marker line.** Four
+  files, and the one checked today has 30 numbered entries and the string
+  "Enforced" appears zero times in it, so the design ban list has no
+  enforcement ending on any entry and no marker at the top. The voice register
+  reached that state by being asked the question in 2026-09-25 and swept on
+  2026-10-09; nothing has asked it of the design register. Frontend seat's
+  call, named here rather than acted on, because that surface is not this
+  seat's.
 
 ### 2026-09-19 — A CI job could make the register checks mechanical (ExO proposal, not built)
 
@@ -3465,6 +3505,34 @@ re-claimed here; these are additive to #34 and #42 and engineer PR #44.
 - Blocked by: nothing. The press being down (incident 24) does not block it
   and is the reason there is time to do it before the daily ships.
 - Cost: $0.
+- **Confirmed 2026-10-09 by the writer seat, with the day's evidence, under
+  canon pass 6. Fifteen days open, and the branch has changed under it.** PR
+  #35 is closed and the file now lives behind the open PR #60, which is
+  nineteen days old, so a reader of this entry looking for `prompts/daily.md`
+  on `main` finds nothing and could reasonably report it clean. It has never
+  been on main. The check has to name the branch:
+
+  ```
+  git show origin/engineer/2026-09-20-digest-quality-gate:prompts/daily.md \
+    | grep -n "source line\|{dates}\|routine, so there is no issue"
+   -> 82: # {Editorial title} [{dates}]
+      95: its source line: *paper title* — [link](url).}
+     121: {dates}: today's papers were routine, so there is no issue.
+  ```
+
+  All four specimens are live and unchanged: the title suffix the owner struck
+  by name, the source line that mandates ban list 25 and carries the em dash
+  canon law 1 forbids, and the stored empty-day sentence of ban list 43.
+  `pipeline/weekly.py:835` on that branch selects that file as the daily's
+  prompt and `:95` uploads it, so the shape of this is unchanged: the day it
+  merges, the daily issue is written by 133 lines rather than by the generator
+  the owner fine-tuned. Nothing in the writer seat's twenty runs of patches is
+  in those 133 lines.
+  The one thing this seat can say that it could not say on 2026-09-24: the
+  reason the parallel file was built is gone. digest.md now carries the daily's
+  length, its slot behaviour, its traction signal and its empty-day issue, so
+  the reland has somewhere to collapse into rather than something to merge
+  against.
 
 ### 2026-09-23 — The measurement system is law in the canon and not in the stylesheet (frontend seat)
 - Trigger: the frontend run of 2026-09-23 audited `site/app/globals.css`
@@ -7149,6 +7217,36 @@ graphs.
 - Whose call: writer seat, next run, no dependency on anyone.
 - Cost: one editorial run, no code.
 - Status: proposed
+- **Executed 2026-10-09, eleven runs after "next run".** The table is in
+  docs/voice/reviews/2026-10-09.md and the result is 46 of 50 already enforced
+  in `prompts/digest.md`, three never enforced at all, and one that no wording
+  of that file can reach.
+  The three: entry 1, the slop lexicon, which is the oldest entry on the
+  register and the one canon law 2 is written from, and whose fifteen words
+  and the word "buzzword" were all absent from the generator. Entry 2, the
+  three-adjective list. Entry 11, the explaining colon in a title, which was
+  banned at the heading gate and not at the slot where a title is chosen. All
+  three are patched in the same pull request as this line. The fourth is entry
+  44, which is about generators other than this one.
+  The prediction in this entry held. "Most entries are word tells the voice
+  section already covers, and the interesting ones are the entries that
+  diagnose machinery, because those are the ones whose fix is a specific
+  change and whose absence is invisible." Entry 1 is not machinery and it is
+  the one that was invisible, because nothing had ever asked the question of
+  an entry that old.
+  **What the ending turned out to be, which is the part this entry got wrong.**
+  It asked for fifty endings written into the register. Forty-six of them would
+  have been one sentence pointing at four places in one file, and the register's
+  own rule says a LANDED line asserted without checking the generator is worse
+  than the prose it replaced. So the ending is `docs/voice/check_voice.py
+  sweep`: a map from each of the fifty entries to the shortest distinctive
+  phrase in the generator that enforces it, which fails when a phrase leaves
+  the file and when an entry in the range has no row. Tested against a
+  generator with one anchor deliberately broken, which names the entry whose
+  enforcement went with it, and against a map with one row deleted, which names
+  the entry nothing covers. A one-time pass would have answered this entry once.
+  The command answers it every run, which is the difference the standard about
+  rules enforced by sentences is about.
 
 ### 2026-09-28 — An editorial repair takes effect only when the owner merges, and the cron prints daily into the gap (writer seat, needs the owner and the engineer)
 
@@ -9949,6 +10047,17 @@ provenance reviewer exists to catch.
   closing note says wiring `checks.yml` needs a `workflows` permission the
   filing seat did not have, and this seat does not have it either.
 - Status: proposed
+- **Confirmed 2026-10-09, five days open, and the title's number is now wrong
+  in the direction that matters.** The file holds six checks rather than three:
+  `enforcements`, `sweep`, `stale`, `measure`, `links` and `delivery`. Nothing
+  calls any of them. Two of the six are the only enforcement that two registers
+  have, which is new since this entry was written: `docs/voice/ban-list.md` now
+  names `sweep` and `enforcements` in its own `Enforced at:` line, so fifty-one
+  ban-list entries are enforced by a command no scheduled thing runs. That is a
+  worse position than the prose it replaced if the command stops being typed,
+  and it is the argument for the one-line wiring rather than against the
+  command. Unchanged: the rename into `tools/` and the `checks.yml` line, both
+  of which need the permission this seat does not have.
 
 ### 2026-09-30 — Model judgment runs at 5 percent of arrival, and every coverage directive lands on it (research seat, for the engineer)
 
@@ -13505,6 +13614,39 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-11 — This seat's gates all live in the one file that needs a deploy, and the ones that could run on a schedule do not (writer seat)
+- Trigger: today's editorial run patched six rules into `prompts/digest.md` and
+  every one of them is a sentence a model reads at generation time, inside a
+  file that reaches the press through `modal deploy`. The press is still
+  running that file as it stood on 2026-10-04, so the count of this seat's
+  enforcements that exist nowhere but a working tree rose from eleven to twelve
+  today and rises again with every run.
+- The part that is not the deploy: six of today's twelve absent rules are pure
+  draft arithmetic. Count the semicolons. Count the headings carrying a colon.
+  Count the kinds of block on the page. Count the figures with no comparison.
+  Count the figures needing leading zeros and the decimals ending in zero.
+  Count the items under a heading against the items the heading describes. Each
+  one reads the finished text and nothing else, and `docs/voice/check_voice.py`
+  already takes four of them off a file on disk.
+- The ask, and it is small: a check that runs those counts over the newest
+  `digests` row and exits non-zero, wired where a Monday send can reach it.
+  Not a model gate and not a rewrite. The counts exist, the tool exists, and
+  the artifact is in a table. What is missing is the three lines that read the
+  newest row instead of a path and the workflow step that calls it.
+- Why it is worth doing even after the deploy is fixed: a rule inside
+  `prompts/digest.md` is enforced at the reliability of a model reading a file,
+  which is L-A22, and it can only ever be enforced before the text exists. A
+  count over the finished row is enforced at the reliability of a shell and
+  runs on text the reader is about to get. The two are not substitutes, and
+  this seat currently has only the weaker one.
+- Scope note: `docs/voice/check_voice.py` is this seat's file and the three
+  lines that read a row are this seat's to write. The workflow step is not, and
+  that is the whole filing. PR #60's pre-send quality gate has been open since
+  2026-09-20 and is the natural home for it, so the right answer may be a
+  conversation with that branch rather than a new one.
+- Cost: $0.
+- Status: proposed
+
 ### 2026-10-12 — URGENT: the stall's cause is fixed in the tree and the tree is not what is running
 - Trigger: today's receipt, read at 02:17 UTC. `claims_newest` and
   `distilled_newest` both still read `2026-10-07T15:15:25.492Z`, five days
@@ -13642,6 +13784,89 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-12 — The payload cannot tell a 211-claim week from a 923-claim week (writer seat)
+- Trigger: grading canon law 11, length follows the news, with a number on both
+  sides for the first time. `press_rehearsals.payload_stats` across all four
+  rehearsals, spanning two different weeks, reads `new_claims` 22 every time and
+  `supported_claims` 12 every time. Those are the literals `limit 22` at
+  `pipeline/weekly.py:337` and `limit 12` at `:368`. Claims created per week over
+  the last five weeks: 280, 923, 211, 287, 295.
+- The gap: the week varies by a factor of 4.4 and the slate the generator sees is
+  constant, because both queries saturate their cap every single week by a factor
+  of ten to forty. The owner's ruling of 2026-09-19 is that the amount of real
+  news decides the length, never a template, and a cap that always binds is a
+  template with a number on it. No wording of `prompts/digest.md` can let a
+  writer see past it, which is why this is filed rather than patched.
+- The ask, and it is small: hand the generator the unclipped total beside each
+  clipped slate. One integer per stream in the `stats` block the payload already
+  carries, so a writer can tell a week that produced 22 candidates from a week
+  that produced 400 and was cut to 22. Not a bigger cap: 280 items would be a
+  worse issue than 13, and the cap is a reasonable cap. What is missing is the
+  signal that it bound.
+- Why it is worth doing: law 11 is the law the owner stated as padding and
+  truncating being the same failure, and the only honest length verdict needs the
+  denominator. A grade can now measure what the issue printed and what the
+  payload offered, and neither number says what the week held.
+- Related filing, same two queries, so read them together: the entry of
+  2026-09-23, "The queries return claims and the issue prints items", which is
+  about the UNIT those limits are counted in. This one is about the limits
+  binding. A fix to either should look at the other.
+- Blocked by: nothing. `gather()` is `pipeline/weekly.py` and this seat never
+  touches pipeline code.
+- Cost: $0, no new service, no model call.
+- Status: proposed
+
+### 2026-10-12 — The published issue carries no record of what it was offered (writer seat)
+- Trigger: the same law 11 verdict. `press_rehearsals` has a `payload_stats`
+  column and `digests` does not. The columns on `digests` are id, week, body,
+  model, prompt_sha, created_at.
+- The gap: the artifact a reader actually received carries no trace of the
+  material it was written from, so the one law about the relation between the two
+  cannot be graded on it at all. Today's grade measured the news side on
+  `press_rehearsals` id 4, a different row from a different run five and a half
+  hours earlier, and said so under the measurement-attribution rule. That rule
+  exists because a figure outlives its subject, and grading one row's law on
+  another row's numbers is the shape it was written to prevent.
+- The ask: one `jsonb` column on `digests`, written from the same dict the
+  rehearsal insert already passes. `pipeline/weekly.py:1413` does the digests
+  insert and `:1537` does the rehearsal insert with the stats in hand, so the
+  value is already computed at both call sites.
+- Why it is worth doing beyond this one law: every count the issue prints about
+  itself comes from that dict, and law 15 is the law about those counts. A grade
+  that wants to check the close's figures against the run that produced them
+  currently reads a neighbouring row and hopes the window matched. On 2026-10-05
+  it did not: the rehearsal recorded 111 papers read in full and the issue printed
+  127, five and a half hours apart.
+- Blocked by: nothing, and it is independent of the filing above.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — The seat's own-prose sweep is the one measurement it still takes by eye (writer seat)
+- Trigger: today's run reported "zero em dashes and no semicolon join in any
+  added line" in a first draft of its review, and the per-file command then found
+  eleven semicolons, eight of them law 1 violations, one inside the sentence
+  asserting the check. Recorded as
+  `INC-2026-10-12-the-editors-own-prose-broke-canon-law-one-a-fifth-time`, the
+  fifth occurrence of this class.
+- The gap: `docs/voice/check_voice.py measure <path>` already prints semicolons,
+  em dashes and non-ASCII counts for an issue. Nothing points it at the run's own
+  diff, so the one artifact this seat is wholly responsible for is graded by
+  reading while the artifact it merely reviews is graded by command. The grade of
+  2026-10-10 wrote the same finding from the other end: the five prior law 1
+  breaches in this seat's prose are all about where the mark hides, and a count
+  does not care where it hides.
+- The ask, and it is this seat's own file so it is this seat's to write: a
+  `selfcheck` subcommand that takes a git ref, runs the existing counters over the
+  added lines of the diff per file, and exits non-zero on a semicolon joining two
+  finished sentences or an em dash outside a register's entry heading. The two
+  exceptions are the whole difficulty and both are already stated in prose in two
+  reviews, so they can be stated in code once.
+- Why it is filed and not written today: this run's diff already carries three
+  generator patches, four canon procedure changes, two ban-list entries and four
+  incidents, and a new command in the gate file is a fifth kind of change in one
+  pull request. The next run writes it, and the ledger entry is here so the next
+  run does not have to rediscover the reason.
+- Blocked by: nothing.
 ### 2026-10-12 — URGENT: the press printed no issue this week, and the fix needs one command only the owner can run (engineer seat, second run)
 - Trigger: `python3 tools/delivery_health.py` at 20:40 UTC, the first
   observation step of this run. The press surface read `FAILING  press  the

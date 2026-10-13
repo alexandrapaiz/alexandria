@@ -28,20 +28,30 @@ caught a live defect on the run that wrote it.
    identifier apart, and fails when one artifact disagrees with itself about
    the version suffix.
 
+6. `sweep`, the ledger filing of 2026-09-27. The standing rule that an entry
+   ends in the generator change enforcing it was written on 2026-09-25, so
+   nothing ever asked whether entries 1 to 50 landed anywhere. This holds the
+   answer as data rather than as a pass somebody ran once: every one of the
+   fifty is mapped to the text in `prompts/digest.md` that enforces it, or to
+   the ledger entry saying why no prompt can. It fails when an anchor leaves
+   the generator and when an entry in that range has no row at all.
+
 Not wired to anything yet, which is the honest half of L-A22: until a command
-that already runs calls this, these three are enforced at the reliability of
-someone choosing to type it. Filed in docs/ideas.md for the engineer, to move
-to tools/ and add to .github/workflows/checks.yml beside check_registers.py.
+that already runs calls this, these are enforced at the reliability of someone
+choosing to type it. Filed in docs/ideas.md for the engineer, to move to
+tools/ and add to .github/workflows/checks.yml beside check_registers.py.
 The stronger form of check 4 needs the corpus and is filed with it.
 
 Usage:  python3 docs/voice/check_voice.py
-          [enforcements|stale|measure|links|delivery|all] [path...]
+          [enforcements|stale|measure|links|delivery|sweep|all] [path...]
+        python3 docs/voice/check_voice.py enforcements <git-ref>
 Exit:   1 if any check reports a finding, 0 if clean.
 """
 import collections
 import html
 import pathlib
 import re
+import subprocess
 import sys
 import unicodedata
 
@@ -71,7 +81,21 @@ def entries(text):
 LANDED = re.compile(r'LANDED\s+(\S+?):\s*"([^"]+)"')
 
 
-def enforcements():
+def at_ref(ref, path):
+    """The bytes of one repository path at one git ref, or None if absent.
+
+    Ban list 105. Every LANDED line in this register is checked against the
+    working tree, and the working tree is not what writes the issue. The press
+    runs an image built by a deploy, so `enforcements` run with no argument
+    answers a question about a branch and reports it in the voice of a question
+    about the product. Given a ref it answers the second question instead.
+    """
+    out = subprocess.run(["git", "show", f"{ref}:{path}"], cwd=ROOT,
+                         capture_output=True)
+    return out.stdout.decode("utf-8", "replace") if out.returncode == 0 else None
+
+
+def enforcements(ref=None):
     """Ban list 92. An entry's enforcement ending may carry one or more
 
     LANDED <path>: "exact text"
@@ -108,7 +132,11 @@ def enforcements():
         for path, text in claims:
             f = ROOT / path
             if path not in cache:
-                cache[path] = norm(f.read_text()) if f.exists() else None
+                if ref:
+                    raw = at_ref(ref, path)
+                    cache[path] = norm(raw) if raw is not None else None
+                else:
+                    cache[path] = norm(f.read_text()) if f.exists() else None
             hay = cache[path]
             if hay is None:
                 missing.append((num, path, text, "no such file"))
@@ -118,6 +146,7 @@ def enforcements():
                 missing.append((num, path, text, "not in file"))
 
     verified = {n for n, _, _ in ok} | {n for n, _, _, _ in missing}
+    print(f"read from   {ref or 'the working tree'}")
     print(f"entries carrying an 'Enforced' ending      {len(prose) + len(verified)}")
     print(f"  carrying a checkable LANDED line         {len(verified)}")
     print(f"  prose only, verifiable by reading        {len(prose)}")
@@ -128,6 +157,136 @@ def enforcements():
     if prose:
         print("  prose only: " + ", ".join(map(str, prose)))
     return 1 if missing else 0
+
+
+# Ban list entries 1 to 50, each against the text in prompts/digest.md that
+# enforces it. The standing "an entry is not finished when it is written" rule
+# arrived on 2026-09-25 and binds entries from 51 on, so this range was never
+# asked the question, and the gap was filed in docs/ideas.md on 2026-09-27 as
+# work for this seat with no dependency on anyone. Executed 2026-10-09.
+#
+# Why a map and not a one-time pass. The filing asked for fifty endings written
+# into the register, and the register's own rule says to seed the quoted form
+# rather than backfill it, "because a LANDED line asserted without checking the
+# generator is worse than the prose it replaced". Forty-six of these are the
+# same ending pointing at four places in one file, so written as prose they are
+# forty-six sentences nothing re-reads. Written here they are forty-six strings
+# a command re-reads every run, which is the whole difference L-A22 names.
+#
+# A row is the shortest distinctive phrase that carries the rule, never the
+# whole rule, because the rule gets rewritten and the phrase survives.
+SWEEP = {
+    1: "the word that fills the slot where a fact belongs",
+    2: "One precise adjective, or the number the three were standing in for",
+    3: "Never let three sentences in a row scan the same length and shape",
+    4: "The hedge that shrinks a claim the evidence has already graded",
+    5: "the intensifier that inflates one",
+    6: "never the rhetorical kind that answers itself",
+    7: "never let it recap the issue",
+    8: "does this add information, or does it tell the reader how to feel",
+    9: "None of those subjects is anybody",
+    10: "a closing summary of what the reader just finished reading",
+    11: "And no colon. The shape the mark makes here is a short label",
+    12: "every item weighted alike however much each actually matters",
+    13: "Plain ASCII punctuation, always",
+    14: "could a subscriber who has never seen alexandria's codebase say what",
+    15: "Printing everything `deep_reads` returned is the opposite of judgment",
+    16: "Group the rows by paper yourself",
+    17: '"Welcome to another edition" and "Happy Monday" are the other failure',
+    18: "Frame the content, never the section",
+    19: '"Compounding", "New and unproven", "Key takeaways", "What this means"',
+    20: "Those are this file's internal names for the slots",
+    21: "Padding a thin day and truncating a heavy one are the same failure",
+    22: "The date does NOT belong in this line",
+    23: "Then say what is in here, in one line, before any interpreting starts",
+    24: "A number without its comparison is not finished, in any section",
+    25: "Then what a builder does differently now.",
+    26: "club words until the sentence itself issues membership",
+    27: "no paragraph past about 100 words",
+    28: "No sentence about the future that no result can check",
+    29: "assert that two papers share people",
+    30: "a label is a label whether it sits at heading level or in bold",
+    31: '"Builders should X" three items running is the spine showing through',
+    32: "are the field's nicknames",
+    33: "every run of bold or italic text sitting alone on its own line",
+    34: "names one of alexandria's own tables at a reader who has never heard",
+    35: "A slot the day gave nothing to holds nothing, and its heading goes",
+    36: "it is the question that decides, never a list",
+    37: "The test is removal",
+    38: "That colleague is serious",
+    39: "Do not open those lines with a verb of presentation",
+    40: "full stop that went untyped",
+    41: "Assume every string you were handed is contaminated",
+    42: "is a single reader rather than the field moving",
+    43: "A stored sentence kept for empty days is furniture the moment it runs",
+    45: 'Find every sentence in the issue whose subject is "you" and whose verb',
+    46: "The second is the text in front of any colon",
+    47: "A line of plain meaning after every result",
+    48: "that is entirely bold, standing alone",
+    49: "One kind is a failing issue",
+    50: "If you find yourself writing the concession, you do not have",
+}
+
+# The entries in that range no edit to this generator can reach, with the
+# ledger entry that holds each one. Entry 44 is the whole class: it is about
+# generators other than this one, and the file it was written from has never
+# been on main. Entry 43 is anchored above AND filed here, because the rule
+# landed in this generator and the specimen it was written from lives in the
+# other one, so closing the entry needs both halves.
+SWEEP_FILED = {
+    43: "2026-09-24 One craft layer, two cadence files",
+    44: "2026-09-24 One craft layer, two cadence files",
+}
+
+
+def sweep():
+    """Ban list 1 to 50 against the generator, as a standing check.
+
+    L-A21 says a gate that saw nothing is a failure rather than a quiet pass,
+    so this fails three ways: an anchor that has left prompts/digest.md, an
+    entry in the range with no row at all, and a row for an entry number the
+    register does not have.
+
+    The domain comes from the register and never from the map, which is what
+    keeps this from being the enumeration L-A26 and ban list 36 both warn
+    about: a list of names answers confidently about the world it was written
+    in. Here the register decides which entries must be covered and the map
+    only answers for them, so an entry this file has never heard of fails
+    rather than passing silently.
+
+    What it cannot see, which is the other half of L-A21. An amendment. Four
+    of these fifty say "Amended" in their own text, 13, 14, 16 and 33, and
+    widening is what each amendment did: 13 went from three characters to
+    every character outside ASCII, and 33 from three italic labels to four.
+    The anchor checks that the entry is enforced somewhere and
+    cannot check that the enforcement is as wide as the entry became, so an
+    amendment that outgrows its rule passes here. That is a reading, and it
+    belongs to pass 4 of the grading procedure rather than to this command.
+    """
+    have = set(entries(BAN.read_text()))
+    want = {n for n in have if n <= 50}
+    hay = norm(DIGEST.read_text())
+    gone = [(n, a) for n, a in sorted(SWEEP.items()) if norm(a) not in hay]
+    unmapped = sorted(want - set(SWEEP) - set(SWEEP_FILED))
+    phantom = sorted((set(SWEEP) | set(SWEEP_FILED)) - have)
+    print(f"ban list entries 1 to 50                   {len(want)}")
+    print(f"  anchored in prompts/digest.md            {len(SWEEP)}")
+    print(f"  no prompt can reach, filed instead       {len(SWEEP_FILED)}")
+    for n, where in sorted(SWEEP_FILED.items()):
+        print(f"  FILED   entry {n:>3}  docs/ideas.md: {where}")
+    for n, a in gone:
+        print(f'  FAIL    entry {n:>3}  anchor gone: "{a[:56]}"')
+    for n in unmapped:
+        print(f"  FAIL    entry {n:>3}  in the register and in no row here")
+    for n in phantom:
+        print(f"  FAIL    entry {n:>3}  row here and not in the register")
+    if not (gone or unmapped or phantom):
+        print("  every anchor is still in the generator")
+    print()
+    print("An anchor is the phrase, never the rule. A rule that was rewritten")
+    print("and still enforces the entry keeps its row. A rule that was deleted")
+    print("takes the entry's enforcement with it, and that is what fails here.")
+    return 1 if (gone or unmapped or phantom) else 0
 
 
 def stale():
@@ -424,12 +583,18 @@ def main():
     paths = sys.argv[2:]
     rc = 0
     takes_paths = {"measure", "links", "delivery"}
-    for name, fn in (("enforcements", enforcements), ("stale", stale),
-                     ("measure", measure), ("links", links),
+    # `enforcements` takes a git ref rather than a path, because ban list 105
+    # is about the file the press runs and that file is only reachable through
+    # the commit the deploy was built from.
+    for name, fn in (("enforcements", enforcements), ("sweep", sweep),
+                     ("stale", stale), ("measure", measure), ("links", links),
                      ("delivery", delivery)):
         if which in (name, "all"):
             print(f"==== {name} ====")
-            rc |= fn(paths) if (name in takes_paths and paths) else fn()
+            if name == "enforcements":
+                rc |= fn(paths[0]) if (which == name and paths) else fn()
+            else:
+                rc |= fn(paths) if (name in takes_paths and paths) else fn()
             print()
     return rc
 
