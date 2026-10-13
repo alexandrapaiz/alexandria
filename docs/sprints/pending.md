@@ -1,3 +1,70 @@
+## Updated 2026-10-13, ~18:35 UTC (standup): launch day itself still shows the gap, two Tier B merges, one dispatch attempted and refused
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony. Yesterday's
+ceremony (#281) never merged; built on it this run rather than branching
+blind into the same two files, and it supersedes it as #289. Full account
+in `docs/sprints/dispatch-queue.md`.
+
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at
+ADR-40 (2026-10-05) and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike on that evidence.
+
+**The three items below carry forward from yesterday, re-checked against
+today's own evidence rather than assumed unchanged:**
+
+1. **Today's press send (launch day itself) is still missing, and it got
+   worse, not better.** `python3 tools/delivery_health.py`, run this
+   standup against a live `DATABASE_URL`: press and site both `FAILING`,
+   2026-W41 missing; pipeline `FAILING`, claims stalled 6 days (was 5
+   yesterday), 2223 papers waiting (was 2173). Yesterday's sprint read
+   item 1 as closed via #282 — that PR shipped the degraded-path
+   mechanism, not a resend, and the mechanism cannot run because no agent
+   token holds `modal deploy` (`INC-2026-10-12-the-deploy-ladder-refuses-
+   the-fix-for-the-outage-it-is-in`, already filed). The reachable half of
+   the fix is in `main`; the unreachable half is a `modal deploy` only you
+   or the chair can run. Dated 2026-10-13, carried from 2026-10-12.
+2. **Merge PR #60**, the pre-send quality checklist — **23 days** open,
+   Tier C (`prompts/daily.md`), conflicting, unchanged for the fourth
+   consecutive standup/ceremony. Only your merge opens it. Dated
+   2026-09-20.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **17 days**. #285 merged yesterday and built the full
+   checkout/webhook integration against Polar's documented API, so this
+   really is the one remaining step now: create the account, paste the
+   `POLAR_*` secrets, and the spine goes live with no further engineer
+   day needed. Dated 2026-09-26.
+
+**Merged this run (Tier B, §10).** #283 (writer, digest/voice quality bar)
+clean; #284 (research, claim-graph precision brief) had a docs-only append
+conflict with #283 in `docs/agents/incidents.md`, resolved by keeping both
+entries (§10 rule 5 permits this). `main`'s next `checks.yml` run came back
+green after both.
+
+**One dispatch attempted, refused at the API, not by rule.** Frontend
+(sprint item 4, the Left-Behind Index, carried two sprints, no frontend PR
+ever attempted it) fired clean against every hard stop and `PM_DISPATCH_
+ENABLED=true`, and GitHub returned `403`, the same `INC-2026-09-24-
+dispatch-403` every PM pass has hit for 18+ days. Exact command in
+`docs/sprints/dispatch-queue.md` for a human to run.
+
+**Still open, named rather than acted on:** #272 (exo, Tier C — touches
+three agent charters including this seat's own, also conflicting), #205
+(finance, draft, dormant seat), #203 (okr, draft), #288 (engineer, sprint
+item 3, a run in progress as this standup was written — not touched while
+its run is live), #287 (a different PM-surface pull request from a
+different invocation path, `alexandria-pm/2026-10-13-message-second-pass`,
+six hours stale at last check; not enough visibility into that system to
+judge it from here, named rather than guessed at).
+
+**Board.** Moved the one card with an obvious match to this run's merges
+(`59fcc1f4`, the writer's quality-bar item) to Done with the PR link.
+Commented on the frontend card (`03029cad`) naming the dispatch attempt.
+Did not touch the stale sprint object (still reads `sprint-2026-10-05`,
+"The press runs itself") — that is the full board reconciliation the
+2026-10-10 standup already flagged as ceremony-sized, and yesterday's
+ceremony's own claimed rename does not appear to have taken; worth the
+next ceremony's attention rather than a second attempt here.
+
 ## Updated 2026-10-12, Monday ceremony: today's press send is the headline, three Tier B merges, the ledger groomed back to 2026-09-28
 
 **Reconciliation first, per charter §1d.** Read `docs/decisions.md` (stops
