@@ -321,11 +321,19 @@ def test_the_scheduled_run_is_unchanged_by_the_trace():
     """weekly() passes no trace, so its call is byte-for-byte what it was."""
     print("the trace is an addition to the rehearsal, not to Monday")
     weekly_body = SOURCE.split("def weekly()")[1].split("@app.function")[0]
-    check("weekly calls write_digest without a trace",
-          "write_digest(payload, prompt, available)" in weekly_body,
+    # `print_issue` since 2026-10-12, which is `write_digest` plus the short
+    # edition behind it. The property under test is unchanged and is the whole
+    # point of the assertion: Monday passes no trace, so Monday's call is
+    # byte-for-byte what it was.
+    check("weekly writes the issue without a trace",
+          "print_issue(payload, prompt, short_prompt,\n"
+          "                                           available)" in weekly_body,
           weekly_body[-800:])
     check("trace defaults to None on call_model",
           "trace: dict | None = None" in SOURCE)
+    check("and the rehearsal is the one that passes one",
+          "print_issue(payload, prompt, short_prompt,\n"
+          "                                       available, trace)" in SOURCE)
 
 
 def test_the_read_connection_closes_before_the_model_call():

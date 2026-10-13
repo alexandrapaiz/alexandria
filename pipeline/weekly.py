@@ -184,6 +184,12 @@ image = (
     .pip_install("psycopg[binary]==3.2.4", "httpx==0.28.1", "markdown==3.7",
                  "tiktoken==0.8.0")
     .add_local_file("prompts/digest.md", "/root/prompts/digest.md")
+    # The degraded edition. A free-tier model cannot take the full
+    # issue by more than a factor of ten, and on 2026-10-12 that meant
+    # a week with no issue at all. This prompt is what the press writes
+    # from instead of nothing; pipeline/budget.py sizes it.
+    .add_local_file("prompts/digest-short.md",
+                    "/root/prompts/digest-short.md")
     # the budget guard runs in the container too, so a request that cannot fit
     # is refused here with the arithmetic rather than 413'd by Groq
     .add_local_file("pipeline/budget.py", "/root/budget.py")
@@ -514,7 +520,17 @@ class PressCannotPrint(RuntimeError):
     This is the exception the owner gets an email about. It carries the whole
     trail, one line per model, because the point of the email is that she
     should not have to open Modal's logs to know what happened.
+
+    `called` is the subset that was actually sent a request and answered with
+    an error. The short edition skips those rather than spending four more
+    retries and up to three minutes of backoff on a provider that just refused
+    four times, which matters because the press's Modal timeout is 1800
+    seconds and the two walks share it.
     """
+
+    def __init__(self, message: str, called: set[str] | None = None):
+        super().__init__(message)
+        self.called = called or set()
 
 
 # Depth sections got truncated at the default cap, so the issue asks for room.
@@ -523,6 +539,20 @@ class PressCannotPrint(RuntimeError):
 # not the output. The one issue the press has actually written came to 1,103
 # tokens, so 6,000 is generous rather than tight.
 MAX_COMPLETION_TOKENS = 24000  # kimi-k2.6 reasons before it writes; 6000 was consumed by hidden thinking (finish_reason length, empty content, 2026-09-24)
+
+# The two editions. The full one is what every healthy Monday prints. The short
+# one exists because of INC-2026-10-12: the primary stopped answering, the three
+# Groq entries below cannot take the full issue by more than a factor of ten,
+# `write_digest` walked the whole list, and 2026-W41 was never written. A short
+# issue that reaches a reader beats a missing one, and the issue says which it
+# is rather than letting a reader wonder why it got thin.
+EDITION_FULL = "full"
+EDITION_SHORT = "short"
+
+#: What the reader is told, by the press and not by the model. Put here rather
+#: than left to the generator because a label the model can forget is a label
+#: that goes missing on the week it matters.
+SHORT_EDITION_NOTE = "*A short edition. This week's issue is the week in brief.*"
 
 # Failure 2 of INC-2026-09-24-press-provider-migration: httpx defaults to a
 # 5-second read timeout and kimi-k2.6 was still reasoning. This was a literal
@@ -539,6 +569,7 @@ CLIENT_TIMEOUT_SECONDS = 1500
 # real strings, rather than a copy of them that can drift.
 ALARM_SUBJECT_CANNOT_PRINT = "The press could not print this week's issue"
 ALARM_SUBJECT_NOT_SENT = "This week's issue was written but not sent"
+ALARM_SUBJECT_SHORT_EDITION = "This week's issue went out as the short edition"
 
 
 def log_limits(resp, model: str) -> None:
@@ -627,7 +658,8 @@ def check_availability() -> set[str]:
 
 
 def call_model(model: str, prompt: str, user: str,
-               trace: dict | None = None) -> str:
+               trace: dict | None = None,
+               max_completion: int = MAX_COMPLETION_TOKENS) -> str:
     """One model, with backoff on 429. Raises so the caller can move down the list.
 
     `trace`, when given, is filled with what the provider said about the call
@@ -659,7 +691,10 @@ def call_model(model: str, prompt: str, user: str,
 
     body = {
         "model": model,
-        "max_completion_tokens": MAX_COMPLETION_TOKENS,
+        # The short edition sends a smaller one, derived from the model's own
+        # published minute in `budget.short_issue_room`. The default is the full
+        # issue's, so every existing caller is unchanged.
+        "max_completion_tokens": max_completion,
         "messages": [
             {"role": "system", "content": prompt},
             {"role": "user", "content": user},
@@ -762,6 +797,10 @@ def write_digest(payload: dict, prompt: str,
 
     guard = budget()
     tried: list[str] = []
+    #: Models that answered with an error, as opposed to the ones that were
+    #: refused by the arithmetic before a request went out. The short edition
+    #: below is told, so it does not spend its retries on them again.
+    called: set[str] = set()
 
     for model in FALLBACK_MODELS:
         if available is not None and model not in available:
@@ -788,6 +827,7 @@ def write_digest(payload: dict, prompt: str,
         try:
             body = call_model(model, prompt, user, trace)
         except (ModelGone, RateLimited, MissingKey) as exc:
+            called.add(model)
             tried.append(f"{model}: {exc}")
             print(f"{model} failed ({exc}); trying the next fallback")
             continue
@@ -796,8 +836,102 @@ def write_digest(payload: dict, prompt: str,
 
     raise PressCannotPrint(
         "every model in the press's fallback list failed:\n  "
-        + "\n  ".join(tried)
+        + "\n  ".join(tried),
+        called,
     )
+
+
+def write_short_issue(payload: dict, short_prompt: str,
+                      available: set[str] | None = None,
+                      trace: dict | None = None,
+                      skip: set[str] | None = None) -> tuple[str, str]:
+    """The degraded edition. Returns (body, model used).
+
+    The same walk down the same list, with three differences and no others: the
+    short prompt, a reservation derived from the model's own published minute
+    rather than the full issue's 24,000, and a payload trimmed against that
+    reservation. `budget.short_issue_room` holds the arithmetic and
+    `budget.check_short_issue` fails the deploy when the prompt grows past what
+    the free tier can take.
+
+    Why this exists at all, in one paragraph, because the reason is a date.
+    `prompts/digest.md` is 1,919 lines, so the press's request on a free-tier
+    model is over budget by more than a factor of ten, and the comment beside
+    FALLBACK_MODELS has said so since incident 24: the Groq entries "cannot
+    print the issue at the current prompt size", kept "for the day the prompt
+    gets shorter or a ceiling moves". Neither ever happened. On 2026-10-12 the
+    primary stopped answering, the walk above rejected all three without
+    sending a request, and /library/2026-W41 is a 404. A list of models that
+    can never answer is not a fallback, it is a comforting list, and this is
+    the function that makes it a real one.
+    """
+    import copy
+
+    guard = budget()
+    tried: list[str] = []
+    skip = skip or set()
+
+    for model in FALLBACK_MODELS:
+        if model in skip:
+            tried.append(f"{model}: already answered with an error on the full "
+                         "edition; not asked twice")
+            continue
+        if available is not None and model not in available:
+            provider = guard.MODELS.get(model, {}).get("provider", "?")
+            tried.append(f"{model}: not listed by {provider} for this key; "
+                         "skipped without a request")
+            continue
+        try:
+            room = guard.short_issue_room(model, short_prompt)
+        except (KeyError, LookupError) as exc:
+            tried.append(f"{model}: cannot be sized. {exc}")
+            continue
+        if not room.fits:
+            tried.append(f"{model}: {room.summary()}")
+            continue
+        try:
+            user = guard.fit_payload(copy.deepcopy(payload), short_prompt,
+                                     room.reservation, model)
+        except (guard.BudgetExceeded, KeyError) as exc:
+            tried.append(f"{model}: the short payload does not fit. {exc}")
+            continue
+        print(f"{model}: short edition, payload {len(user)} chars, "
+              f"{room.reservation}-token reply")
+        try:
+            body = call_model(model, short_prompt, user, trace,
+                              max_completion=room.reservation)
+        except (ModelGone, RateLimited, MissingKey) as exc:
+            tried.append(f"{model}: {exc}")
+            print(f"{model} failed ({exc}); trying the next fallback")
+            continue
+        print(f"short edition written by {model}")
+        return body, model
+
+    raise PressCannotPrint(
+        "no model could write even the short edition:\n  " + "\n  ".join(tried)
+    )
+
+
+def print_issue(payload: dict, prompt: str, short_prompt: str,
+                available: set[str] | None = None,
+                trace: dict | None = None) -> tuple[str, str, str]:
+    """The full issue if anything can take it, the short edition if not.
+
+    Returns (body, model, edition). The order is not negotiable and the reason
+    is the ban list rather than the budget: the full prompt carries 103 entries
+    of docs/voice/ban-list.md and the short one carries the few that fit, so the
+    short edition is strictly the lesser issue and is only ever reached when the
+    alternative is no issue.
+    """
+    try:
+        body, model = write_digest(payload, prompt, available, trace)
+        return body, model, EDITION_FULL
+    except PressCannotPrint as exc:
+        print(f"the full issue could not be written:\n{exc}")
+        print("falling through to the short edition")
+        body, model = write_short_issue(payload, short_prompt, available,
+                                        trace, skip=exc.called)
+        return body, model, EDITION_SHORT
 
 
 # The standing introduction under the title. Fixed in code, not written by the
@@ -861,11 +995,20 @@ def ensure_fresh_title(body: str, prior_titles: list[str], model: str, dates: st
     return "# " + fresh + ("\n" + rest if rest else "")
 
 
-def add_masthead(body: str) -> str:
+def add_masthead(body: str, edition: str = EDITION_FULL) -> str:
+    """The standing line under the title, plus the edition when it is not the full one.
+
+    The note is added here rather than asked of the generator because a label
+    the model can forget is a label that goes missing on the week it matters,
+    and the week it matters is the only week it is ever printed.
+    """
+    block = MASTHEAD
+    if edition == EDITION_SHORT:
+        block = f"{MASTHEAD}\n\n{SHORT_EDITION_NOTE}"
     lines = body.split("\n")
     if lines and lines[0].startswith("#"):
-        return "\n".join([lines[0], "", MASTHEAD, ""] + lines[1:])
-    return f"{MASTHEAD}\n\n{body}"
+        return "\n".join([lines[0], "", block, ""] + lines[1:])
+    return f"{block}\n\n{body}"
 
 
 def email_render():
@@ -1310,6 +1453,7 @@ def preflight() -> str:
     guard = budget()
     available = check_availability()
     prompt = open("/root/prompts/digest.md").read()
+    short_prompt = open("/root/prompts/digest-short.md").read()
     payload_json = guard.encode(guard.worst_case_payload())
     choice = guard.choose_model(FALLBACK_MODELS, available, prompt,
                                 payload_json, MAX_COMPLETION_TOKENS)
@@ -1318,12 +1462,30 @@ def preflight() -> str:
     if choice.model:
         print(f"  cost at list price, worst case: ${choice.report.cost:.4f} "
               "an issue")
-    if not choice.model:
+        return f"preflight ok: {choice.model} would write the issue"
+
+    # The full issue has nowhere to go. Before 2026-10-12 this raised, and
+    # raising was the whole answer: the chain stopped at the second `&&` and the
+    # press was not deployed. That is right when the press has nothing to print
+    # and wrong the moment it does, because the gate was then refusing to deploy
+    # the degraded path on the exact day the degraded path is what runs.
+    print("no model can take the FULL issue. Asking the short edition:")
+    short = [m for m in FALLBACK_MODELS
+             if (available is None or m in available)
+             and m in guard.MODELS
+             and guard.short_issue_room(m, short_prompt).fits]
+    for model in FALLBACK_MODELS:
+        if model in guard.MODELS:
+            print(f"  {guard.short_issue_room(model, short_prompt).summary()}")
+    if not short:
         raise PressCannotPrint(
-            "preflight: no model in the fallback list can write this issue.\n"
-            + choice.summary()
+            "preflight: no model in the fallback list can write this issue, "
+            "and none can write the short edition either, so a deploy today "
+            "installs a press that prints nothing.\n" + choice.summary()
         )
-    return f"preflight ok: {choice.model} would write the issue"
+    return (f"preflight ok on the degraded path: no model can take the full "
+            f"issue, and {short[0]} would write the short edition. The reader "
+            f"gets an issue and it says it is short. Fix the head of the list.")
 
 
 @app.function(
@@ -1364,7 +1526,15 @@ def weekly() -> str:
 
     week, dates = week_just_ended()
     prompt = open("/root/prompts/digest.md").read()
-    sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
+    short_prompt = open("/root/prompts/digest-short.md").read()
+    # Which prompt wrote the issue is not known until the walk is over, so the
+    # sha is taken from whichever one did. A row that says `digest.md` for an
+    # issue the short edition wrote would be a record of record that is wrong
+    # about the one fact it exists to hold.
+    shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
+            EDITION_SHORT: hashlib.sha256(
+                short_prompt.encode()).hexdigest()[:12]}
+    sha = shas[EDITION_FULL]
 
     try:
         # Run-start availability check, before a single token is spent and
@@ -1404,9 +1574,11 @@ def weekly() -> str:
         # idle inside a transaction (IdleInTransactionSessionTimeout,
         # 2026-09-24: the issue was written and could not be saved). The
         # model call runs with no connection open; a fresh one saves and sends.
-        body, model = write_digest(payload, prompt, available)
+        body, model, edition = print_issue(payload, prompt, short_prompt,
+                                           available)
+        sha = shas[edition]
         body = ensure_fresh_title(body, prior_titles, model, dates)
-        body = add_masthead(body)
+        body = add_masthead(body, edition)
         with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
             conn.execute(
                 """
@@ -1419,6 +1591,21 @@ def weekly() -> str:
                 (week, body, model, sha),
             )
             conn.commit()
+            if edition == EDITION_SHORT:
+                # Not a failure, so it does not raise, and not a success worth
+                # passing over either. DoD clause 4 of sprint 2026-10-05 wants a
+                # failed step to reach somebody, and a degraded print is the
+                # case between the two: the reader got an issue and the press is
+                # still running on the wrong engine.
+                print(notify_owner(
+                    ALARM_SUBJECT_SHORT_EDITION,
+                    f"The {week} issue went out as the short edition, written "
+                    f"by {model} at prompt {sha}.\n\n"
+                    "That means no model in the press's list could take the "
+                    "full issue, which in practice means the primary did not "
+                    "answer. The reader got an issue and it says it is short. "
+                    "What needs fixing is the head of the list, and "
+                    "`python3 pipeline/budget.py` prints the arithmetic."))
             try:
                 print(send_newsletter(conn, week, body))
             except Exception as exc:
@@ -1459,7 +1646,7 @@ def weekly() -> str:
              modal.Secret.from_name("moonshot"), modal.Secret.from_name("groq")],
     timeout=1800,
 )
-def rehearse() -> str:
+def rehearse(allow_fallback: bool = False) -> str:
     """One real print, to a scratch row, to nobody. The third gate.
 
     `docs/agents/runtime-changes.md` gives a provider or model change three
@@ -1470,6 +1657,7 @@ def rehearse() -> str:
     INC-2026-09-24-press-provider-migration was on this question.
 
         modal run pipeline/weekly.py::rehearse
+        modal run pipeline/weekly.py::rehearse --allow-fallback
 
     It is `weekly()` with two differences and no others. It writes to
     `press_rehearsals` rather than `digests`, so it cannot overwrite a
@@ -1489,6 +1677,14 @@ def rehearse() -> str:
     chain stops before the deploy. No email: a human is watching a rehearsal
     by definition, and the emailing path belongs to the scheduled run where
     nobody is.
+
+    `--allow-fallback` is the hatch for the day the head of the list is itself
+    what is broken and the change in the image is the degraded path the outage
+    needs. `budget.head_receipt` holds the argument and the morning that proved
+    it. With the hatch open the rehearsal prints whatever edition the press
+    would actually print, which on that day is the short one, and the receipt
+    row carries the short prompt's sha so it is a receipt for what ran rather
+    than for what was hoped.
     """
     import json
     import os
@@ -1497,7 +1693,11 @@ def rehearse() -> str:
 
     week, dates = week_just_ended()
     prompt = open("/root/prompts/digest.md").read()
-    sha = hashlib.sha256(prompt.encode()).hexdigest()[:12]
+    short_prompt = open("/root/prompts/digest-short.md").read()
+    shas = {EDITION_FULL: hashlib.sha256(prompt.encode()).hexdigest()[:12],
+            EDITION_SHORT: hashlib.sha256(
+                short_prompt.encode()).hexdigest()[:12]}
+    sha = shas[EDITION_FULL]
 
     available = check_availability()
 
@@ -1527,8 +1727,10 @@ def rehearse() -> str:
     # cannot find failure 3 again.
 
     trace: dict = {}
-    body, model = write_digest(payload, prompt, available, trace)
-    body = add_masthead(body)
+    body, model, edition = print_issue(payload, prompt, short_prompt,
+                                       available, trace)
+    sha = shas[edition]
+    body = add_masthead(body, edition)
 
     with psycopg.connect(os.environ["DATABASE_URL"]) as conn:
         row_id = conn.execute(
@@ -1561,22 +1763,38 @@ def rehearse() -> str:
     # is written first and unconditionally, because a rehearsal that printed
     # the wrong thing is still evidence and deleting it would be deleting the
     # finding. What is conditional is calling the run a success.
-    expected = (FALLBACK_MODELS[0], sha)
+    # The head, and the hatch, AFTER the row. The row is written first and
+    # unconditionally for the reason the comment above gives, and that ordering
+    # is held by tests/test_press_rehearsal.py: a rehearsal that printed the
+    # wrong thing is still evidence, so the refusal must never be what stops the
+    # evidence from existing.
+    if edition == EDITION_SHORT:
+        print(f"  EDITION: short, at prompt {sha}. The full issue fits no "
+              "model in this list today, so this is what Monday would print.")
+    refusal, forgiven = budget().head_receipt(
+        model, FALLBACK_MODELS, allow_fallback,
+        gate="pipeline/weekly.py::rehearse")
+    if refusal:
+        raise PressCannotPrint(refusal)
+    if forgiven:
+        print(forgiven)
+
+    # And then that the ROW holds the pair the print actually produced, because
+    # a receipt is only evidence if it is a receipt for the print that happened.
+    expected = (model, sha)
     got = tuple(receipt) if receipt else (None, None)
     if got != expected:
         raise PressCannotPrint(
-            "the rehearsal wrote a row, but not a receipt for what is about "
-            "to be deployed.\n"
+            "the rehearsal wrote a row, but not a receipt for the print it "
+            "just made.\n"
             f"  row {row_id}: model {got[0]!r}, prompt_sha {got[1]!r}\n"
-            f"  deploying:   model {expected[0]!r}, prompt_sha {expected[1]!r}\n"
-            "A receipt from a different model, or from a different prompt, is "
-            "not a receipt. If the head of FALLBACK_MODELS could not write "
-            "and a fallback did, that is the finding: fix the head before "
-            "deploying, because Monday will meet it first."
+            f"  printed by:  model {expected[0]!r}, prompt_sha {expected[1]!r}\n"
+            "A row that disagrees with the run that wrote it is not evidence "
+            "of anything. The write itself is what to look at."
         )
-    return (f"rehearsal ok: {model} printed {word_count(body)} words for "
-            f"{week} at prompt {sha}, saved to press_rehearsals {row_id}, "
-            "sent to nobody")
+    return (f"rehearsal ok: {model} printed {word_count(body)} words of the "
+            f"{edition} edition for {week} at prompt {sha}, saved to "
+            f"press_rehearsals {row_id}, sent to nobody")
 
 
 @app.function(

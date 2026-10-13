@@ -196,6 +196,17 @@ UNCOVERED = {
     # and pinned for the same reason: no seat can add it to a workflow.
     "tests/test_voice_enforcements.py",
     "tests/accounts.test.mjs",
+    # Added 2026-10-13 with the Polar integration, pinned for the same
+    # structural reason as every line above and worth more than any of them.
+    # These two hold the signature check that stands between a stranger and
+    # the paid surfaces, and the gate that decides who may open one. The
+    # staged replacement already runs both (measured at `52 of 52`), so this
+    # pin is not a judgement that they do not matter. It is the strongest
+    # argument in this set for applying item 17, because of everything in
+    # `tests/` these are the two files whose silence on a pull request would
+    # cost money rather than a red run.
+    "tests/polar.test.mjs",
+    "tests/test_polar.py",
     "tests/delivery.test.mjs",
     "tests/issues.test.mjs",
     "tests/markdown.test.mjs",
