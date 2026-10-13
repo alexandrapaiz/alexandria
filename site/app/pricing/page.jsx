@@ -1,8 +1,26 @@
 import Waitlist from "../components/Waitlist";
+import { checkoutOffers } from "../../lib/polar-core";
 
 export const metadata = { title: "Pricing — library of alexandr.ia" };
 
+// The three offers ADR-31 decided, read out of the environment rather than
+// hard-coded, so the owner can create the products in Polar and the page
+// becomes buyable without a deploy. Until a checkout link is set, each
+// paid plan shows what it costs and says the door is not open yet, which
+// is the truth and is better than a button that goes nowhere.
+function Offer({ offer }) {
+  if (!offer.live) return <span className="pill ghost">Opens shortly</span>;
+  return (
+    <a className="pill" href={offer.href}>
+      {offer.label}
+    </a>
+  );
+}
+
 export default function Pricing() {
+  const offers = checkoutOffers(process.env);
+  const byId = Object.fromEntries(offers.map((offer) => [offer.id, offer]));
+
   return (
     <main className="page">
       <p className="page-kicker">Pricing</p>
@@ -12,7 +30,7 @@ export default function Pricing() {
         the skill library, in the same files you read and your agents load,
         and the routines that keep it current as the research moves.
       </p>
-      <div className="tiers">
+      <div className="tiers three">
         <div className="tier">
           <h2>Digest</h2>
           <div className="price">Free</div>
@@ -22,7 +40,9 @@ export default function Pricing() {
             <li>Every issue in full</li>
             <li>The complete archive</li>
           </ul>
-          <span className="pill ghost">Opens October 13</span>
+          <a className="pill ghost" href="#waitlist">
+            Start reading
+          </a>
         </div>
         <div className="tier featured">
           <h2>Full access</h2>
@@ -35,7 +55,23 @@ export default function Pricing() {
             <li>Skill updates as the research moves</li>
             <li>Routines, once they ship</li>
           </ul>
-          <span className="pill">Opens October 13</span>
+          <p className="tier-note">
+            Three days free first, and the card is only charged when the
+            trial ends.{" "}
+            {byId.trial.live ? <a href={byId.trial.href}>Start the trial</a> : null}
+          </p>
+          <Offer offer={byId.monthly} />
+        </div>
+        <div className="tier">
+          <h2>Lifetime</h2>
+          <div className="price">$200</div>
+          <span className="per">once</span>
+          <ul>
+            <li>Everything in Full access</li>
+            <li>One payment, kept for good</li>
+            <li>No renewal to remember</li>
+          </ul>
+          <Offer offer={byId.lifetime} />
         </div>
       </div>
       <section className="waitlist-block" id="waitlist">
@@ -57,6 +93,11 @@ export default function Pricing() {
           reminder arrives and you decide to continue. Many subscription
           businesses count on being forgotten, and we would rather earn the
           renewal than collect it.
+        </p>
+        <p>
+          Payment and invoicing run through Polar, which is the seller of
+          record and handles tax wherever you are. Your card details never
+          reach this site.
         </p>
       </div>
     </main>
