@@ -762,6 +762,198 @@ def test_send_newsletter_has_no_recipient_query_of_its_own():
           "from subscribers" not in body)
 
 
+# ---------------- 2026-10-12: the week that got no issue ----------------
+#
+# INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue. The
+# primary stopped answering, the three Groq entries in the list cannot take the
+# full issue by more than a factor of ten, and /library/2026-W41 is a 404. These
+# tests hold the degraded edition's two halves: it can actually print on the
+# models that are left, and it never runs on a day the full issue can.
+
+
+def test_the_short_edition_fits_the_free_tier():
+    """The arithmetic that makes the degraded path real rather than comforting.
+
+    The failure this replaces is not a crash. It is a list of three models that
+    the guard had always reported as over budget, kept in production for "the
+    day the prompt gets shorter or a ceiling moves", which never came.
+    """
+    print("the short edition on the models that are left")
+    offprimary = budget.short_issue_offprimary()
+    check("the press has fallbacks off the primary's provider",
+          bool(offprimary), f"{weekly.FALLBACK_MODELS}")
+    printers = budget.short_issue_printers()
+    check("every one of them can print the short edition",
+          set(printers) == set(offprimary),
+          "cannot: " + ", ".join(
+              budget.short_issue_room(m).summary()
+              for m in offprimary if m not in printers))
+    check("and the guard that gates the deploy is green",
+          budget.check_short_issue() == [],
+          f"{budget.check_short_issue()}")
+    # The property that makes the arithmetic a guard and not a note.
+    room = budget.short_issue_room(offprimary[0])
+    check("the reservation covers the prompt's own word ceiling twice",
+          room.reservation >= room.needed,
+          f"{room.summary()}")
+    check("and the payload allowance holds one row of every stream",
+          room.payload_tokens >= room.floor, f"{room.summary()}")
+
+
+def test_the_short_edition_is_derived_and_not_chosen():
+    """Grow the prompt and every number moves. That is what makes it a guard.
+
+    A reservation written down beside the prompt is a reservation that is right
+    on the day it is written and wrong on the day somebody edits the prompt.
+    """
+    print("the short edition's numbers follow the prompt")
+    model = budget.short_issue_offprimary()[0]
+    small = budget.short_issue_text()
+    big = small + ("\nAn extra paragraph of editorial instruction. " * 60)
+    before = budget.short_issue_room(model, small)
+    after = budget.short_issue_room(model, big)
+    check("a longer prompt leaves a smaller reply",
+          after.reservation < before.reservation,
+          f"{before.reservation} -> {after.reservation}")
+    check("the split is even, to the token",
+          before.reservation + before.payload_tokens == before.room
+          and abs(before.reservation - before.payload_tokens) <= 1,
+          f"{before.summary()}")
+    check("a prompt that eats the whole minute cannot print",
+          not budget.short_issue_room(
+              model, small + ("filler. " * 4_000)).fits)
+    check("the word ceiling is read out of the prompt, not held here",
+          budget.short_issue_words("WORD CEILING: 123\n") == 123)
+
+
+def test_the_short_edition_only_runs_when_the_full_one_cannot():
+    """The order, asserted. The short edition is the lesser issue by design.
+
+    The full prompt carries 103 entries of docs/voice/ban-list.md and the short
+    one carries the few that fit the request, so a press that reached for the
+    short edition on a day the primary was answering would be a quality
+    regression nobody asked for.
+    """
+    print("the full edition first, always")
+    calls = []
+
+    def fake_call(model, prompt, user, trace=None,
+                  max_completion=weekly.MAX_COMPLETION_TOKENS):
+        calls.append((model, len(prompt), max_completion))
+        return "# A title\n\nThe issue."
+
+    saved = weekly.call_model
+    weekly.call_model = fake_call
+    try:
+        payload = budget.worst_case_payload()
+        prompt = (ROOT / "prompts" / "digest.md").read_text()
+        short = budget.short_issue_text()
+        body, model, edition = weekly.print_issue(payload, prompt, short)
+        check("the primary writes the full edition",
+              edition == weekly.EDITION_FULL and model == weekly.FALLBACK_MODELS[0],
+              f"{edition} by {model}")
+        check("at the full issue's own reservation",
+              calls[0][2] == weekly.MAX_COMPLETION_TOKENS, f"{calls}")
+        check("and the short prompt was never sent",
+              all(n != len(short) for _, n, _ in calls), f"{calls}")
+
+        # Now the Monday that happened: nothing on the primary's provider is
+        # available, which is what check_availability returns when the key is
+        # refused, and the full issue fits nothing that is left.
+        calls.clear()
+        groq = [m for m in weekly.FALLBACK_MODELS
+                if budget.provider_of(m) != budget.PRIMARY_PROVIDER]
+        body, model, edition = weekly.print_issue(payload, prompt, short,
+                                                  available=set(groq))
+        check("the press prints the short edition rather than nothing",
+              edition == weekly.EDITION_SHORT, f"{edition}")
+        check("on a model that is actually available", model in groq, model)
+        check("at the derived reservation, not the full issue's",
+              calls[-1][2] == budget.short_issue_room(model, short).reservation,
+              f"{calls}")
+        check("and it sent the short prompt",
+              calls[-1][1] == len(short), f"{calls}")
+    finally:
+        weekly.call_model = saved
+
+
+def test_the_reader_is_told_it_is_a_short_edition():
+    """The label is the press's, not the generator's.
+
+    A label the model can forget is a label that goes missing on the only week
+    it is ever printed.
+    """
+    print("the short edition says so")
+    body = "# A title\n\nThe issue."
+    full = weekly.add_masthead(body)
+    short = weekly.add_masthead(body, weekly.EDITION_SHORT)
+    check("the full edition is unchanged", weekly.MASTHEAD in full
+          and weekly.SHORT_EDITION_NOTE not in full, full)
+    check("the short edition carries the note",
+          weekly.SHORT_EDITION_NOTE in short, short)
+    check("under the title, not above it",
+          short.index("# A title") < short.index(weekly.SHORT_EDITION_NOTE),
+          short)
+    check("the note sells no recipe: no model, no provider, no outage",
+          not any(word in weekly.SHORT_EDITION_NOTE.lower()
+                  for word in ("model", "provider", "groq", "moonshot",
+                               "kimi", "fail", "error")),
+          weekly.SHORT_EDITION_NOTE)
+
+
+def test_the_short_edition_skips_a_model_that_just_errored():
+    """It does not spend the full edition's retries over again.
+
+    Both walks share one 1800-second Modal timeout, and a model that answered
+    with an error four times in a row will answer with an error a fifth.
+    """
+    print("the second walk skips what the first one called")
+    exc = weekly.PressCannotPrint("every model failed", {"openai/gpt-oss-120b"})
+    tried = []
+
+    def fake_call(model, prompt, user, trace=None,
+                  max_completion=weekly.MAX_COMPLETION_TOKENS):
+        tried.append(model)
+        return "# A title\n\nThe issue."
+
+    saved = weekly.call_model
+    weekly.call_model = fake_call
+    try:
+        groq = [m for m in weekly.FALLBACK_MODELS
+                if budget.provider_of(m) != budget.PRIMARY_PROVIDER]
+        body, model = weekly.write_short_issue(
+            budget.worst_case_payload(), budget.short_issue_text(),
+            available=set(groq), skip=exc.called)
+        check("the model that errored is not asked again",
+              "openai/gpt-oss-120b" not in tried, f"{tried}")
+        check("and the next one writes the issue", model in groq, model)
+    finally:
+        weekly.call_model = saved
+    check("the exception carries what was called",
+          weekly.PressCannotPrint("x").called == set())
+
+
+def test_gate_two_lets_the_degraded_path_deploy():
+    """preflight's refusal, read out of its own source.
+
+    Before 2026-10-12 `preflight` raised whenever the full issue fit nothing,
+    which on a primary outage is the gate refusing to deploy the degraded path
+    on the exact day the degraded path is what runs. It now raises only when
+    neither edition can print, and `budget.check_short_issue` is what makes
+    that a real distinction rather than a softened gate.
+    """
+    print("preflight and the degraded path")
+    source = (ROOT / "pipeline" / "weekly.py").read_text()
+    body = source.split("def preflight()")[1].split("@app.function")[0]
+    check("it asks the short edition before it raises",
+          body.index("short_issue_room") < body.index("raise PressCannotPrint"),
+          body[-900:])
+    check("it still raises when neither edition can print",
+          "raise PressCannotPrint" in body, body[-400:])
+    check("and it says which path it passed on",
+          "preflight ok on the degraded path" in body, body[-900:])
+
+
 if __name__ == "__main__":
     for fn in [test_fallback_list, test_withdrawn_model_is_explained,
                test_choose_model_skips_absent_models,
@@ -781,7 +973,13 @@ if __name__ == "__main__":
                test_the_recipient_query_prefers_the_token_column,
                test_a_missing_token_column_rolls_back_then_retries,
                test_only_a_missing_column_is_retried,
-               test_send_newsletter_has_no_recipient_query_of_its_own]:
+               test_send_newsletter_has_no_recipient_query_of_its_own,
+               test_the_short_edition_fits_the_free_tier,
+               test_the_short_edition_is_derived_and_not_chosen,
+               test_the_short_edition_only_runs_when_the_full_one_cannot,
+               test_the_reader_is_told_it_is_a_short_edition,
+               test_the_short_edition_skips_a_model_that_just_errored,
+               test_gate_two_lets_the_degraded_path_deploy]:
         fn()
     print()
     if FAILURES:

@@ -13642,6 +13642,138 @@ that triggered it, per the charter.
 - Cost: $0.
 - Status: proposed
 
+### 2026-10-12 — URGENT: the press printed no issue this week, and the fix needs one command only the owner can run (engineer seat, second run)
+- Trigger: `python3 tools/delivery_health.py` at 20:40 UTC, the first
+  observation step of this run. The press surface read `FAILING  press  the
+  newest issue is 2026-W40 and 2026-W41 has ended; 1 issue(s) missing`, and the
+  live site agreed independently: `GET /library/2026-W41` is a 404,
+  `/library/2026-W40` is a 200, and `/library` lists nothing newer than W40. The
+  Monday 09:00 UTC cron had fired about eleven hours earlier. Nothing in the
+  repository, in any register, or in any of today's other seat runs had said so.
+- What: the primary stopped answering and the press's three Groq fallbacks
+  cannot take the full issue by more than a factor of ten, so `write_digest`
+  walked the whole list, rejected every entry on arithmetic, raised
+  `PressCannotPrint` and mailed the owner. That is the specified behaviour and
+  the week still got no issue. This pull request builds the degraded path
+  (`prompts/digest-short.md`, `budget.short_issue_room`,
+  `weekly.print_issue`) so that the next primary outage prints a short issue
+  instead of nothing, and it builds the hatch that lets the corpus fixes deploy
+  during an outage (`budget.head_receipt`, `--allow-fallback`). Neither reaches
+  a cron on a merge. Both are in `pipeline/`, and `modal deploy` needs a token
+  no seat holds.
+- First step: `python3 tools/deploy_gate.py --app all --plan`, then the weekly
+  chain, which is `python3 pipeline/budget.py && modal run
+  pipeline/weekly.py::preflight && modal run pipeline/weekly.py::rehearse
+  --allow-fallback && modal deploy pipeline/weekly.py`. The `--allow-fallback`
+  is on the rehearsal and not the deploy, and it is needed only while the
+  primary is quiet. If `preflight` now passes where it refused this morning,
+  that is the first evidence the degraded path is real rather than argued.
+  `modal run pipeline/weekly.py::resend --week 2026-W41` is the separate
+  question of whether this week's missing issue is written late or skipped, and
+  that is an editorial call rather than a technical one.
+- Cost: $0. If the rehearsals keep refusing on Moonshot, the account's balance
+  or tier is the remaining cause, which is money and the owner's.
+- Status: urgent
+
+### 2026-10-12 — A degraded deploy leaves no mark, so nothing can say the press is running on the wrong engine (engineer seat, second run)
+- Trigger: writing `--allow-fallback` this run. The hatch prints what it
+  forgave into the Modal log of the run that used it, and the Modal log of a
+  manual `modal run` is read once by the person who typed the command and never
+  again. `deploy_runtime` records the sha of what was deployed and
+  `press_rehearsals` records which model answered a rehearsal, so the facts
+  exist in two tables and no surface joins them.
+- What: after the owner deploys with the hatch open, every corpus app and the
+  press are running code whose last proof of life came from a fallback, and
+  nothing in the org can say that. The receipt reports a deployed sha and calls
+  it current. The honest version is one more line on the delivery receipt:
+  `press_rehearsals` already holds the model and the prompt sha of the most
+  recent rehearsal per app, so the receipt can read the newest row per app and
+  print `proved on the degraded path, 2026-10-12, openai/gpt-oss-120b` beside
+  the deployed sha. That makes a degraded deploy visible for as long as it
+  lasts rather than for as long as somebody remembers typing a flag.
+- First step: `tools/run_report.py`'s deploy block already queries
+  `deploy_runtime` per app. Add the newest `press_rehearsals` row per app to
+  the same query and print the model beside the sha, red when it is not the
+  head of that app's list. One query, one line, no new table.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — The short edition carries nine of the ban list's hundred-and-three rules and nothing says which (engineer seat, second run)
+- Trigger: sizing `prompts/digest-short.md` against a 6,800-token request this
+  run. `docs/voice/ban-list.md` has 103 entries, 47 of them carrying an
+  `Enforced` ending and 18 of those carrying a checkable `LANDED
+  prompts/digest.md: "..."` line that `docs/voice/check_voice.py enforcements`
+  verifies. Every one of those 18 names the full prompt. The short prompt
+  carries the handful of rules that fit in 3,195 characters, chosen by this
+  seat on an afternoon, which is an editorial judgment made by arithmetic.
+- What: there are now two generator prompts and one register that assumes one.
+  A LANDED line that passes against `prompts/digest.md` says nothing about the
+  edition the free tier prints, so on the week the short edition ships, 18
+  verified enforcements are silently unenforced and `check_voice.py` still
+  reports them green. The fix is not to grow the short prompt, because the
+  token ceiling is real. It is to make the register say which edition each rule
+  reaches: a LANDED line names its file already, so the check can report
+  `enforced in the full edition only` as its own count, and the writer seat can
+  then decide which rules are worth their tokens in the short one.
+- First step: `docs/voice/check_voice.py enforcements` already parses the LANDED
+  lines and the file each one names. Have it group by file and print the
+  per-edition counts, which turns an invisible gap into a number that climbs.
+  Choosing what goes in the short prompt stays the writer's call, and this is
+  the surface that makes the call reviewable.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — The missing issue was found by a seat running a command by hand, eleven hours late (engineer seat, second run)
+- Trigger: how this run found the break. `tools/delivery_health.py` reported it
+  correctly on the first try, at 20:40 UTC, for a failure that happened at
+  about 09:00 UTC. Nothing had run that check in between. The press's own alarm
+  path mails the owner, which is DoD clause 4's named gap in sprint
+  2026-10-05, and it fires from inside the press container, so a run that dies
+  before it reaches `notify_owner` raises nothing at all.
+- What: the one surface that reads the artifact rather than the scheduler is
+  not scheduled. Its press check also reads FAILING on any Monday before the
+  cron fires, which is why nobody runs it on a Monday morning, which is exactly
+  when it would have caught this. The fix is small and has two halves: give the
+  press check a grace window so it is quiet between midnight and the cron's
+  own hour plus a timeout, and then run it on a schedule after that window
+  closes. A check that is only correct after a certain hour should know the
+  hour.
+- First step: `tools/delivery_health.py` already imports the cron minute from
+  `pipeline/llm.py`'s window table for the corpus surfaces. Read the press's
+  `modal.Cron("0 9 * * 1")` the same way, suppress the press FAILING before
+  that minute plus the job's own 1800-second timeout, and add one test that the
+  surface is quiet at 08:00 UTC on a Monday and loud at 10:00. Scheduling it is
+  a second step and needs a workflow edit, which this seat cannot push.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-12 — Craft scan: Paperguide states where the machine stops and the human starts, in the feature copy (engineer seat, second run)
+- Trigger: today's rotation through docs/market/landscape.md. Elicit is still
+  unreadable from this sandbox, Consensus was 2026-10-10, Semantic Scholar was
+  2026-10-11 and Undermind was this morning's first run, so the scan moved to
+  the next unscanned entry under "Academic research tools". Paperguide was
+  added on 2026-09-18 at search-snippet confidence only and had never been read
+  directly. Read from paperguide.ai this run.
+- Worth stealing: the division of labour is written into the feature, not into a
+  trust page. On the Dual Review mode: "AI never decides, it prepares the cited
+  evidence." Then, in the same block, "The final call is always human and on
+  record." A reader learns in two sentences what the product will do for them
+  and what it will not do instead of them, at the moment they are deciding
+  whether to use the feature. alexandria records the same distinction in more
+  detail than Paperguide does and says it nowhere a reader looks: every claim
+  knows whether it came from a full text or an abstract, every issue prints
+  papers read in full beside papers ingested, and the evidence grade is in-line
+  by canon law 6. What is missing is one plain sentence at the top of the
+  reading surfaces that says which of those steps a machine did.
+- What alexandria does better: the failure path. Paperguide's page never says
+  what happens when a search returns nothing, when an extraction is partial, or
+  when a model fails, and its own coverage claim argues with itself, citing
+  "200M+ peer-reviewed papers" while naming arXiv among its sources, which
+  hosts preprints that are not peer-reviewed. alexandria's answer to the same
+  question shipped in this pull request and is visible to the reader: when the
+  press cannot write the full issue it writes a short one and the issue says
+  it is short. A product that is specific about its good day and silent about
+  its bad one has only told you about half of itself.
 ### 2026-10-13 — URGENT: the accounts helper opens the paid tier on a flag every free signup carries (engineer seat)
 - Trigger: wiring `hasSpine()` to Clerk this run, I widened its query to match
   `isEntitled` in `site/lib/account-core.js`, which treats `digest_comp === true`
