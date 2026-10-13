@@ -282,6 +282,10 @@ class FakeConn:
         self.statements: list[tuple[str, tuple]] = []
         self.commits = 0
         self.rollbacks = 0
+        # How many statements had run at each commit, so a test can prove the
+        # column's `alter table` was committed on its own rather than together
+        # with a run's worth of updates.
+        self.commit_after: list[int] = []
 
     def execute(self, sql, params=()):
         self.statements.append((" ".join(sql.split()), params))
@@ -290,6 +294,7 @@ class FakeConn:
 
     def commit(self):
         self.commits += 1
+        self.commit_after.append(len(self.statements))
 
     def rollback(self):
         self.rollbacks += 1
@@ -319,13 +324,23 @@ def one_paper(monkeypatch, no_waiting):
     return FakeConn([("arxiv:2404.19756", "KAN: Kolmogorov-Arnold Networks")])
 
 
-def test_the_dry_run_writes_nothing(one_paper, capsys):
+def test_the_dry_run_writes_no_row(one_paper, capsys):
     result = bi.walk(one_paper, limit=10, write=False)
     assert result["filled"] == 1
-    assert one_paper.commits == 0
     updates = [sql for sql, _ in one_paper.statements if sql.startswith("update")]
     assert updates == []
     assert "nothing was written" in capsys.readouterr().out
+
+
+def test_the_column_is_committed_before_the_walk_rather_than_after_it(one_paper):
+    """`alter table` holds an ACCESS EXCLUSIVE lock on `papers` until its
+    transaction commits, and the walk runs for minutes. Inside the walk's
+    transaction it would block ingest and distill for the whole run, including
+    on the dry run, which writes nothing else at all."""
+    bi.walk(one_paper, limit=10, write=False)
+    assert one_paper.commits == 1
+    assert one_paper.statements[0][0].startswith("alter table papers")
+    assert one_paper.commit_after == [1]
 
 
 def test_the_write_pass_fills_and_marks_the_attempt(one_paper):

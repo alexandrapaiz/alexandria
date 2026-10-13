@@ -102,6 +102,10 @@ import modal
 MAX_PAPERS_PER_RUN = 150
 POLITE_SECONDS = 3
 
+# The dry run is the one a person waits on, so it looks at fewer papers by
+# default. Pass `--limit` for more.
+DRY_RUN_PAPERS = 40
+
 # Rows per transaction, for the same reason backfill_topics has one: how much
 # progress a killed run loses.
 BATCH = 25
@@ -533,14 +537,26 @@ def _fetch_html(reader, paper_id: str, timeout: float = 30) -> str | None:
     return body
 
 
+def ensure_column(conn) -> None:
+    """The attempt column, in its own transaction, committed before the walk.
+
+    `alter table` holds an ACCESS EXCLUSIVE lock on `papers` until the
+    transaction it runs in commits, and the walk below runs for minutes. Left
+    inside the walk's transaction this would block ingest and distill for the
+    length of the run, and the dry run would block them while writing nothing.
+    So it commits here, in both passes: the statement is additive and
+    idempotent, and it is the one thing the dry run does write.
+    """
+    conn.execute(ADD_COLUMN)
+    conn.commit()
+
+
 def walk(conn, *, limit: int, write: bool) -> dict:
-    """One pass. `write=False` is the dry run and touches nothing at all."""
+    """One pass. `write=False` reads arXiv and writes no row."""
     import time
 
     reader = read_paper()
-    conn.execute(ADD_COLUMN)
-    if write:
-        conn.commit()
+    ensure_column(conn)
     rows = conn.execute(DUE, (RECHECK_DAYS, limit)).fetchall()
     print(f"{len(rows)} papers with claims and no institutions")
 
@@ -594,7 +610,7 @@ def walk(conn, *, limit: int, write: bool) -> dict:
 
 
 @app.function(secrets=[modal.Secret.from_name("neon")], timeout=1800)
-def count(limit: int = MAX_PAPERS_PER_RUN):
+def count(limit: int = DRY_RUN_PAPERS):
     """The dry run. Reads arXiv, writes nothing, prints what it would write."""
     import os
 
