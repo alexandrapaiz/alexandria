@@ -100,7 +100,7 @@ so instead of guessing one.
 
 Questions the reading raised, for the research seat.
 
-- [ ] question — Claim 289 is a misreading, and the question is how many others are. It says arxiv.org/abs/2609.09219 observed "30 truthful recoveries and zero neutral recoveries" establishing "a statistically significant positive feedback effect". The paper reports 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, and records both Evidence decisions as Inconclusive. The row merged two numbers and inverted the verdict. It then contradicted the accurate claim 288 at 0.75 confidence, which put a true claim into deprecated_claims. The general defect: interpret has no way to tell two registered experiments inside one paper apart when the paper reuses a word for both, and a same-paper contradicts edge is exactly the signature. Worth a corpus-wide pass over same-paper contradicts edges — asked by skills/evaluation-integrity — 2026-09-30
+- [x] ~~question — Claim 289 is a misreading, and the question is how many others are. It says arxiv.org/abs/2609.09219 observed "30 truthful recoveries and zero neutral recoveries" establishing "a statistically significant positive feedback effect". The paper reports 9 of 30 and 16 of 30 truthful against 0 of 30 neutral, and records both Evidence decisions as Inconclusive. The row merged two numbers and inverted the verdict. It then contradicted the accurate claim 288 at 0.75 confidence, which put a true claim into deprecated_claims. The general defect: interpret has no way to tell two registered experiments inside one paper apart when the paper reuses a word for both, and a same-paper contradicts edge is exactly the signature. Worth a corpus-wide pass over same-paper contradicts edges — asked by skills/evaluation-integrity — 2026-09-30~~ - **ANSWERED with a number, 2026-10-12, research seat, PR #284.** The whole 33-edge `contradicts` population was labelled (`docs/research/notes/2026-10-12-contradicts-labels.json`, read by `tools/graph_audit.py --labels`): precision **0.172**, 24 edges wrong of 33, and **19 of the 22 claims in `deprecated_claims` rest on no edge that holds**. The corpus-wide pass over same-paper edges this line asked for was run: all five are still live and all five are wrong, and two of them are the tell-tale the interpret prompt already names in its own words. 289/288 is therefore not an outlier but the visible instance of a class. The dominant shape is not same-paper confusion, though: 12 of 33 edges point at four negative-result claims (C533, C89, C200, C850), which is the diff this PR proposes. Same-paper repair stays an engineer item because `paper_id` is withheld from the prompt.
 - [ ] question — Is a with-versus-without eval written by the seat that wrote the skill measuring the skill, or the author's model of the skill? The tasks in this run were written from the papers, but by the same seat, in the same week, with the skill text in context. evaluation-integrity's own first section says a generated instrument is an attack surface and that the honest test needs an oracle independent of the rubric. This library now has 66 tasks with no such independence. The cheapest available check is whether the unaided arm behaves as each task's `without_skill` field predicts, which was written before any run — asked by the skill seat, for all six skills — 2026-09-30
 - [ ] question — Does any published work measure with-versus-without for a skill whose content is research findings rather than a task procedure? The 2026-09-26 batch queued this once for skills/skill-library-engineering. Re-raised because it is now the premise of the whole eval programme rather than one skill's caveat, and every measurement the library cites is on task-procedure skills — asked by the skill seat — 2026-09-30
 - [ ] question — arxiv:2609.07103, Revisiting Complete Reasoning Traces for Post-Training, publishes no full HTML and was read at the abstract only, for the second run running. It is one of the two independent lines behind context-window-engineering's claim that the middle of a trace is droppable. Either get the PDF into the corpus or mark the convergence in that skill as resting on one paper — asked by skills/context-window-engineering — 2026-09-30
@@ -154,7 +154,7 @@ and not one of them is in the `papers` table.
 Questions the reading raised, for the research seat and the engineer.
 
 - [ ] question — `deep_read` is a live triage decision with no consumer. Hard Stop, the one paper in this cluster that reconstructs a real production escape, was routed `deep_read` and never read by anything. Either something drains that queue or the decision is a label the pipeline cannot act on, which is the same shape as the 96 `index` rows that were really a backfill rule — asked by skills/agent-containment — 2026-09-30
-- [ ] question — Is distill throughput now the binding constraint rather than triage throughput? The 2026-09-30 research census measured triage reading 3 to 15 percent of intake. This run found four papers routed to distill weeks ago and still undistilled, and zero of the ten papers it read carrying a non-null `fulltext_chars`. Both constraints are real and the ordering between them decides which one the engineer fixes first — asked by the skill seat — 2026-09-30
+- [x] ~~question — Is distill throughput now the binding constraint rather than triage throughput? The 2026-09-30 research census measured triage reading 3 to 15 percent of intake. This run found four papers routed to distill weeks ago and still undistilled, and zero of the ten papers it read carrying a non-null `fulltext_chars`. Both constraints are real and the ordering between them decides which one the engineer fixes first — asked by the skill seat — 2026-09-30~~ - **ANSWERED, 2026-10-12, research seat, PR #284.** Two parts. **Until 2026-10-07, distill, at a 7x gap**: triage routed ~210 papers a day to distill and distill cleared ~30, which is why `distill_queue` went 1,410 -> 2,173 in a week. **Since 2026-10-08, neither**: distill has produced nothing for five days and triage runs at ~120 a day against ~860 the week before, 14% of its own rate. The binding constraint is now the model budget (engineer PR #282). Standing totals: 436 of 14,666 papers ever distilled (3.0%), 166 with full text (1.1%).
 - [ ] question — The corpus has no claim for any of the six containment papers, so skills/agent-containment ships with `provenance.claims: []`. Under ADR-36 that fails the automatic provenance gate, correctly, because the gate cannot tell an empty list that is honest from one that is lazy. Either the gate learns to accept a papers-only provenance block written under ADR-35, or ADR-35 and ADR-36 disagree on what a skill may be built from — asked by skills/agent-containment — 2026-09-30
 - [ ] question — Six of fifteen searched safety harnesses in EvoSafeHarness (arXiv 2609.05903, already distilled) dropped their natural-language policy entirely and kept only deterministic runtime relations, and four made no model call at runtime. Our product ships natural-language procedure. That result does not say prose is worthless, it says prose is where a hypothesis is formed and not where enforcement should live. Worth asking whether some of what the library will want to sell in this territory is a policy artifact rather than a SKILL.md — asked by the skill seat — 2026-09-30
 - [ ] question — Nothing in either cluster measures the cost of a containment control end to end in a real deployment except one paper's 145 to 316 second mean, and that figure is dominated by a fully autonomous loop retrying refused actions with no human approval path. A number for the same control with an approval path is the single most useful missing measurement for anyone deciding whether to adopt this — asked by skills/agent-containment — 2026-09-30
@@ -469,7 +469,7 @@ the same shape as the chair's gap batch.
 
 ### Questions this run raised and could not answer from the corpus
 
-- [ ] Is the 227-claim null-embedding window (every one created 2026-10-04 or 10-05) the normal lag of a nightly embed job, or incident 30's first occurrence returning? Not decidable from the corpus; needs the job's schedule from the engineer — research seat 2026-10-05
+- [x] ~~Is the 227-claim null-embedding window (every one created 2026-10-04 or 10-05) the normal lag of a nightly embed job, or incident 30's first occurrence returning? Not decidable from the corpus; needs the job's schedule from the engineer — research seat 2026-10-05~~ - **ANSWERED from the corpus after all, 2026-10-12, research seat, PR #284: neither.** It is not a lag that drains and it is not intermittent. **Every claim created on or after 2026-10-04 has a null embedding and every claim before it has one** -- 422 claims, 21.1% of the corpus, a clean boundary at a date rather than the ragged edge a slow nightly job leaves. All 422 are also uninterpreted, so embedding is the gate in front of interpret. Consequence, and the reason this matters more than it looks: the containment cluster that is this week's top extraction target is unreachable by `semantic_search` for the eight claims inside it that have no embedding, and has zero edges. Raised as engineer item 1 in the 2026-10-12 brief.
 - [ ] C887 is internally inconsistent: "from 72.7% to 99.3%, a +11.99-point improvement" (72.7 to 99.3 is +26.6). Designer-RSI's full text should say which quantity the +11.99 is, and the claim needs splitting or correcting. The W40 draft reproduced the inconsistency faithfully — research seat 2026-10-05
 - [ ] Does SkillsBench's "module" mean a `##` section or a separate file? Our skills are single-file, so the brief read it as a section, which puts six of eight skills over the cap. A file-level reading would put all eight at one module and void the finding. The full text's skill format decides it — research seat 2026-10-05
 
@@ -527,7 +527,7 @@ not read. The corpus says the problem is upstream of that.
 
 ### A question this run raises, for whoever drains next
 
-- [ ] **44.8% of the corpus is `evidence_grade = asserted`** (826 of 1,845 claims), and 15 of 29 `contradicts` edges are drawn *from* an asserted claim. Two deprecating edges run from an `asserted` claim to a `controlled` one (`353 → 264`, `574 → 570`), which lets a say-so claim retire a measured one. Does the interpret step need an evidence-grade floor before it may draw a `contradicts` edge, or is this better fixed where the grade is assigned in distill? — research seat 2026-10-05, PR #228
+- [x] ~~**44.8% of the corpus is `evidence_grade = asserted`** (826 of 1,845 claims), and 15 of 29 `contradicts` edges are drawn *from* an asserted claim. Two deprecating edges run from an `asserted` claim to a `controlled` one (`353 → 264`, `574 → 570`), which lets a say-so claim retire a measured one. Does the interpret step need an evidence-grade floor before it may draw a `contradicts` edge, or is this better fixed where the grade is assigned in distill? — research seat 2026-10-05, PR #228~~ - **ANSWERED, 2026-10-12, research seat, PR #284: neither -- an evidence-grade floor would not help, and the question's premise is the thing to drop.** Updated counts first: now **41.8% asserted** (834 of 1,996) and 15 of 33 `contradicts` edges drawn from an asserted claim, 10 of them deprecating. Then the measurement this line could not make: with the full population labelled, precision from a `controlled` origin is **0.176** and from an `asserted` origin **0.167** -- indistinguishable. A weak claim retiring a measured one is not the defect; the relation is misjudged at the same rate whatever the origin's grade, so a grade gate would block some wrong edges and keep the same proportion of them. The fix belongs in the relation judgment, which is this PR's rule 3.
 
 ## Proposed by the research seat's own live ecosystem check, 2026-10-05 (L-R1, PR #228)
 
@@ -629,3 +629,58 @@ full and answerable by neither.
   mechanism at all. A measured route-coverage rate for a real harness is the
   highest-value missing number on this shelf after a measured escape rate —
   asked by agent-containment
+
+## Drain record, 2026-10-12 (research seat, PR #284)
+
+Four open questions struck above, each answered from the corpus and each
+carrying its numbers in the line itself: the scale of the `contradicts`
+misreading (103), the binding throughput constraint (157), the null-embedding
+window (472), and whether an evidence-grade floor belongs in front of
+`contradicts` (530). The evidence for all four is
+`docs/research/notes/2026-10-12-graph-precision-evidence.md`.
+
+**No queued arXiv id was read this run, and the reason is unchanged.** 133
+remain open. Ingest pulls recent papers from listed categories, so the older
+ids cannot arrive on their own; `distill` has produced nothing since
+2026-10-07; and this seat holds a read-only credential, so it cannot feed one
+either. This was engineer item 1 in the 2026-10-05 brief and item 1 again in
+the 2026-10-12 brief.
+
+**Two items partly answered by claims that arrived this week, left open on
+purpose rather than struck.**
+
+- **CaMeL** (line 594). Still no established arXiv id, so the line stands. But
+  the corpus now measures against it from two directions: C308 (EvoSafeHarness
+  reaches 82.8% utility at 0.0% attack success rate on AgentDojo, "twice the
+  utility of CaMeL at the same rate") and C1882 (Multi-CaMeL, 0.0% on
+  MultiAgentDojo against 0.2% for individual-agent CaMeL and 12.9%
+  undefended). The baseline is now quantified even though the paper is unread,
+  which is worth knowing before anyone spends a read on it.
+- **AgentDojo and PACE's seven other executable benchmarks** (line 599). C1653
+  establishes that PACE evaluates on eight executable agent-security
+  benchmarks across three target-model families and reports the lowest attack
+  success rate on them. It does not name the other seven, so the line stands
+  as a list that still has to be read out of the paper.
+
+- **The end-to-end cost of a containment control** (line 160). Left open,
+  because the line asks for cost in a real deployment and this week's cluster
+  answers a narrower question. What is now measurable is the *utility* cost of
+  fine-grained enforcement on a benchmark: 3.3 points for EvoSafeHarness
+  against a 35.6-point attack-success reduction (C307), 3.80 points for
+  ToolFence against a 21-point reduction (C1224). That is enough to stop a
+  builder arguing that enforcement is too expensive to try, and it is not the
+  wall-clock-and-dollars figure the line wants. The one paper's 145-to-316
+  second mean remains the only end-to-end number in the corpus.
+
+**One item queued by this run.**
+
+- [ ] question -- Re-run the `contradicts` precision measurement under the
+  next `prompts/interpret.md` sha, with the same labelling standard, and
+  compare. This run produced the graph's first precision number (0.172 on the
+  full 33-edge population) and proposed rule 3 against the dominant failure
+  class it found. Nothing in the system will say whether the rule worked. The
+  labels are already in the format `tools/graph_audit.py --labels` reads, and
+  the tool's `--sample`/`--seed` path exists precisely so a later judge can be
+  measured on the same draw, so the comparison is one command once a deploy
+  has shipped the new prompt. The precondition is the deploy, not the
+  measurement -- asked by the research seat -- 2026-10-12
