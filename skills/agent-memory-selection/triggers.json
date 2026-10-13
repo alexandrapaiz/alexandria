@@ -1,0 +1,61 @@
+{
+ "skill": "agent-memory-selection",
+ "suite_version": 1,
+ "written": "2026-10-13",
+ "author": "skill agent (ADR-22)",
+ "note": "The five-prompt trigger test prompts/skill-agent.md requires, in executable form, plus two confusion cases the executable form makes possible. Three positives, two hard negatives. Run with skills/_validation/trigger_test.py.",
+ "cases": [
+  {
+   "id": "ams-pos-1",
+   "kind": "positive",
+   "expect": "agent-memory-selection",
+   "prompt": "We are about to put an LLM extraction pass on the write path of every message so our assistant's memory stores durable facts instead of the conversation. At about 40,000 turns a day that extraction is the biggest line in the inference bill. Is it worth it?",
+   "anchor": "when choosing between extracting facts at ingestion and storing raw turns",
+   "rationale": "Delta 1 is the whole answer and the description names this activation condition first. The question also carries the thing that makes the skill worth loading: a write-path spend about to be committed, which is exactly when a bounded number for what it buys changes the decision."
+  },
+  {
+   "id": "ams-pos-2",
+   "kind": "positive",
+   "expect": "agent-memory-selection",
+   "prompt": "Retrieval gives us 30 candidate turns and the context budget only lets us pass 3 into the prompt. Should we add a reranking call between them? Two papers I have read disagree about whether reranking helps at all.",
+   "anchor": "when deciding whether a reranker is worth its call on a retrieval path",
+   "rationale": "Delta 2, and the prompt contains the literature disagreement the section exists to resolve. The keep ratio is stated in the prompt itself (3 of 30), which is the quantity the skill says decides the answer, so a reader who has the skill answers with a number and one who does not answers with a shrug."
+  },
+  {
+   "id": "ams-pos-3",
+   "kind": "positive",
+   "expect": "agent-memory-selection",
+   "prompt": "Since we added a reranker to our assistant's memory retrieval, accuracy is up but it now confidently answers questions about things the user never told it. Nobody believes the two are connected. What is going on?",
+   "anchor": "when an assistant with memory starts answering questions it should have said were never discussed",
+   "rationale": "Delta 3, and the hardest of the three to answer without the skill, because the prompt states the team's belief that the two observations are unrelated and the skill's content is precisely that they are one change. The description names this condition last and in the user's own words rather than in the paper's."
+  },
+  {
+   "id": "ams-neg-1",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Our training run keeps running out of GPU memory during the long-context phase and we are looking at offloading optimizer state or sharding the KV cache differently. How should we decide?",
+   "rationale": "Hard negative, and the one this skill's name most invites. It says memory, long-context and KV cache, and the corpus has a whole cluster of claims on exactly this, but that is GPU memory and not conversational memory. The description's second sentence exists to refuse this prompt, and the false contradiction this run resolved between claims 103 and 1119 is what one overloaded word costs, so this case is the guard against the same overload here."
+  },
+  {
+   "id": "ams-neg-2",
+   "kind": "negative",
+   "expect": null,
+   "prompt": "Users need to be able to delete their conversation history, deletion has to propagate within 30 days, and we have 90-day backup snapshots. What does the retention design look like and what do we show an auditor?",
+   "rationale": "Hard negative: a genuine question about an agent's conversational memory, using memory, history and conversation, where nothing in this skill's evidence applies. The subject is retention and deletion, not what to store for recall or what to select at read time. A skill that fires on the word memory fires here, and would answer a governance question with a keep ratio. Same prompt as control ams-c2 in the eval suite, deliberately, so the two instruments test the same boundary."
+  },
+  {
+   "id": "ams-conf-1",
+   "kind": "confusion",
+   "expect": "context-window-engineering",
+   "prompt": "We have a fixed KV cache budget and have to pick an eviction rule. Is a scoring heuristic over attention statistics worth it against something cheaper?",
+   "rationale": "Confusion case against the nearest neighbour in the library. This is context-window-engineering's subject, and it must stay there: both skills are about spending a finite token budget, and the line between them is that this one is about what the agent stores and reads back across sessions while that one is about the window of a single call."
+  },
+  {
+   "id": "ams-conf-2",
+   "kind": "confusion",
+   "expect": "evaluation-integrity",
+   "prompt": "Our LLM judge is grading memory-system answers and I am worried it is lenient. How many independent judgments should an accept require, and how do I tell whether the scored gain is real?",
+   "rationale": "Confusion case on the other side. The selection paper has a real finding about judge leniency interacting with answer length, and this skill deliberately does not carry it, because judging the instrument is evaluation-integrity's subject. If this prompt routes here instead, the skill has taken ground that belongs to another file."
+  }
+ ]
+}

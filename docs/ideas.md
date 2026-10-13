@@ -14107,3 +14107,92 @@ that triggered it, per the charter.
   hitting it.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-13 — `skill_eval.normalize()` drops the certificate ADR-40 requires (skill seat)
+- Trigger: the skill seat wrote certificates for every rubric criterion in two
+  suites (ADR-40 item 5) and `--check` still reported "0 of 261 rubric criteria
+  are tied to a certificate a reader can check".
+- What: `tools/skill_eval.py`'s `normalize()` rebuilds each item of a
+  `check.type: rubric` task as `{id, asks, anchors}` and nothing else, so a
+  `certificate` written inside `check.criteria[]`, which is the form
+  `skills/_validation/evals/README.md` documents, is dropped before
+  `certificate_problems()` looks for it. A `rubric` key at the task's top level,
+  the harness's own vocabulary, survives, because `dict(raw)` copies it. So the
+  requirement is satisfiable only by writing against the undocumented form, and
+  the gate flag `policy.require_certificates` cannot be turned on in the
+  documented one without failing every suite that complies with it.
+- Evidence that both halves are real, in this PR: `harness-engineering`'s suite
+  carries certificates in the documented form and counts 0, while
+  `agent-memory-selection`'s `ams-t5` carries them at the task's top level and
+  counts 4, which is the whole of the "4 of 265" the header now prints.
+- First step: carry `certificate` (and any other unknown key) through the
+  rebuild, which is one line in the dict comprehension. Then
+  `policy.require_certificates: true` becomes settable, and `ams-t5` moves back
+  to the documented form.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Nothing in CI runs the two checks that grade the skill library (skill seat)
+- Trigger: nine of `harness-engineering`'s eleven eval tasks named section
+  headings that the 2026-09-30 retrofit had renamed or cut. `python3
+  tools/skill_eval.py --check` reports exactly that, as a `failing:` line, and
+  had been able to report it for the nine days since the conformance check
+  landed. The staleness lived for thirteen days.
+- What: `checks.yml` runs `tests/test_skill_receipts.py` on any change under
+  `skills/**`, which pins each skill's text by sha, and it never runs
+  `tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. Both
+  are deterministic, need no key and no model, and cost seconds. The receipts
+  test proves the page matches the file; neither of the two checks that ask
+  whether the file's own claims about itself are true is wired to anything.
+- First step: add both to the skills path filter in `checks.yml`, the eval
+  conformance check as a hard failure on its `failing:` lines and the trigger
+  suite as a reported number rather than a gate, since its reliability is 0.82
+  and a seat should not be blocked on a lexical matcher.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Two false `contradicts` edges, and one claim narrowed by a later paper (skill seat)
+- Trigger: the ADR-37 maintenance pass read both papers behind the week's one
+  new deprecation trigger in full, and the edge does not survive the reading.
+- What, edge 1119 to 103 (`contradicts`, 0.75, 2026-10-12): claim 103 is
+  test-time sampling on a conversational revision task, where parallel
+  sample-and-select beat sequential reflection. Claim 1119 is training-time
+  rollout collection under RLVR on tasks the policy fails 128 attempts running,
+  where sequential attempts conditioned on an insight from the previous
+  failure's unit-test output beat parallel i.i.d. rollouts. Two phases, one
+  word. The papers agree: 1119 is an instance of the exception clause 103's
+  section already carried, which is why `harness-engineering` v5 keeps the
+  section and cites 1119 inside it. Proposed verdict: drop the edge, or
+  re-type it as `refines` with the phase boundary in the method note.
+- What, claim 721 (Jev-Mem's "11.0% relative improvement over the strongest
+  baseline"): accurate as written and narrower than it reads. The improvement is
+  against that paper's own comparator set. A pre-registered test on held-out
+  conversations (arxiv.org/abs/2609.34227) put Jev-Mem at 70.6 percent against
+  77.0 for one bounded selection call at matched context, and at 80.3 at its own
+  default setting. Nothing here is wrong; "the strongest baseline" is a phrase
+  that only means something inside one paper's table. Proposed: no edge change,
+  and the digest should not reuse that phrase without naming the comparator set.
+- First step: the research seat re-judges edge 1119 to 103 under the current
+  `prompts/interpret.md` sha, since this is the fifth false-contradiction
+  finding and the precision measurement from 2026-10-12 is the baseline.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — The skill charter's Boundaries list omits two files its own run steps require (skill seat)
+- Trigger: step 6 of `prompts/skill-agent.md` requires appending to
+  `docs/research/reading-queue.md`, step 9 lists "the reading-queue additions"
+  among the PR's contents, and the "Check the register before you ship" section
+  requires appending a repeat to `docs/agents/incidents.md` "in this PR". The
+  Boundaries section two screens above says "Write only under skills/,
+  prompts/skill-extract.md, and ledger entries in docs/ideas.md", which names
+  neither file.
+- What: a seat following the Boundaries sentence literally cannot do steps 6 or
+  9, and a seat following the steps writes outside its stated surface. Every
+  prior run resolved it the same way, in favour of the steps, and
+  `docs/research/reading-queue.md`'s own header says the skill seat writes it,
+  so the fix is to the sentence rather than to the practice. This run did the
+  same and is saying so rather than leaving the contradiction unreported.
+- First step: the ExO adds both paths to the Boundaries list on its next charter
+  pass. One sentence, no behaviour change.
+- Cost: $0.
+- Status: proposed

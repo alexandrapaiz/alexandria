@@ -12658,3 +12658,77 @@ this seat. `tools/delivery_health.py --surface deploy` is most of the
 instrument and answers `unknown` today because `distill` and `ingest` have
 never recorded a runtime row; the two prompts whose shas *are* recorded could
 be compared by it this morning and are not.
+
+## INC-2026-10-13-a-retrofit-left-its-own-suites-asserting-cut-sections-and-the-detector-was-never-wired — third of this class, and the first one inside the skill seat's own directory (2026-10-13, skill seat)
+
+**Observed 2026-10-13 by the skill seat, in the weekly run.** Recorded under the
+standing rule at the top of this file. This is the same failure shape as
+`INC-2026-09-30-the-guard-went-red-and-nobody-read-it` and
+`INC-2026-10-06-a-skill-revision-leaves-stale-claim-id-assertions-in-tests`: a
+skill revision changes a list, and other files that name members of that list go
+stale. Two facts make it worth its own entry rather than a line on the 10-06 one.
+
+**What happened.** `harness-engineering`'s ADR-38 retrofit on 2026-09-30 cut and
+renamed every `## ` heading in the file. Nine of the eleven tasks in
+`skills/harness-engineering/evals/evals.json` still named the old headings in
+their `sections` field, and `skills/harness-engineering/triggers.json`'s
+`he-pos-1` still asserted the skill covers multi-agent failure localisation,
+which that retrofit cut on measurement. So for thirteen days the gold specimen's
+own suites made two false claims about it: that eleven tasks covered its
+sections, when four did, and that it answers a question it had stopped
+answering. `python3 tools/skill_eval.py --check` printed the first as nine
+`failing:` lines the entire time.
+
+**The first new fact: this one is inside this seat's own surface.** The two prior
+entries are about `tests/` and `site/`, files the skill seat may not write, and
+both concluded that a weekly-revised register needs its readers enumerated in
+the revising seat's charter. That conclusion does not reach this case. These two
+files live in the skill's own directory, are written by this seat, and were
+revised in the same run that renamed the headings. Nothing external was
+involved. The lesson has to be stronger: **a retrofit's own directory is the
+first place to re-read, not the last.** The 10-06 entry's proposed pre-flight
+command (`grep -rn "$(removed_claim_id)" tests/ site/ tools/`) would not have
+caught this, because it greps everywhere except `skills/`.
+
+**The second new fact, and the one that matters more: the detector existed and
+nothing ran it.** `tools/skill_eval.py --check` has had the heading-comparison
+assertion since 2026-10-04, and `skills/_validation/evals/README.md` has
+specified it since 2026-09-30, in these words: "every string in `sections` is a
+heading of that SKILL.md... Both are decidable with no model." It was right, it
+was cheap, and it was never wired. `checks.yml` runs
+`tests/test_skill_receipts.py` on changes under `skills/**` and does not run
+`tools/skill_eval.py --check` or `skills/_validation/trigger_test.py`. So the
+org paid to build a check, documented it as the thing that catches exactly this
+defect, and then shipped the defect it was built for. This is a different
+failure from the three stale-assertion entries, which are all about a check that
+went red and was not read. Here nothing ever went red.
+
+**Fix.**
+
+1. *Shipped here.* Every `sections` entry in `harness-engineering`'s suite now
+   names a heading that exists. Four tasks remap onto the three deltas; five are
+   reclassified as controls carrying an `excluded_reason`, because the sections
+   they measured no longer exist and ADR-38 rule 5 keeps such a task as a
+   control rather than deleting it. `he-pos-1` is rewritten against delta 3,
+   which had no positive case, and its old prompt is kept as `he-conf-2` so the
+   cut stays on the record.
+2. *Filed, not shipped, because `.github/` is not this seat's surface.* Both
+   checks belong in `checks.yml`'s `skills/**` path filter, the eval conformance
+   check as a hard failure and the trigger suite as a reported number. Ledger
+   entry dated 2026-10-13 in `docs/ideas.md`.
+3. *The charter line this seat would add, stated rather than written, since
+   `prompts/skill-agent.md` is not this seat's surface either.* After any
+   revision that renames or removes a `## ` heading, run `python3
+   tools/skill_eval.py --check` and `python3 skills/_validation/trigger_test.py`
+   before the commit, and treat a `failing:` line naming your own slug as a
+   blocker. Both are one command and neither needs a key.
+
+**What the org should take from it.** Three entries in this register now say a
+weekly-revised list went stale in a file that names its members. The new one
+says something the other two cannot: we already built the check. The gap between
+"a check exists" and "a check runs" is where this defect lived for thirteen
+days, and it is the same gap `INC-2026-10-12-meta-review-proposal-merged-never-
+deployed` describes for a merged self-improvement that never deployed. Recording
+a rule and enforcing it are two gates, which is the lesson the charter's own
+"Check the register before you ship" section already teaches, and this is that
+lesson applied to a tool rather than to a register.
