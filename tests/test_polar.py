@@ -193,6 +193,27 @@ def test_every_failure_in_the_gate_is_a_closed_door():
     assert "return true" in body
 
 
+def test_the_gate_does_not_open_on_the_comp_flag():
+    """The trap found while wiring this, and the one that would have been
+    expensive.
+
+    `subscribers.comp` reads as "free access (friends)" in db/schema.sql,
+    and site/lib/account-core.js's isEntitled treats it as entitling. But
+    site/lib/waitlist-core.js sets `comp: true` on every signup the site
+    takes, because the friends-and-family phase charges nobody for the
+    digest. A gate that opened on `comp` would hand the skill library and
+    the claim graph to the whole free list, quietly, on merge.
+    """
+    waitlist = (REPO / "site" / "lib" / "waitlist-core.js").read_text()
+    assert "comp: true" in waitlist, "the premise of this test changed"
+
+    body = ENTITLEMENT[ENTITLEMENT.index("export async function hasSpine") :]
+    sql = body[body.index("select 1") : body.index("limit 1")]
+    assert "comp" not in sql, "the gate opens on comp, which is the whole free list"
+    assert "tier = ${SPINE_TIER}" in sql
+    assert "status = 'active'" in sql
+
+
 def test_an_expiring_flag_is_what_makes_a_late_revoke_harmless():
     """Polar's revoke event can be late or can go missing. The expiry is
     written at grant time so the entitlement cannot outlive what was paid

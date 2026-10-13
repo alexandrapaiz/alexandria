@@ -31,8 +31,18 @@ export async function currentEmail() {
 //    makes it safe: Polar's revoke event can be late or can go missing,
 //    and an entitlement that expires by itself cannot outlive what was
 //    paid for.
-// 2. A comped or 'full' subscribers row, which is how the owner's friends
+// 2. A `tier = 'full'` subscribers row, which is how the owner's friends
 //    have it and predates payments entirely.
+//
+// What is deliberately NOT a second way is `subscribers.comp`, and the
+// reason is worth the four lines. The column reads as "free access
+// (friends)" in db/schema.sql, and `site/lib/account-core.js`'s
+// `isEntitled` treats it as entitling. But `site/lib/waitlist-core.js`
+// sets `comp: true` on every signup the site takes, because the
+// friends-and-family phase charges nobody for the digest. So a gate that
+// opened on `comp` would hand the skill library and the claim graph to the
+// whole free list. The tier is what says which product somebody has. The
+// comp flag only says nobody billed them for it.
 //
 // Fails closed at every step. No session, no flag, an unreadable expiry, no
 // connection string, or a query that throws all resolve to "not entitled",
@@ -56,7 +66,7 @@ export async function hasSpine() {
       from subscribers
       where lower(email) = lower(${email})
         and status = 'active'
-        and (tier = ${SPINE_TIER} or comp = true)
+        and tier = ${SPINE_TIER}
       limit 1
     `;
     return rows.length > 0;
