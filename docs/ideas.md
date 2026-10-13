@@ -13641,3 +13641,112 @@ that triggered it, per the charter.
   depth measured by a judge that only read the abstract.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-13 — URGENT: the accounts helper opens the paid tier on a flag every free signup carries (engineer seat)
+- Trigger: wiring `hasSpine()` to Clerk this run, I widened its query to match
+  `isEntitled` in `site/lib/account-core.js`, which treats `digest_comp === true`
+  as entitling on its own. Then I read `site/lib/waitlist-core.js`, which sets
+  `comp: true` on every signup the site takes, with its own comment explaining
+  why: the friends-and-family phase charges nobody for the digest. The two files
+  are each internally consistent and together they are a hole. I reverted my own
+  widening and the new gate reads `tier = 'full'` only, so nothing ships open
+  today. `isEntitled` is unchanged and still reads the other way.
+- What: `isEntitled({subscription_status: 'free', digest_tier: 'digest',
+  digest_status: 'active', digest_comp: true})` returns true, and that object is
+  exactly the row `recordSignup` writes for a stranger who types their email into
+  the site's form. Nothing gates on it today, because the only consumer of
+  `currentAccount().entitled` is `site/app/desk/page.jsx` and it prints the value
+  rather than opening anything with it. So this is a trap rather than a leak: the
+  first surface that gates on `.entitled` hands the skill library and the claim
+  graph to the whole free list, and it will look like a one-line feature when
+  somebody writes it. `tests/accounts.test.mjs` asserts the current behaviour
+  under the name "the three ways to hold the spine today", so the defect is
+  pinned by a passing test, which is why no run will trip over it by accident.
+- First step: one line in `isEntitled`, requiring `digest_tier === 'full'`
+  alongside the comp flag, and the matching change to that test's third case.
+  I did not make it, deliberately. It decides what a comped friend is entitled
+  to, which is a product question with the owner's name on it rather than a
+  defect with one correct answer: she may well intend comped friends to hold the
+  spine, in which case the fix is in `waitlist-core.js` instead, giving the
+  digest list a comp value that does not also mean "paid for everything".
+  Either way the two files must agree, and today they do not.
+- Cost: $0.
+- Status: urgent
+
+### 2026-10-13 — The till's state is invisible to the only thing that watches the product (engineer seat)
+- Trigger: the pricing page I shipped today renders "Opens shortly" in place of a
+  button whenever a checkout link is missing from the environment. That is the
+  right thing for a reader and it is silent for the owner. There is no surface
+  anywhere that answers "can somebody buy this right now", and the four
+  environment variables it depends on are set in a dashboard rather than in this
+  repository, so no test in `tests/` can ever see them.
+- What: `tools/delivery_health.py` already reads the live site rather than the
+  scheduler, which is guardrail 4's whole point, and already reports press,
+  pipeline, deploy, site, archive and mcp. Add a seventh surface, `checkout`: GET
+  `/pricing`, count how many of the three offers render as links to
+  `/api/checkout/...` rather than as the note, and report `ok` at three, a
+  degraded line at one or two, and FAILING at none. One HTTP call, no key, no new
+  dependency. The reason this belongs beside the press and not in a test is that
+  it is exactly the same shape as the press failure this org keeps having: a
+  thing that is configured somewhere else, that nobody checks, that stays broken
+  for days because the only reader of the artifact is a person who happens to
+  look.
+- First step: the surface function and its row, plus one case in
+  `tests/test_delivery_health.py` for each of the three verdicts, against a
+  fixture page rather than the network.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — A payment that cannot be matched to an account ends in a console line nobody reads (engineer seat)
+- Trigger: writing `/api/polar-webhook`, both of its unrecoverable outcomes
+  terminate the same way. A buyer with no Clerk account logs `no Clerk account
+  for this buyer` and acknowledges the event, because no number of retries
+  conjures an account. Two accounts on one address logs `email is ambiguous` and
+  refuses rather than guessing. Both are correct, both are money that arrived and
+  did not become access, and both are a `console.error` in a Vercel function log
+  that nothing in this org reads.
+- What: the pipeline has an alarm path (`pipeline/notify.py`) and the site has
+  none, so every site-side failure is discovered by a person. Give the webhook a
+  row rather than a log line: a small `payment_exceptions` table, or a reuse of
+  whatever receipt table the delivery surfaces already read, holding the event
+  type, the Polar ids, the email, the reason and the timestamp. Then
+  `tools/delivery_health.py` can count unresolved rows and the daily standup sees
+  a paid customer with no access on the day it happens rather than when they
+  write in. The same table answers the owner's first question when somebody does
+  write in, which is "did we get their money and what did we do with it".
+- First step: the table in `db/schema.sql`, one insert in `site/lib/polar.js`
+  beside each of the two refusals, and a count in the health tool. The insert
+  must not be able to fail the webhook, since a payment that landed matters more
+  than a record that it was awkward.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-13 — Craft scan: Elicit sells the size of the job, and stopped publishing a number for its free tier (engineer seat)
+- Trigger: today's rotation through docs/market/landscape.md, and today's build
+  was the paid tier, so the pick is the comp whose paid tier is the most
+  developed. One method note first, because three previous runs recorded Elicit
+  as unreachable: `curl` still gets a Cloudflare challenge from this sandbox, and
+  `elicit.com/pricing` read cleanly through the agent's own fetch tool this run.
+  The entry is readable again and the rotation does not need to skip it.
+- Worth stealing: every paid line on that page is a quantity against a named job,
+  not a feature. Pro at $49 "screens 5,000 papers", gives "20 table columns at a
+  time" and extracts "from up to 135 data sources". Scale at $169 is "5x usage",
+  200 sources, 30 columns. Enterprise is 40,000 papers and 40 columns. A buyer
+  reads the tier and knows whether their actual review fits inside it. Our
+  `/pricing` sells nouns: the full skill library, the same files your agents
+  load, routines once they ship. Nobody can tell from that page how much of
+  anything they get, and the one number on it is the price. The stealable move is
+  one line per paid tier naming the size of the job it does, and we have the
+  numbers already: how many skills, how many claims in the graph, how many papers
+  behind them, each of which the corpus can count on the day the page renders.
+- What alexandria does better: the free tier is quantified and complete, and
+  theirs stopped being. `docs/market/landscape.md` recorded Elicit's free plan on
+  2026-09-25 as "5,000 credits"; the page today says "Limited usage" for Research
+  Agent and Research Reports, with no number anywhere, no stated reset period and
+  nothing about what happens when it runs out. Ours is one issue a week, every
+  issue in full, and the complete archive, which is a sentence a reader can plan
+  around and a promise that does not need a credit meter to be honest. A free
+  tier whose limit is unpublished is a free tier the reader has to discover by
+  hitting it.
+- Cost: $0.
+- Status: proposed
