@@ -12105,3 +12105,76 @@ four days and a repeat under the standing rule at the top of this file.
 remedy is a `workflow_dispatch` of the writer seat before its next scheduled
 run, which is the owner's. Reported in one line in the pull request that
 carries this entry.
+## INC-2026-10-13-the-uncovered-set-grew-again-and-this-time-it-is-the-payments-guards — the sixth day of a staged fix nobody can apply, and the two files it leaves silent now guard money (2026-10-13, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-13, when
+`tests/test_ci_coverage.py::test_the_uncovered_set_has_not_grown` failed on
+the two test files this run wrote.
+
+**What happened.** This is a repeat, recorded because the standing rule at
+the top of this file admits no judgment call, and the repeat is of
+`INC-2026-10-02-markdown-suite-claims-a-ci-step-it-never-had`. The shape is
+unchanged: a seat writes a test file, the live `.github/workflows/checks.yml`
+runs fourteen named steps and none of them is the new file, and no agent
+token in this organization may write a workflow, so the only available move
+is to pin the file in `UNCOVERED` and say why.
+
+```
+$ python3 -m pytest tests/ -q
+E       AssertionError: 2 test file(s) run in no workflow and are not pinned:
+E           tests/polar.test.mjs
+E           tests/test_polar.py
+
+$ python3 tools/ci_coverage.py --workflows .github/workflows-pending
+52 of 52 test files run in CI
+```
+
+The pin is in this run's diff with its reason, which is what the gate asks
+for, so nothing here is a rule broken. What makes it worth an entry rather
+than a line in a pull request is the second number. The staged replacement
+has been correct and unapplied since 2026-10-07, which is six days, and the
+set it would empty has grown twice in that window. Item 17 of
+`docs/agents/pending-workflow-changes.md` is measured, verified against the
+live file's anchors, and runs all 52 files including these two.
+
+**Why these two are not like the other thirty-four pins.** Every other line
+in that set costs a red run that somebody notices later. These two hold the
+signature check on `/api/polar-webhook`, which is the only thing standing
+between a stranger with a forged payload and the paid surfaces, and the gate
+in `site/lib/entitlement.js` that decides who may open one. A regression in
+either reports nothing on any pull request. The first evidence would be a
+sale that granted nothing, or access granted to somebody who did not buy.
+
+This run also found the first instance of exactly that class of defect, in a
+file that has been on `main` since 2026-09-19 and is covered by a test which
+asserts it: `isEntitled` in `site/lib/account-core.js` opens the paid tier on
+`digest_comp`, and `site/lib/waitlist-core.js` sets that flag on every free
+signup. A passing test pinned it. Filed as the `urgent` ledger entry of
+today's date rather than fixed here, because it decides what a comped friend
+is entitled to and that is the owner's call.
+
+**Measured, not inferred, after the pull request was opened.** The entry
+above was written from the gate's own failure, which says these two files
+run in no workflow. The pull request then said something stronger:
+
+```
+$ gh pr checks 285
+no checks reported on the 'engineer/2026-10-13-polar-spine' branch
+```
+
+Not a red tick. No tick. `checks.yml`'s `paths:` filter lists fourteen test
+files by name plus `pipeline/**`, `skills/**`, `db/schema.sql` and
+`site/lib/skill-provenance.js`, and a diff of five new `site/` files, two new
+`tests/` files and three documents matches none of them. The filter is
+behaving exactly as written. So the whole payments layer, including the
+signature check on `/api/polar-webhook`, is proposed for merge with no
+continuous integration behind it at all, and the only evidence that the 1,315
+tests pass is a seat's own transcript. That is the state item 17 fixes, and
+it is worse than "a file nobody runs": the pull request does not even claim
+to have been checked, so there is no red for a reviewer to notice.
+
+**The fix, and the part a seat can reach.** None of it. Applying item 17
+needs a `workflows` permission no seat holds. The reachable half is already
+done: the measurement exists, the gate pins the set so it can shrink and
+cannot grow silently, and this entry is the sixth day's evidence that the
+cost of not applying it is no longer only a red tick.
