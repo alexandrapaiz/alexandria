@@ -14240,3 +14240,111 @@ that triggered it, per the charter.
   the landscape has called unfindable since 2026-09-18 is still unfindable.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-14 — A guardrail that writes a card cannot raise its voice (engineer seat, second run)
+- Trigger: today's own diff. `tools/press_watch.py` posts a card to the board
+  the hour the press's grace window closes, which closes the detection half of
+  sprint 2026-10-12 item 5. The escalation half is open and this run wrote the
+  incident for it:
+  `INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it`.
+  The 2026-W41 issue already has a board card from 2026-10-12T20:17Z, a sprint
+  item whose note says "first, regardless of what else is in flight", and an
+  incident entry of its own, and it is 52.9 hours late. A fourth artifact with
+  no clock is not obviously the fix.
+- What: give the tool one rung above a comment. When a card for a missing week
+  is still open past a threshold, mail the owner once through
+  `pipeline/notify.py`, which already exists for exactly this and needs no new
+  service. The cooldown is the card's own newest comment, the same memory the
+  nudge already uses, so the mail cannot repeat daily by accident. The reason
+  this is a proposal rather than today's code is a secret boundary: that
+  function reads `GMAIL_ADDRESS` and `GMAIL_APP_PASSWORD`, which are Modal
+  secrets, and the staged workflow runs on a GitHub runner that holds
+  `BOARD_API_URL` and `BOARD_RUNTIME_TOKEN` and neither of the other two. So
+  the decision is the owner's: add those two names to the Actions secrets the
+  press-watch workflow can read, or decide that a red scheduled run plus a
+  board card is the whole ladder and say so in
+  `docs/agents/delivery-health.md`.
+- First step: `python3 tools/press_watch.py --escalate-after 24`, behind the
+  two secret names, with a test that asserts it mails once and not twice
+  against a card carrying a comment from inside the window.
+- Cost: $0. Same Gmail secret, no new service, no new account.
+- Status: proposed
+
+### 2026-10-14 — Nothing closes a guardrail's card when the thing it watched starts working (engineer seat, second run)
+- Trigger: writing `tools/press_watch.py` and reaching the end of what it
+  should do today. It creates a card and comments on it, and `pm.md` §14 lets a
+  seat move an item, so the one thing it could do and does not is move a week's
+  card to Done once that week's issue lands. Every guardrail in this repository
+  has the same shape: `delivery_health` clears its deploy alarm through a
+  column the jobs write, and nothing else here closes anything.
+- What: a closing pass in the same command. When the press surface reads `ok`
+  for a week that has an open card, move the card to Done and comment with the
+  row that closed it, which is the week, its `created_at` and the model that
+  wrote it. That turns the card from a notice into a record of how long the gap
+  lasted, which is the number the PM's retrospective wants and currently has to
+  reconstruct by hand from two registers.
+- First step: `pw.close_card`, plus the `move` call `tools/board.py` already
+  implements, plus one test that a week which recovers is closed exactly once.
+  The guard against a loop is the same dedupe: a card already in Done is not
+  moved again.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — The archive lists the weeks it has and never the week it owes (engineer seat, second run)
+- Trigger: `GET /library/2026-W41` returns 404 today and `/library` lists
+  `2026-W40` and `2026-W39` as though nothing is outstanding. A reader who
+  arrived on launch day could not tell a product that prints weekly and missed
+  a week from a product that prints every other week on purpose. The press
+  surface, the board card and the incident register all know. The one page a
+  reader actually meets does not.
+- What: `/library` names the week it owes when the press is past its deadline,
+  in one line above the list, in the house's own register: the week label, how
+  late it is, and nothing else. Ban-list entry 34 is the argument for it rather
+  than against it. An absence reported as news is a tell, and an absence
+  reported as an absence is the honesty the entry asks for. The hard part is
+  not the page. It is that the deadline rule lives in `pipeline/weekly.py` and
+  is read by `tools/delivery_health.py`, and the site is JavaScript, so a naive
+  implementation is a second copy of the rule that can only agree by luck. The
+  receipt is the seam: `site/app/api/delivery/route.js` already publishes the
+  rows, so publishing the judged `due`, `deadline` and `late_hours` beside them
+  keeps one copy of the rule and hands the page an answer rather than a
+  calculation.
+- First step: add the three fields to the receipt behind a version bump, which
+  `READABLE_VERSIONS` in `tools/delivery_health.py` already has the policy for,
+  then one line on `/library` reading them. The frontend seat owns the page and
+  this run did not touch it.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Craft scan: Ben's Bites promises nothing, so it is never late (engineer seat, second run)
+- Trigger: today's rotation through docs/market/landscape.md. Ben's Bites was
+  last observed 2026-09-24 and has never had a craft scan, and today's build is
+  about what a cadence promise costs the thing that makes it, so the comp that
+  has quietly dropped its cadence promise is the one to read. Two of the four
+  products ahead of it in the newsletter list refused this sandbox: both
+  `deeplearning.ai/the-batch` and `thesequence.substack.com` answer HTTP 403 to
+  a plain fetch, which is a note for whoever scans them next.
+- Worth stealing: the landing page sells one sentence. "What I'm learning
+  building with agents (plus tools worth trying)", over "Over 171,000
+  subscribers", and then nothing. No cadence, no issue length, no section list,
+  no price, no archive link. The product that used to be a daily AI news digest
+  now promises a person rather than a schedule, and the archive matches: twelve
+  posts in thirty-four days, dated and never numbered, gaps of five days that
+  nothing explains, because a gap in something that never claimed a rhythm is
+  not a gap. That is the stealable thing and it is uncomfortable. Every promise
+  a product publishes is a thing it has to instrument. Ours publishes a weekly
+  cadence and an ISO week label, so our archive can be audited by a stranger
+  and today it fails that audit by 52.9 hours. The move worth taking is not to
+  promise less. It is to notice that we chose the expensive promise and staff it
+  accordingly, which is what today's diff does and what the escalation entry
+  above is still missing.
+- What alexandria does better: a stranger can check us and cannot check them.
+  `GET /library/2026-W41` returning 404 is a fact anybody can establish with no
+  credential, which is exactly what `tools/delivery_health.py` reads and what
+  this run's card is built on. On their archive a reader cannot tell a quiet
+  week from a newsletter that has stopped, and neither can they: dates with no
+  numbers and no cadence mean there is no sequence to be missing from. 171,000
+  subscribers is the number that says this is a real tradeoff rather than a
+  mistake, and the entry for them in the landscape should say so.
+- Cost: $0.
+- Status: proposed
