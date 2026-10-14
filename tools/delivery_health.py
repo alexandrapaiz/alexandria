@@ -1274,6 +1274,108 @@ def name_undeployed(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
             + (f", and {rest} more" if rest > 0 else ""))
 
 
+def recording_asked_at(repo_root: Path, app: str, ref: str = "HEAD") -> dict:
+    """When the trunk started asking this app to record a runtime.
+
+    The answer is a date and the commit that carries it, or a `why`. It exists
+    because "this app has no row" has two causes that look identical in the
+    table and are opposites in production.
+
+    One is an app that cannot record: it is in `runtime_sha.APPS` and its
+    module never calls `record_runtime`, so no deploy of it will ever write a
+    row and the age of its code says nothing about the age of its image. That
+    is unmeasured, and this function returns a `why` for it.
+
+    The other is an app whose own code has asked it to record since a datable
+    commit, and which has still never recorded. A deploy built from that commit
+    or anything after it writes its row on its first run. So no row means the
+    running image predates that commit, which makes the age of that commit a
+    lower bound on the age of the deploy. That is drift, and it is the state
+    `distill` and `ingest` were in for five days while this guard called them
+    unmeasured and said nothing (`INC-2026-10-14-the-two-apps-the-drift-guard-
+    could-not-see`).
+
+    The pickaxe takes the newest commit that changed the call rather than the
+    oldest, which is the conservative end: a later edit to that line cannot
+    make the image younger than it is, and dating from the original add would
+    report an age the evidence does not carry.
+    """
+    from pipeline import runtime_sha
+
+    module = runtime_sha.APPS[app]
+    status, out = _git(repo_root, "log", "-1", "--format=%h%x1f%cI",
+                       "-S", f'record_runtime(conn, "{app}"', ref,
+                       "--", module)
+    if status != 0:
+        return {"why": f"git could not read {module} at {ref} here"}
+    if not out:
+        return {"why": f"no commit in this history adds a record_runtime call "
+                       f"to {module}"}
+    short, _, when = out.partition("\x1f")
+    try:
+        at = datetime.fromisoformat(when).astimezone(timezone.utc)
+    except ValueError:
+        return {"why": f"the commit that added the call ({short}) has no "
+                       f"readable date here"}
+    return {"sha": short, "at": at}
+
+
+def undeployed_since(repo_root: Path, app: str, commit: str,
+                     limit: int = DEPLOY_HISTORY_LIMIT,
+                     ref: str = "HEAD") -> dict:
+    """The commits an image older than `commit` cannot contain.
+
+    `undeployed_commits` recovers the deployed commit by replaying digests
+    until one matches what the container reported. An app that has never
+    reported has no digest to match, so that walk cannot start, and until now
+    the answer stopped at "there is no deployed state to diff against". There
+    is still no deployed commit here, and there is a bound: everything from
+    `commit` forward that touched this app's files is undeployed, because the
+    image predates `commit` by the argument in `recording_asked_at`.
+
+    A bound is worth naming. "distill is 5 days behind" does not tell the
+    owner that the five days contain the three fixes to the thing that is
+    broken, and `name_unrecorded` puts them in the headline.
+    """
+    paths = _paths_at(repo_root, app, ref)
+    if paths is None:
+        from pipeline import runtime_sha
+        return {"why": f"{runtime_sha.APPS[app]} cannot be read at {ref} here"}
+    # `commit^..ref` would drop `commit` itself, and `commit` is undeployed too.
+    status, out = _git(repo_root, "log", f"-{limit}",
+                       "--format=%H%x1f%h%x1f%s%x1f%cI",
+                       f"{commit}~1..{ref}", "--", *paths)
+    if status != 0:
+        # A root commit has no `~1`, and a shallow clone may not have the
+        # parent either. Both are a reason to name nothing rather than to
+        # guess at a range.
+        return {"why": f"this checkout cannot list the commits since {commit}"}
+    commits = []
+    for line in out.splitlines():
+        parts = line.split("\x1f")
+        if len(parts) == 4:
+            commits.append({"sha": parts[1], "subject": parts[2], "at": parts[3]})
+    return {"asked_in": commit, "commits": commits, "searched": len(commits)}
+
+
+def name_unrecorded(found: dict, limit: int = DEPLOY_NAMED_COMMITS) -> str:
+    """The same clause as `name_undeployed`, for an app with no row at all.
+
+    Empty string when there is nothing trustworthy to say, so a caller can
+    append it unconditionally.
+    """
+    if "commits" not in found:
+        return ""
+    commits = found["commits"]
+    if not commits:
+        return ""
+    named = ", ".join(f"{c['sha']} {c['subject']}" for c in commits[:limit])
+    rest = len(commits) - limit
+    plural = "commit" if len(commits) == 1 else "commits"
+    return (f"{len(commits)} undeployed {plural} since {found['asked_in']}: "
+            f"{named}" + (f", and {rest} more" if rest > 0 else ""))
+
+
 def deploy_facts(conn) -> dict | str:
     """What each job last reported it was running, from `deploy_runtime`.
 
@@ -1330,6 +1432,12 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
 
     evidence = {"read_via": source, "ref": ref}
     drifted, unknowns, alarms = [], [], []
+    # Alarms that cannot be mailed, kept apart from the ones that can. The
+    # cooldown lives in `deploy_runtime.notified_at`, so an app with no row
+    # has nowhere to remember that it was mailed, and this file already
+    # refuses to mail without a cooldown on the receipt path for the same
+    # reason: one mail every time a seat runs the standup is not an alarm.
+    blind = []
     cache: dict[str, str] = {}
     for app in sorted(runtime_sha.APPS):
         keys = _paths_at(root, app, ref)
@@ -1357,14 +1465,26 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
                 "recorded_sha": row["runtime_sha"] if row else None,
                 "last_run": str(row["recorded_at"]) if row else None}
 
-        # Never recorded is a third state, and it used to be read as the
-        # second. An app with no row has told this guard nothing, so the age
-        # of its last commit is not evidence that a deploy is late: it is
-        # evidence that the app is unmeasured. Reading it as drift produces a
-        # FAILING whose number is the age of the code rather than the age of
-        # the deploy, which cries wolf on an app that may be running
-        # perfectly. `ingest` is the live case: it delivered papers at 11:01
-        # UTC on 2026-10-09 and has never recorded a runtime in its life.
+        # Never recorded is a third state, and the question it turns on is
+        # not whether a row exists. It is whether the code at `ref` asks for
+        # one. `recording_asked_at` is the whole argument; the short version
+        # is that an app whose module calls `record_runtime` writes its row on
+        # the first run of any deploy built from that commit, so no row means
+        # the image predates it, and the age of that commit is a lower bound
+        # on the age of the deploy.
+        #
+        # This branch read UNKNOWN for both causes from 2026-10-09 to today,
+        # on the reasoning that dating an unmeasured app from its last commit
+        # cries wolf. That reasoning was right about the number and wrong
+        # about the state, and `ingest` was the case it was written against:
+        # it had never recorded because the deploy that would have recorded
+        # had not happened. Neither had `distill`'s. The guard called them
+        # unmeasured for five days while the stage that fills `claims` ran an
+        # image from before 2026-10-09, which is before all three fixes to
+        # the fallback pacing that was stopping it. The press printed nothing
+        # on 2026-10-12 and nothing on launch day because of it, and the one
+        # surface that could have named the cause was the one holding its
+        # tongue. INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see.
         #
         # Only when something else did record, and that condition is the whole
         # of the distinction. An EMPTY table is not five unmeasured apps, it is
@@ -1374,12 +1494,33 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
         # holds it. One app missing among four that reported is a gap in
         # coverage. Every app missing is a gap in the mechanism.
         if row is None and rows:
-            why = ("has never recorded a runtime, so this app is unmeasured "
-                   "rather than behind. It records on its next run after a "
-                   f"deploy: modal deploy {runtime_sha.APPS[app]}")
-            here.update(state=UNKNOWN, why=why)
-            unknowns.append(f"{app} (never recorded)")
+            asked = recording_asked_at(root, app, ref)
+            if "at" not in asked:
+                why = ("has never recorded a runtime and nothing in its code "
+                       f"asks it to ({asked['why']}), so this app is "
+                       "unmeasured rather than behind: modal deploy "
+                       f"{runtime_sha.APPS[app]}")
+                here.update(state=UNKNOWN, why=why)
+                unknowns.append(f"{app} (never recorded)")
+                evidence[app] = here
+                continue
+            age_hours = (now - asked["at"]).total_seconds() / 3600
+            found = undeployed_since(root, app, asked["sha"], ref=ref)
+            named = name_unrecorded(found)
+            here.update(state=FAILING if age_hours > DEPLOY_GRACE_HOURS else OK,
+                        asked_in=asked["sha"], asked_at=str(asked["at"]),
+                        drift_hours=round(age_hours, 1), undeployed=found,
+                        why=("has never recorded a runtime, and "
+                             f"{asked['sha']} asked it to "
+                             f"{round(age_hours / 24, 1)} days ago, so the "
+                             "running image is at least that old: modal "
+                             f"deploy {runtime_sha.APPS[app]}"))
             evidence[app] = here
+            if age_hours > DEPLOY_GRACE_HOURS:
+                blind.append((app, round(age_hours / 24, 1), asked["sha"], named))
+            else:
+                drifted.append(f"{app} (asked to record {round(age_hours, 1)}h "
+                               "ago and has not run since)")
             continue
 
         # Reported, never a verdict. Both halves of the comparison now come
@@ -1423,18 +1564,30 @@ def judge_deploy(facts: dict | str, repo_root: Path | None = None,
             inside = f"{round(age_hours, 1)}h" + (f", {named}" if named else "")
             drifted.append(f"{app} ({inside})")
 
-    if alarms:
+    if alarms or blind:
         names = "; ".join(
-            f"{app} is {days} days behind" + (f" ({named})" if named else "")
-            for app, days, _, _, named in alarms)
-        if notify_conn is not None:
+            [f"{app} is {days} days behind" + (f" ({named})" if named else "")
+             for app, days, _, _, named in alarms]
+            + [f"{app} has never recorded a runtime and {sha} asked it to "
+               f"{days} days ago, so its image predates {sha}"
+               + (f" ({named})" if named else "")
+               for app, days, sha, named in blind])
+        if alarms and notify_conn is not None:
             note = _notify_drift(notify_conn, alarms, root, now)
-        elif source == DIRECT:
+        elif alarms and source == DIRECT:
             note = "not notified"
-        else:
+        elif alarms:
             note = (f"not mailed: these rows came from {source}, which cannot "
                     "write the once-a-day cooldown, and an alarm with no "
                     "cooldown is one mail every time the standup runs")
+        else:
+            note = ""
+        if blind:
+            withheld = ("the apps with no row are not mailed: the cooldown is "
+                        "a column on the row they do not have, and an alarm "
+                        "with no cooldown is one mail every time the standup "
+                        "runs. This surface is where they are read")
+            note = f"{note}. {withheld}" if note else withheld
         evidence["alarm"] = note
         return Surface("deploy", FAILING,
                        f"the deployed code is not {ref}: {names}. "
