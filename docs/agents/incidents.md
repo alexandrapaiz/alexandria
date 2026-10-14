@@ -12805,3 +12805,77 @@ remembering is the thing every entry on this page is about.
 in `docs/agents/pending-workflow-changes.md`, staged and verified in
 `.github/workflows-pending/checks.yml` since 2026-10-07, which replaces the
 filename list with a run of the whole suite.
+
+**Fifth sighting, same day, same branch (engineer seat, second run).** The
+pull request that supersedes this one, #294, carries every file above plus
+`tools/press_watch.py`, `tests/test_press_watch.py` and a new workflow in the
+pending lane. `gh pr checks 294` answers `no checks reported on the
+'engineer/2026-10-14-quiet-send-guardrail' branch`. So the diff that adds the
+press's own quiet-send guardrail is asserted on its branch and silent on the
+merge, for the same reason: none of its files is in `checks.yml`'s `paths`
+list. The rent on item 17 of `docs/agents/pending-workflow-changes.md` is
+seven days. Not fixed here, because no seat's token may write a workflow file.
+
+## INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it — the week's issue has a board card, a sprint item marked first-regardless and an incident of its own, and it is still missing 53 hours later (2026-10-14, engineer seat, second run)
+
+**Observed by:** the engineer seat's second run of 2026-10-14, 15:51 UTC,
+while building sprint 2026-10-12 item 5. `python3 tools/delivery_health.py
+--surface press` reads `FAILING  press  the newest issue is 2026-W40 and
+2026-W41 has ended; 1 issue(s) missing`, read from the public receipt. The
+deadline for that issue was 2026-10-12 11:00 UTC, so it is 52.9 hours late.
+
+**What is already written down about it.** All three of these exist and are
+correct.
+
+- `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`,
+  filed by this seat's second run on Monday, with the whole arithmetic.
+- Sprint 2026-10-12 item 1, whose `Notes for the engineer` open with "Item 1
+  first, regardless of what else is in flight."
+- Board card `dee2d12f-0761-4136-9587-b8e0fca5b3fb`, "Diagnose and close
+  today's press-send gap", seat `engineer`, created 2026-10-12T20:17:59Z and
+  still in Backlog.
+
+Two pull requests have merged against the diagnosis since, #275 and #282, and
+the issue has not been sent. The receipt's newest row is still the one written
+2026-10-05T09:01:04Z.
+
+**The repeat, which is why this is filed.** The class is the one this seat's
+own first run of today named one register over, in
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`: **a pending
+action parked in a state that nothing escalates is indistinguishable from a
+pending action nobody took.** That entry was about a guard state, `unknown`,
+which gets quieter as it ages. This entry is the same sentence about three
+artifacts that are supposed to be loud. A card in Backlog, a sprint item with
+an emphatic note on it, and an incident entry all age the same way, because
+none of the three has a clock and none of them escalates.
+
+Sightings of the class in two days, all four in this repository:
+
+- 2026-10-09: the deploy guard's closing section named the two `modal deploy`
+  commands and five days passed.
+- 2026-10-12: the research seat met `unknown` on the same surface and read it
+  as unmeasured.
+- 2026-10-14, first run: `unknown` on `distill` and `ingest`, five days old,
+  with every fix for the outage merged inside the window.
+- 2026-10-14, second run: this entry.
+
+**The cause the four have in common, stated plainly.** Every one of them ends
+at a hand holding a Modal token. `modal deploy pipeline/distill.py`,
+`modal deploy pipeline/ingest.py`, and
+`modal run pipeline/weekly.py::resend --week 2026-W41` behind the rehearsal
+ladder are the three outstanding actions, and no seat can run any of them. So
+the escalation these registers lack would not be a seat noticing harder. It
+would be the owner being told once, in a channel she reads, with the command
+in it. `.github/workflows-pending/modal-deploy.yml` has been queued for that
+since 2026-10-08 and is six days into its own version of this entry.
+
+**What shipped with this entry, and what it does not fix.**
+`tools/press_watch.py` and its schedule close the detection half: from the
+hour the grace window closes, a missing issue is a card on the board with the
+deadline, the lateness and the command in it, rather than a correct answer
+nobody asked for. The escalation half is not fixed. The card this tool writes
+is a fourth artifact with no clock, and the honest version of its own limit is
+that it nudges once a day and never raises its voice. The ledger entry of
+today, "A guardrail that writes a card should be able to raise its voice", is
+the proposal for the next step, and the schema change the deploy alarm needs
+for its own cooldown is the same shape of work.
