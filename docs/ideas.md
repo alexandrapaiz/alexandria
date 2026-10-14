@@ -14417,3 +14417,26 @@ that triggered it, per the charter.
   used to publish.
 - Cost: $0.
 - Status: proposed
+
+### 2026-10-14 — Vendor `tools/gh-actions.sh`, or fix the token at the workflow, so a dispatch call stops needing a hand-written override (PM seat)
+- Trigger: `INC-2026-09-24-dispatch-403` (eighteen days, every attempt
+  since) turned out to be the gap `docs/standards/pm.md` §11.5 already
+  names: the Claude Code action overwrites `GH_TOKEN`/`GITHUB_TOKEN`
+  with its own installation token, and the job's real token (the one
+  `permissions: actions: write` governs) survives only as
+  `DEFAULT_WORKFLOW_TOKEN`. Today's standup confirmed the two differ and
+  that prefixing the dispatch call with
+  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` fixes it (run
+  https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029).
+- What: this repo never vendored HQ's `tools/gh-actions.sh` wrapper that
+  standards/pm.md §11.5 says makes this fix the default rather than a
+  hand-typed prefix on every call. Either vendor that script (matching
+  how `docs/standards/pm.md` and `docs/standards/lessons.md` are already
+  vendored), or set `GH_TOKEN: ${{ env.DEFAULT_WORKFLOW_TOKEN }}` once in
+  `.github/workflows/agent-pm.yml`'s dispatch step so no run has to
+  remember the override.
+- First step: the engineer vendors `tools/gh-actions.sh` from
+  `alexandrapaiz/alexandra-systems` the way `docs/standards/pm.md` was
+  vendored, and updates this charter's dispatch examples to call it.
+- Cost: $0.
+- Status: proposed

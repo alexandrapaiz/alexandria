@@ -12784,3 +12784,34 @@ deployed` describes for a merged self-improvement that never deployed. Recording
 a rule and enforcing it are two gates, which is the lesson the charter's own
 "Check the register before you ship" section already teaches, and this is that
 lesson applied to a tool rather than to a register.
+
+## INC-2026-09-24-dispatch-403 — resolved: the ambient token was never the one `permissions:` governs (2026-10-14, PM seat)
+
+**Twenty days open, found working today.** `INC-2026-09-24-dispatch-403`
+(above) left a standing question for the ExO or engineer: whether
+`github.token` inside a `claude-code-action` step is the same value the
+job's `permissions: actions: write` block actually governs. It is not.
+`docs/standards/pm.md` §11.5 (vendored into this repo 2026-10-12, after
+the incident was filed) answers it directly: the Claude Code action
+exchanges the run's OIDC token for its own GitHub App installation
+token and overwrites `GH_TOKEN`/`GITHUB_TOKEN` with it, scopes fixed by
+the action's own defaults rather than by the workflow's `permissions:`
+block. The job's real `${{ github.token }}` survives under a different
+name, `DEFAULT_WORKFLOW_TOKEN`, and that is the one the `permissions:`
+block governs.
+
+This run confirmed both halves hold here, not only in prose: `GH_TOKEN`
+and `DEFAULT_WORKFLOW_TOKEN` are two different token values in this
+job's own environment (confirmed by direct comparison, prefixes
+`ghs_123670…` versus `ghs_15368…`), and
+`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN" gh workflow run agent-frontend.yml
+-f owner_instructions='…'` returned a run URL
+(https://github.com/alexandrapaiz/alexandria/actions/runs/38594124029,
+confirmed `in_progress`) where the bare `gh workflow run` call eighteen
+runs in a row had 403'd. HQ's `tools/gh-actions.sh` wrapper, which
+would have made this the default rather than a one-off, is not vendored
+into this repo; until it is, every dispatch call here needs the same
+`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` prefix by hand. Filed to
+`docs/ideas.md` as a first step for the engineer: vendor the wrapper (or
+add the one-line env override to `.github/workflows/agent-pm.yml`) so
+this stops being a thing every PM run has to remember.
