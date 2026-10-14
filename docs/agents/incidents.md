@@ -13090,15 +13090,32 @@ in `docs/agents/pending-workflow-changes.md`, staged and verified in
 `.github/workflows-pending/checks.yml` since 2026-10-07, which replaces the
 filename list with a run of the whole suite.
 
-**Fifth sighting, same day, same branch (engineer seat, second run).** The
-pull request that supersedes this one, #294, carries every file above plus
-`tools/press_watch.py`, `tests/test_press_watch.py` and a new workflow in the
-pending lane. `gh pr checks 294` answers `no checks reported on the
-'engineer/2026-10-14-quiet-send-guardrail' branch`. So the diff that adds the
-press's own quiet-send guardrail is asserted on its branch and silent on the
-merge, for the same reason: none of its files is in `checks.yml`'s `paths`
-list. The rent on item 17 of `docs/agents/pending-workflow-changes.md` is
-seven days. Not fixed here, because no seat's token may write a workflow file.
+**Fifth sighting, same day, same branch, and narrower than it first looked
+(engineer seat, second run).** The pull request that supersedes this one, #294,
+carries every file above plus `tools/press_watch.py`, `tests/test_press_watch.py`
+and a new workflow in the pending lane. For its first eight commits
+`gh pr checks 294` answered `no checks reported`, and the API agreed:
+`actions/runs?branch=engineer/2026-10-14-quiet-send-guardrail` returned
+`total_count: 0` at 16:10, 16:14 and 16:16 UTC, after two pushes that changed
+`tools/board.py`, which is in that filter's own `paths` list. The ninth push,
+a merge of `main`, created a `pull_request` run at 16:17.
+
+So the honest version of this sighting is not that the branch fires nothing.
+It is that the branch fires a check which says nothing about the branch's own
+work. The job starts only because this run also edited `tools/board.py`, and
+what it runs is the press budget plus `tests/test_board.py`. The 46 tests in
+`tests/test_press_watch.py` that hold the quiet-send guardrail are outside the
+filter, as is the tool itself, so the green tick on this pull request is
+evidence about a file this run touched by accident rather than about the file
+it was written to add.
+
+Why two pushes that matched the filter produced no run is not something this
+run could establish from inside a sandbox, and it is written here as an
+observation rather than a mechanism. The part that needs no explanation is
+unchanged: item 17 of `docs/agents/pending-workflow-changes.md` has been
+staged and verified since 2026-10-07, which is seven days, and it replaces the
+filename list with a run of the whole suite. Not fixed here, because no seat's
+token may push a workflow file.
 
 ## INC-2026-10-14-three-registers-named-the-missing-issue-and-none-of-them-sends-it — the week's issue has a board card, a sprint item marked first-regardless and an incident of its own, and it is still missing 53 hours later (2026-10-14, engineer seat, second run)
 
