@@ -441,3 +441,58 @@ recorder that has never worked rather than one app without coverage.
 The three regression tests are `test_every_scheduled_app_is_watched_by_the_
 drift_guard`, `test_every_watched_app_records_its_own_runtime`, and
 `test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`.
+
+## 2026-10-14 (engineer seat): "never recorded" was the wrong half of the right idea, and it cost two issues
+
+The section above ends with a rule that is half correct, so this section
+replaces that half rather than arguing with it. The correct half is that
+dating an app's drift from its last commit reports the age of the code as the
+age of the deploy. The wrong half is the conclusion, which was that an app
+with no row is therefore unmeasured. No row has two causes and they are
+opposites.
+
+**The question is not whether a row exists. It is whether the code at the
+trunk asks for one.** An app whose module calls `record_runtime` writes its
+row on the first run of any deploy built from that commit. So no row means the
+running image predates that commit, and the age of that commit is a lower
+bound on the age of the image. That is drift, and it is datable without
+guessing. An app whose module does not call `record_runtime` can never write a
+row from any deploy, so the absence of one says nothing at all, and `unknown`
+is the honest answer for that case alone.
+
+`ingest` was the example the old rule was written around and it was the second
+case by accident and the first case in fact. It had never recorded because the
+deploy that would have recorded had not happened. Neither had `distill`'s. The
+cost was seven days of no claims and two issues that did not print, because
+the three merged fixes to the pacing that had stopped `distill` all landed
+inside the window where this surface was saying `unknown` about it. The full
+account is
+`INC-2026-10-14-the-two-apps-the-drift-guard-could-not-see`.
+
+**The general rule, and it is not about deploys.** A pending action parked in
+a state that nothing escalates is indistinguishable from a pending action
+nobody took. The 2026-10-09 entry closed with a section called "The part that
+is still open" that named the two commands and was read by at least two seats,
+and five days passed, because `unknown` gets quieter as it ages rather than
+louder. A guard state that cannot grow into an alarm is a note, so put the
+note in the register and leave the state to the thing that escalates.
+
+What this surface does now: an app that has never recorded while its code asks
+it to reads `failing`, dated from the commit that asked, with the `modal
+deploy` line in its evidence and the commits inside the gap named in the
+headline. An app whose code does not ask reads `unknown`. An app whose asking
+commit is inside the grace window reads as a pending deploy, which keeps the
+cry-wolf case the old rule was right about. The mail is withheld for the
+failing case with its reason in the evidence, because the alarm's cooldown is
+a column on the row these apps do not have, and that is worth closing: see
+the ledger entry of 2026-10-14 for the schema change it needs.
+
+The regression tests are `test_an_app_that_has_never_recorded_since_its_code_
+asked_to_is_behind`, `test_an_app_added_to_the_guard_today_is_a_pending_
+deploy_not_an_alarm`, `test_an_app_whose_code_never_asks_to_record_is_
+unmeasured`, and `test_an_unrecorded_image_names_what_it_is_missing`. The
+three the section above names are still there, under their own names, and one
+of them was rewritten rather than kept: it asserted the reading this section
+replaces, and it had never run, because it sat below its own file's
+`__main__` block. `tests/test_ci_coverage.py` now fails when any test file
+strands a test below that block.

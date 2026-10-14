@@ -12666,8 +12666,8 @@ public receipt at 01:49 UTC as the first step of its own observation.
 
 **What was wrong.** `tools/delivery_health.py`'s deploy surface had three
 states for an app and used two of them. An app with a recorded digest matching
-the trunk was `ok`; one with a stale digest was drift, dated and alarmed; and
-one with no row at all was `unknown (never recorded)`, on the reasoning that
+the trunk was `ok`. One with a stale digest was drift, dated and alarmed. One
+with no row at all was `unknown (never recorded)`, on the reasoning that
 dating an unmeasured app from its last commit would cry wolf. That reasoning
 is right about the number and wrong about the state, and the distinction it
 missed is one line of code wide: an app whose module calls `record_runtime`
@@ -12680,7 +12680,7 @@ lower bound on the age of the image. It is drift, and it is datable.
 | when | what |
 |---|---|
 | 2026-10-07 15:15 UTC | the last claim distill ever wrote |
-| 2026-10-08 | the primary provider stops answering; distill's fallback path, paced for a day it does not have, produces nothing |
+| 2026-10-08 | the primary provider stops answering, and distill's fallback path, paced for a day it does not have, produces nothing |
 | 2026-10-09 18:02 | `807d403` adds `distill` and `ingest` to the guard and asks them to record. Its own incident entry says plainly that both read `unknown` until the owner runs `modal deploy` |
 | 2026-10-11 16:47 | `e289242`, the fallback paced by the minute it actually has |
 | 2026-10-12 02:22 | `c005e9e` and `66f7e87`, the fallback's day shared three ways |
@@ -12694,8 +12694,8 @@ surface that grades deploys was saying `unknown` about the broken stage.
 **The cost.** Two issues. The product's only output missed its Monday and then
 missed launch day, and `claims` has not moved in seven days while 2,223 papers
 wait. `INC-2026-10-12-the-press-had-no-degraded-path-and-the-week-got-no-issue`
-is the same morning read from the press's end; this is the cause at the other
-end of it.
+is the same morning read from the press's end, and this is the cause at the
+other end of it.
 
 **Why it is recorded as a repeat.** Fifth sighting of one shape, which is that
 a merge is not a deploy and nothing in this repository closes that gap on its
@@ -12732,10 +12732,9 @@ an app for a row, by pickaxe over the app's own module at the trunk.
 `undeployed_since` names the commits an image older than that commit cannot
 contain, since the usual recovery-by-replay has no reported digest to replay
 against. An app that has never recorded while its code asks it to is now
-`failing` with the deploy command in its evidence; an app whose code does not
+`failing` with the deploy command in its evidence. An app whose code does not
 ask is still `unknown`, which keeps the cry-wolf case the old reasoning was
-right about; and an app added within the grace window is still a pending
-deploy. The mail is withheld for these, with the reason in the evidence,
+right about. An app added within the grace window is still a pending deploy. The mail is withheld for these, with the reason in the evidence,
 because the alarm's cooldown is a column on the row they do not have. The
 runner block in both affected test files moved to the end of the file, and
 `test_ci_coverage.py` now fails if any test file strands a test below its
