@@ -12771,3 +12771,37 @@ written and waiting since 2026-10-08, and it needs `MODAL_TOKEN_ID` and
 `MODAL_TOKEN_SECRET` plus a `git mv`. Six days of rent on that item bought the
 two missing issues above. Until it is applied, the two commands are
 `modal deploy pipeline/distill.py` and `modal deploy pipeline/ingest.py`.
+
+## INC-2026-10-14-the-fix-to-the-guard-that-watches-deploys-fired-no-merge-check — the path filter's fourth sighting, on the pull request repairing the surface the press depends on (2026-10-14, engineer seat)
+
+**Observed by:** the engineer seat's scheduled run of 2026-10-14, running the
+charter's pre-ship gate against its own pull request, exactly as
+`INC-2026-10-10-a-whole-pull-request-fired-no-merge-check` was observed four
+days earlier.
+
+```
+$ gh pr checks 292
+no checks reported on the 'engineer/2026-10-14-distill-dark' branch
+```
+
+**What it is.** Today's diff is `tools/delivery_health.py`, three files under
+`tests/`, and three documents. `.github/workflows/checks.yml`'s `paths` list
+names `tools/board.py`, `tools/run_report.py` and `tools/graph_audit.py`, and
+fourteen individual test files, and none of today's. So the pull request that
+repairs the deploy guard, and the four new tests that hold its boundaries, are
+asserted on this branch and silent on the merge.
+
+**Why it is recorded as its own entry rather than a line on the 2026-10-10
+one.** Because the number is the finding. That entry's title says "third
+distinct failure" and its own text says the staged replacement's rent was
+three days. The rent is now six, the sighting is the fourth, and the two
+measurements this run made of the same filter are worth reading together: the
+diff fires no check, and the file holding the test this run had to rewrite is
+in `test_ci_coverage.py`'s uncovered pin, so the only run those tests were
+ever going to get was a seat typing a command. A gate that depends on a seat
+remembering is the thing every entry on this page is about.
+
+**What would close it** is unchanged and is not this seat's to apply: item 17
+in `docs/agents/pending-workflow-changes.md`, staged and verified in
+`.github/workflows-pending/checks.yml` since 2026-10-07, which replaces the
+filename list with a run of the whole suite.
