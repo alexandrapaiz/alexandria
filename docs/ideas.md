@@ -34,6 +34,14 @@ defines. Statuses below are untouched; only the owner moves them.
   regardless on the owner minting a PR-merge-scoped token
   (docs/sprints/pending.md item 7). (1) and (2) do not need that token
   and can ship independently of it.
+- Groomed 2026-10-12 (PM, Monday ceremony): pieces (1) and (2) read as
+  built against the tree — `tools/panel_provenance.py`,
+  `tools/panel_adversary.py`, and `tools/panel_validator.py` all exist
+  and run in the maintenance job. Named here for the owner or the
+  building seat to confirm and flip; this seat does not set `built`
+  itself. Piece (3), the unanimous-merge automation, is still the only
+  genuinely open part, still blocked on the PR-merge-scoped token
+  (pending.md, now 25+ days overdue).
 
 ### 2026-09-17 — Institution backfill, then regenerate and resend digest
 - Trigger: known gap; scratchpad script `backfill_institutions.py` exists
@@ -42,6 +50,13 @@ defines. Statuses below are untouched; only the owner moves them.
 - First step: run the backfill inside the daily budget window
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): the oldest unresolved accepted
+  entry in the ledger, 25 days. No `backfill_institutions.py` exists
+  anywhere in the tree (only `backfill_topics.py`, `backfill_grades.py`),
+  and the 2026-09-19 finding that 99.2% of papers show empty
+  `institutions` (line ~1831) is unchanged as of this ceremony. Ranked
+  #1 by leverage against the accepted backlog below; day-sized as
+  written, no split needed. Pulled into sprint-2026-10-12 as item 4.
 
 ### 2026-09-17 — Member site auth and deploy
 - Trigger: Sprint 2 plan in vision.md
@@ -58,6 +73,10 @@ defines. Statuses below are untouched; only the owner moves them.
   stand as written. This week's sprint (docs/sprints/sprint-2026-09-21.md)
   carries the first two engineer items that redesign this entry's gate
   before the rest of it is built.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built against the
+  tree — `@clerk/nextjs` is a live site dependency, `site/middleware.js`,
+  `site/vercel.json`, and the sign-in/sign-up routes all exist. Named
+  for the owner or the building seat to confirm and flip to `built`.
 
 ### 2026-09-17 — Skill-extract prompt
 - Trigger: gold layer needs its authoring prompt
@@ -79,6 +98,10 @@ defines. Statuses below are untouched; only the owner moves them.
   frontmatter for the provenance reviewer to check against the database.
   Inline numeric ids would make the prose unreadable without making it any
   more checkable, since the reviewer needs the stable id either way.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built — the file
+  exists and is cited throughout later skill-seat ledger entries as the
+  live extraction method. Named for the owner or the building seat to
+  confirm and flip to `built`.
 - Done this run (skill agent, 2026-09-18, PR skill/2026-09-18-b-self-improving-post-training-loops):
   the "first step" above is now done. `prompts/skill-extract.md` itself is
   still only on the still-open PR #12 branch
@@ -339,6 +362,12 @@ below.
   a home-page card
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): same accepted idea as "The
+  Left-Behind Index as a public page" below (both 2026-09-18); not
+  built under either name. No `left-behind`/`leftbehind` route exists
+  under `site/app` as of this ceremony. Ranked #2 by leverage, right
+  behind the institution backfill, because it gates drafted
+  sales-outreach notes. Treat as one item, satisfied once either ships.
 - Groomed 2026-09-18 (PM, closing all-hands triage): accepted. Sales'
   redispatched plan (PR #22, merged) independently proposes a
   "Left-Behind Index" public page (see that entry under "Sales agent
@@ -977,6 +1006,12 @@ build.
   (edges have stopped forming at all since 2026-09-12, a supply
   problem the graph-quality audit would just measure more precisely),
   so carried rather than scheduled this sprint.
+- Groomed 2026-10-12 (PM, Monday ceremony): first step shipped
+  2026-09-29 as "Slice 1" — `docs/product/graph-quality.md`,
+  `tools/graph_audit.py`, `tests/test_graph_audit.py` all exist. The
+  rest of the upgrade (slices 2+) is legitimately still open and stays
+  `accepted`, correctly scoped by the prior grooming note; no further
+  split needed now that slice 1 is done.
 
 ### 2026-09-18 — Digest issue permalinks with real share meta tags (sales agent)
 - Trigger: building the launch campaign (docs/sales/, ADR-24) surfaced
@@ -997,6 +1032,13 @@ build.
   than a separate sprint item.
 - Cost: $0
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): the stated precondition has
+  resolved — the archive now renders real content
+  (`site/lib/issues-live.js`, live Neon query, confirmed against two
+  issues in `/library`) — so this is unblocked and ready for a verdict
+  on its own terms rather than "once the archive renders," which already
+  happened.
+
 ### 2026-09-18 — Corpus expansion scoping spike (Q4) and Q1 objective
 - Trigger: owner's directive to cover everything related to building in
   the AI age, adopted with the three seats' guardrails (all-hands
@@ -1012,6 +1054,14 @@ build.
 - First step: the evidence_grade migration and one blog feed, engineer
 - Cost: $0
 - Status: accepted
+- Groomed 2026-10-12 (PM, Monday ceremony): first step built — the
+  `evidence_grade` column exists and is in active use
+  (`pipeline/backfill_grades.py`), and the engineering-blog feeds are in
+  `sources.yaml`, well beyond the five named (cloudflare-engineering,
+  stanford-sail, mit-news-ai, mit-csail, simonwillison, interconnects,
+  raschka, langchain, lilianweng among others). Correctly split already
+  (Q4 spike vs. Q1 2027 objective); the Q1 full expansion stays
+  `accepted` as legitimately future work.
 
 ### 2026-09-18 — A public, read-only, cited claims endpoint (sales agent)
 - Trigger: the GEO plan (docs/sales/geo-plan.md, Game 2) and the board's
@@ -1117,6 +1167,11 @@ build.
   is a five-line diff either way.
 - Cost: $0
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as resolved by
+  default — `site/app/pricing/page.jsx` still reads "Full access" as of
+  this ceremony, weeks after this run's own rename, with no reversal
+  requested. Worth a one-line verdict confirming the choice rather than
+  leaving it open on a question nobody is still asking.
 
 ### 2026-09-18 — The digest's own text says "ingested" where the site now says "read" (frontend agent)
 - Trigger: the home page's metric line was changed this run from "papers
@@ -1145,6 +1200,10 @@ build.
   says needs a ledger proposal first, and Neon's HTTP query path is not a
   documented public endpoint, so writing a fetch against it would be a
   guess this run could not verify.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built —
+  `site/lib/metrics.js` exists with exactly the two-wiring design this
+  entry proposed. Named for the owner or the building seat to confirm
+  and flip to `built`.
 - What: decide between two wirings, both $0. Either the site gains a Neon
   client and reads `DATABASE_URL` at revalidate time, or the pipeline
   publishes the number it already computes and the site reads that. The
@@ -1213,6 +1272,10 @@ build.
   regression gate not existing yet is a reason to record the before/after
   bundle carefully, per this entry's own first step, not a reason to
   leave a known, cheap, one-clause fix red through launch.
+- Groomed 2026-10-12 (PM, Monday ceremony): reads as built — the live
+  `description:` field in `skills/harness-engineering/SKILL.md` now
+  carries almost verbatim the suggested replacement clause. Named for
+  the owner or the building seat to confirm and flip to `built`.
 
 ### 2026-09-18 — trigger_reliability is now computable, and option (b) is the one to build (skill agent)
 - Trigger: the verification-badge schema entry filed earlier on
@@ -1474,6 +1537,13 @@ owning seat rather than assumed. Arguments in docs/sales/.
   treat the other entry as satisfied rather than build both. Greenlit as
   a product/backlog call within PM authority (all-hands decision 4), not
   money, a secret, or purpose, per the owner's dispatch for this triage.
+- Groomed 2026-10-12 (PM, Monday ceremony): still not built under
+  either name. No `left-behind`/`leftbehind` route exists under
+  `site/app` as of this ceremony (routes present: api, desk, graph,
+  library, mission, pricing, privacy, routines, sign-in, sign-up,
+  skills, terms, unsubscribe). Ranked #2 by leverage in this week's
+  accepted-backlog order, right behind the institution backfill.
+  Pulled into sprint-2026-10-12 as item 5.
 
 ### 2026-09-18 — The Receipt Standard: publish the provenance spec plus a conformance linter
 - Trigger: 69% of 216 audited public Claude Code skills won't reliably
@@ -1676,6 +1746,18 @@ owning seat rather than assumed. Arguments in docs/sales/.
   one covers `add_masthead`.
 - Whose call: the owner's on the words, the engineer's on the code.
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): this is the first of six
+  filings on the masthead (2026-09-19, -20, -24, -27, -30, -10-03), each
+  superseding the last one's diagnosis without a cross-reference, so a
+  reader hits all six independently. Verified directly against
+  `pipeline/weekly.py`: the text itself was rewritten on 2026-09-26
+  (citing "Canon law 15"), so the original defect this entry names is
+  fixed in code. What the later filings (09-27 onward) actually track is
+  a regression-test gap, not the original text — nothing tripwires the
+  masthead against drifting again. One ruling ("add the tripwire test,
+  close the thread") would close all six rather than inviting a seventh
+  filing; flagged in this week's PR description under "Awaiting your
+  verdict."
 
 ### 2026-09-19 — The date range arrives as an en dash (writer seat, run 2)
 - Trigger: reading prompts/digest.md end to end. The prompt tells the
@@ -10768,6 +10850,15 @@ provenance reviewer exists to catch.
   because a view that returns four rows is a paragraph and not a page.
 - Cost: $0, one view over data already held.
 - Status: proposed
+- Groomed 2026-10-12 (PM, Monday ceremony): the premise does not hold.
+  This entry claims institutions are a field "distill has always filled
+  in," but the writer seat's 2026-09-19 measured finding (99.2% of
+  papers show empty `institutions`) is confirmed unchanged as of this
+  ceremony, same gap the institution-backfill entry above still names.
+  The proposed `reversals` view is not computable with no new ingestion
+  as claimed; it is blocked on that backfill landing first. Not stale,
+  just mis-sequenced — worth a verdict that says so rather than building
+  against data that mostly does not exist yet.
 
 ### 2026-09-30 — A concurrency group on the twelve agent workflows
 
@@ -14395,5 +14486,34 @@ that triggered it, per the charter.
   block, 0.0001 on a single-work query. It is still free and keyless to call
   today, and a usage price printed on every answer is not a thing a free API
   used to publish.
+- Cost: $0.
+- Status: proposed
+
+### 2026-10-14 — Dispatch needs two workflow fixes, not one, and both are HQ's to make (PM seat)
+- Trigger: `INC-2026-09-24-dispatch-403` (eighteen days, every attempt
+  since) turned out to be the gap `docs/standards/pm.md` §11.5 already
+  names: the Claude Code action overwrites `GH_TOKEN`/`GITHUB_TOKEN` with
+  its own installation token, and the job's real token (the one
+  `permissions: actions: write` governs) survives only as
+  `DEFAULT_WORKFLOW_TOKEN`. Prefixing today's dispatch call with
+  `GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"` created a real run for the first
+  time in eighteen days — then that run failed in 4 seconds on a second,
+  previously invisible gate: `claude-code-action` refuses a run whose
+  triggering actor is a bot (`github-actions[bot]`, which is what
+  `DEFAULT_WORKFLOW_TOKEN` is attributed to) unless `allowed_bots` names
+  it. Full account in the matching incident entry dated today.
+- What: every `agent-*.yml` workflow in this repo needs
+  `allowed_bots: '*'` (or `github-actions` by name) on its
+  `claude-code-action` step before a PM dispatch can do anything beyond
+  create the run, and the token fix itself should stop being a hand-typed
+  prefix (vendor HQ's `tools/gh-actions.sh`, or set
+  `GH_TOKEN: ${{ env.DEFAULT_WORKFLOW_TOKEN }}` once in
+  `.github/workflows/agent-pm.yml`'s dispatch step). Both are
+  `.github/workflows/` changes, which standard §15 names as HQ's surface
+  in every product repo, not a product seat's to edit.
+- First step: handed off to `alexandra-systems/exo-centralizer` on the
+  board this run rather than attempted here. The centralizer applies both
+  fixes with one idempotent tool across every product the way the tracing
+  change landed in 37 files at once (standard §15).
 - Cost: $0.
 - Status: proposed

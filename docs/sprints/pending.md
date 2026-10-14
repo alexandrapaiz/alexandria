@@ -1,3 +1,263 @@
+## Updated 2026-10-14, ~16:10 UTC (standup): last Monday's ceremony finally lands, the 18-day dispatch block is half-fixed, three Tier B merges
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony — the
+next one is Monday 2026-10-19. But this run also closed a four-day gap
+that was not a standup's to leave open: `sprint-2026-10-12.md` (the
+2026-10-12 Monday ceremony: closed retro on sprint-2026-10-05, groomed
+ledger, the new sprint) was sitting on an open, unmerged pull request
+(#281, then carried into #289) the whole time, because the only file in
+that chain outside a knowledge surface was the launch PR/FAQ
+(`docs/prfaq/launch-2026-10-13.md`), and Tier A's own rule holds the
+*whole* pull request for the owner when any file in it is not a
+knowledge surface. Split the PR/FAQ into its own pull request (#289,
+unchanged, waiting on your go/no-go) and self-merged everything else as
+#295, so `main` has had a current sprint file since before today's
+standup even started, not since four days ago when it should have.
+
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at
+ADR-40 (2026-10-05) and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike on that evidence.
+
+**The headline: the dispatch mechanism moved for the first time in
+eighteen days, and immediately hit a second gate.**
+`INC-2026-09-24-dispatch-403` turned out to be exactly what
+`docs/standards/pm.md` §11.5 already names: the Claude Code action
+overwrites the ambient `GH_TOKEN`/`GITHUB_TOKEN` with its own
+installation token, and the job's real token — the one `permissions:
+actions: write` governs — survives only as `DEFAULT_WORKFLOW_TOKEN`.
+Prefixing the dispatch call with it (`GH_TOKEN="$DEFAULT_WORKFLOW_TOKEN"
+gh workflow run agent-frontend.yml ...`) created a real run
+(38594124029) for the first time since the incident was filed. That run
+then died in 4 seconds, before the model read its prompt:
+`claude-code-action` refuses a bot-triggered actor
+(`github-actions[bot]`, what `DEFAULT_WORKFLOW_TOKEN` is attributed to)
+unless the workflow's `allowed_bots` names it. Both fixes are
+`.github/workflows/` changes, which is HQ's surface in every product
+repo, not this seat's or the frontend seat's. Handed off to
+`alexandra-systems/exo-centralizer` on the board this run, with the run
+URL and both fixes named. Full account: the amended
+`INC-2026-09-24-dispatch-403` entry in `docs/agents/incidents.md`, dated
+today.
+
+**Owed to you, four lines, in order of urgency:**
+
+1. **The launch PR/FAQ go/no-go — new, and it is the only thing left
+   blocking #289.** `docs/prfaq/launch-2026-10-13.md`, drafted at the
+   2026-10-12 ceremony, one page plus the FAQ, per standard §2c. Your
+   merge of #289 is the go decision; everything else that PR carried has
+   already landed via #295.
+2. **The press hasn't sent since 2026-W40, four weeks running, and the
+   pipeline is now 7 days stalled with 2,264 papers waiting.** Unchanged
+   in kind from the last three standups; `tools/delivery_health.py` run
+   live this standup. The reachable half of the fix is in `main`
+   (`INC-2026-10-12-the-deploy-ladder-refuses-the-fix-for-the-outage-it-
+   is-in`); the unreachable half is a `modal deploy` only you or the
+   chair can run, and the deploy surface now also reports the live site
+   is 1.8 days behind `main` (16 undeployed commits). Dated 2026-09-21,
+   carried every standup since.
+3. **Merge PR #60**, the pre-send quality checklist — **25 days** open.
+   `CONFLICTING` regardless of tier (confirmed again this run), so it is
+   blocked either way and this seat cannot resolve it (the conflicting
+   files are product code — `db/schema.sql`, `mcp/server.py`,
+   `pipeline/budget.py`, `pipeline/weekly.py` — not the docs-only kind
+   §10 rule 5 lets this seat fix). One correction to four standups' own
+   label, found while re-examining `prompts/digest.md` for #291 this
+   run: `prompts/daily.md`, the file that made this PR "Tier C" in every
+   prior report, is the same kind of file as `digest.md` — a content
+   prompt, not a seat charter (`prompts/<role>-agent.md` is the Tier C
+   boundary per standard §16) — so the conflict, not the tier, is what's
+   actually blocking it. Handed off to the engineer to rebase, since
+   that is rule 5's own instruction for a non-docs conflict. Dated
+   2026-09-20.
+4. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **19 days**. #285 shipped the full integration eight
+   days ago; this is the one remaining step. Dated 2026-09-26.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10), three:**
+- **#288** (engineer, institution backfill — sprint-2026-10-12 item 3) —
+  clean, no Tier C path.
+- **#290** (skill, harness-engineering v5 + agent-memory-selection) —
+  opened `CONFLICTING` against #288 in `docs/agents/incidents.md` and
+  `docs/ideas.md` (both append-only, same anchor). Docs-only, resolved
+  per §10 rule 5: merged `main` into the branch, kept both sides, pushed,
+  merged clean.
+- **#291** (writer, the attribution-gate fix + two ban-list entries) —
+  touches `prompts/digest.md`, re-examined this run against standard
+  §16's own vocabulary (a charter is `prompts/<role>-agent.md`; this
+  isn't one) rather than against the label a prior standup gave a
+  different file. Opened `CONFLICTING` against the two merges above in
+  the same two append-only files; resolved the same way.
+
+**Also split and self-merged under Tier A, #295 (this run's own PR):**
+the 2026-10-12 ceremony's sprint, retro and grooming, `org-chart.md`,
+and today's `pending.md`/`dispatch-queue.md` — see the headline above.
+
+**Not merged, named rather than acted on:** #272 (exo, Tier C — touches
+three agent charters including this seat's own, also `CONFLICTING`),
+#205 (finance, draft, dormant seat), #203 (okr, draft), #294 (engineer,
+draft, sprint item 5, a run in progress), #293 (a different PM-surface
+pull request from the owner's own window session, `alexandria-pm/2026-
+10-14-message`, open since 12:27 UTC, a draft with only a placeholder
+body at last check — not touched while it may still be live), #289 (the
+launch PR/FAQ, now trimmed to that one file, waiting on you per item 1
+above).
+
+**One dispatch fired, the first ever to actually create a run, and it
+failed — see the headline.** Frontend, sprint item 4 (the Left-Behind
+Index), logged in full in `docs/sprints/dispatch-queue.md`'s "Dispatched
+by the PM" section with the run URL.
+
+**Board.** Commented on the frontend card (`03029cad`) naming the
+dispatch and its failure; left it in Backlog since nothing actually
+started. Did not touch the stale sprint object (still reads
+`sprint-2026-10-05`) — same ceremony-sized item the 2026-10-10 standup
+already flagged, now four ceremonies running.
+
+## Updated 2026-10-13, ~18:35 UTC (standup): launch day itself still shows the gap, two Tier B merges, one dispatch attempted and refused
+
+**Scope note.** Standup shape (charter §0/§4), not the ceremony. Yesterday's
+ceremony (#281) never merged; built on it this run rather than branching
+blind into the same two files, and it supersedes it as #289. Full account
+in `docs/sprints/dispatch-queue.md`.
+
+**Reconciliation, per charter §1d.** `docs/decisions.md` still stops at
+ADR-40 (2026-10-05) and `docs/allhands/` still has nothing newer than
+2026-09-18-close. Nothing to strike on that evidence.
+
+**The three items below carry forward from yesterday, re-checked against
+today's own evidence rather than assumed unchanged:**
+
+1. **Today's press send (launch day itself) is still missing, and it got
+   worse, not better.** `python3 tools/delivery_health.py`, run this
+   standup against a live `DATABASE_URL`: press and site both `FAILING`,
+   2026-W41 missing; pipeline `FAILING`, claims stalled 6 days (was 5
+   yesterday), 2223 papers waiting (was 2173). Yesterday's sprint read
+   item 1 as closed via #282 — that PR shipped the degraded-path
+   mechanism, not a resend, and the mechanism cannot run because no agent
+   token holds `modal deploy` (`INC-2026-10-12-the-deploy-ladder-refuses-
+   the-fix-for-the-outage-it-is-in`, already filed). The reachable half of
+   the fix is in `main`; the unreachable half is a `modal deploy` only you
+   or the chair can run. Dated 2026-10-13, carried from 2026-10-12.
+2. **Merge PR #60**, the pre-send quality checklist — **23 days** open,
+   Tier C (`prompts/daily.md`), conflicting, unchanged for the fourth
+   consecutive standup/ceremony. Only your merge opens it. Dated
+   2026-09-20.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **17 days**. #285 merged yesterday and built the full
+   checkout/webhook integration against Polar's documented API, so this
+   really is the one remaining step now: create the account, paste the
+   `POLAR_*` secrets, and the spine goes live with no further engineer
+   day needed. Dated 2026-09-26.
+
+**Merged this run (Tier B, §10).** #283 (writer, digest/voice quality bar)
+clean; #284 (research, claim-graph precision brief) had a docs-only append
+conflict with #283 in `docs/agents/incidents.md`, resolved by keeping both
+entries (§10 rule 5 permits this). `main`'s next `checks.yml` run came back
+green after both.
+
+**One dispatch attempted, refused at the API, not by rule.** Frontend
+(sprint item 4, the Left-Behind Index, carried two sprints, no frontend PR
+ever attempted it) fired clean against every hard stop and `PM_DISPATCH_
+ENABLED=true`, and GitHub returned `403`, the same `INC-2026-09-24-
+dispatch-403` every PM pass has hit for 18+ days. Exact command in
+`docs/sprints/dispatch-queue.md` for a human to run.
+
+**Still open, named rather than acted on:** #272 (exo, Tier C — touches
+three agent charters including this seat's own, also conflicting), #205
+(finance, draft, dormant seat), #203 (okr, draft), #288 (engineer, sprint
+item 3, a run in progress as this standup was written — not touched while
+its run is live), #287 (a different PM-surface pull request from a
+different invocation path, `alexandria-pm/2026-10-13-message-second-pass`,
+six hours stale at last check; not enough visibility into that system to
+judge it from here, named rather than guessed at).
+
+**Board.** Moved the one card with an obvious match to this run's merges
+(`59fcc1f4`, the writer's quality-bar item) to Done with the PR link.
+Commented on the frontend card (`03029cad`) naming the dispatch attempt.
+Did not touch the stale sprint object (still reads `sprint-2026-10-05`,
+"The press runs itself") — that is the full board reconciliation the
+2026-10-10 standup already flagged as ceremony-sized, and yesterday's
+ceremony's own claimed rename does not appear to have taken; worth the
+next ceremony's attention rather than a second attempt here.
+
+## Updated 2026-10-12, Monday ceremony: today's press send is the headline, three Tier B merges, the ledger groomed back to 2026-09-28
+
+**Reconciliation first, per charter §1d.** Read `docs/decisions.md` (stops
+at ADR-40, 2026-10-05, nothing newer) and `docs/allhands/` (nothing newer
+than 2026-09-18-close) back to the last ceremony. Nothing to strike: no
+new ADR or ruling since the 2026-10-10 standup resolved anything this
+tracker was still carrying as open.
+
+**Owed to you, three lines, in order of urgency:**
+
+1. **Today's press send may have silently failed.** `pipeline/weekly.py`'s
+   09:00 UTC cron fired (confirmed by its own runtime fingerprint) but
+   produced no new `digests` row — the receipt and `/library` both still
+   show last Monday's `2026-W40` issue. A PM dispatch to the engineer to
+   diagnose and, if safe, send it now was attempted and refused with
+   `HTTP 403` (repeat of `INC-2026-09-24-dispatch-403`). The exact command
+   is in `docs/sprints/dispatch-queue.md` for you or the chair to run by
+   hand. Launch is dated 2026-10-13 — tomorrow. Dated 2026-10-12.
+2. **Merge PR #60**, the pre-send quality checklist — **22 days** open,
+   Tier C (`prompts/daily.md`), conflicting, unchanged for the third
+   consecutive ceremony. Only your merge opens it. Dated 2026-09-20.
+3. **The Polar Merchant-of-Record account (ADR-30)** — overdue since
+   2026-09-26, now **16 days**. This ceremony's new sprint (item 2) has
+   the engineer building the full checkout/webhook integration against
+   Polar's documented API regardless, so the account and `POLAR_*`
+   secrets are the one remaining step once that PR lands — not a new
+   blocker, the same one, closer to done. Dated 2026-09-26.
+
+**Merged this run (Tier B, `docs/standards/pm.md` §10/§21).** Full account
+of each in `docs/sprints/dispatch-queue.md`.
+
+- **#277** — re-vendor `docs/standards/pm.md` to HQ `2c0cb30`. Merged.
+  **#280**, a duplicate of the same commit, closed rather than merged
+  twice.
+- **#278** — raise the writer's turn cap 150→225. Merged. Worth your eyes:
+  an earlier PM pass today read this exact PR as outside this seat's
+  merge authority (a workflow file) and this run read the standard the
+  other way and merged it; the standard's own §10 and §15 disagree with
+  each other about whether a product seat may touch `.github/workflows`
+  at all. Flagged for the ExO, not resolved here.
+- **#275** — the engineer's free-tier pacing fix (the cause of the
+  five-day claims stall). Merged.
+
+**Left open, each named rather than acted on.** #273 (writer, conflicting,
+Tier C), #272 (exo, touches three charters, Tier C), #279 (this seat's
+own prior-pass PR, waits for the owner or HQ's PM per Tier B condition 1
+— though both items it covers are already independently resolved above),
+#205 (finance, draft, dormant), #203 (okr, draft).
+
+**Ledger grooming (`docs/ideas.md`), full account in this week's PR
+description.** Groomed the 9 `accepted`-not-flagged-built entries (5 read
+as already built in the tree, named for the owner or building seat to
+flip; 2 genuinely open and pulled into this week's sprint; 1 correctly
+scoped future work; 1 already correctly split). Added dated notes on 6
+stale/superseded entries, including a six-filing masthead cluster (the
+code defect is fixed, only a regression-test gap remains live) and one
+entry whose premise does not hold (institutions data it assumes exists).
+96 `proposed` entries dated 2026-09-22 through 2026-09-28 now cross the
+two-week mark with no verdict; full list in this week's PR description
+under "Awaiting your verdict." The prior ceremony's own 92-entry list
+(dated ≤2026-09-21) was never actually written into its PR body despite
+saying it would be — treat all 92 as still outstanding too, since nothing
+since has resolved them.
+
+**The board was unstable this run** (one read returned a different,
+stale sprint record than four subsequent reads; one write failed with
+"the board's database is unreachable"). Renamed the sprint it actually
+serves to this week's goal, added three cards, moved one stale card to
+Done. The full 36-card reconciliation the 2026-10-10 standup named as
+ceremony-sized was not attempted against an unstable backend — carried
+rather than forced. See `docs/sprints/dispatch-queue.md` for the full
+account.
+
+**Run health.** One failure in 24h, already classified as a tripwire
+false alarm (the same branch's later pushes went green and merged). The
+writer's 2026-10-11 19:46 UTC run finished at 127/150 turns (84.7%, over
+the cap-ratio line); the raise merged this run resolves it going forward.
+
 ## Updated 2026-10-10, ~16:10 UTC (standup): two Tier B merges, two abandoned drafts closed, nothing failed that wasn't already filed
 
 **Scope note.** Standup shape (charter §0/§4), not the ceremony — full
