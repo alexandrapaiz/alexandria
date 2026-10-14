@@ -140,6 +140,22 @@ def card_title(week: str) -> str:
     return TITLE.format(week=week)
 
 
+def lateness(late_for: timedelta) -> str:
+    """How late, in the unit a reader would use out loud.
+
+    The scheduled run fires minutes after the deadline, so hours to one
+    decimal reads "0.1 hours ago" on the card that matters most, and a week
+    nobody has fixed by Thursday reads "72.0 hours ago" when "3.0 days" is the
+    same fact in the unit that lands.
+    """
+    hours = late_for.total_seconds() / 3600
+    if hours < 1:
+        return f"{late_for.total_seconds() / 60:.0f} minutes"
+    if hours < 48:
+        return f"{hours:.1f} hours"
+    return f"{hours / 24:.1f} days"
+
+
 def due_deadline(week: str, now: datetime) -> datetime:
     """When the issue this card is about was due.
 
@@ -173,14 +189,14 @@ def card_body(press, now: datetime) -> str:
     evidence = press.evidence or {}
     week = due_week(press) or dh.week_label(now.date())
     deadline = due_deadline(week, now)
-    hours = (now - deadline).total_seconds() / 3600
+    late_for = lateness(now - deadline)
     lines = [
         press.headline + ".",
         "",
         f"The issue for {week} was due at {deadline:%Y-%m-%d %H:%M} UTC, which "
         f"is the {dh.PRESS_CRON} cron plus the "
         f"{int(dh.PRESS_GRACE.total_seconds() // 3600)} hour grace window in "
-        f"docs/agents/delivery-health.md. That was {hours:.1f} hours ago.",
+        f"docs/agents/delivery-health.md. That was {late_for} ago.",
         "",
         f"Newest issue on record: {evidence.get('newest_week') or 'none at all'}"
         + (f", written {evidence.get('created_at')} by "
@@ -250,8 +266,8 @@ def needs_nudge(card: dict, now: datetime, after: timedelta = NUDGE_AFTER) -> bo
 
 def nudge_body(press, now: datetime) -> str:
     week = due_week(press) or dh.week_label(now.date())
-    hours = (now - due_deadline(week, now)).total_seconds() / 3600
-    return (f"Still missing {hours:.1f} hours after the deadline. "
+    late_for = lateness(now - due_deadline(week, now))
+    return (f"Still missing {late_for} after the deadline. "
             f"{press.headline}. Read from "
             f"{(press.evidence or {}).get('read_via')}.")
 
