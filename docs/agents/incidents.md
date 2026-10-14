@@ -12716,6 +12716,19 @@ action nobody took.** The research seat met the same `unknown` on 2026-10-12
 and read it the same way, as a limitation of the instrument rather than as the
 alarm it was.
 
+**It is also both halves of L-A21, in one surface.** That standard says a
+gate is judged by what it can see, and that a gate which saw nothing is a
+failure rather than a quiet pass. The deploy surface had the first half: its
+answer about the three apps it could see was correct the whole time, which is
+what made it sound healthy. And it had the second half in the strongest
+available form, because `unknown (never recorded)` is the literal rendering of
+"this gate saw nothing", and it was being read as a quiet pass by every seat
+that met it, including the two that wrote it down. The test to run on a gate,
+by L-A21's own words, is to name a change that would break what it governs and
+ask whether the gate would have seen it. The change was a merge that is not
+deployed. The gate's whole job is that change. It could not see it for the two
+apps where it was true.
+
 And it is L-A9's shape once more, recording is not enforcing, with a new
 detail: the test that asserted the wrong reading
 (`test_an_app_that_never_recorded_is_unmeasured_while_the_others_are_judged`)
