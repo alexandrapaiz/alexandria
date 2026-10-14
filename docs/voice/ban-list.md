@@ -2379,3 +2379,91 @@ gap that the same collision had left empty (incident 25).
     ```
     LANDED prompts/digest.md: "The two numbers are the same number or the issue is not finished."
     ```
+
+112. The count of its own contents that nobody could check, because the
+    sentence picked the unit. Entry 109 is the count whose noun is false of a
+    member. This is the count whose number is wrong and whose unit is
+    unstated, so the number cannot be shown wrong.
+    The specimen opens the new-work slot of 2026-W40:
+
+    > Three papers this week test what happens when you push the agent stack
+    > in directions no benchmark yet covers.
+
+    Four items follow it, each a bold lead carrying its own piece of work.
+    Three of the four name a paper. The fourth, "Branches that learn what to
+    forget", names a team at Meta, Duke and UC Davis, no paper and no link, so
+    a writer counting papers counts three and a reader counting items counts
+    four. Either reading is a defect. If the fourth is a paper the number is
+    wrong, and if it is not a paper then an item in the new-work slot carries
+    no paper at all, which is the link coverage entry one register over.
+    The gate was in the file that wrote this and it is the gate that calls
+    itself "arithmetic rather than judgment". It says to count what appears
+    under the sentence and never says what to count, and its four examples,
+    three findings, two bets, two labs and both results, are all nouns naming
+    the issue's own contents rather than units a reader can see. The file had
+    already solved this exact problem one gate over, where link coverage was
+    failing until it was told "Count named works, not items, because an item
+    can name three of them".
+    Ten grades read past it. Two of them had it in front of them: the review
+    of 2026-10-06 quoted this very sentence in a block of standalone lines
+    while counting shapes, and the review of 2026-10-05 was counting where the
+    grades sat. A quotation entered both reviews as evidence for one law and
+    was never put to the others. Recorded as
+    `INC-2026-10-14-a-count-gate-that-named-no-unit-passed-four-items-as-three`.
+    Added 2026-10-14. Enforced the same day at the counting gate, which now
+    fixes the unit as the blocks a reader sees rather than the noun the
+    sentence used.
+    The sweep entry 90 requires found one supply and it is struck in the same
+    pull request. The honesty rule carried the model sentence "two papers carry
+    this week's new work", quoted at a rule that tells the writer what to
+    write, and the print took that frame with the count and the verb swapped.
+    That is the third time a phrase quoted where the work happens has arrived
+    in the issue as the nearest available draft, after the cadence supplies and
+    the reading-list heading.
+    ```
+    LANDED prompts/digest.md: "Count the blocks a reader sees under the sentence, one for every bold lead, bullet or paragraph carrying its own piece of work, whatever noun your sentence happened to use."
+    ```
+
+113. The evidence grade that is the same sentence as the last one. Entry 94
+    moved the grade out of the position the meaning line needed and left its
+    shape alone. This is the shape.
+    2026-W40 carried eight grades and four of them open on the identical three
+    words:
+
+    > The authors' own experiments, not yet replicated outside the group.
+    > The authors' own experiments on GUI agents; no replication yet.
+    > The authors' own traffic and benchmarks; no external replication.
+    > The authors' own experiments against their Meta-Harness baseline.
+
+    Two more are the same frame as each other, about the same paper, sixty
+    lines apart: "One benchmark, one incident autopsy, one prototype" in the
+    body and "One incident autopsy, one formal model, one prototype" in the
+    reading list. Eight grades, three frames. Every one of them is accurate
+    about its own paper, which is what makes this prose rather than error.
+    The gate forbids all of it in its own words, and it was in the deployed
+    file on the day: "No two grades in the issue begin the same way, none
+    begins on the word 'evidence', and no two are built on the same frame."
+    Three requirements and no count under any of them, and the step it does
+    ask for is a judgment about your own prose, which is the condition canon
+    pass 4 already names as the one a tired writer gets wrong. Every gate in
+    that list that holds was turned into a count after a print walked past it.
+    This one was not, so it has never failed and the frames repeat.
+    What it costs is law 6 rather than law 1. A grade is in the issue so a
+    reader can weigh one result against another, and four grades reading alike
+    tell a reader the four works are alike, which these four are not. One is a
+    held-out family of 24 cells, one is five rounds on live Adobe traffic, one
+    is a single ablation against the group's own baseline.
+    Added 2026-10-14. Enforced the same day at the same gate, as a written
+    list of every grade in print order with two string comparisons over it.
+    The sweep entry 90 requires found four supplies and all four are struck in
+    the same pull request. The in-line grade rule opened on four model grades,
+    quoted at the rule that tells a writer what to write, and the first of them
+    is the three words this print used four times. A run of 2026-10-05 struck a
+    fifth specimen from that same sentence for this same reason and left these
+    four standing four lines above it, so the rule forbidding a reused stem was
+    the rule supplying it. The two specimens in the rule's second half stay:
+    they demonstrate the missing-measurement half, which is a kind of content
+    rather than a frame, and this print used neither.
+    ```
+    LANDED prompts/digest.md: "Read the first three words of each line, and no two of them are the same string."
+    ```
